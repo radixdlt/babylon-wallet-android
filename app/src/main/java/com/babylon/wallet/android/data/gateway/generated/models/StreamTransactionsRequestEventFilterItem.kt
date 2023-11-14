@@ -26,7 +26,6 @@ import kotlinx.serialization.Contextual
  * @param event 
  * @param emitterAddress Bech32m-encoded human readable version of the address.
  * @param resourceAddress Bech32m-encoded human readable version of the address.
- * @param quantity String-encoded decimal representing the amount of a related fungible resource.
  */
 @Serializable
 
@@ -41,11 +40,7 @@ data class StreamTransactionsRequestEventFilterItem (
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "resource_address")
-    val resourceAddress: kotlin.String? = null,
-
-    /* String-encoded decimal representing the amount of a related fungible resource. */
-    @SerialName(value = "quantity")
-    val quantity: kotlin.String? = null
+    val resourceAddress: kotlin.String? = null
 
 ) {
 

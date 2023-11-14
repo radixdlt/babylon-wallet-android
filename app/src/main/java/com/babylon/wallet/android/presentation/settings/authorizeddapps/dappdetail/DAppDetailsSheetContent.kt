@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -32,11 +32,11 @@ import com.babylon.wallet.android.presentation.ui.composables.displayName
 fun DAppDetailsSheetContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    dApp: DAppWithMetadataAndAssociatedResources
+    dApp: DAppWithResources
 ) {
     Column(modifier = modifier) {
         RadixCenteredTopAppBar(
-            title = dApp.dAppWithMetadata.displayName(),
+            title = dApp.dApp.displayName(),
             onBackClick = onBackClick,
             contentColor = RadixTheme.colors.gray1
         )
@@ -51,11 +51,11 @@ fun DAppDetailsSheetContent(
                     modifier = Modifier
                         .padding(vertical = RadixTheme.dimensions.paddingDefault)
                         .size(104.dp),
-                    dapp = dApp.dAppWithMetadata
+                    dapp = dApp.dApp
                 )
                 Divider(color = RadixTheme.colors.gray5)
             }
-            dApp.dAppWithMetadata.description?.let { description ->
+            dApp.dApp.description?.let { description ->
                 item {
                     Text(
                         modifier = Modifier
@@ -69,7 +69,7 @@ fun DAppDetailsSheetContent(
                     Divider(color = RadixTheme.colors.gray5)
                 }
             }
-            dApp.dAppWithMetadata.dAppAddress.let { dappDefinitionAddress ->
+            dApp.dApp.dAppAddress.let { dappDefinitionAddress ->
                 item {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     DappDefinitionAddressRow(
@@ -81,10 +81,10 @@ fun DAppDetailsSheetContent(
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
             }
-            if (dApp.dAppWithMetadata.claimedWebsites.isNotEmpty()) {
+            if (dApp.dApp.claimedWebsites.isNotEmpty()) {
                 item {
                     DAppWebsiteAddressRow(
-                        websiteAddresses = dApp.dAppWithMetadata.claimedWebsites,
+                        websiteAddresses = dApp.dApp.claimedWebsites,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault)

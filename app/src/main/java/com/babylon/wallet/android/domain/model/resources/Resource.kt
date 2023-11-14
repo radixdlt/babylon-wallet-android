@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
 import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPerNetwork
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
@@ -30,19 +31,25 @@ sealed class Resource {
     abstract val name: String
     abstract val iconUrl: Uri?
 
+    val isDetailsAvailable: Boolean
+        get() = when (this) {
+            is FungibleResource -> currentSupply != null && divisibility != null && behaviours != null
+            is NonFungibleResource -> currentSupply != null && behaviours != null
+        }
+
     data class FungibleResource(
         override val resourceAddress: String,
         val ownedAmount: BigDecimal?,
-        private val nameMetadataItem: NameMetadataItem? = null,
-        private val symbolMetadataItem: SymbolMetadataItem? = null,
-        private val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        private val iconUrlMetadataItem: IconUrlMetadataItem? = null,
-        private val tagsMetadataItem: TagsMetadataItem? = null,
-        private val behaviours: AssetBehaviours = emptySet(),
+        val nameMetadataItem: NameMetadataItem? = null,
+        val symbolMetadataItem: SymbolMetadataItem? = null,
+        val descriptionMetadataItem: DescriptionMetadataItem? = null,
+        val iconUrlMetadataItem: IconUrlMetadataItem? = null,
+        val tagsMetadataItem: TagsMetadataItem? = null,
+        private val assetBehaviours: AssetBehaviours? = null,
         val currentSupply: BigDecimal? = null,
-        private val validatorMetadataItem: ValidatorMetadataItem? = null,
-        private val poolMetadataItem: PoolMetadataItem? = null,
-        private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
+        val validatorMetadataItem: ValidatorMetadataItem? = null,
+        val poolMetadataItem: PoolMetadataItem? = null,
+        val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
         val divisibility: Int? = null
     ) : Resource(), Comparable<FungibleResource> {
         override val name: String
@@ -73,12 +80,11 @@ sealed class Resource {
                 tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
             }
 
-        val resourceBehaviours: AssetBehaviours
-            get() = if (isXrd) {
-                setOf(AssetBehaviour.SUPPLY_FLEXIBLE)
-            } else {
-                behaviours
-            }
+        val behaviours: AssetBehaviours? = if (isXrd) {
+            assetBehaviours?.filterNot { it == AssetBehaviour.INFORMATION_CHANGEABLE }?.toSet()
+        } else {
+            assetBehaviours
+        }
 
         val currentSupplyToDisplay: String?
             get() = currentSupply?.displayableQuantity()
@@ -139,15 +145,15 @@ sealed class Resource {
     data class NonFungibleResource(
         override val resourceAddress: String,
         val amount: Long,
-        private val nameMetadataItem: NameMetadataItem? = null,
-        private val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        private val iconMetadataItem: IconUrlMetadataItem? = null,
-        private val tagsMetadataItem: TagsMetadataItem? = null,
-        val behaviours: AssetBehaviours = emptySet(),
+        val nameMetadataItem: NameMetadataItem? = null,
+        val descriptionMetadataItem: DescriptionMetadataItem? = null,
+        val iconMetadataItem: IconUrlMetadataItem? = null,
+        val tagsMetadataItem: TagsMetadataItem? = null,
+        private val assetBehaviours: AssetBehaviours? = null,
         val items: List<Item>,
         val currentSupply: Int? = null,
-        private val validatorMetadataItem: ValidatorMetadataItem? = null,
-        private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
+        val validatorMetadataItem: ValidatorMetadataItem? = null,
+        val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
     ) : Resource(), Comparable<NonFungibleResource> {
         override val name: String
             get() = nameMetadataItem?.name.orEmpty()
@@ -167,6 +173,8 @@ sealed class Resource {
         val dappDefinitions: List<String>
             get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
 
+        val behaviours: AssetBehaviours? = assetBehaviours
+
         override fun compareTo(other: NonFungibleResource): Int = when {
             nameMetadataItem == null && other.nameMetadataItem != null -> 1
             nameMetadataItem != null && other.nameMetadataItem == null -> -1
@@ -182,7 +190,8 @@ sealed class Resource {
             val localId: ID,
             val nameMetadataItem: NameMetadataItem? = null,
             val iconMetadataItem: IconUrlMetadataItem? = null,
-            val readyToClaim: Boolean = false,
+            val readyToClaim: Boolean = false, // TODO to remove from object
+            val claimEpochMetadataItem: ClaimEpochMetadataItem? = null,
             val claimAmountMetadataItem: ClaimAmountMetadataItem? = null,
             val remainingMetadata: List<StringMetadataItem> = emptyList()
         ) : Comparable<Item> {
@@ -194,7 +203,10 @@ sealed class Resource {
                 get() = iconMetadataItem?.url
 
             val claimAmountXrd: BigDecimal?
-                get() = claimAmountMetadataItem?.amount?.toBigDecimal()
+                get() = claimAmountMetadataItem?.amount
+
+            val claimEpoch: Long?
+                get() = claimEpochMetadataItem?.claimEpoch
 
             override fun compareTo(other: Item): Int = when (localId) {
                 is ID.StringType -> (other.localId as? ID.StringType)?.compareTo(localId) ?: -1

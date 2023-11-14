@@ -10,6 +10,26 @@ import retrofit2.Call
 import retrofit2.awaitResponse
 
 @Suppress("SwallowedException")
+suspend inline fun <T> Call<T>.toResult(): Result<T> {
+    return try {
+        val response = awaitResponse()
+        val responseBody = response.body()
+        if (response.isSuccessful && responseBody != null) {
+            Result.success(responseBody)
+        } else {
+            val errorResponse = try {
+                Serializer.kotlinxSerializationJson.decodeFromString<ErrorResponse>(response.errorBody()?.string().orEmpty())
+            } catch (e: Exception) {
+                null
+            }
+            Result.failure(RadixGatewayException(errorResponse?.message))
+        }
+    } catch (e: Exception) {
+        Result.failure(RadixGatewayException(e.message, e))
+    }
+}
+
+@Suppress("SwallowedException")
 suspend inline fun <reified T, A> Call<T>.execute(
     cacheParameters: CacheParameters? = null,
     map: (T) -> A,

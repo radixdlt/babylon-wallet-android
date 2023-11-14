@@ -23,16 +23,18 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param nonFungibleIncludeNfids 
- * @param explicitMetadata 
+ * @param nonFungibleIncludeNfids if set to `true`, first page of non fungible ids are returned for each non fungible resource, with cursor which can be later used at `/state/entity/page/non-fungible-vault/ids` endpoint.
+ * @param explicitMetadata allows specifying explicitly metadata properties which should be returned in response, limited to max 20 items.
  */
 @Serializable
 
 data class StateEntityNonFungiblesPageRequestOptIns (
 
+    /* if set to `true`, first page of non fungible ids are returned for each non fungible resource, with cursor which can be later used at `/state/entity/page/non-fungible-vault/ids` endpoint. */
     @SerialName(value = "non_fungible_include_nfids")
-    val nonFungibleIncludeNfids: kotlin.Boolean? = null,
+    val nonFungibleIncludeNfids: kotlin.Boolean? = false,
 
+    /* allows specifying explicitly metadata properties which should be returned in response, limited to max 20 items. */
     @SerialName(value = "explicit_metadata")
     val explicitMetadata: kotlin.collections.List<kotlin.String>? = null
 

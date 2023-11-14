@@ -50,7 +50,7 @@ sealed interface SettingsItem {
             return when (this) {
                 SeedPhrases -> R.string.displayMnemonics_seedPhrases
                 LedgerHardwareWallets -> R.string.settings_ledgerHardwareWallets
-                DepositGuarantees -> R.string.settings_depositGuarantees
+                DepositGuarantees -> R.string.settings_depositGuarantees_title
                 ImportFromLegacyWallet -> R.string.settings_importFromLegacyWallet
             }
         }

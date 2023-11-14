@@ -15,21 +15,24 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.EventsItem
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
- * @param status The status of the transaction.
- * @param feeSummary Fees paid, Only present if the `status` is not `Rejected`.
+ * @param status 
+ * @param feeSummary This type is defined in the Core API as `FeeSummary`. See the Core API documentation for more details. 
  * @param costingParameters 
- * @param feeDestination Only present if the `status` is not `Rejected`.
- * @param feeSource Only present if the `status` is not `Rejected`.
- * @param stateUpdates Transaction state updates (only present if status is Succeeded or Failed).
- * @param nextEpoch Information (number and active validator list) about new epoch if occured.
- * @param output The manifest line-by-line engine return data (only present if `status` is `Succeeded`).
+ * @param feeDestination This type is defined in the Core API as `FeeDestination`. See the Core API documentation for more details. 
+ * @param feeSource This type is defined in the Core API as `FeeSource`. See the Core API documentation for more details. 
+ * @param stateUpdates This type is defined in the Core API as `StateUpdates`. See the Core API documentation for more details. 
+ * @param nextEpoch Information (number and active validator list) about new epoch if occured. This type is defined in the Core API as `NextEpoch`. See the Core API documentation for more details. 
+ * @param output The manifest line-by-line engine return data (only present if `status` is `CommittedSuccess`). This type is defined in the Core API as `SborData`. See the Core API documentation for more details. 
  * @param events Events emitted by a transaction.
  * @param errorMessage Error message (only present if status is `Failed` or `Rejected`)
  */
@@ -39,32 +42,32 @@ data class TransactionReceipt (
 
     /* The status of the transaction. */
     @SerialName(value = "status")
-    val status: String,
+    val status: TransactionStatus? = null,
 
-    /* Fees paid, Only present if the `status` is not `Rejected`. */
+    /* This type is defined in the Core API as `FeeSummary`. See the Core API documentation for more details.  */
     @SerialName(value = "fee_summary")
     val feeSummary: FeeSummary? = null,
 
     @SerialName(value = "costing_parameters")
     val costingParameters: CostingParameters? = null,
 
-    /* Only present if the `status` is not `Rejected`. */
+    /* This type is defined in the Core API as `FeeDestination`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "fee_destination")
 //    val feeDestination: kotlin.Any? = null,
 
-    /* Only present if the `status` is not `Rejected`. */
+    /* This type is defined in the Core API as `FeeSource`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "fee_source")
 //    val feeSource: kotlin.Any? = null,
 
-    /* Transaction state updates (only present if status is Succeeded or Failed). */
+    /* This type is defined in the Core API as `StateUpdates`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "state_updates")
 //    val stateUpdates: kotlin.Any? = null,
 
-    /* Information (number and active validator list) about new epoch if occured. */
+    /* Information (number and active validator list) about new epoch if occured. This type is defined in the Core API as `NextEpoch`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "next_epoch")
 //    val nextEpoch: kotlin.Any? = null,
 
-    /* The manifest line-by-line engine return data (only present if `status` is `Succeeded`). */
+    /* The manifest line-by-line engine return data (only present if `status` is `CommittedSuccess`). This type is defined in the Core API as `SborData`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "output")
 //    val output: kotlin.Any? = null,
 
@@ -76,11 +79,7 @@ data class TransactionReceipt (
     @SerialName(value = "error_message")
     val errorMessage: kotlin.String? = null
 
-) {
-    val isFailed
-        get() = status == "Failed" || status == "Rejected"
-
-}
+)
 
 @Serializable
 data class FeeSummary(

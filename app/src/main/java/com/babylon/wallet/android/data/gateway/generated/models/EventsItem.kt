@@ -24,7 +24,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param name 
- * @param emitter 
+ * @param emitter This type is defined in the Core API as `EventEmitterIdentifier`. See the Core API documentation for more details. 
  * @param `data` 
  */
 @Serializable
@@ -34,11 +34,12 @@ data class EventsItem (
     @SerialName(value = "name")
     val name: kotlin.String? = null,
 
+    /* This type is defined in the Core API as `EventEmitterIdentifier`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "emitter")
 //    val emitter: kotlin.Any,
-//
-//    @Contextual @SerialName(value = "data")
-//    val `data`: kotlin.Any
+
+    @SerialName(value = "data")
+    val `data`: ProgrammaticScryptoSborValue
 
 )
 

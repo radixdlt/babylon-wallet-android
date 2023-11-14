@@ -62,7 +62,7 @@ fun PoolUnitItem(
                     poolUnit = resource
                 )
                 Text(
-                    poolName(resource.poolUnitResource.displayTitle),
+                    poolName(resource.stake.displayTitle),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
@@ -73,7 +73,7 @@ fun PoolUnitItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
-                PoolResourcesValues(modifier = Modifier.weight(1f), resource = resource)
+                PoolResourcesValues(modifier = Modifier.weight(1f), poolUnit = resource)
                 trailingContent()
             }
         }
@@ -81,10 +81,10 @@ fun PoolUnitItem(
 }
 
 @Composable
-fun PoolResourcesValues(resource: PoolUnit, modifier: Modifier = Modifier) {
+fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
     Column(modifier = modifier.border(1.dp, RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)) {
-        val itemsSize = resource.poolResources.size
-        resource.poolResources.forEachIndexed { index, poolResource ->
+        val itemsSize = poolUnit.pool?.resources?.size ?: 0
+        poolUnit.pool?.resources?.forEachIndexed { index, poolResource ->
             Row(
                 modifier = Modifier.padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
@@ -105,7 +105,7 @@ fun PoolResourcesValues(resource: PoolUnit, modifier: Modifier = Modifier) {
                     maxLines = 2
                 )
                 Text(
-                    resource.resourceRedemptionValue(poolResource.resourceAddress)?.displayableQuantity().orEmpty(),
+                    poolUnit.resourceRedemptionValue(poolResource)?.displayableQuantity().orEmpty(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1

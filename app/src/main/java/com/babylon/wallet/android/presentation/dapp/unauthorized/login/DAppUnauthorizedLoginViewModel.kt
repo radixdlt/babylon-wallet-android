@@ -9,7 +9,7 @@ import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toRequiredFields
@@ -89,7 +89,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 needMostRecentData = false
             ).onSuccess { dappWithMetadata ->
                 _state.update {
-                    it.copy(dappWithMetadata = dappWithMetadata)
+                    it.copy(dapp = dappWithMetadata)
                 }
             }.onFailure { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
@@ -246,7 +246,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 appEventBus.sendEvent(
                     AppEvent.Status.DappInteraction(
                         requestId = request.id,
-                        dAppName = state.value.dappWithMetadata?.name
+                        dAppName = state.value.dapp?.name
                     )
                 )
             }.onFailure { exception ->
@@ -271,7 +271,7 @@ sealed interface Event : OneOffEvent {
 }
 
 data class DAppUnauthorizedLoginUiState(
-    val dappWithMetadata: DAppWithMetadata? = null,
+    val dapp: DApp? = null,
     val uiMessage: UiMessage? = null,
     val failureDialog: FailureDialog = FailureDialog.Closed,
     val initialUnauthorizedLoginRoute: InitialUnauthorizedLoginRoute? = null,

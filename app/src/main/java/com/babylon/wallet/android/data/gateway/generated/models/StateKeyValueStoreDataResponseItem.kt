@@ -26,7 +26,7 @@ import kotlinx.serialization.Contextual
  *
  * @param key 
  * @param `value` 
- * @param lastUpdatedAtStateVersion TBD
+ * @param lastUpdatedAtStateVersion The most recent state version underlying object was modified at.
  * @param isLocked 
  */
 @Serializable
@@ -39,7 +39,7 @@ data class StateKeyValueStoreDataResponseItem (
     @SerialName(value = "value")
     val `value`: ScryptoSborValue,
 
-    /* TBD */
+    /* The most recent state version underlying object was modified at. */
     @SerialName(value = "last_updated_at_state_version")
     val lastUpdatedAtStateVersion: kotlin.Long,
 

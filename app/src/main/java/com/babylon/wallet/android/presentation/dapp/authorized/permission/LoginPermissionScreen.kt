@@ -32,7 +32,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
@@ -73,7 +73,7 @@ fun LoginPermissionScreen(
         onContinueClick = {
             viewModel.onPermissionGranted(numberOfAccounts, isExactAccountsCount, oneTime)
         },
-        dappWithMetadata = state.dappWithMetadata,
+        dapp = state.dapp,
         onBackClick = {
             if (state.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.Permission) {
                 viewModel.onAbortDappLogin()
@@ -90,7 +90,7 @@ fun LoginPermissionScreen(
 @Composable
 private fun LoginPermissionContent(
     onContinueClick: () -> Unit,
-    dappWithMetadata: DAppWithMetadata?,
+    dapp: DApp?,
     onBackClick: () -> Unit,
     numberOfAccounts: Int,
     isExactAccountsCount: Boolean,
@@ -121,7 +121,7 @@ private fun LoginPermissionContent(
             Thumbnail.DApp(
                 modifier = Modifier
                     .size(64.dp),
-                dapp = dappWithMetadata,
+                dapp = dapp,
                 shape = RadixTheme.shapes.roundedRectSmall
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -133,7 +133,7 @@ private fun LoginPermissionContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             PermissionRequestHeader(
-                dappName = dappWithMetadata?.name.orEmpty()
+                dappName = dapp?.name.orEmpty()
                     .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
             )
             Spacer(modifier = Modifier.weight(0.5f))
@@ -219,7 +219,7 @@ fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         LoginPermissionContent(
             onContinueClick = {},
-            dappWithMetadata = DAppWithMetadata(
+            dapp = DApp(
                 dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Collabo.fi")
             ),
@@ -238,7 +238,7 @@ fun LoginPermissionContentFirstTimePreview() {
     RadixWalletTheme {
         LoginPermissionContent(
             onContinueClick = {},
-            dappWithMetadata = DAppWithMetadata(
+            dapp = DApp(
                 dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Collabo.fi")
             ),

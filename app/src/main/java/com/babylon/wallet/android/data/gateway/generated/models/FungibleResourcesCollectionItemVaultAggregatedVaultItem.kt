@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  *
  * @param vaultAddress Bech32m-encoded human readable version of the address.
  * @param amount String-encoded decimal representing the amount of a related fungible resource.
- * @param lastUpdatedAtStateVersion TBD
+ * @param lastUpdatedAtStateVersion The most recent state version underlying object was modified at.
  */
 @Serializable
 
@@ -39,7 +39,7 @@ data class FungibleResourcesCollectionItemVaultAggregatedVaultItem (
     @SerialName(value = "amount")
     val amount: kotlin.String,
 
-    /* TBD */
+    /* The most recent state version underlying object was modified at. */
     @SerialName(value = "last_updated_at_state_version")
     val lastUpdatedAtStateVersion: kotlin.Long
 

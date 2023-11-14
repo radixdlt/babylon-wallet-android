@@ -26,7 +26,7 @@ import kotlinx.serialization.Serializable
  * @param blueprintName
  * @param blueprintVersion 
  * @param packageAddress Bech32m-encoded human readable version of the address.
- * @param state 
+ * @param state A representation of a component's inner state. If this entity is a `GenericComponent`, this field will be in a programmatic JSON structure (you can deserialize it as a `ProgrammaticScryptoSborValue`). Otherwise, for \"native\" components such as `Account`, `Validator`, `AccessController`, `OneResourcePool`, `TwoResourcePool`, and `MultiResourcePool`, this field will be a  custom JSON model defined in the Core API schema. 
  * @param roleAssignments 
  * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
  */
@@ -46,6 +46,7 @@ data class StateEntityDetailsResponseComponentDetails(
     @SerialName(value = "package_address")
     val packageAddress: kotlin.String? = null,
 
+    /* A representation of a component's inner state. If this entity is a `GenericComponent`, this field will be in a programmatic JSON structure (you can deserialize it as a `ProgrammaticScryptoSborValue`). Otherwise, for \"native\" components such as `Account`, `Validator`, `AccessController`, `OneResourcePool`, `TwoResourcePool`, and `MultiResourcePool`, this field will be a  custom JSON model defined in the Core API schema.  */
     @Contextual @SerialName(value = "state")
     val state: ComponentEntityState? = null,
 

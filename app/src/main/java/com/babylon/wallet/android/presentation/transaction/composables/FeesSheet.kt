@@ -70,11 +70,11 @@ fun FeesSheet(
         item {
             val title = when (state.feesMode) {
                 TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
-                    stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_normalMode_title)
+                    stringResource(id = R.string.customizeNetworkFees_normalMode_title)
                 }
 
                 TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
-                    stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_advancedMode_title)
+                    stringResource(id = R.string.customizeNetworkFees_advancedMode_title)
                 }
             }
             Text(
@@ -91,11 +91,11 @@ fun FeesSheet(
         item {
             val body = when (state.feesMode) {
                 TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
-                    stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_normalMode_subtitle)
+                    stringResource(id = R.string.customizeNetworkFees_normalMode_subtitle)
                 }
 
                 TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
-                    stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_advancedMode_subtitle)
+                    stringResource(id = R.string.customizeNetworkFees_advancedMode_subtitle)
                 }
             }
             Text(
@@ -131,7 +131,7 @@ fun FeesSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_payFeeFrom)
+                            text = stringResource(id = R.string.customizeNetworkFees_payFeeFrom)
                                 .uppercase(),
                             style = RadixTheme.typography.body1Link,
                             color = RadixTheme.colors.gray2
@@ -139,7 +139,7 @@ fun FeesSheet(
                         Spacer(modifier = Modifier.weight(1f))
                         RadixTextButton(
                             text = stringResource(
-                                id = R.string.transactionReview_customizeNetworkFeeSheet_changeButtonTitle
+                                id = R.string.customizeNetworkFees_changeButtonTitle
                             ),
                             onClick = onChangeFeePayerClick
                         )
@@ -160,7 +160,7 @@ fun FeesSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneRequired),
+                            text = stringResource(id = R.string.customizeNetworkFees_noneRequired),
                             style = RadixTheme.typography.body1Header,
                             color = RadixTheme.colors.gray2
                         )
@@ -176,7 +176,7 @@ fun FeesSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_payFeeFrom)
+                            text = stringResource(id = R.string.customizeNetworkFees_payFeeFrom)
                                 .uppercase(),
                             style = RadixTheme.typography.body1Link,
                             color = RadixTheme.colors.gray2
@@ -184,7 +184,7 @@ fun FeesSheet(
                         Spacer(modifier = Modifier.weight(1f))
                         RadixTextButton(
                             text = stringResource(
-                                id = R.string.transactionReview_customizeNetworkFeeSheet_changeButtonTitle
+                                id = R.string.customizeNetworkFees_changeButtonTitle
                             ),
                             onClick = onChangeFeePayerClick
                         )
@@ -207,7 +207,7 @@ fun FeesSheet(
                                     horizontal = RadixTheme.dimensions.paddingDefault,
                                     vertical = RadixTheme.dimensions.paddingSmall
                                 ),
-                            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_insufficientBalance_warning),
+                            text = stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance),
                             contentColor = RadixTheme.colors.red1,
                             iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
                         )
@@ -223,7 +223,7 @@ fun FeesSheet(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_payFeeFrom)
+                            text = stringResource(id = R.string.customizeNetworkFees_payFeeFrom)
                                 .uppercase(),
                             style = RadixTheme.typography.body1Link,
                             color = RadixTheme.colors.gray2
@@ -231,7 +231,7 @@ fun FeesSheet(
                         Spacer(modifier = Modifier.weight(1f))
                         RadixTextButton(
                             text = stringResource(
-                                id = R.string.transactionReview_customizeNetworkFeeSheet_changeButtonTitle
+                                id = R.string.customizeNetworkFees_changeButtonTitle
                             ),
                             onClick = { /* Not needed since its disabled */ },
                             enabled = false
@@ -244,7 +244,7 @@ fun FeesSheet(
                     ) {
                         RadixTextButton(
                             text = stringResource(
-                                id = R.string.transactionReview_customizeNetworkFeeSheet_selectFeePayer_navigationTitle
+                                id = R.string.customizeNetworkFees_selectFeePayer_navigationTitle
                             ),
                             onClick = onSelectFeePayerClick
                         )
@@ -296,7 +296,7 @@ fun FeesSheet(
                     TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Default -> {
                         RadixTextButton(
                             text = stringResource(
-                                id = R.string.transactionReview_customizeNetworkFeeSheet_viewAdvancedModeButtonTitle
+                                id = R.string.customizeNetworkFees_viewAdvancedModeButtonTitle
                             ),
                             onClick = onViewAdvancedModeClick
                         )
@@ -305,7 +305,7 @@ fun FeesSheet(
                     TransactionReviewViewModel.State.Sheet.CustomizeFees.FeesMode.Advanced -> {
                         RadixTextButton(
                             text = stringResource(
-                                id = R.string.transactionReview_customizeNetworkFeeSheet_viewNormalModeButtonTitle
+                                id = R.string.customizeNetworkFees_viewNormalModeButtonTitle
                             ),
                             onClick = onViewDefaultModeClick
                         )
@@ -332,7 +332,7 @@ fun NetworkFeesDefaultView(
                     end = RadixTheme.dimensions.paddingLarge,
                     bottom = RadixTheme.dimensions.paddingDefault
                 ),
-            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_feeBreakdownTitle).uppercase(),
+            text = stringResource(id = R.string.customizeNetworkFees_feeBreakdownTitle).uppercase(),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray2
         )
@@ -354,7 +354,7 @@ fun NetworkFeesDefaultView(
                         .padding(
                             end = RadixTheme.dimensions.paddingMedium
                         ),
-                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_networkFee).uppercase(),
+                    text = stringResource(id = R.string.customizeNetworkFees_networkFee).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
                 )
@@ -362,7 +362,7 @@ fun NetworkFeesDefaultView(
                 Text(
                     text = transactionFees?.networkFeeDisplayed?.let {
                         stringResource(id = R.string.transactionReview_xrdAmount, it)
-                    } ?: stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue),
+                    } ?: stringResource(id = R.string.customizeNetworkFees_noneDue),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End
@@ -378,7 +378,7 @@ fun NetworkFeesDefaultView(
                         .padding(
                             end = RadixTheme.dimensions.paddingMedium
                         ),
-                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_royaltyFee).uppercase(),
+                    text = stringResource(id = R.string.customizeNetworkFees_royaltyFee).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
                 )
@@ -387,7 +387,7 @@ fun NetworkFeesDefaultView(
 
                 Text(
                     text = if (transactionFees?.noDefaultRoyaltiesDue == true) {
-                        stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
+                        stringResource(id = R.string.customizeNetworkFees_noneDue)
                     } else {
                         stringResource(id = R.string.transactionReview_xrdAmount, royaltyFee.orEmpty())
                     },
@@ -474,7 +474,7 @@ fun NetworkFeesAdvancedView(
             value = transactionFees?.feePaddingAmountToDisplay.orEmpty(),
             leftLabel = LabelType.Default(
                 stringResource(
-                    id = R.string.transactionReview_customizeNetworkFeeSheet_paddingFieldLabel
+                    id = R.string.customizeNetworkFees_paddingFieldLabel
                 )
             ),
             keyboardOptions = KeyboardOptions(
@@ -501,13 +501,13 @@ fun NetworkFeesAdvancedView(
             value = transactionFees?.tipPercentageToDisplay.orEmpty(),
             leftLabel = LabelType.Custom {
                 Text(
-                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_tipFieldLabel),
+                    text = stringResource(id = R.string.customizeNetworkFees_tipFieldLabel),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1
                 )
 
                 Text(
-                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_tipFieldInfo)
+                    text = stringResource(id = R.string.customizeNetworkFees_tipFieldInfo)
                         .replace("%%", "%"),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray2
@@ -533,7 +533,7 @@ fun NetworkFeesAdvancedView(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingDefault
                 ),
-            text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_feeBreakdownTitle).uppercase(),
+            text = stringResource(id = R.string.customizeNetworkFees_feeBreakdownTitle).uppercase(),
             style = RadixTheme.typography.body1Link,
             color = RadixTheme.colors.gray2
         )
@@ -556,7 +556,7 @@ fun NetworkFeesAdvancedView(
                             end = RadixTheme.dimensions.paddingMedium
                         ),
                     text = stringResource(
-                        id = R.string.transactionReview_customizeNetworkFeeSheet_networkExecution
+                        id = R.string.customizeNetworkFees_networkExecution
                     ).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -583,7 +583,7 @@ fun NetworkFeesAdvancedView(
                             end = RadixTheme.dimensions.paddingMedium
                         ),
                     text = stringResource(
-                        id = R.string.transactionReview_customizeNetworkFeeSheet_networkFinalization
+                        id = R.string.customizeNetworkFees_networkFinalization
                     ).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -610,7 +610,7 @@ fun NetworkFeesAdvancedView(
                             end = RadixTheme.dimensions.paddingMedium
                         ),
                     text = stringResource(
-                        id = R.string.transactionReview_customizeNetworkFeeSheet_effectiveTip
+                        id = R.string.customizeNetworkFees_effectiveTip
                     ).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -638,7 +638,7 @@ fun NetworkFeesAdvancedView(
                             end = RadixTheme.dimensions.paddingMedium
                         ),
                     text = stringResource(
-                        id = R.string.transactionReview_customizeNetworkFeeSheet_networkStorage
+                        id = R.string.customizeNetworkFees_networkStorage
                     ).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -664,7 +664,7 @@ fun NetworkFeesAdvancedView(
                         .padding(
                             end = RadixTheme.dimensions.paddingMedium
                         ),
-                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_padding).uppercase(),
+                    text = stringResource(id = R.string.customizeNetworkFees_padding).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
                 )
@@ -689,14 +689,14 @@ fun NetworkFeesAdvancedView(
                         .padding(
                             end = RadixTheme.dimensions.paddingMedium
                         ),
-                    text = stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_royalties).uppercase(),
+                    text = stringResource(id = R.string.customizeNetworkFees_royalties).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.weight(1f))
 
                 val royaltyFee = if (transactionFees?.noRoyaltiesCostDue == true) {
-                    stringResource(id = R.string.transactionReview_customizeNetworkFeeSheet_noneDue)
+                    stringResource(id = R.string.customizeNetworkFees_noneDue)
                 } else {
                     stringResource(
                         id = R.string.transactionReview_xrdAmount,
@@ -725,7 +725,7 @@ fun NetworkFeesAdvancedView(
                             end = RadixTheme.dimensions.paddingMedium
                         ),
                     text = stringResource(
-                        id = R.string.transactionReview_customizeNetworkFeeSheet_paidByDApps
+                        id = R.string.customizeNetworkFees_paidByDApps
                     ).uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2
@@ -770,7 +770,7 @@ fun NetworkFeesAdvancedView(
                         modifier = Modifier
                             .padding(end = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(
-                            id = R.string.transactionReview_customizeNetworkFeeSheet_totalFee
+                            id = R.string.customizeNetworkFees_totalFee
                         ).uppercase(),
                         style = RadixTheme.typography.body1Link,
                         color = RadixTheme.colors.gray2
@@ -779,7 +779,7 @@ fun NetworkFeesAdvancedView(
                         modifier = Modifier
                             .padding(end = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(
-                            id = R.string.transactionReview_customizeNetworkFeeSheet_totalFee_info
+                            id = R.string.customizeNetworkFees_totalFee_info
                         ),
                         style = RadixTheme.typography.body1Link,
                         color = RadixTheme.colors.gray2

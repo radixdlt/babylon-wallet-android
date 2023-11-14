@@ -48,12 +48,12 @@ jobs:
         uses: crazy-max/ghaction-dump-context@8b55fa205ab4530d36f787a4de1009afaaa7f3b4 # v2.1.0
 
       - name: Download Ruby (action)
-        uses: ruby/setup-ruby@c7079efafd956afb5d823e8999c2506e1053aefa
+        uses: ruby/setup-ruby@8575951200e472d5f2d95c625da0c7bec8217c42
         with:
           ruby-version: '3.1.2'
           bundler-cache: true
 
-      - uses: actions/setup-java@cd89f46ac9d01407894225f350157564c9c7cee2 # v3.12.0
+      - uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
         with:
           distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'

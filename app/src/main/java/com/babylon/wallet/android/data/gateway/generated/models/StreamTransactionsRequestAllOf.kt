@@ -15,7 +15,6 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
 import com.babylon.wallet.android.data.gateway.generated.models.StreamTransactionsRequestEventFilterItem
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionDetailsOptIns
 
@@ -26,7 +25,6 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param fromLedgerState 
  * @param kindFilter Limit returned transactions by their kind. Defaults to `user`.
  * @param manifestAccountsWithdrawnFromFilter 
  * @param manifestAccountsDepositedIntoFilter 
@@ -39,9 +37,6 @@ import kotlinx.serialization.Contextual
 @Serializable
 
 data class StreamTransactionsRequestAllOf (
-
-    @SerialName(value = "from_ledger_state")
-    val fromLedgerState: LedgerStateSelector? = null,
 
     /* Limit returned transactions by their kind. Defaults to `user`. */
     @SerialName(value = "kind_filter")

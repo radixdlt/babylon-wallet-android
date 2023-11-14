@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.transaction.ROLAClient
-import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -101,7 +101,7 @@ class PersonaDetailViewModel @Inject constructor(
         }
     }
 
-    fun onDAppClick(dApp: DAppWithMetadataAndAssociatedResources) {
+    fun onDAppClick(dApp: DAppWithResources) {
         _state.update { state ->
             state.copy(selectedDApp = dApp)
         }
@@ -149,8 +149,8 @@ sealed interface Event : OneOffEvent {
 
 data class PersonaDetailUiState(
     val loading: Boolean = true,
-    val authorizedDapps: ImmutableList<DAppWithMetadataAndAssociatedResources> = persistentListOf(),
+    val authorizedDapps: ImmutableList<DAppWithResources> = persistentListOf(),
     val persona: Network.Persona? = null,
     val hasAuthKey: Boolean = false,
-    val selectedDApp: DAppWithMetadataAndAssociatedResources? = null
+    val selectedDApp: DAppWithResources? = null
 ) : UiState

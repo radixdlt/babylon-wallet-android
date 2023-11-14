@@ -22,8 +22,8 @@ import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.DAppResources
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.presentation.model.ActionableAddress
@@ -41,16 +41,16 @@ interface DAppRepository {
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
         needMostRecentData: Boolean
-    ): Result<DAppWithMetadata>
+    ): Result<DApp>
 
     suspend fun getDAppsMetadata(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey> = ExplicitMetadataKey.forDapp,
         needMostRecentData: Boolean
-    ): Result<List<DAppWithMetadata>>
+    ): Result<List<DApp>>
 
     suspend fun getDAppResources(
-        dAppMetadata: DAppWithMetadata,
+        dAppMetadata: DApp,
         isRefreshing: Boolean = true
     ): Result<DAppResources>
 }
@@ -115,7 +115,7 @@ class DAppRepositoryImpl @Inject constructor(
         definitionAddress: String,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<DAppWithMetadata> = getDAppsMetadata(
+    ): Result<DApp> = getDAppsMetadata(
         definitionAddresses = listOf(definitionAddress),
         explicitMetadata = explicitMetadata,
         needMostRecentData = needMostRecentData
@@ -131,7 +131,7 @@ class DAppRepositoryImpl @Inject constructor(
         definitionAddresses: List<String>,
         explicitMetadata: Set<ExplicitMetadataKey>,
         needMostRecentData: Boolean
-    ): Result<List<DAppWithMetadata>> = withContext(ioDispatcher) {
+    ): Result<List<DApp>> = withContext(ioDispatcher) {
         if (definitionAddresses.isEmpty()) return@withContext Result.success(emptyList())
 
         val optIns = if (explicitMetadata.isNotEmpty()) {
@@ -142,7 +142,7 @@ class DAppRepositoryImpl @Inject constructor(
             null
         }
 
-        stateApi.entityDetails(
+        stateApi.stateEntityDetails(
             StateEntityDetailsRequest(
                 addresses = definitionAddresses,
                 optIns = optIns
@@ -154,7 +154,7 @@ class DAppRepositoryImpl @Inject constructor(
             ),
             map = { response ->
                 response.items.map { dAppResponse ->
-                    DAppWithMetadata.from(
+                    DApp.from(
                         address = dAppResponse.address,
                         metadataItems = dAppResponse.metadata.asMetadataItems()
                     )
@@ -182,7 +182,7 @@ class DAppRepositoryImpl @Inject constructor(
 
     @Suppress("LongMethod")
     override suspend fun getDAppResources(
-        dAppMetadata: DAppWithMetadata,
+        dAppMetadata: DApp,
         isRefreshing: Boolean
     ): Result<DAppResources> {
         val claimedResources = dAppMetadata.claimedEntities.filter {
@@ -218,7 +218,7 @@ class DAppRepositoryImpl @Inject constructor(
                             symbolMetadataItem = metadataItems.consume(),
                             descriptionMetadataItem = metadataItems.consume(),
                             iconUrlMetadataItem = metadataItems.consume(),
-                            behaviours = fungibleItem.details?.extractBehaviours().orEmpty(),
+                            assetBehaviours = fungibleItem.details?.extractBehaviours(),
                             currentSupply = fungibleItem.details?.totalSupply()?.toBigDecimal(),
                             validatorMetadataItem = metadataItems.consume(),
                             poolMetadataItem = metadataItems.consume(),
@@ -239,7 +239,7 @@ class DAppRepositoryImpl @Inject constructor(
                             tagsMetadataItem = metadataItems.consume(),
                             validatorMetadataItem = metadataItems.consume(),
                             items = emptyList(),
-                            behaviours = nonFungibleItem.details?.extractBehaviours().orEmpty(),
+                            assetBehaviours = nonFungibleItem.details?.extractBehaviours(),
                             currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull()
                         )
                     }
@@ -269,7 +269,7 @@ class DAppRepositoryImpl @Inject constructor(
         val responses = addresses
             .chunked(EntityRepositoryImpl.CHUNK_SIZE_OF_ITEMS)
             .map { chunkedAddresses ->
-                stateApi.entityDetails(
+                stateApi.stateEntityDetails(
                     StateEntityDetailsRequest(
                         addresses = chunkedAddresses,
                         aggregationLevel = ResourceAggregationLevel.vault,

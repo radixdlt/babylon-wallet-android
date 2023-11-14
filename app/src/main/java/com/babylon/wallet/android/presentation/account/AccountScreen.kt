@@ -68,7 +68,6 @@ import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorsWithStakeResources
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
@@ -396,7 +395,7 @@ fun AssetsContent(
         val collapsedState = remember(nonFungibleCollections) {
             nonFungibleCollections.map { true }.toMutableStateList()
         }
-        var collapsedStakeState by remember(assets?.validatorsWithStakeResources) { mutableStateOf(true) }
+        var collapsedStakeState by remember(assets?.validatorsWithStakes) { mutableStateOf(true) }
 
         val accountAddress = remember(state.accountWithAssets) {
             state.accountWithAssets?.account?.address.orEmpty()
@@ -520,7 +519,7 @@ fun AssetsContent(
                             poolUnitsResources(
                                 modifier = contentModifier,
                                 collapsedState = collapsedStakeState,
-                                validatorsWithStakeResources = assets.validatorsWithStakeResources,
+                                validatorsWithStakeResources = assets.validatorsWithStakes.toPersistentList(),
                                 poolUnits = assets.poolUnits,
                                 parentSectionClick = {
                                     collapsedStakeState = !collapsedStakeState
@@ -604,7 +603,7 @@ fun AccountContentPreview() {
                             fungibles = sampleFungibleResources(),
                             nonFungibles = listOf(),
                             poolUnits = listOf(),
-                            validatorsWithStakeResources = ValidatorsWithStakeResources()
+                            validatorsWithStakes = emptyList()
                         ),
                     )
                 ),

@@ -23,28 +23,33 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param ancestorIdentities 
- * @param componentRoyaltyVaultBalance 
- * @param packageRoyaltyVaultBalance 
- * @param nonFungibleIncludeNfids 
- * @param explicitMetadata 
+ * @param ancestorIdentities if set to `true`, ancestor addresses - `parent_address`, `owner_address` and `global_address` for entities are returned.
+ * @param componentRoyaltyVaultBalance if set to `true`, `royalty_vault_balance` for component entities is returned.
+ * @param packageRoyaltyVaultBalance if set to `true`, `royalty_vault_balance` for package entities is returned.
+ * @param nonFungibleIncludeNfids if set to `true`, first page of non fungible ids are returned for each non fungible resource, with `next_cursor` which can be later used at `/state/entity/page/non-fungible-vault/ids` endpoint.
+ * @param explicitMetadata allows specifying explicitly metadata properties which should be returned in response.
  */
 @Serializable
 
 data class StateEntityDetailsOptIns (
 
+    /* if set to `true`, ancestor addresses - `parent_address`, `owner_address` and `global_address` for entities are returned. */
     @SerialName(value = "ancestor_identities")
-    val ancestorIdentities: kotlin.Boolean? = null,
+    val ancestorIdentities: kotlin.Boolean? = false,
 
+    /* if set to `true`, `royalty_vault_balance` for component entities is returned. */
     @SerialName(value = "component_royalty_vault_balance")
-    val componentRoyaltyVaultBalance: kotlin.Boolean? = null,
+    val componentRoyaltyVaultBalance: kotlin.Boolean? = false,
 
+    /* if set to `true`, `royalty_vault_balance` for package entities is returned. */
     @SerialName(value = "package_royalty_vault_balance")
-    val packageRoyaltyVaultBalance: kotlin.Boolean? = null,
+    val packageRoyaltyVaultBalance: kotlin.Boolean? = false,
 
+    /* if set to `true`, first page of non fungible ids are returned for each non fungible resource, with `next_cursor` which can be later used at `/state/entity/page/non-fungible-vault/ids` endpoint. */
     @SerialName(value = "non_fungible_include_nfids")
-    val nonFungibleIncludeNfids: kotlin.Boolean? = null,
+    val nonFungibleIncludeNfids: kotlin.Boolean? = false,
 
+    /* allows specifying explicitly metadata properties which should be returned in response. */
     @SerialName(value = "explicit_metadata")
     val explicitMetadata: kotlin.collections.List<kotlin.String>? = null
 

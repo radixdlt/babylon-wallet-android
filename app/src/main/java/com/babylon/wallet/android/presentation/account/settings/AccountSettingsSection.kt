@@ -33,7 +33,7 @@ sealed interface AccountSettingItem {
         return when (this) {
             AccountColor -> R.string.accountSettings_accountColor
             AccountLabel -> R.string.accountSettings_accountLabel
-            AccountSecurity -> R.string.accountSettings_accountSecurity
+            AccountSecurity -> R.string.settings_accountSecurityAndSettings
             ShowAssetsWithTags -> R.string.accountSettings_showAssets
             ThirdPartyDeposits -> R.string.accountSettings_thirdPartyDeposits
             DevSettings -> R.string.accountSettings_devPreferences
@@ -45,7 +45,7 @@ sealed interface AccountSettingItem {
         return when (this) {
             AccountColor -> R.string.accountSettings_accountColorSubtitle
             AccountLabel -> R.string.accountSettings_accountColor_text
-            AccountSecurity -> R.string.accountSettings_accountSecuritySubtitle
+            AccountSecurity -> R.string.accountSettings_setBehaviorHeading
             ShowAssetsWithTags -> R.string.accountSettings_showAssetsSubtitle
             ThirdPartyDeposits -> R.string.accountSettings_thirdPartyDeposits
             DevSettings -> R.string.accountSettings_devPreferences

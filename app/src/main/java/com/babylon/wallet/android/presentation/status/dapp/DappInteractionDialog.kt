@@ -75,7 +75,7 @@ private fun DappInteractionDialogContent(
             contentDescription = null
         )
         Text(
-            text = stringResource(id = R.string.transaction_status_success_title),
+            text = stringResource(id = R.string.transactionStatus_success_title),
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )

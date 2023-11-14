@@ -33,9 +33,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.DAppResources
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
-import com.babylon.wallet.android.domain.model.DAppWithMetadataAndAssociatedResources
+import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -44,8 +44,8 @@ import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun ConnectedDAppsContent(
-    connectedDApps: ImmutableList<DAppWithMetadataAndAssociatedResources>,
-    onDAppClick: (DAppWithMetadataAndAssociatedResources) -> Unit,
+    connectedDApps: ImmutableList<DAppWithResources>,
+    onDAppClick: (DAppWithResources) -> Unit,
     showStrokeLine: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -105,7 +105,7 @@ fun ConnectedDAppsContent(
             }
             verifiedDapps.forEach { connectedDApp ->
                 ConnectedDappRow(
-                    dApp = connectedDApp.dAppWithMetadata,
+                    dApp = connectedDApp.dApp,
                     modifier = Modifier.throttleClickable {
                         onDAppClick(connectedDApp)
                     }
@@ -121,7 +121,7 @@ fun ConnectedDAppsContent(
 
 @Composable
 private fun ConnectedDappRow(
-    dApp: DAppWithMetadata?,
+    dApp: DApp?,
     name: String = dApp.displayName(),
     modifier: Modifier = Modifier
 ) {
@@ -168,8 +168,8 @@ private fun ConnectedDappRow(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            DAppWithMetadataAndAssociatedResources(
-                dAppWithMetadata = DAppWithMetadata(
+            DAppWithResources(
+                dApp = DApp(
                     dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
                 ),
                 resources = DAppResources(

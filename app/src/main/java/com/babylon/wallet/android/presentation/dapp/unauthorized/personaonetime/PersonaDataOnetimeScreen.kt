@@ -36,7 +36,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
@@ -107,7 +107,7 @@ fun PersonaDataOnetimeScreen(
     PersonaDataOnetimeContent(
         modifier = modifier,
         onContinueClick = sharedViewModel::onGrantedPersonaDataOnetime,
-        dappWithMetadata = sharedState.dappWithMetadata,
+        dapp = sharedState.dapp,
         onBackClick = {
             if (sharedState.initialUnauthorizedLoginRoute is InitialUnauthorizedLoginRoute.OnetimePersonaData) {
                 sharedViewModel.onRejectRequest()
@@ -137,7 +137,7 @@ fun PersonaDataOnetimeScreen(
 @Composable
 private fun PersonaDataOnetimeContent(
     onContinueClick: () -> Unit,
-    dappWithMetadata: DAppWithMetadata?,
+    dapp: DApp?,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     isFirstScreenInFlow: Boolean,
@@ -178,7 +178,7 @@ private fun PersonaDataOnetimeContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 Thumbnail.DApp(
                     modifier = Modifier.size(64.dp),
-                    dapp = dappWithMetadata
+                    dapp = dapp
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 Text(
@@ -189,7 +189,7 @@ private fun PersonaDataOnetimeContent(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 PermissionRequestHeader(
-                    dappName = dappWithMetadata?.name.orEmpty()
+                    dappName = dapp?.name.orEmpty()
                         .ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -257,7 +257,7 @@ fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         PersonaDataOnetimeContent(
             onContinueClick = {},
-            dappWithMetadata = DAppWithMetadata(
+            dapp = DApp(
                 dAppAddress = "account_tdx_abc",
                 nameItem = NameMetadataItem("Collabo.fi")
             ),

@@ -50,7 +50,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
@@ -240,7 +240,7 @@ object Thumbnail {
     @Composable
     fun DApp(
         modifier: Modifier = Modifier,
-        dapp: DAppWithMetadata?,
+        dapp: DApp?,
         shape: Shape = RadixTheme.shapes.roundedRectDefault
     ) {
         Custom(
@@ -274,11 +274,11 @@ object Thumbnail {
     ) {
         Custom(
             modifier = modifier,
-            imageType = poolUnit.poolUnitResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
+            imageType = poolUnit.stake.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
-            contentDescription = poolUnit.poolUnitResource.displayTitle
+            contentDescription = poolUnit.stake.displayTitle
         )
     }
 

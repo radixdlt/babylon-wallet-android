@@ -18,14 +18,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.DAppWithMetadata
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 
 @Composable
 fun DappCard(
     modifier: Modifier = Modifier,
-    dApp: DAppWithMetadata,
+    dApp: DApp,
     showChevron: Boolean = true,
     elevation: Dp = 8.dp
 ) {

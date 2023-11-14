@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param encodedReceipt Hex-encoded binary blob.
- * @param receipt 
+ * @param receipt This type is defined in the Core API as `TransactionReceipt`. See the Core API documentation for more details. 
  * @param resourceChanges 
  * @param logs 
  */
@@ -37,8 +37,9 @@ data class TransactionPreviewResponse (
     @SerialName(value = "encoded_receipt")
     val encodedReceipt: kotlin.String,
 
+    /* This type is defined in the Core API as `TransactionReceipt`. See the Core API documentation for more details.  */
     @Contextual @SerialName(value = "receipt")
-    val receipt: TransactionReceipt,
+    val receipt: CoreApiTransactionReceipt,
 
 //    @SerialName(value = "resource_changes")
 //    val resourceChanges: kotlin.collections.List<@Contextual kotlin.Any>,
@@ -48,3 +49,30 @@ data class TransactionPreviewResponse (
 
 )
 
+/**
+ * A bit different from [TransactionReceipt] since [TransactionPreviewResponse] returns the core api object.
+ */
+@Serializable
+data class CoreApiTransactionReceipt (
+
+    /* The status of the transaction. */
+    @SerialName(value = "status")
+    val status: String,
+
+    /* Fees paid, Only present if the `status` is not `Rejected`. */
+    @SerialName(value = "fee_summary")
+    val feeSummary: FeeSummary? = null,
+
+    @SerialName(value = "costing_parameters")
+    val costingParameters: CostingParameters? = null,
+
+    /* Error message (only present if status is `Failed` or `Rejected`) */
+    @SerialName(value = "error_message")
+    val errorMessage: kotlin.String? = null
+
+) {
+
+    val isFailed
+        get() = status == "Failed" || status == "Rejected"
+
+}

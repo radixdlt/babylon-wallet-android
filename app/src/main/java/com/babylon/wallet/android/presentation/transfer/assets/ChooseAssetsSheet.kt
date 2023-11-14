@@ -195,14 +195,14 @@ fun ChooseAssetsSheet(
                                             resource = poolUnit,
                                             modifier = Modifier
                                                 .throttleClickable {
-                                                    val spendingAsset = SpendingAsset.Fungible(poolUnit.poolUnitResource)
+                                                    val spendingAsset = SpendingAsset.Fungible(poolUnit.stake)
                                                     onAssetSelectionChanged(spendingAsset, !isSelected)
                                                 },
                                             trailingContent = {
                                                 Checkbox(
                                                     checked = isSelected,
                                                     onCheckedChange = {
-                                                        val spendingAsset = SpendingAsset.Fungible(poolUnit.poolUnitResource)
+                                                        val spendingAsset = SpendingAsset.Fungible(poolUnit.stake)
                                                         onAssetSelectionChanged(spendingAsset, !isSelected)
                                                     },
                                                     colors = CheckboxDefaults.colors(

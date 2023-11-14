@@ -68,7 +68,7 @@ fun DepositGuaranteesContent(
     Scaffold(
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.settings_depositGuarantees),
+                title = stringResource(id = R.string.settings_depositGuarantees_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBars
             )
@@ -81,7 +81,7 @@ fun DepositGuaranteesContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 Text(
                     modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.depositGuarantees_text),
+                    text = stringResource(id = R.string.settings_depositGuarantees_text),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )

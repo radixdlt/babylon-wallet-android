@@ -27,8 +27,8 @@ import kotlinx.serialization.Contextual
  *
  * @param aggregationLevel 
  * @param resourceAddress Bech32m-encoded human readable version of the address.
- * @param amount TBA
- * @param lastUpdatedAtStateVersion TBD
+ * @param amount The total amount of non-fungible IDs across all vaults.
+ * @param lastUpdatedAtStateVersion The most recent state version underlying object was modified at.
  * @param explicitMetadata 
  */
 @Serializable
@@ -42,11 +42,11 @@ data class NonFungibleResourcesCollectionItemGloballyAggregated (
     @SerialName(value = "resource_address")
     override val resourceAddress: kotlin.String,
 
-    /* TBA */
+    /* The total amount of non-fungible IDs across all vaults. */
     @SerialName(value = "amount")
     val amount: kotlin.Long,
 
-    /* TBD */
+    /* The most recent state version underlying object was modified at. */
     @SerialName(value = "last_updated_at_state_version")
     val lastUpdatedAtStateVersion: kotlin.Long,
 
