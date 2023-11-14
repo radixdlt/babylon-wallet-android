@@ -3,8 +3,10 @@ package com.babylon.wallet.android.presentation.ui.composables.assets
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -14,6 +16,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -29,7 +32,7 @@ import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
-import com.babylon.wallet.android.presentation.transfer.assets.ResourcesTabs
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
 import java.math.BigDecimal
 
 @Suppress("LongParameterList")
@@ -46,12 +49,12 @@ fun LazyListScope.assetsView(
             modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            ResourcesTabs(selectedTab = selectedTab, onTabSelected = onTabSelected)
+            AssetsTabs(selectedTab = selectedTab, onTabSelected = onTabSelected)
         }
     }
 
     if (assets == null) {
-        loadingAssets(selectedTab = selectedTab)
+        loadingAssets()
     } else {
         when (selectedTab) {
             ResourceTab.Tokens -> tokensTab(
@@ -75,13 +78,18 @@ fun LazyListScope.assetsView(
     }
 }
 
-private fun LazyListScope.loadingAssets(
-    selectedTab: ResourceTab,
-) {
-    when (selectedTab) {
-        ResourceTab.Tokens -> {}
-        ResourceTab.Nfts -> {}
-        ResourceTab.PoolUnits -> {}
+private fun LazyListScope.loadingAssets() {
+    item {
+        Box(
+            modifier = Modifier
+                .height(256.dp)
+                .fillMaxWidth()
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = RadixTheme.colors.gray1
+            )
+        }
     }
 }
 
