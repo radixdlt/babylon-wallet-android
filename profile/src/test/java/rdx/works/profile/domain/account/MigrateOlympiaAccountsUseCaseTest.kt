@@ -14,7 +14,6 @@ import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -50,9 +49,7 @@ import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.TestData
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
-import rdx.works.profile.olympiaimport.olympiaTestSeedPhrase
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class MigrateOlympiaAccountsUseCaseTest {
 
     private val profileRepository = mockk<ProfileRepository>()
@@ -142,7 +139,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
     }
 
     private fun getOlympiaTestAccounts(): List<OlympiaAccountDetails> {
-        val words = MnemonicWords(olympiaTestSeedPhrase)
+        val words = MnemonicWords("bridge easily outer film record undo turtle method knife quarter promote arch")
         val seed = words.toSeed(passphrase = "")
         val accounts = (0..10).map { index ->
             val derivationPath = DerivationPath.forLegacyOlympia(accountIndex = index)
