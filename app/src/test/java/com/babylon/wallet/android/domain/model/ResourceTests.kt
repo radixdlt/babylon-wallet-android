@@ -182,11 +182,7 @@ class ResourceTests {
             symbol = "XRD"
         )
 
-//<<<<<<< HEAD
-//        Assert.assertTrue(resource.resourceBehaviours == setOf(AssetBehaviour.SUPPLY_FLEXIBLE))
-//=======
         assertEquals(setOf(AssetBehaviour.SUPPLY_FLEXIBLE), resource.behaviours)
-//>>>>>>> main
     }
 
     @Test
