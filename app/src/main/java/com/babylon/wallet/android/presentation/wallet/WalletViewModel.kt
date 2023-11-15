@@ -128,7 +128,7 @@ class WalletViewModel @Inject constructor(
     private fun observeProfileBackupState(getBackupStateUseCase: GetBackupStateUseCase) {
         viewModelScope.launch {
             getBackupStateUseCase().collect { backupState ->
-                _state.update { it.copy(isSettingsWarningVisible = backupState.isWarningVisible) }
+                _state.update { it.copy(isBackupWarningVisible = backupState.isWarningVisible) }
             }
         }
     }
@@ -180,7 +180,7 @@ data class WalletUiState(
     private val refreshing: Boolean = false,
     private val entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList(),
     private val factorSources: List<FactorSource> = emptyList(),
-    val isSettingsWarningVisible: Boolean = false,
+    val isBackupWarningVisible: Boolean = false,
     val error: UiMessage? = null,
 ) : UiState {
 
@@ -217,8 +217,10 @@ data class WalletUiState(
         }
     }
 
-    val showPersonaSecurityPrompt: Boolean
-        get() = entitiesWithSecurityPrompt.any { it.entity is Network.Persona && it.prompt == SecurityPromptType.NEEDS_BACKUP }
+    val isSettingsWarningVisible: Boolean
+        get() = isBackupWarningVisible || entitiesWithSecurityPrompt.any {
+            it.entity is Network.Persona && it.prompt == SecurityPromptType.NEEDS_BACKUP
+        }
 
     fun getTag(forAccount: Network.Account): AccountTag? {
         return when {

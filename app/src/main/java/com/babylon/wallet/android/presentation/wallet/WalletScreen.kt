@@ -137,7 +137,7 @@ private fun WalletContent(
                             )
                         }
 
-                        if (state.isSettingsWarningVisible || state.showPersonaSecurityPrompt) {
+                        if (state.isSettingsWarningVisible) {
                             Badge(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
@@ -247,7 +247,7 @@ fun WalletContentPreview() {
                 state = WalletUiState(
                     accountsWithResources = listOf(sampleAccountWithResources(), sampleAccountWithResources()),
                     loading = false,
-                    isSettingsWarningVisible = true,
+                    isBackupWarningVisible = true,
                     error = null
                 ),
                 onMenuClick = {},
