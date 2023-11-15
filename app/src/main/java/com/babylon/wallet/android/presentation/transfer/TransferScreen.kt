@@ -51,10 +51,12 @@ import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
 import com.babylon.wallet.android.presentation.transfer.accounts.ChooseAccountSheet
 import com.babylon.wallet.android.presentation.transfer.assets.ChooseAssetsSheet
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import kotlinx.coroutines.launch
+import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -86,6 +88,7 @@ fun TransferScreen(
         onRemoveAssetClick = viewModel::onRemoveAsset,
         onAmountTyped = viewModel::onAmountTyped,
         onMaxAmountClicked = viewModel::onMaxAmount,
+        onMaxAmountApplied = viewModel::onMaxAmountApplied,
         onAssetSelectionChanged = viewModel::onAssetSelectionChanged,
         onUiMessageShown = viewModel::onUiMessageShown,
         onChooseAssetsSubmitted = viewModel::onChooseAssetsSubmitted,
@@ -116,6 +119,7 @@ fun TransferContent(
     onRemoveAssetClick: (TargetAccount, SpendingAsset) -> Unit,
     onAmountTyped: (TargetAccount, SpendingAsset, String) -> Unit,
     onMaxAmountClicked: (TargetAccount, SpendingAsset) -> Unit,
+    onMaxAmountApplied: (Boolean) -> Unit,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit,
     onUiMessageShown: () -> Unit,
     onChooseAssetsSubmitted: () -> Unit,
@@ -133,6 +137,18 @@ fun TransferContent(
         isSheetVisible = state.isSheetVisible,
         onSheetClosed = onSheetClosed
     )
+
+    state.maxXrdError?.let { error ->
+        BasicPromptAlertDialog(
+            finish = onMaxAmountApplied,
+            title = "Sending All XRD", // TODO Crowdin
+            text = "Sending the full amount of XRD in this account will require you to pay the transaction " +
+                "fee from a different account. Or, the wallet can reduce the amount transferred so the fee can be " +
+                "paid from this account. Choose the amount to transfer:",
+            confirmText = "${error.maxAccountAmount.displayableQuantity()} (send all XRD)",
+            dismissText = "${error.amountWithoutFees.displayableQuantity()} (save 1 XRD for fee)"
+        )
+    }
 
     DefaultModalSheetLayout(
         modifier = modifier,
@@ -400,6 +416,7 @@ fun TransferContentPreview() {
             onRemoveAssetClick = { _, _ -> },
             onAmountTyped = { _, _, _ -> },
             onMaxAmountClicked = { _, _ -> },
+            onMaxAmountApplied = {},
             onAssetSelectionChanged = { _, _ -> },
             onUiMessageShown = {},
             onChooseAssetsSubmitted = {},

@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -101,9 +102,49 @@ class TransferViewModel @Inject constructor(
         val spentAmount = _state.value.targetAccounts
             .filterNot { it.address == account.address }
             .sumOf { it.amountSpent(fungibleAsset) }
-        val remainingAmountString = (maxAmount - spentAmount).coerceAtLeast(BigDecimal.ZERO).toPlainString()
+        val remainingAmount = (maxAmount - spentAmount).coerceAtLeast(BigDecimal.ZERO)
+        val remainingAmountString = remainingAmount.toPlainString()
 
-        _state.update { it.updateAssetAmount(account, fungibleAsset, remainingAmountString) }
+        if (fungibleAsset.resource.isXrd) {
+            _state.update {
+                it.copy(
+                    maxXrdError = State.MaxAmountMessage(
+                        maxAccountAmount = remainingAmount,
+                        account = account,
+                        asset = asset
+                    )
+                )
+            }
+        } else {
+            _state.update { state ->
+                state.updateAssetAmount(
+                    account = account,
+                    asset = fungibleAsset,
+                    amountString = remainingAmountString
+                )
+            }
+        }
+    }
+
+    fun onMaxAmountApplied(emptyAccount: Boolean) {
+        _state.value.maxXrdError?.let { maxXrdError ->
+            val fungibleAsset = maxXrdError.asset as? SpendingAsset.Fungible ?: return
+            val remainingAmountString = if (emptyAccount) {
+                maxXrdError.maxAccountAmount
+            } else {
+                maxXrdError.amountWithoutFees
+            }
+            _state.update { state ->
+                state.updateAssetAmount(
+                    account = maxXrdError.account,
+                    asset = fungibleAsset,
+                    amountString = remainingAmountString.toPlainString()
+                )
+                    .copy(
+                        maxXrdError = null
+                    )
+            }
+        }
     }
 
     fun onTransferSubmit() {
@@ -177,6 +218,7 @@ class TransferViewModel @Inject constructor(
         val messageState: Message = Message.None,
         val sheet: Sheet = Sheet.None,
         val error: UiMessage? = null,
+        val maxXrdError: MaxAmountMessage? = null,
         val transferRequestId: String? = null
     ) : UiState {
 
@@ -366,6 +408,15 @@ class TransferViewModel @Inject constructor(
         sealed interface Message {
             data object None : Message
             data class Added(val message: String = "") : Message
+        }
+
+        data class MaxAmountMessage(
+            val maxAccountAmount: BigDecimal,
+            val account: TargetAccount,
+            val asset: SpendingAsset
+        ) {
+            val amountWithoutFees: BigDecimal
+                get() = maxAccountAmount - BigDecimal.ONE
         }
     }
 }
