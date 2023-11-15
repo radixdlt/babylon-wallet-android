@@ -68,7 +68,6 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.LSUBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.PoolUnitBottomSheetDetails
@@ -91,6 +90,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun AccountScreen(
@@ -100,6 +100,7 @@ fun AccountScreen(
     onBackClick: () -> Unit,
     onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
     onNavigateToMnemonicRestore: (FactorSource.FactorSourceID.FromHash) -> Unit,
+    onFungibleResourceClick: (Resource.FungibleResource, Network.Account) -> Unit,
     onTransferClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -108,6 +109,7 @@ fun AccountScreen(
             when (it) {
                 is AccountEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                 is AccountEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore(it.factorSourceId)
+                is AccountEvent.OnFungibleClick -> onFungibleResourceClick(it.resource, it.account)
             }
         }
     }
@@ -127,7 +129,7 @@ fun AccountScreen(
         onRefresh = viewModel::refresh,
         onTransferClick = onTransferClick,
         onMessageShown = viewModel::onMessageShown,
-        onFungibleResourceClicked = viewModel::onFungibleResourceClicked,
+        onFungibleItemClicked = viewModel::onFungibleResourceClicked,
         onNonFungibleItemClicked = viewModel::onNonFungibleResourceClicked,
         onApplySecuritySettings = viewModel::onApplySecuritySettings,
         onPoolUnitClick = viewModel::onPoolUnitClicked,
@@ -147,7 +149,7 @@ private fun AccountScreenContent(
     onRefresh: () -> Unit,
     onTransferClick: (String) -> Unit,
     onMessageShown: () -> Unit,
-    onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
+    onFungibleItemClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
@@ -252,10 +254,7 @@ private fun AccountScreenContent(
                     state = state,
                     lazyListState = lazyListState,
                     onFungibleTokenClick = {
-                        onFungibleResourceClicked(it)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
+                        onFungibleItemClicked(it)
                     },
                     onNonFungibleItemClick = { nftCollection, nftItem ->
                         onNonFungibleItemClicked(nftCollection, nftItem)
@@ -312,18 +311,6 @@ private fun SheetContent(
                 modifier = modifier.fillMaxWidth(),
                 item = selected.item,
                 nonFungibleResource = selected.nonFungible,
-                onCloseClick = {
-                    scope.launch {
-                        bottomSheetState.hide()
-                    }
-                }
-            )
-        }
-
-        is SelectedResource.SelectedFungibleResource -> {
-            FungibleTokenBottomSheetDetails(
-                modifier = modifier.fillMaxWidth(),
-                fungible = selected.fungible,
                 onCloseClick = {
                     scope.launch {
                         bottomSheetState.hide()
@@ -549,7 +536,7 @@ fun AccountContentPreview() {
                 onRefresh = {},
                 onTransferClick = {},
                 onMessageShown = {},
-                onFungibleResourceClicked = {},
+                onFungibleItemClicked = {},
                 onNonFungibleItemClicked = { _, _ -> },
                 onApplySecuritySettings = {},
                 onPoolUnitClick = {},

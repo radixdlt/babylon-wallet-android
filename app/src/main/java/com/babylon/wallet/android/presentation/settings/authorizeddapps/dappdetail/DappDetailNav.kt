@@ -11,6 +11,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.ROUTE_EDIT_PERSONA
 import com.google.accompanist.navigation.animation.composable
 
@@ -32,7 +33,8 @@ fun NavController.dAppDetailScreen(dappDefinitionAddress: String) {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.dAppDetailScreen(
     onBackClick: () -> Unit,
-    onEditPersona: (String, RequiredPersonaFields?) -> Unit
+    onEditPersona: (String, RequiredPersonaFields?) -> Unit,
+    onFungibleClick: (Resource.FungibleResource) -> Unit
 ) {
     composable(
         route = ROUTE_DAPP_DETAIL,
@@ -60,7 +62,8 @@ fun NavGraphBuilder.dAppDetailScreen(
         DappDetailScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onEditPersona = onEditPersona
+            onEditPersona = onEditPersona,
+            onFungibleClick = onFungibleClick
         )
     }
 }

@@ -44,7 +44,6 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
-import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
@@ -370,14 +369,6 @@ private fun BottomSheetContent(
     when (sheetState) {
         is State.Sheet.ResourceSelected -> {
             when (sheetState) {
-                is State.Sheet.ResourceSelected.Fungible -> {
-                    FungibleTokenBottomSheetDetails(
-                        modifier = modifier.fillMaxWidth(),
-                        fungible = sheetState.token,
-                        onCloseClick = onCloseDAppSheet
-                    )
-                }
-
                 is State.Sheet.ResourceSelected.NonFungible -> {
                     NonFungibleTokenBottomSheetDetails(
                         modifier = modifier.fillMaxWidth(),

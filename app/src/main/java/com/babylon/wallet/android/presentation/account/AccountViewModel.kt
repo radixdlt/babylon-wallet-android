@@ -43,6 +43,7 @@ import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
@@ -131,8 +132,10 @@ class AccountViewModel @Inject constructor(
     }
 
     fun onFungibleResourceClicked(resource: Resource.FungibleResource) {
-        _state.update { accountUiState ->
-            accountUiState.copy(selectedResource = SelectedResource.SelectedFungibleResource(resource))
+        val account = _state.value.accountWithAssets?.account ?: return
+
+        viewModelScope.launch {
+            sendEvent(AccountEvent.OnFungibleClick(resource, account))
         }
     }
 
@@ -230,6 +233,7 @@ class AccountViewModel @Inject constructor(
 internal sealed interface AccountEvent : OneOffEvent {
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
     data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
+    data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Network.Account) : AccountEvent
 }
 
 data class AccountUiState(
@@ -294,7 +298,6 @@ data class AccountUiState(
 }
 
 sealed interface SelectedResource {
-    data class SelectedFungibleResource(val fungible: Resource.FungibleResource) : SelectedResource
     data class SelectedNonFungibleResource(
         val nonFungible: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item

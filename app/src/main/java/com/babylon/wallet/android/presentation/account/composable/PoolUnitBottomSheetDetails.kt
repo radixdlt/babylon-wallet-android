@@ -25,6 +25,7 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.assets.Behaviour
 import com.babylon.wallet.android.presentation.ui.composables.assets.PoolResourcesValues
 import com.babylon.wallet.android.presentation.ui.composables.assets.poolName
 import com.babylon.wallet.android.presentation.ui.composables.icon
@@ -61,7 +62,7 @@ fun PoolUnitBottomSheetDetails(
                 poolUnit = poolUnit
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            TokenBalance(poolUnit.stake)
+            TokenBalance(fungibleResource = poolUnit.stake)
             Divider(
                 Modifier
                     .fillMaxWidth()

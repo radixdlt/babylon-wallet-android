@@ -59,6 +59,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import rdx.works.core.toEncodedString
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
@@ -69,16 +70,16 @@ object Thumbnail {
     @Composable
     fun Fungible(
         modifier: Modifier = Modifier,
-        token: Resource.FungibleResource,
+        token: Resource.FungibleResource?,
     ) {
         var viewSize: IntSize? by remember { mutableStateOf(null) }
 
         val imageType = remember(token, viewSize) {
             val size = viewSize
-            if (token.isXrd) {
+            if (token?.isXrd == true) {
                 ImageType.InternalRes(drawableRes = R.drawable.ic_xrd_token)
             } else if (size != null) {
-                val icon = token.iconUrl
+                val icon = token?.iconUrl
                 if (icon != null) {
                     ImageType.External(
                         uri = icon,
@@ -92,12 +93,17 @@ object Thumbnail {
             }
         }
         Custom(
-            modifier = modifier.onGloballyPositioned { viewSize = it.size },
+            modifier = modifier
+                .radixPlaceholder(
+                    visible = token == null,
+                    shape = CircleShape
+                )
+                .onGloballyPositioned { viewSize = it.size },
             imageType = imageType,
             imageContentScale = ContentScale.Crop,
             emptyDrawable = R.drawable.ic_token,
             shape = CircleShape,
-            contentDescription = token.displayTitle
+            contentDescription = token?.displayTitle.orEmpty()
         )
     }
 

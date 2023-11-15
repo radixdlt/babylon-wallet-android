@@ -49,6 +49,7 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.p
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
+import com.babylon.wallet.android.presentation.status.assets.fungible.fungibleAssetDialog
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
@@ -173,6 +174,9 @@ fun NavigationHost(
                     navController.restoreMnemonics(
                         args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(factorSourceId = factorSourceId.body)
                     )
+                },
+                onFungibleResourceClick = { resource, account ->
+                    navController.fungibleAssetDialog(resource.resourceAddress, account.address)
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
@@ -333,6 +337,11 @@ fun NavigationHost(
         )
         transactionStatusDialog(
             onClose = {
+                navController.popBackStack()
+            }
+        )
+        fungibleAssetDialog(
+            onDismiss = {
                 navController.popBackStack()
             }
         )

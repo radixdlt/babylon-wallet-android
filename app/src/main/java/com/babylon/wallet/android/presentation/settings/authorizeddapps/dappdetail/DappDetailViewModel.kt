@@ -100,11 +100,7 @@ class DappDetailViewModel @Inject constructor(
 
     fun onFungibleTokenClick(fungibleResource: Resource.FungibleResource) {
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    selectedSheetState = SelectedSheetState.SelectedFungibleResource(fungibleResource)
-                )
-            }
+            sendEvent(DappDetailEvent.OnFungibleClick(fungibleResource))
         }
     }
 
@@ -235,6 +231,7 @@ sealed interface DappDetailEvent : OneOffEvent {
 
     data object LastPersonaDeleted : DappDetailEvent
     data object DappDeleted : DappDetailEvent
+    data class OnFungibleClick(val resource: Resource.FungibleResource) : DappDetailEvent
 }
 
 data class DappDetailUiState(
@@ -247,7 +244,6 @@ data class DappDetailUiState(
 ) : UiState
 
 sealed interface SelectedSheetState {
-    data class SelectedFungibleResource(val fungible: Resource.FungibleResource) : SelectedSheetState
     data class SelectedNonFungibleResource(
         val nonFungibleResource: Resource.NonFungibleResource
     ) : SelectedSheetState
