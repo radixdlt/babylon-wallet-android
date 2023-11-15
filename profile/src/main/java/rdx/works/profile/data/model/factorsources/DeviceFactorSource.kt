@@ -38,13 +38,15 @@ data class DeviceFactorSource(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             model: String = "",
             name: String = "",
-            createdAt: Instant = InstantGenerator()
+            createdAt: Instant = InstantGenerator(),
+            isMain: Boolean = false
         ) = device(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             model = model,
             name = name,
             isOlympiaCompatible = false,
-            createdAt = createdAt
+            createdAt = createdAt,
+            isMain = isMain
         )
 
         fun olympia(
@@ -60,33 +62,41 @@ data class DeviceFactorSource(
             createdAt = createdAt
         )
 
+        @Suppress("LongParameterList")
         private fun device(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             model: String = "",
             name: String = "",
             isOlympiaCompatible: Boolean,
-            createdAt: Instant
-        ) = DeviceFactorSource(
-            id = FactorSourceID.FromHash(
-                kind = FactorSourceKind.DEVICE,
-                body = HexCoded32Bytes(
-                    value = factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
+            createdAt: Instant,
+            isMain: Boolean = false
+        ): DeviceFactorSource {
+            require((isMain && isOlympiaCompatible).not()) {
+                "Olympia Device factor source should never be marked 'main'."
+            }
+            return DeviceFactorSource(
+                id = FactorSourceID.FromHash(
+                    kind = FactorSourceKind.DEVICE,
+                    body = HexCoded32Bytes(
+                        value = factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
+                    ),
                 ),
-            ),
-            common = Common(
-                cryptoParameters = if (isOlympiaCompatible) {
-                    Common.CryptoParameters.olympiaBackwardsCompatible
-                } else {
-                    Common.CryptoParameters.babylon
-                },
-                addedOn = createdAt,
-                lastUsedOn = createdAt
-            ),
-            hint = Hint(
-                model = model,
-                name = name,
-                mnemonicWordCount = mnemonicWithPassphrase.wordCount
+                common = Common(
+                    cryptoParameters = if (isOlympiaCompatible) {
+                        Common.CryptoParameters.olympiaBackwardsCompatible
+                    } else {
+                        Common.CryptoParameters.babylon
+                    },
+                    addedOn = createdAt,
+                    lastUsedOn = createdAt,
+                    flags = if (isMain) listOf(FactorSourceFlag.Main) else emptyList()
+                ),
+                hint = Hint(
+                    model = model,
+                    name = name,
+                    mnemonicWordCount = mnemonicWithPassphrase.wordCount
+                )
             )
-        )
+        }
     }
 }

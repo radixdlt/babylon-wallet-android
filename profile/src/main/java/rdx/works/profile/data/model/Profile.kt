@@ -11,6 +11,7 @@ import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.extensions.isNotHidden
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.model.pernetwork.Network
 import java.time.Instant
 
@@ -61,10 +62,23 @@ data class Profile(
      * NOTE that this factor source will always be used when creating the first account.
      */
     val babylonDeviceFactorSource: DeviceFactorSource
-        get() = factorSources
-            .filterIsInstance<DeviceFactorSource>()
-            .first {
-                it.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon
+        get() =
+            // It may be that during migration old factor source does not contain Main so there may be only
+            // one factor source that is not main so then we choose first BDFS
+            // If there is main, we choose main BDFS
+            if (hasMainBabylonDeviceFactorSource) {
+                factorSources
+                    .filterIsInstance<DeviceFactorSource>()
+                    .first { deviceFactorSource ->
+                        deviceFactorSource.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon &&
+                            deviceFactorSource.common.flags.any { it == FactorSourceFlag.Main }
+                    }
+            } else {
+                factorSources
+                    .filterIsInstance<DeviceFactorSource>()
+                    .first { deviceFactorSource ->
+                        deviceFactorSource.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon
+                    }
             }
 
     val babylonDeviceFactorSourceExist: Boolean
@@ -72,6 +86,14 @@ data class Profile(
             .filterIsInstance<DeviceFactorSource>()
             .any {
                 it.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon
+            }
+
+    val hasMainBabylonDeviceFactorSource: Boolean
+        get() = factorSources
+            .filterIsInstance<DeviceFactorSource>()
+            .any { deviceFactorSource ->
+                deviceFactorSource.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon &&
+                    deviceFactorSource.common.flags.contains(FactorSourceFlag.Main)
             }
 
     companion object {

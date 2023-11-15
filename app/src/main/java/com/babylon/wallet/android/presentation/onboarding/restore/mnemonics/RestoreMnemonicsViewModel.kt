@@ -27,6 +27,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
+import rdx.works.profile.domain.backup.RestoreAndSkipMainSeedPhraseUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
@@ -40,6 +41,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
+    private val restoreAndSkipMainSeedPhraseUseCase: RestoreAndSkipMainSeedPhraseUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
@@ -104,8 +106,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     fun onBackClick() {
-        if (!state.value.isShowingEntities) {
-            _state.update { it.copy(isShowingEntities = true, isMovingForward = false) }
+        if (state.value.screenType != State.ScreenType.Entities) {
+            _state.update { it.copy(screenType = State.ScreenType.Entities, isMovingForward = false) }
         } else {
             viewModelScope.launch {
                 when (args) {
@@ -132,6 +134,16 @@ class RestoreMnemonicsViewModel @Inject constructor(
         viewModelScope.launch { showNextRecoverableFactorSourceOrFinish() }
     }
 
+    fun onSkipMainSeedPhraseClicked() {
+        _state.update {
+            it.copy(screenType = State.ScreenType.NoMainSeedPhrase)
+        }
+    }
+
+    fun skipMainSeedPhrase() {
+        viewModelScope.launch { skipAndCreateBabylonDeviceFactorSource() }
+    }
+
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
@@ -154,11 +166,21 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     fun onSubmit() {
-        if (state.value.isShowingEntities) {
-            _state.update { it.copy(isShowingEntities = false, isMovingForward = false) }
+        if (state.value.screenType == State.ScreenType.Entities) {
+            _state.update { it.copy(screenType = State.ScreenType.SeedPhrase, isMovingForward = false) }
         } else {
             viewModelScope.launch { restoreMnemonic() }
         }
+    }
+
+    private suspend fun skipAndCreateBabylonDeviceFactorSource() {
+        _state.update { it.copy(isRestoring = true) }
+        if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainSeedPhrase) {
+            restoreAndSkipMainSeedPhraseUseCase(args.backupType)
+        }
+
+        _state.update { state -> state.copy(isRestoring = false) }
+        showNextRecoverableFactorSourceOrFinish()
     }
 
     private suspend fun restoreMnemonic() {
@@ -205,12 +227,18 @@ class RestoreMnemonicsViewModel @Inject constructor(
     data class State(
         private val recoverableFactorSources: List<RecoverableFactorSource> = emptyList(),
         private val selectedIndex: Int = -1,
-        val isShowingEntities: Boolean = true,
+        val screenType: ScreenType = ScreenType.Entities,
         val isMovingForward: Boolean = false,
         val uiMessage: UiMessage? = null,
         val isRestoring: Boolean = false,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState {
+
+        sealed interface ScreenType {
+            data object Entities : ScreenType
+            data object SeedPhrase : ScreenType
+            data object NoMainSeedPhrase : ScreenType
+        }
 
         val nextRecoverableFactorSource: RecoverableFactorSource?
             get() = recoverableFactorSources.getOrNull(selectedIndex + 1)
@@ -224,7 +252,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1,
             isMovingForward = true,
-            isShowingEntities = true
+            screenType = ScreenType.Entities
         )
     }
 

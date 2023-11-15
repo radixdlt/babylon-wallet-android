@@ -10,10 +10,6 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 
-// fun Entity.networkId() {
-//    this.networkID
-// }
-
 fun Entity.usesCurve25519(): Boolean {
     val unsecuredEntityControl = (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
     return when (val virtualBadge = unsecuredEntityControl?.transactionSigning?.badge) {

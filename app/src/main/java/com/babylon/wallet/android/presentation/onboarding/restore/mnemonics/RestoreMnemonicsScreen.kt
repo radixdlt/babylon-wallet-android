@@ -74,15 +74,26 @@ fun RestoreMnemonicsScreen(
         state = state,
         onBackClick = viewModel::onBackClick,
         onSkipClicked = viewModel::onSkipClick,
+        onSkipMainSeedPhraseClicked = viewModel::onSkipMainSeedPhraseClicked,
         onSubmitClick = {
-            if (!state.isShowingEntities) {
-                context.biometricAuthenticate { authenticated ->
-                    if (authenticated) {
-                        viewModel.onSubmit()
+            when (state.screenType) {
+                RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
+                    context.biometricAuthenticate { authenticated ->
+                        if (authenticated) {
+                            viewModel.skipMainSeedPhrase()
+                        }
                     }
                 }
-            } else {
-                viewModel.onSubmit()
+                RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
+                    context.biometricAuthenticate { authenticated ->
+                        if (authenticated) {
+                            viewModel.onSubmit()
+                        }
+                    }
+                }
+                else -> {
+                    viewModel.onSubmit()
+                }
             }
         },
         onWordTyped = viewModel::onWordChanged,
@@ -103,12 +114,14 @@ fun RestoreMnemonicsScreen(
     }
 }
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 private fun RestoreMnemonicsContent(
     modifier: Modifier = Modifier,
     state: RestoreMnemonicsViewModel.State,
     onBackClick: () -> Unit,
     onSkipClicked: () -> Unit,
+    onSkipMainSeedPhraseClicked: () -> Unit,
     onSubmitClick: () -> Unit,
     onWordTyped: (Int, String) -> Unit,
     onWordSelected: (Int, String) -> Unit,
@@ -139,7 +152,9 @@ private fun RestoreMnemonicsContent(
             )
         },
         bottomBar = {
-            if (!state.isShowingEntities && isSuggestionsVisible(state = state)) {
+            if (state.screenType != RestoreMnemonicsViewModel.State.ScreenType.Entities &&
+                isSuggestionsVisible(state = state)
+            ) {
                 SeedPhraseSuggestions(
                     wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
                     modifier = Modifier
@@ -161,13 +176,14 @@ private fun RestoreMnemonicsContent(
                         .imePadding()
                         .padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(
-                        id = if (state.isShowingEntities) {
+                        id = if (state.screenType == RestoreMnemonicsViewModel.State.ScreenType.Entities) {
                             R.string.recoverSeedPhrase_enterButton
                         } else {
                             R.string.common_continue
                         }
                     ),
-                    enabled = state.isShowingEntities || state.seedPhraseState.seedPhraseValid,
+                    enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase ||
+                        state.seedPhraseState.seedPhraseValid,
                     isLoading = state.isRestoring,
                     onClick = onSubmitClick
                 )
@@ -181,30 +197,46 @@ private fun RestoreMnemonicsContent(
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-        AnimatedVisibility(
-            modifier = Modifier.padding(padding),
-            visible = state.isShowingEntities,
-            enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) it else -it }),
-            exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) it else -it })
-        ) {
-            EntitiesView(
-                state = state,
-                onSkipClicked = onSkipClicked
-            )
-        }
-
-        AnimatedVisibility(
-            modifier = Modifier.padding(padding),
-            visible = !state.isShowingEntities,
-            enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
-            exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
-        ) {
-            SeedPhraseView(
-                state = state,
-                onWordChanged = onWordTyped,
-                onPassphraseChanged = onPassphraseChanged,
-                onFocusedWordIndexChanged = { focusedWordIndex = it }
-            )
+        when (state.screenType) {
+            RestoreMnemonicsViewModel.State.ScreenType.Entities -> {
+                AnimatedVisibility(
+                    modifier = Modifier.padding(padding),
+                    visible = true,
+                    enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) it else -it }),
+                    exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) it else -it })
+                ) {
+                    EntitiesView(
+                        state = state,
+                        onSkipClicked = onSkipClicked,
+                        onSkipMainSeedPhraseClicked = onSkipMainSeedPhraseClicked
+                    )
+                }
+            }
+            RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
+                AnimatedVisibility(
+                    modifier = Modifier.padding(padding),
+                    visible = true,
+                    enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
+                    exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
+                ) {
+                    SeedPhraseView(
+                        state = state,
+                        onWordChanged = onWordTyped,
+                        onPassphraseChanged = onPassphraseChanged,
+                        onFocusedWordIndexChanged = { focusedWordIndex = it }
+                    )
+                }
+            }
+            RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
+                AnimatedVisibility(
+                    modifier = Modifier.padding(padding),
+                    visible = true,
+                    enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
+                    exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
+                ) {
+                    NoMainSeedPhraseView()
+                }
+            }
         }
     }
 }
@@ -213,7 +245,8 @@ private fun RestoreMnemonicsContent(
 private fun EntitiesView(
     modifier: Modifier = Modifier,
     state: RestoreMnemonicsViewModel.State,
-    onSkipClicked: () -> Unit
+    onSkipClicked: () -> Unit,
+    onSkipMainSeedPhraseClicked: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize()
@@ -271,8 +304,57 @@ private fun EntitiesView(
                         account = account
                     )
                 }
+
+                if (state.isMainSeedPhrase) {
+                    item {
+                        RadixTextButton(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                            text = "I Don't Have the Main Seed Phrase",
+                            onClick = onSkipMainSeedPhraseClicked
+                        )
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun NoMainSeedPhraseView(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            text = "No Main Seed Phrase?",
+            textAlign = TextAlign.Center,
+            style = RadixTheme.typography.title
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            text = "WARNING: If you continue without entering your previous main “Babylon” seed phrase" +
+                ", **you will permanently lose access** to your Personas and any Accounts listed on the previous " +
+                "screen. A new main seed phrase will be created.\n" +
+                "\n" +
+                (
+                    "Tap Continue to proceed with recovering control of any Accounts created with a Ledger hardware " +
+                        "wallet, or Accounts you originally created on the Olympia network."
+                    )
+                    .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)), // TODO Crowdin
+            textAlign = TextAlign.Center,
+            style = RadixTheme.typography.body1Regular
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
 }
 
@@ -351,10 +433,11 @@ fun RestoreMnemonicsIntroContent() {
                         factorSource = SampleDataProvider().babylonDeviceFactorSource()
                     )
                 ),
-                isShowingEntities = true
+                screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
             ),
             onBackClick = {},
             onSkipClicked = {},
+            onSkipMainSeedPhraseClicked = {},
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
             onPassphraseChanged = {},
@@ -382,10 +465,11 @@ fun RestoreMnemonicsSeedPhraseContent() {
                         factorSource = SampleDataProvider().babylonDeviceFactorSource()
                     )
                 ),
-                isShowingEntities = false
+                screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
             ),
             onBackClick = {},
             onSkipClicked = {},
+            onSkipMainSeedPhraseClicked = {},
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
             onPassphraseChanged = {},
