@@ -50,6 +50,7 @@ import com.babylon.wallet.android.presentation.settings.personas.personadetail.p
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.status.assets.fungible.fungibleAssetDialog
+import com.babylon.wallet.android.presentation.status.assets.nonfungible.nonFungibleAssetDialog
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
@@ -178,6 +179,9 @@ fun NavigationHost(
                 onFungibleResourceClick = { resource, account ->
                     navController.fungibleAssetDialog(resource.resourceAddress, account.address)
                 },
+                onNonFungibleResourceClick = { resource, item ->
+                    navController.nonFungibleAssetDialog(resource.resourceAddress, item.localId.code)
+                },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
                 }
@@ -253,6 +257,15 @@ fun NavigationHost(
         transactionReviewScreen(
             onBackClick = {
                 navController.popBackStack()
+            },
+            onFungibleClick = { resource ->
+                navController.fungibleAssetDialog(resourceAddress = resource.resourceAddress)
+            },
+            onNonFungibleClick = { resource, item ->
+                navController.nonFungibleAssetDialog(
+                    resourceAddress = resource.resourceAddress,
+                    localId = item.localId.code
+                )
             }
         )
         transferScreen(
@@ -341,6 +354,11 @@ fun NavigationHost(
             }
         )
         fungibleAssetDialog(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        nonFungibleAssetDialog(
             onDismiss = {
                 navController.popBackStack()
             }

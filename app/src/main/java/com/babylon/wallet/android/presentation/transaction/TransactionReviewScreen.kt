@@ -44,10 +44,10 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
-import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
+import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.Event.*
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
@@ -74,7 +74,9 @@ import rdx.works.profile.data.model.pernetwork.Network
 fun TransactionReviewScreen(
     modifier: Modifier = Modifier,
     viewModel: TransactionReviewViewModel,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onFungibleClick: (Resource.FungibleResource) -> Unit,
+    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -88,6 +90,16 @@ fun TransactionReviewScreen(
             dismissText = null
         )
     }
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect {
+            when (it) {
+                is OnFungibleClick -> onFungibleClick(it.resource)
+                is OnNonFungibleClick -> onNonFungibleClick(it.resource, it.item)
+            }
+        }
+    }
+
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
@@ -367,19 +379,6 @@ private fun BottomSheetContent(
     onViewAdvancedModeClick: () -> Unit
 ) {
     when (sheetState) {
-        is State.Sheet.ResourceSelected -> {
-            when (sheetState) {
-                is State.Sheet.ResourceSelected.NonFungible -> {
-                    NonFungibleTokenBottomSheetDetails(
-                        modifier = modifier.fillMaxWidth(),
-                        item = sheetState.item,
-                        nonFungibleResource = sheetState.collection,
-                        onCloseClick = onCloseDAppSheet
-                    )
-                }
-            }
-        }
-
         is State.Sheet.CustomizeGuarantees -> {
             GuaranteesSheet(
                 modifier = modifier,

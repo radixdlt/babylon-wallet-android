@@ -66,7 +66,6 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedWebsitesMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
@@ -98,7 +97,8 @@ fun DappDetailScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     onEditPersona: (String, RequiredPersonaFields?) -> Unit,
-    onFungibleClick: (Resource.FungibleResource) -> Unit
+    onFungibleClick: (Resource.FungibleResource) -> Unit,
+    onNonFungibleClick: (Resource.NonFungibleResource) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -110,6 +110,7 @@ fun DappDetailScreen(
                     onEditPersona(it.personaAddress, it.requiredPersonaFields)
                 }
                 is DappDetailEvent.OnFungibleClick -> onFungibleClick(it.resource)
+                is DappDetailEvent.OnNonFungibleClick -> onNonFungibleClick(it.resource)
             }
         }
     }
@@ -228,21 +229,6 @@ private fun DappDetailContent(
                             onEditAccountSharing = onEditAccountSharing
                         )
                     }
-                }
-
-                is SelectedSheetState.SelectedNonFungibleResource -> {
-                    NonFungibleTokenBottomSheetDetails(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .navigationBarsPadding(),
-                        item = null,
-                        onCloseClick = {
-                            scope.launch {
-                                bottomSheetState.hide()
-                            }
-                        },
-                        nonFungibleResource = selectedSheetState.nonFungibleResource
-                    )
                 }
 
                 else -> {}

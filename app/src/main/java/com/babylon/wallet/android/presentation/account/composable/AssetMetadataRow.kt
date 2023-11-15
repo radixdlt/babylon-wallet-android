@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import java.util.Locale
@@ -17,8 +18,9 @@ fun AssetMetadataRow(
     valueView: @Composable RowScope.() -> Unit
 ) {
     Row(
-        modifier,
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = modifier,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingMedium),

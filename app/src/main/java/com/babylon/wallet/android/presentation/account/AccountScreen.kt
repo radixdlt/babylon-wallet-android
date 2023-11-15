@@ -69,7 +69,6 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.composable.LSUBottomSheetDetails
-import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.account.composable.PoolUnitBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
@@ -101,6 +100,7 @@ fun AccountScreen(
     onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
     onNavigateToMnemonicRestore: (FactorSource.FactorSourceID.FromHash) -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Network.Account) -> Unit,
+    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onTransferClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -110,6 +110,7 @@ fun AccountScreen(
                 is AccountEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                 is AccountEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore(it.factorSourceId)
                 is AccountEvent.OnFungibleClick -> onFungibleResourceClick(it.resource, it.account)
+                is AccountEvent.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item)
             }
         }
     }
@@ -306,19 +307,6 @@ private fun SheetContent(
     bottomSheetState: ModalBottomSheetState
 ) {
     when (val selected = state.selectedResource) {
-        is SelectedResource.SelectedNonFungibleResource -> {
-            NonFungibleTokenBottomSheetDetails(
-                modifier = modifier.fillMaxWidth(),
-                item = selected.item,
-                nonFungibleResource = selected.nonFungible,
-                onCloseClick = {
-                    scope.launch {
-                        bottomSheetState.hide()
-                    }
-                }
-            )
-        }
-
         is SelectedResource.SelectedPoolUnit -> {
             PoolUnitBottomSheetDetails(
                 modifier = modifier

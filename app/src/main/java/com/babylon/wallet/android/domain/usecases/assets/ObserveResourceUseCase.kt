@@ -14,7 +14,7 @@ class ObserveResourceUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
-    operator fun invoke(resourceAddress: String, accountAddress: String?): Flow<Resource> = flow {
+    operator fun invoke(resourceAddress: String, accountAddress: String? = null): Flow<Resource> = flow {
         val resource = stateRepository.getResources(
             addresses = setOf(resourceAddress),
             underAccountAddress = accountAddress,

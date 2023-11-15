@@ -143,13 +143,11 @@ class AccountViewModel @Inject constructor(
         nonFungibleResource: Resource.NonFungibleResource,
         item: Resource.NonFungibleResource.Item
     ) {
-        _state.update { accountUiState ->
-            accountUiState.copy(
-                selectedResource = SelectedResource.SelectedNonFungibleResource(
-                    nonFungible = nonFungibleResource,
-                    item = item
-                )
-            )
+        viewModelScope.launch {
+            sendEvent(AccountEvent.OnNonFungibleClick(
+                resource = nonFungibleResource,
+                item = item
+            ))
         }
     }
 
@@ -234,6 +232,10 @@ internal sealed interface AccountEvent : OneOffEvent {
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
     data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
     data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Network.Account) : AccountEvent
+    data class OnNonFungibleClick(
+        val resource: Resource.NonFungibleResource,
+        val item: Resource.NonFungibleResource.Item
+    ) : AccountEvent
 }
 
 data class AccountUiState(
@@ -298,11 +300,6 @@ data class AccountUiState(
 }
 
 sealed interface SelectedResource {
-    data class SelectedNonFungibleResource(
-        val nonFungible: Resource.NonFungibleResource,
-        val item: Resource.NonFungibleResource.Item
-    ) : SelectedResource
-
     data class SelectedLSUUnit(val lsuUnit: LiquidStakeUnit, val validatorDetail: ValidatorDetail) : SelectedResource
     data class SelectedPoolUnit(val poolUnit: PoolUnit) : SelectedResource
 }

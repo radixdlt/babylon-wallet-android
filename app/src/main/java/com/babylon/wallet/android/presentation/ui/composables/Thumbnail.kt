@@ -70,16 +70,16 @@ object Thumbnail {
     @Composable
     fun Fungible(
         modifier: Modifier = Modifier,
-        token: Resource.FungibleResource?,
+        token: Resource.FungibleResource,
     ) {
         var viewSize: IntSize? by remember { mutableStateOf(null) }
 
         val imageType = remember(token, viewSize) {
             val size = viewSize
-            if (token?.isXrd == true) {
+            if (token.isXrd) {
                 ImageType.InternalRes(drawableRes = R.drawable.ic_xrd_token)
             } else if (size != null) {
-                val icon = token?.iconUrl
+                val icon = token.iconUrl
                 if (icon != null) {
                     ImageType.External(
                         uri = icon,
@@ -93,12 +93,7 @@ object Thumbnail {
             }
         }
         Custom(
-            modifier = modifier
-                .radixPlaceholder(
-                    visible = token == null,
-                    shape = CircleShape
-                )
-                .onGloballyPositioned { viewSize = it.size },
+            modifier = modifier.onGloballyPositioned { viewSize = it.size },
             imageType = imageType,
             imageContentScale = ContentScale.Crop,
             emptyDrawable = R.drawable.ic_token,

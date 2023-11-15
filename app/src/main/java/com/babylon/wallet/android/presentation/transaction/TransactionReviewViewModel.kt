@@ -214,8 +214,8 @@ class TransactionReviewViewModel @Inject constructor(
         nonFungibleResource: NonFungibleResource,
         item: NonFungibleResource.Item
     ) {
-        _state.update {
-            it.copy(sheetState = State.Sheet.ResourceSelected.NonFungible(nonFungibleResource, item))
+        viewModelScope.launch {
+            sendEvent(Event.OnNonFungibleClick(nonFungibleResource, item))
         }
     }
 
@@ -225,6 +225,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     sealed interface Event: OneOffEvent {
         data class OnFungibleClick(val resource: FungibleResource): Event
+        data class OnNonFungibleClick(val resource: NonFungibleResource, val item: NonFungibleResource.Item): Event
     }
 
     data class State(
@@ -370,14 +371,6 @@ class TransactionReviewViewModel @Inject constructor(
         sealed interface Sheet {
 
             data object None : Sheet
-
-            sealed interface ResourceSelected : Sheet {
-
-                data class NonFungible(
-                    val collection: NonFungibleResource,
-                    val item: NonFungibleResource.Item
-                ) : ResourceSelected
-            }
 
             data class CustomizeGuarantees(
                 val accountsWithPredictedGuarantees: List<AccountWithPredictedGuarantee>

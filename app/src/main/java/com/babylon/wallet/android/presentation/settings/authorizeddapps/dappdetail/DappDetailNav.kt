@@ -34,7 +34,8 @@ fun NavController.dAppDetailScreen(dappDefinitionAddress: String) {
 fun NavGraphBuilder.dAppDetailScreen(
     onBackClick: () -> Unit,
     onEditPersona: (String, RequiredPersonaFields?) -> Unit,
-    onFungibleClick: (Resource.FungibleResource) -> Unit
+    onFungibleClick: (Resource.FungibleResource) -> Unit,
+    onNonFungibleClick: (Resource.NonFungibleResource) -> Unit
 ) {
     composable(
         route = ROUTE_DAPP_DETAIL,
@@ -63,7 +64,8 @@ fun NavGraphBuilder.dAppDetailScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
             onEditPersona = onEditPersona,
-            onFungibleClick = onFungibleClick
+            onFungibleClick = onFungibleClick,
+            onNonFungibleClick = onNonFungibleClick
         )
     }
 }

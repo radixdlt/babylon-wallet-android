@@ -106,13 +106,7 @@ class DappDetailViewModel @Inject constructor(
 
     fun onNftClick(nftItem: Resource.NonFungibleResource) {
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    selectedSheetState = SelectedSheetState.SelectedNonFungibleResource(
-                        nonFungibleResource = nftItem
-                    )
-                )
-            }
+            sendEvent(DappDetailEvent.OnNonFungibleClick(nftItem))
         }
     }
 
@@ -232,6 +226,7 @@ sealed interface DappDetailEvent : OneOffEvent {
     data object LastPersonaDeleted : DappDetailEvent
     data object DappDeleted : DappDetailEvent
     data class OnFungibleClick(val resource: Resource.FungibleResource) : DappDetailEvent
+    data class OnNonFungibleClick(val resource: Resource.NonFungibleResource) : DappDetailEvent
 }
 
 data class DappDetailUiState(
@@ -244,10 +239,6 @@ data class DappDetailUiState(
 ) : UiState
 
 sealed interface SelectedSheetState {
-    data class SelectedNonFungibleResource(
-        val nonFungibleResource: Resource.NonFungibleResource
-    ) : SelectedSheetState
-
     data class SelectedPersona(
         val persona: PersonaUiModel?
     ) : SelectedSheetState
