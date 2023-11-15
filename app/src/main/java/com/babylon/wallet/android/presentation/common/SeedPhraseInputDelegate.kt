@@ -21,7 +21,7 @@ class SeedPhraseInputDelegate(
     private var debounceJob: Job? = null
 
     fun initInConfirmMode(seedSize: Int, blankWords: Int = 4) {
-        val seedPhraseWords = (0 until seedSize).map { index ->
+        val seedPhraseWords = List(seedSize) { index ->
             SeedPhraseWord(
                 index,
                 lastWord = index == seedSize - 1,
@@ -29,7 +29,8 @@ class SeedPhraseInputDelegate(
                 state = SeedPhraseWord.State.ValidDisabled
             )
         }.toPersistentList()
-        val wordsToFillIndexes = mutableSetOf<Int>()
+        // always ask for last word
+        val wordsToFillIndexes = mutableSetOf<Int>().apply { add(seedSize - 1) }
         do {
             wordsToFillIndexes.add(Random.nextInt(seedSize))
         } while (wordsToFillIndexes.size < blankWords)
