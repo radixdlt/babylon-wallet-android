@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
+import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -43,14 +45,15 @@ class RevealSeedPhraseViewModel @Inject constructor(
                 ).getOrNull()?.let { mnemonicWithPassphrase ->
                     _state.update { state ->
                         state.copy(
-                            mnemonicWords = mnemonicWithPassphrase
+                            mnemonicWordsChunked = mnemonicWithPassphrase
                                 .mnemonic
                                 .split(" ").chunked(state.seedPhraseWordsPerLine)
                                 .map {
                                     it.toPersistentList()
                                 }.toPersistentList(),
                             passphrase = mnemonicWithPassphrase.bip39Passphrase,
-                            backedUp = backedUpIds.contains(args.factorSourceId)
+                            backedUp = backedUpIds.contains(args.factorSourceId),
+                            mnemonicSize = mnemonicWithPassphrase.wordCount
                         )
                     }
                 }
@@ -58,19 +61,33 @@ class RevealSeedPhraseViewModel @Inject constructor(
         }
     }
 
-    fun markFactorSourceBackedUp() {
-        viewModelScope.launch {
-            preferencesManager.markFactorSourceBackedUp(args.factorSourceId)
-            sendEvent(Effect.Close)
+    fun onMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
+    }
+
+    fun showConfirmSeedPhraseDialog() {
+        _state.update { state ->
+            state.copy(
+                showConfirmSeedPhraseDialogState = ConfirmSeedPhraseDialogState.Shown(args.factorSourceId, _state.value.mnemonicSize)
+            )
         }
     }
 
     data class State(
-        val mnemonicWords: PersistentList<PersistentList<String>> = persistentListOf(),
+        val mnemonicSize: Int = 0,
+        val mnemonicWordsChunked: PersistentList<PersistentList<String>> = persistentListOf(),
         val passphrase: String = "",
         val backedUp: Boolean = false,
-        val seedPhraseWordsPerLine: Int = 3
+        val seedPhraseWordsPerLine: Int = 3,
+        val showConfirmSeedPhraseDialogState: ConfirmSeedPhraseDialogState = ConfirmSeedPhraseDialogState.None,
+        val uiMessage: UiMessage? = null,
+        val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState
+
+    sealed interface ConfirmSeedPhraseDialogState {
+        data object None : ConfirmSeedPhraseDialogState
+        data class Shown(val factorSourceId: String, val mnemonicSize: Int) : ConfirmSeedPhraseDialogState
+    }
 
     sealed interface Effect : OneOffEvent {
         data object Close : Effect

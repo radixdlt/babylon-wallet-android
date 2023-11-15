@@ -28,7 +28,12 @@ import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
@@ -36,6 +41,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 
 @Composable
+@Suppress("CyclomaticComplexMethod")
 fun MnemonicWordTextField(
     modifier: Modifier,
     onValueChanged: (String) -> Unit,
@@ -50,7 +56,9 @@ fun MnemonicWordTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     textStyle: TextStyle = RadixTheme.typography.body1Regular,
-    errorFixedSize: Boolean = false
+    errorFixedSize: Boolean = false,
+    enabled: Boolean = true,
+    highlightField: Boolean = false
 ) {
     var focused by remember { mutableStateOf(false) }
     Column(
@@ -66,6 +74,17 @@ fun MnemonicWordTextField(
             handleColor = RadixTheme.colors.gray1,
             backgroundColor = RadixTheme.colors.gray1.copy(alpha = 0.4f)
         )
+        val textColor = when {
+            error != null -> RadixTheme.colors.red1
+            !enabled -> RadixTheme.colors.gray2
+            else -> RadixTheme.colors.gray1
+        }
+        val borderColor = when {
+            enabled && highlightField -> RadixTheme.colors.green1
+            error != null -> RadixTheme.colors.red1
+            focused -> RadixTheme.colors.gray1
+            else -> RadixTheme.colors.gray4
+        }
         CompositionLocalProvider(LocalTextSelectionColors provides selectionColors) {
             BasicTextField(
                 modifier = Modifier.onFocusChanged {
@@ -74,7 +93,7 @@ fun MnemonicWordTextField(
                 },
                 value = value,
                 onValueChange = onValueChanged,
-                textStyle = textStyle.copy(color = if (error != null) RadixTheme.colors.red1 else RadixTheme.colors.gray1),
+                textStyle = textStyle.copy(color = textColor),
                 keyboardActions = keyboardActions,
                 keyboardOptions = keyboardOptions,
                 singleLine = singleLine,
@@ -83,11 +102,7 @@ fun MnemonicWordTextField(
                         modifier = Modifier
                             .border(
                                 width = 1.dp,
-                                color = when {
-                                    error != null -> RadixTheme.colors.red1
-                                    focused -> RadixTheme.colors.gray1
-                                    else -> RadixTheme.colors.gray4
-                                },
+                                color = borderColor,
                                 shape = RadixTheme.shapes.roundedRectSmall
                             )
                             .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall)
@@ -105,10 +120,14 @@ fun MnemonicWordTextField(
                             Box(modifier = Modifier.weight(1f)) {
                                 innerTextField()
                             }
-                            trailingIcon?.invoke()
+                            if (enabled) {
+                                trailingIcon?.invoke()
+                            }
                         }
                     }
-                }
+                },
+                enabled = enabled,
+                visualTransformation = if (enabled) VisualTransformation.None else MnemonicWordVisualTransformation()
             )
         }
         if (error != null || errorFixedSize) {
@@ -127,6 +146,24 @@ fun MnemonicWordTextField(
                 Text(text = error.orEmpty(), style = RadixTheme.typography.body2Regular, color = RadixTheme.colors.red1)
             }
         }
+    }
+}
+
+internal class MnemonicWordVisualTransformation : VisualTransformation {
+
+    override fun filter(text: AnnotatedString): TransformedText {
+        return TransformedText(
+            text = buildAnnotatedString {
+                repeat(transformationCharactersLength) {
+                    append("\u2022")
+                }
+            },
+            offsetMapping = OffsetMapping.Identity
+        )
+    }
+
+    companion object {
+        private const val transformationCharactersLength: Int = 4
     }
 }
 

@@ -68,6 +68,12 @@ suspend fun GetProfileUseCase.factorSourceById(
     factorSource.id == id
 }
 
+suspend fun GetProfileUseCase.factorSourceByIdValue(
+    value: String
+) = factorSources.first().firstOrNull { factorSource ->
+    factorSource.identifier == value
+}
+
 suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = accountsOnCurrentNetwork.first()
 
 suspend fun GetProfileUseCase.accountOnCurrentNetwork(

@@ -20,9 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -48,17 +45,15 @@ import kotlinx.collections.immutable.persistentListOf
 fun RevealSeedPhraseScreen(
     modifier: Modifier = Modifier,
     viewModel: RevealSeedPhraseViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onConfirmSeedPhraseClick: (String, Int) -> Unit
 ) {
-    var showWarningDialog by remember {
-        mutableStateOf(false)
-    }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val backClickHandler = {
         if (state.backedUp) {
             onBackClick()
         } else {
-            showWarningDialog = true
+            viewModel.showConfirmSeedPhraseDialog()
         }
     }
     SecureScreen()
@@ -67,35 +62,23 @@ fun RevealSeedPhraseScreen(
     }
     RevealSeedPhraseContent(
         modifier = modifier,
-        mnemonicWords = state.mnemonicWords,
+        mnemonicWords = state.mnemonicWordsChunked,
         passphrase = state.passphrase,
         seedPhraseWordsPerLine = state.seedPhraseWordsPerLine,
         onBackClick = backClickHandler,
     )
-    if (showWarningDialog) {
+    val dialogState = state.showConfirmSeedPhraseDialogState
+    if (dialogState is RevealSeedPhraseViewModel.ConfirmSeedPhraseDialogState.Shown) {
         BasicPromptAlertDialog(
             finish = { confirmed ->
-                showWarningDialog = false
                 if (confirmed) {
-                    viewModel.markFactorSourceBackedUp()
+                    onConfirmSeedPhraseClick(dialogState.factorSourceId, dialogState.mnemonicSize)
                 } else {
                     onBackClick()
                 }
             },
-            title = {
-                Text(
-                    text = stringResource(id = R.string.revealSeedPhrase_warningDialog_title),
-                    style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            text = {
-                Text(
-                    text = stringResource(id = R.string.revealSeedPhrase_warningDialog_subtitle),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
-                )
-            },
+            title = stringResource(id = R.string.revealSeedPhrase_warningDialog_title),
+            text = stringResource(id = R.string.revealSeedPhrase_warningDialog_subtitle),
             confirmText = stringResource(id = R.string.revealSeedPhrase_warningDialog_confirmButton)
         )
     }
