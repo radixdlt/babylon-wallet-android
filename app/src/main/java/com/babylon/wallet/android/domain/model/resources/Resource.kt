@@ -81,7 +81,7 @@ sealed class Resource {
             }
 
         val behaviours: AssetBehaviours? = if (assetBehaviours != null && isXrd) {
-            setOf(AssetBehaviour.SUPPLY_FLEXIBLE)
+            assetBehaviours.filterNot { it == AssetBehaviour.INFORMATION_CHANGEABLE }.toSet()
         } else {
             assetBehaviours
         }

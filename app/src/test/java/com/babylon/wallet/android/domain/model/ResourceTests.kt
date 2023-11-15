@@ -194,7 +194,7 @@ class ResourceTests {
         )
 
         Assert.assertEquals(resource.behaviours, setOf(
-            AssetBehaviour.SIMPLE_ASSET,
+            AssetBehaviour.SUPPLY_FLEXIBLE,
             AssetBehaviour.INFORMATION_CHANGEABLE
         ))
     }
@@ -209,7 +209,7 @@ class ResourceTests {
         nameMetadataItem = name?.let { NameMetadataItem(it) },
         symbolMetadataItem = symbol?.let { SymbolMetadataItem(it) },
         assetBehaviours = setOf(
-            AssetBehaviour.SIMPLE_ASSET,
+            AssetBehaviour.SUPPLY_FLEXIBLE,
             AssetBehaviour.INFORMATION_CHANGEABLE
         )
     )
