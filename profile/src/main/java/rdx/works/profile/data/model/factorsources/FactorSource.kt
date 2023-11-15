@@ -141,5 +141,3 @@ sealed class FactorSource : Identified {
         }
     }
 }
-
-class WasNotDeviceFactorSource : RuntimeException()

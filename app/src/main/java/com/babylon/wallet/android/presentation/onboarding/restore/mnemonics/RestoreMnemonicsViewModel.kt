@@ -22,7 +22,6 @@ import rdx.works.profile.data.model.extensions.changeGateway
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.BackupType
@@ -163,15 +162,12 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     private suspend fun restoreMnemonic() {
-        val storedSecurityState = state.value
-            .recoverableFactorSource
-            ?.associatedAccounts
-            ?.firstOrNull()
-            ?.securityState as? SecurityState.Unsecured ?: return
+        val factorSourceToRecover = state.value
+            .recoverableFactorSource?.factorSource ?: return
 
         _state.update { it.copy(isRestoring = true) }
         restoreMnemonicUseCase(
-            factorInstance = storedSecurityState.unsecuredEntityControl.transactionSigning,
+            factorSource = factorSourceToRecover,
             mnemonicWithPassphrase = MnemonicWithPassphrase(
                 mnemonic = _state.value.seedPhraseState.wordsPhrase,
                 bip39Passphrase = _state.value.seedPhraseState.bip39Passphrase

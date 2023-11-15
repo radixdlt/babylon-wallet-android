@@ -96,13 +96,13 @@ class SnapshotEncodingTests(private val versionUnderTest: Int) {
 
                     if (instance.factorSourceId.kind != FactorSourceKind.DEVICE) return
 
-                    factorSources.find { it.id == instance.factorSourceId }
+                    val factorSource = factorSources.find { it.id == instance.factorSourceId } as? DeviceFactorSource
                         ?: error("Factor source not found ${instance.factorSourceId}")
                     val mnemonic = mnemonics.find { it.factorSourceID == instance.factorSourceId }
                         ?: error("Mnemonic not found ${instance.factorSourceId}")
 
                     assertTrue(
-                        instance.validateAgainst(mnemonic.mnemonicWithPassphrase.toDomain()),
+                        factorSource.validateAgainst(mnemonic.mnemonicWithPassphrase.toDomain()),
                         "FactorInstance: ${instance.factorSourceId} cannot be derived from mnemonic"
                     )
                 }

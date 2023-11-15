@@ -178,5 +178,3 @@ enum class OlympiaAccountType {
         }
     }
 }
-
-var olympiaTestSeedPhrase = "bridge easily outer film record undo turtle method knife quarter promote arch"
