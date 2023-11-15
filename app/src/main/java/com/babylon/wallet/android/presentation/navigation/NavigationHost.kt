@@ -51,6 +51,7 @@ import com.babylon.wallet.android.presentation.settings.personas.personaedit.per
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.status.assets.fungible.fungibleAssetDialog
 import com.babylon.wallet.android.presentation.status.assets.nonfungible.nonFungibleAssetDialog
+import com.babylon.wallet.android.presentation.status.assets.pool.poolUnitAssetDialog
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
@@ -181,6 +182,9 @@ fun NavigationHost(
                 },
                 onNonFungibleResourceClick = { resource, item ->
                     navController.nonFungibleAssetDialog(resource.resourceAddress, item.localId.code)
+                },
+                onPoolUnitClick = { poolUnit, account ->
+                    navController.poolUnitAssetDialog(poolUnit.resourceAddress, account.address)
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
@@ -359,6 +363,11 @@ fun NavigationHost(
             }
         )
         nonFungibleAssetDialog(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        poolUnitAssetDialog(
             onDismiss = {
                 navController.popBackStack()
             }

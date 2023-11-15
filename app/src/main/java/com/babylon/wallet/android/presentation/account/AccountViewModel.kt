@@ -157,9 +157,11 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun onPoolUnitClicked(resource: PoolUnit) {
-        _state.update { accountUiState ->
-            accountUiState.copy(selectedResource = SelectedResource.SelectedPoolUnit(resource))
+    fun onPoolUnitClicked(poolUnit: PoolUnit) {
+        val account = _state.value.accountWithAssets?.account ?: return
+
+        viewModelScope.launch {
+            sendEvent(AccountEvent.OnPoolUnitClick(poolUnit, account))
         }
     }
 
@@ -236,6 +238,7 @@ internal sealed interface AccountEvent : OneOffEvent {
         val resource: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item
     ) : AccountEvent
+    data class OnPoolUnitClick(val poolUnit: PoolUnit, val account: Network.Account): AccountEvent
 }
 
 data class AccountUiState(
@@ -301,5 +304,4 @@ data class AccountUiState(
 
 sealed interface SelectedResource {
     data class SelectedLSUUnit(val lsuUnit: LiquidStakeUnit, val validatorDetail: ValidatorDetail) : SelectedResource
-    data class SelectedPoolUnit(val poolUnit: PoolUnit) : SelectedResource
 }

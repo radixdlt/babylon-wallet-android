@@ -13,6 +13,7 @@ import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
+import com.babylon.wallet.android.data.repository.cache.database.getCachedPools
 import com.babylon.wallet.android.data.repository.cache.database.storeAccountNFTsPortfolio
 import com.babylon.wallet.android.data.repository.cache.database.updateResourceDetails
 import com.babylon.wallet.android.data.repository.toResult
@@ -20,6 +21,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
@@ -27,6 +29,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
@@ -41,6 +44,8 @@ interface StateRepository {
     suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>): Result<Unit>
 
     suspend fun getResources(addresses: Set<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>>
+
+    suspend fun getPool(poolAddress: String, accountAddress: String): Result<Pool>
 
     suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
 
@@ -248,6 +253,18 @@ class StateRepositoryImpl @Inject constructor(
             }
 
             addressesWithResources.values.filterNotNull()
+        }
+    }
+
+    override suspend fun getPool(poolAddress: String, accountAddress: String): Result<Pool> = withContext(dispatcher) {
+        runCatching {
+            val stateVersion = stateDao.getAccountStateVersion(accountAddress = accountAddress)
+                ?: error("Account $accountAddress has no state version")
+
+            stateDao.getCachedPools(
+                poolAddresses = setOf(poolAddress),
+                atStateVersion = stateVersion
+            )[poolAddress] ?: error("Pool $poolAddress does not exist")
         }
     }
 
