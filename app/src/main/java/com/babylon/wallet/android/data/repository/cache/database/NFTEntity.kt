@@ -12,6 +12,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadat
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadataItem
+import rdx.works.core.toEncodedString
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -59,5 +60,16 @@ data class NFTEntity(
                 synced = synced
             )
         }
+
+        fun Resource.NonFungibleResource.Item.asEntity(synced: Instant) = NFTEntity(
+            address = collectionAddress,
+            localId = localId.code,
+            name = nameMetadataItem?.name,
+            imageUrl = iconMetadataItem?.url?.toEncodedString(),
+            claimAmount = claimAmountMetadataItem?.amount,
+            claimEpoch = claimEpochMetadataItem?.claimEpoch,
+            metadata = if (remainingMetadata.isNotEmpty()) StringMetadataColumn(remainingMetadata.map { it.key to it.value }) else null,
+            synced = synced
+        )
     }
 }

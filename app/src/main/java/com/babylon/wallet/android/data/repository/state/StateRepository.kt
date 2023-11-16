@@ -61,6 +61,8 @@ interface StateRepository {
 
     suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>>
 
+    suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit>
+
     sealed class Error(cause: Throwable) : Exception(cause) {
         data object NoMorePages : Error(RuntimeException("No more NFTs for this resource."))
 
@@ -358,6 +360,16 @@ class StateRepositoryImpl @Inject constructor(
 
         items.map { item ->
             DApp.from(address = item.address, metadataItems = item.explicitMetadata?.asMetadataItems().orEmpty())
+        }
+    }
+
+    override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>) = withContext(dispatcher) {
+        runCatching {
+            val syncedAt = InstantGenerator()
+            stateDao.insertOrReplaceResources(newResources.map { it.asEntity(syncedAt) })
+
+            val newNFTs = newResources.filterIsInstance<Resource.NonFungibleResource>().map { it.items }.flatten()
+            stateDao.insertNFTs(newNFTs.map { it.asEntity(syncedAt) })
         }
     }
 }

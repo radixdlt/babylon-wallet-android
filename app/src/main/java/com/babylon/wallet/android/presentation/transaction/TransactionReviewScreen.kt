@@ -42,6 +42,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
@@ -75,8 +76,8 @@ fun TransactionReviewScreen(
     modifier: Modifier = Modifier,
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
-    onFungibleClick: (Resource.FungibleResource) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
+    onFungibleClick: (Resource.FungibleResource, Boolean) -> Unit,
+    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -94,8 +95,8 @@ fun TransactionReviewScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is OnFungibleClick -> onFungibleClick(it.resource)
-                is OnNonFungibleClick -> onNonFungibleClick(it.resource, it.item)
+                is OnFungibleClick -> onFungibleClick(it.resource, it.isNewlyCreated)
+                is OnNonFungibleClick -> onNonFungibleClick(it.resource, it.item, it.isNewlyCreated)
             }
         }
     }
@@ -175,8 +176,8 @@ private fun TransactionPreviewContent(
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onDAppClick: (DAppWithResources) -> Unit,
-    onFungibleResourceClick: (Resource.FungibleResource) -> Unit,
-    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    onFungibleResourceClick: (Resource.FungibleResource, Boolean) -> Unit,
+    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onPayerSelected: (Network.Account) -> Unit,
@@ -474,8 +475,8 @@ fun TransactionPreviewContentPreview() {
             promptForGuarantees = {},
             onCustomizeClick = {},
             onDAppClick = {},
-            onFungibleResourceClick = {},
-            onNonFungibleResourceClick = { _, _ -> },
+            onFungibleResourceClick = { _, _ ->},
+            onNonFungibleResourceClick = { _, _, _ -> },
             onGuaranteeValueChanged = { _, _ -> },
             onGuaranteeValueIncreased = {},
             onGuaranteeValueDecreased = {},

@@ -266,13 +266,17 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            onFungibleClick = { resource ->
-                navController.fungibleAssetDialog(resourceAddress = resource.resourceAddress)
+            onFungibleClick = { resource, isNewlyCreated ->
+                navController.fungibleAssetDialog(
+                    resourceAddress = resource.resourceAddress,
+                    isNewlyCreated = isNewlyCreated
+                )
             },
-            onNonFungibleClick = { resource, item ->
+            onNonFungibleClick = { resource, item, isNewlyCreated ->
                 navController.nonFungibleAssetDialog(
                     resourceAddress = resource.resourceAddress,
-                    localId = item.localId.code
+                    localId = item.localId.code,
+                    isNewlyCreated = isNewlyCreated
                 )
             }
         )

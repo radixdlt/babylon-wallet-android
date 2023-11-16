@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
+import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
@@ -29,6 +30,7 @@ import javax.inject.Inject
 class TransactionAnalysisDelegate @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getResourcesUseCase: GetResourcesUseCase,
+    private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val resolveDAppsUseCase: ResolveDAppsUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase
@@ -91,6 +93,13 @@ class TransactionAnalysisDelegate @Inject constructor(
             PreviewType.NonConforming
         } else {
             processConformingManifest(transactionTypes[0])
+        }
+
+        if (previewType is PreviewType.Transfer) {
+            val newlyCreated = previewType.getNewlyCreatedResources()
+            if (newlyCreated.isNotEmpty()) {
+                cacheNewlyCreatedEntitiesUseCase(newlyCreated.map { it.resource })
+            }
         }
 
         _state.update {

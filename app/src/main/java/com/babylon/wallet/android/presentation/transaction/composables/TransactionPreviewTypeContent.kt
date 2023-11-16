@@ -24,8 +24,8 @@ fun TransactionPreviewTypeContent(
     preview: PreviewType.Transfer,
     onPromptForGuarantees: () -> Unit,
     onDappClick: (DAppWithResources) -> Unit,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
+    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
+    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize()
@@ -44,10 +44,12 @@ fun TransactionPreviewTypeContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 from = preview.from.toPersistentList(),
                 showStrokeLine = preview.from.toPersistentList().isNotEmpty() ||
-                    preview.dApps.toPersistentList().isNotEmpty(),
-                onFungibleResourceClick = { onFungibleResourceClick(it) },
-                onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem ->
-                    onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem)
+                        preview.dApps.toPersistentList().isNotEmpty(),
+                onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
+                    onFungibleResourceClick(fungibleResource, isNewlyCreated)
+                },
+                onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
+                    onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
                 }
             )
 
@@ -67,9 +69,11 @@ fun TransactionPreviewTypeContent(
                 to = preview.to.toPersistentList(),
                 promptForGuarantees = onPromptForGuarantees,
                 showStrokeLine = false,
-                onFungibleResourceClick = { onFungibleResourceClick(it) },
-                onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem ->
-                    onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem)
+                onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
+                    onFungibleResourceClick(fungibleResource, isNewlyCreated)
+                },
+                onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
+                    onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
                 }
             )
 
@@ -95,8 +99,8 @@ fun TransactionPreviewTypePreview() {
             ),
             onPromptForGuarantees = {},
             onDappClick = { _ -> },
-            onFungibleResourceClick = { _ -> },
-            onNonFungibleResourceClick = { _, _ -> }
+            onFungibleResourceClick = { _, _ -> },
+            onNonFungibleResourceClick = { _, _, _ -> }
         )
     }
 }

@@ -261,101 +261,103 @@ private fun NonFungibleAssetDialogContent(
                     }
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-                    AssetMetadataRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                        key = stringResource(id = R.string.assetDetails_currentSupply)
-                    ) {
-                        Text(
+                    if (!state.isNewlyCreated) {
+                        AssetMetadataRow(
                             modifier = Modifier
-                                .padding(start = RadixTheme.dimensions.paddingDefault)
-                                .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
-                                .radixPlaceholder(visible = state.resource?.currentSupply == null),
-                            text = when {
-                                state.resource?.currentSupply != null -> when (state.resource.currentSupply) {
-                                    0 -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                                    else -> state.resource.currentSupply.toString()
-                                }
-
-                                else -> ""
-                            },
-                            style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray1,
-                            textAlign = TextAlign.End
-                        )
-                    }
-
-                    Column(modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge)) {
-                        if (state.resource?.behaviours == null || state.resource.behaviours.isNotEmpty()) {
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                            key = stringResource(id = R.string.assetDetails_currentSupply)
+                        ) {
                             Text(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        top = RadixTheme.dimensions.paddingDefault,
-                                        bottom = RadixTheme.dimensions.paddingSmall
-                                    ),
-                                text = stringResource(id = R.string.assetDetails_behavior),
-                                style = RadixTheme.typography.body1Regular,
-                                color = RadixTheme.colors.gray2
+                                    .padding(start = RadixTheme.dimensions.paddingDefault)
+                                    .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                                    .radixPlaceholder(visible = state.resource?.currentSupply == null),
+                                text = when {
+                                    state.resource?.currentSupply != null -> when (state.resource.currentSupply) {
+                                        0 -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                                        else -> state.resource.currentSupply.toString()
+                                    }
+
+                                    else -> ""
+                                },
+                                style = RadixTheme.typography.body1HighImportance,
+                                color = RadixTheme.colors.gray1,
+                                textAlign = TextAlign.End
                             )
                         }
 
-                        if (state.resource?.behaviours == null) {
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(RadixTheme.dimensions.paddingLarge)
-                                    .radixPlaceholder(visible = true)
-                            )
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                            Box(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(RadixTheme.dimensions.paddingLarge)
-                                    .radixPlaceholder(visible = true)
-                            )
-                        } else {
-                            state.resource.behaviours.forEach { behaviour ->
-                                Behaviour(
-                                    icon = behaviour.icon(),
-                                    name = behaviour.name()
+                        Column(modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge)) {
+                            if (state.resource?.behaviours == null || state.resource.behaviours.isNotEmpty()) {
+                                Text(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(
+                                            top = RadixTheme.dimensions.paddingDefault,
+                                            bottom = RadixTheme.dimensions.paddingSmall
+                                        ),
+                                    text = stringResource(id = R.string.assetDetails_behavior),
+                                    style = RadixTheme.typography.body1Regular,
+                                    color = RadixTheme.colors.gray2
                                 )
                             }
-                        }
-                    }
 
-                    if (!state.resource?.tags.isNullOrEmpty()) {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                            text = stringResource(id = R.string.assetDetails_tags),
-                            style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray2
-                        )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                        FlowRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                            content = {
-                                state.resource?.tags?.forEach { tag ->
-                                    Tag(
-                                        modifier = Modifier
-                                            .padding(RadixTheme.dimensions.paddingXSmall)
-                                            .border(
-                                                width = 1.dp,
-                                                color = RadixTheme.colors.gray4,
-                                                shape = RadixTheme.shapes.roundedTag
-                                            )
-                                            .padding(RadixTheme.dimensions.paddingSmall),
-                                        tag = tag
+                            if (state.resource?.behaviours == null) {
+                                Box(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(RadixTheme.dimensions.paddingLarge)
+                                        .radixPlaceholder(visible = true)
+                                )
+                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                                Box(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .height(RadixTheme.dimensions.paddingLarge)
+                                        .radixPlaceholder(visible = true)
+                                )
+                            } else {
+                                state.resource.behaviours.forEach { behaviour ->
+                                    Behaviour(
+                                        icon = behaviour.icon(),
+                                        name = behaviour.name()
                                     )
                                 }
                             }
-                        )
+                        }
+
+                        if (!state.resource?.tags.isNullOrEmpty()) {
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                                text = stringResource(id = R.string.assetDetails_tags),
+                                style = RadixTheme.typography.body1Regular,
+                                color = RadixTheme.colors.gray2
+                            )
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                            FlowRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                                content = {
+                                    state.resource?.tags?.forEach { tag ->
+                                        Tag(
+                                            modifier = Modifier
+                                                .padding(RadixTheme.dimensions.paddingXSmall)
+                                                .border(
+                                                    width = 1.dp,
+                                                    color = RadixTheme.colors.gray4,
+                                                    shape = RadixTheme.shapes.roundedTag
+                                                )
+                                                .padding(RadixTheme.dimensions.paddingSmall),
+                                            tag = tag
+                                        )
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }

@@ -24,12 +24,13 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     observeResourceUseCase: ObserveResourceUseCase,
     getNFTDetailsUseCase: GetNFTDetailsUseCase
-): StateViewModel<NonFungibleAssetDialogViewModel.State>() {
+) : StateViewModel<NonFungibleAssetDialogViewModel.State>() {
 
     private val args = NonFungibleAssetDialogArgs(savedStateHandle)
     override fun initialState(): State = State(
         resourceAddress = args.resourceAddress,
-        localId = args.localId
+        localId = args.localId,
+        isNewlyCreated = args.isNewlyCreated
     )
 
     init {
@@ -46,8 +47,10 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
             }
         }
 
-        observeResourceUseCase(resourceAddress = args.resourceAddress)
-            .filterIsInstance<Resource.NonFungibleResource>()
+        observeResourceUseCase(
+            resourceAddress = args.resourceAddress,
+            withDetails = !args.isNewlyCreated
+        ).filterIsInstance<Resource.NonFungibleResource>()
             .onEach { resource ->
                 _state.update { it.copy(resource = resource) }
             }
@@ -67,6 +70,7 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
         val localId: String?,
         val resource: Resource.NonFungibleResource? = null,
         val item: Resource.NonFungibleResource.Item? = null,
+        val isNewlyCreated: Boolean,
         val uiMessage: UiMessage? = null
-    ): UiState
+    ) : UiState
 }

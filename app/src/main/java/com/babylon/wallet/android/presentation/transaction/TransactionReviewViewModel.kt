@@ -204,18 +204,19 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    fun onFungibleResourceClick(fungibleResource: FungibleResource) {
+    fun onFungibleResourceClick(fungibleResource: FungibleResource, isNewlyCreated: Boolean) {
         viewModelScope.launch {
-            sendEvent(Event.OnFungibleClick(fungibleResource))
+            sendEvent(Event.OnFungibleClick(fungibleResource, isNewlyCreated))
         }
     }
 
     fun onNonFungibleResourceClick(
         nonFungibleResource: NonFungibleResource,
-        item: NonFungibleResource.Item
+        item: NonFungibleResource.Item,
+        isNewlyCreated: Boolean
     ) {
         viewModelScope.launch {
-            sendEvent(Event.OnNonFungibleClick(nonFungibleResource, item))
+            sendEvent(Event.OnNonFungibleClick(nonFungibleResource, item, isNewlyCreated))
         }
     }
 
@@ -223,9 +224,17 @@ class TransactionReviewViewModel @Inject constructor(
         _state.update { it.copy(isNoMnemonicErrorVisible = false) }
     }
 
-    sealed interface Event: OneOffEvent {
-        data class OnFungibleClick(val resource: FungibleResource): Event
-        data class OnNonFungibleClick(val resource: NonFungibleResource, val item: NonFungibleResource.Item): Event
+    sealed interface Event : OneOffEvent {
+        data class OnFungibleClick(
+            val resource: FungibleResource,
+            val isNewlyCreated: Boolean
+        ) : Event
+
+        data class OnNonFungibleClick(
+            val resource: NonFungibleResource,
+            val item: NonFungibleResource.Item,
+            val isNewlyCreated: Boolean
+        ) : Event
     }
 
     data class State(
@@ -426,7 +435,13 @@ sealed interface PreviewType {
         val to: List<AccountWithTransferableResources>,
         val badges: List<Badge> = emptyList(),
         val dApps: List<DAppWithResources> = emptyList()
-    ) : PreviewType
+    ) : PreviewType {
+
+        fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
+            allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
+        }.flatten()
+
+    }
 }
 
 data class AccountWithDepositSettingsChanges(
@@ -483,9 +498,9 @@ sealed interface AccountWithPredictedGuarantee {
 
     fun decrease(): AccountWithPredictedGuarantee {
         val newOffset = (
-            guaranteeOffsetDecimal.toBigDecimal().minus(BigDecimal(0.001))
-                .coerceAtLeast(BigDecimal.ZERO).multiply(BigDecimal(100))
-            ).setScale(1, RoundingMode.HALF_EVEN)
+                guaranteeOffsetDecimal.toBigDecimal().minus(BigDecimal(0.001))
+                    .coerceAtLeast(BigDecimal.ZERO).multiply(BigDecimal(100))
+                ).setScale(1, RoundingMode.HALF_EVEN)
         return when (this) {
             is Other -> copy(guaranteeAmountString = newOffset.toString())
             is Owned -> copy(guaranteeAmountString = newOffset.toString())
@@ -505,7 +520,7 @@ sealed interface AccountWithPredictedGuarantee {
     }
 
     fun isTheSameGuaranteeItem(with: AccountWithPredictedGuarantee): Boolean = address == with.address &&
-        transferableAmount.resourceAddress == with.transferableAmount.resourceAddress
+            transferableAmount.resourceAddress == with.transferableAmount.resourceAddress
 
     data class Owned(
         val account: Network.Account,

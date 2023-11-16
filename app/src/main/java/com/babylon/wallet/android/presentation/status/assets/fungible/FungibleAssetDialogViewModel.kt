@@ -27,13 +27,15 @@ class FungibleAssetDialogViewModel @Inject constructor(
     override fun initialState(): State = State(
         resourceAddress = args.resourceAddress,
         accountAddress = args.accountAddress,
+        isNewlyCreated = args.isNewlyCreated,
         resource = null
     )
 
     init {
         observeResourceUseCase(
             resourceAddress = args.resourceAddress,
-            accountAddress = args.accountAddress
+            accountAddress = args.accountAddress,
+            withDetails = !args.isNewlyCreated
         ).filterIsInstance<Resource.FungibleResource>()
             .onEach { resource ->
                 _state.update { it.copy(resource = resource) }
@@ -52,6 +54,7 @@ class FungibleAssetDialogViewModel @Inject constructor(
     data class State(
         val resourceAddress: String,
         val accountAddress: String?,
+        val isNewlyCreated: Boolean,
         val resource: Resource.FungibleResource?,
         val uiMessage: UiMessage? = null
     ) : UiState

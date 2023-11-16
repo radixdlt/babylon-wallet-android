@@ -30,8 +30,8 @@ fun NavController.transactionReview(requestId: String) {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.transactionReviewScreen(
     onBackClick: () -> Unit,
-    onFungibleClick: (Resource.FungibleResource) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
+    onFungibleClick: (Resource.FungibleResource, Boolean) -> Unit,
+    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
     markAsHighPriority(ROUTE_TRANSACTION_REVIEW)
     composable(

@@ -24,8 +24,8 @@ fun WithdrawAccountContent(
     modifier: Modifier = Modifier,
     from: ImmutableList<AccountWithTransferableResources>,
     showStrokeLine: Boolean,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
+    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
+    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
     if (from.isNotEmpty()) {
         Text(
@@ -50,9 +50,11 @@ fun WithdrawAccountContent(
             from.forEachIndexed { index, account ->
                 TransactionAccountCard(
                     account = account,
-                    onFungibleResourceClick = { onFungibleResourceClick(it) },
-                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem ->
-                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem)
+                    onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
+                        onFungibleResourceClick(fungibleResource, isNewlyCreated)
+                    },
+                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
+                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
                     }
                 )
 
