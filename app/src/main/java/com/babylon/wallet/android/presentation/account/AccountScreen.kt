@@ -260,9 +260,6 @@ private fun AccountScreenContent(
                     },
                     onNonFungibleItemClick = { nftCollection, nftItem ->
                         onNonFungibleItemClicked(nftCollection, nftItem)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
                     },
                     gradient = gradient,
                     onTransferClick = onTransferClick,
@@ -274,9 +271,6 @@ private fun AccountScreenContent(
                     onApplySecuritySettings = onApplySecuritySettings,
                     onPoolUnitClick = {
                         onPoolUnitClick(it)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
                     },
                     onLSUUnitClicked = { lsu, validator ->
                         onLSUUnitClicked(lsu, validator)
