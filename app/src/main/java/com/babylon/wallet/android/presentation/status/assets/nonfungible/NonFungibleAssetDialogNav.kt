@@ -7,13 +7,14 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
+import java.net.URLEncoder
 
 private const val ROUTE = "non_fungible_asset_dialog"
 private const val ARG_RESOURCE_ADDRESS = "resource_address"
 private const val ARG_LOCAL_ID = "local_id"
 
 fun NavController.nonFungibleAssetDialog(resourceAddress: String, localId: String? = null) {
-    val localIdParam = if (localId != null) "&$ARG_LOCAL_ID=$localId" else ""
+    val localIdParam = if (localId != null) "&$ARG_LOCAL_ID=${URLEncoder.encode(localId, Charsets.UTF_8.name())}" else ""
     navigate(route = "$ROUTE?$ARG_RESOURCE_ADDRESS=$resourceAddress$localIdParam")
 }
 
