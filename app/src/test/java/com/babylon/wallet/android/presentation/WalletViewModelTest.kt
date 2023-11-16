@@ -6,8 +6,8 @@ import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
@@ -37,7 +37,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val getAccountsWithAssetsUseCase = mockk<GetAccountsWithAssetsUseCase>()
     private val getBackupStateUseCase = mockk<GetBackupStateUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val getAccountsForSecurityPromptUseCase = mockk<GetAccountsForSecurityPromptUseCase>()
+    private val getAccountsForSecurityPromptUseCase = mockk<GetEntitiesWithSecurityPromptUseCase>()
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
     private val appEventBus = mockk<AppEventBus>()
 
@@ -94,7 +94,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
         viewModel.state.test {
             assertEquals(
-                WalletUiState(isSettingsWarningVisible = true, factorSources = sampleProfile.factorSources),
+                WalletUiState(isBackupWarningVisible = true, factorSources = sampleProfile.factorSources),
                 expectMostRecentItem()
             )
         }

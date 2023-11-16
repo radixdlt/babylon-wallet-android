@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import rdx.works.profile.data.model.BackupState
 
 sealed interface SettingsItem {
@@ -11,7 +12,7 @@ sealed interface SettingsItem {
         data object LinkToConnector : TopLevelSettings
         data object ImportOlympiaWallet : TopLevelSettings
         data object AuthorizedDapps : TopLevelSettings
-        data object Personas : TopLevelSettings
+        data class Personas(val showBackupSecurityPrompt: Boolean = false) : TopLevelSettings
         data object AccountSecurityAndSettings : TopLevelSettings
         data class AppSettings(val showNotificationWarning: Boolean) : TopLevelSettings
 
@@ -21,7 +22,7 @@ sealed interface SettingsItem {
                 LinkToConnector -> R.string.empty
                 ImportOlympiaWallet -> R.string.settings_importFromLegacyWallet
                 AuthorizedDapps -> R.string.settings_authorizedDapps
-                Personas -> R.string.settings_personas
+                is Personas -> R.string.settings_personas
                 AccountSecurityAndSettings -> R.string.settings_accountSecurityAndSettings
                 is AppSettings -> R.string.settings_appSettings
             }
@@ -30,10 +31,10 @@ sealed interface SettingsItem {
         @DrawableRes
         fun getIcon(): Int? {
             return when (this) {
-                AuthorizedDapps -> com.babylon.wallet.android.designsystem.R.drawable.ic_authorized_dapps
-                Personas -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
-                AccountSecurityAndSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_security
-                is AppSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
+                AuthorizedDapps -> DSR.ic_authorized_dapps
+                is Personas -> DSR.ic_personas
+                AccountSecurityAndSettings -> DSR.ic_security
+                is AppSettings -> DSR.ic_app_settings
                 else -> null
             }
         }

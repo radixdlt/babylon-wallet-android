@@ -72,7 +72,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.authorizedDAppsScreen()
                     }
 
-                    SettingsItem.TopLevelSettings.Personas -> {
+                    is SettingsItem.TopLevelSettings.Personas -> {
                         navController.personasScreen()
                     }
 

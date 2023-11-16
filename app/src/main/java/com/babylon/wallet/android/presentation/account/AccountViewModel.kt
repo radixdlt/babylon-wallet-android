@@ -7,8 +7,8 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.usecases.GetAccountsForSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicRestore
@@ -37,7 +37,7 @@ import javax.inject.Inject
 class AccountViewModel @Inject constructor(
     private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getAccountsForSecurityPromptUseCase: GetAccountsForSecurityPromptUseCase,
+    private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
@@ -71,8 +71,8 @@ class AccountViewModel @Inject constructor(
 
     private fun observeSecurityPrompt() {
         viewModelScope.launch {
-            getAccountsForSecurityPromptUseCase().collect { accounts ->
-                val securityPrompt = accounts.find { it.account.address == accountAddress }?.prompt
+            getEntitiesWithSecurityPromptUseCase().collect { accounts ->
+                val securityPrompt = accounts.find { it.entity.address == accountAddress }?.prompt
 
                 _state.update { state ->
                     state.copy(securityPromptType = securityPrompt)

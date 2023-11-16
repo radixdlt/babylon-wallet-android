@@ -247,7 +247,7 @@ fun WalletContentPreview() {
                 state = WalletUiState(
                     accountsWithResources = listOf(sampleAccountWithResources(), sampleAccountWithResources()),
                     loading = false,
-                    isSettingsWarningVisible = true,
+                    isBackupWarningVisible = true,
                     error = null
                 ),
                 onMenuClick = {},

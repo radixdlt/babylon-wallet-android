@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -29,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
@@ -124,6 +126,31 @@ private fun SettingsContent(
                             }
                         }
 
+                        is SettingsItem.TopLevelSettings.Personas -> {
+                            item {
+                                DefaultSettingsItem(
+                                    title = stringResource(id = settingsItem.descriptionRes()),
+                                    subtitleView = if (settingsItem.showBackupSecurityPrompt) {
+                                        { NotBackedUpPersonasWarning(Modifier.fillMaxWidth()) }
+                                    } else {
+                                        null
+                                    },
+                                    iconView = settingsItem.getIcon()?.let { iconRes ->
+                                        {
+                                            Icon(
+                                                modifier = Modifier.size(24.dp),
+                                                painter = painterResource(id = iconRes),
+                                                contentDescription = null
+                                            )
+                                        }
+                                    },
+                                    onClick = {
+                                        onSettingClick(settingsItem)
+                                    }
+                                )
+                            }
+                        }
+
                         else -> {
                             item {
                                 DefaultSettingsItem(
@@ -158,6 +185,26 @@ private fun SettingsContent(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun NotBackedUpPersonasWarning(modifier: Modifier) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+        verticalAlignment = CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error),
+            contentDescription = null,
+            tint = RadixTheme.colors.orange1
+        )
+        Text(
+            text = "Back up seed phrase for your Personas", // TODO crowdin
+            style = RadixTheme.typography.body2Regular,
+            color = RadixTheme.colors.orange1
+        )
     }
 }
 
@@ -279,7 +326,7 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
                 SettingsItem.TopLevelSettings.LinkToConnector,
                 SettingsItem.TopLevelSettings.ImportOlympiaWallet,
                 SettingsItem.TopLevelSettings.AuthorizedDapps,
-                SettingsItem.TopLevelSettings.Personas,
+                SettingsItem.TopLevelSettings.Personas(),
                 SettingsItem.TopLevelSettings.AccountSecurityAndSettings,
                 SettingsItem.TopLevelSettings.AppSettings(showNotificationWarning = true)
             ),
