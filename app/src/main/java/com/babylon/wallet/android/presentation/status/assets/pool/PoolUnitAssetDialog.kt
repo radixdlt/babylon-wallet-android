@@ -282,7 +282,7 @@ private fun FungibleAssetDialogContent(
                             }
                         }
                     )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
                 }
             }
 

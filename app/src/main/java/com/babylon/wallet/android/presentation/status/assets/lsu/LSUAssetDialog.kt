@@ -1,13 +1,15 @@
 @file:OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 
-package com.babylon.wallet.android.presentation.status.assets.fungible
+package com.babylon.wallet.android.presentation.status.assets.lsu
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,40 +27,40 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.resources.isXrd
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.Behaviour
 import com.babylon.wallet.android.presentation.ui.composables.assets.Tag
+import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
+import com.babylon.wallet.android.presentation.ui.composables.resources.ValidatorDetailsItem
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
 @Composable
-fun FungibleAssetDialog(
-    viewModel: FungibleAssetDialogViewModel = hiltViewModel(),
+fun LSUAssetDialog(
+    viewModel: LSUAssetDialogViewModel = hiltViewModel(),
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    FungibleAssetDialogContent(
+    LSUAssetDialogContent(
         state = state,
         onMessageShown = viewModel::onMessageShown,
         onDismiss = onDismiss
@@ -66,15 +68,15 @@ fun FungibleAssetDialog(
 }
 
 @Composable
-private fun FungibleAssetDialogContent(
+private fun LSUAssetDialogContent(
     modifier: Modifier = Modifier,
-    state: FungibleAssetDialogViewModel.State,
+    state: LSUAssetDialogViewModel.State,
     onMessageShown: () -> Unit,
     onDismiss: () -> Unit
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier.fillMaxHeight(fraction = 0.9f),
-        title = state.resource?.name.orEmpty(),
+        title = state.validatorWithStakes?.name().orEmpty(),
         onDismissRequest = onDismiss
     ) {
         Box {
@@ -89,10 +91,10 @@ private fun FungibleAssetDialogContent(
                     ),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (state.resource != null) {
-                    Thumbnail.Fungible(
+                if (state.validatorWithStakes?.liquidStakeUnit != null) {
+                    Thumbnail.LSU(
                         modifier = Modifier.size(104.dp),
-                        token = state.resource
+                        liquidStakeUnit = state.validatorWithStakes.liquidStakeUnit
                     )
                 } else {
                     Box(
@@ -105,30 +107,54 @@ private fun FungibleAssetDialogContent(
                     )
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                if (state.accountAddress != null) {
-                    TokenBalance(
+                TokenBalance(
+                    modifier = Modifier
+                        .fillMaxWidth(fraction = if (state.validatorWithStakes?.liquidStakeUnit == null) 0.5f else 1f)
+                        .radixPlaceholder(visible = state.validatorWithStakes?.liquidStakeUnit == null),
+                    fungibleResource = state.validatorWithStakes?.liquidStakeUnit?.fungibleResource
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                Divider(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = RadixTheme.colors.gray4
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                Text(
+                    text = stringResource(id = R.string.account_poolUnits_details_currentRedeemableValue),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray1
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+                if (state.validatorWithStakes != null) {
+                    ValidatorDetailsItem(
                         modifier = Modifier
-                            .fillMaxWidth(fraction = if (state.resource == null) 0.5f else 1f)
-                            .radixPlaceholder(visible = state.resource == null),
-                        fungibleResource = state.resource
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                        validator = state.validatorWithStakes.validatorDetail
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(24.dp)
+                            .padding(horizontal = RadixTheme.dimensions.paddingMedium)
+                            .radixPlaceholder(visible = true)
                     )
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-                Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+                LSUResourceValue(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                    validatorWithStakes = state.validatorWithStakes,
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                Divider(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = RadixTheme.colors.gray4
+                )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-                if (!state.resource?.description.isNullOrBlank()) {
-                    Text(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                        text = state.resource?.description.orEmpty(),
-                        style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray1
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    Divider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                }
                 AddressRow(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -141,18 +167,39 @@ private fun FungibleAssetDialogContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                    key = stringResource(id = R.string.assetDetails_name)
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(start = RadixTheme.dimensions.paddingDefault)
+                            .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                            .radixPlaceholder(visible = state.validatorWithStakes == null),
+                        text = state.validatorWithStakes?.name().orEmpty(),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray1,
+                        textAlign = TextAlign.End
+                    )
+                }
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                AssetMetadataRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingSmall),
                     key = stringResource(id = R.string.assetDetails_currentSupply)
                 ) {
                     Text(
                         modifier = Modifier
                             .padding(start = RadixTheme.dimensions.paddingDefault)
                             .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
-                            .radixPlaceholder(visible = state.resource?.currentSupply == null),
+                            .radixPlaceholder(
+                                visible = state.validatorWithStakes?.liquidStakeUnit?.fungibleResource?.currentSupply == null
+                            ),
                         text = when {
-                            state.resource?.currentSupply != null -> when (state.resource.currentSupply) {
-                                BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                                else -> state.resource.currentSupply.displayableQuantity()
-                            }
+                            state.validatorWithStakes?.liquidStakeUnit?.fungibleResource?.currentSupply != null ->
+                                when (state.validatorWithStakes.liquidStakeUnit.fungibleResource.currentSupply) {
+                                    BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                                    else -> state.validatorWithStakes.liquidStakeUnit.fungibleResource.currentSupply.displayableQuantity()
+                                }
 
                             else -> ""
                         },
@@ -161,9 +208,30 @@ private fun FungibleAssetDialogContent(
                         textAlign = TextAlign.End
                     )
                 }
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                AssetMetadataRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                    key = stringResource(id = R.string.assetDetails_validator)
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(start = RadixTheme.dimensions.paddingDefault)
+                            .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                            .radixPlaceholder(visible = state.validatorWithStakes == null),
+                        text = state.validatorWithStakes?.validatorDetail?.name.orEmpty(),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray1,
+                        textAlign = TextAlign.End
+                    )
+                }
 
                 Column(modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall)) {
-                    if (state.resource?.behaviours == null || state.resource.behaviours.isNotEmpty()) {
+                    if (state.validatorWithStakes?.liquidStakeUnit?.fungibleResource?.behaviours == null ||
+                        state.validatorWithStakes.liquidStakeUnit.fungibleResource.behaviours.isNotEmpty()
+                    ) {
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -177,7 +245,7 @@ private fun FungibleAssetDialogContent(
                         )
                     }
 
-                    if (state.resource?.behaviours == null) {
+                    if (state.validatorWithStakes?.liquidStakeUnit?.fungibleResource?.behaviours == null) {
                         Box(
                             Modifier
                                 .fillMaxWidth()
@@ -192,16 +260,16 @@ private fun FungibleAssetDialogContent(
                                 .radixPlaceholder(visible = true)
                         )
                     } else {
-                        state.resource.behaviours.forEach { behaviour ->
+                        state.validatorWithStakes.liquidStakeUnit.fungibleResource.behaviours.forEach { behaviour ->
                             Behaviour(
                                 icon = behaviour.icon(),
-                                name = behaviour.name(state.resource.isXrd)
+                                name = behaviour.name()
                             )
                         }
                     }
                 }
 
-                if (!state.resource?.tags.isNullOrEmpty()) {
+                if (!state.validatorWithStakes?.liquidStakeUnit?.fungibleResource?.tags.isNullOrEmpty()) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     Text(
                         modifier = Modifier
@@ -217,7 +285,7 @@ private fun FungibleAssetDialogContent(
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingSmall),
                         content = {
-                            state.resource?.tags?.forEach { tag ->
+                            state.validatorWithStakes?.liquidStakeUnit?.fungibleResource?.tags?.forEach { tag ->
                                 Tag(
                                     modifier = Modifier
                                         .padding(RadixTheme.dimensions.paddingXSmall)
@@ -244,22 +312,50 @@ private fun FungibleAssetDialogContent(
     }
 }
 
-@Preview
 @Composable
-fun FungibleTokenBottomSheetDetailsPreview() {
-    RadixWalletTheme {
-        val resource = remember {
-            SampleDataProvider().sampleFungibleResources().first()
-        }
-        FungibleAssetDialogContent(
-            modifier = Modifier.background(RadixTheme.colors.defaultBackground),
-            state = FungibleAssetDialogViewModel.State(
-                resourceAddress = resource.resourceAddress,
-                accountAddress = null,
-                resource = resource
+fun ValidatorWithStakes.name(): String = liquidStakeUnit.name.ifEmpty {
+    stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
+}
+
+@Composable
+private fun LSUResourceValue(
+    validatorWithStakes: ValidatorWithStakes?,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .assetOutlineBorder()
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingLarge
             ),
-            onMessageShown = {},
-            onDismiss = {}
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+    ) {
+        Thumbnail.Fungible(
+            modifier = Modifier.size(44.dp),
+            token = Resource.FungibleResource(
+                resourceAddress = XrdResource.address(),
+                ownedAmount = null
+            )
+        )
+        Text(
+            modifier = Modifier.weight(1f),
+            text = XrdResource.SYMBOL,
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray1,
+            maxLines = 2
+        )
+
+        Text(
+            modifier = Modifier
+                .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                .radixPlaceholder(visible = validatorWithStakes == null),
+            text = validatorWithStakes?.stakeValue()?.displayableQuantity().orEmpty(),
+            style = RadixTheme.typography.secondaryHeader,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.End,
+            maxLines = 1
         )
     }
 }

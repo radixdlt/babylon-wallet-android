@@ -237,7 +237,7 @@ private fun LiquidStakeUnitItem(
             .throttleClickable {
                 when (action) {
                     is AssetsViewAction.Click -> {
-                        action.onLSUClick(stake.liquidStakeUnit, stake.validatorDetail)
+                        action.onLSUClick(stake.liquidStakeUnit)
                     }
 
                     is AssetsViewAction.Selection -> {

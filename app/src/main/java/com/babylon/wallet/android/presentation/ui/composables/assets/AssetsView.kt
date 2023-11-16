@@ -101,7 +101,7 @@ sealed interface AssetsViewAction {
     data class Click(
         val onFungibleClick: (Resource.FungibleResource) -> Unit,
         val onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
-        val onLSUClick: (LiquidStakeUnit, ValidatorDetail) -> Unit,
+        val onLSUClick: (LiquidStakeUnit) -> Unit,
         val onPoolUnitClick: (PoolUnit) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
         override val onStakesRequest: () -> Unit
@@ -146,7 +146,7 @@ fun AssetsViewWithLoadingAssets() {
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
-                    onLSUClick = { _, _ -> },
+                    onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
                     onStakesRequest = {}
@@ -171,7 +171,7 @@ fun AssetsViewWithEmptyAssets() {
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
-                    onLSUClick = { _, _ -> },
+                    onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
                     onStakesRequest = {}
@@ -305,7 +305,7 @@ fun AssetsViewWithAssets() {
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
-                    onLSUClick = { _, _ -> },
+                    onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
                     onStakesRequest = {}

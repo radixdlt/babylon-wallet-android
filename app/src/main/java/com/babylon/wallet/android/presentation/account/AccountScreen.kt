@@ -20,8 +20,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.ModalBottomSheetLayout
@@ -65,10 +63,8 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.presentation.account.composable.LSUBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
@@ -101,6 +97,7 @@ fun AccountScreen(
     onFungibleResourceClick: (Resource.FungibleResource, Network.Account) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onPoolUnitClick: (PoolUnit, Network.Account) -> Unit,
+    onLSUClick: (LiquidStakeUnit, Network.Account) -> Unit,
     onTransferClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -112,6 +109,7 @@ fun AccountScreen(
                 is AccountEvent.OnFungibleClick -> onFungibleResourceClick(it.resource, it.account)
                 is AccountEvent.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item)
                 is AccountEvent.OnPoolUnitClick -> onPoolUnitClick(it.poolUnit, it.account)
+                is AccountEvent.OnLSUClick -> onLSUClick(it.liquidStakeUnit, it.account)
             }
         }
     }
@@ -155,7 +153,7 @@ private fun AccountScreenContent(
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
-    onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit,
+    onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit
 ) {
@@ -272,11 +270,8 @@ private fun AccountScreenContent(
                     onPoolUnitClick = {
                         onPoolUnitClick(it)
                     },
-                    onLSUUnitClicked = { lsu, validator ->
-                        onLSUUnitClicked(lsu, validator)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
+                    onLSUUnitClicked = { lsu ->
+                        onLSUUnitClicked(lsu)
                     },
                     onNextNFTsPageRequest = onNextNFTsPageRequest,
                     onStakesRequest = onStakesRequest
@@ -301,24 +296,6 @@ private fun SheetContent(
     scope: CoroutineScope,
     bottomSheetState: ModalBottomSheetState
 ) {
-    when (val selected = state.selectedResource) {
-        is SelectedResource.SelectedLSUUnit -> {
-            LSUBottomSheetDetails(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                lsuUnit = selected.lsuUnit,
-                validatorDetail = selected.validatorDetail,
-                onCloseClick = {
-                    scope.launch {
-                        bottomSheetState.hide()
-                    }
-                }
-            )
-        }
-
-        else -> {}
-    }
 }
 
 @Composable
@@ -333,7 +310,7 @@ fun AssetsContent(
     onTransferClick: (String) -> Unit,
     onHistoryClick: () -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
-    onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit,
+    onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit
 ) {
@@ -509,7 +486,7 @@ fun AccountContentPreview() {
                 onNonFungibleItemClicked = { _, _ -> },
                 onApplySecuritySettings = {},
                 onPoolUnitClick = {},
-                onLSUUnitClicked = { _, _ -> },
+                onLSUUnitClicked = {},
                 onNextNFTsPageRequest = {},
                 onStakesRequest = {}
             )

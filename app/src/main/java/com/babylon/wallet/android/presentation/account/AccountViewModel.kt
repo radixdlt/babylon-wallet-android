@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
@@ -151,9 +151,11 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun onLSUUnitClicked(resource: LiquidStakeUnit, validatorDetail: ValidatorDetail) {
-        _state.update { accountUiState ->
-            accountUiState.copy(selectedResource = SelectedResource.SelectedLSUUnit(resource, validatorDetail))
+    fun onLSUUnitClicked(liquidStakeUnit: LiquidStakeUnit) {
+        val account = _state.value.accountWithAssets?.account ?: return
+
+        viewModelScope.launch {
+            sendEvent(AccountEvent.OnLSUClick(liquidStakeUnit = liquidStakeUnit, account = account))
         }
     }
 
@@ -239,6 +241,7 @@ internal sealed interface AccountEvent : OneOffEvent {
         val item: Resource.NonFungibleResource.Item
     ) : AccountEvent
     data class OnPoolUnitClick(val poolUnit: PoolUnit, val account: Network.Account): AccountEvent
+    data class OnLSUClick(val liquidStakeUnit: LiquidStakeUnit, val account: Network.Account): AccountEvent
 }
 
 data class AccountUiState(
@@ -248,7 +251,6 @@ data class AccountUiState(
     private val securityPromptType: SecurityPromptType? = null,
     val epoch: Long? = null,
     val isRefreshing: Boolean = false,
-    val selectedResource: SelectedResource? = null,
     val uiMessage: UiMessage? = null
 ) : UiState {
 
@@ -300,8 +302,4 @@ data class AccountUiState(
             uiMessage = UiMessage.ErrorMessage(error = error)
         )
     }
-}
-
-sealed interface SelectedResource {
-    data class SelectedLSUUnit(val lsuUnit: LiquidStakeUnit, val validatorDetail: ValidatorDetail) : SelectedResource
 }

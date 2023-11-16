@@ -50,6 +50,7 @@ import com.babylon.wallet.android.presentation.settings.personas.personadetail.p
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.status.assets.fungible.fungibleAssetDialog
+import com.babylon.wallet.android.presentation.status.assets.lsu.lsuAssetDialog
 import com.babylon.wallet.android.presentation.status.assets.nonfungible.nonFungibleAssetDialog
 import com.babylon.wallet.android.presentation.status.assets.pool.poolUnitAssetDialog
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
@@ -185,6 +186,9 @@ fun NavigationHost(
                 },
                 onPoolUnitClick = { poolUnit, account ->
                     navController.poolUnitAssetDialog(poolUnit.resourceAddress, account.address)
+                },
+                onLSUClick = { liquidStakeUnit, account ->
+                    navController.lsuAssetDialog(liquidStakeUnit.resourceAddress, account.address)
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
@@ -368,6 +372,11 @@ fun NavigationHost(
             }
         )
         poolUnitAssetDialog(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        lsuAssetDialog(
             onDismiss = {
                 navController.popBackStack()
             }
