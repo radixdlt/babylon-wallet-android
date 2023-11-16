@@ -49,13 +49,13 @@ fun LazyListScope.assetsView(
 ) {
     item {
         Row {
-            Spacer(modifier = Modifier.weight(0.15f))
+            Spacer(modifier = Modifier.weight(0.1f))
             AssetsTabs(
-                modifier = Modifier.weight(0.7f),
+                modifier = Modifier.weight(0.8f),
                 selectedTab = selectedTab,
                 onTabSelected = onTabSelected
             )
-            Spacer(modifier = Modifier.weight(0.15f))
+            Spacer(modifier = Modifier.weight(0.1f))
         }
 
     }
