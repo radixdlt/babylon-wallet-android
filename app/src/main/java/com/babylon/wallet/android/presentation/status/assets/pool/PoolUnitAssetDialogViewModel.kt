@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.usecases.assets.GetPoolUnitDetailsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -33,15 +34,21 @@ class PoolUnitAssetDialogViewModel @Inject constructor(
                 accountAddress = args.accountAddress
             ).onSuccess { poolUnit ->
                 _state.update { it.copy(poolUnit = poolUnit) }
-            }.onFailure {
-                Timber.w(it)
+            }.onFailure { error ->
+                Timber.w(error)
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
         }
+    }
+
+    fun onMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
     }
 
     data class State(
         val resourceAddress: String,
         val accountAddress: String?,
-        val poolUnit: PoolUnit?
+        val poolUnit: PoolUnit?,
+        val uiMessage: UiMessage? = null
     ) : UiState
 }

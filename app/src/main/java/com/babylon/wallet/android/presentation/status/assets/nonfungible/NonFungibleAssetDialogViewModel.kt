@@ -6,14 +6,17 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ObserveResourceUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -37,6 +40,8 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
                     localId = args.localId
                 ).onSuccess { item ->
                     _state.update { it.copy(item = item) }
+                }.onFailure { error ->
+                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
                 }
             }
         }
@@ -46,13 +51,22 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
             .onEach { resource ->
                 _state.update { it.copy(resource = resource) }
             }
+            .catch { error ->
+                Timber.w(error)
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+            }
             .launchIn(viewModelScope)
+    }
+
+    fun onMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
     }
 
     data class State(
         val resourceAddress: String,
         val localId: String?,
         val resource: Resource.NonFungibleResource? = null,
-        val item: Resource.NonFungibleResource.Item? = null
+        val item: Resource.NonFungibleResource.Item? = null,
+        val uiMessage: UiMessage? = null
     ): UiState
 }

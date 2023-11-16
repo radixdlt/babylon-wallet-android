@@ -50,6 +50,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail.NFTAspectRatio
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail.NFTCornerRadius
@@ -70,6 +71,7 @@ fun NonFungibleAssetDialog(
     val state by viewModel.state.collectAsState()
     NonFungibleAssetDialogContent(
         state = state,
+        onMessageShown = viewModel::onMessageShown,
         onDismiss = onDismiss
     )
 }
@@ -78,67 +80,172 @@ fun NonFungibleAssetDialog(
 private fun NonFungibleAssetDialogContent(
     modifier: Modifier = Modifier,
     state: NonFungibleAssetDialogViewModel.State,
+    onMessageShown: () -> Unit,
     onDismiss: () -> Unit
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier.fillMaxHeight(fraction = 0.9f),
         onDismissRequest = onDismiss
     ) {
-        Column(
-            modifier = modifier
-                .background(RadixTheme.colors.defaultBackground)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (state.localId != null) {
-                if (state.item?.imageUrl != null) {
-                    Thumbnail.NFT(
+        Box {
+            Column(
+                modifier = Modifier
+                    .background(RadixTheme.colors.defaultBackground)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (state.localId != null) {
+                    if (state.item?.imageUrl != null) {
+                        Thumbnail.NFT(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                            nft = state.item,
+                            cropped = false
+                        )
+                    } else if (state.item == null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(NFTAspectRatio)
+                                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                .radixPlaceholder(
+                                    visible = true,
+                                    shape = RoundedCornerShape(NFTCornerRadius)
+                                )
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+                    AssetMetadataRow(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        nft = state.item,
-                        cropped = false
-                    )
-                } else if (state.item == null) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(NFTAspectRatio)
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                            .radixPlaceholder(
-                                visible = true,
-                                shape = RoundedCornerShape(NFTCornerRadius)
+                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                        key = stringResource(id = R.string.assetDetails_NFTDetails_id)
+                    ) {
+                        if (state.item != null) {
+                            ActionableAddressView(
+                                address = state.item.globalAddress,
+                                textStyle = RadixTheme.typography.body1HighImportance,
+                                textColor = RadixTheme.colors.gray1
                             )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .size(
+                                        width = RadixTheme.dimensions.paddingXXXLarge * 2,
+                                        height = 16.dp
+                                    )
+                                    .radixPlaceholder(visible = true)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    if (state.item != null) {
+                        state.item.nameMetadataItem?.name?.let { name ->
+                            AssetMetadataRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                                key = stringResource(id = R.string.assetDetails_name)
+                            ) {
+                                Text(
+                                    text = name,
+                                    style = RadixTheme.typography.body1HighImportance,
+                                    color = RadixTheme.colors.gray1
+                                )
+                            }
+                        }
+
+                        state.item.remainingMetadata.forEach { field ->
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                            AssetMetadataRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                                key = field.key
+                            ) {
+                                Text(
+                                    text = field.value,
+                                    style = RadixTheme.typography.body1HighImportance,
+                                    color = RadixTheme.colors.gray1
+                                )
+                            }
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(16.dp)
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                                .radixPlaceholder(visible = true)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
+
+                if (state.localId != null) {
+                    Divider(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(top = RadixTheme.dimensions.paddingDefault),
+                        color = RadixTheme.colors.gray4
                     )
                 }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-                AssetMetadataRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                    key = stringResource(id = R.string.assetDetails_NFTDetails_id)
-                ) {
-                    if (state.item != null) {
-                        ActionableAddressView(
-                            address = state.item.globalAddress,
-                            textStyle = RadixTheme.typography.body1HighImportance,
-                            textColor = RadixTheme.colors.gray1
+                GrayBackgroundWrapper(contentPadding = PaddingValues(bottom = RadixTheme.dimensions.paddingXLarge)) {
+                    if (state.resource != null) {
+                        Thumbnail.NonFungible(
+                            modifier = Modifier
+                                .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                                .size(104.dp),
+                            collection = state.resource,
+                            shape = CircleShape
                         )
                     } else {
                         Box(
                             modifier = Modifier
-                                .size(
-                                    width = RadixTheme.dimensions.paddingXXXLarge * 2,
-                                    height = 16.dp
+                                .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                                .size(104.dp)
+                                .radixPlaceholder(
+                                    visible = true,
+                                    shape = CircleShape
                                 )
-                                .radixPlaceholder(visible = true)
                         )
                     }
-                }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                if (state.item != null) {
-                    state.item.nameMetadataItem?.name?.let { name ->
+
+                    Divider(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                        color = RadixTheme.colors.gray4
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+                    if (!state.resource?.description.isNullOrBlank()) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                            text = state.resource?.description.orEmpty(),
+                            style = RadixTheme.typography.body2Regular,
+                            color = RadixTheme.colors.gray1
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                        Divider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                            color = RadixTheme.colors.gray4
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    }
+                    AddressRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                        address = state.resourceAddress
+                    )
+                    if (!state.resource?.name.isNullOrBlank()) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                         AssetMetadataRow(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -146,214 +253,117 @@ private fun NonFungibleAssetDialogContent(
                             key = stringResource(id = R.string.assetDetails_name)
                         ) {
                             Text(
-                                text = name,
+                                text = state.resource?.name.orEmpty(),
                                 style = RadixTheme.typography.body1HighImportance,
                                 color = RadixTheme.colors.gray1
                             )
                         }
                     }
-
-                    state.item.remainingMetadata.forEach { field ->
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-                        AssetMetadataRow(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                            key = field.key
-                        ) {
-                            Text(
-                                text = field.value,
-                                style = RadixTheme.typography.body1HighImportance,
-                                color = RadixTheme.colors.gray1
-                            )
-                        }
-                    }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(16.dp)
-                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
-                            .radixPlaceholder(visible = true)
-                    )
-                }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-            }
-
-            if (state.localId != null) {
-                Divider(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = RadixTheme.dimensions.paddingDefault),
-                    color = RadixTheme.colors.gray4
-                )
-            }
-            GrayBackgroundWrapper(contentPadding = PaddingValues(bottom = RadixTheme.dimensions.paddingXLarge)) {
-                if (state.resource != null) {
-                    Thumbnail.NonFungible(
-                        modifier = Modifier
-                            .padding(vertical = RadixTheme.dimensions.paddingDefault)
-                            .size(104.dp),
-                        collection = state.resource,
-                        shape = CircleShape
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .padding(vertical = RadixTheme.dimensions.paddingDefault)
-                            .size(104.dp)
-                            .radixPlaceholder(
-                                visible = true,
-                                shape = CircleShape
-                            )
-                    )
-                }
-
-                Divider(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    color = RadixTheme.colors.gray4
-                )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-                if (!state.resource?.description.isNullOrBlank()) {
-                    Text(
-                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                        text = state.resource?.description.orEmpty(),
-                        style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray1
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    Divider(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                        color = RadixTheme.colors.gray4
-                    )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                }
-                AddressRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                    address = state.resourceAddress
-                )
-                if (!state.resource?.name.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
                     AssetMetadataRow(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                        key = stringResource(id = R.string.assetDetails_name)
+                        key = stringResource(id = R.string.assetDetails_currentSupply)
                     ) {
                         Text(
-                            text = state.resource?.name.orEmpty(),
-                            style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray1
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-                AssetMetadataRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                    key = stringResource(id = R.string.assetDetails_currentSupply)
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(start = RadixTheme.dimensions.paddingDefault)
-                            .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
-                            .radixPlaceholder(visible = state.resource?.currentSupply == null),
-                        text = when {
-                            state.resource?.currentSupply != null -> when (state.resource.currentSupply) {
-                                0 -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                                else -> state.resource.currentSupply.toString()
-                            }
-
-                            else -> ""
-                        },
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.End
-                    )
-                }
-
-                Column(modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge)) {
-                    if (state.resource?.behaviours == null || state.resource.behaviours.isNotEmpty()) {
-                        Text(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    top = RadixTheme.dimensions.paddingDefault,
-                                    bottom = RadixTheme.dimensions.paddingSmall
-                                ),
-                            text = stringResource(id = R.string.assetDetails_behavior),
-                            style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.gray2
+                                .padding(start = RadixTheme.dimensions.paddingDefault)
+                                .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                                .radixPlaceholder(visible = state.resource?.currentSupply == null),
+                            text = when {
+                                state.resource?.currentSupply != null -> when (state.resource.currentSupply) {
+                                    0 -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                                    else -> state.resource.currentSupply.toString()
+                                }
+
+                                else -> ""
+                            },
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray1,
+                            textAlign = TextAlign.End
                         )
                     }
 
-                    if (state.resource?.behaviours == null) {
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(RadixTheme.dimensions.paddingLarge)
-                                .radixPlaceholder(visible = true)
-                        )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .height(RadixTheme.dimensions.paddingLarge)
-                                .radixPlaceholder(visible = true)
-                        )
-                    } else {
-                        state.resource.behaviours.forEach { behaviour ->
-                            Behaviour(
-                                icon = behaviour.icon(),
-                                name = behaviour.name()
+                    Column(modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge)) {
+                        if (state.resource?.behaviours == null || state.resource.behaviours.isNotEmpty()) {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        top = RadixTheme.dimensions.paddingDefault,
+                                        bottom = RadixTheme.dimensions.paddingSmall
+                                    ),
+                                text = stringResource(id = R.string.assetDetails_behavior),
+                                style = RadixTheme.typography.body1Regular,
+                                color = RadixTheme.colors.gray2
                             )
                         }
-                    }
-                }
 
-                if (!state.resource?.tags.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                        text = stringResource(id = R.string.assetDetails_tags),
-                        style = RadixTheme.typography.body1Regular,
-                        color = RadixTheme.colors.gray2
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    FlowRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                        content = {
-                            state.resource?.tags?.forEach { tag ->
-                                Tag(
-                                    modifier = Modifier
-                                        .padding(RadixTheme.dimensions.paddingXSmall)
-                                        .border(
-                                            width = 1.dp,
-                                            color = RadixTheme.colors.gray4,
-                                            shape = RadixTheme.shapes.roundedTag
-                                        )
-                                        .padding(RadixTheme.dimensions.paddingSmall),
-                                    tag = tag
+                        if (state.resource?.behaviours == null) {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(RadixTheme.dimensions.paddingLarge)
+                                    .radixPlaceholder(visible = true)
+                            )
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(RadixTheme.dimensions.paddingLarge)
+                                    .radixPlaceholder(visible = true)
+                            )
+                        } else {
+                            state.resource.behaviours.forEach { behaviour ->
+                                Behaviour(
+                                    icon = behaviour.icon(),
+                                    name = behaviour.name()
                                 )
                             }
                         }
-                    )
+                    }
+
+                    if (!state.resource?.tags.isNullOrEmpty()) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                            text = stringResource(id = R.string.assetDetails_tags),
+                            style = RadixTheme.typography.body1Regular,
+                            color = RadixTheme.colors.gray2
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                        FlowRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                            content = {
+                                state.resource?.tags?.forEach { tag ->
+                                    Tag(
+                                        modifier = Modifier
+                                            .padding(RadixTheme.dimensions.paddingXSmall)
+                                            .border(
+                                                width = 1.dp,
+                                                color = RadixTheme.colors.gray4,
+                                                shape = RadixTheme.shapes.roundedTag
+                                            )
+                                            .padding(RadixTheme.dimensions.paddingSmall),
+                                        tag = tag
+                                    )
+                                }
+                            }
+                        )
+                    }
                 }
             }
+
+            SnackbarUiMessageHandler(
+                message = state.uiMessage,
+                onMessageShown = onMessageShown
+            )
         }
     }
 }
