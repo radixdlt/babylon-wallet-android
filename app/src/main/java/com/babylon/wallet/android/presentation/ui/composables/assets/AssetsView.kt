@@ -31,8 +31,8 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
+import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import java.math.BigDecimal
 
 @Suppress("LongParameterList")
