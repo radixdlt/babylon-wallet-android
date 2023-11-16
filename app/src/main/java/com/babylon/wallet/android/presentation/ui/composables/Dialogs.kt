@@ -103,6 +103,7 @@ fun BottomDialogDragHandle(
 ) {
     Box(modifier = modifier) {
         IconButton(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
             onClick = onDismissRequest
         ) {
             Icon(
