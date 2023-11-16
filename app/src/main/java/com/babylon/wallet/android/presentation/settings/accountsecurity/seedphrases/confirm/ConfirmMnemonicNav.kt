@@ -1,15 +1,15 @@
 package com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm
 
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
-import com.google.accompanist.navigation.animation.composable
 
 private const val ARGS_FACTOR_SOURCE_ID = "factorSourceId"
 private const val ARGS_MNEMONIC_SIZE = "mnemonicSize"
@@ -52,10 +52,10 @@ fun NavGraphBuilder.confirmSeedPhrase(
             }
         ),
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Up)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Down)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {
         ConfirmMnemonicScreen(
