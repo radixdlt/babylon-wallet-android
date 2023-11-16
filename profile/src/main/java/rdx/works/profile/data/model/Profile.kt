@@ -70,14 +70,13 @@ data class Profile(
                 factorSources
                     .filterIsInstance<DeviceFactorSource>()
                     .first { deviceFactorSource ->
-                        deviceFactorSource.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon &&
-                            deviceFactorSource.common.flags.any { it == FactorSourceFlag.Main }
+                        deviceFactorSource.isBabylon && deviceFactorSource.common.flags.any { it == FactorSourceFlag.Main }
                     }
             } else {
                 factorSources
                     .filterIsInstance<DeviceFactorSource>()
                     .first { deviceFactorSource ->
-                        deviceFactorSource.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon
+                        deviceFactorSource.isBabylon
                     }
             }
 

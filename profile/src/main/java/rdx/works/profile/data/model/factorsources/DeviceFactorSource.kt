@@ -59,7 +59,8 @@ data class DeviceFactorSource(
             model = model,
             name = name,
             isOlympiaCompatible = true,
-            createdAt = createdAt
+            createdAt = createdAt,
+            isMain = false
         )
 
         @Suppress("LongParameterList")

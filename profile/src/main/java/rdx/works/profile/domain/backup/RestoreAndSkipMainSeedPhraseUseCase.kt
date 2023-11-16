@@ -1,7 +1,7 @@
 package rdx.works.profile.domain.backup
 
-import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.extensions.addMainBabylonDeviceFactorSource
 import rdx.works.profile.data.model.extensions.changeGateway
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.repository.BackupProfileRepository
@@ -26,14 +26,16 @@ class RestoreAndSkipMainSeedPhraseUseCase @Inject constructor(
         if (profile != null) {
             val deviceInfo = deviceInfoRepository.getDeviceInfo()
             val mnemonic = mnemonicRepository()
-            val factorSource = DeviceFactorSource.babylon(
+            val deviceFactorSource = DeviceFactorSource.babylon(
                 mnemonicWithPassphrase = mnemonic,
                 model = deviceInfo.model,
                 name = deviceInfo.name,
                 createdAt = Instant.now(),
-                isMain = !profile.hasMainBabylonDeviceFactorSource
+                isMain = true
             )
-            val updatedProfile = profile.copy(factorSources = (listOf(factorSource) + profile.factorSources).toIdentifiedArrayList())
+            val updatedProfile = profile.addMainBabylonDeviceFactorSource(
+                mainBabylonFactorSource = deviceFactorSource
+            )
 
             profileRepository.saveProfile(updatedProfile)
         }

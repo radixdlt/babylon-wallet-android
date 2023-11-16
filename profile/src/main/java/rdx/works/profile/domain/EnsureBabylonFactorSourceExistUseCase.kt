@@ -1,8 +1,8 @@
 package rdx.works.profile.domain
 
 import kotlinx.coroutines.flow.first
-import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.extensions.addMainBabylonDeviceFactorSource
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -22,13 +22,16 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         if (profile.babylonDeviceFactorSourceExist) return profile
         val deviceInfo = deviceInfoRepository.getDeviceInfo()
         val mnemonic = mnemonicRepository()
-        val factorSource = DeviceFactorSource.babylon(
+        val deviceFactorSource = DeviceFactorSource.babylon(
             mnemonicWithPassphrase = mnemonic,
             model = deviceInfo.model,
             name = deviceInfo.name,
-            createdAt = Instant.now()
+            createdAt = Instant.now(),
+            isMain = true
         )
-        val updatedProfile = profile.copy(factorSources = (listOf(factorSource) + profile.factorSources).toIdentifiedArrayList())
+        val updatedProfile = profile.addMainBabylonDeviceFactorSource(
+            mainBabylonFactorSource = deviceFactorSource
+        )
         profileRepository.saveProfile(updatedProfile)
         return updatedProfile
     }
