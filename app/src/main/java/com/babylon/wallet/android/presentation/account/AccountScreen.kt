@@ -2,7 +2,6 @@
 
 package com.babylon.wallet.android.presentation.account
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,14 +20,10 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Surface
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -38,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,8 +74,6 @@ import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -164,21 +155,6 @@ private fun AccountScreenContent(
         AccountGradientList[appearanceId % AccountGradientList.size]
     }.toPersistentList()
 
-    val bottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
-    )
-    val scope = rememberCoroutineScope()
-    BackHandler {
-        if (bottomSheetState.isVisible) {
-            scope.launch {
-                bottomSheetState.hide()
-            }
-        } else {
-            onBackClick()
-        }
-    }
-
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
         message = state.uiMessage,
@@ -186,116 +162,91 @@ private fun AccountScreenContent(
         onMessageShown = onMessageShown
     )
 
-    ModalBottomSheetLayout(
+    val pullToRefreshState = rememberPullRefreshState(
+        refreshing = state.isRefreshing,
+        onRefresh = onRefresh,
+        refreshingOffset = 116.dp
+    )
+    val lazyListState = rememberLazyListState()
+    Box(
         modifier = modifier
+            .pullRefresh(pullToRefreshState)
             .background(Brush.horizontalGradient(gradient))
-            .statusBarsPadding(),
-        sheetState = bottomSheetState,
-        sheetBackgroundColor = RadixTheme.colors.defaultBackground,
-        scrimColor = Color.Black.copy(alpha = 0.3f),
-        sheetShape = RadixTheme.shapes.roundedRectTopDefault,
-        sheetContent = {
-            SheetContent(
-                modifier = Modifier.navigationBarsPadding(),
-                state = state,
-                scope = scope,
-                bottomSheetState = bottomSheetState
-            )
-        },
+            .statusBarsPadding()
     ) {
-        val pullToRefreshState = rememberPullRefreshState(
-            refreshing = state.isRefreshing,
-            onRefresh = onRefresh,
-            refreshingOffset = 116.dp
-        )
-        val lazyListState = rememberLazyListState()
-        Box(
-            modifier = Modifier.pullRefresh(pullToRefreshState)
-        ) {
-            Scaffold(
-                modifier = Modifier,
-                topBar = {
-                    RadixCenteredTopAppBar(
-                        title = state.accountWithAssets?.account?.displayName.orEmpty(),
-                        onBackClick = onBackClick,
-                        contentColor = RadixTheme.colors.white,
-                        containerColor = Color.Transparent,
-                        actions = {
-                            // TODO revisit after compose update and remove if library update fixes the issue
-                            // https://radixdlt.atlassian.net/browse/ABW-2504
-                            ThrottleIconButton(
-                                onClick = {
-                                    onAccountPreferenceClick(state.accountWithAssets?.account?.address.orEmpty())
-                                },
-                                thresholdMs = 1000L
-                            ) {
-                                Icon(
-                                    imageVector = ImageVector.vectorResource(
-                                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
-                                    ),
-                                    tint = RadixTheme.colors.white,
-                                    contentDescription = "account settings"
-                                )
-                            }
+        Scaffold(
+            modifier = Modifier,
+            topBar = {
+                RadixCenteredTopAppBar(
+                    title = state.accountWithAssets?.account?.displayName.orEmpty(),
+                    onBackClick = onBackClick,
+                    contentColor = RadixTheme.colors.white,
+                    containerColor = Color.Transparent,
+                    actions = {
+                        // TODO revisit after compose update and remove if library update fixes the issue
+                        // https://radixdlt.atlassian.net/browse/ABW-2504
+                        ThrottleIconButton(
+                            onClick = {
+                                onAccountPreferenceClick(state.accountWithAssets?.account?.address.orEmpty())
+                            },
+                            thresholdMs = 1000L
+                        ) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(
+                                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
+                                ),
+                                tint = RadixTheme.colors.white,
+                                contentDescription = "account settings"
+                            )
                         }
-                    )
+                    }
+                )
+            },
+            containerColor = Color.Transparent,
+            floatingActionButtonPosition = FabPosition.Center,
+            snackbarHost = {
+                RadixSnackbarHost(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                    hostState = snackBarHostState
+                )
+            }
+        ) { innerPadding ->
+            AssetsContent(
+                modifier = Modifier.padding(innerPadding),
+                state = state,
+                lazyListState = lazyListState,
+                onFungibleTokenClick = {
+                    onFungibleItemClicked(it)
                 },
-                containerColor = Color.Transparent,
-                floatingActionButtonPosition = FabPosition.Center,
-                snackbarHost = {
-                    RadixSnackbarHost(
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                        hostState = snackBarHostState
-                    )
-                }
-            ) { innerPadding ->
-                AssetsContent(
-                    modifier = Modifier.padding(innerPadding),
-                    state = state,
-                    lazyListState = lazyListState,
-                    onFungibleTokenClick = {
-                        onFungibleItemClicked(it)
-                    },
-                    onNonFungibleItemClick = { nftCollection, nftItem ->
-                        onNonFungibleItemClicked(nftCollection, nftItem)
-                    },
-                    gradient = gradient,
-                    onTransferClick = onTransferClick,
-                    onHistoryClick = {
+                onNonFungibleItemClick = { nftCollection, nftItem ->
+                    onNonFungibleItemClicked(nftCollection, nftItem)
+                },
+                gradient = gradient,
+                onTransferClick = onTransferClick,onHistoryClick = {
                         state.historyDashboardUrl?.let { url ->
                             context.openUrl(url)
                         }
                     },
-                    onApplySecuritySettings = onApplySecuritySettings,
-                    onPoolUnitClick = {
-                        onPoolUnitClick(it)
-                    },
-                    onLSUUnitClicked = { lsu ->
-                        onLSUUnitClicked(lsu)
-                    },
-                    onNextNFTsPageRequest = onNextNFTsPageRequest,
-                    onStakesRequest = onStakesRequest
-                )
-            }
-
-            PullRefreshIndicator(
-                modifier = Modifier.align(Alignment.TopCenter),
-                refreshing = state.isRefreshing,
-                state = pullToRefreshState,
-                contentColor = RadixTheme.colors.gray1,
-                backgroundColor = RadixTheme.colors.defaultBackground,
+                onApplySecuritySettings = onApplySecuritySettings,
+                onPoolUnitClick = {
+                    onPoolUnitClick(it)
+                },
+                onLSUUnitClicked = { lsu ->
+                    onLSUUnitClicked(lsu)
+                },
+                onNextNFTsPageRequest = onNextNFTsPageRequest,
+                onStakesRequest = onStakesRequest
             )
         }
-    }
-}
 
-@Composable
-private fun SheetContent(
-    modifier: Modifier = Modifier,
-    state: AccountUiState,
-    scope: CoroutineScope,
-    bottomSheetState: ModalBottomSheetState
-) {
+        PullRefreshIndicator(
+            modifier = Modifier.align(Alignment.TopCenter),
+            refreshing = state.isRefreshing,
+            state = pullToRefreshState,
+            contentColor = RadixTheme.colors.gray1,
+            backgroundColor = RadixTheme.colors.defaultBackground,
+        )
+    }
 }
 
 @Composable
