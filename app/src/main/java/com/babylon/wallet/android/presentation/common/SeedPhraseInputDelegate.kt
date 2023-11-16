@@ -38,7 +38,8 @@ class SeedPhraseInputDelegate(
             state.copy(
                 seedPhraseWords = seedPhraseWords.mapWhen(predicate = { wordsToFillIndexes.contains(it.index) }, mutation = { word ->
                     word.copy(state = SeedPhraseWord.State.Empty, value = "")
-                }).toPersistentList(), blankIndices = wordsToFillIndexes
+                }).toPersistentList(),
+                blankIndices = wordsToFillIndexes
             )
         }
     }
