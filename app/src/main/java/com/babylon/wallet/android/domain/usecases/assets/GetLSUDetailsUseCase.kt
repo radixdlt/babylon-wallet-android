@@ -29,7 +29,7 @@ class GetLSUDetailsUseCase @Inject constructor(
         }.then { stake ->
             val validatorAddress = stake.validatorAddress
                 ?: return@then Result.failure(RuntimeException("Resource $resourceAddress has no associated validator"))
-            stateRepository.getValidator(validatorAddress = validatorAddress, accountAddress = accountAddress).map { validator ->
+            stateRepository.getValidator(validatorAddress = validatorAddress).map { validator ->
                 ValidatorWithStakes(
                     validatorDetail = validator,
                     liquidStakeUnit = LiquidStakeUnit(stake)

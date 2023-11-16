@@ -49,9 +49,9 @@ interface StateRepository {
 
     suspend fun getResources(addresses: Set<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>>
 
-    suspend fun getPool(poolAddress: String, accountAddress: String): Result<Pool>
+    suspend fun getPool(poolAddress: String): Result<Pool>
 
-    suspend fun getValidator(validatorAddress: String, accountAddress: String): Result<ValidatorDetail>
+    suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail>
 
     suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
 
@@ -262,11 +262,9 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getPool(poolAddress: String, accountAddress: String): Result<Pool> = withContext(dispatcher) {
+    override suspend fun getPool(poolAddress: String): Result<Pool> = withContext(dispatcher) {
         runCatching {
-            val stateVersion = stateDao.getAccountStateVersion(accountAddress = accountAddress)
-                ?: error("Account $accountAddress has no state version")
-
+            val stateVersion = stateDao.getLatestStateVersion() ?: error("No cached state version found")
             stateDao.getCachedPools(
                 poolAddresses = setOf(poolAddress),
                 atStateVersion = stateVersion
@@ -274,11 +272,9 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getValidator(validatorAddress: String, accountAddress: String): Result<ValidatorDetail> = withContext(dispatcher) {
+    override suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail> = withContext(dispatcher) {
         runCatching {
-            val stateVersion = stateDao.getAccountStateVersion(accountAddress = accountAddress)
-                ?: error("Account $accountAddress has no state version")
-
+            val stateVersion = stateDao.getLatestStateVersion() ?: error("No cached state version found")
             val validator = stateDao.getValidators(addresses = setOf(validatorAddress), atStateVersion = stateVersion).firstOrNull()
             if (validator == null) {
                 val details = stateApi.fetchValidators(

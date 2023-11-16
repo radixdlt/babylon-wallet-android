@@ -45,6 +45,13 @@ interface StateDao {
     )
     fun getAccountStateVersion(accountAddress: String): Long?
 
+    @Query(
+        """
+        SELECT MAX(state_version) FROM AccountEntity
+    """
+    )
+    fun getLatestStateVersion(): Long?
+
     @Suppress("UnsafeCallOnNullableType")
     @Transaction
     fun updatePools(pools: Map<ResourceEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>) {
