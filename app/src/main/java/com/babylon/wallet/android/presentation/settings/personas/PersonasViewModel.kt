@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.presentation.settings.personas
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -17,6 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.babylonDeviceFactorSource
@@ -37,13 +40,13 @@ class PersonasViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 getProfileUseCase.personasOnCurrentNetwork,
-                getEntitiesWithSecurityPromptUseCase.shouldShowPersonaSecurityPrompt
-            ) { personas, shouldShowSecurityPrompt ->
+                getEntitiesWithSecurityPromptUseCase()
+            ) { personas, entitiesWithSecurityPrompts ->
                 val babylonFactorSource = getProfileUseCase.babylonDeviceFactorSource()
                 _state.update {
                     it.copy(
                         personas = personas.toPersistentList(),
-                        showSecurityPrompt = shouldShowSecurityPrompt,
+                        entitiesWithSecurityPrompts = entitiesWithSecurityPrompts,
                         babylonFactorSource = babylonFactorSource
                     )
                 }
@@ -60,8 +63,19 @@ class PersonasViewModel @Inject constructor(
     data class PersonasUiState(
         val babylonFactorSource: DeviceFactorSource? = null,
         val personas: ImmutableList<Network.Persona> = persistentListOf(),
-        val showSecurityPrompt: Boolean = false
-    ) : UiState
+        val entitiesWithSecurityPrompts: List<EntityWithSecurityPrompt> = emptyList()
+    ) : UiState {
+        fun securityPrompt(forEntity: Entity): SecurityPromptType? {
+            val prompt = entitiesWithSecurityPrompts.find {
+                it.entity.address == forEntity.address
+            }?.prompt
+            return if (prompt == SecurityPromptType.NEEDS_BACKUP) {
+                prompt
+            } else {
+                null
+            }
+        }
+    }
 
     sealed interface PersonasEvent : OneOffEvent {
         data class CreatePersona(val firstPersonaCreated: Boolean) : PersonasEvent

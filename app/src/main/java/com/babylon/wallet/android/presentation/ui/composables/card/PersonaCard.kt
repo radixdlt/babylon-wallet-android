@@ -31,6 +31,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -39,9 +40,11 @@ fun PersonaCard(
     modifier: Modifier = Modifier,
     persona: Network.Persona,
     showChevron: Boolean = true,
-    elevation: Dp = 8.dp
+    elevation: Dp = 8.dp,
+    onApplySecuritySettings: (() -> Unit)? = null,
+    displaySecurityPrompt: Boolean = false
 ) {
-    Row(
+    Column(
         modifier = modifier
             .shadow(elevation = elevation, shape = RadixTheme.shapes.roundedRectMedium)
             .clip(RadixTheme.shapes.roundedRectMedium)
@@ -51,28 +54,41 @@ fun PersonaCard(
                 horizontal = RadixTheme.dimensions.paddingLarge,
                 vertical = RadixTheme.dimensions.paddingDefault
             ),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
     ) {
-        Thumbnail.Persona(
-            modifier = Modifier.size(44.dp),
-            persona = persona
-        )
-        Text(
-            modifier = Modifier.weight(1f),
-            text = persona.displayName,
-            style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
-        if (showChevron) {
-            Icon(
-                painter = painterResource(
-                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
-                ),
-                contentDescription = null,
-                tint = RadixTheme.colors.gray1
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            Thumbnail.Persona(
+                modifier = Modifier.size(44.dp),
+                persona = persona
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = persona.displayName,
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (showChevron) {
+                Icon(
+                    painter = painterResource(
+                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
+                    ),
+                    contentDescription = null,
+                    tint = RadixTheme.colors.gray1
+                )
+            }
+        }
+        if (displaySecurityPrompt) {
+            ApplySecuritySettingsLabel(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onApplySecuritySettings,
+                text = "Please write down this Persona's seed phrase",
+                labelColor = RadixTheme.colors.backgroundAlternate.copy(alpha = 0.3f),
             )
         }
     }
@@ -133,7 +149,6 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
 fun DAppLoginContentPreview() {
     RadixWalletTheme {
         PersonaCard(persona = SampleDataProvider().samplePersona())
-
         PersonaSelectableCard(
             modifier = Modifier
                 .fillMaxWidth()

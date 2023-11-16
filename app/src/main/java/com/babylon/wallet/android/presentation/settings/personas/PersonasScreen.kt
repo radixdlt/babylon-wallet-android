@@ -30,16 +30,14 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.settings.personas.PersonasViewModel.PersonasEvent
-import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun PersonasScreen(
@@ -60,17 +58,16 @@ fun PersonasScreen(
         }
     }
     PersonasContent(
-        personas = state.personas,
+        state = state,
         modifier = modifier,
         onBackClick = onBackClick,
         createNewPersona = viewModel::onCreatePersona,
         onPersonaClick = onPersonaClick,
-        showSecurityPrompt = state.showSecurityPrompt,
-        onApplySecuritySettings = {
-            state.babylonFactorSource?.id?.let { babylonFactorSourceID ->
+        onApplySecuritySettings = { factorSourceID ->
+            (factorSourceID as? FactorSource.FactorSourceID.FromHash)?.let { id ->
                 context.biometricAuthenticate { authenticated ->
                     if (authenticated) {
-                        onNavigateToMnemonicBackup(babylonFactorSourceID)
+                        onNavigateToMnemonicBackup(id)
                     }
                 }
             }
@@ -80,13 +77,12 @@ fun PersonasScreen(
 
 @Composable
 fun PersonasContent(
-    personas: ImmutableList<Network.Persona>,
+    state: PersonasViewModel.PersonasUiState,
     modifier: Modifier,
     onBackClick: () -> Unit,
     createNewPersona: () -> Unit,
     onPersonaClick: (String) -> Unit,
-    showSecurityPrompt: Boolean,
-    onApplySecuritySettings: (() -> Unit)?
+    onApplySecuritySettings: ((FactorSource.FactorSourceID) -> Unit)
 ) {
     Scaffold(
         modifier = modifier,
@@ -119,29 +115,22 @@ fun PersonasContent(
                 ),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                if (showSecurityPrompt) {
-                    item {
-                        ApplySecuritySettingsLabel(
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = onApplySecuritySettings,
-                            text = "Please write down this Persona's seed phrase",
-                            labelColor = RadixTheme.colors.backgroundAlternate.copy(alpha = 0.3f),
-                        )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    }
-                }
 //                item {
 //                InfoLink( // TODO enable it when we have a link
 //                    stringResource(R.string.personas_whatIsPersona),
 //                    modifier = Modifier.fillMaxWidth()
 //                )
 //                }
-                itemsIndexed(items = personas) { _, personaItem ->
+                itemsIndexed(items = state.personas) { _, personaItem ->
                     PersonaCard(
                         modifier = Modifier.throttleClickable {
                             onPersonaClick(personaItem.address)
                         },
                         persona = personaItem,
+                        displaySecurityPrompt = state.securityPrompt(personaItem) != null,
+                        onApplySecuritySettings = {
+                            onApplySecuritySettings(personaItem.factorSourceId())
+                        }
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
@@ -164,23 +153,23 @@ fun PersonasContent(
 fun PersonasScreenPreview() {
     RadixWalletTheme {
         PersonasContent(
-            personas = listOf(
-                SampleDataProvider().samplePersona(
-                    personaAddress = "address1",
-                    personaName = "persona1"
-                ),
-                SampleDataProvider().samplePersona(
-                    personaAddress = "address2",
-                    personaName = "persona2"
-                ),
-            ).toImmutableList(),
+            PersonasViewModel.PersonasUiState(
+                personas = listOf(
+                    SampleDataProvider().samplePersona(
+                        personaAddress = "address1",
+                        personaName = "persona1"
+                    ),
+                    SampleDataProvider().samplePersona(
+                        personaAddress = "address2",
+                        personaName = "persona2"
+                    ),
+                ).toImmutableList()
+            ),
             modifier = Modifier,
             onBackClick = {},
             createNewPersona = {},
             onPersonaClick = {},
-            showSecurityPrompt = true,
-            onApplySecuritySettings = {}
-        )
+        ) {}
     }
 }
 
@@ -189,13 +178,11 @@ fun PersonasScreenPreview() {
 fun PersonasScreenEmptyPreview() {
     RadixWalletTheme {
         PersonasContent(
-            personas = persistentListOf(),
+            state = PersonasViewModel.PersonasUiState(personas = persistentListOf()),
             modifier = Modifier,
             onBackClick = {},
             createNewPersona = {},
-            onPersonaClick = {},
-            showSecurityPrompt = false,
-            onApplySecuritySettings = {}
-        )
+            onPersonaClick = {}
+        ) {}
     }
 }
