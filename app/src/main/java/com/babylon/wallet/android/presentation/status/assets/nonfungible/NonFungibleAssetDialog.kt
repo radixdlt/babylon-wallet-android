@@ -99,7 +99,7 @@ private fun NonFungibleAssetDialogContent(
                         Thumbnail.NFT(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
                             nft = state.item,
                             cropped = false
                         )
@@ -108,7 +108,7 @@ private fun NonFungibleAssetDialogContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .aspectRatio(NFTAspectRatio)
-                                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
                                 .radixPlaceholder(
                                     visible = true,
                                     shape = RoundedCornerShape(NFTCornerRadius)
