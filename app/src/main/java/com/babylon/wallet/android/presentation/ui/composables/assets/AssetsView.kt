@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.CircularProgressIndicator
@@ -38,7 +37,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import java.math.BigDecimal
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "MagicNumber")
 fun LazyListScope.assetsView(
     assets: Assets?,
     epoch: Long?,
@@ -57,7 +56,6 @@ fun LazyListScope.assetsView(
             )
             Spacer(modifier = Modifier.weight(0.1f))
         }
-
     }
 
     if (assets == null) {

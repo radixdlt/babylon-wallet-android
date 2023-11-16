@@ -65,6 +65,7 @@ fun FungibleAssetDialog(
     )
 }
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 private fun FungibleAssetDialogContent(
     modifier: Modifier = Modifier,

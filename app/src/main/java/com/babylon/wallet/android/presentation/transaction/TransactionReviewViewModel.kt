@@ -440,7 +440,6 @@ sealed interface PreviewType {
         fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
             allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
         }.flatten()
-
     }
 }
 
@@ -498,9 +497,9 @@ sealed interface AccountWithPredictedGuarantee {
 
     fun decrease(): AccountWithPredictedGuarantee {
         val newOffset = (
-                guaranteeOffsetDecimal.toBigDecimal().minus(BigDecimal(0.001))
-                    .coerceAtLeast(BigDecimal.ZERO).multiply(BigDecimal(100))
-                ).setScale(1, RoundingMode.HALF_EVEN)
+            guaranteeOffsetDecimal.toBigDecimal().minus(BigDecimal(0.001))
+                .coerceAtLeast(BigDecimal.ZERO).multiply(BigDecimal(100))
+            ).setScale(1, RoundingMode.HALF_EVEN)
         return when (this) {
             is Other -> copy(guaranteeAmountString = newOffset.toString())
             is Owned -> copy(guaranteeAmountString = newOffset.toString())
@@ -520,7 +519,7 @@ sealed interface AccountWithPredictedGuarantee {
     }
 
     fun isTheSameGuaranteeItem(with: AccountWithPredictedGuarantee): Boolean = address == with.address &&
-            transferableAmount.resourceAddress == with.transferableAmount.resourceAddress
+        transferableAmount.resourceAddress == with.transferableAmount.resourceAddress
 
     data class Owned(
         val account: Network.Account,

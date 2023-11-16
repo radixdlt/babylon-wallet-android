@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.resources.Resource
 import javax.inject.Inject
 
@@ -13,6 +11,4 @@ class CacheNewlyCreatedEntitiesUseCase @Inject constructor(
     suspend operator fun invoke(resources: List<Resource>): Result<Unit> {
         return stateRepository.cacheNewlyCreatedResources(resources)
     }
-
-
 }

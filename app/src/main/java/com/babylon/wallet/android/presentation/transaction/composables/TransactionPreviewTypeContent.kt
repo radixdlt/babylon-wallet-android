@@ -44,7 +44,7 @@ fun TransactionPreviewTypeContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 from = preview.from.toPersistentList(),
                 showStrokeLine = preview.from.toPersistentList().isNotEmpty() ||
-                        preview.dApps.toPersistentList().isNotEmpty(),
+                    preview.dApps.toPersistentList().isNotEmpty(),
                 onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
                     onFungibleResourceClick(fungibleResource, isNewlyCreated)
                 },

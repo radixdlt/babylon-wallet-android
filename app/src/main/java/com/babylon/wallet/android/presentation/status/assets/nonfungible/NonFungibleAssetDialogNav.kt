@@ -16,7 +16,8 @@ private const val ARG_LOCAL_ID = "local_id"
 
 fun NavController.nonFungibleAssetDialog(resourceAddress: String, localId: String? = null, isNewlyCreated: Boolean = false) {
     val localIdParam = if (localId != null) "&$ARG_LOCAL_ID=${URLEncoder.encode(localId, Charsets.UTF_8.name())}" else ""
-    navigate(route = ROUTE +
+    navigate(
+        route = ROUTE +
             "?$ARG_RESOURCE_ADDRESS=$resourceAddress" +
             "&$ARG_NEWLY_CREATED=$isNewlyCreated" +
             localIdParam
@@ -39,9 +40,9 @@ fun NavGraphBuilder.nonFungibleAssetDialog(
 ) {
     dialog(
         route = ROUTE +
-                "?$ARG_RESOURCE_ADDRESS={$ARG_RESOURCE_ADDRESS}" +
-                "&$ARG_NEWLY_CREATED={$ARG_NEWLY_CREATED}" +
-                "&$ARG_LOCAL_ID={$ARG_LOCAL_ID}",
+            "?$ARG_RESOURCE_ADDRESS={$ARG_RESOURCE_ADDRESS}" +
+            "&$ARG_NEWLY_CREATED={$ARG_NEWLY_CREATED}" +
+            "&$ARG_LOCAL_ID={$ARG_LOCAL_ID}",
         arguments = listOf(
             navArgument(ARG_RESOURCE_ADDRESS) {
                 type = NavType.StringType

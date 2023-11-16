@@ -42,13 +42,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
-import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.Event.*
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
@@ -95,8 +93,8 @@ fun TransactionReviewScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is OnFungibleClick -> onFungibleClick(it.resource, it.isNewlyCreated)
-                is OnNonFungibleClick -> onNonFungibleClick(it.resource, it.item, it.isNewlyCreated)
+                is TransactionReviewViewModel.Event.OnFungibleClick -> onFungibleClick(it.resource, it.isNewlyCreated)
+                is TransactionReviewViewModel.Event.OnNonFungibleClick -> onNonFungibleClick(it.resource, it.item, it.isNewlyCreated)
             }
         }
     }
@@ -475,7 +473,7 @@ fun TransactionPreviewContentPreview() {
             promptForGuarantees = {},
             onCustomizeClick = {},
             onDAppClick = {},
-            onFungibleResourceClick = { _, _ ->},
+            onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> },
             onGuaranteeValueChanged = { _, _ -> },
             onGuaranteeValueIncreased = {},

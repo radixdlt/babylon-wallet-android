@@ -37,9 +37,9 @@ fun NavGraphBuilder.fungibleAssetDialog(
 ) {
     dialog(
         route = ROUTE +
-                "?$ARG_RESOURCE_ADDRESS={$ARG_RESOURCE_ADDRESS}" +
-                "&$ARG_NEWLY_CREATED={$ARG_NEWLY_CREATED}" +
-                "&$ARG_ACCOUNT_ADDRESS={$ARG_ACCOUNT_ADDRESS}",
+            "?$ARG_RESOURCE_ADDRESS={$ARG_RESOURCE_ADDRESS}" +
+            "&$ARG_NEWLY_CREATED={$ARG_NEWLY_CREATED}" +
+            "&$ARG_ACCOUNT_ADDRESS={$ARG_ACCOUNT_ADDRESS}",
         arguments = listOf(
             navArgument(ARG_RESOURCE_ADDRESS) {
                 type = NavType.StringType

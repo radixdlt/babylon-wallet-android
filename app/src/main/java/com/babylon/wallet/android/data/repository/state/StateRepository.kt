@@ -14,7 +14,6 @@ import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
-import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntity
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidators
 import com.babylon.wallet.android.data.repository.cache.database.getCachedPools

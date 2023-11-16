@@ -63,6 +63,7 @@ fun PoolUnitAssetDialog(
     )
 }
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 private fun FungibleAssetDialogContent(
     modifier: Modifier = Modifier,
@@ -131,7 +132,7 @@ private fun FungibleAssetDialogContent(
                     )
                 } else {
                     Column(
-                        modifier = modifier
+                        modifier = Modifier
                             .padding(horizontal = RadixTheme.dimensions.paddingMedium)
                             .fillMaxWidth()
                             .assetOutlineBorder()

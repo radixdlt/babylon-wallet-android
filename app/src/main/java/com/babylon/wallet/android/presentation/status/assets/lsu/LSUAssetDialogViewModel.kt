@@ -2,10 +2,8 @@ package com.babylon.wallet.android.presentation.status.assets.lsu
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.usecases.assets.GetLSUDetailsUseCase
-import com.babylon.wallet.android.domain.usecases.assets.GetPoolUnitDetailsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState

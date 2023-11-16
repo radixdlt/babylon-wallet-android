@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
@@ -144,10 +143,12 @@ class AccountViewModel @Inject constructor(
         item: Resource.NonFungibleResource.Item
     ) {
         viewModelScope.launch {
-            sendEvent(AccountEvent.OnNonFungibleClick(
-                resource = nonFungibleResource,
-                item = item
-            ))
+            sendEvent(
+                AccountEvent.OnNonFungibleClick(
+                    resource = nonFungibleResource,
+                    item = item
+                )
+            )
         }
     }
 
@@ -240,8 +241,8 @@ internal sealed interface AccountEvent : OneOffEvent {
         val resource: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item
     ) : AccountEvent
-    data class OnPoolUnitClick(val poolUnit: PoolUnit, val account: Network.Account): AccountEvent
-    data class OnLSUClick(val liquidStakeUnit: LiquidStakeUnit, val account: Network.Account): AccountEvent
+    data class OnPoolUnitClick(val poolUnit: PoolUnit, val account: Network.Account) : AccountEvent
+    data class OnLSUClick(val liquidStakeUnit: LiquidStakeUnit, val account: Network.Account) : AccountEvent
 }
 
 data class AccountUiState(

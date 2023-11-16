@@ -1,11 +1,8 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.resources.Resource
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
 import rdx.works.core.then
 import javax.inject.Inject
 
