@@ -2,8 +2,11 @@ package com.babylon.wallet.android.presentation.ui.composables.assets
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.CircularProgressIndicator
@@ -45,12 +48,16 @@ fun LazyListScope.assetsView(
     action: AssetsViewAction
 ) {
     item {
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            AssetsTabs(selectedTab = selectedTab, onTabSelected = onTabSelected)
+        Row {
+            Spacer(modifier = Modifier.weight(0.15f))
+            AssetsTabs(
+                modifier = Modifier.weight(0.7f),
+                selectedTab = selectedTab,
+                onTabSelected = onTabSelected
+            )
+            Spacer(modifier = Modifier.weight(0.15f))
         }
+
     }
 
     if (assets == null) {
