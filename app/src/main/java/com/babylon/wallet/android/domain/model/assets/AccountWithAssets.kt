@@ -25,22 +25,35 @@ data class Assets(
     val validatorsWithStakes: List<ValidatorWithStakes> = emptyList()
 ) {
 
-    val xrd: Resource.FungibleResource? by lazy {
-        fungibles.find { it.isXrd }
+    val ownedXrd: Resource.FungibleResource? by lazy {
+        fungibles.find { it.isXrd && it.ownedAmount != BigDecimal.ZERO }
     }
-    val nonXrdFungibles: List<Resource.FungibleResource> by lazy {
-        fungibles.filterNot { it.isXrd }
+    val ownedNonXrdFungibles: List<Resource.FungibleResource> by lazy {
+        fungibles.filterNot { it.isXrd || it.ownedAmount == BigDecimal.ZERO }
+    }
+    val ownedFungibles: List<Resource.FungibleResource> by lazy {
+        ownedXrd?.let { listOf(it) + ownedNonXrdFungibles } ?: ownedNonXrdFungibles
     }
 
-    fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = xrd?.let {
+    val ownedNonFungibles: List<Resource.NonFungibleResource> by lazy {
+        nonFungibles.filterNot { it.amount == 0L }
+    }
+
+    val ownedPoolUnits: List<PoolUnit> by lazy {
+        poolUnits.filterNot { it.stake.ownedAmount == BigDecimal.ZERO }
+    }
+
+    fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = ownedXrd?.let {
         it.ownedAmount?.let { amount ->
             amount >= minimumBalance
         }
     } == true
 
-    fun poolUnitsSize(): Int {
-        return poolUnits.size + validatorsWithStakes.size
-    }
+    fun fungiblesSize(): Int = ownedNonXrdFungibles.size + if (ownedXrd != null) 1 else 0
+
+    fun nftsSize(): Int = nonFungibles.sumOf { it.amount }.toInt()
+
+    fun poolUnitsSize(): Int = ownedPoolUnits.size + validatorsWithStakes.size
 }
 
 data class ValidatorDetail(
@@ -68,5 +81,3 @@ data class ValidatorWithStakes(
         return liquidStakeUnit.stakeValueInXRD(validatorDetail.totalXrdStake)
     }
 }
-
-fun List<Resource.NonFungibleResource>.allNftItemsSize() = sumOf { it.amount }

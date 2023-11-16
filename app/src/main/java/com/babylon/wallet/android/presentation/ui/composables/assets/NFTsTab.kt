@@ -40,7 +40,7 @@ fun LazyListScope.nftsTab(
     collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
     action: AssetsViewAction
 ) {
-    if (assets.nonFungibles.isEmpty()) {
+    if (assets.nftsSize() == 0) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
@@ -49,7 +49,7 @@ fun LazyListScope.nftsTab(
         }
     }
 
-    assets.nonFungibles.forEach { collection ->
+    assets.ownedNonFungibles.forEach { collection ->
         item(
             key = collection.resourceAddress,
             contentType = { "collection" }
