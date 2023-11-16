@@ -11,7 +11,6 @@ import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.ROUTE_PERSONA_DETAIL
-import com.google.accompanist.navigation.animation.composable
 import rdx.works.profile.data.model.factorsources.FactorSource
 
 const val ROUTE_CREATE_PERSONA = "create_persona_route"
