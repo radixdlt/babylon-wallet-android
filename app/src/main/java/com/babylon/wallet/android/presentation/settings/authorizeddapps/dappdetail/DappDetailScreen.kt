@@ -260,15 +260,9 @@ private fun DappDetailContent(
                         },
                         onFungibleTokenClick = { fungibleResource ->
                             onFungibleTokenClick(fungibleResource)
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
                         },
                         onNonFungibleClick = { nftItem ->
                             onNftClick(nftItem)
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
                         },
                         onDeleteDapp = {
                             showDeleteDappPrompt = true
