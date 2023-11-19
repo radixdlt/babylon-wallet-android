@@ -7,11 +7,12 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.seedphrase.SeedPhraseInputDelegate
+import com.babylon.wallet.android.domain.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWalletCompleteUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
-import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -524,7 +525,7 @@ data class ImportLegacyWalletUiState(
     val verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
     val addLedgerSheetState: AddLedgerDeviceUiState.ShowContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
-    val seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord> = persistentListOf(),
+    val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf(),
     val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf(),
     val shouldShowAddLinkConnectorScreen: Boolean = false,
     val shouldShowAddLedgerDeviceScreen: Boolean = false,

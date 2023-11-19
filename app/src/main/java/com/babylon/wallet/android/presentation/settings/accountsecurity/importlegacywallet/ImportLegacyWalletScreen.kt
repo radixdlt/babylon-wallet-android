@@ -65,8 +65,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
+import com.babylon.wallet.android.domain.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.ImportLegacyWalletUiState.Page
@@ -106,7 +106,6 @@ import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.olympiaimport.ChunkInfo
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
-import kotlin.reflect.KFunction0
 
 @Composable
 fun ImportLegacyWalletScreen(
@@ -188,7 +187,7 @@ private fun ImportLegacyWalletContent(
     onImportAccounts: () -> Unit,
     onCloseScreen: () -> Unit,
     importButtonEnabled: Boolean,
-    seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord>,
+    seedPhraseWords: ImmutableList<SeedPhraseWord>,
     bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
@@ -217,7 +216,7 @@ private fun ImportLegacyWalletContent(
     onCloseSettings: () -> Unit,
     onWordSelected: (Int, String) -> Unit,
     importAllAccounts: () -> Unit,
-    onInvalidConnectionPasswordShown: KFunction0<Unit>,
+    onInvalidConnectionPasswordShown: () -> Unit,
     seedPhraseValid: Boolean
 ) {
     val focusManager = LocalFocusManager.current
@@ -758,7 +757,7 @@ private fun ImportCompletePage(
 @Composable
 private fun VerifyWithYourSeedPhrasePage(
     modifier: Modifier = Modifier,
-    seedPhraseWords: ImmutableList<SeedPhraseInputDelegate.SeedPhraseWord>,
+    seedPhraseWords: ImmutableList<SeedPhraseWord>,
     bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
