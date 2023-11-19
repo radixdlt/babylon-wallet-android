@@ -46,7 +46,7 @@ class SeedPhraseInputDelegate(
         }
     }
 
-    @Suppress("MagicNumber", "LongMethod")
+    @Suppress("LongMethod")
     fun onWordChanged(index: Int, value: String, onMoveToNextWord: suspend () -> Unit) {
         val isDeleting = (_state.value.seedPhraseWords.firstOrNull { it.index == index }?.value?.length ?: 0) > value.length
         _state.update { state ->
@@ -59,7 +59,7 @@ class SeedPhraseInputDelegate(
         }
         debounceJob?.cancel()
         debounceJob = scope.launch {
-            delay(75L)
+            delay(DEBOUNCE_DELAY_MS)
             if (BuildConfig.DEBUG_MODE) {
                 val pastedMnemonic = value.toMnemonicWords(state.value.seedPhraseWords.size)
                 if (pastedMnemonic.isNotEmpty()) {
@@ -141,5 +141,9 @@ class SeedPhraseInputDelegate(
 
     override fun initialState(): State {
         return State()
+    }
+
+    companion object {
+        private const val DEBOUNCE_DELAY_MS = 75L
     }
 }

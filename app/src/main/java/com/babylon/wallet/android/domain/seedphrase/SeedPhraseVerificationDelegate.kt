@@ -1,9 +1,7 @@
 package com.babylon.wallet.android.domain.seedphrase
 
-import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.common.Stateful
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.utils.toMnemonicWords
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -46,7 +44,6 @@ class SeedPhraseVerificationDelegate(
         }
     }
 
-    @Suppress("MagicNumber", "LongMethod")
     fun onWordChanged(index: Int, value: String) {
         _state.update { state ->
             val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
@@ -58,25 +55,7 @@ class SeedPhraseVerificationDelegate(
         }
         debounceJob?.cancel()
         debounceJob = scope.launch {
-            delay(75L)
-            if (BuildConfig.DEBUG_MODE) {
-                val pastedMnemonic = value.toMnemonicWords(state.value.seedPhraseWords.size)
-                if (pastedMnemonic.isNotEmpty()) {
-                    _state.update { state ->
-                        state.copy(
-                            seedPhraseWords = state.seedPhraseWords.mapIndexed { index, word ->
-                                val wordState = if (word.state == SeedPhraseWord.State.ValidDisabled) {
-                                    SeedPhraseWord.State.ValidDisabled
-                                } else {
-                                    SeedPhraseWord.State.Valid
-                                }
-                                word.copy(value = pastedMnemonic[index], state = wordState)
-                            }.toPersistentList()
-                        )
-                    }
-                    return@launch
-                }
-            }
+            delay(DEBOUNCE_DELAY_MS)
             val wordState = when {
                 value.isEmpty() -> SeedPhraseWord.State.Empty
                 else -> SeedPhraseWord.State.HasValue
@@ -92,17 +71,10 @@ class SeedPhraseVerificationDelegate(
         }
     }
 
-    fun reset() {
-        _state.update { State() }
-    }
-
     data class State(
         val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf(),
         val blankIndices: Set<Int> = emptySet()
     ) : UiState {
-
-        val wordsPhrase: String
-            get() = seedPhraseWords.joinToString(separator = " ") { it.value }
 
         val wordsToConfirm: Map<Int, String>
             get() = blankIndices.associateWith { seedPhraseWords[it].value }
@@ -110,5 +82,9 @@ class SeedPhraseVerificationDelegate(
 
     override fun initialState(): State {
         return State()
+    }
+
+    companion object {
+        private const val DEBOUNCE_DELAY_MS = 75L
     }
 }
