@@ -105,7 +105,7 @@ class TransferViewModel @Inject constructor(
         val remainingAmount = (maxAmount - spentAmount).coerceAtLeast(BigDecimal.ZERO)
         val remainingAmountString = remainingAmount.toPlainString()
 
-        if (fungibleAsset.resource.isXrd) {
+        if (fungibleAsset.resource.isXrd && remainingAmount > BigDecimal.ZERO) {
             _state.update {
                 it.copy(
                     maxXrdError = State.MaxAmountMessage(
@@ -144,6 +144,26 @@ class TransferViewModel @Inject constructor(
                         maxXrdError = null
                     )
             }
+        }
+    }
+
+    fun onLessThanFeeApplied(confirm: Boolean) {
+        if (confirm) {
+            _state.value.maxXrdError?.let { maxXrdError ->
+                val fungibleAsset = maxXrdError.asset as? SpendingAsset.Fungible ?: return
+                _state.update { state ->
+                    state.updateAssetAmount(
+                        account = maxXrdError.account,
+                        asset = fungibleAsset,
+                        amountString = maxXrdError.maxAccountAmount.toPlainString()
+                    )
+                        .copy(
+                            maxXrdError = null
+                        )
+                }
+            }
+        } else {
+            _state.update { it.copy(maxXrdError = null) }
         }
     }
 
@@ -417,6 +437,9 @@ class TransferViewModel @Inject constructor(
         ) {
             val amountWithoutFees: BigDecimal
                 get() = maxAccountAmount - BigDecimal.ONE
+
+            val maxAccountAmountLessThanFee: Boolean
+                get() = maxAccountAmount < BigDecimal.ONE
         }
     }
 }
@@ -534,7 +557,7 @@ sealed class SpendingAsset {
             get() = resource.resourceAddress
 
         override val isValidForSubmission: Boolean
-            get() = !exceedingBalance && amountDecimal != BigDecimal.ZERO
+            get() = !exceedingBalance && amountString.isNotEmpty() && (resource.isXrd || amountDecimal != BigDecimal.ZERO)
 
         val amountDecimal: BigDecimal
             get() = amountString.toBigDecimalOrNull() ?: BigDecimal.ZERO
