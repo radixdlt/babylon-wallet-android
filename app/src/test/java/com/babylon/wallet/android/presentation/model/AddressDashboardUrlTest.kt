@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.model
 
+import com.babylon.wallet.android.utils.encodeUtf8
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,7 +25,7 @@ internal class AddressDashboardUrlTest(
         fun data() : Collection<Array<Any>> {
             return listOf(
                 arrayOf(RESOURCE_ADDRESS, "$BASE_MAIN_URL/resource/$RESOURCE_ADDRESS"),
-                arrayOf(RESOURCE_NFT_ADDRESS, "$BASE_MAIN_URL/nft/$RESOURCE_NFT_ADDRESS"),
+                arrayOf(RESOURCE_NFT_ADDRESS, "$BASE_MAIN_URL/nft/${RESOURCE_NFT_ADDRESS.encodeUtf8()}"),
                 arrayOf(ACCOUNT_ADDRESS, "$BASE_MAIN_URL/account/$ACCOUNT_ADDRESS"),
                 arrayOf(PACKAGE_ADDRESS, "$BASE_MAIN_URL/package/$PACKAGE_ADDRESS"),
                 arrayOf(

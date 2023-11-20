@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.model
 
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.truncatedHash
 import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.derivation.model.NetworkId
@@ -24,12 +25,13 @@ data class ActionableAddress(
     }
 
     fun toDashboardUrl(networkId: NetworkId): String {
+        val addressUrlEncoded = address.encodeUtf8()
         val suffix = when {
-            isNft -> "nft/$address"
-            type == Type.TRANSACTION -> "transaction/$address"
-            type == Type.VALIDATOR -> "component/$address"
-            type != null -> "${type.prefix}/$address"
-            else -> address
+            isNft -> "nft/$addressUrlEncoded"
+            type == Type.TRANSACTION -> "transaction/$addressUrlEncoded"
+            type == Type.VALIDATOR -> "component/$addressUrlEncoded"
+            type != null -> "${type.prefix}/$addressUrlEncoded"
+            else -> addressUrlEncoded
         }
 
         val url = networkId.dashboardUrl()
