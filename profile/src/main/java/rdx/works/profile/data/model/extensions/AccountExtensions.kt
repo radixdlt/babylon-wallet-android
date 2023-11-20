@@ -3,6 +3,7 @@ package rdx.works.profile.data.model.extensions
 import com.radixdlt.ret.AccountDefaultDepositRule
 import com.radixdlt.ret.ResourcePreference
 import rdx.works.core.mapWhen
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.Slip10Curve
@@ -38,7 +39,7 @@ fun Profile.renameAccountDisplayName(
                     accounts = network.accounts.mapWhen(
                         predicate = { it == accountToRename },
                         mutation = { renamedAccount }
-                    )
+                    ).toIdentifiedArrayList()
                 )
             }
         )

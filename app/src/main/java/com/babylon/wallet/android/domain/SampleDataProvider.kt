@@ -24,6 +24,7 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -310,11 +311,11 @@ class SampleDataProvider {
             networkId = networkId,
             appearanceID = 0
         )
-        return profile.copy(networks = listOf(network.copy(accounts = listOf(firstAccount))))
+        return profile.copy(networks = listOf(network.copy(accounts = identifiedArrayListOf(firstAccount))))
     }
 
     fun network(networkId: Int): Network {
-        return Network(networkId, emptyList(), emptyList(), emptyList())
+        return Network(networkId, emptyIdentifiedArrayList(), emptyIdentifiedArrayList(), emptyList())
     }
 
     fun sampleFungibleResources(

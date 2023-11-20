@@ -12,9 +12,14 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
+import rdx.works.core.Identified
+import rdx.works.core.IdentifiedArrayList
 import rdx.works.core.decodeHex
+import rdx.works.core.emptyIdentifiedArrayList
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -39,12 +44,12 @@ data class Network(
     /**
      * Accounts created by the user for this network.
      */
-    @SerialName("accounts") val accounts: List<Account>,
+    @SerialName("accounts") val accounts: IdentifiedArrayList<Account>,
 
     /**
      * Personas created by the user for this network.
      */
-    @SerialName("personas") val personas: List<Persona>,
+    @SerialName("personas") val personas: IdentifiedArrayList<Persona>,
 
     /**
      * AuthorizedDapp the user has connected with on this network.
@@ -95,7 +100,7 @@ data class Network(
         @EncodeDefault
         override val flags: Set<EntityFlag> = emptySet()
 
-    ) : Entity() {
+    ) : Entity(), Identified {
 
         @Serializable
         data class OnLedgerSettings(
@@ -273,6 +278,9 @@ data class Network(
                 return response.addressString()
             }
         }
+
+        override val identifier: String
+            get() = address
     }
 
     @Serializable
@@ -305,7 +313,7 @@ data class Network(
 
         @EncodeDefault
         override val flags: Set<EntityFlag> = emptySet()
-    ) : Entity() {
+    ) : Entity(), Identified {
 
         companion object {
             @Suppress("LongParameterList") // TODO refine this later on
@@ -353,6 +361,9 @@ data class Network(
                 return deriveVirtualIdentityAddressFromPublicKey(publicKey, networkID.value.toUByte()).addressString()
             }
         }
+
+        override val identifier: String
+            get() = address
     }
 
     @Serializable
@@ -473,10 +484,10 @@ fun Profile.addAccount(
     val networkExist = this.networks.any { onNetwork.value == it.networkID }
     val newNetworks = if (networkExist) {
         this.networks.mapWhen(predicate = { network -> network.networkID == onNetwork.value }) { network ->
-            val updatedAccounts = network.accounts.toMutableList()
+            val updatedAccounts = network.accounts.toIdentifiedArrayList()
             updatedAccounts.add(account)
             Network(
-                accounts = updatedAccounts.toList(),
+                accounts = updatedAccounts,
                 authorizedDapps = network.authorizedDapps,
                 networkID = network.networkID,
                 personas = network.personas
@@ -484,10 +495,10 @@ fun Profile.addAccount(
         }
     } else {
         this.networks + Network(
-            accounts = listOf(account),
+            accounts = identifiedArrayListOf(account),
             authorizedDapps = listOf(),
             networkID = onNetwork.value,
-            personas = listOf()
+            personas = emptyIdentifiedArrayList()
         )
     }
     val updatedProfile = copy(
@@ -512,7 +523,7 @@ fun Profile.addAuthSigningFactorInstanceForEntity(
                         )
                     }
                     account.copy(securityState = updatedSecurityState)
-                }
+                }.toIdentifiedArrayList()
             )
 
             is Network.Persona -> {
@@ -526,7 +537,7 @@ fun Profile.addAuthSigningFactorInstanceForEntity(
                             )
                         }
                         persona.copy(securityState = updatedSecurityState)
-                    }
+                    }.toIdentifiedArrayList()
                 )
             }
         }
@@ -543,7 +554,7 @@ fun Profile.updateThirdPartyDepositSettings(
     val updatedNetworks = networks.mapWhen(predicate = { network -> network.networkID == account.networkID }) { network ->
         val updatedAccounts = network.accounts.mapWhen(predicate = { it.address == account.address }) { account ->
             account.updateThirdPartyDeposits(thirdPartyDeposits = thirdPartyDeposits)
-        }
+        }.toIdentifiedArrayList()
         network.copy(accounts = updatedAccounts)
     }
     return copy(
@@ -562,10 +573,10 @@ fun Profile.addNetworkIfDoesNotExist(
     return if (!networkExist) {
         copy(
             networks = networks + Network(
-                accounts = listOf(),
+                accounts = emptyIdentifiedArrayList(),
                 authorizedDapps = listOf(),
                 networkID = onNetwork.value,
-                personas = listOf()
+                personas = emptyIdentifiedArrayList()
             )
         ).withUpdatedContentHint()
     } else {
@@ -592,7 +603,11 @@ fun Profile.updatePersona(
 
     return copy(
         networks = networks.mapWhen(predicate = { it.networkID == networkId.value }, mutation = { network ->
-            network.copy(personas = network.personas.mapWhen(predicate = { it.address == persona.address }, mutation = { persona }))
+            network.copy(
+                personas = network.personas.mapWhen(predicate = {
+                    it.address == persona.address
+                }, mutation = { persona }).toIdentifiedArrayList()
+            )
         })
     )
 }
@@ -611,7 +626,7 @@ fun Profile.addPersona(
 
     return copy(
         networks = this.networks.mapWhen(predicate = { it.networkID == onNetwork.value }, mutation = { network ->
-            network.copy(personas = network.personas + persona)
+            network.copy(personas = (network.personas + persona).toIdentifiedArrayList())
         })
     ).withUpdatedContentHint()
 }
