@@ -309,8 +309,7 @@ private fun EntitiesView(
                     item {
                         RadixTextButton(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                                .fillMaxWidth(),
                             text = "I Don't Have the Main Seed Phrase",
                             onClick = onSkipMainSeedPhraseClicked
                         )
