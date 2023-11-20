@@ -631,8 +631,7 @@ fun AccountContentPreview() {
                             poolUnits = listOf(),
                             validatorsWithStakes = emptyList()
                         ),
-                    ),
-                    historyDashboardUrl = ""
+                    )
                 ),
                 onAccountPreferenceClick = { _ -> },
                 onBackClick = {},

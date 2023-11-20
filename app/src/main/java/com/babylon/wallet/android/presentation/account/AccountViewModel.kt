@@ -52,12 +52,9 @@ class AccountViewModel @Inject constructor(
         viewModelScope.launch {
             getProfileUseCase.accountOnCurrentNetworkWithAddress(accountAddress).collectLatest { accountFromAddress ->
                 accountFromAddress?.let { account ->
-                    val dashboardUrl = NetworkId.from(account.networkID).dashboardUrl()
-                    val historyDashboardUrl = "$dashboardUrl/account/$accountAddress/recent-transactions"
                     _state.update { state ->
                         state.copy(
-                            accountWithAssets = AccountWithAssets(account = account, assets = null),
-                            historyDashboardUrl = historyDashboardUrl
+                            accountWithAssets = AccountWithAssets(account = account, assets = null)
                         )
                     }
                     loadAccountData(isRefreshing = false)
@@ -184,8 +181,7 @@ data class AccountUiState(
     val isLoading: Boolean = true,
     private val refreshing: Boolean = false,
     val selectedResource: SelectedResource? = null,
-    val uiMessage: UiMessage? = null,
-    val historyDashboardUrl: String? = null
+    val uiMessage: UiMessage? = null
 ) : UiState {
 
     val visiblePrompt: SecurityPromptType?
@@ -197,6 +193,12 @@ data class AccountUiState(
                 null
             }
             else -> null
+        }
+
+    val historyDashboardUrl: String?
+        get() = accountWithAssets?.account?.let { account ->
+            val dashboardUrl = NetworkId.from(account.networkID).dashboardUrl()
+            return "$dashboardUrl/account/${account.address}/recent-transactions"
         }
 
     val isRefreshing: Boolean
