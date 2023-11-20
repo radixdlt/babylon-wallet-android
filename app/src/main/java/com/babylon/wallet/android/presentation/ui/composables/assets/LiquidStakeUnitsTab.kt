@@ -45,7 +45,7 @@ fun LazyListScope.liquidStakeUnitsTab(
     collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
     action: AssetsViewAction
 ) {
-    if (assets.validatorsWithStakes.isNotEmpty()) {
+    if (assets.ownedValidatorsWithStakes.isNotEmpty()) {
         item {
             LSUHeader(
                 collapsibleAssetsState = collapsibleAssetsState,
@@ -55,12 +55,12 @@ fun LazyListScope.liquidStakeUnitsTab(
 
         if (!collapsibleAssetsState.isStakeSectionCollapsed()) {
             itemsIndexed(
-                items = assets.validatorsWithStakes,
+                items = assets.ownedValidatorsWithStakes,
                 key = { _, item -> item.validatorDetail.address }
             ) { index, item ->
                 LSUItem(
                     index = index,
-                    allSize = assets.validatorsWithStakes.size,
+                    allSize = assets.ownedValidatorsWithStakes.size,
                     epoch = epoch,
                     item = item,
                     action = action
@@ -117,7 +117,7 @@ private fun LSUItem(
             action = action
         )
 
-        if (item.stakeClaimNft != null) {
+        if (item.stakeClaimNft != null && item.stakeClaimNft.nonFungibleResource.amount > 0) {
             StakeSectionTitle(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
@@ -156,7 +156,7 @@ private fun LSUHeader(
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
             .padding(top = RadixTheme.dimensions.paddingSemiLarge),
         isCollapsed = isCollapsed,
-        collapsedItems = assets.validatorsWithStakes.size
+        collapsedItems = assets.ownedValidatorsWithStakes.size
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -184,7 +184,7 @@ private fun LSUHeader(
                     maxLines = 2
                 )
                 Text(
-                    stringResource(id = R.string.account_poolUnits_numberOfStakes, assets.validatorsWithStakes.size),
+                    stringResource(id = R.string.account_poolUnits_numberOfStakes, assets.ownedValidatorsWithStakes.size),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1

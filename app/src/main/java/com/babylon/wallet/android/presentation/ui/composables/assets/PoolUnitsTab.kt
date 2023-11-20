@@ -33,7 +33,7 @@ fun LazyListScope.poolUnitsTab(
     collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
     action: AssetsViewAction
 ) {
-    if (assets.validatorsWithStakes.isEmpty() && assets.ownedPoolUnits.isEmpty()) {
+    if (assets.ownedValidatorsWithStakes.isEmpty() && assets.ownedPoolUnits.isEmpty()) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),

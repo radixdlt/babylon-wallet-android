@@ -43,17 +43,24 @@ data class Assets(
         poolUnits.filterNot { it.stake.ownedAmount == BigDecimal.ZERO }
     }
 
+    val ownedValidatorsWithStakes: List<ValidatorWithStakes> by lazy {
+        validatorsWithStakes.filterNot {
+            (it.stakeClaimNft == null || it.stakeClaimNft.nonFungibleResource.amount == 0L) &&
+                    it.liquidStakeUnit.fungibleResource.ownedAmount == BigDecimal.ZERO
+        }
+    }
+
     fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = ownedXrd?.let {
         it.ownedAmount?.let { amount ->
             amount >= minimumBalance
         }
     } == true
 
-    fun fungiblesSize(): Int = ownedNonXrdFungibles.size + if (ownedXrd != null) 1 else 0
+    fun fungiblesSize(): Int = ownedFungibles.size
 
-    fun nftsSize(): Int = nonFungibles.sumOf { it.amount }.toInt()
+    fun nftsSize(): Int = ownedNonFungibles.sumOf { it.amount }.toInt()
 
-    fun poolUnitsSize(): Int = ownedPoolUnits.size + validatorsWithStakes.size
+    fun poolUnitsSize(): Int = ownedPoolUnits.size + ownedValidatorsWithStakes.size
 }
 
 data class ValidatorDetail(

@@ -104,7 +104,7 @@ class AssetsChooserDelegate @Inject constructor(
     fun onStakesRequest() {
         val sheet = _state.value.sheet as? Sheet.ChooseAssets ?: return
         val account = _state.value.fromAccount ?: return
-        val stakes = sheet.assets?.validatorsWithStakes ?: return
+        val stakes = sheet.assets?.ownedValidatorsWithStakes ?: return
         val unknownLSUs = stakes.any { !it.isDetailsAvailable }
 
         if (!sheet.pendingStakeUnits && unknownLSUs) {

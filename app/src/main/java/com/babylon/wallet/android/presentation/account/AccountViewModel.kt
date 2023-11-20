@@ -205,7 +205,7 @@ class AccountViewModel @Inject constructor(
 
     fun onStakesRequest() {
         val account = state.value.accountWithAssets?.account ?: return
-        val stakes = state.value.accountWithAssets?.assets?.validatorsWithStakes ?: return
+        val stakes = state.value.accountWithAssets?.assets?.ownedValidatorsWithStakes ?: return
         val unknownLSUs = stakes.any { !it.isDetailsAvailable }
         onLatestEpochRequest()
         if (!state.value.isRefreshing && !state.value.pendingStakeUnits && unknownLSUs) {
