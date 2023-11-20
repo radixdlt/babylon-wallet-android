@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
+import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.settings.GetImportOlympiaSettingVisibilityUseCase
 import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWalletCompleteUseCase
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.AccountSecurityAndSettings
@@ -34,12 +35,13 @@ class SettingsViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
     getImportOlympiaSettingVisibilityUseCase: GetImportOlympiaSettingVisibilityUseCase,
     private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase,
-    getBackupStateUseCase: GetBackupStateUseCase
+    getBackupStateUseCase: GetBackupStateUseCase,
+    getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase
 ) : ViewModel() {
 
     private val defaultSettings = listOf(
         AuthorizedDapps,
-        Personas,
+        Personas(),
         AccountSecurityAndSettings,
         AppSettings(showNotificationWarning = false)
     )
@@ -47,8 +49,9 @@ class SettingsViewModel @Inject constructor(
     val state: StateFlow<SettingsUiState> = combine(
         getProfileUseCase(),
         getImportOlympiaSettingVisibilityUseCase(),
-        getBackupStateUseCase()
-    ) { profile: Profile, isImportFromOlympiaSettingDismissed: Boolean, backupState: BackupState ->
+        getBackupStateUseCase(),
+        getEntitiesWithSecurityPromptUseCase.shouldShowPersonaSecurityPrompt
+    ) { profile: Profile, isImportFromOlympiaSettingDismissed: Boolean, backupState: BackupState, showPersonaPrompt: Boolean ->
         val mutated = defaultSettings.toMutableList()
         var topIndex = 0
         if (profile.appPreferences.p2pLinks.isEmpty() && !defaultSettings.contains(LinkToConnector)) {
@@ -65,7 +68,11 @@ class SettingsViewModel @Inject constructor(
             AppSettings(showNotificationWarning = backupState.isWarningVisible)
         }
 
-        SettingsUiState(withBackupWarning.toPersistentList())
+        val withPersonaWarning = withBackupWarning.mapWhen(predicate = { it is Personas }) {
+            Personas(showBackupSecurityPrompt = showPersonaPrompt)
+        }
+
+        SettingsUiState(withPersonaWarning.toPersistentList())
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(Constants.VM_STOP_TIMEOUT_MS),
@@ -80,5 +87,5 @@ class SettingsViewModel @Inject constructor(
 }
 
 data class SettingsUiState(
-    val settings: ImmutableList<SettingsItem.TopLevelSettings>
+    val settings: ImmutableList<SettingsItem.TopLevelSettings>,
 )

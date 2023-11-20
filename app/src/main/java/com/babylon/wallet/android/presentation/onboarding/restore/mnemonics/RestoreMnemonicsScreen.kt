@@ -176,10 +176,11 @@ private fun RestoreMnemonicsContent(
                         .imePadding()
                         .padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(
-                        id = if (state.screenType == RestoreMnemonicsViewModel.State.ScreenType.Entities) {
-                            R.string.recoverSeedPhrase_enterButton
-                        } else {
-                            R.string.common_continue
+                        when (state.screenType) {
+                            RestoreMnemonicsViewModel.State.ScreenType.Entities -> R.string.recoverSeedPhrase_enterButton
+                            RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> R.string.common_continue
+                            RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase ->
+                                R.string.recoverSeedPhrase_skipMainSeedPhraseButton
                         }
                     ),
                     enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase ||
@@ -310,7 +311,7 @@ private fun EntitiesView(
                         RadixTextButton(
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            text = "I Don't Have the Main Seed Phrase",
+                            text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
                             onClick = onSkipMainSeedPhraseClicked
                         )
                     }
@@ -331,7 +332,7 @@ private fun NoMainSeedPhraseView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = "No Main Seed Phrase?",
+            text = stringResource(id = R.string.recoverSeedPhrase_header_titleNoMainSeedPhrase),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.title
         )
@@ -341,15 +342,8 @@ private fun NoMainSeedPhraseView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = "WARNING: If you continue without entering your previous main “Babylon” seed phrase" +
-                ", **you will permanently lose access** to your Personas and any Accounts listed on the previous " +
-                "screen. A new main seed phrase will be created.\n" +
-                "\n" +
-                (
-                    "Tap Continue to proceed with recovering control of any Accounts created with a Ledger hardware " +
-                        "wallet, or Accounts you originally created on the Olympia network."
-                    )
-                    .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)), // TODO Crowdin
+            text = stringResource(id = R.string.recoverSeedPhrase_header_subtitleNoMainSeedPhrase)
+                .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Regular
         )
