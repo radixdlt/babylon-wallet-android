@@ -73,8 +73,8 @@ fun RestoreMnemonicsScreen(
     RestoreMnemonicsContent(
         state = state,
         onBackClick = viewModel::onBackClick,
-        onSkipClicked = viewModel::onSkipClick,
-        onSkipMainSeedPhraseClicked = viewModel::onSkipMainSeedPhraseClicked,
+        onSkipSeedPhraseClick = viewModel::onSkipSeedPhraseClick,
+        onSkipMainSeedPhraseClick = viewModel::onSkipMainSeedPhraseClick,
         onSubmitClick = {
             when (state.screenType) {
                 RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
@@ -120,8 +120,8 @@ private fun RestoreMnemonicsContent(
     modifier: Modifier = Modifier,
     state: RestoreMnemonicsViewModel.State,
     onBackClick: () -> Unit,
-    onSkipClicked: () -> Unit,
-    onSkipMainSeedPhraseClicked: () -> Unit,
+    onSkipSeedPhraseClick: () -> Unit,
+    onSkipMainSeedPhraseClick: () -> Unit,
     onSubmitClick: () -> Unit,
     onWordTyped: (Int, String) -> Unit,
     onWordSelected: (Int, String) -> Unit,
@@ -208,8 +208,8 @@ private fun RestoreMnemonicsContent(
                 ) {
                     EntitiesView(
                         state = state,
-                        onSkipClicked = onSkipClicked,
-                        onSkipMainSeedPhraseClicked = onSkipMainSeedPhraseClicked
+                        onSkipClicked = onSkipSeedPhraseClick,
+                        onSkipMainSeedPhraseClicked = onSkipMainSeedPhraseClick
                     )
                 }
             }
@@ -429,8 +429,8 @@ fun RestoreMnemonicsIntroContent() {
                 screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
             ),
             onBackClick = {},
-            onSkipClicked = {},
-            onSkipMainSeedPhraseClicked = {},
+            onSkipSeedPhraseClick = {},
+            onSkipMainSeedPhraseClick = {},
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
             onPassphraseChanged = {},
@@ -461,8 +461,8 @@ fun RestoreMnemonicsSeedPhraseContent() {
                 screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
             ),
             onBackClick = {},
-            onSkipClicked = {},
-            onSkipMainSeedPhraseClicked = {},
+            onSkipSeedPhraseClick = {},
+            onSkipMainSeedPhraseClick = {},
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
             onPassphraseChanged = {},

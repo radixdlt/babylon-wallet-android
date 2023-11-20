@@ -130,11 +130,11 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    fun onSkipClick() {
+    fun onSkipSeedPhraseClick() {
         viewModelScope.launch { showNextRecoverableFactorSourceOrFinish() }
     }
 
-    fun onSkipMainSeedPhraseClicked() {
+    fun onSkipMainSeedPhraseClick() {
         _state.update {
             it.copy(screenType = State.ScreenType.NoMainSeedPhrase)
         }
