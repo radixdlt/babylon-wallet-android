@@ -8,8 +8,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -93,6 +96,7 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.nonFungi
 import com.babylon.wallet.android.presentation.ui.composables.resources.poolUnitsResources
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
@@ -132,7 +136,6 @@ fun AccountScreen(
         },
         onBackClick = onBackClick,
         onRefresh = viewModel::refresh,
-        onHistoryClick = {},
         onTransferClick = onTransferClick,
         onMessageShown = viewModel::onMessageShown,
         onFungibleResourceClicked = viewModel::onFungibleResourceClicked,
@@ -151,7 +154,6 @@ private fun AccountScreenContent(
     onAccountPreferenceClick: (address: String) -> Unit,
     onBackClick: () -> Unit,
     onRefresh: () -> Unit,
-    onHistoryClick: () -> Unit,
     onTransferClick: (String) -> Unit,
     onMessageShown: () -> Unit,
     onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
@@ -160,6 +162,8 @@ private fun AccountScreenContent(
     onPoolUnitClick: (PoolUnit) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit
 ) {
+    val context = LocalContext.current
+
     val gradient = remember(state.accountWithAssets) {
         val appearanceId = state.accountWithAssets?.account?.appearanceID ?: 0
         AccountGradientList[appearanceId % AccountGradientList.size]
@@ -242,14 +246,6 @@ private fun AccountScreenContent(
                     )
                 },
                 containerColor = Color.Transparent,
-                floatingActionButton = {
-                    if (state.isHistoryEnabled) {
-                        HistoryButton(
-                            modifier = Modifier.size(174.dp, 50.dp),
-                            onHistoryClick
-                        )
-                    }
-                },
                 floatingActionButtonPosition = FabPosition.Center,
                 snackbarHost = {
                     RadixSnackbarHost(
@@ -276,6 +272,11 @@ private fun AccountScreenContent(
                     },
                     gradient = gradient,
                     onTransferClick = onTransferClick,
+                    onHistoryClick = {
+                        state.historyDashboardUrl?.let { url ->
+                            context.openUrl(url)
+                        }
+                    },
                     onApplySecuritySettings = onApplySecuritySettings,
                     onPoolUnitClick = {
                         onPoolUnitClick(it)
@@ -379,6 +380,7 @@ fun AssetsContent(
     onPoolUnitClick: (PoolUnit) -> Unit,
     gradient: ImmutableList<Color>,
     onTransferClick: (String) -> Unit,
+    onHistoryClick: () -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit
 ) {
@@ -433,17 +435,16 @@ fun AssetsContent(
                             enter = fadeIn(),
                             exit = fadeOut()
                         ) {
-                            RadixSecondaryButton(
-                                text = stringResource(id = R.string.account_transfer),
-                                onClick = { onTransferClick(accountAddress) },
-                                containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
-                                contentColor = RadixTheme.colors.white,
-                                shape = RadixTheme.shapes.circle
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
-                                Icon(
-                                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
-                                    tint = RadixTheme.colors.white,
-                                    contentDescription = null
+                                HistoryButton(
+                                    onHistoryClick = onHistoryClick
+                                )
+                                TransferButton(
+                                    accountAddress = accountAddress,
+                                    onTransferClick = onTransferClick
                                 )
                             }
                         }
@@ -573,12 +574,37 @@ fun AssetsContent(
 }
 
 @Composable
-private fun HistoryButton(modifier: Modifier = Modifier, onHistoryClick: () -> Unit) {
+private fun TransferButton(
+    modifier: Modifier = Modifier,
+    accountAddress: String,
+    onTransferClick: (String) -> Unit
+) {
+    RadixSecondaryButton(
+        modifier = modifier,
+        text = stringResource(id = R.string.account_transfer),
+        onClick = { onTransferClick(accountAddress) },
+        containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
+        contentColor = RadixTheme.colors.white,
+        shape = RadixTheme.shapes.circle
+    ) {
+        Icon(
+            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
+            tint = RadixTheme.colors.white,
+            contentDescription = null
+        )
+    }
+}
+
+@Composable
+private fun HistoryButton(
+    modifier: Modifier = Modifier,
+    onHistoryClick: () -> Unit
+) {
     RadixSecondaryButton(
         text = stringResource(id = R.string.common_history),
         onClick = onHistoryClick,
         modifier = modifier,
-        containerColor = RadixTheme.colors.gray2,
+        containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
         contentColor = RadixTheme.colors.white,
         shape = RadixTheme.shapes.circle
     ) {
@@ -605,12 +631,12 @@ fun AccountContentPreview() {
                             poolUnits = listOf(),
                             validatorsWithStakes = emptyList()
                         ),
-                    )
+                    ),
+                    historyDashboardUrl = ""
                 ),
                 onAccountPreferenceClick = { _ -> },
                 onBackClick = {},
                 onRefresh = {},
-                onHistoryClick = {},
                 onTransferClick = {},
                 onMessageShown = {},
                 onFungibleResourceClicked = {},

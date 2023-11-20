@@ -26,8 +26,10 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
+import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetworkWithAddress
 import timber.log.Timber
@@ -48,10 +50,15 @@ class AccountViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetworkWithAddress(accountAddress).collectLatest { account ->
-                account?.let {
+            getProfileUseCase.accountOnCurrentNetworkWithAddress(accountAddress).collectLatest { accountFromAddress ->
+                accountFromAddress?.let { account ->
+                    val dashboardUrl = NetworkId.from(account.networkID).dashboardUrl()
+                    val historyDashboardUrl = "$dashboardUrl/account/$accountAddress/recent-transactions"
                     _state.update { state ->
-                        state.copy(accountWithAssets = AccountWithAssets(account = account, assets = null))
+                        state.copy(
+                            accountWithAssets = AccountWithAssets(account = account, assets = null),
+                            historyDashboardUrl = historyDashboardUrl
+                        )
                     }
                     loadAccountData(isRefreshing = false)
                 }
@@ -178,6 +185,7 @@ data class AccountUiState(
     private val refreshing: Boolean = false,
     val selectedResource: SelectedResource? = null,
     val uiMessage: UiMessage? = null,
+    val historyDashboardUrl: String? = null
 ) : UiState {
 
     val visiblePrompt: SecurityPromptType?
@@ -196,8 +204,6 @@ data class AccountUiState(
 
     val isTransferEnabled: Boolean
         get() = !isLoading
-
-    val isHistoryEnabled: Boolean = false
 }
 
 sealed interface SelectedResource {
