@@ -140,8 +140,16 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    fun skipMainSeedPhrase() {
-        viewModelScope.launch { skipAndCreateBabylonDeviceFactorSource() }
+    fun skipMainSeedPhraseAndCreateNew() {
+        viewModelScope.launch {
+            _state.update { it.copy(isRestoring = true) }
+            if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainSeedPhrase) {
+                restoreAndSkipMainSeedPhraseUseCase(args.backupType)
+            }
+
+            _state.update { state -> state.copy(isRestoring = false) }
+            showNextRecoverableFactorSourceOrFinish()
+        }
     }
 
     fun onMessageShown() {
@@ -171,16 +179,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
         } else {
             viewModelScope.launch { restoreMnemonic() }
         }
-    }
-
-    private suspend fun skipAndCreateBabylonDeviceFactorSource() {
-        _state.update { it.copy(isRestoring = true) }
-        if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainSeedPhrase) {
-            restoreAndSkipMainSeedPhraseUseCase(args.backupType)
-        }
-
-        _state.update { state -> state.copy(isRestoring = false) }
-        showNextRecoverableFactorSourceOrFinish()
     }
 
     private suspend fun restoreMnemonic() {

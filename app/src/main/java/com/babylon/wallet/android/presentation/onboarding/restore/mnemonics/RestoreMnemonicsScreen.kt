@@ -80,7 +80,7 @@ fun RestoreMnemonicsScreen(
                 RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
                     context.biometricAuthenticate { authenticated ->
                         if (authenticated) {
-                            viewModel.skipMainSeedPhrase()
+                            viewModel.skipMainSeedPhraseAndCreateNew()
                         }
                     }
                 }
@@ -459,6 +459,38 @@ fun RestoreMnemonicsSeedPhraseContent() {
                     )
                 ),
                 screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
+            ),
+            onBackClick = {},
+            onSkipSeedPhraseClick = {},
+            onSkipMainSeedPhraseClick = {},
+            onSubmitClick = {},
+            onWordTyped = { _, _ -> },
+            onPassphraseChanged = {},
+            onMessageShown = {},
+            onWordSelected = { _, _ -> }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RestoreMnemonicsNoMainSeedPhraseContent() {
+    RadixWalletTheme {
+        RestoreMnemonicsContent(
+            state = RestoreMnemonicsViewModel.State(
+                recoverableFactorSources = listOf(
+                    RecoverableFactorSource(
+                        associatedAccounts = List(5) { index ->
+                            SampleDataProvider().sampleAccount(
+                                address = "rdx_abcdefg$index",
+                                name = "Account $index",
+                                appearanceId = index
+                            )
+                        },
+                        factorSource = SampleDataProvider().babylonDeviceFactorSource()
+                    )
+                ),
+                screenType = RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase
             ),
             onBackClick = {},
             onSkipSeedPhraseClick = {},
