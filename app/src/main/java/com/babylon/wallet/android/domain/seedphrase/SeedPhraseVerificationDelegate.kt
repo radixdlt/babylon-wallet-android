@@ -62,7 +62,7 @@ class SeedPhraseVerificationDelegate(
             }
             _state.update { state ->
                 val updatedWords = state.seedPhraseWords.mapWhen(predicate = { it.index == index }, mutation = {
-                    it.copy(value = value, state = wordState)
+                    it.copy(value = value.trim(), state = wordState)
                 }).toPersistentList()
                 state.copy(
                     seedPhraseWords = updatedWords,

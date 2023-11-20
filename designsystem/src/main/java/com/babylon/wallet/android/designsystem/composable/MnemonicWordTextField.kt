@@ -61,7 +61,7 @@ fun MnemonicWordTextField(
     textStyle: TextStyle = RadixTheme.typography.body1Regular,
     errorFixedSize: Boolean = false,
     enabled: Boolean = true,
-    usedInSeedPhraseVerification: Boolean = false,
+    highlightField: Boolean = false,
     hasInitialFocus: Boolean = false
 ) {
     var focused by remember { mutableStateOf(hasInitialFocus) }
@@ -90,7 +90,7 @@ fun MnemonicWordTextField(
             else -> RadixTheme.colors.gray1
         }
         val borderColor = when {
-            enabled && usedInSeedPhraseVerification -> RadixTheme.colors.gray1
+            enabled && highlightField -> RadixTheme.colors.gray1
             error != null -> RadixTheme.colors.red1
             focused -> RadixTheme.colors.gray1
             else -> RadixTheme.colors.gray4
@@ -132,7 +132,7 @@ fun MnemonicWordTextField(
                             Box(modifier = Modifier.weight(1f)) {
                                 innerTextField()
                             }
-                            if (enabled && usedInSeedPhraseVerification.not()) {
+                            if (enabled && highlightField.not()) {
                                 trailingIcon?.invoke()
                             }
                         }

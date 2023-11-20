@@ -128,7 +128,7 @@ private fun SeedPhraseWordInput(
         errorFixedSize = true,
         singleLine = true,
         enabled = enabled,
-        usedInSeedPhraseVerification = true,
+        highlightField = true,
         hasInitialFocus = initiallyFocused,
         hintColor = if (enabled.not()) RadixTheme.colors.gray4 else null
     )

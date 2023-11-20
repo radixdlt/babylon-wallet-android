@@ -206,7 +206,7 @@ private fun SeedPhraseWordInput(
         errorFixedSize = true,
         singleLine = true,
         enabled = enabled,
-        usedInSeedPhraseVerification = false
+        highlightField = false
     )
 }
 
