@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -275,77 +274,9 @@ private fun NonFungibleAssetDialogContent(
                             )
                         }
 
-                        Column(modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge)) {
-                            if (state.resource?.behaviours == null || state.resource.behaviours.isNotEmpty()) {
-                                Text(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(
-                                            top = RadixTheme.dimensions.paddingDefault,
-                                            bottom = RadixTheme.dimensions.paddingSmall
-                                        ),
-                                    text = stringResource(id = R.string.assetDetails_behavior),
-                                    style = RadixTheme.typography.body1Regular,
-                                    color = RadixTheme.colors.gray2
-                                )
-                            }
+                        BehavioursSection(state)
 
-                            if (state.resource?.behaviours == null) {
-                                Box(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .height(RadixTheme.dimensions.paddingLarge)
-                                        .radixPlaceholder(visible = true)
-                                )
-                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                                Box(
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .height(RadixTheme.dimensions.paddingLarge)
-                                        .radixPlaceholder(visible = true)
-                                )
-                            } else {
-                                state.resource.behaviours.forEach { behaviour ->
-                                    Behaviour(
-                                        icon = behaviour.icon(),
-                                        name = behaviour.name()
-                                    )
-                                }
-                            }
-                        }
-
-                        if (!state.resource?.tags.isNullOrEmpty()) {
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                                text = stringResource(id = R.string.assetDetails_tags),
-                                style = RadixTheme.typography.body1Regular,
-                                color = RadixTheme.colors.gray2
-                            )
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                            FlowRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                                content = {
-                                    state.resource?.tags?.forEach { tag ->
-                                        Tag(
-                                            modifier = Modifier
-                                                .padding(RadixTheme.dimensions.paddingXSmall)
-                                                .border(
-                                                    width = 1.dp,
-                                                    color = RadixTheme.colors.gray4,
-                                                    shape = RadixTheme.shapes.roundedTag
-                                                )
-                                                .padding(RadixTheme.dimensions.paddingSmall),
-                                            tag = tag
-                                        )
-                                    }
-                                }
-                            )
-                        }
+                        TagsSection(state)
                     }
                 }
             }
@@ -355,5 +286,85 @@ private fun NonFungibleAssetDialogContent(
                 onMessageShown = onMessageShown
             )
         }
+    }
+}
+
+@Composable
+private fun BehavioursSection(
+    state: NonFungibleAssetDialogViewModel.State
+) {
+    Column(modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge)) {
+        if (state.resource?.behaviours == null || state.resource.behaviours.isNotEmpty()) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        top = RadixTheme.dimensions.paddingDefault,
+                        bottom = RadixTheme.dimensions.paddingSmall
+                    ),
+                text = stringResource(id = R.string.assetDetails_behavior),
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.gray2
+            )
+        }
+
+        if (state.resource?.behaviours == null) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(RadixTheme.dimensions.paddingLarge)
+                    .radixPlaceholder(visible = true)
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .height(RadixTheme.dimensions.paddingLarge)
+                    .radixPlaceholder(visible = true)
+            )
+        } else {
+            state.resource.behaviours.forEach { behaviour ->
+                Behaviour(
+                    icon = behaviour.icon(),
+                    name = behaviour.name()
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TagsSection(state: NonFungibleAssetDialogViewModel.State) {
+    if (!state.resource?.tags.isNullOrEmpty()) {
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+            text = stringResource(id = R.string.assetDetails_tags),
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray2
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        FlowRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+            content = {
+                state.resource?.tags?.forEach { tag ->
+                    Tag(
+                        modifier = Modifier
+                            .padding(RadixTheme.dimensions.paddingXSmall)
+                            .border(
+                                width = 1.dp,
+                                color = RadixTheme.colors.gray4,
+                                shape = RadixTheme.shapes.roundedTag
+                            )
+                            .padding(RadixTheme.dimensions.paddingSmall),
+                        tag = tag
+                    )
+                }
+            }
+        )
     }
 }
