@@ -142,12 +142,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     fun skipMainSeedPhraseAndCreateNew() {
         viewModelScope.launch {
-            _state.update { it.copy(isRestoring = true) }
-            if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainBabylonSeedPhrase) {
-                restoreAndCreateMainSeedPhraseUseCase(args.backupType)
-            }
-
-            _state.update { state -> state.copy(isRestoring = false) }
+            _state.update { state -> state.copy(hasSkippedMainSeedPhrase = true) }
             showNextRecoverableFactorSourceOrFinish()
         }
     }
@@ -218,6 +213,21 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
             _state.update { it.proceedToNextRecoverable() }
         } else {
+            if (_state.value.hasSkippedMainSeedPhrase) {
+                // Create main babylon seedphrase as it was skipped before
+                _state.update { it.copy(isRestoring = true) }
+                if (args is RestoreMnemonicsArgs.RestoreProfile) {
+                    restoreAndCreateMainSeedPhraseUseCase(args.backupType)
+                }
+
+                _state.update { state ->
+                    state.copy(
+                        isRestoring = false,
+                        hasSkippedMainSeedPhrase = false
+                    )
+                }
+            }
+
             sendEvent(Event.FinishRestoration(isMovingToMain = args is RestoreMnemonicsArgs.RestoreProfile))
         }
     }
@@ -229,6 +239,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val isMovingForward: Boolean = false,
         val uiMessage: UiMessage? = null,
         val isRestoring: Boolean = false,
+        val hasSkippedMainSeedPhrase: Boolean = false,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState {
 
@@ -240,6 +251,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
         val nextRecoverableFactorSource: RecoverableFactorSource?
             get() = recoverableFactorSources.getOrNull(selectedIndex + 1)
+
+        val isLastRecoverableFactorSource: Boolean
+            get() = nextRecoverableFactorSource == null
 
         val recoverableFactorSource: RecoverableFactorSource?
             get() = if (selectedIndex == -1) null else recoverableFactorSources.getOrNull(selectedIndex)

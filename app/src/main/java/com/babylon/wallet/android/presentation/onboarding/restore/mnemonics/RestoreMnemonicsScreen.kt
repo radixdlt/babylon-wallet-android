@@ -73,15 +73,29 @@ fun RestoreMnemonicsScreen(
     RestoreMnemonicsContent(
         state = state,
         onBackClick = viewModel::onBackClick,
-        onSkipSeedPhraseClick = viewModel::onSkipSeedPhraseClick,
+        onSkipSeedPhraseClick = {
+            if (state.isLastRecoverableFactorSource) {
+                context.biometricAuthenticate { authenticated ->
+                    if (authenticated) {
+                        viewModel.onSkipSeedPhraseClick()
+                    }
+                }
+            } else {
+                viewModel.onSkipSeedPhraseClick()
+            }
+        },
         onSkipMainSeedPhraseClick = viewModel::onSkipMainSeedPhraseClick,
         onSubmitClick = {
             when (state.screenType) {
                 RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
-                    context.biometricAuthenticate { authenticated ->
-                        if (authenticated) {
-                            viewModel.skipMainSeedPhraseAndCreateNew()
+                    if (state.isLastRecoverableFactorSource) {
+                        context.biometricAuthenticate { authenticated ->
+                            if (authenticated) {
+                                viewModel.skipMainSeedPhraseAndCreateNew()
+                            }
                         }
+                    } else {
+                        viewModel.skipMainSeedPhraseAndCreateNew()
                     }
                 }
                 RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
