@@ -66,7 +66,8 @@ fun BigDecimal.displayableQuantity(): String {
         if (roundTokenQuantity == BigDecimal.ZERO) {
             "0"
         } else {
-            roundTokenQuantity.toPlainString()
+            decimalFormat.maximumFractionDigits = MAX_TOKEN_DIGITS_LENGTH - 1
+            decimalFormat.format(roundTokenQuantity)
         }
     } else {
         decimalFormat.maximumFractionDigits = MAX_TOKEN_DIGITS_LENGTH - integralPartLength
