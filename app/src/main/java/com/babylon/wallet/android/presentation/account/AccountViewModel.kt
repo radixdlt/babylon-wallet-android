@@ -261,9 +261,6 @@ data class AccountUiState(
             return "$dashboardUrl/account/${account.address}/recent-transactions"
         }
 
-    val isRefreshing: Boolean
-        get() = !isLoading && refreshing
-
     val isTransferEnabled: Boolean
         get() = accountWithAssets?.assets != null
 
