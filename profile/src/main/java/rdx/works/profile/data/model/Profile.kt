@@ -76,7 +76,7 @@ data class Profile(
         get() = factorSources
             .filterIsInstance<DeviceFactorSource>()
             .any {
-                it.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon
+                it.isBabylon
             }
 
     companion object {

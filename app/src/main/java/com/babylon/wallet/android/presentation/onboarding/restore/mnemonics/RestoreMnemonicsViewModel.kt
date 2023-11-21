@@ -27,7 +27,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
-import rdx.works.profile.domain.backup.RestoreAndSkipMainSeedPhraseUseCase
+import rdx.works.profile.domain.backup.RestoreAndCreateMainSeedPhraseUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
@@ -41,7 +41,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
-    private val restoreAndSkipMainSeedPhraseUseCase: RestoreAndSkipMainSeedPhraseUseCase,
+    private val restoreAndCreateMainSeedPhraseUseCase: RestoreAndCreateMainSeedPhraseUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
@@ -144,7 +144,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isRestoring = true) }
             if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainBabylonSeedPhrase) {
-                restoreAndSkipMainSeedPhraseUseCase(args.backupType)
+                restoreAndCreateMainSeedPhraseUseCase(args.backupType)
             }
 
             _state.update { state -> state.copy(isRestoring = false) }

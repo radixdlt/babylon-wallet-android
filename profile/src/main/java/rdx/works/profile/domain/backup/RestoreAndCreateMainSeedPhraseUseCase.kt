@@ -11,7 +11,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import java.time.Instant
 import javax.inject.Inject
 
-class RestoreAndSkipMainSeedPhraseUseCase @Inject constructor(
+class RestoreAndCreateMainSeedPhraseUseCase @Inject constructor(
     private val backupProfileRepository: BackupProfileRepository,
     private val profileRepository: ProfileRepository,
     private val deviceInfoRepository: DeviceInfoRepository,
