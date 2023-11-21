@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.ui
 
-import com.babylon.wallet.android.domain.seedphrase.SeedPhraseWord
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme

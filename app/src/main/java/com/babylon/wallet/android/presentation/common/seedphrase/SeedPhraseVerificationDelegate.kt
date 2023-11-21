@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.seedphrase
+package com.babylon.wallet.android.presentation.common.seedphrase
 
 import com.babylon.wallet.android.presentation.common.Stateful
 import com.babylon.wallet.android.presentation.common.UiState
