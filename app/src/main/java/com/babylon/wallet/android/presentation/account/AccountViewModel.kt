@@ -41,8 +41,8 @@ import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
