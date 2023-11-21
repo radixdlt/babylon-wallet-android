@@ -245,7 +245,13 @@ class RestoreMnemonicsViewModel @Inject constructor(
             get() = if (selectedIndex == -1) null else recoverableFactorSources.getOrNull(selectedIndex)
 
         val isMainBabylonSeedPhrase: Boolean
-            get() = recoverableFactorSource?.factorSource?.isMainBabylon == true
+            // If its only one factor source we treat it as main
+            // If more than one we check against isMainBabylon
+            get() = if (recoverableFactorSources.size == 1) {
+                true
+            } else {
+                recoverableFactorSource?.factorSource?.isMainBabylon == true
+            }
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1,
