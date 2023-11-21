@@ -94,10 +94,11 @@ class AccountsStateCache @Inject constructor(
             }
             emit(accountsToReturn)
 
+            val knownStateVersion = accountsToReturn.maxOfOrNull { it.details?.stateVersion ?: -1L }?.takeIf { it > 0L }
             val accountsToRequest = accountsToReturn.filter { it.assets == null }.map { it.account.address }.toSet()
             fetchAllResources(
                 accountAddresses = accountsToRequest,
-                onStateVersion = cachedAccounts.maxOfOrNull { it.details?.stateVersion ?: -1L }?.takeIf { it > 0L },
+                onStateVersion = knownStateVersion,
             )
         }
         .flowOn(dispatcher)
