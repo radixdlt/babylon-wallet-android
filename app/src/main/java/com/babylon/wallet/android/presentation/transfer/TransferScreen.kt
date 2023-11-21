@@ -89,6 +89,7 @@ fun TransferScreen(
         onAmountTyped = viewModel::onAmountTyped,
         onMaxAmountClicked = viewModel::onMaxAmount,
         onMaxAmountApplied = viewModel::onMaxAmountApplied,
+        onLessThanFeeApplied = viewModel::onLessThanFeeApplied,
         onAssetSelectionChanged = viewModel::onAssetSelectionChanged,
         onUiMessageShown = viewModel::onUiMessageShown,
         onChooseAssetsSubmitted = viewModel::onChooseAssetsSubmitted,
@@ -120,6 +121,7 @@ fun TransferContent(
     onAmountTyped: (TargetAccount, SpendingAsset, String) -> Unit,
     onMaxAmountClicked: (TargetAccount, SpendingAsset) -> Unit,
     onMaxAmountApplied: (Boolean) -> Unit,
+    onLessThanFeeApplied: (Boolean) -> Unit,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit,
     onUiMessageShown: () -> Unit,
     onChooseAssetsSubmitted: () -> Unit,
@@ -139,15 +141,30 @@ fun TransferContent(
     )
 
     state.maxXrdError?.let { error ->
-        BasicPromptAlertDialog(
-            finish = onMaxAmountApplied,
-            title = "Sending All XRD", // TODO Crowdin
-            text = "Sending the full amount of XRD in this account will require you to pay the transaction " +
-                "fee from a different account. Or, the wallet can reduce the amount transferred so the fee can be " +
-                "paid from this account. Choose the amount to transfer:",
-            confirmText = "${error.maxAccountAmount.displayableQuantity()} (send all XRD)",
-            dismissText = "${error.amountWithoutFees.displayableQuantity()} (save 1 XRD for fee)"
-        )
+        if (error.maxAccountAmountLessThanFee) {
+            BasicPromptAlertDialog(
+                finish = onLessThanFeeApplied,
+                title = stringResource(id = R.string.assetTransfer_maxAmountDialog_title),
+                text = "Sending the full amount of XRD in this account will require you to pay the transaction fee " +
+                    "from a different account.", // TODO Crowdin
+                confirmText = stringResource(id = R.string.common_ok),
+                dismissText = stringResource(id = R.string.common_cancel)
+            )
+        } else {
+            BasicPromptAlertDialog(
+                finish = onMaxAmountApplied,
+                title = stringResource(id = R.string.assetTransfer_maxAmountDialog_title),
+                text = stringResource(id = R.string.assetTransfer_maxAmountDialog_body),
+                confirmText = stringResource(
+                    id = R.string.assetTransfer_maxAmountDialog_sendAllButton,
+                    error.maxAccountAmount.displayableQuantity()
+                ),
+                dismissText = stringResource(
+                    id = R.string.assetTransfer_maxAmountDialog_saveXrdForFeeButton,
+                    error.amountWithoutFees.displayableQuantity()
+                )
+            )
+        }
     }
 
     DefaultModalSheetLayout(
@@ -417,6 +434,7 @@ fun TransferContentPreview() {
             onAmountTyped = { _, _, _ -> },
             onMaxAmountClicked = { _, _ -> },
             onMaxAmountApplied = {},
+            onLessThanFeeApplied = {},
             onAssetSelectionChanged = { _, _ -> },
             onUiMessageShown = {},
             onChooseAssetsSubmitted = {},
