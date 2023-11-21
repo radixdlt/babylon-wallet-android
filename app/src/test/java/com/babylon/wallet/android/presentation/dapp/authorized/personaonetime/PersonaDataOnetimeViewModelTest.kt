@@ -18,6 +18,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.domain.GetProfileUseCase
@@ -57,7 +58,7 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
             emit(true)
         }
         coEvery { getProfileUseCase() } returns flowOf(
-            profile(personas = listOf(samplePersona))
+            profile(personas = identifiedArrayListOf(samplePersona))
         )
     }
 

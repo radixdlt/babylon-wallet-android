@@ -18,6 +18,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
 
@@ -47,7 +48,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         every { savedStateHandle.get<String>(ARG_DAPP_DEFINITION_ADDRESS) } returns "address1"
         every { getProfileUseCase() } returns flowOf(
             profile(
-                personas = listOf(
+                personas = identifiedArrayListOf(
                     SampleDataProvider().samplePersona("address1"),
                     SampleDataProvider().samplePersona("address2")
                 )

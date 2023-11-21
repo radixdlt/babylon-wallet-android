@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
@@ -41,7 +42,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
     private val appEventBus = mockk<AppEventBus>()
 
-    private val sampleProfile = profile(accounts = listOf(account(address = "adr_1", name = "primary")))
+    private val sampleProfile = profile(accounts = identifiedArrayListOf(account(address = "adr_1", name = "primary")))
     private val sampleXrdResource = Resource.FungibleResource(
         resourceAddress = XrdResource.address(),
         ownedAmount = BigDecimal.TEN,

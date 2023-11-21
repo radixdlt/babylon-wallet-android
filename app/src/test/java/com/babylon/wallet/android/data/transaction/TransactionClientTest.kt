@@ -20,6 +20,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
@@ -75,7 +76,7 @@ internal class TransactionClientTest {
             ).build(networkId)
 
         private object ProfileRepositoryFake : ProfileRepository {
-            private val profile = profile(accounts = listOf(account1, account2))
+            private val profile = profile(accounts = identifiedArrayListOf(account1, account2))
 
             override val profileState: Flow<ProfileState> = flowOf(ProfileState.Restored(profile = profile))
 

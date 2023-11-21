@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.domain.GetProfileUseCase
 
 @ExperimentalCoroutinesApi
@@ -38,7 +39,7 @@ class CreateAccountConfirmationViewModelTest : StateViewModelTest<CreateAccountC
         every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns accountId
         every { savedStateHandle.get<String>(Screen.ARG_ACCOUNT_NAME) } returns accountName
         every { savedStateHandle.get<Boolean>(Screen.ARG_HAS_PROFILE) } returns false
-        every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(account(address = accountId, name = accountName))))
+        every { getProfileUseCase() } returns flowOf(profile(accounts = identifiedArrayListOf(account(address = accountId, name = accountName))))
     }
 
     @Test
