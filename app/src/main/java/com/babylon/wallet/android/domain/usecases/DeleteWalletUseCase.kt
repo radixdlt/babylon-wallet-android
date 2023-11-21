@@ -3,7 +3,6 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import rdx.works.profile.domain.DeleteProfileUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 class DeleteWalletUseCase @Inject constructor(
@@ -17,5 +16,4 @@ class DeleteWalletUseCase @Inject constructor(
         peerdroidClient.terminate()
         stateRepository.clearCachedState()
     }
-
 }

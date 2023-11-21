@@ -169,6 +169,10 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
+            override suspend fun clearCachedState(): Result<Unit> {
+                error("Not needed")
+            }
+
         }
     }
 

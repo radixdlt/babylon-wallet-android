@@ -43,7 +43,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -56,7 +55,6 @@ import java.math.BigDecimal
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.time.Duration
 
 @Singleton
 class AccountsStateCache @Inject constructor(

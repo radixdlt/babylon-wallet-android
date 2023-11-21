@@ -9,7 +9,6 @@ import kotlinx.serialization.json.Json.Default.serializersModule
 import kotlinx.serialization.serializer
 import retrofit2.Call
 import retrofit2.awaitResponse
-import timber.log.Timber
 
 @Suppress("SwallowedException")
 suspend inline fun <T> Call<T>.toResult(): Result<T> {

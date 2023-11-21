@@ -38,6 +38,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 interface StateRepository {
 
     fun observeAccountsOnLedger(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>>
@@ -73,6 +74,7 @@ interface StateRepository {
     }
 }
 
+@Suppress("TooManyFunctions")
 class StateRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val stateDao: StateDao,

@@ -11,7 +11,6 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -30,7 +29,6 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewA
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.assets.rememberAssetsViewState
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
-import timber.log.Timber
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
