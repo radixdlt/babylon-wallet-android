@@ -151,7 +151,7 @@ class GenerateProfileUseCaseTest {
             Assert.assertEquals(
                 "Factor Source ID",
                 expectedFactorSourceId,
-                profile.babylonDeviceFactorSource.id.body.value
+                profile.babylonMainDeviceFactorSource.id.body.value
             )
         }
     }
@@ -179,7 +179,7 @@ class GenerateProfileUseCaseTest {
             Assert.assertEquals(
                 "Factor Source ID",
                 expectedFactorSourceId,
-                profile.babylonDeviceFactorSource.id.body.value
+                profile.babylonMainDeviceFactorSource.id.body.value
             )
         }
     }
