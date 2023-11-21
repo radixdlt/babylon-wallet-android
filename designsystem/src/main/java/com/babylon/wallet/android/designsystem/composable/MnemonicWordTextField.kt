@@ -18,13 +18,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.FocusState
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -58,9 +61,16 @@ fun MnemonicWordTextField(
     textStyle: TextStyle = RadixTheme.typography.body1Regular,
     errorFixedSize: Boolean = false,
     enabled: Boolean = true,
-    highlightField: Boolean = false
+    highlightField: Boolean = false,
+    hasInitialFocus: Boolean = false
 ) {
-    var focused by remember { mutableStateOf(false) }
+    var focused by remember { mutableStateOf(hasInitialFocus) }
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        if (hasInitialFocus) {
+            focusRequester.requestFocus()
+        }
+    }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
@@ -80,17 +90,19 @@ fun MnemonicWordTextField(
             else -> RadixTheme.colors.gray1
         }
         val borderColor = when {
-            enabled && highlightField -> RadixTheme.colors.green1
+            enabled && highlightField -> RadixTheme.colors.gray1
             error != null -> RadixTheme.colors.red1
             focused -> RadixTheme.colors.gray1
             else -> RadixTheme.colors.gray4
         }
         CompositionLocalProvider(LocalTextSelectionColors provides selectionColors) {
             BasicTextField(
-                modifier = Modifier.onFocusChanged {
-                    focused = it.hasFocus
-                    onFocusChanged?.invoke(it)
-                },
+                modifier = Modifier
+                    .onFocusChanged {
+                        focused = it.hasFocus
+                        onFocusChanged?.invoke(it)
+                    }
+                    .focusRequester(focusRequester),
                 value = value,
                 onValueChange = onValueChanged,
                 textStyle = textStyle.copy(color = textColor),
@@ -120,7 +132,7 @@ fun MnemonicWordTextField(
                             Box(modifier = Modifier.weight(1f)) {
                                 innerTextField()
                             }
-                            if (enabled) {
+                            if (enabled && highlightField.not()) {
                                 trailingIcon?.invoke()
                             }
                         }

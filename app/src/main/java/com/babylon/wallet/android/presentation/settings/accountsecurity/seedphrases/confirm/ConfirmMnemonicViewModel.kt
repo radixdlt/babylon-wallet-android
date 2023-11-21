@@ -5,10 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
-import com.babylon.wallet.android.presentation.common.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseVerificationDelegate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -30,7 +30,7 @@ class ConfirmMnemonicViewModel @Inject constructor(
     OneOffEventHandler<ConfirmMnemonicViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = ConfirmSeedPhraseArgs(savedStateHandle)
-    private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
+    private val seedPhraseInputDelegate = SeedPhraseVerificationDelegate(viewModelScope)
 
     override fun initialState(): State = State()
 
@@ -39,7 +39,7 @@ class ConfirmMnemonicViewModel @Inject constructor(
             val factorSource = requireNotNull(getProfileUseCase.factorSourceByIdValue(args.factorSourceId) as? DeviceFactorSource)
             val mnemonicExist = mnemonicRepository.mnemonicExist(factorSource.id)
             if (mnemonicExist) {
-                seedPhraseInputDelegate.initInConfirmMode(args.mnemonicSize)
+                seedPhraseInputDelegate.init(args.mnemonicSize)
             }
         }
         viewModelScope.launch {
@@ -54,20 +54,7 @@ class ConfirmMnemonicViewModel @Inject constructor(
     }
 
     fun onWordChanged(index: Int, value: String) {
-        seedPhraseInputDelegate.onWordChanged(index, value) {
-            sendEvent(Event.MoveToNextWord)
-        }
-    }
-
-    fun onWordSelected(index: Int, value: String) {
-        seedPhraseInputDelegate.onWordSelected(index, value)
-        viewModelScope.launch {
-            sendEvent(Event.MoveToNextWord)
-        }
-    }
-
-    fun onPassphraseChanged(value: String) {
-        seedPhraseInputDelegate.onPassphraseChanged(value)
+        seedPhraseInputDelegate.onWordChanged(index, value)
     }
 
     fun onSubmit() {
@@ -90,7 +77,7 @@ class ConfirmMnemonicViewModel @Inject constructor(
     data class State(
         private val factorSource: FactorSource? = null,
         val uiMessage: UiMessage? = null,
-        val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
+        val seedPhraseState: SeedPhraseVerificationDelegate.State = SeedPhraseVerificationDelegate.State()
     ) : UiState
 
     sealed interface Event : OneOffEvent {
