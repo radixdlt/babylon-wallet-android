@@ -46,8 +46,10 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
+import rdx.works.core.toUnitResult
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import timber.log.Timber
@@ -67,7 +69,7 @@ class AccountsStateCache @Inject constructor(
 
     private val accountsMemoryCache = MutableStateFlow<List<AccountAddressWithAssets>?>(null)
     private val accountsRequested = MutableStateFlow<Set<String>>(emptySet())
-    private val deletingCache = MutableStateFlow(false)
+    private val deletingDatabaseMutex = Mutex()
 
     init {
         dao.observeAccounts()
@@ -100,7 +102,7 @@ class AccountsStateCache @Inject constructor(
             emit(accountsToReturn)
 
             // Do not request accounts while deleting cache
-            if (deletingCache.value) return@transform
+            if (deletingDatabaseMutex.isLocked) return@transform
 
             val knownStateVersion = accountsToReturn.maxOfOrNull { it.details?.stateVersion ?: -1L }?.takeIf { it > 0L }
             val accountsToRequest = accountsToReturn.filter { it.assets == null }.map { it.account.address }.toSet()
@@ -130,19 +132,18 @@ class AccountsStateCache @Inject constructor(
     }
 
     suspend fun clear() = runCatching {
+        deletingDatabaseMutex.lock()
         withContext(dispatcher) {
-            deletingCache.update { true }
             database.clearAllTables()
-            applicationScope.launch {
-                // observeAccountsOnLedger will emit immediately after the db has been deleted
-                // and it may have an active connection of a several amount of accounts
-                // We need to delay a bit so the subscriber (view model) can be killed by the system
-                delay(StateDao.deleteDuration)
-                deletingCache.update { false }
-            }
-            Unit
         }
-    }
+        applicationScope.launch {
+            // observeAccountsOnLedger will emit immediately after the db has been deleted
+            // and it may have an active connection of a several amount of accounts
+            // We need to delay a bit so the subscriber (view model) can be killed by the system
+            delay(StateDao.deleteDuration)
+            deletingDatabaseMutex.unlock()
+        }
+    }.toUnitResult()
 
     private suspend fun fetchAllResources(
         accountAddresses: Set<String>,
