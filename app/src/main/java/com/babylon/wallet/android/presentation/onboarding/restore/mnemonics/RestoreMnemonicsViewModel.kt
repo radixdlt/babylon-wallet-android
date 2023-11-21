@@ -143,7 +143,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     fun skipMainSeedPhraseAndCreateNew() {
         viewModelScope.launch {
             _state.update { it.copy(isRestoring = true) }
-            if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainSeedPhrase) {
+            if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainBabylonSeedPhrase) {
                 restoreAndSkipMainSeedPhraseUseCase(args.backupType)
             }
 
@@ -193,7 +193,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 bip39Passphrase = _state.value.seedPhraseState.bip39Passphrase
             )
         ).onSuccess {
-            if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainSeedPhrase) {
+            if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainBabylonSeedPhrase) {
                 restoreProfileFromBackupUseCase(args.backupType)
             }
 
@@ -244,8 +244,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val recoverableFactorSource: RecoverableFactorSource?
             get() = if (selectedIndex == -1) null else recoverableFactorSources.getOrNull(selectedIndex)
 
-        val isMainSeedPhrase: Boolean
-            get() = recoverableFactorSource?.factorSource?.isBabylon == true
+        val isMainBabylonSeedPhrase: Boolean
+            get() = recoverableFactorSource?.factorSource?.isMainBabylon == true
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1,

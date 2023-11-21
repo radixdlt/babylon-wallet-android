@@ -29,6 +29,9 @@ data class DeviceFactorSource(
     val isBabylon: Boolean
         get() = common.cryptoParameters == Common.CryptoParameters.babylon
 
+    val isMainBabylon: Boolean
+        get() = common.flags.contains(FactorSourceFlag.Main) && isBabylon
+
     val isOlympia: Boolean
         get() = common.cryptoParameters == Common.CryptoParameters.olympiaBackwardsCompatible
 

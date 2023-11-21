@@ -257,7 +257,7 @@ private fun EntitiesView(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(
-                id = if (state.isMainSeedPhrase) {
+                id = if (state.isMainBabylonSeedPhrase) {
                     R.string.recoverSeedPhrase_header_titleMain
                 } else {
                     R.string.recoverSeedPhrase_header_titleOther
@@ -273,7 +273,7 @@ private fun EntitiesView(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(
-                id = if (state.isMainSeedPhrase) {
+                id = if (state.isMainBabylonSeedPhrase) {
                     R.string.recoverSeedPhrase_header_subtitleMainSeedPhrase
                 } else {
                     R.string.recoverSeedPhrase_header_subtitleOtherSeedPhrase
@@ -284,7 +284,7 @@ private fun EntitiesView(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        if (!state.isMainSeedPhrase) {
+        if (!state.isMainBabylonSeedPhrase) {
             RadixTextButton(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -306,7 +306,7 @@ private fun EntitiesView(
                     )
                 }
 
-                if (state.isMainSeedPhrase) {
+                if (state.isMainBabylonSeedPhrase) {
                     item {
                         RadixTextButton(
                             modifier = Modifier
