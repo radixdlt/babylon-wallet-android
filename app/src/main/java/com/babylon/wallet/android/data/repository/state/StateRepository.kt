@@ -62,6 +62,8 @@ interface StateRepository {
 
     suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit>
 
+    suspend fun clearCachedState(): Result<Unit>
+
     sealed class Error(cause: Throwable) : Exception(cause) {
         data object NoMorePages : Error(RuntimeException("No more NFTs for this resource."))
 
@@ -371,4 +373,6 @@ class StateRepositoryImpl @Inject constructor(
             stateDao.insertNFTs(newNFTs.map { it.asEntity(syncedAt) })
         }
     }
+
+    override suspend fun clearCachedState(): Result<Unit> = accountsStateCache.clear()
 }

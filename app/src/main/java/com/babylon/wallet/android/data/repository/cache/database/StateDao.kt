@@ -252,6 +252,7 @@ interface StateDao {
     }
 
     companion object {
+        val deleteDuration = 1.toDuration(DurationUnit.SECONDS)
         private val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
         private val resourcesCacheDuration = 48.toDuration(DurationUnit.HOURS)
 

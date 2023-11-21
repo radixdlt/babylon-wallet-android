@@ -4,10 +4,12 @@ import com.babylon.wallet.android.data.gateway.RadixGatewayException
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.data.gateway.generated.models.ErrorResponse
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json.Default.serializersModule
 import kotlinx.serialization.serializer
 import retrofit2.Call
 import retrofit2.awaitResponse
+import timber.log.Timber
 
 @Suppress("SwallowedException")
 suspend inline fun <T> Call<T>.toResult(): Result<T> {
@@ -25,7 +27,13 @@ suspend inline fun <T> Call<T>.toResult(): Result<T> {
             Result.failure(RadixGatewayException(errorResponse?.message))
         }
     } catch (e: Exception) {
-        Result.failure(RadixGatewayException(e.message, e))
+        if (e is CancellationException) {
+            // In this case we don't need to swallow this error but throw it,
+            // so the coroutines can cancel themselves
+            throw e
+        } else {
+            Result.failure(RadixGatewayException(e.message, e))
+        }
     }
 }
 

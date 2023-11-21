@@ -94,9 +94,6 @@ fun ChooseAssetsSheet(
         val selectedAssets = remember(state.targetAccount.assets) {
             state.targetAccount.assets.map { it.address }
         }
-        LaunchedEffect(state.epoch) {
-            Timber.tag("Bakos").d("Epoch ${state.epoch}")
-        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
