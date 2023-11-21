@@ -25,6 +25,15 @@ data class Assets(
     val validatorsWithStakes: List<ValidatorWithStakes> = emptyList()
 ) {
 
+    // Owned assets are assets that appear in the lists, but the user owns 0 amounts.
+    // That is usually the case where a user may have sent all their NFTs from a collection
+    // to another account. Still the collection is associated with the account, but the
+    // user, on ui level, does not need to see it.
+    // Also we don't filter those values out in the data layer since, we actually need this
+    // information when for example we need to know what resources an account is familiar with
+    // so we can apply the correct deposit rule warnings in transfer screen when the rule
+    // is "Only accept known"
+
     val ownedXrd: Resource.FungibleResource? by lazy {
         fungibles.find { it.isXrd && it.ownedAmount != BigDecimal.ZERO }
     }
