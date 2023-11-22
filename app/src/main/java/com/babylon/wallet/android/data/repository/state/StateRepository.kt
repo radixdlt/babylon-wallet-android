@@ -144,6 +144,7 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
+    @Suppress("LongMethod")
     override suspend fun updateLSUsInfo(
         account: Network.Account,
         validatorsWithStakes: List<ValidatorWithStakes>

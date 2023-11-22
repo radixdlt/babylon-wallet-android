@@ -124,7 +124,10 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>): Result<Unit> {
+            override suspend fun updateLSUsInfo(
+                account: Network.Account,
+                validatorsWithStakes: List<ValidatorWithStakes>
+            ): Result<List<ValidatorWithStakes>> {
                 error("Not needed")
             }
 
