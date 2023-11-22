@@ -51,7 +51,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val args = RestoreMnemonicsArgs.from(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
-    override fun initialState(): State = State()
+    override fun initialState(): State = State(restoreMnemonicsArgs = args)
 
     init {
         viewModelScope.launch {
@@ -229,6 +229,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     data class State(
         private val recoverableFactorSources: List<RecoverableFactorSource> = emptyList(),
+        private val restoreMnemonicsArgs: RestoreMnemonicsArgs,
         private val selectedIndex: Int = -1,
         val screenType: ScreenType = ScreenType.Entities,
         val isMovingForward: Boolean = false,
@@ -251,7 +252,15 @@ class RestoreMnemonicsViewModel @Inject constructor(
             get() = if (selectedIndex == -1) null else recoverableFactorSources.getOrNull(selectedIndex)
 
         val isMainBabylonSeedPhrase: Boolean
-            get() = recoverableFactorSource?.factorSource?.isMainBabylon == true
+            get() = if (recoverableFactorSources.any { it.factorSource.isMainBabylon }) {
+                recoverableFactorSource?.factorSource?.isMainBabylon == true
+            } else {
+                when (restoreMnemonicsArgs) {
+                    is RestoreMnemonicsArgs.RestoreProfile -> true
+                    is RestoreMnemonicsArgs.RestoreSpecificMnemonic -> false
+                }
+            }
+
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1,
