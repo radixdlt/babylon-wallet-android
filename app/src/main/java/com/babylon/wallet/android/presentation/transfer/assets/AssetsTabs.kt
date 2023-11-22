@@ -57,7 +57,6 @@ fun AssetsTabs(
             ) {
                 Text(
                     modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingMedium,
                         vertical = RadixTheme.dimensions.paddingSmall
                     ),
                     text = tab.name(),
