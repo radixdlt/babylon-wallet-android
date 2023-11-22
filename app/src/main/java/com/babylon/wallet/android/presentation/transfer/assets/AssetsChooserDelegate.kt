@@ -110,7 +110,7 @@ class AssetsChooserDelegate @Inject constructor(
             updateSheetState { state -> state.copy(pendingStakeUnits = true) }
             viewModelScope.launch {
                 updateLSUsInfo(account, stakes).onSuccess {
-                    updateSheetState { state -> state.copy(pendingStakeUnits = false) }
+                    updateSheetState { state -> state.onValidatorsReceived(it) }
                 }.onFailure { error ->
                     updateSheetState { state -> state.copy(pendingStakeUnits = false, uiMessage = UiMessage.ErrorMessage(error)) }
                 }

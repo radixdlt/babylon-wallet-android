@@ -23,6 +23,7 @@ import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Pool
@@ -45,7 +46,7 @@ interface StateRepository {
 
     suspend fun getNextNFTsPage(account: Network.Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
 
-    suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>): Result<Unit>
+    suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>): Result<List<ValidatorWithStakes>>
 
     suspend fun getResources(addresses: Set<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>>
 
@@ -150,14 +151,14 @@ class StateRepositoryImpl @Inject constructor(
         runCatching {
             val stateVersion = stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
 
-            val lsuAddresses = validatorsWithStakes
-                .filter { !it.liquidStakeUnit.fungibleResource.isDetailsAvailable }
-                .map { it.liquidStakeUnit.resourceAddress }
-                .toSet()
+            var result = validatorsWithStakes
 
-            val lsuEntities = mutableListOf<ResourceEntity>()
+            val lsuEntities = mutableMapOf<String, ResourceEntity>()
             stateApi.paginateDetails(
-                addresses = lsuAddresses,
+                addresses = result
+                    .filter { !it.liquidStakeUnit.fungibleResource.isDetailsAvailable }
+                    .map { it.liquidStakeUnit.resourceAddress }
+                    .toSet(),
                 metadataKeys = setOf(
                     ExplicitMetadataKey.NAME,
                     ExplicitMetadataKey.SYMBOL,
@@ -172,11 +173,30 @@ class StateRepositoryImpl @Inject constructor(
                 ),
                 onPage = { response ->
                     val synced = InstantGenerator()
-                    lsuEntities.addAll(response.items.map { it.asEntity(synced) })
+                    val newLSUs = response.items.map { it.asEntity(synced) }.associateBy { it.address }
+                    lsuEntities.putAll(newLSUs)
                 }
             )
 
-            val claims = validatorsWithStakes.map { validatorWithStakes ->
+            result = result.map { item ->
+                item.copy(
+                    liquidStakeUnit = if (!item.liquidStakeUnit.fungibleResource.isDetailsAvailable) {
+                        val newLsu = lsuEntities[item.liquidStakeUnit.resourceAddress]?.toResource(
+                            item.liquidStakeUnit.fungibleResource.ownedAmount
+                        ) as? Resource.FungibleResource
+
+                        if (newLsu != null) {
+                            LiquidStakeUnit(newLsu)
+                        } else {
+                            item.liquidStakeUnit
+                        }
+                    } else {
+                        item.liquidStakeUnit
+                    }
+                )
+            }
+
+            val claims = result.map { validatorWithStakes ->
                 val stakeClaimCollection = validatorWithStakes.stakeClaimNft?.nonFungibleResource
                 if (stakeClaimCollection != null && stakeClaimCollection.amount.toInt() != stakeClaimCollection.items.size) {
                     val resourcesInAccount = stateDao.getAccountResourceJoin(
@@ -205,9 +225,24 @@ class StateRepositoryImpl @Inject constructor(
             stateDao.storeStakeDetails(
                 accountAddress = account.address,
                 stateVersion = stateVersion,
-                lsuList = lsuEntities,
+                lsuList = lsuEntities.values.toList(),
                 claims = claims
             )
+
+            val allClaimCollections = claims.map { it.toItem() }.groupBy { it.collectionAddress }
+
+            result.map { item ->
+                item.copy(
+                    stakeClaimNft = item.stakeClaimNft?.let { claimCollection ->
+                        val claimNFTs = allClaimCollections[claimCollection.resourceAddress]
+                        if (claimNFTs != null) {
+                            claimCollection.copy(nonFungibleResource = claimCollection.nonFungibleResource.copy(items = claimNFTs))
+                        } else {
+                            claimCollection
+                        }
+                    }
+                )
+            }
         }
     }
 
