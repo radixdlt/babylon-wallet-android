@@ -43,7 +43,7 @@ interface StateRepository {
 
     fun observeAccountsOnLedger(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>>
 
-    suspend fun getMoreNFTs(account: Network.Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
+    suspend fun getNextNFTsPage(account: Network.Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
 
     suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>): Result<Unit>
 
@@ -90,7 +90,7 @@ class StateRepositoryImpl @Inject constructor(
         isRefreshing = isRefreshing
     )
 
-    override suspend fun getMoreNFTs(
+    override suspend fun getNextNFTsPage(
         account: Network.Account,
         resource: Resource.NonFungibleResource
     ): Result<Resource.NonFungibleResource> = withContext(dispatcher) {

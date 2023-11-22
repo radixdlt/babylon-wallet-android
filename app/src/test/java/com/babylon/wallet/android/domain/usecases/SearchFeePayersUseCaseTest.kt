@@ -117,7 +117,7 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getMoreNFTs(
+            override suspend fun getNextNFTsPage(
                 account: Network.Account,
                 resource: Resource.NonFungibleResource
             ): Result<Resource.NonFungibleResource> {

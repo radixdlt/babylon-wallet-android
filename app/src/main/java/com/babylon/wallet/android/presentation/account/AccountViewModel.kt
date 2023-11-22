@@ -11,7 +11,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.domain.usecases.assets.GetMoreNFTsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
@@ -54,7 +54,7 @@ class AccountViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
-    private val getMoreNFTsUseCase: GetMoreNFTsUseCase,
+    private val getNextNFTsPageUseCase: GetNextNFTsPageUseCase,
     private val updateLSUsInfo: UpdateLSUsInfo,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
@@ -189,7 +189,7 @@ class AccountViewModel @Inject constructor(
         if (!state.value.isRefreshing && resource.resourceAddress !in state.value.nonFungiblesWithPendingNFTs) {
             _state.update { state -> state.onNFTsLoading(resource) }
             viewModelScope.launch {
-                getMoreNFTsUseCase(account, resource)
+                getNextNFTsPageUseCase(account, resource)
                     .onSuccess { resourceWithUpdatedNFTs ->
                         _state.update { state ->
                             state.onNFTsReceived(resourceWithUpdatedNFTs)

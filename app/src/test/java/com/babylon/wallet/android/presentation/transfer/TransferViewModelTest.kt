@@ -5,7 +5,7 @@ import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
-import com.babylon.wallet.android.domain.usecases.assets.GetMoreNFTsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.mockdata.account
@@ -37,7 +37,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()
-    private val getMoreNFTsUseCase = mockk<GetMoreNFTsUseCase>()
+    private val getNextNFTsPageUseCase = mockk<GetNextNFTsPageUseCase>()
     private val updateLSUsInfoUseCase = mockk<UpdateLSUsInfo>()
     private val getNetworkInfoUseCase = mockk<GetNetworkInfoUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
@@ -70,7 +70,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             ),
             assetsChooserDelegate = AssetsChooserDelegate(
                 getWalletAssetsUseCase = getWalletAssetsUseCase,
-                getMoreNFTsUseCase = getMoreNFTsUseCase,
+                getNextNFTsPageUseCase = getNextNFTsPageUseCase,
                 updateLSUsInfo = updateLSUsInfoUseCase,
                 getNetworkInfoUseCase = getNetworkInfoUseCase
             ),

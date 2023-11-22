@@ -5,10 +5,10 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 
-class GetMoreNFTsUseCase @Inject constructor(
+class GetNextNFTsPageUseCase @Inject constructor(
     private val repository: StateRepository
 ) {
 
     suspend operator fun invoke(account: Network.Account, resource: Resource.NonFungibleResource) =
-        repository.getMoreNFTs(account, resource)
+        repository.getNextNFTsPage(account, resource)
 }
