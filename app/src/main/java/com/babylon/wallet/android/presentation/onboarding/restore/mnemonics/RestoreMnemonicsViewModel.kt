@@ -78,7 +78,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             recoverableFactorSources = factorSources,
-                            mainBabylonFactorSourceId = profile?.mainBabylonFactorSourceId()
+                            mainBabylonFactorSourceId = profile.mainBabylonFactorSourceId()
                         )
                     }
                 }
@@ -223,6 +223,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
+    @Suppress("NestedBlockDepth")
     private suspend fun showNextRecoverableFactorSourceOrFinish(biometricAuthProvider: suspend () -> Boolean = { true }) {
         val nextRecoverableFactorSource = state.value.nextRecoverableFactorSource
         if (nextRecoverableFactorSource != null) {
