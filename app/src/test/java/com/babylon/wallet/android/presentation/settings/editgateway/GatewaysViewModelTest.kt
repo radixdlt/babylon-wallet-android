@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.settings.editgateway
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.NetworkInfo
+import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewayAddFailure
 import com.babylon.wallet.android.presentation.settings.appsettings.gateways.SettingsEditGatewayEvent
@@ -37,7 +39,7 @@ class GatewaysViewModelTest {
     private val changeGatewayIfNetworkExistUseCase = mockk<ChangeGatewayIfNetworkExistUseCase>()
     private val addGatewayUseCase = mockk<AddGatewayUseCase>()
     private val deleteGatewayUseCase = mockk<DeleteGatewayUseCase>()
-    private val networkInfoRepository = mockk<NetworkInfoRepository>()
+    private val getNetworkInfoUseCase = mockk<GetNetworkInfoUseCase>()
 
     private val profile = SampleDataProvider().sampleProfile()
 
@@ -48,12 +50,14 @@ class GatewaysViewModelTest {
             changeGatewayIfNetworkExistUseCase = changeGatewayIfNetworkExistUseCase,
             addGatewayUseCase = addGatewayUseCase,
             deleteGatewayUseCase = deleteGatewayUseCase,
-            networkInfoRepository = networkInfoRepository
+            getNetworkInfoUseCase = getNetworkInfoUseCase
         )
         every { getProfileUseCase() } returns flowOf(profile)
         coEvery { changeGatewayIfNetworkExistUseCase(any()) } returns true
         coEvery { addGatewayUseCase(any()) } returns Unit
-        coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.success("nebunet")
+        coEvery { getNetworkInfoUseCase(any()) } returns Result.success(
+            NetworkInfo(Radix.Network.nebunet, 0L)
+        )
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidUrl() } returns true
     }
@@ -122,7 +126,7 @@ class GatewaysViewModelTest {
 
     @Test
     fun `network info error triggers ui error`() = runTest {
-        coEvery { networkInfoRepository.getNetworkInfo(any()) } returns Result.failure(
+        coEvery { getNetworkInfoUseCase(any()) } returns Result.failure(
             Throwable()
         )
         val sampleUrl = Radix.Gateway.nebunet.url

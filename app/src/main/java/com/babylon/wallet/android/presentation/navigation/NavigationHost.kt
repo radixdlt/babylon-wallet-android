@@ -49,6 +49,10 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.p
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
+import com.babylon.wallet.android.presentation.status.assets.fungible.fungibleAssetDialog
+import com.babylon.wallet.android.presentation.status.assets.lsu.lsuAssetDialog
+import com.babylon.wallet.android.presentation.status.assets.nonfungible.nonFungibleAssetDialog
+import com.babylon.wallet.android.presentation.status.assets.pool.poolUnitAssetDialog
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
@@ -174,6 +178,18 @@ fun NavigationHost(
                         args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(factorSourceId = factorSourceId.body)
                     )
                 },
+                onFungibleResourceClick = { resource, account ->
+                    navController.fungibleAssetDialog(resource.resourceAddress, account.address)
+                },
+                onNonFungibleResourceClick = { resource, item ->
+                    navController.nonFungibleAssetDialog(resource.resourceAddress, item.localId.code)
+                },
+                onPoolUnitClick = { poolUnit, account ->
+                    navController.poolUnitAssetDialog(poolUnit.resourceAddress, account.address)
+                },
+                onLSUClick = { liquidStakeUnit, account ->
+                    navController.lsuAssetDialog(liquidStakeUnit.resourceAddress, account.address)
+                },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
                 }
@@ -249,6 +265,19 @@ fun NavigationHost(
         transactionReviewScreen(
             onBackClick = {
                 navController.popBackStack()
+            },
+            onFungibleClick = { resource, isNewlyCreated ->
+                navController.fungibleAssetDialog(
+                    resourceAddress = resource.resourceAddress,
+                    isNewlyCreated = isNewlyCreated
+                )
+            },
+            onNonFungibleClick = { resource, item, isNewlyCreated ->
+                navController.nonFungibleAssetDialog(
+                    resourceAddress = resource.resourceAddress,
+                    localId = item.localId.code,
+                    isNewlyCreated = isNewlyCreated
+                )
             }
         )
         transferScreen(
@@ -333,6 +362,26 @@ fun NavigationHost(
         )
         transactionStatusDialog(
             onClose = {
+                navController.popBackStack()
+            }
+        )
+        fungibleAssetDialog(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        nonFungibleAssetDialog(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        poolUnitAssetDialog(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        lsuAssetDialog(
+            onDismiss = {
                 navController.popBackStack()
             }
         )

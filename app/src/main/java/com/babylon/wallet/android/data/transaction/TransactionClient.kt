@@ -8,27 +8,20 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.assets.findAccountWithEnoughXRDBalance
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.hex.extensions.toHexString
-import com.radixdlt.ret.Address
 import com.radixdlt.ret.Intent
 import com.radixdlt.ret.NotarizedTransaction
 import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
-import rdx.works.core.decodeHex
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.core.then
 import rdx.works.core.toByteArray
-import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.pernetwork.Entity
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.personasOnCurrentNetwork
@@ -41,8 +34,7 @@ import javax.inject.Inject
 class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val getProfileUseCase: GetProfileUseCase,
-    private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
-    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase
+    private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase
 ) {
     val signingState = collectSignersSignaturesUseCase.interactionState
 
@@ -161,89 +153,6 @@ class TransactionClient @Inject constructor(
         deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
     )
 
-    suspend fun findFeePayerInManifest(manifest: TransactionManifest, lockFee: BigDecimal): Result<FeePayerSearchResult> {
-        val allAccounts = getProfileUseCase.accountsOnCurrentNetwork()
-        val allAccountsWithResources = getAccountsWithAssetsUseCase(
-            accounts = allAccounts,
-            isRefreshing = false
-        ).getOrNull()
-        val candidates = allAccountsWithResources?.map {
-            FeePayerSearchResult.FeePayerCandidate(
-                account = it.account,
-                xrdAmount = it.assets?.xrd?.ownedAmount ?: BigDecimal.ZERO
-            )
-        }.orEmpty()
-
-        // 1. accountsWithdrawnFrom
-        findFeePayerCandidatesWithinOwnedAccounts(
-            entityAddress = manifest.accountsWithdrawnFrom(),
-            ownedAccounts = allAccounts
-        ).let {
-            val withdrawnFromCandidate = findFeePayerWithFundsWithin(accounts = it, lockFee = lockFee)
-            if (withdrawnFromCandidate != null) {
-                return Result.success(
-                    FeePayerSearchResult(
-                        feePayerAddress = withdrawnFromCandidate,
-                        candidates = candidates
-                    )
-                )
-            }
-        }
-
-        // 2. accountsDepositedInto
-        findFeePayerCandidatesWithinOwnedAccounts(
-            entityAddress = manifest.accountsDepositedInto(),
-            ownedAccounts = allAccounts
-        ).let {
-            val depositedIntoCandidate = findFeePayerWithFundsWithin(accounts = it, lockFee = lockFee)
-            if (depositedIntoCandidate != null) {
-                return Result.success(
-                    FeePayerSearchResult(
-                        feePayerAddress = depositedIntoCandidate,
-                        candidates = candidates
-                    )
-                )
-            }
-        }
-
-        // 3. accountsRequiringAuth
-        findFeePayerCandidatesWithinOwnedAccounts(
-            entityAddress = manifest.accountsRequiringAuth(),
-            ownedAccounts = allAccounts
-        ).let {
-            val requiringAuthCandidate = findFeePayerWithFundsWithin(accounts = it, lockFee = lockFee)
-            if (requiringAuthCandidate != null) {
-                return Result.success(
-                    FeePayerSearchResult(
-                        feePayerAddress = requiringAuthCandidate,
-                        candidates = candidates
-                    )
-                )
-            }
-        }
-
-        return Result.success(
-            FeePayerSearchResult(
-                candidates = candidates
-            )
-        )
-    }
-
-    private fun findFeePayerCandidatesWithinOwnedAccounts(
-        entityAddress: List<Address>,
-        ownedAccounts: List<Network.Account>
-    ): List<Network.Account> = entityAddress.mapNotNull { address ->
-        ownedAccounts.find { it.address == address.addressString() }
-    }
-
-    private suspend fun findFeePayerWithFundsWithin(
-        accounts: List<Network.Account>,
-        lockFee: BigDecimal
-    ): String? {
-        return getAccountsWithAssetsUseCase(accounts = accounts, isRefreshing = true)
-            .getOrNull()?.findAccountWithEnoughXRDBalance(lockFee)?.account?.address
-    }
-
     private suspend fun buildTransactionHeader(
         networkId: Int,
         notaryAndSigners: NotaryAndSigners,
@@ -328,13 +237,6 @@ class TransactionClient @Inject constructor(
             },
             onFailure = { Result.failure(it) }
         )
-    }
-
-    fun analyzeExecution(
-        manifest: TransactionManifest,
-        preview: TransactionPreviewResponse
-    ) = runCatching {
-        manifest.analyzeExecution(transactionReceipt = preview.encodedReceipt.decodeHex().toUByteList())
     }
 
     @Suppress("MagicNumber")

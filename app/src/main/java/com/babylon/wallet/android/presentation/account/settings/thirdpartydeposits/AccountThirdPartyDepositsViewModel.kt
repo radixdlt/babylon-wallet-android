@@ -6,8 +6,8 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -47,7 +47,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val transactionStatusClient: TransactionStatusClient,
     private val updateProfileThirdPartySettingsUseCase: UpdateProfileThirdPartySettingsUseCase,
-    private val entityRepository: EntityRepository,
+    private val getResourcesUseCase: GetResourcesUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountThirdPartyDepositsUiState>() {
 
@@ -196,13 +196,13 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 assetExceptionToAdd = AssetType.AssetException()
             )
         }
-        loadAssets(listOf(assetExceptionToAdd.assetException.address))
+        loadAssets(setOf(assetExceptionToAdd.assetException.address))
         checkIfSettingsChanged()
     }
 
-    private fun loadAssets(addresses: List<String>) {
-        viewModelScope.launch {
-            entityRepository.getResources(addresses).onSuccess { resources ->
+    private fun loadAssets(addresses: Set<String>) = viewModelScope.launch {
+        getResourcesUseCase(addresses = addresses)
+            .onSuccess { resources ->
                 val loadedResourcesAddresses = resources.map { it.resourceAddress }.toSet()
                 _state.update { state ->
                     state.copy(
@@ -237,7 +237,6 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     )
                 }
             }
-        }
     }
 
     fun onAddDepositor() {
@@ -255,7 +254,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     )
                 } ?: state
             }
-            loadAssets(listOf(depositorAddress.resourceAddress()))
+            loadAssets(setOf(depositorAddress.resourceAddress()))
         }
         checkIfSettingsChanged()
     }
@@ -377,7 +376,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                             } + account.onLedgerSettings.thirdPartyDeposits.depositorsAllowList.map {
                                 it.resourceAddress()
                             }
-                            ).distinct()
+                            ).toSet()
                     )
                 }
         }

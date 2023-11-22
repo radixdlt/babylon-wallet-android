@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.data.transaction
 
-import com.babylon.wallet.android.data.repository.entity.EntityRepository
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
@@ -23,7 +23,7 @@ import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import javax.inject.Inject
 
 class ROLAClient @Inject constructor(
-    private val entityRepository: EntityRepository,
+    private val getEntitiesOwnerKeysUseCase: GetEntitiesOwnerKeysUseCase,
     private val generateAuthSigningFactorInstanceUseCase: GenerateAuthSigningFactorInstanceUseCase,
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase
 ) {
@@ -50,7 +50,7 @@ class ROLAClient @Inject constructor(
                 }
             }
         }
-        val ownerKeys = entityRepository.getEntityOwnerKeyHashes(entity.address, true).getOrNull()
+        val ownerKeys = getEntitiesOwnerKeysUseCase(listOf(entity)).getOrNull()?.get(entity)
         val publicKeyHashes = mutableListOf<FactorInstance.PublicKey>()
         val ownerKeysHashes = ownerKeys?.keyHashes.orEmpty()
         val authSigningPublicKey = when (val badge = authSigningFactorInstance.badge) {

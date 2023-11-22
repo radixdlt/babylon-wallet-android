@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.settings.appsettings.gateways
 
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
+import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -34,7 +34,7 @@ class GatewaysViewModel @Inject constructor(
     private val changeGatewayIfNetworkExistUseCase: ChangeGatewayIfNetworkExistUseCase,
     private val addGatewayUseCase: AddGatewayUseCase,
     private val deleteGatewayUseCase: DeleteGatewayUseCase,
-    private val networkInfoRepository: NetworkInfoRepository,
+    private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
 ) : StateViewModel<SettingsUiState>(), OneOffEventHandler<SettingsEditGatewayEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState(): SettingsUiState = SettingsUiState()
@@ -102,15 +102,13 @@ class GatewaysViewModel @Inject constructor(
 
             _state.update { state -> state.copy(addingGateway = true) }
 
-            val newGatewayInfo = networkInfoRepository.getNetworkInfo(newUrl)
-            newGatewayInfo.onSuccess { networkName ->
-                addGatewayUseCase(Radix.Gateway(newUrl, Radix.Network.fromName(networkName)))
+            getNetworkInfoUseCase(newUrl).onSuccess { info ->
+                addGatewayUseCase(Radix.Gateway(newUrl, info.network))
                 _state.update { state ->
                     state.copy(addingGateway = false, newUrl = "", newUrlValid = false)
                 }
                 sendEvent(SettingsEditGatewayEvent.GatewayAdded)
-            }
-            newGatewayInfo.onFailure {
+            }.onFailure {
                 _state.update { state ->
                     state.copy(
                         gatewayAddFailure = GatewayAddFailure.ErrorWhileAdding,

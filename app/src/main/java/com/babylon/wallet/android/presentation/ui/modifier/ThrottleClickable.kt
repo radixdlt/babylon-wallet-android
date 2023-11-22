@@ -10,11 +10,12 @@ import androidx.compose.ui.composed
 
 inline fun Modifier.throttleClickable(
     thresholdMs: Long = 500L,
+    enabled: Boolean = true,
     crossinline onClick: () -> Unit
 ): Modifier {
     return composed {
         var lastClickMs by remember { mutableStateOf(0L) }
-        clickable {
+        clickable(enabled = enabled) {
             val now = System.currentTimeMillis()
             if (now - lastClickMs > thresholdMs) {
                 onClick()

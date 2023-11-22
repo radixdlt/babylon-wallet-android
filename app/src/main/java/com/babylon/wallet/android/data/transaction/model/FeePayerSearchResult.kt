@@ -12,3 +12,11 @@ data class FeePayerSearchResult(
         val xrdAmount: BigDecimal
     )
 }
+
+fun List<FeePayerSearchResult.FeePayerCandidate>.findAccountWithAtLeast(value: BigDecimal, inSet: Set<Network.Account>) = find {
+    it.account in inSet && it.xrdAmount >= value
+}
+
+fun List<FeePayerSearchResult.FeePayerCandidate>.findAccountWithAtLeast(value: BigDecimal) = find {
+    it.xrdAmount >= value
+}

@@ -6,8 +6,8 @@ import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
@@ -34,8 +34,8 @@ import java.math.BigDecimal
 @ExperimentalCoroutinesApi
 class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
-    private val getAccountsWithAssetsUseCase = mockk<GetAccountsWithAssetsUseCase>()
     private val getBackupStateUseCase = mockk<GetBackupStateUseCase>()
+    private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsForSecurityPromptUseCase = mockk<GetEntitiesWithSecurityPromptUseCase>()
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
@@ -49,7 +49,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     )
 
     override fun initVM(): WalletViewModel = WalletViewModel(
-        getAccountsWithAssetsUseCase,
+        getWalletAssetsUseCase,
         getProfileUseCase,
         getAccountsForSecurityPromptUseCase,
         appEventBus,
@@ -71,11 +71,11 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         val viewModel = vm.value
         advanceUntilIdle()
         coEvery {
-            getAccountsWithAssetsUseCase(
+            getWalletAssetsUseCase(
                 accounts = sampleProfile.currentNetwork.accounts,
                 isRefreshing = false
             )
-        } returns Result.success(
+        } returns flowOf(
             listOf(
                 AccountWithAssets(
                     account = sampleProfile.currentNetwork.accounts[0],

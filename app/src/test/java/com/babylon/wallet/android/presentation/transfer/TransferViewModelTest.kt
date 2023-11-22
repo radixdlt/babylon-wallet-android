@@ -4,7 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -33,7 +36,10 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
 
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
-    private val getAccountsWithAssetsUseCase = mockk<GetAccountsWithAssetsUseCase>()
+    private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()
+    private val getNextNFTsPageUseCase = mockk<GetNextNFTsPageUseCase>()
+    private val updateLSUsInfoUseCase = mockk<UpdateLSUsInfo>()
+    private val getNetworkInfoUseCase = mockk<GetNetworkInfoUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val mnemonicRepository = mockk<MnemonicRepository>()
 
@@ -63,7 +69,10 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
                 getProfileUseCase = getProfileUseCase
             ),
             assetsChooserDelegate = AssetsChooserDelegate(
-                getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase
+                getWalletAssetsUseCase = getWalletAssetsUseCase,
+                getNextNFTsPageUseCase = getNextNFTsPageUseCase,
+                updateLSUsInfo = updateLSUsInfoUseCase,
+                getNetworkInfoUseCase = getNetworkInfoUseCase
             ),
             prepareManifestDelegate = PrepareManifestDelegate(
                 incomingRequestRepository = incomingRequestRepository,

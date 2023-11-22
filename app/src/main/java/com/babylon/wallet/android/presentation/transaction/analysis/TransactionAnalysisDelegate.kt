@@ -3,10 +3,10 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
-import com.babylon.wallet.android.domain.usecases.GetResourcesMetadataUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
+import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
+import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
@@ -18,7 +18,9 @@ import com.radixdlt.ret.ExecutionAnalysis
 import com.radixdlt.ret.TransactionManifest
 import com.radixdlt.ret.TransactionType
 import kotlinx.coroutines.flow.update
+import rdx.works.core.decodeHex
 import rdx.works.core.then
+import rdx.works.core.toUByteList
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import java.math.BigDecimal
@@ -27,52 +29,59 @@ import javax.inject.Inject
 @Suppress("LongParameterList")
 class TransactionAnalysisDelegate @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
-    private val getResourcesMetadataUseCase: GetResourcesMetadataUseCase,
     private val getResourcesUseCase: GetResourcesUseCase,
+    private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
-    private val resolveDAppsUseCase: ResolveDAppsUseCase
+    private val resolveDAppsUseCase: ResolveDAppsUseCase,
+    private val searchFeePayersUseCase: SearchFeePayersUseCase
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
     private val logger = Timber.tag("TransactionAnalysis")
 
     suspend fun analyse(transactionClient: TransactionClient) {
-        _state.value.requestNonNull.transactionManifestData.toTransactionManifest().onSuccess {
-            startAnalysis(it, transactionClient)
-        }.onFailure { error ->
-            reportFailure(error)
-        }
+        _state.value.requestNonNull.transactionManifestData
+            .toTransactionManifest()
+            .then {
+                startAnalysis(it, transactionClient)
+            }.onFailure { error ->
+                reportFailure(error)
+            }
     }
 
     private suspend fun startAnalysis(
         manifest: TransactionManifest,
         transactionClient: TransactionClient
-    ) {
+    ): Result<Unit> {
         val notaryAndSigners = transactionClient.getNotaryAndSigners(
             manifest = manifest,
             ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey
         )
-        transactionClient.getTransactionPreview(
+        return transactionClient.getTransactionPreview(
             manifest = manifest,
             notaryAndSigners = notaryAndSigners
-        ).then { preview ->
-            transactionClient.analyzeExecution(manifest, preview)
-        }.resolve(
-            manifest = manifest,
-            notaryAndSigners = notaryAndSigners,
-            transactionClient = transactionClient
-        )
+        ).mapCatching { preview ->
+            manifest
+                .analyzeExecution(transactionReceipt = preview.encodedReceipt.decodeHex().toUByteList())
+                .resolvePreview(notaryAndSigners)
+                .resolveFees(notaryAndSigners)
+        }.mapCatching { transactionFees ->
+            val feePayerResult = searchFeePayersUseCase(
+                manifest = manifest,
+                lockFee = transactionFees.defaultTransactionFee
+            ).getOrThrow()
+
+            _state.update {
+                it.copy(
+                    isNetworkFeeLoading = false,
+                    transactionFees = transactionFees,
+                    feePayerSearchResult = feePayerResult
+                )
+            }
+        }
     }
 
-    @Suppress("LongMethod")
-    private suspend fun Result<ExecutionAnalysis>.resolve(
-        manifest: TransactionManifest,
-        notaryAndSigners: NotaryAndSigners,
-        transactionClient: TransactionClient
-    ) = this.onSuccess { analysis ->
-        val previewType = if (_state.value.requestNonNull.isInternal.not() &&
-            analysis.reservedInstructions.isNotEmpty()
-        ) {
+    private suspend fun ExecutionAnalysis.resolvePreview(notaryAndSigners: NotaryAndSigners) = apply {
+        val previewType = if (_state.value.requestNonNull.isInternal.not() && reservedInstructions.isNotEmpty()) {
             // wallet unacceptable manifest
             _state.update {
                 it.copy(
@@ -80,23 +89,18 @@ class TransactionAnalysisDelegate @Inject constructor(
                 )
             }
             PreviewType.UnacceptableManifest
-        } else if (analysis.transactionTypes.isEmpty()) {
+        } else if (transactionTypes.isEmpty()) {
             PreviewType.NonConforming
         } else {
-            processConformingManifest(analysis.transactionTypes[0])
+            processConformingManifest(transactionTypes[0])
         }
 
-        var transactionFees = TransactionFees(
-            nonContingentFeeLock = analysis.feeLocks.lock.asStr().toBigDecimal(),
-            networkExecution = analysis.feeSummary.executionCost.asStr().toBigDecimal(),
-            networkFinalization = analysis.feeSummary.finalizationCost.asStr().toBigDecimal(),
-            networkStorage = analysis.feeSummary.storageExpansionCost.asStr().toBigDecimal(),
-            royalties = analysis.feeSummary.royaltyCost.asStr().toBigDecimal(),
-            guaranteesCount = (previewType as? PreviewType.Transfer)?.to?.guaranteesCount() ?: 0,
-            notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
-            includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
-            signersCount = notaryAndSigners.signers.count()
-        )
+        if (previewType is PreviewType.Transfer) {
+            val newlyCreated = previewType.getNewlyCreatedResources()
+            if (newlyCreated.isNotEmpty()) {
+                cacheNewlyCreatedEntitiesUseCase(newlyCreated.map { it.resource })
+            }
+        }
 
         _state.update {
             it.copy(
@@ -106,55 +110,54 @@ class TransactionAnalysisDelegate @Inject constructor(
                 defaultSignersCount = notaryAndSigners.signers.count()
             )
         }
+    }
 
-        if (transactionFees.defaultTransactionFee > BigDecimal.ZERO) {
+    private fun ExecutionAnalysis.resolveFees(notaryAndSigners: NotaryAndSigners) = TransactionFees(
+        nonContingentFeeLock = feeLocks.lock.asStr().toBigDecimal(),
+        networkExecution = feeSummary.executionCost.asStr().toBigDecimal(),
+        networkFinalization = feeSummary.finalizationCost.asStr().toBigDecimal(),
+        networkStorage = feeSummary.storageExpansionCost.asStr().toBigDecimal(),
+        royalties = feeSummary.royaltyCost.asStr().toBigDecimal(),
+        guaranteesCount = (_state.value.previewType as? PreviewType.Transfer)?.to?.guaranteesCount() ?: 0,
+        notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
+        includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
+        signersCount = notaryAndSigners.signers.count()
+    ).let { fees ->
+        if (fees.defaultTransactionFee > BigDecimal.ZERO) {
             // There will be a lock fee so update lock fee cost
-            transactionFees = transactionFees.copy(
-                includeLockFee = true
-            )
+            fees.copy(includeLockFee = true)
+        } else {
+            fees
         }
-
-        transactionClient.findFeePayerInManifest(
-            manifest = manifest,
-            lockFee = transactionFees.defaultTransactionFee
-        ).onSuccess { feePayerResult ->
-            _state.update {
-                it.copy(
-                    isNetworkFeeLoading = false,
-                    transactionFees = transactionFees,
-                    feePayerSearchResult = feePayerResult
-                )
-            }
-        }
-    }.onFailure { error ->
-        reportFailure(error)
     }
 
     private suspend fun processConformingManifest(transactionType: TransactionType): PreviewType {
+        val resources = getResourcesUseCase(addresses = transactionType.involvedResourceAddresses).getOrThrow()
+
         return when (transactionType) {
             is TransactionType.GeneralTransaction -> transactionType.resolve(
+                resources = resources,
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 getProfileUseCase = getProfileUseCase,
-                getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase,
-                getResourcesMetadataUseCase = getResourcesMetadataUseCase,
                 resolveDAppsUseCase = resolveDAppsUseCase
             )
 
             is TransactionType.SimpleTransfer -> transactionType.resolve(
                 getProfileUseCase = getProfileUseCase,
-                getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase
+                resources = resources
             )
 
             is TransactionType.Transfer -> transactionType.resolve(
                 getProfileUseCase = getProfileUseCase,
-                getAccountsWithAssetsUseCase = getAccountsWithAssetsUseCase
+                resources = resources
             )
 
-            is TransactionType.AccountDepositSettings -> transactionType.resolve(getProfileUseCase, getResourcesUseCase)
+            is TransactionType.AccountDepositSettings -> transactionType.resolve(
+                getProfileUseCase = getProfileUseCase,
+                allResources = resources
+            )
 
-            else -> {
-                PreviewType.NonConforming
-            }
+            else -> PreviewType.NonConforming
         }
     }
 

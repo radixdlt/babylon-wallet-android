@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.babylon.wallet.android.presentation.account
 
 import androidx.lifecycle.SavedStateHandle
@@ -5,11 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicRestore
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -22,24 +26,36 @@ import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_A
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetworkWithAddress
-import timber.log.Timber
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
+@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class AccountViewModel @Inject constructor(
-    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
+    private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
+    private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
+    private val getNextNFTsPageUseCase: GetNextNFTsPageUseCase,
+    private val updateLSUsInfo: UpdateLSUsInfo,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
@@ -48,29 +64,54 @@ class AccountViewModel @Inject constructor(
 
     override fun initialState(): AccountUiState = AccountUiState(accountWithAssets = null)
 
+    private val refreshFlow = MutableSharedFlow<Unit>()
+    private val accountFlow = combine(
+        getProfileUseCase.accountsOnCurrentNetwork.mapNotNull { accountsInProfile ->
+            accountsInProfile.find { it.address == accountAddress }
+        },
+        refreshFlow
+    ) { account, _ -> account }
+
     init {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetworkWithAddress(accountAddress).collectLatest { accountFromAddress ->
-                accountFromAddress?.let { account ->
+            accountFlow
+                .onEach { account ->
+                    // Update details of profile account each time it is updated
+                    _state.update { state ->
+                        val accountWithAssets = state.accountWithAssets?.copy(account = account) ?: AccountWithAssets(account = account)
+                        state.copy(accountWithAssets = accountWithAssets)
+                    }
+                }
+                .flatMapLatest { account ->
+                    getWalletAssetsUseCase(listOf(account), state.value.isRefreshing)
+                        .catch { error ->
+                            _state.update {
+                                it.copy(isRefreshing = false, uiMessage = UiMessage.ErrorMessage(error = error))
+                            }
+                        }
+                        .mapNotNull { it.firstOrNull() }
+                }
+                .collectLatest { accountWithAssets ->
+                    // Update assets of the account each time they are updated
                     _state.update { state ->
                         state.copy(
-                            accountWithAssets = AccountWithAssets(account = account, assets = null)
+                            accountWithAssets = state.accountWithAssets?.copy(assets = accountWithAssets.assets),
+                            isRefreshing = false
                         )
                     }
-                    loadAccountData(isRefreshing = false)
                 }
-            }
         }
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
                 event is AppEvent.RefreshResourcesNeeded || event is AppEvent.RestoredMnemonic
             }.collect {
-                refresh(fetchNewData = it !is AppEvent.RestoredMnemonic)
+                loadAccountDetails(withRefresh = it !is AppEvent.RestoredMnemonic)
             }
         }
 
         observeSecurityPrompt()
+        loadAccountDetails(withRefresh = false)
     }
 
     private fun observeSecurityPrompt() {
@@ -85,45 +126,15 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun refresh(fetchNewData: Boolean = true) {
-        _state.update { state ->
-            state.copy(refreshing = fetchNewData)
-        }
-        loadAccountData(isRefreshing = fetchNewData)
-    }
-
-    private fun loadAccountData(isRefreshing: Boolean) {
-        val account = _state.value.accountWithAssets?.account ?: return
-        viewModelScope.launch {
-            val result = getAccountsWithAssetsUseCase(
-                accounts = listOf(account),
-                isRefreshing = isRefreshing
-            )
-            result.onFailure { e ->
-                Timber.w(e)
-                _state.update { accountUiState ->
-                    accountUiState.copy(
-                        uiMessage = UiMessage.ErrorMessage(e),
-                        isLoading = false,
-                        refreshing = false
-                    )
-                }
-            }
-            result.onSuccess { accountsWithResources ->
-                _state.update { accountUiState ->
-                    accountUiState.copy(
-                        accountWithAssets = accountsWithResources.first(),
-                        isLoading = false,
-                        refreshing = false
-                    )
-                }
-            }
-        }
+    fun refresh() {
+        loadAccountDetails(withRefresh = true)
     }
 
     fun onFungibleResourceClicked(resource: Resource.FungibleResource) {
-        _state.update { accountUiState ->
-            accountUiState.copy(selectedResource = SelectedResource.SelectedFungibleResource(resource))
+        val account = _state.value.accountWithAssets?.account ?: return
+
+        viewModelScope.launch {
+            sendEvent(AccountEvent.OnFungibleClick(resource, account))
         }
     }
 
@@ -131,25 +142,29 @@ class AccountViewModel @Inject constructor(
         nonFungibleResource: Resource.NonFungibleResource,
         item: Resource.NonFungibleResource.Item
     ) {
-        _state.update { accountUiState ->
-            accountUiState.copy(
-                selectedResource = SelectedResource.SelectedNonFungibleResource(
-                    nonFungible = nonFungibleResource,
+        viewModelScope.launch {
+            sendEvent(
+                AccountEvent.OnNonFungibleClick(
+                    resource = nonFungibleResource,
                     item = item
                 )
             )
         }
     }
 
-    fun onLSUUnitClicked(resource: LiquidStakeUnit, validatorDetail: ValidatorDetail) {
-        _state.update { accountUiState ->
-            accountUiState.copy(selectedResource = SelectedResource.SelectedLSUUnit(resource, validatorDetail))
+    fun onLSUUnitClicked(liquidStakeUnit: LiquidStakeUnit) {
+        val account = _state.value.accountWithAssets?.account ?: return
+
+        viewModelScope.launch {
+            sendEvent(AccountEvent.OnLSUClick(liquidStakeUnit = liquidStakeUnit, account = account))
         }
     }
 
-    fun onPoolUnitClicked(resource: PoolUnit) {
-        _state.update { accountUiState ->
-            accountUiState.copy(selectedResource = SelectedResource.SelectedPoolUnit(resource))
+    fun onPoolUnitClicked(poolUnit: PoolUnit) {
+        val account = _state.value.accountWithAssets?.account ?: return
+
+        viewModelScope.launch {
+            sendEvent(AccountEvent.OnPoolUnitClick(poolUnit, account))
         }
     }
 
@@ -168,26 +183,82 @@ class AccountViewModel @Inject constructor(
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
+
+    fun onNextNftPageRequest(resource: Resource.NonFungibleResource) {
+        val account = state.value.accountWithAssets?.account ?: return
+        if (!state.value.isRefreshing && resource.resourceAddress !in state.value.nonFungiblesWithPendingNFTs) {
+            _state.update { state -> state.onNFTsLoading(resource) }
+            viewModelScope.launch {
+                getNextNFTsPageUseCase(account, resource)
+                    .onSuccess { resourceWithUpdatedNFTs ->
+                        _state.update { state ->
+                            state.onNFTsReceived(resourceWithUpdatedNFTs)
+                        }
+                    }.onFailure { error ->
+                        _state.update { state ->
+                            state.onNFTsError(resource, error)
+                        }
+                    }
+            }
+        }
+    }
+
+    fun onStakesRequest() {
+        val account = state.value.accountWithAssets?.account ?: return
+        val stakes = state.value.accountWithAssets?.assets?.ownedValidatorsWithStakes ?: return
+        val unknownLSUs = stakes.any { !it.isDetailsAvailable }
+        onLatestEpochRequest()
+        if (!state.value.isRefreshing && !state.value.pendingStakeUnits && unknownLSUs) {
+            _state.update { state -> state.copy(pendingStakeUnits = true) }
+            viewModelScope.launch {
+                updateLSUsInfo(account, stakes).onSuccess {
+                    _state.update { state -> state.copy(pendingStakeUnits = false) }
+                }.onFailure { error ->
+                    _state.update { state -> state.copy(pendingStakeUnits = false, uiMessage = UiMessage.ErrorMessage(error)) }
+                }
+            }
+        }
+    }
+
+    private fun onLatestEpochRequest() = viewModelScope.launch {
+        getNetworkInfoUseCase().onSuccess { info ->
+            _state.update { it.copy(epoch = info.epoch) }
+        }
+    }
+
+    private fun loadAccountDetails(withRefresh: Boolean) {
+        _state.update { it.copy(isRefreshing = withRefresh) }
+        viewModelScope.launch { refreshFlow.emit(Unit) }
+        onLatestEpochRequest()
+    }
 }
 
 internal sealed interface AccountEvent : OneOffEvent {
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
     data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
+    data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Network.Account) : AccountEvent
+    data class OnNonFungibleClick(
+        val resource: Resource.NonFungibleResource,
+        val item: Resource.NonFungibleResource.Item
+    ) : AccountEvent
+    data class OnPoolUnitClick(val poolUnit: PoolUnit, val account: Network.Account) : AccountEvent
+    data class OnLSUClick(val liquidStakeUnit: LiquidStakeUnit, val account: Network.Account) : AccountEvent
 }
 
 data class AccountUiState(
     val accountWithAssets: AccountWithAssets? = null,
+    val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
+    val pendingStakeUnits: Boolean = false,
     private val securityPromptType: SecurityPromptType? = null,
-    val isLoading: Boolean = true,
-    private val refreshing: Boolean = false,
-    val selectedResource: SelectedResource? = null,
+    val epoch: Long? = null,
+    val isRefreshing: Boolean = false,
     val uiMessage: UiMessage? = null
 ) : UiState {
 
     val visiblePrompt: SecurityPromptType?
         get() = when (securityPromptType) {
             SecurityPromptType.NEEDS_RESTORE -> securityPromptType
-            SecurityPromptType.NEEDS_BACKUP -> if (accountWithAssets?.assets?.hasXrd() == true && !isLoading) {
+            SecurityPromptType.NEEDS_BACKUP -> if (accountWithAssets?.assets?.hasXrd() == true) {
                 SecurityPromptType.NEEDS_BACKUP
             } else {
                 null
@@ -201,20 +272,35 @@ data class AccountUiState(
             return "$dashboardUrl/account/${account.address}/recent-transactions"
         }
 
-    val isRefreshing: Boolean
-        get() = !isLoading && refreshing
-
     val isTransferEnabled: Boolean
-        get() = !isLoading
-}
+        get() = accountWithAssets?.assets != null
 
-sealed interface SelectedResource {
-    data class SelectedFungibleResource(val fungible: Resource.FungibleResource) : SelectedResource
-    data class SelectedNonFungibleResource(
-        val nonFungible: Resource.NonFungibleResource,
-        val item: Resource.NonFungibleResource.Item
-    ) : SelectedResource
+    fun onNFTsLoading(forResource: Resource.NonFungibleResource): AccountUiState {
+        return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.resourceAddress)
+    }
 
-    data class SelectedLSUUnit(val lsuUnit: LiquidStakeUnit, val validatorDetail: ValidatorDetail) : SelectedResource
-    data class SelectedPoolUnit(val poolUnit: PoolUnit) : SelectedResource
+    fun onNFTsReceived(forResource: Resource.NonFungibleResource): AccountUiState {
+        if (accountWithAssets?.assets?.nonFungibles == null) return this
+        return copy(
+            accountWithAssets = accountWithAssets.copy(
+                assets = accountWithAssets.assets.copy(
+                    nonFungibles = accountWithAssets.assets.nonFungibles.mapWhen(
+                        predicate = {
+                            it.resourceAddress == forResource.resourceAddress && it.items.size < forResource.items.size
+                        },
+                        mutation = { forResource }
+                    )
+                )
+            ),
+            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress
+        )
+    }
+
+    fun onNFTsError(forResource: Resource.NonFungibleResource, error: Throwable): AccountUiState {
+        if (accountWithAssets?.assets?.nonFungibles == null) return this
+        return copy(
+            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress,
+            uiMessage = UiMessage.ErrorMessage(error = error)
+        )
+    }
 }

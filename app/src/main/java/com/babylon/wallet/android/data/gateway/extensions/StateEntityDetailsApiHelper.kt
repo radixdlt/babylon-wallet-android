@@ -27,7 +27,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import java.math.BigDecimal
 
-private const val ENTITY_DETAILS_PAGE_LIMIT = 25
+const val ENTITY_DETAILS_PAGE_LIMIT = 20
 
 suspend fun StateApi.fetchAccountGatewayDetails(
     accountsToRequest: Set<String>,

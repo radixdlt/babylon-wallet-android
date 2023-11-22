@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.settings.appsettings.backup
 
 import android.net.Uri
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.domain.usecases.DeleteWalletUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -13,7 +13,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.BackupState
-import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType
@@ -27,8 +26,7 @@ import javax.inject.Inject
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     private val backupProfileToFileUseCase: BackupProfileToFileUseCase,
-    private val deleteProfileUseCase: DeleteProfileUseCase,
-    private val peerdroidClient: PeerdroidClient,
+    private val deleteWalletUseCase: DeleteWalletUseCase,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(), OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
@@ -142,8 +140,7 @@ class BackupViewModel @Inject constructor(
         _state.update { it.copy(deleteWalletDialogVisible = false) }
 
         viewModelScope.launch {
-            deleteProfileUseCase()
-            peerdroidClient.terminate()
+            deleteWalletUseCase()
             sendEvent(Event.ProfileDeleted)
         }
     }

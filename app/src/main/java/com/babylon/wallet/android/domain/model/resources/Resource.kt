@@ -190,7 +190,6 @@ sealed class Resource {
             val localId: ID,
             val nameMetadataItem: NameMetadataItem? = null,
             val iconMetadataItem: IconUrlMetadataItem? = null,
-            val readyToClaim: Boolean = false, // TODO to remove from object
             val claimEpochMetadataItem: ClaimEpochMetadataItem? = null,
             val claimAmountMetadataItem: ClaimAmountMetadataItem? = null,
             val remainingMetadata: List<StringMetadataItem> = emptyList()
@@ -205,8 +204,9 @@ sealed class Resource {
             val claimAmountXrd: BigDecimal?
                 get() = claimAmountMetadataItem?.amount
 
-            val claimEpoch: Long?
-                get() = claimEpochMetadataItem?.claimEpoch
+            fun isReadyToClaim(currentEpoch: Long): Boolean {
+                return claimEpochMetadataItem?.claimEpoch != null && claimEpochMetadataItem.claimEpoch <= currentEpoch
+            }
 
             override fun compareTo(other: Item): Int = when (localId) {
                 is ID.StringType -> (other.localId as? ID.StringType)?.compareTo(localId) ?: -1
@@ -335,3 +335,6 @@ object XrdResource {
 
 val Resource.FungibleResource.isXrd: Boolean
     get() = addressesPerNetwork.containsValue(resourceAddress)
+
+fun List<Resource>.findFungible(address: String) = find { it.resourceAddress == address } as? Resource.FungibleResource
+fun List<Resource>.findNonFungible(address: String) = find { it.resourceAddress == address } as? Resource.NonFungibleResource

@@ -1,11 +1,14 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
-import com.babylon.wallet.android.domain.usecases.GetAccountsWithAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -17,11 +20,16 @@ import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.extensions.factorSourceId
@@ -41,7 +49,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    private val getAccountsWithAssetsUseCase: GetAccountsWithAssetsUseCase,
+    private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
@@ -55,7 +63,9 @@ class WalletViewModel @Inject constructor(
     private val accountsFlow = combine(
         getProfileUseCase.accountsOnCurrentNetwork.distinctUntilChanged(),
         refreshFlow
-    ) { accounts, _ -> accounts }
+    ) { accounts, _ ->
+        accounts
+    }
 
     val babylonFactorSourceDoesNotExistEvent =
         appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceDoesNotExist>()
@@ -87,24 +97,18 @@ class WalletViewModel @Inject constructor(
     }
 
     private fun observeAccounts() {
-        viewModelScope.launch {
-            accountsFlow.collect { accounts ->
-                _state.update { state ->
-                    state.loadingResources(accounts = accounts, isRefreshing = state.isRefreshing)
-                }
-
-                getAccountsWithAssetsUseCase(
-                    accounts = accounts,
-                    isNftItemDataNeeded = false,
-                    isRefreshing = _state.value.isRefreshing
-                ).onSuccess { resources ->
-                    _state.update { it.onResourcesReceived(resources) }
-                }.onFailure { error ->
+        accountsFlow
+            .flatMapLatest { accounts ->
+                _state.update { it.loadingResources(accounts = accounts, isRefreshing = it.isRefreshing) }
+                getWalletAssetsUseCase(accounts = accounts, isRefreshing = state.value.isRefreshing).catch { error ->
                     _state.update { it.onResourcesError(error) }
                     Timber.w(error)
                 }
             }
-        }
+            .onEach { resources ->
+                _state.update { it.onResourcesReceived(resources) }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun observeDeviceFactorSources() {
@@ -193,9 +197,6 @@ data class WalletUiState(
     val isLoading: Boolean
         get() = accountsWithResources == null && loading
 
-    val isLoadingAssets: Boolean
-        get() = accountsWithResources != null && accountsWithResources.none { it.assets != null } && loading
-
     /**
      * Used in pull to refresh mode.
      */
@@ -251,9 +252,11 @@ data class WalletUiState(
 
     fun loadingResources(accounts: List<Network.Account>, isRefreshing: Boolean): WalletUiState = copy(
         accountsWithResources = accounts.map { account ->
+            val current = accountsWithResources?.find { account == it.account }
             AccountWithAssets(
                 account = account,
-                assets = accountsWithResources?.find { account == it.account }?.assets
+                details = current?.details,
+                assets = current?.assets
             )
         },
         loading = true,
@@ -268,6 +271,15 @@ data class WalletUiState(
 
     fun onResourcesError(error: Throwable?): WalletUiState = copy(
         error = UiMessage.ErrorMessage(error),
+        accountsWithResources = accountsWithResources?.map { account ->
+            if (account.assets == null) {
+                // If assets don't exist leave them empty
+                account.copy(assets = Assets())
+            } else {
+                // Else continue with what the user used to see before the refresh
+                account
+            }
+        },
         loading = false,
         refreshing = false
     )

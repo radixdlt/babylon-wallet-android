@@ -66,8 +66,6 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedWebsitesMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
-import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
@@ -98,7 +96,9 @@ fun DappDetailScreen(
     viewModel: DappDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onEditPersona: (String, RequiredPersonaFields?) -> Unit
+    onEditPersona: (String, RequiredPersonaFields?) -> Unit,
+    onFungibleClick: (Resource.FungibleResource) -> Unit,
+    onNonFungibleClick: (Resource.NonFungibleResource) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -109,6 +109,8 @@ fun DappDetailScreen(
                 is DappDetailEvent.EditPersona -> {
                     onEditPersona(it.personaAddress, it.requiredPersonaFields)
                 }
+                is DappDetailEvent.OnFungibleClick -> onFungibleClick(it.resource)
+                is DappDetailEvent.OnNonFungibleClick -> onNonFungibleClick(it.resource)
             }
         }
     }
@@ -229,35 +231,6 @@ private fun DappDetailContent(
                     }
                 }
 
-                is SelectedSheetState.SelectedFungibleResource -> {
-                    FungibleTokenBottomSheetDetails(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .navigationBarsPadding(),
-                        fungible = selectedSheetState.fungible,
-                        onCloseClick = {
-                            scope.launch {
-                                bottomSheetState.hide()
-                            }
-                        }
-                    )
-                }
-
-                is SelectedSheetState.SelectedNonFungibleResource -> {
-                    NonFungibleTokenBottomSheetDetails(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .navigationBarsPadding(),
-                        item = null,
-                        onCloseClick = {
-                            scope.launch {
-                                bottomSheetState.hide()
-                            }
-                        },
-                        nonFungibleResource = selectedSheetState.nonFungibleResource
-                    )
-                }
-
                 else -> {}
             }
         },
@@ -287,15 +260,9 @@ private fun DappDetailContent(
                         },
                         onFungibleTokenClick = { fungibleResource ->
                             onFungibleTokenClick(fungibleResource)
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
                         },
                         onNonFungibleClick = { nftItem ->
                             onNftClick(nftItem)
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
                         },
                         onDeleteDapp = {
                             showDeleteDappPrompt = true

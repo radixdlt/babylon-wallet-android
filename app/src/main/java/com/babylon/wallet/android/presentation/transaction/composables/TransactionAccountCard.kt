@@ -47,8 +47,8 @@ import rdx.works.profile.data.model.pernetwork.Network
 fun TransactionAccountCard(
     modifier: Modifier = Modifier,
     account: AccountWithTransferableResources,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
+    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
+    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -75,7 +75,7 @@ fun TransactionAccountCard(
 
             TransferableItemContent(
                 modifier = Modifier.clickable {
-                    onFungibleResourceClick(transferableAmount.resource)
+                    onFungibleResourceClick(transferableAmount.resource, transferableAmount.isNewlyCreated)
                 },
                 transferable = amountTransferable,
                 shape = shape,
@@ -89,7 +89,7 @@ fun TransactionAccountCard(
             collection.resource.items.forEachIndexed { itemIndex, item ->
                 val lastItem = itemIndex == collection.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
                 TransferableNftItemContent(
-                    modifier = Modifier.clickable { onNonFungibleResourceClick(collection.resource, item) },
+                    modifier = Modifier.clickable { onNonFungibleResourceClick(collection.resource, item, collection.isNewlyCreated) },
                     transferable = collection,
                     shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
                     nftItem = item
@@ -334,8 +334,8 @@ fun TransactionAccountCardPreview() {
                     )
                 }
             ),
-            onFungibleResourceClick = { _ -> },
-            onNonFungibleResourceClick = { _, _ -> }
+            onFungibleResourceClick = { _, _ -> },
+            onNonFungibleResourceClick = { _, _, _ -> }
         )
     }
 }

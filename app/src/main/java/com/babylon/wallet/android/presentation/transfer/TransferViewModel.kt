@@ -205,12 +205,10 @@ class TransferViewModel @Inject constructor(
         val currentState = state.value
         val fromAccount = currentState.fromAccount ?: return
 
-        viewModelScope.launch {
-            assetsChooserDelegate.onChooseAssets(
-                fromAccount = fromAccount,
-                targetAccount = targetAccount
-            )
-        }
+        assetsChooserDelegate.onChooseAssets(
+            fromAccount = fromAccount,
+            targetAccount = targetAccount
+        )
     }
 
     fun onAssetSelectionChanged(asset: SpendingAsset, isSelected: Boolean) = assetsChooserDelegate.onAssetSelectionChanged(
@@ -227,6 +225,10 @@ class TransferViewModel @Inject constructor(
     }
 
     fun onChooseAssetsSubmitted() = assetsChooserDelegate.onChooseAssetsSubmitted()
+
+    fun onNextNFTsPageRequest(resource: Resource.NonFungibleResource) = assetsChooserDelegate.onNextNFTsPageRequest(resource)
+
+    fun onStakesRequest() = assetsChooserDelegate.onStakesRequest()
 
     fun onSheetClose() {
         _state.update { it.copy(sheet = State.Sheet.None) }
@@ -338,24 +340,6 @@ class TransferViewModel @Inject constructor(
                                 is SpendingAsset.NFT -> asset.copy(
                                     exceedingBalance = nonFungibleBalances.getOrDefault(asset.item, 0) > 1
                                 )
-
-                                is SpendingAsset.LSU -> asset.copy(
-                                    exceedingBalance = fungibleBalances.getOrDefault(
-                                        asset.resource,
-                                        BigDecimal.ZERO
-                                    ) > asset.resource.ownedAmount
-                                )
-
-                                is SpendingAsset.PoolUnit -> asset.copy(
-                                    exceedingBalance = fungibleBalances.getOrDefault(
-                                        asset.resource,
-                                        BigDecimal.ZERO
-                                    ) > asset.resource.ownedAmount
-                                )
-
-                                is SpendingAsset.StakeClaimNFT -> asset.copy(
-                                    exceedingBalance = nonFungibleBalances.getOrDefault(asset.item, 0) > 1
-                                )
                             }
                         }.toPersistentSet()
                     }
@@ -393,8 +377,11 @@ class TransferViewModel @Inject constructor(
             data class ChooseAssets(
                 val assets: Assets? = null,
                 private val initialAssetAddress: ImmutableSet<String>, // Used to compute the difference between chosen assets
+                val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
+                val pendingStakeUnits: Boolean = false,
                 val targetAccount: TargetAccount,
                 val selectedTab: Tab = Tab.Tokens,
+                val epoch: Long? = null,
                 val uiMessage: UiMessage? = null
             ) : Sheet {
 
@@ -409,6 +396,33 @@ class TransferViewModel @Inject constructor(
 
                 val assetsSelectedCount: Int
                     get() = targetAccount.assets.size
+
+                fun onNFTsLoading(forResource: Resource.NonFungibleResource): ChooseAssets {
+                    return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.resourceAddress)
+                }
+
+                fun onNFTsReceived(forResource: Resource.NonFungibleResource): ChooseAssets {
+                    if (assets?.nonFungibles == null) return this
+                    return copy(
+                        assets = assets.copy(
+                            nonFungibles = assets.nonFungibles.mapWhen(
+                                predicate = {
+                                    it.resourceAddress == forResource.resourceAddress && it.items.size < forResource.items.size
+                                },
+                                mutation = { forResource }
+                            )
+                        ),
+                        nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress
+                    )
+                }
+
+                fun onNFTsError(forResource: Resource.NonFungibleResource, error: Throwable): ChooseAssets {
+                    if (assets?.nonFungibles == null) return this
+                    return copy(
+                        nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress,
+                        uiMessage = UiMessage.ErrorMessage(error = error)
+                    )
+                }
 
                 enum class Tab {
                     Tokens,
@@ -564,50 +578,6 @@ sealed class SpendingAsset {
     }
 
     data class NFT(
-        val resource: Resource.NonFungibleResource,
-        val item: Resource.NonFungibleResource.Item,
-        val exceedingBalance: Boolean = false
-    ) : SpendingAsset() {
-        override val address: String
-            get() = item.globalAddress
-
-        override val isValidForSubmission: Boolean
-            get() = !exceedingBalance
-    }
-
-    data class LSU(
-        val resource: Resource.FungibleResource,
-        val amountString: String = "",
-        val exceedingBalance: Boolean = false
-    ) : SpendingAsset() {
-
-        override val address: String
-            get() = resource.resourceAddress
-
-        override val isValidForSubmission: Boolean
-            get() = !exceedingBalance && amountDecimal != BigDecimal.ZERO
-
-        val amountDecimal: BigDecimal
-            get() = amountString.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    }
-
-    data class PoolUnit(
-        val resource: Resource.FungibleResource,
-        val amountString: String = "",
-        val exceedingBalance: Boolean = false
-    ) : SpendingAsset() {
-
-        override val address: String
-            get() = resource.resourceAddress
-
-        override val isValidForSubmission: Boolean
-            get() = !exceedingBalance && amountDecimal != BigDecimal.ZERO
-
-        val amountDecimal: BigDecimal
-            get() = amountString.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    }
-
-    data class StakeClaimNFT(
         val resource: Resource.NonFungibleResource,
         val item: Resource.NonFungibleResource.Item,
         val exceedingBalance: Boolean = false

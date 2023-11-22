@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.repository.dappmetadata
 
 import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.extensions.ENTITY_DETAILS_PAGE_LIMIT
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.divisibility
 import com.babylon.wallet.android.data.gateway.extensions.extractBehaviours
@@ -15,7 +16,6 @@ import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.CacheParameters
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.TimeoutDuration
-import com.babylon.wallet.android.data.repository.entity.EntityRepositoryImpl
 import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.SimpleHttpClient
@@ -267,7 +267,7 @@ class DAppRepositoryImpl @Inject constructor(
         isRefreshing: Boolean
     ): Result<List<StateEntityDetailsResponse>> {
         val responses = addresses
-            .chunked(EntityRepositoryImpl.CHUNK_SIZE_OF_ITEMS)
+            .chunked(ENTITY_DETAILS_PAGE_LIMIT)
             .map { chunkedAddresses ->
                 stateApi.stateEntityDetails(
                     StateEntityDetailsRequest(

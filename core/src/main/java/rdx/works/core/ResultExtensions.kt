@@ -10,3 +10,5 @@ inline fun <FirstResult, SecondResult> Result<FirstResult>.then(
         Result.failure(it)
     }
 )
+
+fun <T> Result<T>.toUnitResult() = map {}
