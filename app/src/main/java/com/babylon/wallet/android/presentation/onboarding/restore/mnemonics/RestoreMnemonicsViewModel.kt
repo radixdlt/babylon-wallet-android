@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.changeGateway
@@ -57,36 +58,13 @@ class RestoreMnemonicsViewModel @Inject constructor(
             val factorSources = when (args) {
                 is RestoreMnemonicsArgs.RestoreProfile -> {
                     val profile = getTemporaryRestoringProfileForBackupUseCase(args.backupType)?.changeGateway(Radix.Gateway.mainnet)
-                    val allAccounts = profile?.currentNetwork?.accounts.orEmpty()
-
-                    profile?.factorSources
-                        ?.filterIsInstance<DeviceFactorSource>()
-                        ?.filter { !mnemonicRepository.mnemonicExist(it.id) }
-                        ?.mapNotNull { factorSource ->
-                            val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
-
-                            if (associatedAccounts.isEmpty() && !factorSource.isBabylon) return@mapNotNull null
-
-                            RecoverableFactorSource(
-                                associatedAccounts = associatedAccounts,
-                                factorSource = factorSource
-                            )
-                        }
-                        .orEmpty()
+                    profile.recoverableFactorSources()
                 }
 
+                // TODO refactor later to remove that specific case at all and use RestoreProfile? always
                 is RestoreMnemonicsArgs.RestoreSpecificMnemonic -> {
                     val profile = getProfileUseCase().firstOrNull() ?: return@launch
-                    val allAccounts = profile.currentNetwork.accounts
-                    profile.factorSources.filterIsInstance<DeviceFactorSource>().filter { factorSource ->
-                        !mnemonicRepository.mnemonicExist(factorSource.id)
-                    }.map { factorSource ->
-                        val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
-                        RecoverableFactorSource(
-                            associatedAccounts = associatedAccounts,
-                            factorSource = factorSource
-                        )
-                    }
+                    profile.recoverableFactorSources()
                 }
             }
 
@@ -100,6 +78,25 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 _state.update { it.copy(seedPhraseState = delegateState) }
             }
         }
+    }
+
+    private suspend fun Profile?.recoverableFactorSources(): List<RecoverableFactorSource> {
+        val allAccounts = this?.currentNetwork?.accounts.orEmpty()
+
+        return this?.factorSources
+            ?.filterIsInstance<DeviceFactorSource>()
+            ?.filter { !mnemonicRepository.mnemonicExist(it.id) }
+            ?.mapNotNull { factorSource ->
+                val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
+
+                if (associatedAccounts.isEmpty() && !factorSource.isBabylon) return@mapNotNull null
+
+                RecoverableFactorSource(
+                    associatedAccounts = associatedAccounts,
+                    factorSource = factorSource
+                )
+            }
+            .orEmpty()
     }
 
     fun onBackClick() {
@@ -185,7 +182,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 bip39Passphrase = _state.value.seedPhraseState.bip39Passphrase
             )
         ).onSuccess {
-            if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainBabylonSeedPhrase) {
+            if (args is RestoreMnemonicsArgs.RestoreProfile) {
                 restoreProfileFromBackupUseCase(args.backupType)
             }
 
@@ -211,11 +208,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update { it.proceedToNextRecoverable() }
         } else {
             if (_state.value.hasSkippedMainSeedPhrase) {
-                if (biometricAuthProvider().not()) return
-
-                // Create main babylon seedphrase as it was skipped before
                 _state.update { it.copy(isRestoring = true) }
+
                 if (args is RestoreMnemonicsArgs.RestoreProfile) {
+                    if (biometricAuthProvider().not()) return
                     restoreAndCreateMainSeedPhraseUseCase(args.backupType)
                 }
 
@@ -255,13 +251,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             get() = if (selectedIndex == -1) null else recoverableFactorSources.getOrNull(selectedIndex)
 
         val isMainBabylonSeedPhrase: Boolean
-            // If its only one factor source we treat it as main
-            // If more than one we check against isMainBabylon
-            get() = if (recoverableFactorSources.size == 1) {
-                true
-            } else {
-                recoverableFactorSource?.factorSource?.isMainBabylon == true
-            }
+            get() = recoverableFactorSource?.factorSource?.isMainBabylon == true
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1,
