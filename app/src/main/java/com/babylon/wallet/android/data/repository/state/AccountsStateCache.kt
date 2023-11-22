@@ -170,7 +170,7 @@ class AccountsStateCache @Inject constructor(
             }
         }.onFailure {
             accountsRequested.update { value -> value subtract accountsToRequest }
-            throw it // TODO check that
+            throw it
         }
     }
 
