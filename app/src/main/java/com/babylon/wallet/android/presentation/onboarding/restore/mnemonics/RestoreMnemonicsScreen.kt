@@ -61,7 +61,6 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
-import rdx.works.profile.domain.backup.BackupType
 
 @Composable
 fun RestoreMnemonicsScreen(
@@ -430,7 +429,6 @@ fun RestoreMnemonicsIntroContent() {
                         factorSource = SampleDataProvider().babylonDeviceFactorSource()
                     )
                 ),
-                restoreMnemonicsArgs = RestoreMnemonicsArgs.RestoreProfile(backupType = BackupType.Cloud),
                 screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
             ),
             onBackClick = {},
@@ -463,7 +461,6 @@ fun RestoreMnemonicsSeedPhraseContent() {
                         factorSource = SampleDataProvider().babylonDeviceFactorSource()
                     )
                 ),
-                restoreMnemonicsArgs = RestoreMnemonicsArgs.RestoreProfile(backupType = BackupType.Cloud),
                 screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
             ),
             onBackClick = {},
@@ -496,7 +493,6 @@ fun RestoreMnemonicsNoMainSeedPhraseContent() {
                         factorSource = SampleDataProvider().babylonDeviceFactorSource()
                     )
                 ),
-                restoreMnemonicsArgs = RestoreMnemonicsArgs.RestoreProfile(backupType = BackupType.Cloud),
                 screenType = RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase
             ),
             onBackClick = {},

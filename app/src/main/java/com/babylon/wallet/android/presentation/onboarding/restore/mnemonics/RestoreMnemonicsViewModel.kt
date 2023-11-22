@@ -22,6 +22,8 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.changeGateway
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
@@ -51,24 +53,36 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val args = RestoreMnemonicsArgs.from(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
-    override fun initialState(): State = State(restoreMnemonicsArgs = args)
+    override fun initialState(): State = State()
 
     init {
         viewModelScope.launch {
-            val factorSources = when (args) {
+            when (args) {
                 is RestoreMnemonicsArgs.RestoreProfile -> {
                     val profile = getTemporaryRestoringProfileForBackupUseCase(args.backupType)?.changeGateway(Radix.Gateway.mainnet)
-                    profile.recoverableFactorSources()
+                    val factorSources = profile.recoverableFactorSources()
+
+                    _state.update {
+                        it.copy(
+                            recoverableFactorSources = factorSources,
+                            mainBabylonFactorSourceId = profile?.mainBabylonFactorSourceId()
+                        )
+                    }
                 }
 
                 // TODO refactor later to remove that specific case at all and use RestoreProfile? always
                 is RestoreMnemonicsArgs.RestoreSpecificMnemonic -> {
                     val profile = getProfileUseCase().firstOrNull() ?: return@launch
-                    profile.recoverableFactorSources()
+                    val factorSources = profile.recoverableFactorSources()
+
+                    _state.update {
+                        it.copy(
+                            recoverableFactorSources = factorSources,
+                            mainBabylonFactorSourceId = profile?.mainBabylonFactorSourceId()
+                        )
+                    }
                 }
             }
-
-            _state.update { it.copy(recoverableFactorSources = factorSources) }
 
             showNextRecoverableFactorSourceOrFinish()
         }
@@ -97,6 +111,16 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 )
             }
             .orEmpty()
+    }
+
+    fun Profile.mainBabylonFactorSourceId(): FactorSource.FactorSourceID.FromHash? {
+        val deviceFactorSources = factorSources.filterIsInstance<DeviceFactorSource>()
+        val babylonFactorSources = deviceFactorSources.filter { it.isBabylon }
+        return if (babylonFactorSources.size == 1) {
+            babylonFactorSources.first().id
+        } else {
+            babylonFactorSources.firstOrNull { it.common.flags.contains(FactorSourceFlag.Main) }?.id
+        }
     }
 
     fun onBackClick() {
@@ -229,7 +253,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     data class State(
         private val recoverableFactorSources: List<RecoverableFactorSource> = emptyList(),
-        private val restoreMnemonicsArgs: RestoreMnemonicsArgs,
+        private val mainBabylonFactorSourceId: FactorSource.FactorSourceID.FromHash? = null,
         private val selectedIndex: Int = -1,
         val screenType: ScreenType = ScreenType.Entities,
         val isMovingForward: Boolean = false,
@@ -252,15 +276,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             get() = if (selectedIndex == -1) null else recoverableFactorSources.getOrNull(selectedIndex)
 
         val isMainBabylonSeedPhrase: Boolean
-            get() = if (recoverableFactorSources.any { it.factorSource.isMainBabylon }) {
-                recoverableFactorSource?.factorSource?.isMainBabylon == true
-            } else {
-                when (restoreMnemonicsArgs) {
-                    is RestoreMnemonicsArgs.RestoreProfile -> true
-                    is RestoreMnemonicsArgs.RestoreSpecificMnemonic -> false
-                }
-            }
-
+            get() = recoverableFactorSource?.factorSource?.id == mainBabylonFactorSourceId
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1,
