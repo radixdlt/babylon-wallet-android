@@ -53,7 +53,7 @@ data class Profile(
             )
         )
     )
-    
+
     /**
      * Temporarily the only factor source that the user can use to create accounts/personas.
      * When new UI is added that allows the user to import other factor sources

@@ -320,7 +320,7 @@ private fun EntitiesView(
                     )
                 }
 
-                if (state.isMainBabylonSeedPhrase) {
+                if (state.isMainBabylonSeedPhrase && state.isMandatory.not()) {
                     item {
                         RadixTextButton(
                             modifier = Modifier

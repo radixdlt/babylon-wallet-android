@@ -50,7 +50,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val args = RestoreMnemonicsArgs.from(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
-    override fun initialState(): State = State()
+    override fun initialState(): State = State(isMandatory = (args as? RestoreMnemonicsArgs.RestoreSpecificMnemonic)?.isMandatory == true)
 
     init {
         viewModelScope.launch {
@@ -240,7 +240,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val uiMessage: UiMessage? = null,
         val isRestoring: Boolean = false,
         val hasSkippedMainSeedPhrase: Boolean = false,
-        val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
+        val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
+        val isMandatory: Boolean = false
     ) : UiState {
 
         sealed interface ScreenType {

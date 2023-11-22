@@ -6,6 +6,7 @@ import rdx.works.core.KeystoreManager
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.checkIfKeyWasPermanentlyInvalidated
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import javax.inject.Inject
@@ -35,11 +36,16 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
     }
 
     suspend fun babylonMnemonicNeedsRecovery(): FactorSource.FactorSourceID.FromHash? {
-        val babylonFactorSource = getProfileUseCase.deviceFactorSources.firstOrNull()?.find {
-            it.isBabylon
+        val babylonFactorSources =
+            getProfileUseCase.deviceFactorSources.firstOrNull()?.filter { it.isBabylon }
+                ?: return null
+        val mainBabylonFactorSourceToRecover = if (babylonFactorSources.size == 1) {
+            babylonFactorSources.first()
+        } else {
+            babylonFactorSources.firstOrNull { it.common.flags.contains(FactorSourceFlag.Main) }
         } ?: return null
-        return if (!mnemonicRepository.mnemonicExist(babylonFactorSource.id)) {
-            babylonFactorSource.id
+        return if (!mnemonicRepository.mnemonicExist(mainBabylonFactorSourceToRecover.id)) {
+            mainBabylonFactorSourceToRecover.id
         } else {
             null
         }
