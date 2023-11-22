@@ -78,18 +78,15 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 is RestoreMnemonicsArgs.RestoreSpecificMnemonic -> {
                     val profile = getProfileUseCase().firstOrNull() ?: return@launch
                     val allAccounts = profile.currentNetwork.accounts
-                    profile.factorSources.filterIsInstance<DeviceFactorSource>().find { factorSource ->
-                        factorSource.id.body == args.factorSourceId && !mnemonicRepository.mnemonicExist(factorSource.id)
-                    }?.let { factorSource ->
+                    profile.factorSources.filterIsInstance<DeviceFactorSource>().filter { factorSource ->
+                        !mnemonicRepository.mnemonicExist(factorSource.id)
+                    }.map { factorSource ->
                         val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
-
-                        listOf(
-                            RecoverableFactorSource(
-                                associatedAccounts = associatedAccounts,
-                                factorSource = factorSource
-                            )
+                        RecoverableFactorSource(
+                            associatedAccounts = associatedAccounts,
+                            factorSource = factorSource
                         )
-                    }.orEmpty()
+                    }
                 }
             }
 
@@ -130,8 +127,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    fun onSkipSeedPhraseClick() {
-        viewModelScope.launch { showNextRecoverableFactorSourceOrFinish() }
+    fun onSkipSeedPhraseClick(biometricAuthProvider: suspend () -> Boolean) {
+        viewModelScope.launch { showNextRecoverableFactorSourceOrFinish(biometricAuthProvider) }
     }
 
     fun onSkipMainSeedPhraseClick() {
@@ -140,10 +137,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    fun skipMainSeedPhraseAndCreateNew() {
+    fun skipMainSeedPhraseAndCreateNew(biometricAuthProvider: suspend () -> Boolean) {
         viewModelScope.launch {
             _state.update { state -> state.copy(hasSkippedMainSeedPhrase = true) }
-            showNextRecoverableFactorSourceOrFinish()
+            showNextRecoverableFactorSourceOrFinish(biometricAuthProvider)
         }
     }
 
@@ -205,7 +202,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun showNextRecoverableFactorSourceOrFinish() {
+    private suspend fun showNextRecoverableFactorSourceOrFinish(biometricAuthProvider: suspend () -> Boolean = { true }) {
         val nextRecoverableFactorSource = state.value.nextRecoverableFactorSource
         if (nextRecoverableFactorSource != null) {
             seedPhraseInputDelegate.reset()
@@ -214,6 +211,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update { it.proceedToNextRecoverable() }
         } else {
             if (_state.value.hasSkippedMainSeedPhrase) {
+                if (biometricAuthProvider().not()) return
+
                 // Create main babylon seedphrase as it was skipped before
                 _state.update { it.copy(isRestoring = true) }
                 if (args is RestoreMnemonicsArgs.RestoreProfile) {
@@ -251,9 +250,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
         val nextRecoverableFactorSource: RecoverableFactorSource?
             get() = recoverableFactorSources.getOrNull(selectedIndex + 1)
-
-        val isLastRecoverableFactorSource: Boolean
-            get() = nextRecoverableFactorSource == null
 
         val recoverableFactorSource: RecoverableFactorSource?
             get() = if (selectedIndex == -1) null else recoverableFactorSources.getOrNull(selectedIndex)

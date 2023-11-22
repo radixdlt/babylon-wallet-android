@@ -59,6 +59,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggesti
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 
 @Composable
@@ -74,28 +75,16 @@ fun RestoreMnemonicsScreen(
         state = state,
         onBackClick = viewModel::onBackClick,
         onSkipSeedPhraseClick = {
-            if (state.isLastRecoverableFactorSource) {
-                context.biometricAuthenticate { authenticated ->
-                    if (authenticated) {
-                        viewModel.onSkipSeedPhraseClick()
-                    }
-                }
-            } else {
-                viewModel.onSkipSeedPhraseClick()
+            viewModel.onSkipSeedPhraseClick {
+                context.biometricAuthenticateSuspend()
             }
         },
         onSkipMainSeedPhraseClick = viewModel::onSkipMainSeedPhraseClick,
         onSubmitClick = {
             when (state.screenType) {
                 RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
-                    if (state.isLastRecoverableFactorSource) {
-                        context.biometricAuthenticate { authenticated ->
-                            if (authenticated) {
-                                viewModel.skipMainSeedPhraseAndCreateNew()
-                            }
-                        }
-                    } else {
-                        viewModel.skipMainSeedPhraseAndCreateNew()
+                    viewModel.skipMainSeedPhraseAndCreateNew {
+                        context.biometricAuthenticateSuspend()
                     }
                 }
                 RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
