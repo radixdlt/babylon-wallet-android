@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.repository.cache.database.AccountPortfoli
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsResourcesJoin
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.accountCacheValidity
+import com.babylon.wallet.android.data.repository.cache.database.StateDatabase
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntities
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidators
@@ -31,6 +32,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMet
 import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -43,8 +45,11 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
+import rdx.works.core.toUnitResult
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import timber.log.Timber
@@ -57,12 +62,14 @@ import javax.inject.Singleton
 class AccountsStateCache @Inject constructor(
     private val api: StateApi,
     private val dao: StateDao,
+    private val database: StateDatabase,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
     @ApplicationScope private val applicationScope: CoroutineScope
 ) {
 
     private val accountsMemoryCache = MutableStateFlow<List<AccountAddressWithAssets>?>(null)
     private val accountsRequested = MutableStateFlow<Set<String>>(emptySet())
+    private val deletingDatabaseMutex = Mutex()
 
     init {
         dao.observeAccounts()
@@ -94,10 +101,14 @@ class AccountsStateCache @Inject constructor(
             }
             emit(accountsToReturn)
 
+            // Do not request accounts while deleting cache
+            if (deletingDatabaseMutex.isLocked) return@transform
+
+            val knownStateVersion = accountsToReturn.maxOfOrNull { it.details?.stateVersion ?: -1L }?.takeIf { it > 0L }
             val accountsToRequest = accountsToReturn.filter { it.assets == null }.map { it.account.address }.toSet()
             fetchAllResources(
                 accountAddresses = accountsToRequest,
-                onStateVersion = cachedAccounts.maxOfOrNull { it.details?.stateVersion ?: -1L }?.takeIf { it > 0L },
+                onStateVersion = knownStateVersion,
             )
         }
         .flowOn(dispatcher)
@@ -119,6 +130,20 @@ class AccountsStateCache @Inject constructor(
             }
         }
     }
+
+    suspend fun clear() = runCatching {
+        deletingDatabaseMutex.lock()
+        withContext(dispatcher) {
+            database.clearAllTables()
+        }
+        applicationScope.launch {
+            // observeAccountsOnLedger will emit immediately after the db has been deleted
+            // and it may have an active connection of a several amount of accounts
+            // We need to delay a bit so the subscriber (view model) can be killed by the system
+            delay(StateDao.deleteDuration)
+            deletingDatabaseMutex.unlock()
+        }
+    }.toUnitResult()
 
     private suspend fun fetchAllResources(
         accountAddresses: Set<String>,

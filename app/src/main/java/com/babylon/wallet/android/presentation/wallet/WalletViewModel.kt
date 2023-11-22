@@ -252,9 +252,11 @@ data class WalletUiState(
 
     fun loadingResources(accounts: List<Network.Account>, isRefreshing: Boolean): WalletUiState = copy(
         accountsWithResources = accounts.map { account ->
+            val current = accountsWithResources?.find { account == it.account }
             AccountWithAssets(
                 account = account,
-                assets = accountsWithResources?.find { account == it.account }?.assets
+                details = current?.details,
+                assets = current?.assets
             )
         },
         loading = true,

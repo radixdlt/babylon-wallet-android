@@ -44,8 +44,6 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
-import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
-import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
@@ -75,7 +73,9 @@ import rdx.works.profile.data.model.pernetwork.Network
 fun TransactionReviewScreen(
     modifier: Modifier = Modifier,
     viewModel: TransactionReviewViewModel,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onFungibleClick: (Resource.FungibleResource, Boolean) -> Unit,
+    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -89,6 +89,16 @@ fun TransactionReviewScreen(
             dismissText = null
         )
     }
+
+    LaunchedEffect(Unit) {
+        viewModel.oneOffEvent.collect {
+            when (it) {
+                is TransactionReviewViewModel.Event.OnFungibleClick -> onFungibleClick(it.resource, it.isNewlyCreated)
+                is TransactionReviewViewModel.Event.OnNonFungibleClick -> onNonFungibleClick(it.resource, it.item, it.isNewlyCreated)
+            }
+        }
+    }
+
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
         state = state,
@@ -164,8 +174,8 @@ private fun TransactionPreviewContent(
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onDAppClick: (DAppWithResources) -> Unit,
-    onFungibleResourceClick: (Resource.FungibleResource) -> Unit,
-    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    onFungibleResourceClick: (Resource.FungibleResource, Boolean) -> Unit,
+    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onPayerSelected: (Network.Account) -> Unit,
@@ -368,27 +378,6 @@ private fun BottomSheetContent(
     onViewAdvancedModeClick: () -> Unit
 ) {
     when (sheetState) {
-        is State.Sheet.ResourceSelected -> {
-            when (sheetState) {
-                is State.Sheet.ResourceSelected.Fungible -> {
-                    FungibleTokenBottomSheetDetails(
-                        modifier = modifier.fillMaxWidth(),
-                        fungible = sheetState.token,
-                        onCloseClick = onCloseDAppSheet
-                    )
-                }
-
-                is State.Sheet.ResourceSelected.NonFungible -> {
-                    NonFungibleTokenBottomSheetDetails(
-                        modifier = modifier.fillMaxWidth(),
-                        item = sheetState.item,
-                        nonFungibleResource = sheetState.collection,
-                        onCloseClick = onCloseDAppSheet
-                    )
-                }
-            }
-        }
-
         is State.Sheet.CustomizeGuarantees -> {
             GuaranteesSheet(
                 modifier = modifier,
@@ -484,8 +473,8 @@ fun TransactionPreviewContentPreview() {
             promptForGuarantees = {},
             onCustomizeClick = {},
             onDAppClick = {},
-            onFungibleResourceClick = {},
-            onNonFungibleResourceClick = { _, _ -> },
+            onFungibleResourceClick = { _, _ -> },
+            onNonFungibleResourceClick = { _, _, _ -> },
             onGuaranteeValueChanged = { _, _ -> },
             onGuaranteeValueIncreased = {},
             onGuaranteeValueDecreased = {},

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.CircularProgressIndicator
@@ -35,7 +36,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import java.math.BigDecimal
 
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "MagicNumber")
 fun LazyListScope.assetsView(
     assets: Assets?,
     epoch: Long?,
@@ -45,12 +46,12 @@ fun LazyListScope.assetsView(
     action: AssetsViewAction
 ) {
     item {
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            AssetsTabs(selectedTab = selectedTab, onTabSelected = onTabSelected)
-        }
+        AssetsTabs(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+            selectedTab = selectedTab,
+            onTabSelected = onTabSelected
+        )
     }
 
     if (assets == null) {
@@ -101,7 +102,7 @@ sealed interface AssetsViewAction {
     data class Click(
         val onFungibleClick: (Resource.FungibleResource) -> Unit,
         val onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
-        val onLSUClick: (LiquidStakeUnit, ValidatorDetail) -> Unit,
+        val onLSUClick: (LiquidStakeUnit) -> Unit,
         val onPoolUnitClick: (PoolUnit) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
         override val onStakesRequest: () -> Unit
@@ -146,7 +147,7 @@ fun AssetsViewWithLoadingAssets() {
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
-                    onLSUClick = { _, _ -> },
+                    onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
                     onStakesRequest = {}
@@ -171,7 +172,7 @@ fun AssetsViewWithEmptyAssets() {
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
-                    onLSUClick = { _, _ -> },
+                    onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
                     onStakesRequest = {}
@@ -305,7 +306,7 @@ fun AssetsViewWithAssets() {
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
-                    onLSUClick = { _, _ -> },
+                    onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
                     onStakesRequest = {}

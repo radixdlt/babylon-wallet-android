@@ -39,8 +39,8 @@ fun DepositAccountContent(
     to: ImmutableList<AccountWithTransferableResources>,
     promptForGuarantees: () -> Unit,
     showStrokeLine: Boolean,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit
+    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
+    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
     if (to.isNotEmpty()) {
         Row(verticalAlignment = Alignment.Bottom) {
@@ -72,9 +72,11 @@ fun DepositAccountContent(
                 val lastItem = index == to.size - 1
                 TransactionAccountCard(
                     account = accountEntry,
-                    onFungibleResourceClick = { onFungibleResourceClick(it) },
-                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem ->
-                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem)
+                    onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
+                        onFungibleResourceClick(fungibleResource, isNewlyCreated)
+                    },
+                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
+                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
                     }
                 )
 
@@ -129,8 +131,8 @@ fun DepositAccountPreview() {
             to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned).toPersistentList(),
             promptForGuarantees = {},
             showStrokeLine = true,
-            onFungibleResourceClick = { _ -> },
-            onNonFungibleResourceClick = { _, _ -> }
+            onFungibleResourceClick = { _, _ -> },
+            onNonFungibleResourceClick = { _, _, _ -> }
         )
     }
 }

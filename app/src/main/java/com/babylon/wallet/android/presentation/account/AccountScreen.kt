@@ -2,7 +2,6 @@
 
 package com.babylon.wallet.android.presentation.account
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -14,24 +13,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.Surface
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -40,7 +32,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -65,13 +56,8 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.presentation.account.composable.FungibleTokenBottomSheetDetails
-import com.babylon.wallet.android.presentation.account.composable.LSUBottomSheetDetails
-import com.babylon.wallet.android.presentation.account.composable.NonFungibleTokenBottomSheetDetails
-import com.babylon.wallet.android.presentation.account.composable.PoolUnitBottomSheetDetails
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
@@ -87,9 +73,8 @@ import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun AccountScreen(
@@ -99,6 +84,10 @@ fun AccountScreen(
     onBackClick: () -> Unit,
     onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
     onNavigateToMnemonicRestore: (FactorSource.FactorSourceID.FromHash) -> Unit,
+    onFungibleResourceClick: (Resource.FungibleResource, Network.Account) -> Unit,
+    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    onPoolUnitClick: (PoolUnit, Network.Account) -> Unit,
+    onLSUClick: (LiquidStakeUnit, Network.Account) -> Unit,
     onTransferClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -107,6 +96,10 @@ fun AccountScreen(
             when (it) {
                 is AccountEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                 is AccountEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore(it.factorSourceId)
+                is AccountEvent.OnFungibleClick -> onFungibleResourceClick(it.resource, it.account)
+                is AccountEvent.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item)
+                is AccountEvent.OnPoolUnitClick -> onPoolUnitClick(it.poolUnit, it.account)
+                is AccountEvent.OnLSUClick -> onLSUClick(it.liquidStakeUnit, it.account)
             }
         }
     }
@@ -126,7 +119,7 @@ fun AccountScreen(
         onRefresh = viewModel::refresh,
         onTransferClick = onTransferClick,
         onMessageShown = viewModel::onMessageShown,
-        onFungibleResourceClicked = viewModel::onFungibleResourceClicked,
+        onFungibleItemClicked = viewModel::onFungibleResourceClicked,
         onNonFungibleItemClicked = viewModel::onNonFungibleResourceClicked,
         onApplySecuritySettings = viewModel::onApplySecuritySettings,
         onPoolUnitClick = viewModel::onPoolUnitClicked,
@@ -146,11 +139,11 @@ private fun AccountScreenContent(
     onRefresh: () -> Unit,
     onTransferClick: (String) -> Unit,
     onMessageShown: () -> Unit,
-    onFungibleResourceClicked: (Resource.FungibleResource) -> Unit,
+    onFungibleItemClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
-    onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit,
+    onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit
 ) {
@@ -161,21 +154,6 @@ private fun AccountScreenContent(
         AccountGradientList[appearanceId % AccountGradientList.size]
     }.toPersistentList()
 
-    val bottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
-    )
-    val scope = rememberCoroutineScope()
-    BackHandler {
-        if (bottomSheetState.isVisible) {
-            scope.launch {
-                bottomSheetState.hide()
-            }
-        } else {
-            onBackClick()
-        }
-    }
-
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
         message = state.uiMessage,
@@ -183,184 +161,91 @@ private fun AccountScreenContent(
         onMessageShown = onMessageShown
     )
 
-    ModalBottomSheetLayout(
+    val pullToRefreshState = rememberPullRefreshState(
+        refreshing = state.isRefreshing,
+        onRefresh = onRefresh,
+        refreshingOffset = 116.dp
+    )
+    val lazyListState = rememberLazyListState()
+    Box(
         modifier = modifier
+            .pullRefresh(pullToRefreshState)
             .background(Brush.horizontalGradient(gradient))
-            .statusBarsPadding(),
-        sheetState = bottomSheetState,
-        sheetBackgroundColor = RadixTheme.colors.defaultBackground,
-        scrimColor = Color.Black.copy(alpha = 0.3f),
-        sheetShape = RadixTheme.shapes.roundedRectTopDefault,
-        sheetContent = {
-            SheetContent(
-                modifier = Modifier.navigationBarsPadding(),
-                state = state,
-                scope = scope,
-                bottomSheetState = bottomSheetState
-            )
-        },
+            .statusBarsPadding()
     ) {
-        val pullToRefreshState = rememberPullRefreshState(
-            refreshing = state.isRefreshing,
-            onRefresh = onRefresh,
-            refreshingOffset = 116.dp
-        )
-        val lazyListState = rememberLazyListState()
-        Box(
-            modifier = Modifier.pullRefresh(pullToRefreshState)
-        ) {
-            Scaffold(
-                modifier = Modifier,
-                topBar = {
-                    RadixCenteredTopAppBar(
-                        title = state.accountWithAssets?.account?.displayName.orEmpty(),
-                        onBackClick = onBackClick,
-                        contentColor = RadixTheme.colors.white,
-                        containerColor = Color.Transparent,
-                        actions = {
-                            // TODO revisit after compose update and remove if library update fixes the issue
-                            // https://radixdlt.atlassian.net/browse/ABW-2504
-                            ThrottleIconButton(
-                                onClick = {
-                                    onAccountPreferenceClick(state.accountWithAssets?.account?.address.orEmpty())
-                                },
-                                thresholdMs = 1000L
-                            ) {
-                                Icon(
-                                    imageVector = ImageVector.vectorResource(
-                                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
-                                    ),
-                                    tint = RadixTheme.colors.white,
-                                    contentDescription = "account settings"
-                                )
-                            }
+        Scaffold(
+            modifier = Modifier,
+            topBar = {
+                RadixCenteredTopAppBar(
+                    title = state.accountWithAssets?.account?.displayName.orEmpty(),
+                    onBackClick = onBackClick,
+                    contentColor = RadixTheme.colors.white,
+                    containerColor = Color.Transparent,
+                    actions = {
+                        // TODO revisit after compose update and remove if library update fixes the issue
+                        // https://radixdlt.atlassian.net/browse/ABW-2504
+                        ThrottleIconButton(
+                            onClick = {
+                                onAccountPreferenceClick(state.accountWithAssets?.account?.address.orEmpty())
+                            },
+                            thresholdMs = 1000L
+                        ) {
+                            Icon(
+                                imageVector = ImageVector.vectorResource(
+                                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_more_horiz
+                                ),
+                                tint = RadixTheme.colors.white,
+                                contentDescription = "account settings"
+                            )
                         }
-                    )
-                },
-                containerColor = Color.Transparent,
-                floatingActionButtonPosition = FabPosition.Center,
-                snackbarHost = {
-                    RadixSnackbarHost(
-                        modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                        hostState = snackBarHostState
-                    )
-                }
-            ) { innerPadding ->
-                AssetsContent(
-                    modifier = Modifier.padding(innerPadding),
-                    state = state,
-                    lazyListState = lazyListState,
-                    onFungibleTokenClick = {
-                        onFungibleResourceClicked(it)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
-                    },
-                    onNonFungibleItemClick = { nftCollection, nftItem ->
-                        onNonFungibleItemClicked(nftCollection, nftItem)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
-                    },
-                    gradient = gradient,
-                    onTransferClick = onTransferClick,
-                    onHistoryClick = {
-                        state.historyDashboardUrl?.let { url ->
-                            context.openUrl(url)
-                        }
-                    },
-                    onApplySecuritySettings = onApplySecuritySettings,
-                    onPoolUnitClick = {
-                        onPoolUnitClick(it)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
-                    },
-                    onLSUUnitClicked = { lsu, validator ->
-                        onLSUUnitClicked(lsu, validator)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
-                    },
-                    onNextNFTsPageRequest = onNextNFTsPageRequest,
-                    onStakesRequest = onStakesRequest
+                    }
+                )
+            },
+            containerColor = Color.Transparent,
+            floatingActionButtonPosition = FabPosition.Center,
+            snackbarHost = {
+                RadixSnackbarHost(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                    hostState = snackBarHostState
                 )
             }
-
-            PullRefreshIndicator(
-                modifier = Modifier.align(Alignment.TopCenter),
-                refreshing = state.isRefreshing,
-                state = pullToRefreshState,
-                contentColor = RadixTheme.colors.gray1,
-                backgroundColor = RadixTheme.colors.defaultBackground,
-            )
-        }
-    }
-}
-
-@Composable
-private fun SheetContent(
-    modifier: Modifier = Modifier,
-    state: AccountUiState,
-    scope: CoroutineScope,
-    bottomSheetState: ModalBottomSheetState
-) {
-    when (val selected = state.selectedResource) {
-        is SelectedResource.SelectedNonFungibleResource -> {
-            NonFungibleTokenBottomSheetDetails(
-                modifier = modifier.fillMaxWidth(),
-                item = selected.item,
-                nonFungibleResource = selected.nonFungible,
-                onCloseClick = {
-                    scope.launch {
-                        bottomSheetState.hide()
+        ) { innerPadding ->
+            AssetsContent(
+                modifier = Modifier.padding(innerPadding),
+                state = state,
+                lazyListState = lazyListState,
+                onFungibleTokenClick = {
+                    onFungibleItemClicked(it)
+                },
+                onNonFungibleItemClick = { nftCollection, nftItem ->
+                    onNonFungibleItemClicked(nftCollection, nftItem)
+                },
+                gradient = gradient,
+                onTransferClick = onTransferClick,
+                onHistoryClick = {
+                    state.historyDashboardUrl?.let { url ->
+                        context.openUrl(url)
                     }
-                }
+                },
+                onApplySecuritySettings = onApplySecuritySettings,
+                onPoolUnitClick = {
+                    onPoolUnitClick(it)
+                },
+                onLSUUnitClicked = { lsu ->
+                    onLSUUnitClicked(lsu)
+                },
+                onNextNFTsPageRequest = onNextNFTsPageRequest,
+                onStakesRequest = onStakesRequest
             )
         }
 
-        is SelectedResource.SelectedFungibleResource -> {
-            FungibleTokenBottomSheetDetails(
-                modifier = modifier.fillMaxWidth(),
-                fungible = selected.fungible,
-                onCloseClick = {
-                    scope.launch {
-                        bottomSheetState.hide()
-                    }
-                }
-            )
-        }
-
-        is SelectedResource.SelectedPoolUnit -> {
-            PoolUnitBottomSheetDetails(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                poolUnit = selected.poolUnit,
-                onCloseClick = {
-                    scope.launch {
-                        bottomSheetState.hide()
-                    }
-                }
-            )
-        }
-
-        is SelectedResource.SelectedLSUUnit -> {
-            LSUBottomSheetDetails(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                lsuUnit = selected.lsuUnit,
-                validatorDetail = selected.validatorDetail,
-                onCloseClick = {
-                    scope.launch {
-                        bottomSheetState.hide()
-                    }
-                }
-            )
-        }
-
-        else -> {}
+        PullRefreshIndicator(
+            modifier = Modifier.align(Alignment.TopCenter),
+            refreshing = state.isRefreshing,
+            state = pullToRefreshState,
+            contentColor = RadixTheme.colors.gray1,
+            backgroundColor = RadixTheme.colors.defaultBackground,
+        )
     }
 }
 
@@ -376,7 +261,7 @@ fun AssetsContent(
     onTransferClick: (String) -> Unit,
     onHistoryClick: () -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
-    onLSUUnitClicked: (LiquidStakeUnit, ValidatorDetail) -> Unit,
+    onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit
 ) {
@@ -548,11 +433,11 @@ fun AccountContentPreview() {
                 onRefresh = {},
                 onTransferClick = {},
                 onMessageShown = {},
-                onFungibleResourceClicked = {},
+                onFungibleItemClicked = {},
                 onNonFungibleItemClicked = { _, _ -> },
                 onApplySecuritySettings = {},
                 onPoolUnitClick = {},
-                onLSUUnitClicked = { _, _ -> },
+                onLSUUnitClicked = {},
                 onNextNFTsPageRequest = {},
                 onStakesRequest = {}
             )

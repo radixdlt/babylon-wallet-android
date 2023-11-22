@@ -14,7 +14,11 @@ class ObserveResourceUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
-    operator fun invoke(resourceAddress: String, accountAddress: String?): Flow<Resource> = flow {
+    operator fun invoke(
+        resourceAddress: String,
+        accountAddress: String? = null,
+        withDetails: Boolean = true
+    ): Flow<Resource> = flow {
         val resource = stateRepository.getResources(
             addresses = setOf(resourceAddress),
             underAccountAddress = accountAddress,
@@ -23,7 +27,7 @@ class ObserveResourceUseCase @Inject constructor(
 
         emit(resource)
 
-        if (!resource.isDetailsAvailable) {
+        if (!resource.isDetailsAvailable && withDetails) {
             val resourceWithDetails = stateRepository.getResources(
                 addresses = setOf(resourceAddress),
                 underAccountAddress = accountAddress,

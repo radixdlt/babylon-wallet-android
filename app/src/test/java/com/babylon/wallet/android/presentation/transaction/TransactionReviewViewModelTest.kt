@@ -22,6 +22,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadata
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
+import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
@@ -82,6 +83,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val transactionClient = mockk<TransactionClient>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getResourcesUseCase = mockk<GetResourcesUseCase>()
+    private val cacheNewlyCreatedEntitiesUseCase = mockk<CacheNewlyCreatedEntitiesUseCase>()
     private val searchFeePayersUseCase = mockk<SearchFeePayersUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getTransactionBadgesUseCase = mockk<GetTransactionBadgesUseCase>()
@@ -221,6 +223,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             analysis = TransactionAnalysisDelegate(
                 getProfileUseCase = getProfileUseCase,
                 getResourcesUseCase = getResourcesUseCase,
+                cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 resolveDAppsUseCase = resolveDAppsUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase

@@ -25,22 +25,51 @@ data class Assets(
     val validatorsWithStakes: List<ValidatorWithStakes> = emptyList()
 ) {
 
-    val xrd: Resource.FungibleResource? by lazy {
-        fungibles.find { it.isXrd }
+    // Owned assets are assets that appear in the lists, but the user owns 0 amounts.
+    // That is usually the case where a user may have sent all their NFTs from a collection
+    // to another account. Still the collection is associated with the account, but the
+    // user, on ui level, does not need to see it.
+    // Also we don't filter those values out in the data layer since, we actually need this
+    // information when for example we need to know what resources an account is familiar with
+    // so we can apply the correct deposit rule warnings in transfer screen when the rule
+    // is "Only accept known"
+
+    val ownedXrd: Resource.FungibleResource? by lazy {
+        fungibles.find { it.isXrd && it.ownedAmount != BigDecimal.ZERO }
     }
-    val nonXrdFungibles: List<Resource.FungibleResource> by lazy {
-        fungibles.filterNot { it.isXrd }
+    val ownedNonXrdFungibles: List<Resource.FungibleResource> by lazy {
+        fungibles.filterNot { it.isXrd || it.ownedAmount == BigDecimal.ZERO }
+    }
+    val ownedFungibles: List<Resource.FungibleResource> by lazy {
+        ownedXrd?.let { listOf(it) + ownedNonXrdFungibles } ?: ownedNonXrdFungibles
     }
 
-    fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = xrd?.let {
+    val ownedNonFungibles: List<Resource.NonFungibleResource> by lazy {
+        nonFungibles.filterNot { it.amount == 0L }
+    }
+
+    val ownedPoolUnits: List<PoolUnit> by lazy {
+        poolUnits.filterNot { it.stake.ownedAmount == BigDecimal.ZERO }
+    }
+
+    val ownedValidatorsWithStakes: List<ValidatorWithStakes> by lazy {
+        validatorsWithStakes.filterNot {
+            (it.stakeClaimNft == null || it.stakeClaimNft.nonFungibleResource.amount == 0L) &&
+                it.liquidStakeUnit.fungibleResource.ownedAmount == BigDecimal.ZERO
+        }
+    }
+
+    fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = ownedXrd?.let {
         it.ownedAmount?.let { amount ->
             amount >= minimumBalance
         }
     } == true
 
-    fun poolUnitsSize(): Int {
-        return poolUnits.size + validatorsWithStakes.size
-    }
+    fun fungiblesSize(): Int = ownedFungibles.size
+
+    fun nftsSize(): Int = ownedNonFungibles.sumOf { it.amount }.toInt()
+
+    fun poolUnitsSize(): Int = ownedPoolUnits.size + ownedValidatorsWithStakes.size
 }
 
 data class ValidatorDetail(
@@ -68,5 +97,3 @@ data class ValidatorWithStakes(
         return liquidStakeUnit.stakeValueInXRD(validatorDetail.totalXrdStake)
     }
 }
-
-fun List<Resource.NonFungibleResource>.allNftItemsSize() = sumOf { it.amount }

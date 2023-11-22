@@ -45,6 +45,13 @@ interface StateDao {
     )
     fun getAccountStateVersion(accountAddress: String): Long?
 
+    @Query(
+        """
+        SELECT MAX(state_version) FROM AccountEntity
+    """
+    )
+    fun getLatestStateVersion(): Long?
+
     @Suppress("UnsafeCallOnNullableType")
     @Transaction
     fun updatePools(pools: Map<ResourceEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>) {
@@ -245,6 +252,7 @@ interface StateDao {
     }
 
     companion object {
+        val deleteDuration = 1.toDuration(DurationUnit.SECONDS)
         private val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
         private val resourcesCacheDuration = 48.toDuration(DurationUnit.HOURS)
 

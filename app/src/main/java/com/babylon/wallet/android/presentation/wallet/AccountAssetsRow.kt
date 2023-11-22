@@ -37,7 +37,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.allNftItemsSize
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
@@ -91,11 +90,11 @@ private fun AssetsContent(
     ConstraintLayout(
         modifier = modifier
     ) {
-        val (visibleFungibles, remainingFungiblesCount) = remember(assets.fungibles) {
-            assets.fungibles.take(maxVisibleFungibles) to (assets.fungibles.size - maxVisibleFungibles)
-                .coerceAtLeast(minimumValue = 0)
+        val (visibleFungibles, remainingFungiblesCount) = remember(assets.ownedFungibles) {
+            val all = assets.ownedFungibles
+            all.take(maxVisibleFungibles) to (all.size - maxVisibleFungibles).coerceAtLeast(minimumValue = 0)
         }
-        val nftsCount = remember(assets.nonFungibles) { assets.nonFungibles.allNftItemsSize() }
+        val nftsCount = remember(assets.nonFungibles) { assets.nftsSize() }
         val poolUnitCount = remember(assets.poolUnits, assets.validatorsWithStakes) {
             assets.poolUnitsSize()
         }
@@ -161,7 +160,7 @@ private fun AssetsContent(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .height(iconSize),
-                    text = "${assets.nonFungibles.allNftItemsSize()}",
+                    text = "${assets.nftsSize()}",
                     contentPadding = PaddingValues(
                         start = iconSize + RadixTheme.dimensions.paddingSmall,
                         end = RadixTheme.dimensions.paddingSmall

@@ -5,7 +5,9 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
 import com.babylon.wallet.android.mockdata.account
@@ -134,6 +136,14 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
+            override suspend fun getPool(poolAddress: String): Result<Pool> {
+                error("Not needed")
+            }
+
+            override suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail> {
+                error("Not needed")
+            }
+
             override suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> {
                 error("Not needed")
             }
@@ -152,6 +162,14 @@ class SearchFeePayersUseCaseTest {
             }
 
             override suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>> {
+                error("Not needed")
+            }
+
+            override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit> {
+                error("Not needed")
+            }
+
+            override suspend fun clearCachedState(): Result<Unit> {
                 error("Not needed")
             }
 

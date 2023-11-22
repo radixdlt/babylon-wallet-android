@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,7 +27,7 @@ fun AssetsTabs(
     val tabIndex = remember(selectedTab) {
         ResourceTab.values().indexOf(selectedTab)
     }
-    ScrollableTabRow(
+    TabRow(
         modifier = modifier,
         selectedTabIndex = tabIndex,
         containerColor = Color.Transparent,
@@ -57,7 +57,6 @@ fun AssetsTabs(
             ) {
                 Text(
                     modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingMedium,
                         vertical = RadixTheme.dimensions.paddingSmall
                     ),
                     text = tab.name(),

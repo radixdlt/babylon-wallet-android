@@ -45,6 +45,17 @@ data class ValidatorEntity(
     )
 
     companion object {
+        fun ValidatorDetail.asValidatorEntity(syncInfo: SyncInfo) = ValidatorEntity(
+            address = address,
+            name = name.takeIf { it.isNotBlank() },
+            description = description,
+            iconUrl = url?.toString(),
+            stakeUnitResourceAddress = stakeUnitResourceAddress,
+            claimTokenResourceAddress = claimTokenResourceAddress,
+            totalStake = totalXrdStake,
+            stateVersion = syncInfo.accountStateVersion
+        )
+
         fun List<StateEntityDetailsResponseItem>.asValidators() = map { item ->
             val metadataItems = item.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
             ValidatorDetail(
@@ -59,16 +70,7 @@ data class ValidatorEntity(
         }
 
         fun List<ValidatorDetail>.asValidatorEntities(syncInfo: SyncInfo) = map { item ->
-            ValidatorEntity(
-                address = item.address,
-                name = item.name.takeIf { it.isNotBlank() },
-                description = item.description,
-                iconUrl = item.url?.toString(),
-                stakeUnitResourceAddress = item.stakeUnitResourceAddress,
-                claimTokenResourceAddress = item.claimTokenResourceAddress,
-                totalStake = item.totalXrdStake,
-                stateVersion = syncInfo.accountStateVersion
-            )
+            item.asValidatorEntity(syncInfo)
         }
     }
 }

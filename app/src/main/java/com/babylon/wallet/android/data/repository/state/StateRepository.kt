@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
+import com.babylon.wallet.android.data.gateway.extensions.fetchValidators
 import com.babylon.wallet.android.data.gateway.extensions.getNextNftItems
 import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
@@ -13,13 +14,18 @@ import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
+import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntity
+import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidators
+import com.babylon.wallet.android.data.repository.cache.database.getCachedPools
 import com.babylon.wallet.android.data.repository.cache.database.storeAccountNFTsPortfolio
 import com.babylon.wallet.android.data.repository.cache.database.updateResourceDetails
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
@@ -32,6 +38,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 interface StateRepository {
 
     fun observeAccountsOnLedger(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>>
@@ -42,6 +49,10 @@ interface StateRepository {
 
     suspend fun getResources(addresses: Set<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>>
 
+    suspend fun getPool(poolAddress: String): Result<Pool>
+
+    suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail>
+
     suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
 
     suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>>
@@ -49,6 +60,10 @@ interface StateRepository {
     suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, OwnerKeyHashesMetadataItem>>
 
     suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>>
+
+    suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit>
+
+    suspend fun clearCachedState(): Result<Unit>
 
     sealed class Error(cause: Throwable) : Exception(cause) {
         data object NoMorePages : Error(RuntimeException("No more NFTs for this resource."))
@@ -59,6 +74,7 @@ interface StateRepository {
     }
 }
 
+@Suppress("TooManyFunctions")
 class StateRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val stateDao: StateDao,
@@ -251,6 +267,34 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getPool(poolAddress: String): Result<Pool> = withContext(dispatcher) {
+        runCatching {
+            val stateVersion = stateDao.getLatestStateVersion() ?: error("No cached state version found")
+            stateDao.getCachedPools(
+                poolAddresses = setOf(poolAddress),
+                atStateVersion = stateVersion
+            )[poolAddress] ?: error("Pool $poolAddress does not exist")
+        }
+    }
+
+    override suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail> = withContext(dispatcher) {
+        runCatching {
+            val stateVersion = stateDao.getLatestStateVersion() ?: error("No cached state version found")
+            val validator = stateDao.getValidators(addresses = setOf(validatorAddress), atStateVersion = stateVersion).firstOrNull()
+            if (validator == null) {
+                val details = stateApi.fetchValidators(
+                    validatorsAddresses = setOf(validatorAddress),
+                    stateVersion = stateVersion
+                ).asValidators().first()
+
+                stateDao.insertValidators(listOf(details.asValidatorEntity(SyncInfo(InstantGenerator(), stateVersion))))
+                details
+            } else {
+                validator.asValidatorDetail()
+            }
+        }
+    }
+
     override suspend fun getNFTDetails(
         resourceAddress: String,
         localId: String
@@ -321,4 +365,16 @@ class StateRepositoryImpl @Inject constructor(
             DApp.from(address = item.address, metadataItems = item.explicitMetadata?.asMetadataItems().orEmpty())
         }
     }
+
+    override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>) = withContext(dispatcher) {
+        runCatching {
+            val syncedAt = InstantGenerator()
+            stateDao.insertOrReplaceResources(newResources.map { it.asEntity(syncedAt) })
+
+            val newNFTs = newResources.filterIsInstance<Resource.NonFungibleResource>().map { it.items }.flatten()
+            stateDao.insertNFTs(newNFTs.map { it.asEntity(syncedAt) })
+        }
+    }
+
+    override suspend fun clearCachedState(): Result<Unit> = accountsStateCache.clear()
 }

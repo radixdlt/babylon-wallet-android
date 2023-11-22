@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
@@ -42,6 +41,7 @@ import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -131,8 +131,10 @@ class AccountViewModel @Inject constructor(
     }
 
     fun onFungibleResourceClicked(resource: Resource.FungibleResource) {
-        _state.update { accountUiState ->
-            accountUiState.copy(selectedResource = SelectedResource.SelectedFungibleResource(resource))
+        val account = _state.value.accountWithAssets?.account ?: return
+
+        viewModelScope.launch {
+            sendEvent(AccountEvent.OnFungibleClick(resource, account))
         }
     }
 
@@ -140,25 +142,29 @@ class AccountViewModel @Inject constructor(
         nonFungibleResource: Resource.NonFungibleResource,
         item: Resource.NonFungibleResource.Item
     ) {
-        _state.update { accountUiState ->
-            accountUiState.copy(
-                selectedResource = SelectedResource.SelectedNonFungibleResource(
-                    nonFungible = nonFungibleResource,
+        viewModelScope.launch {
+            sendEvent(
+                AccountEvent.OnNonFungibleClick(
+                    resource = nonFungibleResource,
                     item = item
                 )
             )
         }
     }
 
-    fun onLSUUnitClicked(resource: LiquidStakeUnit, validatorDetail: ValidatorDetail) {
-        _state.update { accountUiState ->
-            accountUiState.copy(selectedResource = SelectedResource.SelectedLSUUnit(resource, validatorDetail))
+    fun onLSUUnitClicked(liquidStakeUnit: LiquidStakeUnit) {
+        val account = _state.value.accountWithAssets?.account ?: return
+
+        viewModelScope.launch {
+            sendEvent(AccountEvent.OnLSUClick(liquidStakeUnit = liquidStakeUnit, account = account))
         }
     }
 
-    fun onPoolUnitClicked(resource: PoolUnit) {
-        _state.update { accountUiState ->
-            accountUiState.copy(selectedResource = SelectedResource.SelectedPoolUnit(resource))
+    fun onPoolUnitClicked(poolUnit: PoolUnit) {
+        val account = _state.value.accountWithAssets?.account ?: return
+
+        viewModelScope.launch {
+            sendEvent(AccountEvent.OnPoolUnitClick(poolUnit, account))
         }
     }
 
@@ -199,7 +205,7 @@ class AccountViewModel @Inject constructor(
 
     fun onStakesRequest() {
         val account = state.value.accountWithAssets?.account ?: return
-        val stakes = state.value.accountWithAssets?.assets?.validatorsWithStakes ?: return
+        val stakes = state.value.accountWithAssets?.assets?.ownedValidatorsWithStakes ?: return
         val unknownLSUs = stakes.any { !it.isDetailsAvailable }
         onLatestEpochRequest()
         if (!state.value.isRefreshing && !state.value.pendingStakeUnits && unknownLSUs) {
@@ -230,6 +236,13 @@ class AccountViewModel @Inject constructor(
 internal sealed interface AccountEvent : OneOffEvent {
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
     data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceID.FromHash) : AccountEvent
+    data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Network.Account) : AccountEvent
+    data class OnNonFungibleClick(
+        val resource: Resource.NonFungibleResource,
+        val item: Resource.NonFungibleResource.Item
+    ) : AccountEvent
+    data class OnPoolUnitClick(val poolUnit: PoolUnit, val account: Network.Account) : AccountEvent
+    data class OnLSUClick(val liquidStakeUnit: LiquidStakeUnit, val account: Network.Account) : AccountEvent
 }
 
 data class AccountUiState(
@@ -239,7 +252,6 @@ data class AccountUiState(
     private val securityPromptType: SecurityPromptType? = null,
     val epoch: Long? = null,
     val isRefreshing: Boolean = false,
-    val selectedResource: SelectedResource? = null,
     val uiMessage: UiMessage? = null
 ) : UiState {
 
@@ -251,7 +263,6 @@ data class AccountUiState(
             } else {
                 null
             }
-
             else -> null
         }
 
@@ -292,15 +303,4 @@ data class AccountUiState(
             uiMessage = UiMessage.ErrorMessage(error = error)
         )
     }
-}
-
-sealed interface SelectedResource {
-    data class SelectedFungibleResource(val fungible: Resource.FungibleResource) : SelectedResource
-    data class SelectedNonFungibleResource(
-        val nonFungible: Resource.NonFungibleResource,
-        val item: Resource.NonFungibleResource.Item
-    ) : SelectedResource
-
-    data class SelectedLSUUnit(val lsuUnit: LiquidStakeUnit, val validatorDetail: ValidatorDetail) : SelectedResource
-    data class SelectedPoolUnit(val poolUnit: PoolUnit) : SelectedResource
 }

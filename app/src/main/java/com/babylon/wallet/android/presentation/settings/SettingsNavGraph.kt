@@ -15,6 +15,8 @@ import com.babylon.wallet.android.presentation.settings.authorizeddapps.authoriz
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.status.assets.fungible.fungibleAssetDialog
+import com.babylon.wallet.android.presentation.status.assets.nonfungible.nonFungibleAssetDialog
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.navigation
 
@@ -39,10 +41,17 @@ fun NavGraphBuilder.settingsNavGraph(
         dAppDetailScreen(
             onBackClick = {
                 navController.popBackStack()
+            },
+            onEditPersona = { personaAddress, requiredFields ->
+                navController.personaEditScreen(personaAddress, requiredFields)
+            },
+            onFungibleClick = { resource ->
+                navController.fungibleAssetDialog(resourceAddress = resource.resourceAddress)
+            },
+            onNonFungibleClick = { resource ->
+                navController.nonFungibleAssetDialog(resourceAddress = resource.resourceAddress)
             }
-        ) { personaAddress, requiredFields ->
-            navController.personaEditScreen(personaAddress, requiredFields)
-        }
+        )
         accountSecurityNavGraph(navController)
         appSettingsNavGraph(navController)
     }

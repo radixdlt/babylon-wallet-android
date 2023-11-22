@@ -28,7 +28,7 @@ fun LazyListScope.tokensTab(
     assets: Assets,
     action: AssetsViewAction
 ) {
-    if (assets.fungibles.isEmpty()) {
+    if (assets.fungiblesSize() == 0) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
@@ -38,7 +38,7 @@ fun LazyListScope.tokensTab(
     }
 
     item {
-        val xrdResource = remember(assets.xrd) { assets.xrd }
+        val xrdResource = remember(assets.ownedXrd) { assets.ownedXrd }
         if (xrdResource != null) {
             AssetCard(
                 modifier = Modifier
@@ -54,7 +54,7 @@ fun LazyListScope.tokensTab(
     }
 
     itemsIndexed(
-        items = assets.nonXrdFungibles,
+        items = assets.ownedNonXrdFungibles,
         key = { _, resource -> resource.resourceAddress },
         itemContent = { index, resource ->
             AssetCard(
@@ -64,14 +64,14 @@ fun LazyListScope.tokensTab(
                     )
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 itemIndex = index,
-                allItemsSize = assets.nonXrdFungibles.size
+                allItemsSize = assets.ownedNonXrdFungibles.size
             ) {
                 FungibleResourceItem(
                     resource = resource,
                     action = action
                 )
 
-                if (index != assets.nonXrdFungibles.lastIndex) {
+                if (index != assets.ownedNonXrdFungibles.lastIndex) {
                     Divider(
                         modifier = Modifier.padding(horizontal = 20.dp),
                         color = RadixTheme.colors.gray4

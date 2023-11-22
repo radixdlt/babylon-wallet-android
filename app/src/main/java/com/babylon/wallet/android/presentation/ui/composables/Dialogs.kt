@@ -44,6 +44,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 @Composable
 fun BottomSheetWrapper(
     modifier: Modifier = Modifier,
+    title: String? = null,
     onDismissRequest: () -> Unit,
     bottomSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     content: @Composable ColumnScope.() -> Unit,
@@ -61,6 +62,7 @@ fun BottomSheetWrapper(
                     .fillMaxWidth()
                     .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
                     .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                title = title,
                 onDismissRequest = onDismissRequest
             )
         }
@@ -76,6 +78,7 @@ fun BottomSheetWrapper(
 @Composable
 fun BottomSheetDialogWrapper(
     modifier: Modifier = Modifier,
+    title: String? = null,
     onDismissRequest: () -> Unit,
     bottomSheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     content: @Composable ColumnScope.() -> Unit,
@@ -83,6 +86,7 @@ fun BottomSheetDialogWrapper(
     Dialog(onDismissRequest = onDismissRequest) {
         BottomSheetWrapper(
             modifier = modifier,
+            title = title,
             onDismissRequest = onDismissRequest,
             bottomSheetState = bottomSheetState,
             content = content,
@@ -93,10 +97,12 @@ fun BottomSheetDialogWrapper(
 @Composable
 fun BottomDialogDragHandle(
     modifier: Modifier = Modifier,
+    title: String? = null,
     onDismissRequest: () -> Unit
 ) {
     Box(modifier = modifier) {
         IconButton(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
             onClick = onDismissRequest
         ) {
             Icon(
@@ -111,6 +117,16 @@ fun BottomDialogDragHandle(
                 .size(38.dp, 4.dp)
                 .background(color = RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
         )
+        if (title != null) {
+            Text(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = 48.dp),
+                text = title,
+                textAlign = TextAlign.Center,
+                style = RadixTheme.typography.body1Header
+            )
+        }
     }
 }
 
