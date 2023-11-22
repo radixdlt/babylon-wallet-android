@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transfer
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -423,6 +424,11 @@ class TransferViewModel @Inject constructor(
                         uiMessage = UiMessage.ErrorMessage(error = error)
                     )
                 }
+
+                fun onValidatorsReceived(validatorsWithStakes: List<ValidatorWithStakes>): ChooseAssets = copy(
+                    assets = assets?.copy(validatorsWithStakes = validatorsWithStakes),
+                    pendingStakeUnits = false
+                )
 
                 enum class Tab {
                     Tokens,

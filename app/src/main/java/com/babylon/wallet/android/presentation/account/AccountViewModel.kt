@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
@@ -212,7 +213,7 @@ class AccountViewModel @Inject constructor(
             _state.update { state -> state.copy(pendingStakeUnits = true) }
             viewModelScope.launch {
                 updateLSUsInfo(account, stakes).onSuccess {
-                    _state.update { state -> state.copy(pendingStakeUnits = false) }
+                    _state.update { state -> state.onValidatorsReceived(it) }
                 }.onFailure { error ->
                     _state.update { state -> state.copy(pendingStakeUnits = false, uiMessage = UiMessage.ErrorMessage(error)) }
                 }
@@ -303,4 +304,13 @@ data class AccountUiState(
             uiMessage = UiMessage.ErrorMessage(error = error)
         )
     }
+
+    fun onValidatorsReceived(validatorsWithStakes: List<ValidatorWithStakes>): AccountUiState = copy(
+        accountWithAssets = accountWithAssets?.copy(
+            assets = accountWithAssets.assets?.copy(
+                validatorsWithStakes = validatorsWithStakes
+            )
+        ),
+        pendingStakeUnits = false
+    )
 }
