@@ -6,7 +6,9 @@ import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Transaction
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
@@ -83,5 +85,24 @@ fun PersonaData.toSharedPersonaData(
         } else {
             null
         }
+    )
+}
+
+fun Profile.addMainBabylonDeviceFactorSource(
+    mainBabylonFactorSource: DeviceFactorSource
+): Profile {
+    val existingBabylonDeviceFactorSources = factorSources
+        .mapWhen(
+            predicate = { factorSource -> factorSource is DeviceFactorSource && factorSource.isBabylon }
+        ) { deviceBabylonFactorSource ->
+            (deviceBabylonFactorSource as DeviceFactorSource).copy(
+                common = deviceBabylonFactorSource.common.copy(
+                    flags = deviceBabylonFactorSource.common.flags.filterNot { it == FactorSourceFlag.Main }
+                )
+            )
+        }
+
+    return copy(
+        factorSources = (listOf(mainBabylonFactorSource) + existingBabylonDeviceFactorSources).toIdentifiedArrayList()
     )
 }

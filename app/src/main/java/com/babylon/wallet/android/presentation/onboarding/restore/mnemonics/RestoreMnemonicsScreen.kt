@@ -73,16 +73,41 @@ fun RestoreMnemonicsScreen(
     RestoreMnemonicsContent(
         state = state,
         onBackClick = viewModel::onBackClick,
-        onSkipClicked = viewModel::onSkipClick,
-        onSubmitClick = {
-            if (!state.isShowingEntities) {
+        onSkipSeedPhraseClick = {
+            if (state.isLastRecoverableFactorSource) {
                 context.biometricAuthenticate { authenticated ->
                     if (authenticated) {
-                        viewModel.onSubmit()
+                        viewModel.onSkipSeedPhraseClick()
                     }
                 }
             } else {
-                viewModel.onSubmit()
+                viewModel.onSkipSeedPhraseClick()
+            }
+        },
+        onSkipMainSeedPhraseClick = viewModel::onSkipMainSeedPhraseClick,
+        onSubmitClick = {
+            when (state.screenType) {
+                RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
+                    if (state.isLastRecoverableFactorSource) {
+                        context.biometricAuthenticate { authenticated ->
+                            if (authenticated) {
+                                viewModel.skipMainSeedPhraseAndCreateNew()
+                            }
+                        }
+                    } else {
+                        viewModel.skipMainSeedPhraseAndCreateNew()
+                    }
+                }
+                RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
+                    context.biometricAuthenticate { authenticated ->
+                        if (authenticated) {
+                            viewModel.onSubmit()
+                        }
+                    }
+                }
+                else -> {
+                    viewModel.onSubmit()
+                }
             }
         },
         onWordTyped = viewModel::onWordChanged,
@@ -103,12 +128,14 @@ fun RestoreMnemonicsScreen(
     }
 }
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 private fun RestoreMnemonicsContent(
     modifier: Modifier = Modifier,
     state: RestoreMnemonicsViewModel.State,
     onBackClick: () -> Unit,
-    onSkipClicked: () -> Unit,
+    onSkipSeedPhraseClick: () -> Unit,
+    onSkipMainSeedPhraseClick: () -> Unit,
     onSubmitClick: () -> Unit,
     onWordTyped: (Int, String) -> Unit,
     onWordSelected: (Int, String) -> Unit,
@@ -139,7 +166,9 @@ private fun RestoreMnemonicsContent(
             )
         },
         bottomBar = {
-            if (!state.isShowingEntities && isSuggestionsVisible(state = state)) {
+            if (state.screenType != RestoreMnemonicsViewModel.State.ScreenType.Entities &&
+                isSuggestionsVisible(state = state)
+            ) {
                 SeedPhraseSuggestions(
                     wordAutocompleteCandidates = state.seedPhraseState.wordAutocompleteCandidates,
                     modifier = Modifier
@@ -161,13 +190,15 @@ private fun RestoreMnemonicsContent(
                         .imePadding()
                         .padding(RadixTheme.dimensions.paddingDefault),
                     text = stringResource(
-                        id = if (state.isShowingEntities) {
-                            R.string.recoverSeedPhrase_enterButton
-                        } else {
-                            R.string.common_continue
+                        when (state.screenType) {
+                            RestoreMnemonicsViewModel.State.ScreenType.Entities -> R.string.recoverSeedPhrase_enterButton
+                            RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> R.string.common_continue
+                            RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase ->
+                                R.string.recoverSeedPhrase_skipMainSeedPhraseButton
                         }
                     ),
-                    enabled = state.isShowingEntities || state.seedPhraseState.seedPhraseValid,
+                    enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase ||
+                        state.seedPhraseState.seedPhraseValid,
                     isLoading = state.isRestoring,
                     onClick = onSubmitClick
                 )
@@ -181,30 +212,46 @@ private fun RestoreMnemonicsContent(
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-        AnimatedVisibility(
-            modifier = Modifier.padding(padding),
-            visible = state.isShowingEntities,
-            enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) it else -it }),
-            exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) it else -it })
-        ) {
-            EntitiesView(
-                state = state,
-                onSkipClicked = onSkipClicked
-            )
-        }
-
-        AnimatedVisibility(
-            modifier = Modifier.padding(padding),
-            visible = !state.isShowingEntities,
-            enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
-            exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
-        ) {
-            SeedPhraseView(
-                state = state,
-                onWordChanged = onWordTyped,
-                onPassphraseChanged = onPassphraseChanged,
-                onFocusedWordIndexChanged = { focusedWordIndex = it }
-            )
+        when (state.screenType) {
+            RestoreMnemonicsViewModel.State.ScreenType.Entities -> {
+                AnimatedVisibility(
+                    modifier = Modifier.padding(padding),
+                    visible = true,
+                    enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) it else -it }),
+                    exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) it else -it })
+                ) {
+                    EntitiesView(
+                        state = state,
+                        onSkipClicked = onSkipSeedPhraseClick,
+                        onSkipMainSeedPhraseClicked = onSkipMainSeedPhraseClick
+                    )
+                }
+            }
+            RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
+                AnimatedVisibility(
+                    modifier = Modifier.padding(padding),
+                    visible = true,
+                    enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
+                    exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
+                ) {
+                    SeedPhraseView(
+                        state = state,
+                        onWordChanged = onWordTyped,
+                        onPassphraseChanged = onPassphraseChanged,
+                        onFocusedWordIndexChanged = { focusedWordIndex = it }
+                    )
+                }
+            }
+            RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
+                AnimatedVisibility(
+                    modifier = Modifier.padding(padding),
+                    visible = true,
+                    enter = slideInHorizontally(initialOffsetX = { if (state.isMovingForward) -it else it }),
+                    exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) -it else it })
+                ) {
+                    NoMainSeedPhraseView()
+                }
+            }
         }
     }
 }
@@ -213,7 +260,8 @@ private fun RestoreMnemonicsContent(
 private fun EntitiesView(
     modifier: Modifier = Modifier,
     state: RestoreMnemonicsViewModel.State,
-    onSkipClicked: () -> Unit
+    onSkipClicked: () -> Unit,
+    onSkipMainSeedPhraseClicked: () -> Unit
 ) {
     Column(
         modifier = modifier.fillMaxSize()
@@ -223,7 +271,7 @@ private fun EntitiesView(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(
-                id = if (state.isMainSeedPhrase) {
+                id = if (state.isMainBabylonSeedPhrase) {
                     R.string.recoverSeedPhrase_header_titleMain
                 } else {
                     R.string.recoverSeedPhrase_header_titleOther
@@ -239,7 +287,7 @@ private fun EntitiesView(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(
-                id = if (state.isMainSeedPhrase) {
+                id = if (state.isMainBabylonSeedPhrase) {
                     R.string.recoverSeedPhrase_header_subtitleMainSeedPhrase
                 } else {
                     R.string.recoverSeedPhrase_header_subtitleOtherSeedPhrase
@@ -250,7 +298,7 @@ private fun EntitiesView(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        if (!state.isMainSeedPhrase) {
+        if (!state.isMainBabylonSeedPhrase) {
             RadixTextButton(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -271,8 +319,49 @@ private fun EntitiesView(
                         account = account
                     )
                 }
+
+                if (state.isMainBabylonSeedPhrase) {
+                    item {
+                        RadixTextButton(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
+                            onClick = onSkipMainSeedPhraseClicked
+                        )
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun NoMainSeedPhraseView(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            text = stringResource(id = R.string.recoverSeedPhrase_header_titleNoMainSeedPhrase),
+            textAlign = TextAlign.Center,
+            style = RadixTheme.typography.title
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            text = stringResource(id = R.string.recoverSeedPhrase_header_subtitleNoMainSeedPhrase)
+                .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+            textAlign = TextAlign.Center,
+            style = RadixTheme.typography.body1Regular
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
 }
 
@@ -351,10 +440,11 @@ fun RestoreMnemonicsIntroContent() {
                         factorSource = SampleDataProvider().babylonDeviceFactorSource()
                     )
                 ),
-                isShowingEntities = true
+                screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
             ),
             onBackClick = {},
-            onSkipClicked = {},
+            onSkipSeedPhraseClick = {},
+            onSkipMainSeedPhraseClick = {},
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
             onPassphraseChanged = {},
@@ -382,10 +472,43 @@ fun RestoreMnemonicsSeedPhraseContent() {
                         factorSource = SampleDataProvider().babylonDeviceFactorSource()
                     )
                 ),
-                isShowingEntities = false
+                screenType = RestoreMnemonicsViewModel.State.ScreenType.Entities
             ),
             onBackClick = {},
-            onSkipClicked = {},
+            onSkipSeedPhraseClick = {},
+            onSkipMainSeedPhraseClick = {},
+            onSubmitClick = {},
+            onWordTyped = { _, _ -> },
+            onPassphraseChanged = {},
+            onMessageShown = {},
+            onWordSelected = { _, _ -> }
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RestoreMnemonicsNoMainSeedPhraseContent() {
+    RadixWalletTheme {
+        RestoreMnemonicsContent(
+            state = RestoreMnemonicsViewModel.State(
+                recoverableFactorSources = listOf(
+                    RecoverableFactorSource(
+                        associatedAccounts = List(5) { index ->
+                            SampleDataProvider().sampleAccount(
+                                address = "rdx_abcdefg$index",
+                                name = "Account $index",
+                                appearanceId = index
+                            )
+                        },
+                        factorSource = SampleDataProvider().babylonDeviceFactorSource()
+                    )
+                ),
+                screenType = RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase
+            ),
+            onBackClick = {},
+            onSkipSeedPhraseClick = {},
+            onSkipMainSeedPhraseClick = {},
             onSubmitClick = {},
             onWordTyped = { _, _ -> },
             onPassphraseChanged = {},

@@ -27,6 +27,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
+import rdx.works.profile.domain.backup.RestoreAndCreateMainSeedPhraseUseCase
 import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
 import rdx.works.profile.domain.backup.RestoreProfileFromBackupUseCase
 import javax.inject.Inject
@@ -40,6 +41,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val restoreMnemonicUseCase: RestoreMnemonicUseCase,
     private val restoreProfileFromBackupUseCase: RestoreProfileFromBackupUseCase,
+    private val restoreAndCreateMainSeedPhraseUseCase: RestoreAndCreateMainSeedPhraseUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<RestoreMnemonicsViewModel.State>(),
@@ -104,8 +106,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     fun onBackClick() {
-        if (!state.value.isShowingEntities) {
-            _state.update { it.copy(isShowingEntities = true, isMovingForward = false) }
+        if (state.value.screenType != State.ScreenType.Entities) {
+            _state.update { it.copy(screenType = State.ScreenType.Entities, isMovingForward = false) }
         } else {
             viewModelScope.launch {
                 when (args) {
@@ -128,8 +130,21 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    fun onSkipClick() {
+    fun onSkipSeedPhraseClick() {
         viewModelScope.launch { showNextRecoverableFactorSourceOrFinish() }
+    }
+
+    fun onSkipMainSeedPhraseClick() {
+        _state.update {
+            it.copy(screenType = State.ScreenType.NoMainSeedPhrase)
+        }
+    }
+
+    fun skipMainSeedPhraseAndCreateNew() {
+        viewModelScope.launch {
+            _state.update { state -> state.copy(hasSkippedMainSeedPhrase = true) }
+            showNextRecoverableFactorSourceOrFinish()
+        }
     }
 
     fun onMessageShown() {
@@ -154,8 +169,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     fun onSubmit() {
-        if (state.value.isShowingEntities) {
-            _state.update { it.copy(isShowingEntities = false, isMovingForward = false) }
+        if (state.value.screenType == State.ScreenType.Entities) {
+            _state.update { it.copy(screenType = State.ScreenType.SeedPhrase, isMovingForward = false) }
         } else {
             viewModelScope.launch { restoreMnemonic() }
         }
@@ -173,7 +188,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 bip39Passphrase = _state.value.seedPhraseState.bip39Passphrase
             )
         ).onSuccess {
-            if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainSeedPhrase) {
+            if (args is RestoreMnemonicsArgs.RestoreProfile && _state.value.isMainBabylonSeedPhrase) {
                 restoreProfileFromBackupUseCase(args.backupType)
             }
 
@@ -198,6 +213,21 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
             _state.update { it.proceedToNextRecoverable() }
         } else {
+            if (_state.value.hasSkippedMainSeedPhrase) {
+                // Create main babylon seedphrase as it was skipped before
+                _state.update { it.copy(isRestoring = true) }
+                if (args is RestoreMnemonicsArgs.RestoreProfile) {
+                    restoreAndCreateMainSeedPhraseUseCase(args.backupType)
+                }
+
+                _state.update { state ->
+                    state.copy(
+                        isRestoring = false,
+                        hasSkippedMainSeedPhrase = false
+                    )
+                }
+            }
+
             sendEvent(Event.FinishRestoration(isMovingToMain = args is RestoreMnemonicsArgs.RestoreProfile))
         }
     }
@@ -205,26 +235,42 @@ class RestoreMnemonicsViewModel @Inject constructor(
     data class State(
         private val recoverableFactorSources: List<RecoverableFactorSource> = emptyList(),
         private val selectedIndex: Int = -1,
-        val isShowingEntities: Boolean = true,
+        val screenType: ScreenType = ScreenType.Entities,
         val isMovingForward: Boolean = false,
         val uiMessage: UiMessage? = null,
         val isRestoring: Boolean = false,
+        val hasSkippedMainSeedPhrase: Boolean = false,
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State()
     ) : UiState {
+
+        sealed interface ScreenType {
+            data object Entities : ScreenType
+            data object SeedPhrase : ScreenType
+            data object NoMainSeedPhrase : ScreenType
+        }
 
         val nextRecoverableFactorSource: RecoverableFactorSource?
             get() = recoverableFactorSources.getOrNull(selectedIndex + 1)
 
+        val isLastRecoverableFactorSource: Boolean
+            get() = nextRecoverableFactorSource == null
+
         val recoverableFactorSource: RecoverableFactorSource?
             get() = if (selectedIndex == -1) null else recoverableFactorSources.getOrNull(selectedIndex)
 
-        val isMainSeedPhrase: Boolean
-            get() = recoverableFactorSource?.factorSource?.isBabylon == true
+        val isMainBabylonSeedPhrase: Boolean
+            // If its only one factor source we treat it as main
+            // If more than one we check against isMainBabylon
+            get() = if (recoverableFactorSources.size == 1) {
+                true
+            } else {
+                recoverableFactorSource?.factorSource?.isMainBabylon == true
+            }
 
         fun proceedToNextRecoverable() = copy(
             selectedIndex = selectedIndex + 1,
             isMovingForward = true,
-            isShowingEntities = true
+            screenType = ScreenType.Entities
         )
     }
 

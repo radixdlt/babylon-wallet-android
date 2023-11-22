@@ -28,7 +28,7 @@ class CreateAccountWithDeviceFactorSourceUseCase @Inject constructor(
     ): Network.Account {
         return withContext(defaultDispatcher) {
             val profile = ensureBabylonFactorSourceExistUseCase()
-            val factorSource = profile.babylonDeviceFactorSource
+            val factorSource = profile.babylonMainDeviceFactorSource
 
             // Construct new account
             val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()

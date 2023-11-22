@@ -11,6 +11,7 @@ import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.extensions.isNotHidden
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.model.pernetwork.Network
 import java.time.Instant
 
@@ -52,7 +53,7 @@ data class Profile(
             )
         )
     )
-
+    
     /**
      * Temporarily the only factor source that the user can use to create accounts/personas.
      * When new UI is added that allows the user to import other factor sources
@@ -60,18 +61,22 @@ data class Profile(
      *
      * NOTE that this factor source will always be used when creating the first account.
      */
-    val babylonDeviceFactorSource: DeviceFactorSource
+    val babylonMainDeviceFactorSource: DeviceFactorSource
         get() = factorSources
             .filterIsInstance<DeviceFactorSource>()
-            .first {
-                it.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon
+            .firstOrNull { deviceFactorSource ->
+                deviceFactorSource.isBabylon && deviceFactorSource.common.flags.any { it == FactorSourceFlag.Main }
+            } ?: factorSources
+            .filterIsInstance<DeviceFactorSource>()
+            .first { deviceFactorSource ->
+                deviceFactorSource.isBabylon
             }
 
     val babylonDeviceFactorSourceExist: Boolean
         get() = factorSources
             .filterIsInstance<DeviceFactorSource>()
             .any {
-                it.common.cryptoParameters == FactorSource.Common.CryptoParameters.babylon
+                it.isBabylon
             }
 
     companion object {

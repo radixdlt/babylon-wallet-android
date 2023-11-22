@@ -51,7 +51,7 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
 
             val mnemonicRepository = mock<MnemonicRepository> {
                 onBlocking {
-                    readMnemonic(profile.babylonDeviceFactorSource.id)
+                    readMnemonic(profile.babylonMainDeviceFactorSource.id)
                 } doReturn Result.success(mnemonicWithPassphrase)
             }
 
