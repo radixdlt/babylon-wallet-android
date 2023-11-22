@@ -113,7 +113,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             .orEmpty()
     }
 
-    fun Profile.mainBabylonFactorSourceId(): FactorSource.FactorSourceID.FromHash? {
+    private fun Profile.mainBabylonFactorSourceId(): FactorSource.FactorSourceID.FromHash? {
         val deviceFactorSources = factorSources.filterIsInstance<DeviceFactorSource>()
         val babylonFactorSources = deviceFactorSources.filter { it.isBabylon }
         return if (babylonFactorSources.size == 1) {
