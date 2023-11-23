@@ -14,8 +14,10 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseFungibleVaultDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungiblesPageRequestOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungibleIdsPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequestOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
@@ -265,7 +267,21 @@ suspend fun StateApi.paginateFungibles(
                 address = item.address,
                 cursor = nextCursor,
                 aggregationLevel = ResourceAggregationLevel.vault,
-                atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion)
+                atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion),
+                optIns = StateEntityFungiblesPageRequestOptIns(
+                    explicitMetadata = listOf(
+                        ExplicitMetadataKey.NAME,
+                        ExplicitMetadataKey.SYMBOL,
+                        ExplicitMetadataKey.DESCRIPTION,
+                        ExplicitMetadataKey.RELATED_WEBSITES,
+                        ExplicitMetadataKey.ICON_URL,
+                        ExplicitMetadataKey.INFO_URL,
+                        ExplicitMetadataKey.VALIDATOR,
+                        ExplicitMetadataKey.POOL,
+                        ExplicitMetadataKey.TAGS,
+                        ExplicitMetadataKey.DAPP_DEFINITIONS
+                    ).map { it.key }
+                )
             )
         ).toResult().getOrThrow()
 
@@ -286,7 +302,21 @@ suspend fun StateApi.paginateNonFungibles(
                 address = item.address,
                 cursor = nextCursor,
                 aggregationLevel = ResourceAggregationLevel.vault,
-                atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion)
+                atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion),
+                optIns = StateEntityNonFungiblesPageRequestOptIns(
+                    explicitMetadata = listOf(
+                        ExplicitMetadataKey.NAME,
+                        ExplicitMetadataKey.SYMBOL,
+                        ExplicitMetadataKey.DESCRIPTION,
+                        ExplicitMetadataKey.RELATED_WEBSITES,
+                        ExplicitMetadataKey.ICON_URL,
+                        ExplicitMetadataKey.INFO_URL,
+                        ExplicitMetadataKey.VALIDATOR,
+                        ExplicitMetadataKey.POOL,
+                        ExplicitMetadataKey.TAGS,
+                        ExplicitMetadataKey.DAPP_DEFINITIONS
+                    ).map { it.key }
+                )
             )
         ).toResult().getOrThrow()
 
