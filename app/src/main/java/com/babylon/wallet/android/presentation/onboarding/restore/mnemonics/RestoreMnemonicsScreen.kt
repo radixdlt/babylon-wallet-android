@@ -176,14 +176,17 @@ private fun RestoreMnemonicsContent(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = RadixTheme.dimensions.paddingMedium)
                 ) {
                     if (state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities) {
                         if (!state.isMainBabylonSeedPhrase) {
                             RadixTextButton(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                                    .padding(
+                                        top = RadixTheme.dimensions.paddingMedium,
+                                        start = RadixTheme.dimensions.paddingLarge,
+                                        end = RadixTheme.dimensions.paddingLarge,
+                                    ),
                                 text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
                                 onClick = onSkipSeedPhraseClick
                             )
@@ -192,7 +195,12 @@ private fun RestoreMnemonicsContent(
                         if (state.isMainBabylonSeedPhrase && state.isMandatory.not()) {
                             RadixTextButton(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
+                                    .fillMaxWidth()
+                                    .padding(
+                                        top = RadixTheme.dimensions.paddingMedium,
+                                        start = RadixTheme.dimensions.paddingLarge,
+                                        end = RadixTheme.dimensions.paddingLarge,
+                                    ),
                                 text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
                                 onClick = onSkipMainSeedPhraseClick
                             )
