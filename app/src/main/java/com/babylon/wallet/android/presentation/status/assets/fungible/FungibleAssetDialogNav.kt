@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.status.assets.fungible
 
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -52,7 +53,8 @@ fun NavGraphBuilder.fungibleAssetDialog(
                 type = NavType.StringType
                 nullable = true
             }
-        )
+        ),
+        dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         FungibleAssetDialog(onDismiss = onDismiss)
     }

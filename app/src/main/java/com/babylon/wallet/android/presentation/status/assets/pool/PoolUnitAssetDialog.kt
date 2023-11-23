@@ -72,11 +72,11 @@ private fun FungibleAssetDialogContent(
     onDismiss: () -> Unit
 ) {
     BottomSheetDialogWrapper(
-        modifier = modifier.fillMaxHeight(fraction = 0.9f),
+        modifier = modifier,
         title = state.poolUnit?.name.orEmpty(),
-        onDismissRequest = onDismiss
+        onDismiss = onDismiss
     ) {
-        Box {
+        Box(modifier = Modifier.fillMaxHeight(fraction = 0.9f)) {
             Column(
                 modifier = Modifier
                     .background(RadixTheme.colors.defaultBackground)

@@ -25,7 +25,6 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.FabPosition
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -70,14 +69,6 @@ import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.assets.rememberAssetsViewState
-import com.babylon.wallet.android.presentation.ui.composables.resources.FungibleResourceItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.LiquidStakeUnitItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.NonFungibleResourceItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.PoolUnitItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.StakeClaimNftItem
-import com.babylon.wallet.android.presentation.ui.composables.resources.fungibleResources
-import com.babylon.wallet.android.presentation.ui.composables.resources.nonFungibleResources
-import com.babylon.wallet.android.presentation.ui.composables.resources.poolUnitsResources
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList

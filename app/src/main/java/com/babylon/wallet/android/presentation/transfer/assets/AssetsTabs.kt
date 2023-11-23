@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -44,7 +42,7 @@ fun AssetsTabs(
             )
         }
     ) {
-        tabs.forEach { tab ->
+        ResourceTab.values().forEach { tab ->
             val isSelected = tab == selectedTab
             Tab(
                 modifier = Modifier.wrapContentWidth(),

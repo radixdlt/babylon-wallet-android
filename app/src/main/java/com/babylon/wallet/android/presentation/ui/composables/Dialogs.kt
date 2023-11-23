@@ -96,13 +96,15 @@ fun BottomSheetDialogWrapper(
     modifier: Modifier = Modifier,
     dragToDismissEnabled: Boolean = true,
     addScrim: Boolean = false,
+    title: String? = null,
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
-            .fillMaxSize().applyIf(addScrim, Modifier.background(Color.Black.copy(alpha = 0.4f)))
+            .fillMaxSize()
+            .applyIf(addScrim, Modifier.background(Color.Black.copy(alpha = 0.4f)))
             .clickable(interactionSource = interactionSource, indication = null) { onDismiss() }
     ) {
         BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
@@ -161,7 +163,8 @@ fun BottomSheetDialogWrapper(
                             .fillMaxWidth()
                             .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
                             .padding(vertical = RadixTheme.dimensions.paddingSmall),
-                        onDismissRequest = onDismiss
+                        onDismissRequest = onDismiss,
+                        title = title
                     )
                 }
                 content()

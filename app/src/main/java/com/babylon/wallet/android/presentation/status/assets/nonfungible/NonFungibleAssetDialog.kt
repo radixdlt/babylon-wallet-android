@@ -71,10 +71,10 @@ private fun NonFungibleAssetDialogContent(
     onDismiss: () -> Unit
 ) {
     BottomSheetDialogWrapper(
-        modifier = modifier.fillMaxHeight(fraction = 0.9f),
-        onDismissRequest = onDismiss
+        modifier = modifier,
+        onDismiss = onDismiss
     ) {
-        Box {
+        Box(modifier = Modifier.fillMaxHeight(fraction = 0.9f)) {
             Column(
                 modifier = Modifier
                     .background(RadixTheme.colors.defaultBackground)

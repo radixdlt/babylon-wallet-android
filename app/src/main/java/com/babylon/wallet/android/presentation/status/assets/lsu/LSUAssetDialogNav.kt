@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.status.assets.lsu
 
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -36,7 +37,8 @@ fun NavGraphBuilder.lsuAssetDialog(
             navArgument(ARG_ACCOUNT_ADDRESS) {
                 type = NavType.StringType
             }
-        )
+        ),
+        dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         LSUAssetDialog(onDismiss = onDismiss)
     }

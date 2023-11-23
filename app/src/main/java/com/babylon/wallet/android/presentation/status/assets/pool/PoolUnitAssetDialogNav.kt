@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.status.assets.pool
 
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -36,7 +37,8 @@ fun NavGraphBuilder.poolUnitAssetDialog(
             navArgument(ARG_ACCOUNT_ADDRESS) {
                 type = NavType.StringType
             }
-        )
+        ),
+        dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         PoolUnitAssetDialog(onDismiss = onDismiss)
     }
