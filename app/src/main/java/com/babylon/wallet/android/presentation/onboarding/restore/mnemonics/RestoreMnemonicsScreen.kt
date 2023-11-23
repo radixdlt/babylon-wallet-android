@@ -173,24 +173,51 @@ private fun RestoreMnemonicsContent(
                     }
                 )
             } else {
-                RadixPrimaryButton(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .imePadding()
-                        .padding(RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(
-                        when (state.screenType) {
-                            RestoreMnemonicsViewModel.State.ScreenType.Entities -> R.string.recoverSeedPhrase_enterButton
-                            RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> R.string.common_continue
-                            RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase ->
-                                R.string.recoverSeedPhrase_skipMainSeedPhraseButton
+                        .padding(top = RadixTheme.dimensions.paddingMedium)
+                ) {
+                    if (state.screenType is RestoreMnemonicsViewModel.State.ScreenType.Entities) {
+                        if (!state.isMainBabylonSeedPhrase) {
+                            RadixTextButton(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                                text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
+                                onClick = onSkipSeedPhraseClick
+                            )
                         }
-                    ),
-                    enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase ||
-                        state.seedPhraseState.seedPhraseValid,
-                    isLoading = state.isRestoring,
-                    onClick = onSubmitClick
-                )
+
+                        if (state.isMainBabylonSeedPhrase && state.isMandatory.not()) {
+                            RadixTextButton(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
+                                onClick = onSkipMainSeedPhraseClick
+                            )
+                        }
+                    }
+
+                    RadixPrimaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .imePadding()
+                            .padding(RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(
+                            when (state.screenType) {
+                                RestoreMnemonicsViewModel.State.ScreenType.Entities -> R.string.recoverSeedPhrase_enterButton
+                                RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> R.string.common_continue
+                                RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase ->
+                                    R.string.recoverSeedPhrase_skipMainSeedPhraseButton
+                            }
+                        ),
+                        enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase ||
+                                state.seedPhraseState.seedPhraseValid,
+                        isLoading = state.isRestoring,
+                        onClick = onSubmitClick
+                    )
+                }
             }
         },
         snackbarHost = {
@@ -210,9 +237,7 @@ private fun RestoreMnemonicsContent(
                     exit = slideOutHorizontally(targetOffsetX = { if (state.isMovingForward) it else -it })
                 ) {
                     EntitiesView(
-                        state = state,
-                        onSkipClicked = onSkipSeedPhraseClick,
-                        onSkipMainSeedPhraseClicked = onSkipMainSeedPhraseClick
+                        state = state
                     )
                 }
             }
@@ -248,9 +273,7 @@ private fun RestoreMnemonicsContent(
 @Composable
 private fun EntitiesView(
     modifier: Modifier = Modifier,
-    state: RestoreMnemonicsViewModel.State,
-    onSkipClicked: () -> Unit,
-    onSkipMainSeedPhraseClicked: () -> Unit
+    state: RestoreMnemonicsViewModel.State
 ) {
     Column(
         modifier = modifier.fillMaxSize()
@@ -298,27 +321,6 @@ private fun EntitiesView(
                         account = account
                     )
                 }
-            }
-
-            if (!state.isMainBabylonSeedPhrase) {
-                Spacer(modifier = Modifier.weight(1f))
-                RadixTextButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
-                    onClick = onSkipClicked
-                )
-            }
-
-            if (state.isMainBabylonSeedPhrase && state.isMandatory.not()) {
-                Spacer(modifier = Modifier.weight(1f))
-                RadixTextButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
-                    onClick = onSkipMainSeedPhraseClicked
-                )
             }
         }
     }
