@@ -287,16 +287,6 @@ private fun EntitiesView(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        if (!state.isMainBabylonSeedPhrase) {
-            RadixTextButton(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
-                onClick = onSkipClicked
-            )
-        }
-
         state.recoverableFactorSource?.let { recoverable ->
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
@@ -308,17 +298,27 @@ private fun EntitiesView(
                         account = account
                     )
                 }
+            }
 
-                if (state.isMainBabylonSeedPhrase && state.isMandatory.not()) {
-                    item {
-                        RadixTextButton(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
-                            onClick = onSkipMainSeedPhraseClicked
-                        )
-                    }
-                }
+            if (!state.isMainBabylonSeedPhrase) {
+                Spacer(modifier = Modifier.weight(1f))
+                RadixTextButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                    text = stringResource(id = R.string.recoverSeedPhrase_skipButton),
+                    onClick = onSkipClicked
+                )
+            }
+
+            if (state.isMainBabylonSeedPhrase && state.isMandatory.not()) {
+                Spacer(modifier = Modifier.weight(1f))
+                RadixTextButton(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    text = stringResource(id = R.string.recoverSeedPhrase_noMainSeedPhraseButton),
+                    onClick = onSkipMainSeedPhraseClicked
+                )
             }
         }
     }

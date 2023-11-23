@@ -53,32 +53,24 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val args = RestoreMnemonicsArgs.from(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
-    override fun initialState(): State = State(isMandatory = (args as? RestoreMnemonicsArgs.RestoreSpecificMnemonic)?.isMandatory == true)
+    override fun initialState(): State = State(
+        isMandatory = (args as? RestoreMnemonicsArgs.RestoreProfile)?.isMandatory == true
+    )
 
     init {
         viewModelScope.launch {
             when (args) {
                 is RestoreMnemonicsArgs.RestoreProfile -> {
-                    val profile = getTemporaryRestoringProfileForBackupUseCase(args.backupType)?.changeGateway(Radix.Gateway.mainnet)
+                    val profile = args.backupType?.let { backupType ->
+                        getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGateway(Radix.Gateway.mainnet)
+                    } ?: run {
+                        getProfileUseCase().firstOrNull()
+                    }
                     val factorSources = profile.recoverableFactorSources()
-
                     _state.update {
                         it.copy(
                             recoverableFactorSources = factorSources,
                             mainBabylonFactorSourceId = profile?.mainBabylonFactorSourceId()
-                        )
-                    }
-                }
-
-                // TODO refactor later to remove that specific case at all and use RestoreProfile? always
-                is RestoreMnemonicsArgs.RestoreSpecificMnemonic -> {
-                    val profile = getProfileUseCase().firstOrNull() ?: return@launch
-                    val factorSources = profile.recoverableFactorSources()
-
-                    _state.update {
-                        it.copy(
-                            recoverableFactorSources = factorSources,
-                            mainBabylonFactorSourceId = profile.mainBabylonFactorSourceId()
                         )
                     }
                 }
@@ -133,10 +125,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
                         if (args.backupType is BackupType.File) {
                             discardTemporaryRestoredFileForBackupUseCase(BackupType.File.PlainText)
                         }
-
-                        sendEvent(Event.FinishRestoration(isMovingToMain = false))
-                    }
-                    is RestoreMnemonicsArgs.RestoreSpecificMnemonic -> {
                         if (args.isMandatory) {
                             sendEvent(Event.CloseApp)
                         } else {
@@ -207,7 +195,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
             )
         ).onSuccess {
             if (args is RestoreMnemonicsArgs.RestoreProfile) {
-                restoreProfileFromBackupUseCase(args.backupType)
+                args.backupType?.let { backupType ->
+                    restoreProfileFromBackupUseCase(backupType)
+                }
             }
 
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
@@ -235,9 +225,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
             if (_state.value.hasSkippedMainSeedPhrase) {
                 _state.update { it.copy(isRestoring = true) }
 
-                if (args is RestoreMnemonicsArgs.RestoreProfile) {
+                (args as? RestoreMnemonicsArgs.RestoreProfile)?.backupType?.let { backupType ->
                     if (biometricAuthProvider().not()) return
-                    restoreAndCreateMainSeedPhraseUseCase(args.backupType)
+                    restoreAndCreateMainSeedPhraseUseCase(backupType)
                 }
 
                 _state.update { state ->

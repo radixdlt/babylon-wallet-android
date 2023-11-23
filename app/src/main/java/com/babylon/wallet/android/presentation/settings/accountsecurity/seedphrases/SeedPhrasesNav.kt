@@ -20,7 +20,7 @@ fun NavController.seedPhrases() {
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.seedPhrases(
     onBackClick: () -> Unit,
-    onNavigateToRecoverMnemonic: (FactorSource.FactorSourceID.FromHash) -> Unit,
+    onNavigateToRecoverMnemonic: () -> Unit,
     onNavigateToSeedPhrase: (FactorSource.FactorSourceID.FromHash) -> Unit
 ) {
     composable(

@@ -19,7 +19,7 @@ fun MainScreen(
     onMenuClick: () -> Unit,
     onAccountClick: (Network.Account) -> Unit = { },
     onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
-    onNavigateToMnemonicRestore: (FactorSourceID.FromHash) -> Unit,
+    onNavigateToMnemonicRestore: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit

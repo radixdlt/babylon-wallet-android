@@ -13,7 +13,6 @@ import com.google.accompanist.navigation.animation.composable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.domain.backup.BackupType
 
 private const val ARGS_RESTORE_MNEMONICS = "restoreMnemonicsArgs"
@@ -28,11 +27,8 @@ fun NavController.restoreMnemonics(
 @Serializable
 sealed interface RestoreMnemonicsArgs {
     @Serializable
-    data class RestoreProfile(val backupType: BackupType) : RestoreMnemonicsArgs
-
-    @Serializable
-    data class RestoreSpecificMnemonic(
-        val factorSourceId: HexCoded32Bytes,
+    data class RestoreProfile(
+        val backupType: BackupType? = null,
         val isMandatory: Boolean = false
     ) : RestoreMnemonicsArgs
 

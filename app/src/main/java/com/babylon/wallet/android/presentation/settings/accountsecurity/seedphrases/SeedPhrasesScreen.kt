@@ -48,7 +48,7 @@ fun SeedPhrasesScreen(
     modifier: Modifier = Modifier,
     viewModel: SeedPhrasesViewModel,
     onBackClick: () -> Unit,
-    onNavigateToRecoverMnemonic: (FactorSource.FactorSourceID.FromHash) -> Unit,
+    onNavigateToRecoverMnemonic: () -> Unit,
     onNavigateToSeedPhrase: (FactorSource.FactorSourceID.FromHash) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -72,7 +72,7 @@ fun SeedPhrasesScreen(
                 }
 
                 is SeedPhrasesViewModel.Effect.OnRequestToRecoverMnemonic -> {
-                    onNavigateToRecoverMnemonic(it.factorSourceID)
+                    onNavigateToRecoverMnemonic()
                 }
             }
         }

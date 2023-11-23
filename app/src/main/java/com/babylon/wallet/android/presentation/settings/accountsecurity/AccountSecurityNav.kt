@@ -37,7 +37,7 @@ fun NavGraphBuilder.accountSecurityNavGraph(
         seedPhrases(
             onBackClick = { navController.popBackStack() },
             onNavigateToRecoverMnemonic = {
-                navController.restoreMnemonics(args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(it.body))
+                navController.restoreMnemonics(args = RestoreMnemonicsArgs.RestoreProfile())
             },
             onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.body.value) }
         )
