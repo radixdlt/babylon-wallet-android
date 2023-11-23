@@ -213,7 +213,7 @@ private fun RestoreMnemonicsContent(
                             }
                         ),
                         enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase ||
-                                state.seedPhraseState.seedPhraseValid,
+                            state.seedPhraseState.seedPhraseValid,
                         isLoading = state.isRestoring,
                         onClick = onSubmitClick
                     )
