@@ -13,7 +13,6 @@ import com.google.accompanist.navigation.animation.composable
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.domain.backup.BackupType
 
 private const val ARGS_RESTORE_MNEMONICS = "restoreMnemonicsArgs"
