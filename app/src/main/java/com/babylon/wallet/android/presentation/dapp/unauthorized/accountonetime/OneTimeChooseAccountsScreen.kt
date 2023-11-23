@@ -2,14 +2,10 @@ package com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,6 +15,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
@@ -33,7 +30,6 @@ import kotlinx.collections.immutable.persistentListOf
 fun OneTimeChooseAccountsScreen(
     viewModel: OneTimeChooseAccountsViewModel,
     exitRequestFlow: () -> Unit,
-    dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     sharedViewModel: DAppUnauthorizedLoginViewModel,
     onLoginFlowComplete: () -> Unit,
@@ -116,34 +112,9 @@ fun OneTimeChooseAccountsScreen(
             interactionState = it
         )
     }
-    state.error?.let { error ->
-        DAppAlertDialog(
-            title = stringResource(id = R.string.dAppRequest_chooseAccounts_verificationErrorTitle),
-            body = error,
-            dismissErrorDialog = dismissErrorDialog
-        )
-    }
-}
-
-@Composable
-fun DAppAlertDialog(
-    title: String,
-    body: String,
-    dismissErrorDialog: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    AlertDialog(
-        modifier = modifier,
-        onDismissRequest = {},
-        title = { Text(text = title, color = Color.Black) },
-        text = { Text(text = body, color = Color.Black) },
-        confirmButton = {
-            TextButton(
-                onClick = dismissErrorDialog
-            ) {
-                Text(stringResource(id = R.string.common_ok), color = Color.Black)
-            }
-        }
+    DappInteractionFailureDialog(
+        dialogState = sharedState.failureDialogState,
+        onAcknowledgeFailureDialog = sharedViewModel::onAcknowledgeFailureDialog
     )
 }
 

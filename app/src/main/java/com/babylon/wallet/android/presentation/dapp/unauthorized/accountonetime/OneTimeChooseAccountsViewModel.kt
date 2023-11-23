@@ -49,7 +49,6 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         availableAccountItems = accountItems.toPersistentList(),
-                        error = null,
                         showProgress = false,
                         isContinueButtonEnabled = !it.isExactAccountsCount && it.numberOfAccounts == 0
                     )
@@ -106,14 +105,13 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
 }
 
 sealed interface OneTimeChooseAccountsEvent : OneOffEvent {
-    object NavigateToCompletionScreen : OneTimeChooseAccountsEvent
-    object FailedToSendResponse : OneTimeChooseAccountsEvent
+    data object NavigateToCompletionScreen : OneTimeChooseAccountsEvent
+    data object FailedToSendResponse : OneTimeChooseAccountsEvent
 }
 
 data class OneTimeChooseAccountUiState(
     val availableAccountItems: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val isContinueButtonEnabled: Boolean = false,
-    val error: String? = null,
     val showProgress: Boolean = true,
     val numberOfAccounts: Int,
     val isExactAccountsCount: Boolean,

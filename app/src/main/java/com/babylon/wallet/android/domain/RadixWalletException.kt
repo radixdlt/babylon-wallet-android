@@ -145,6 +145,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object FailedToGetDeviceId : LedgerCommunicationException()
         data object FailedToDerivePublicKeys : LedgerCommunicationException()
         data object FailedToDeriveAndDisplayAddress : LedgerCommunicationException()
+        data object FailedToSignAuthChallenge : LedgerCommunicationException()
         data class FailedToSignTransaction(val reason: LedgerErrorCode) : LedgerCommunicationException()
 
         override val ceError: ConnectorExtensionError
@@ -153,6 +154,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 FailedToGetDeviceId -> WalletErrorType.InvalidRequest
                 is FailedToSignTransaction -> WalletErrorType.InvalidRequest
                 is FailedToDeriveAndDisplayAddress -> WalletErrorType.InvalidRequest
+                FailedToSignAuthChallenge -> WalletErrorType.InvalidRequest
             }
     }
 }
@@ -167,8 +169,9 @@ fun RadixWalletException.LedgerCommunicationException.toUserFriendlyMessage(cont
     return context.getString(
         when (this) {
             RadixWalletException.LedgerCommunicationException.FailedToDerivePublicKeys -> {
-                R.string.common_somethingWentWrong
-            } // TODO consider different copy
+                R.string.ledgerHardwareDevices_verification_requestFailed
+            }
+
             RadixWalletException.LedgerCommunicationException.FailedToGetDeviceId -> {
                 R.string.common_somethingWentWrong
             } // TODO consider different copy
@@ -179,6 +182,9 @@ fun RadixWalletException.LedgerCommunicationException.toUserFriendlyMessage(cont
             }
 
             is RadixWalletException.LedgerCommunicationException.FailedToDeriveAndDisplayAddress -> R.string.common_somethingWentWrong
+            RadixWalletException.LedgerCommunicationException.FailedToSignAuthChallenge -> {
+                R.string.ledgerHardwareDevices_verification_requestFailed
+            }
         }
     )
 }

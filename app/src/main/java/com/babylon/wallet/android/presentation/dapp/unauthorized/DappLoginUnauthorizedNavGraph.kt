@@ -38,9 +38,6 @@ fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) 
             exitRequestFlow = {
                 navController.popBackStack()
             },
-            dismissErrorDialog = {
-                navController.popBackStack()
-            },
             onAccountCreationClick = {
                 navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
             },

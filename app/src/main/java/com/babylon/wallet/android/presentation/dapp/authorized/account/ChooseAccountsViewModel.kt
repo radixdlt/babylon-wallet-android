@@ -54,7 +54,6 @@ class ChooseAccountsViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         availableAccountItems = accountItems.toPersistentList(),
-                        error = null,
                         showProgress = false,
                         isContinueButtonEnabled = !it.isExactAccountsCount && it.numberOfAccounts == 0
                     )
@@ -125,7 +124,6 @@ data class ChooseAccountUiState(
     val isContinueButtonEnabled: Boolean = false,
     val oneTimeRequest: Boolean = false,
     val isSingleChoice: Boolean = false,
-    val error: String? = null,
     val showProgress: Boolean = true,
     val showBackButton: Boolean = false,
     val selectedAccounts: List<AccountItemUiModel> = emptyList()

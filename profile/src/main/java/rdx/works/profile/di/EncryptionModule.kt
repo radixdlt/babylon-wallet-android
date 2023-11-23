@@ -17,7 +17,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object EncryptionModule {
 
-    @Suppress("InjectDispatcher")
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
         name = DATA_STORE_NAME
     )

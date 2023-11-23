@@ -2,14 +2,10 @@ package com.babylon.wallet.android.presentation.dapp.authorized.account
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.TextButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,6 +14,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
@@ -32,7 +29,6 @@ import kotlinx.coroutines.flow.Flow
 fun ChooseAccountsScreen(
     viewModel: ChooseAccountsViewModel,
     sharedViewModel: DAppAuthorizedLoginViewModel,
-    dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,
     onLoginFlowComplete: () -> Unit,
@@ -93,13 +89,10 @@ fun ChooseAccountsScreen(
         modifier = modifier
     )
 
-    state.error?.let { error ->
-        ErrorAlertDialog(
-            title = stringResource(id = R.string.dAppRequest_chooseAccounts_verificationErrorTitle),
-            body = error,
-            dismissErrorDialog = dismissErrorDialog
-        )
-    }
+    DappInteractionFailureDialog(
+        dialogState = sharedState.failureDialog,
+        onAcknowledgeFailureDialog = sharedViewModel::onAcknowledgeFailureDialog
+    )
     sharedState.interactionState?.let {
         SigningStatusBottomDialog(
             modifier = Modifier.fillMaxHeight(0.8f),
@@ -145,28 +138,6 @@ private fun HandleOneOffEvents(
             }
         }
     }
-}
-
-@Composable
-private fun ErrorAlertDialog(
-    title: String,
-    body: String,
-    dismissErrorDialog: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    AlertDialog(
-        modifier = modifier,
-        onDismissRequest = {},
-        title = { Text(text = title, color = Color.Black) },
-        text = { Text(text = body, color = Color.Black) },
-        confirmButton = {
-            TextButton(
-                onClick = dismissErrorDialog
-            ) {
-                Text(stringResource(id = R.string.common_ok), color = Color.Black)
-            }
-        }
-    )
 }
 
 @Preview(showBackground = true)

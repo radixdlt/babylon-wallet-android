@@ -40,7 +40,6 @@ fun NavController.chooseAccountsOneTime(numberOfAccounts: Int, isExactAccountsCo
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.chooseAccountsOneTime(
     exitRequestFlow: () -> Unit,
-    dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onLoginFlowComplete: () -> Unit,
     onPersonaOnetime: (RequiredPersonaFields) -> Unit,
@@ -64,7 +63,6 @@ fun NavGraphBuilder.chooseAccountsOneTime(
         OneTimeChooseAccountsScreen(
             viewModel = hiltViewModel(),
             exitRequestFlow = exitRequestFlow,
-            dismissErrorDialog = dismissErrorDialog,
             onAccountCreationClick = onAccountCreationClick,
             sharedViewModel = sharedVM,
             onLoginFlowComplete = onLoginFlowComplete,

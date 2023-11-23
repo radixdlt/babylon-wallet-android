@@ -86,13 +86,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         _interactionState.update { null }
                         signaturesWithPublicKeys.addAll(signatures)
                     }.onFailure { error ->
-                        _interactionState.update {
-                            if (error is RadixWalletException.LedgerCommunicationException) {
-                                InteractionState.Ledger.Error(factorSource, signingPurpose, error)
-                            } else {
-                                null
-                            }
-                        }
+                        _interactionState.update { null }
                         return Result.failure(error)
                     }
                 }

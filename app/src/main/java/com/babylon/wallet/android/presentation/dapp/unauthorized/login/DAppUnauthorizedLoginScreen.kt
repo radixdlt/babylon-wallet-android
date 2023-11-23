@@ -24,8 +24,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.dapp.FailureDialogState
 import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
-import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginUiState.FailureDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import kotlinx.coroutines.flow.filterIsInstance
@@ -69,9 +69,9 @@ fun DappUnauthorizedLoginScreen(
             FullscreenCircularProgressContent()
         }
 
-        when (val dialogState = state.failureDialog) {
-            is FailureDialog.Closed -> {}
-            is FailureDialog.Open -> {
+        when (val dialogState = state.failureDialogState) {
+            is FailureDialogState.Closed -> {}
+            is FailureDialogState.Open -> {
                 BasicPromptAlertDialog(
                     finish = { viewModel.onAcknowledgeFailureDialog() },
                     title = {

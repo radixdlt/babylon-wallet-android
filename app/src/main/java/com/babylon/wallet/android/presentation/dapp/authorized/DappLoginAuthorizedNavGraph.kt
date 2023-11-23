@@ -99,9 +99,6 @@ fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
             navController.popBackStack()
         }
         chooseAccounts(
-            dismissErrorDialog = {
-                navController.navigateUp()
-            },
             onAccountCreationClick = {
                 navController.createAccountScreen(CreateAccountRequestSource.ChooseAccount)
             },

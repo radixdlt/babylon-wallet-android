@@ -127,7 +127,7 @@ class LedgerMessengerImpl @Inject constructor(
             dAppDefinitionAddress = dAppDefinitionAddress
         )
         return makeLedgerRequest(request = ledgerRequest, onError = {
-            RadixWalletException.LedgerCommunicationException.FailedToDerivePublicKeys
+            RadixWalletException.LedgerCommunicationException.FailedToSignAuthChallenge
         })
     }
 
