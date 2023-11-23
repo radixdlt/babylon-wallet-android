@@ -23,6 +23,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.dapp.FailureDialogState
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
@@ -256,6 +257,9 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun handleRequestError(exception: Throwable) {
         if (exception is RadixWalletException.DappRequestException) {
+            if (exception.cause is RadixWalletException.LedgerCommunicationException) {
+                return
+            }
             if (exception.cause is RadixWalletException.SignatureCancelled) {
                 return
             }
@@ -269,12 +273,12 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 error = exception.ceError,
                 message = exception.getDappMessage()
             )
-            _state.update { it.copy(failureDialog = DAppLoginUiState.FailureDialog.Open(exception)) }
+            _state.update { it.copy(failureDialog = FailureDialogState.Open(exception)) }
         }
     }
 
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
-        _state.update { it.copy(failureDialog = DAppLoginUiState.FailureDialog.Closed) }
+        _state.update { it.copy(failureDialog = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.interactionId)
     }
@@ -755,7 +759,7 @@ sealed interface Event : OneOffEvent {
 data class DAppLoginUiState(
     val dapp: DApp? = null,
     val uiMessage: UiMessage? = null,
-    val failureDialog: FailureDialog = FailureDialog.Closed,
+    val failureDialog: FailureDialogState = FailureDialogState.Closed,
     val initialAuthorizedLoginRoute: InitialAuthorizedLoginRoute? = null,
     val selectedAccountsOngoing: List<AccountItemUiModel> = emptyList(),
     val selectedOngoingPersonaData: PersonaData? = null,
@@ -764,10 +768,4 @@ data class DAppLoginUiState(
     val selectedPersona: PersonaUiModel? = null,
     val interactionState: InteractionState? = null,
     val isNoMnemonicErrorVisible: Boolean = false
-) : UiState {
-
-    sealed interface FailureDialog {
-        data object Closed : FailureDialog
-        data class Open(val dappRequestException: RadixWalletException.DappRequestException) : FailureDialog
-    }
-}
+) : UiState

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -20,7 +21,7 @@ fun BottomPrimaryButton(
     text: String,
     buttonPadding: PaddingValues = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault)
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier.background(RadixTheme.colors.defaultBackground)) {
         Divider(color = RadixTheme.colors.gray5)
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         RadixPrimaryButton(

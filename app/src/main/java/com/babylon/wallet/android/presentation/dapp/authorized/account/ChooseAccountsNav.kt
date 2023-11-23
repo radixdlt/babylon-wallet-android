@@ -55,7 +55,6 @@ fun NavController.chooseAccounts(
 @Suppress("LongParameterList", "MagicNumber")
 @OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.chooseAccounts(
-    dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,
     onLoginFlowComplete: () -> Unit,
@@ -88,7 +87,6 @@ fun NavGraphBuilder.chooseAccounts(
         ChooseAccountsScreen(
             viewModel = hiltViewModel(),
             sharedViewModel = sharedVM,
-            dismissErrorDialog = dismissErrorDialog,
             onAccountCreationClick = onAccountCreationClick,
             onChooseAccounts = onChooseAccounts,
             onLoginFlowComplete = onLoginFlowComplete,
