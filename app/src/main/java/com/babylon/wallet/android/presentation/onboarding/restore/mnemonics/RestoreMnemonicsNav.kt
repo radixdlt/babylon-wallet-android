@@ -28,11 +28,8 @@ fun NavController.restoreMnemonics(
 @Serializable
 sealed interface RestoreMnemonicsArgs {
     @Serializable
-    data class RestoreProfile(val backupType: BackupType) : RestoreMnemonicsArgs
-
-    @Serializable
-    data class RestoreSpecificMnemonic(
-        val factorSourceId: HexCoded32Bytes,
+    data class RestoreProfile(
+        val backupType: BackupType? = null,
         val isMandatory: Boolean = false
     ) : RestoreMnemonicsArgs
 

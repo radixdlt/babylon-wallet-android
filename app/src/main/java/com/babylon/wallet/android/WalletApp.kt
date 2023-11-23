@@ -93,8 +93,7 @@ fun WalletApp(
     LaunchedEffect(Unit) {
         mainViewModel.babylonMnemonicNeedsRecoveryEvent.collect {
             navController.restoreMnemonics(
-                args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(
-                    factorSourceId = it.factorSourceID.body,
+                args = RestoreMnemonicsArgs.RestoreProfile(
                     isMandatory = true
                 )
             )

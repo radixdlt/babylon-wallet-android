@@ -152,7 +152,7 @@ fun NavigationHost(
             },
             onNavigateToMnemonicRestore = {
                 navController.restoreMnemonics(
-                    args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(factorSourceId = it.body)
+                    args = RestoreMnemonicsArgs.RestoreProfile()
                 )
             },
         )
@@ -173,9 +173,9 @@ fun NavigationHost(
                 onNavigateToMnemonicBackup = {
                     navController.seedPhrases()
                 },
-                onNavigateToMnemonicRestore = { factorSourceId ->
+                onNavigateToMnemonicRestore = {
                     navController.restoreMnemonics(
-                        args = RestoreMnemonicsArgs.RestoreSpecificMnemonic(factorSourceId = factorSourceId.body)
+                        args = RestoreMnemonicsArgs.RestoreProfile()
                     )
                 },
                 onFungibleResourceClick = { resource, account ->
