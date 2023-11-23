@@ -30,7 +30,6 @@ import kotlinx.collections.immutable.persistentListOf
 fun OneTimeChooseAccountsScreen(
     viewModel: OneTimeChooseAccountsViewModel,
     exitRequestFlow: () -> Unit,
-    dismissErrorDialog: () -> Unit,
     onAccountCreationClick: () -> Unit,
     sharedViewModel: DAppUnauthorizedLoginViewModel,
     onLoginFlowComplete: () -> Unit,
