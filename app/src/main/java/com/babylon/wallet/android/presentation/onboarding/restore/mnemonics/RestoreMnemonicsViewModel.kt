@@ -21,6 +21,8 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.changeGateway
 import rdx.works.profile.data.model.extensions.factorSourceId
+import rdx.works.profile.data.model.extensions.isHidden
+import rdx.works.profile.data.model.extensions.isNotHidden
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceFlag
@@ -287,4 +289,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
 data class RecoverableFactorSource(
     val associatedAccounts: List<Network.Account>,
     val factorSource: DeviceFactorSource
-)
+) {
+    val nonHiddenAccountsToDisplay: List<Network.Account>
+        get() = associatedAccounts.filter { it.isNotHidden() }
+
+    val allAccountsHidden: Boolean
+        get() = associatedAccounts.all { it.isHidden() }
+}

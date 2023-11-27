@@ -112,3 +112,7 @@ fun Profile.unhideAllEntities(): Profile {
 fun Entity.isNotHidden(): Boolean {
     return flags.contains(EntityFlag.DeletedByUser).not()
 }
+
+fun Entity.isHidden(): Boolean {
+    return flags.contains(EntityFlag.DeletedByUser)
+}
