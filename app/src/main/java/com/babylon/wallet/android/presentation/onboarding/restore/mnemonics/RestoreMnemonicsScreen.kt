@@ -329,8 +329,10 @@ private fun EntitiesView(
                         .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium)
                 ) {
                     Text(
-                        modifier = Modifier.fillMaxWidth().padding(RadixTheme.dimensions.paddingXLarge),
-                        text = "Hidden accounts only.",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(RadixTheme.dimensions.paddingXLarge),
+                        text = stringResource(id = R.string.recoverSeedPhrase_hidden_accounts_only),
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray2
