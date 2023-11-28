@@ -21,8 +21,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -111,7 +111,7 @@ private fun FungibleAssetDialogContent(
                     fungibleResource = state.poolUnit?.stake
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.fillMaxWidth(),
                     color = RadixTheme.colors.gray4
                 )
@@ -149,7 +149,7 @@ private fun FungibleAssetDialogContent(
                                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                                 .radixPlaceholder(visible = true)
                         )
-                        Divider(color = RadixTheme.colors.gray4)
+                        HorizontalDivider(color = RadixTheme.colors.gray4)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -160,7 +160,7 @@ private fun FungibleAssetDialogContent(
                     }
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.fillMaxWidth(),
                     color = RadixTheme.colors.gray4
                 )
@@ -174,7 +174,7 @@ private fun FungibleAssetDialogContent(
                         color = RadixTheme.colors.gray1
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier.fillMaxWidth(),
                         color = RadixTheme.colors.gray4
                     )

@@ -22,8 +22,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -173,7 +173,7 @@ private fun NonFungibleAssetDialogContent(
                 }
 
                 if (state.localId != null) {
-                    Divider(
+                    HorizontalDivider(
                         Modifier
                             .fillMaxWidth()
                             .padding(top = RadixTheme.dimensions.paddingDefault),
@@ -201,7 +201,7 @@ private fun NonFungibleAssetDialogContent(
                         )
                     }
 
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingLarge),
@@ -217,7 +217,7 @@ private fun NonFungibleAssetDialogContent(
                             color = RadixTheme.colors.gray1
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                        Divider(
+                        HorizontalDivider(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),

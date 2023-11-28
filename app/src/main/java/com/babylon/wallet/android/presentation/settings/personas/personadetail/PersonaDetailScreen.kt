@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -164,7 +164,7 @@ private fun PersonaDetailContent(
                         windowInsets = WindowInsets.statusBars
                     )
 
-                    Divider(color = RadixTheme.colors.gray5)
+                    HorizontalDivider(color = RadixTheme.colors.gray5)
                 }
             },
             containerColor = RadixTheme.colors.defaultBackground
@@ -228,7 +228,7 @@ private fun PersonaDetailList(
                 label = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
                 value = persona.displayName
             )
-            Divider(modifier = Modifier.padding(dimensions.paddingDefault), color = RadixTheme.colors.gray4)
+            HorizontalDivider(modifier = Modifier.padding(dimensions.paddingDefault), color = RadixTheme.colors.gray4)
         }
         val allFields = persona.personaData.allFields
         if (allFields.isNotEmpty()) {
@@ -241,7 +241,7 @@ private fun PersonaDetailList(
                     field = field.value
                 )
                 if (field != lastItem) {
-                    Divider(
+                    HorizontalDivider(
                         modifier = Modifier.padding(
                             horizontal = dimensions.paddingDefault,
                             vertical = dimensions.paddingLarge

@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Text
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateMap
@@ -156,7 +156,7 @@ fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
                 )
             }
             if (index != itemsSize - 1) {
-                Divider(color = RadixTheme.colors.gray4)
+                HorizontalDivider(color = RadixTheme.colors.gray4)
             }
         }
     }
