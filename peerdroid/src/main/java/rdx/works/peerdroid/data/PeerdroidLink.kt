@@ -5,6 +5,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
@@ -44,6 +45,9 @@ internal class PeerdroidLinkImpl(
     private val webSocketClient = WebSocketClient(applicationContext)
     private val webRtcManager = WebRtcManager(applicationContext)
 
+    private var webSocketClientJob: Job? = null
+    private var webRtcManagerJob: Job? = null
+
     // This CompletableDeferred will return a result when a peer connection
     // has been first connected and then disconnected.
     private lateinit var addConnectionDeferred: CompletableDeferred<Result<Unit>>
@@ -77,7 +81,7 @@ internal class PeerdroidLinkImpl(
 
     @Suppress("LongMethod")
     private fun listenForIncomingMessagesFromSignalingServer(webSocketClient: WebSocketClient) {
-        webSocketClient
+        webSocketClientJob = webSocketClient
             .listenForMessages()
             .onStart { // for debugging
                 Timber.d("\uD83D\uDDFC start observing incoming messages from signaling server ▶️️")
@@ -140,7 +144,7 @@ internal class PeerdroidLinkImpl(
     // a peer connection executed its lifecycle:
     // created -> connecting -> connected -> disconnected
     private fun observePeerConnectionUntilEstablished() {
-        webRtcManager
+        webRtcManagerJob = webRtcManager
             .createPeerConnection("")
             .onStart { // for debugging
                 Timber.d("🗼 ⚡ start observing webrtc events ▶️")
@@ -242,12 +246,19 @@ internal class PeerdroidLinkImpl(
     }
 
     private suspend fun terminateWithError() {
-        terminate()
+        webSocketClientJob?.cancel()
+        webSocketClient.closeSession()
+        webRtcManagerJob?.cancel()
+        webRtcManager.close()
         addConnectionDeferred.complete(Result.failure(Throwable("data channel couldn't initialize")))
     }
 
     private suspend fun terminate() {
         Timber.d("🗼️ terminate webrtc and web socket connection \uD83D\uDEAB")
+        webSocketClientJob?.cancel()
         webSocketClient.closeSession()
+        webRtcManagerJob?.cancel()
+        webRtcManager.close()
+        addConnectionDeferred.complete(Result.success(Unit))
     }
 }
