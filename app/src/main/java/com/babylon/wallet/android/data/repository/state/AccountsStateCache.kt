@@ -297,7 +297,7 @@ class AccountsStateCache @Inject constructor(
                 }
             }
 
-            val resultingValidatorsWithStakeResources = validators.map { validatorEntry ->
+            val resultingValidatorsWithStakeResources = validators.mapNotNull { validatorEntry ->
                 val validatorDetail = validatorEntry.value
 
                 val fungible = resultingFungibles.find {
@@ -311,11 +311,15 @@ class AccountsStateCache @Inject constructor(
                 }
                 val stakeClaimNft = nonFungible?.let { StakeClaim(it) }
 
-                ValidatorWithStakes(
-                    validatorDetail = validatorDetail,
-                    liquidStakeUnit = liquidStakeUnit,
-                    stakeClaimNft = stakeClaimNft
-                )
+                if (liquidStakeUnit == null && stakeClaimNft == null) {
+                    null
+                } else {
+                    ValidatorWithStakes(
+                        validatorDetail = validatorDetail,
+                        liquidStakeUnit = liquidStakeUnit,
+                        stakeClaimNft = stakeClaimNft
+                    )
+                }
             }
 
             return AccountAddressWithAssets(
