@@ -245,7 +245,7 @@ private fun ConnectorSettingBox(
             },
             containerColor = RadixTheme.colors.gray3,
             contentColor = RadixTheme.colors.gray1,
-            icon = {
+            leadingContent = {
                 Icon(
                     painter = painterResource(
                         id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
@@ -304,7 +304,7 @@ private fun ImportOlympiaWalletSettingBox(
                 },
                 containerColor = RadixTheme.colors.gray3,
                 contentColor = RadixTheme.colors.gray1,
-                icon = {
+                leadingContent = {
                     Icon(
                         painter = painterResource(
                             id = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
