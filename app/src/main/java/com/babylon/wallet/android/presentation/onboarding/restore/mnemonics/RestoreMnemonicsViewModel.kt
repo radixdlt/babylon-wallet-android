@@ -22,7 +22,6 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.changeGateway
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isHidden
-import rdx.works.profile.data.model.extensions.isNotHidden
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceFlag
@@ -291,7 +290,7 @@ data class RecoverableFactorSource(
     val factorSource: DeviceFactorSource
 ) {
     val nonHiddenAccountsToDisplay: List<Network.Account>
-        get() = associatedAccounts.filter { it.isNotHidden() }
+        get() = associatedAccounts.filter { it.isHidden().not() }
 
     val allAccountsHidden: Boolean
         get() = associatedAccounts.all { it.isHidden() }
