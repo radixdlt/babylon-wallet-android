@@ -94,20 +94,12 @@ private fun PoolUnitItem(
                 poolUnit = resource
             )
             Text(
-                poolName(resource.stake.displayTitle),
+                modifier = Modifier.weight(1f),
+                text = poolName(resource.stake.displayTitle),
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1,
                 maxLines = 2
             )
-        }
-        Row(
-            modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                .padding(bottom = RadixTheme.dimensions.paddingLarge),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-        ) {
-            PoolResourcesValues(modifier = Modifier.weight(1f), poolUnit = resource)
 
             if (action is AssetsViewAction.Selection) {
                 val isSelected = remember(resource.stake, action) {
@@ -121,6 +113,13 @@ private fun PoolUnitItem(
                 )
             }
         }
+
+        PoolResourcesValues(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .padding(bottom = RadixTheme.dimensions.paddingLarge),
+            poolUnit = resource
+        )
     }
 }
 
@@ -149,7 +148,7 @@ fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
                     maxLines = 2
                 )
                 Text(
-                    poolUnit.resourceRedemptionValue(poolResource)?.displayableQuantity().orEmpty(),
+                    text = poolUnit.resourceRedemptionValue(poolResource)?.displayableQuantity().orEmpty(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1
