@@ -12,11 +12,11 @@ import timber.log.Timber
 // This is a callbackFlow wrapper of the native DataChannel.Observer callback and it does two things:
 // 1. returns the state of the data channel - when this is changed
 // 2. returns the type of PackageDto - when a message is received
+@Suppress("EmptyFunctionBlock")
 internal fun DataChannel.eventFlow(): Flow<DataChannelMessage> = callbackFlow {
     val callback = object : DataChannel.Observer {
 
         override fun onBufferedAmountChange(p0: Long) {
-            Timber.d("📯 onBufferedAmountChange")
         }
 
         override fun onStateChange() {

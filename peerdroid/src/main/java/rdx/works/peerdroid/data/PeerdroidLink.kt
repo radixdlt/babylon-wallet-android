@@ -5,6 +5,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
@@ -44,6 +45,9 @@ internal class PeerdroidLinkImpl(
     private val webSocketClient = WebSocketClient(applicationContext)
     private val webRtcManager = WebRtcManager(applicationContext)
 
+    private var webSocketClientJob: Job? = null
+    private var webRtcManagerJob: Job? = null
+
     // This CompletableDeferred will return a result when a peer connection
     // has been first connected and then disconnected.
     private lateinit var addConnectionDeferred: CompletableDeferred<Result<Unit>>
@@ -52,7 +56,7 @@ internal class PeerdroidLinkImpl(
         addConnectionDeferred = CompletableDeferred()
         // get connection id from encryption key
         val connectionId = encryptionKey.blake2Hash().toHexString()
-        Timber.d("🛠️️ add new link connection with connection id: $connectionId")
+        Timber.d("\uD83D\uDDFC️ add new link connection with connectionId: $connectionId")
 
         withContext(ioDispatcher) {
             // Leave this method here because WebRTC takes too long to initialize its components
@@ -77,55 +81,59 @@ internal class PeerdroidLinkImpl(
 
     @Suppress("LongMethod")
     private fun listenForIncomingMessagesFromSignalingServer(webSocketClient: WebSocketClient) {
-        webSocketClient
+        webSocketClientJob = webSocketClient
             .listenForMessages()
             .onStart { // for debugging
-                Timber.d("🛠️️ ▶️️ start observing incoming messages from signaling server")
+                Timber.d("\uD83D\uDDFC start observing incoming messages from signaling server ▶️️")
             }
             .onCompletion {
-                Timber.d("🛠️️ ⏹️️ end observing incoming messages from signaling server")
+                Timber.d("\uD83D\uDDFC️️ end observing incoming messages from signaling server ⏹️")
             }
             .onEach { incomingMessage ->
                 when (incomingMessage) {
                     is SignalingServerMessage.RemoteInfo.ClientConnected -> {
-                        Timber.d("🛠️️ ⬇️ connector extension is connected with id: ${incomingMessage.remoteClientId} 📬")
+                        Timber.d(
+                            "🗼️ \uD83D\uDCE1️ connector extension is connected with id: ${incomingMessage.remoteClientId} ⬇️ \uD83D\uDFE9"
+                        )
                     }
                     is SignalingServerMessage.RemoteData.Offer -> {
-                        Timber.d("🛠️️ ⬇️ offer received from connector extension: ${incomingMessage.remoteClientId}")
+                        Timber.d("🗼️ \uD83D\uDCE1️️ offer received from connector extension: ${incomingMessage.remoteClientId} ⬇️")
                         setRemoteDescriptionFromOffer(incomingMessage)
                         createAndSendAnswerToRemoteClient()
                     }
                     is SignalingServerMessage.RemoteData.Answer -> {
-                        Timber.d("🛠️️ ⬇️ answer received from connector extension: ${incomingMessage.remoteClientId}")
+                        Timber.d("🗼️ \uD83D\uDCE1️️ answer received from connector extension: ${incomingMessage.remoteClientId} ⬇️")
                     }
                     is SignalingServerMessage.RemoteData.IceCandidate -> {
-                        Timber.d("🛠️️ ⬇️ ice candidate received from connector extension: ${incomingMessage.remoteClientId}")
+                        Timber.d("🗼️ \uD83D\uDCE1️️ ice candidate received from connector extension: ${incomingMessage.remoteClientId} ⬇️")
                         addRemoteIceCandidateInWebRtc(incomingMessage)
                     }
                     is SignalingServerMessage.Confirmation -> {
-                        Timber.d("🛠️️ ⬇️ confirmation received for requestId: ${incomingMessage.requestId}")
+//                        Timber.d("🗼️ \uD83D\uDCE1️️ confirmation received for requestId: ${incomingMessage.requestId} ⬇️")
                     }
                     is SignalingServerMessage.Error.InvalidMessage -> {
-                        Timber.d("🛠️️ ⬇️ invalid message error: ${incomingMessage.errorMessage}")
+                        Timber.d("🗼️ \uD83D\uDCE1️️ invalid message error: ${incomingMessage.errorMessage} ⬇️")
                     }
                     is SignalingServerMessage.RemoteInfo.MissingClient -> {
-                        Timber.d("🛠️️ ⬇️ missing connector extension error, request id: ${incomingMessage.requestId}")
+                        Timber.d("🗼️ \uD83D\uDCE1️️ missing connector extension error, request id: ${incomingMessage.requestId} ⬇️")
                     }
                     is SignalingServerMessage.RemoteInfo.ClientDisconnected -> {
-                        Timber.d("🛠️️ ⬇️ connector extension disconnected with id: ${incomingMessage.remoteClientId} 📪")
+                        Timber.d(
+                            "🗼️ \uD83D\uDCE1️️ connector extension disconnected with id: ${incomingMessage.remoteClientId} ⬇️ \uD83D\uDFE5"
+                        )
                     }
                     is SignalingServerMessage.Error.Validation -> {
-                        Timber.d("🛠️️ ⬇️ validation error")
+                        Timber.d("🗼️ \uD83D\uDCE1️️ validation error ❗ ⬇️")
                         terminateWithError()
                     }
                     is SignalingServerMessage.Error.Unknown -> {
-                        Timber.d("🛠️️ ⬇️ unknown error")
+                        Timber.d("🗼️ \uD83D\uDCE1️️ unknown error ❗ ⬇️")
                         terminateWithError()
                     }
                 }
             }
             .catch { exception ->
-                Timber.e("🛠️️ ⬇️ an exception occurred: ${exception.localizedMessage}")
+                Timber.e("🗼️ ⬇️ an exception occurred: ${exception.localizedMessage}")
                 terminateWithError()
             }
             .flowOn(ioDispatcher)
@@ -136,45 +144,44 @@ internal class PeerdroidLinkImpl(
     // a peer connection executed its lifecycle:
     // created -> connecting -> connected -> disconnected
     private fun observePeerConnectionUntilEstablished() {
-        webRtcManager
+        webRtcManagerJob = webRtcManager
             .createPeerConnection("")
             .onStart { // for debugging
-                Timber.d("🛠️ start observing webrtc events")
+                Timber.d("🗼 ⚡ start observing webrtc events ▶️")
             }
             .onCompletion { // for debugging
-                Timber.d("🛠️ end observing webrtc events")
+                Timber.d("🗼 ⚡ end observing webrtc events ⏹️")
             }
             .onEach { event ->
                 when (event) {
                     PeerConnectionEvent.RenegotiationNeeded -> {
-                        Timber.d("🛠️ renegotiation needed 🆗")
+                        Timber.d("🗼 ⚡ renegotiation needed 🆗")
                     }
                     is PeerConnectionEvent.IceGatheringChange -> {
-                        Timber.d("🛠️ ice gathering state changed: ${event.state}")
+                        Timber.d("🗼 ⚡ ice gathering state changed: ${event.state}")
                     }
                     is PeerConnectionEvent.IceCandidate -> {
-                        Timber.d("🛠️ ice candidate generated")
+                        Timber.d("🗼 ⚡ ice candidate generated")
                         sendIceCandidateToRemoteClient(event.data)
                     }
                     is PeerConnectionEvent.SignalingState -> {
-                        Timber.d("🛠️ signaling state changed: ${event.message}")
+                        Timber.d("🗼 ⚡ signaling state changed: ${event.message}")
                     }
                     PeerConnectionEvent.Connected -> {
-                        Timber.d("🛠️ signaling state changed: peer connection connected 🟢")
+                        Timber.d("🗼 ⚡ signaling state changed: peer connection connected 🟢")
                     }
                     is PeerConnectionEvent.Disconnected -> {
-                        Timber.d("🛠️ signaling state changed: peer connection disconnected 🔴")
-                        terminate()
-                        addConnectionDeferred.complete(Result.success(Unit))
+                        Timber.d("🗼 ⚡ signaling state changed: peer connection disconnected 🔴")
+                        terminateWithSuccess()
                     }
                     is PeerConnectionEvent.Failed -> {
-                        Timber.d("🛠️ signaling state changed: peer connection failed ❌")
+                        Timber.d("🗼 ⚡ signaling state changed: peer connection failed ❌")
                         terminateWithError()
                     }
                 }
             }
             .catch { exception ->
-                Timber.e("🛠️ an exception occurred: ${exception.localizedMessage}")
+                Timber.e("🗼 ⚡ an exception occurred: ${exception.localizedMessage}")
                 terminateWithError()
             }
             .completeWhenDisconnected()
@@ -195,7 +202,7 @@ internal class PeerdroidLinkImpl(
                 )
                 if (isSet) {
                     // then send the answer to the connector extension via signaling server
-                    Timber.d("🛠️️ ⬆️ send answer to the connector extension")
+                    Timber.d("🗼 \uD83D\uDCE1️ send answer to the connector extension ⬆️")
                     webSocketClient.sendAnswerMessage(
                         remoteClientId = "",
                         answerPayload = sessionDescriptionValue.toAnswerPayload()
@@ -205,20 +212,13 @@ internal class PeerdroidLinkImpl(
                 }
             }
             .onFailure { throwable ->
-                Timber.e("🛠️️ failed to create answer: ${throwable.message}")
+                Timber.e("🗼️ failed to create answer: ${throwable.message}❗")
                 terminateWithError()
             }
     }
 
     private suspend fun setLocalDescription(localSessionDescription: SessionDescriptionWrapper): Boolean {
-        return webRtcManager.setLocalDescription(localSessionDescription)
-            .onSuccess {
-                Timber.d("🛠️️ local description is set")
-            }
-            .onFailure { throwable ->
-                Timber.e("🛠️️ failed to set local description:${throwable.message} ")
-            }
-            .isSuccess
+        return webRtcManager.setLocalDescription(localSessionDescription).isSuccess
     }
 
     private suspend fun setRemoteDescriptionFromOffer(offer: SignalingServerMessage.RemoteData.Offer) {
@@ -227,17 +227,10 @@ internal class PeerdroidLinkImpl(
             sessionDescriptionValue = SessionDescriptionWrapper.SessionDescriptionValue(offer.sdp)
         )
         webRtcManager.setRemoteDescription(sessionDescription)
-            .onSuccess {
-                Timber.d("🛠️️ remote description is set")
-            }
-            .onFailure { throwable ->
-                Timber.e("🛠️️ failed to set remote description:${throwable.message} ")
-                terminateWithError()
-            }
     }
 
     private suspend fun sendIceCandidateToRemoteClient(iceCandidateData: PeerConnectionEvent.IceCandidate.Data) {
-        Timber.d("🛠️️ ⬆️ send ice candidate to the connector extension")
+        Timber.d("🗼️ \uD83D\uDCE1️ send ice candidate to the connector extension ⬆️")
         withContext(ioDispatcher) {
             webSocketClient.sendIceCandidateMessage(
                 remoteClientId = "",
@@ -248,17 +241,23 @@ internal class PeerdroidLinkImpl(
 
     private suspend fun addRemoteIceCandidateInWebRtc(iceCandidate: SignalingServerMessage.RemoteData.IceCandidate) {
         val remoteIceCandidate = iceCandidate.remoteIceCandidate
-        Timber.d("🛠️️ set remote ice candidate in local WebRTC")
         webRtcManager.addRemoteIceCandidate(remoteIceCandidate = remoteIceCandidate)
     }
 
     private suspend fun terminateWithError() {
-        terminate()
+        webSocketClientJob?.cancel()
+        webSocketClient.closeSession()
+        webRtcManagerJob?.cancel()
+        webRtcManager.close()
         addConnectionDeferred.complete(Result.failure(Throwable("data channel couldn't initialize")))
     }
 
-    private suspend fun terminate() {
-        Timber.d("🛠️️ terminate webrtc and web socket connection")
+    private suspend fun terminateWithSuccess() {
+        Timber.d("🗼️ terminate webrtc and web socket connection \uD83D\uDEAB")
+        webSocketClientJob?.cancel()
         webSocketClient.closeSession()
+        webRtcManagerJob?.cancel()
+        webRtcManager.close()
+        addConnectionDeferred.complete(Result.success(Unit))
     }
 }

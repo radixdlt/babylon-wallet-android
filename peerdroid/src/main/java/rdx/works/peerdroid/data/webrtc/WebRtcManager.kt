@@ -125,7 +125,6 @@ internal class WebRtcManager(applicationContext: Context) {
         peerConnection.let {
             dataChannel = it.createDataChannel(remoteClientId, dataChannelInit)
             Timber.d("🔌 created a data channel for remote client: $remoteClientId")
-            Timber.d("🔌 created a RTC data channel")
         }
     }
 

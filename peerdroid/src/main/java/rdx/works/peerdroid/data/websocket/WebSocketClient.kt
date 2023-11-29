@@ -87,14 +87,14 @@ internal class WebSocketClient(applicationContext: Context) {
                 Timber.d("🛰 successfully connected to signaling server")
                 Result.success(Unit)
             } else {
-                Timber.e("🛰 failed to connect to signaling server")
+                Timber.e("🛰 failed to connect to signaling server❗")
                 Result.failure(Exception("Couldn't establish a connection"))
             }
         } catch (exception: Exception) {
             if (exception is CancellationException) {
                 throw exception
             }
-            Timber.e("🛰 connection exception: ${exception.localizedMessage}")
+            Timber.e("🛰 connection exception: ${exception.localizedMessage}❗")
             Result.failure(exception)
         }
     }
@@ -117,7 +117,7 @@ internal class WebSocketClient(applicationContext: Context) {
                 }
                 ?: flowOf(SignalingServerMessage.Error.Unknown)
         } catch (exception: Exception) {
-            Timber.e("🛰 incoming message exception: ${exception.localizedMessage}")
+            Timber.e("🛰 incoming message exception: ${exception.localizedMessage}❗")
             flowOf(SignalingServerMessage.Error.Unknown)
         }
     }
@@ -185,7 +185,7 @@ internal class WebSocketClient(applicationContext: Context) {
             if (exception is CancellationException) {
                 throw exception
             }
-            Timber.e("🛰 failed to send message: ${exception.localizedMessage}")
+            Timber.e("🛰 failed to send message: ${exception.localizedMessage}❗")
         }
     }
 
@@ -225,7 +225,7 @@ internal class WebSocketClient(applicationContext: Context) {
                 )
             }
             is SignalingServerDto.ValidationError -> {
-                Timber.e("🛰 validation error in signaling server message: ${signalingServerDto.error}")
+                Timber.e("🛰 validation error in signaling server message: ${signalingServerDto.error}❗")
                 SignalingServerMessage.Error.Validation
             }
         }
