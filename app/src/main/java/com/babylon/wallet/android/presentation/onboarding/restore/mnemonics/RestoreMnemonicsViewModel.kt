@@ -292,6 +292,6 @@ data class RecoverableFactorSource(
     val nonHiddenAccountsToDisplay: List<Network.Account>
         get() = associatedAccounts.filter { it.isHidden().not() }
 
-    val allAccountsHidden: Boolean
+    val areAllAccountsHidden: Boolean
         get() = associatedAccounts.all { it.isHidden() }
 }

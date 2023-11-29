@@ -321,7 +321,7 @@ private fun EntitiesView(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
         state.recoverableFactorSource?.let { recoverable ->
-            if (recoverable.allAccountsHidden) {
+            if (recoverable.areAllAccountsHidden) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
