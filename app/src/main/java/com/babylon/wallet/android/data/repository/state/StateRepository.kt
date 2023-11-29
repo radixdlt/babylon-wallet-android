@@ -144,7 +144,7 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "UnsafeCallOnNullableType")
     override suspend fun updateLSUsInfo(
         account: Network.Account,
         validatorsWithStakes: List<ValidatorWithStakes>
@@ -157,8 +157,8 @@ class StateRepositoryImpl @Inject constructor(
             val lsuEntities = mutableMapOf<String, ResourceEntity>()
             stateApi.paginateDetails(
                 addresses = result
-                    .filter { !it.liquidStakeUnit.fungibleResource.isDetailsAvailable }
-                    .map { it.liquidStakeUnit.resourceAddress }
+                    .filter { it.liquidStakeUnit != null && it.liquidStakeUnit.fungibleResource.isDetailsAvailable.not() }
+                    .map { it.liquidStakeUnit!!.resourceAddress }
                     .toSet(),
                 metadataKeys = setOf(
                     ExplicitMetadataKey.NAME,
@@ -181,7 +181,7 @@ class StateRepositoryImpl @Inject constructor(
 
             result = result.map { item ->
                 item.copy(
-                    liquidStakeUnit = if (!item.liquidStakeUnit.fungibleResource.isDetailsAvailable) {
+                    liquidStakeUnit = if (item.liquidStakeUnit != null && item.liquidStakeUnit.fungibleResource.isDetailsAvailable.not()) {
                         val newLsu = lsuEntities[item.liquidStakeUnit.resourceAddress]?.toResource(
                             item.liquidStakeUnit.fungibleResource.ownedAmount
                         ) as? Resource.FungibleResource

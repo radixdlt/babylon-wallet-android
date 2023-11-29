@@ -320,8 +320,16 @@ class AccountsStateCache @Inject constructor(
 
                 val validatorDetails = claimTokenAddressToValidator[nonFungible.resourceAddress]
                 if (validatorDetails != null) {
-                    resultingStakeUnits[validatorDetails]?.copy(stakeClaimNft = StakeClaim(nonFungible))?.let {
-                        resultingStakeUnits[validatorDetails] = it
+                    val existingValidatorWithStakes = resultingStakeUnits[validatorDetails]
+                    if (existingValidatorWithStakes != null) {
+                        resultingStakeUnits[validatorDetails] = existingValidatorWithStakes.copy(
+                            stakeClaimNft = StakeClaim(nonFungible)
+                        )
+                    } else {
+                        resultingStakeUnits[validatorDetails] = ValidatorWithStakes(
+                            validatorDetail = validatorDetails,
+                            stakeClaimNft = StakeClaim(nonFungible)
+                        )
                     }
 
                     // Remove this non-fungible from the list as it will be included as a stake claim
@@ -329,12 +337,8 @@ class AccountsStateCache @Inject constructor(
                 }
             }
 
-            val resultingValidatorsWithStakeResources = resultingStakeUnits.map {
-                ValidatorWithStakes(
-                    validatorDetail = it.key,
-                    liquidStakeUnit = it.value.liquidStakeUnit,
-                    stakeClaimNft = it.value.stakeClaimNft
-                )
+            val resultingValidatorsWithStakeResources = validators.values.mapNotNull { validatorDetail ->
+                resultingStakeUnits[validatorDetail]
             }
 
             return AccountAddressWithAssets(
