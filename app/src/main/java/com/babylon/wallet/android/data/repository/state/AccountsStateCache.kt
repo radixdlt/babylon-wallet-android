@@ -275,11 +275,7 @@ class AccountsStateCache @Inject constructor(
         ): AccountAddressWithAssets? {
             if (stateVersion == null) return null
 
-            val stakeUnitAddressToValidator = validators.mapKeys { it.value.stakeUnitResourceAddress }
-            val claimTokenAddressToValidator = validators.mapKeys { it.value.claimTokenResourceAddress }
-
             val resultingPoolUnits = mutableListOf<PoolUnit>()
-            val resultingStakeUnits = mutableMapOf<ValidatorDetail, ValidatorWithStakes>()
 
             val resultingFungibles = fungibles.toMutableList()
             val resultingNonFungibles = nonFungibles.toMutableList()
@@ -299,41 +295,26 @@ class AccountsStateCache @Inject constructor(
 
                     fungiblesIterator.remove()
                 }
-
-                val validatorDetails = stakeUnitAddressToValidator[fungible.resourceAddress]
-                if (validatorDetails != null) {
-                    val lsu = LiquidStakeUnit(fungible)
-
-                    resultingStakeUnits[validatorDetails] = ValidatorWithStakes(
-                        validatorDetail = validatorDetails,
-                        liquidStakeUnit = lsu
-                    )
-
-                    // Remove this fungible from the list as it will be included as an lsu
-                    fungiblesIterator.remove()
-                }
             }
 
-            val nonFungiblesIterator = resultingNonFungibles.iterator()
-            while (nonFungiblesIterator.hasNext()) {
-                val nonFungible = nonFungiblesIterator.next()
+            val resultingValidatorsWithStakeResources = validators.map { validatorEntry ->
+                val validatorDetail = validatorEntry.value
 
-                val validatorDetails = claimTokenAddressToValidator[nonFungible.resourceAddress]
-                if (validatorDetails != null) {
-                    resultingStakeUnits[validatorDetails]?.copy(stakeClaimNft = StakeClaim(nonFungible))?.let {
-                        resultingStakeUnits[validatorDetails] = it
-                    }
-
-                    // Remove this non-fungible from the list as it will be included as a stake claim
-                    nonFungiblesIterator.remove()
+                val fungible = resultingFungibles.find {
+                    it.resourceAddress == validatorEntry.value.stakeUnitResourceAddress
                 }
-            }
 
-            val resultingValidatorsWithStakeResources = resultingStakeUnits.map {
+                val liquidStakeUnit = fungible?.let { LiquidStakeUnit(it) }
+
+                val nonFungible = resultingNonFungibles.find {
+                    it.resourceAddress == validatorEntry.value.claimTokenResourceAddress
+                }
+                val stakeClaimNft = nonFungible?.let { StakeClaim(it) }
+
                 ValidatorWithStakes(
-                    validatorDetail = it.key,
-                    liquidStakeUnit = it.value.liquidStakeUnit,
-                    stakeClaimNft = it.value.stakeClaimNft
+                    validatorDetail = validatorDetail,
+                    liquidStakeUnit = liquidStakeUnit,
+                    stakeClaimNft = stakeClaimNft
                 )
             }
 

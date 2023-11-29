@@ -325,9 +325,9 @@ private fun TagsSection(state: LSUAssetDialogViewModel.State) {
 }
 
 @Composable
-fun ValidatorWithStakes.name(): String = liquidStakeUnit.name.ifEmpty {
+fun ValidatorWithStakes.name(): String = liquidStakeUnit?.name?.ifEmpty {
     stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
-}
+} ?: stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
 
 @Composable
 private fun LSUResourceValue(

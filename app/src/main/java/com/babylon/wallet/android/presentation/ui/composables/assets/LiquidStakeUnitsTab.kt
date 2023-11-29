@@ -102,20 +102,22 @@ private fun LSUItem(
             validator = item.validatorDetail
         )
 
-        StakeSectionTitle(
-            modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
-                .padding(bottom = RadixTheme.dimensions.paddingSmall),
-            title = stringResource(id = R.string.account_poolUnits_liquidStakeUnits)
-        )
+        if (item.liquidStakeUnit != null) {
+            StakeSectionTitle(
+                modifier = Modifier
+                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                    .padding(bottom = RadixTheme.dimensions.paddingSmall),
+                title = stringResource(id = R.string.account_poolUnits_liquidStakeUnits)
+            )
 
-        LiquidStakeUnitItem(
-            modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                .padding(bottom = RadixTheme.dimensions.paddingDefault),
-            stake = item,
-            action = action
-        )
+            LiquidStakeUnitItem(
+                modifier = Modifier
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                stake = item,
+                action = action
+            )
+        }
 
         if (item.stakeClaimNft != null && item.stakeClaimNft.nonFungibleResource.amount > 0) {
             StakeSectionTitle(
@@ -237,14 +239,16 @@ private fun LiquidStakeUnitItem(
             .throttleClickable {
                 when (action) {
                     is AssetsViewAction.Click -> {
-                        action.onLSUClick(stake.liquidStakeUnit)
+                        stake.liquidStakeUnit?.let { action.onLSUClick(it) }
                     }
 
                     is AssetsViewAction.Selection -> {
-                        action.onFungibleCheckChanged(
-                            stake.liquidStakeUnit.fungibleResource,
-                            !action.isSelected(stake.liquidStakeUnit.resourceAddress)
-                        )
+                        stake.liquidStakeUnit?.let { liquidStakeUnit ->
+                            action.onFungibleCheckChanged(
+                                liquidStakeUnit.fungibleResource,
+                                !action.isSelected(liquidStakeUnit.resourceAddress)
+                            )
+                        }
                     }
                 }
             }
@@ -288,15 +292,17 @@ private fun LiquidStakeUnitItem(
         )
 
         if (action is AssetsViewAction.Selection) {
-            val isSelected = remember(stake.liquidStakeUnit.resourceAddress, action) {
-                action.isSelected(stake.liquidStakeUnit.resourceAddress)
-            }
-            AssetsViewCheckBox(
-                isSelected = isSelected,
-                onCheckChanged = { isChecked ->
-                    action.onFungibleCheckChanged(stake.liquidStakeUnit.fungibleResource, isChecked)
+            stake.liquidStakeUnit?.let { liquidStakeUnit ->
+                val isSelected = remember(liquidStakeUnit.resourceAddress, action) {
+                    action.isSelected(liquidStakeUnit.resourceAddress)
                 }
-            )
+                AssetsViewCheckBox(
+                    isSelected = isSelected,
+                    onCheckChanged = { isChecked ->
+                        action.onFungibleCheckChanged(liquidStakeUnit.fungibleResource, isChecked)
+                    }
+                )
+            }
         }
     }
 }
