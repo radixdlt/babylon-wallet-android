@@ -173,7 +173,6 @@ internal class PeerdroidLinkImpl(
                     is PeerConnectionEvent.Disconnected -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection disconnected 🔴")
                         terminate()
-                        addConnectionDeferred.complete(Result.success(Unit))
                     }
                     is PeerConnectionEvent.Failed -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection failed ❌")
