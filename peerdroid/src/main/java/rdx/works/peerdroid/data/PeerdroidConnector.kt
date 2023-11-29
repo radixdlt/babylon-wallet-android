@@ -456,7 +456,7 @@ internal class PeerdroidConnectorImpl(
     private suspend fun addRemoteIceCandidateInWebRtc(iceCandidate: RemoteData.IceCandidate) {
         val remoteIceCandidate = iceCandidate.remoteIceCandidate
         val remoteClientHolder = RemoteClientHolder(id = iceCandidate.remoteClientId)
-        val webRtcManager = mapOfPeerConnections.getValue(remoteClientHolder).webRtcManager
+        val webRtcManager = mapOfPeerConnections[remoteClientHolder]?.webRtcManager ?: return
         webRtcManager.addRemoteIceCandidate(remoteIceCandidate = remoteIceCandidate)
     }
 
@@ -467,7 +467,7 @@ internal class PeerdroidConnectorImpl(
     ) {
         Timber.d("⚙️ \uD83D\uDCE1️ send ice candidate to the remote client: $remoteClientHolder ⬆️")
         applicationScope.launch(ioDispatcher) {
-            val webSocketClient = mapOfWebSockets.getValue(connectionId).webSocketClient
+            val webSocketClient = mapOfWebSockets[connectionId]?.webSocketClient ?: return@launch
             webSocketClient.sendIceCandidateMessage(
                 remoteClientId = remoteClientHolder.id,
                 iceCandidateData = iceCandidateData
