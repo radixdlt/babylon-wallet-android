@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.ComplexMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
@@ -40,7 +41,11 @@ data class NFTEntity(
         iconMetadataItem = imageUrl?.let { IconUrlMetadataItem(Uri.parse(it)) },
         claimEpochMetadataItem = claimEpoch?.let { ClaimEpochMetadataItem(it) },
         claimAmountMetadataItem = claimAmount?.let { ClaimAmountMetadataItem(it) },
-        remainingMetadata = metadata?.metadata.orEmpty().map { StringMetadataItem(it.first, it.second) }
+        remainingMetadata = metadata?.metadata.orEmpty().map { entry ->
+            entry.second?.let {
+                StringMetadataItem(entry.first, it)
+            } ?: ComplexMetadataItem(entry.first)
+        }
     )
 
     companion object {
@@ -56,7 +61,16 @@ data class NFTEntity(
                 imageUrl = metadataItems.consume<IconUrlMetadataItem>()?.url?.toString(),
                 claimAmount = metadataItems.consume<ClaimAmountMetadataItem>()?.amount,
                 claimEpoch = metadataItems.consume<ClaimEpochMetadataItem>()?.claimEpoch,
-                metadata = StringMetadataColumn(metadataItems.filterIsInstance<StringMetadataItem>().map { it.key to it.value }),
+                metadata = metadataItems
+                    .mapNotNull { item ->
+                        when (item) {
+                            is StringMetadataItem -> item.key to item.value
+                            is ComplexMetadataItem -> item.key to null
+                            else -> null
+                        }
+                    }
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { StringMetadataColumn(it) },
                 synced = synced
             )
         }
@@ -68,7 +82,10 @@ data class NFTEntity(
             imageUrl = iconMetadataItem?.url?.toEncodedString(),
             claimAmount = claimAmountMetadataItem?.amount,
             claimEpoch = claimEpochMetadataItem?.claimEpoch,
-            metadata = if (remainingMetadata.isNotEmpty()) StringMetadataColumn(remainingMetadata.map { it.key to it.value }) else null,
+            metadata = remainingMetadata
+                .takeIf { it.isNotEmpty() }
+                ?.map { it.key to (if (it is StringMetadataItem) it.value else null) }
+                ?.let { StringMetadataColumn(it) },
             synced = synced
         )
     }

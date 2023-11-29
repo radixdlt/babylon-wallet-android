@@ -19,7 +19,7 @@ data class DappDefinitionsColumn(val dappDefinitions: List<String>)
 data class BehavioursColumn(val behaviours: Set<AssetBehaviour>)
 
 @Serializable
-data class StringMetadataColumn(val metadata: List<Pair<String, String>>)
+data class StringMetadataColumn(val metadata: List<Pair<String, String?>>)
 
 @Serializable
 data class NFTIdsColumn(val ids: List<String>)

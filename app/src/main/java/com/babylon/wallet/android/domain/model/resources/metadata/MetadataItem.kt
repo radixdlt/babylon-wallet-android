@@ -18,3 +18,19 @@ interface MetadataItem {
         }
     }
 }
+
+/**
+ * Generic [MetadataItem] that the [key] is not included in the
+ * [ExplicitMetadataKey]s and whose [value] can be represented as a [String]
+ */
+data class StringMetadataItem(
+    override val key: String,
+    val value: String
+) : MetadataItem
+
+/**
+ * More complex types as Maps or Tuples that are previewed as complex.
+ */
+data class ComplexMetadataItem(
+    override val key: String
+) : MetadataItem

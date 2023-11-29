@@ -9,9 +9,9 @@ import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMeta
 import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.PoolMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.ValidatorMetadataItem
@@ -212,7 +212,7 @@ sealed class Resource {
             val iconMetadataItem: IconUrlMetadataItem? = null,
             val claimEpochMetadataItem: ClaimEpochMetadataItem? = null,
             val claimAmountMetadataItem: ClaimAmountMetadataItem? = null,
-            val remainingMetadata: List<StringMetadataItem> = emptyList()
+            val remainingMetadata: List<MetadataItem> = emptyList()
         ) : Comparable<Item> {
 
             val globalAddress: String
