@@ -150,8 +150,7 @@ fun TransferContent(
             BasicPromptAlertDialog(
                 finish = onLessThanFeeApplied,
                 title = stringResource(id = R.string.assetTransfer_maxAmountDialog_title),
-                text = "Sending the full amount of XRD in this account will require you to pay the transaction fee " +
-                    "from a different account.", // TODO Crowdin
+                text = stringResource(id = R.string.assetTransfer_maxAmountDialog_body2),
                 confirmText = stringResource(id = R.string.common_ok),
                 dismissText = stringResource(id = R.string.common_cancel)
             )
