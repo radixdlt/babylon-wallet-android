@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Text
@@ -32,6 +31,7 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 
@@ -253,8 +253,8 @@ private fun LiquidStakeUnitItem(
                 }
             }
             .assetOutlineBorder()
-            .padding(RadixTheme.dimensions.paddingDefault),
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+            .padding(vertical = RadixTheme.dimensions.paddingDefault)
+            .padding(start = RadixTheme.dimensions.paddingDefault)
     ) {
         Icon(
             painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
@@ -264,7 +264,11 @@ private fun LiquidStakeUnitItem(
                 .clip(RadixTheme.shapes.circle),
             tint = Color.Unspecified
         )
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+
+        Column(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
+            verticalArrangement = Arrangement.Center
+        ) {
             Text(
                 text = XrdResource.SYMBOL,
                 style = RadixTheme.typography.body2HighImportance,
@@ -278,20 +282,22 @@ private fun LiquidStakeUnitItem(
                 maxLines = 1
             )
         }
-
         val stakeValue = remember(stake) { stake.stakeValue() }
         Text(
             modifier = Modifier
-                .sizeIn(minWidth = 96.dp)
+                .weight(1f)
+                .padding(
+                    end = if (action is AssetsViewAction.Click || stakeValue == null) RadixTheme.dimensions.paddingDefault else 0.dp
+                )
                 .assetPlaceholder(visible = stakeValue == null),
             text = stakeValue?.displayableQuantity().orEmpty(),
             style = RadixTheme.typography.secondaryHeader,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.End,
-            maxLines = 1
+            maxLines = 2
         )
 
-        if (action is AssetsViewAction.Selection) {
+        if (action is AssetsViewAction.Selection && stakeValue != null) {
             stake.liquidStakeUnit?.let { liquidStakeUnit ->
                 val isSelected = remember(liquidStakeUnit.resourceAddress, action) {
                     action.isSelected(liquidStakeUnit.resourceAddress)
@@ -315,9 +321,18 @@ private fun StakeClaimNftItem(
     modifier: Modifier = Modifier,
     action: AssetsViewAction
 ) {
+    val isReadyToClaim = remember(stakeClaimNft, epoch) {
+        if (stakeClaimNft != null && epoch != null) {
+            stakeClaimNft.isReadyToClaim(epoch)
+        } else {
+            null
+        }
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .fillMaxWidth()
             .assetOutlineBorder()
             .throttleClickable(enabled = stakeClaimNft != null) {
                 when (action) {
@@ -332,8 +347,14 @@ private fun StakeClaimNftItem(
                     }
                 }
             }
-            .padding(RadixTheme.dimensions.paddingDefault),
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+            .padding(
+                vertical = if (action is AssetsViewAction.Click || isReadyToClaim == null) {
+                    RadixTheme.dimensions.paddingDefault
+                } else {
+                    RadixTheme.dimensions.paddingSmall
+                }
+            )
+            .padding(start = RadixTheme.dimensions.paddingDefault)
     ) {
         Icon(
             painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
@@ -344,26 +365,37 @@ private fun StakeClaimNftItem(
             tint = Color.Unspecified
         )
 
-        val isReadyToClaim = remember(stakeClaimNft, epoch) {
-            epoch?.let { stakeClaimNft?.isReadyToClaim(epoch) == true } ?: false
-        }
         Text(
             modifier = Modifier
                 .weight(1f)
-                .assetPlaceholder(visible = stakeClaimNft == null || epoch == null),
-            text = stringResource(
-                id = if (isReadyToClaim) R.string.account_poolUnits_readyToClaim else R.string.account_poolUnits_unstaking
-            ),
+                .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+            text = if (isReadyToClaim != null) {
+                stringResource(id = if (isReadyToClaim) R.string.account_poolUnits_readyToClaim else R.string.account_poolUnits_unstaking)
+            } else {
+                ""
+            },
             style = RadixTheme.typography.body2HighImportance,
-            color = if (isReadyToClaim) RadixTheme.colors.green1 else RadixTheme.colors.gray1,
+            color = if (isReadyToClaim == true) RadixTheme.colors.green1 else RadixTheme.colors.gray1,
+            textAlign = TextAlign.Start,
             maxLines = 1
         )
 
         Text(
+            modifier = Modifier
+                .weight(1f)
+                .padding(
+                    end = if (action is AssetsViewAction.Click || isReadyToClaim == null) {
+                        RadixTheme.dimensions.paddingDefault
+                    } else {
+                        0.dp
+                    }
+                )
+                .assetPlaceholder(visible = isReadyToClaim == null),
             text = stakeClaimNft?.claimAmountXrd?.displayableQuantity().orEmpty(),
             style = RadixTheme.typography.secondaryHeader,
             color = RadixTheme.colors.gray1,
-            maxLines = 1
+            textAlign = TextAlign.End,
+            maxLines = 2
         )
 
         if (action is AssetsViewAction.Selection && stakeClaimNft != null) {
