@@ -201,7 +201,7 @@ private fun NotBackedUpPersonasWarning(modifier: Modifier) {
             tint = RadixTheme.colors.orange1
         )
         Text(
-            text = "Back up seed phrase for your Personas", // TODO crowdin
+            text = stringResource(id = R.string.settings_personas_seedPhraseWarning),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.orange1
         )
