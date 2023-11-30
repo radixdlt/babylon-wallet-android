@@ -173,6 +173,7 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="settings_importFromLegacyWalletHeader_title">Radix Olympia Desktop Wallet user?</string>
   <string name="settings_importFromLegacyWalletHeader_subtitle">Get started importing your Olympia accounts into your new Radix Wallet</string>
   <string name="settings_importFromLegacyWalletHeader_importLegacyAccounts">Import Legacy Accounts</string>
+  <string name="settings_personas_seedPhraseWarning">Write down main seed phrase</string>
   <string name="linkedConnectors_title">Linked Connectors</string>
   <string name="linkedConnectors_subtitle">Connect your Radix Wallet to desktop web browsers by linking to the Radix Connector browser extension. Here are your linked Connectors.</string>
   <string name="linkedConnectors_lastConnected">Last connected %s</string>
@@ -543,6 +544,7 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="importOlympiaAccounts_noNewAccounts">No new accounts were found on this Ledger device</string>
   <string name="importOlympiaAccounts_passphrase">Passphrase</string>
   <string name="importOlympiaAccounts_seedPhrase">Seed phrase</string>
+  <string name="importOlympiaAccounts_noAddresses">No addresses verified. The currently connected Ledger device is not related to any accounts to be imported, or has already been used.</string>
   <string name="onboarding_newUser">I\'m a New Radix Wallet User</string>
   <string name="onboarding_restoreFromBackup">Restore Wallet from Backup</string>
   <string name="onboarding_step1_title">Welcome to the Radix Wallet</string>
@@ -628,6 +630,7 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="assetTransfer_error_insufficientBalance">Total amount exceeds your current balance</string>
   <string name="assetTransfer_maxAmountDialog_title">Sending All XRD</string>
   <string name="assetTransfer_maxAmountDialog_body">Sending the full amount of XRD in this account will require you to pay the transaction fee from a different account. Or, the wallet can reduce the amount transferred so the fee can be paid from this account. Choose the amount to transfer:</string>
+  <string name="assetTransfer_maxAmountDialog_body2">Sending the full amount of XRD in this account will require you to pay the transaction fee from a different account.</string>
   <string name="assetTransfer_maxAmountDialog_sendAllButton">%s (send all XRD)</string>
   <string name="assetTransfer_maxAmountDialog_saveXrdForFeeButton">%s (save 1 XRD for fee)</string>
   <string name="assetTransfer_extraSignature_label">You will be asked for an extra signature</string>
@@ -695,6 +698,8 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="seedPhrases_seedPhrase_reveal">Reveal Seed Phrase</string>
   <string name="seedPhrases_seedPhrase_oneConnectedAccount">Connected to 1 Account</string>
   <string name="seedPhrases_seedPhrase_multipleConnectedAccounts">Connected to %d Accounts</string>
+  <string name="seedPhrases_seedPhrase_confirmTitle">Confirm Your Seed Phrase</string>
+  <string name="seedPhrases_seedPhrase_confirmSubtitle">Confirm you have written down the seed phrase by entering the missing words below.</string>
   <string name="appSettings_title">App Settings</string>
   <string name="appSettings_subtitle">Customize your Radix Wallet</string>
   <string name="appSettings_developerMode_title">Developer Mode</string>
