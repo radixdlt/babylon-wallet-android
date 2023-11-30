@@ -53,7 +53,7 @@ android {
         applicationId "com.radixpublishing.radixwallet.android"
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
-        versionCode 22
+        versionCode 23
         versionName "1.2.0"
         buildConfigField "boolean", "DEBUG_MODE", "true"
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
