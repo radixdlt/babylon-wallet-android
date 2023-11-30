@@ -152,7 +152,7 @@ private fun SeedPhraseView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = "Confirm Your Seed Phrase", // TODO crowding
+            text = stringResource(id = R.string.confirmMnemonicBackedUp_title),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.title
         )
@@ -161,7 +161,7 @@ private fun SeedPhraseView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = "Confirm you have written down the seed phrase by entering the missing words below.", // TODO crowdin
+            text = stringResource(id = R.string.confirmMnemonicBackedUp_subtitle),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Header
         )

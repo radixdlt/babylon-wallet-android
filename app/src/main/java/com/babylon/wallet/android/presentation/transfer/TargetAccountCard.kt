@@ -196,7 +196,7 @@ fun TargetAccountCard(
                             contentDescription = null
                         )
                         Text(
-                            text = "Additional signature is required.",
+                            text = stringResource(id = R.string.assetTransfer_extraSignature_label),
                             modifier = Modifier.padding(start = RadixTheme.dimensions.paddingXSmall),
                             style = RadixTheme.typography.body2Regular,
                             maxLines = 1,

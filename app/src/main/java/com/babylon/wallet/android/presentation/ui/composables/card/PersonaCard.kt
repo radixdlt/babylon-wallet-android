@@ -87,7 +87,7 @@ fun PersonaCard(
             ApplySecuritySettingsLabel(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = onApplySecuritySettings,
-                text = "Please write down this Persona's seed phrase",
+                text = stringResource(id = R.string.personas_writeSeedPhrase),
                 labelColor = RadixTheme.colors.backgroundAlternate.copy(alpha = 0.3f),
             )
         }
