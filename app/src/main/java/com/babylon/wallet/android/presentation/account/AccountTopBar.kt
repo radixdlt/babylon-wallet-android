@@ -130,14 +130,15 @@ fun AccountTopBar(
                     onClick = { onTransferClick(accountAddress) },
                     containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
                     contentColor = RadixTheme.colors.white,
-                    shape = RadixTheme.shapes.circle
-                ) {
-                    Icon(
-                        painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
-                        tint = RadixTheme.colors.white,
-                        contentDescription = null
-                    )
-                }
+                    shape = RadixTheme.shapes.circle,
+                    leadingContent = {
+                        Icon(
+                            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
+                            tint = RadixTheme.colors.white,
+                            contentDescription = null
+                        )
+                    }
+                )
             }
 
             AnimatedVisibility(

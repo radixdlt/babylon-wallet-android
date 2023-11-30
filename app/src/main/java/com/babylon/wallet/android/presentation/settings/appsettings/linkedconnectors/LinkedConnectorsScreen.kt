@@ -219,7 +219,7 @@ private fun ActiveLinkedConnectorsListContent(
                             .padding(horizontal = RadixTheme.dimensions.paddingMedium),
                         text = stringResource(id = R.string.linkedConnectors_linkNewConnector),
                         onClick = onLinkNewConnectorClick,
-                        icon = {
+                        leadingContent = {
                             Icon(
                                 painter = painterResource(id = DSR.ic_qr_code_scanner),
                                 contentDescription = null

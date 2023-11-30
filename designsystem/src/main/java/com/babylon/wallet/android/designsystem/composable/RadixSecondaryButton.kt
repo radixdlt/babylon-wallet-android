@@ -38,7 +38,8 @@ fun RadixSecondaryButton(
     isLoading: Boolean = false,
     enabled: Boolean = true,
     throttleClicks: Boolean = false,
-    icon: @Composable (() -> Unit)? = null
+    leadingContent: @Composable (() -> Unit)? = null,
+    trailingContent: @Composable (() -> Unit)? = null
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
@@ -76,8 +77,9 @@ fun RadixSecondaryButton(
                     strokeWidth = 2.dp
                 )
             } else {
-                icon?.invoke()
+                leadingContent?.invoke()
                 Text(text = text, style = RadixTheme.typography.button)
+                trailingContent?.invoke()
             }
         }
     }
@@ -87,7 +89,11 @@ fun RadixSecondaryButton(
 @Composable
 fun RadixSecondaryButtonPreview() {
     RadixWalletTheme {
-        RadixSecondaryButton(text = "Secondary button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp))
+        RadixSecondaryButton(
+            text = "Secondary button",
+            onClick = {},
+            modifier = Modifier.size(200.dp, 50.dp)
+        )
     }
 }
 
@@ -95,9 +101,14 @@ fun RadixSecondaryButtonPreview() {
 @Composable
 fun RadixSecondaryButtonWithIconPreview() {
     RadixWalletTheme {
-        RadixSecondaryButton(text = "Secondary button", onClick = {}, modifier = Modifier.size(200.dp, 50.dp)) {
-            Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
-        }
+        RadixSecondaryButton(
+            text = "Secondary button",
+            onClick = {},
+            modifier = Modifier.size(200.dp, 50.dp),
+            leadingContent = {
+                Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = "")
+            }
+        )
     }
 }
 

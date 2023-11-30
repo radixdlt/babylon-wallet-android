@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -307,13 +308,17 @@ fun AssetsContent(
                             exit = fadeOut()
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceEvenly
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingXSmall),
+                                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
                             ) {
                                 HistoryButton(
+                                    modifier = Modifier.weight(1f),
                                     onHistoryClick = onHistoryClick
                                 )
                                 TransferButton(
+                                    modifier = Modifier.weight(1f),
                                     accountAddress = accountAddress,
                                     onTransferClick = onTransferClick
                                 )
@@ -380,14 +385,16 @@ private fun TransferButton(
         onClick = { onTransferClick(accountAddress) },
         containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
         contentColor = RadixTheme.colors.white,
-        shape = RadixTheme.shapes.circle
-    ) {
-        Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
-            tint = RadixTheme.colors.white,
-            contentDescription = null
-        )
-    }
+        shape = RadixTheme.shapes.circle,
+        leadingContent = {
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_transfer),
+                tint = RadixTheme.colors.white,
+                contentDescription = null
+            )
+        }
+    )
 }
 
 @Composable
@@ -401,14 +408,24 @@ private fun HistoryButton(
         modifier = modifier,
         containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
         contentColor = RadixTheme.colors.white,
-        shape = RadixTheme.shapes.circle
-    ) {
-        Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
-            tint = RadixTheme.colors.white,
-            contentDescription = null
-        )
-    }
+        shape = RadixTheme.shapes.circle,
+        leadingContent = {
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_watch_later),
+                tint = RadixTheme.colors.white,
+                contentDescription = null
+            )
+        },
+        trailingContent = {
+            Icon(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_link_out),
+                tint = RadixTheme.colors.white.copy(alpha = 0.5f),
+                contentDescription = null
+            )
+        }
+    )
 }
 
 @Preview
