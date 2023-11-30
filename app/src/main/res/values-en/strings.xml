@@ -264,6 +264,7 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="personas_subtitle">Here are all of your current Personas.</string>
   <string name="personas_whatIsPersona">What is a Persona?</string>
   <string name="personas_createNewPersona">Create a New Persona</string>
+  <string name="personas_writeSeedPhrase">Write down main seed phrase</string>
   <string name="createAccount_completion_explanation">Your Account lives on the Radix Network and you can access it any time in your Radix Wallet.</string>
   <string name="createAccount_completion_subtitleFirst">You’ve created your first Account!</string>
   <string name="createAccount_completion_subtitleNotFirst">Your Account has been created.</string>
@@ -629,6 +630,7 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="assetTransfer_maxAmountDialog_body">Sending the full amount of XRD in this account will require you to pay the transaction fee from a different account. Or, the wallet can reduce the amount transferred so the fee can be paid from this account. Choose the amount to transfer:</string>
   <string name="assetTransfer_maxAmountDialog_sendAllButton">%s (send all XRD)</string>
   <string name="assetTransfer_maxAmountDialog_saveXrdForFeeButton">%s (save 1 XRD for fee)</string>
+  <string name="assetTransfer_extraSignature_label">You will be asked for an extra signature</string>
   <string name="importOlympiaLedgerAccounts_title">Verify With Ledger Device</string>
   <string name="importOlympiaLedgerAccounts_subtitle">You are attempting to import one or more Olympia accounts that must be verified with a Ledger hardware wallet device.</string>
   <string name="importOlympiaLedgerAccounts_listHeading">Already verified Ledger devices:</string>
