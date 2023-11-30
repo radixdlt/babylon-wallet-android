@@ -108,9 +108,16 @@ data class OwnerKeyHashesMetadataItem(
 }
 
 data class ValidatorMetadataItem(
-    val validatorAddress: String
+    private val address: String
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.VALIDATOR.key
+
+    val validatorAddress: String?
+        get() = address.takeIf { it.isNotBlank() && it.startsWith(HRP_VALIDATOR) }
+
+    companion object {
+        private const val HRP_VALIDATOR = "validator_"
+    }
 }
 
 data class ClaimAmountMetadataItem(
@@ -126,9 +133,16 @@ data class ClaimEpochMetadataItem(
 }
 
 data class PoolMetadataItem(
-    val poolAddress: String
+    private val address: String
 ) : StandardMetadataItem {
     override val key: String = ExplicitMetadataKey.POOL.key
+
+    val poolAddress: String?
+        get() = address.takeIf { it.isNotBlank() && it.startsWith(HRP_POOL) }
+
+    companion object {
+        private const val HRP_POOL = "pool_"
+    }
 }
 
 data class PoolUnitMetadataItem(
