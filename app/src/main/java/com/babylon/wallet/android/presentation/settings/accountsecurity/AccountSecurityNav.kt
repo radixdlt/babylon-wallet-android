@@ -1,11 +1,13 @@
 package com.babylon.wallet.android.presentation.settings.accountsecurity
 
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
+import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
@@ -15,8 +17,6 @@ import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerha
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.seedPhrases
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.navigation
 
 const val ROUTE_ACCOUNT_SECURITY_SCREEN = "settings_account_security_screen"
 const val ROUTE_ACCOUNT_SECURITY_GRAPH = "settings_account_security_graph"
@@ -25,7 +25,6 @@ fun NavController.accountSecurityScreen() {
     navigate(ROUTE_ACCOUNT_SECURITY_SCREEN)
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.accountSecurityNavGraph(
     navController: NavController,
 ) {
@@ -74,13 +73,13 @@ fun NavGraphBuilder.accountSecurityScreen(
     composable(
         route = ROUTE_ACCOUNT_SECURITY_SCREEN,
         enterTransition = {
-            slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
+            slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         },
         popExitTransition = {
-            slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
         },
         popEnterTransition = {
             EnterTransition.None

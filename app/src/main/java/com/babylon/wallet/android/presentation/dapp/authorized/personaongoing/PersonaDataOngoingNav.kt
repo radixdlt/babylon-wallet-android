@@ -9,6 +9,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
@@ -16,7 +17,6 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthori
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
 import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsParameterType
-import com.google.accompanist.navigation.animation.composable
 import kotlinx.serialization.encodeToString
 
 @VisibleForTesting

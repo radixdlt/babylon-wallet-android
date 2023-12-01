@@ -1,17 +1,16 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.permission
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
-import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
 internal const val ARG_NUMBER_OF_ACCOUNTS = "number_of_accounts"
@@ -33,7 +32,6 @@ fun NavController.loginPermission(
     navigate("dapp_permission/$numberOfAccounts/$isExactAccountsCount/$oneTime")
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.loginPermission(
     navController: NavController,
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,

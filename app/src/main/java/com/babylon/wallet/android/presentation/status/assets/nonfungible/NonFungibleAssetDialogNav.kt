@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.status.assets.nonfungible
 
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -55,7 +56,8 @@ fun NavGraphBuilder.nonFungibleAssetDialog(
                 type = NavType.StringType
                 nullable = true
             }
-        )
+        ),
+        dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         NonFungibleAssetDialog(
             viewModel = hiltViewModel(),

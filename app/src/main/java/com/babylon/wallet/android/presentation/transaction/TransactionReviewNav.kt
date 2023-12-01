@@ -1,16 +1,15 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
-import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
 internal const val ARG_TRANSACTION_REQUEST_ID = "arg_transaction_request_id"
@@ -27,7 +26,6 @@ fun NavController.transactionReview(requestId: String) {
     navigate("transaction_review_route/$requestId")
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.transactionReviewScreen(
     onBackClick: () -> Unit,
     onFungibleClick: (Resource.FungibleResource, Boolean) -> Unit,

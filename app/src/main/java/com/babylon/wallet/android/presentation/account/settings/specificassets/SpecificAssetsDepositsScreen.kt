@@ -31,7 +31,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.rememberModalBottomSheetState
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.RadioButton
@@ -335,7 +335,9 @@ private fun SpecificAssetsDepositsContent(
         mutableStateOf(SpecificAssetsTab.Allowed)
     }
     val scope = rememberCoroutineScope()
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(0) {
+        SpecificAssetsTab.values().size
+    }
     val snackBarHostState = remember { SnackbarHostState() }
 
     SnackbarUIMessage(
@@ -402,9 +404,8 @@ private fun SpecificAssetsDepositsContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                pageCount = SpecificAssetsTab.values().size,
                 state = pagerState,
-                userScrollEnabled = false
+                userScrollEnabled = false,
             ) { tabIndex ->
                 when (SpecificAssetsTab.values()[tabIndex]) {
                     SpecificAssetsTab.Allowed -> {
@@ -484,7 +485,7 @@ private fun AssetsList(
                 onDeleteAsset = onDeleteAsset
             )
             if (lastItem != asset) {
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),

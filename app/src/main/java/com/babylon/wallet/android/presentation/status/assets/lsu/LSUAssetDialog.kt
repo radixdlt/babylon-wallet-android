@@ -22,8 +22,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -75,11 +75,11 @@ private fun LSUAssetDialogContent(
     onDismiss: () -> Unit
 ) {
     BottomSheetDialogWrapper(
-        modifier = modifier.fillMaxHeight(fraction = 0.9f),
+        modifier = modifier,
         title = state.validatorWithStakes?.name().orEmpty(),
-        onDismissRequest = onDismiss
+        onDismiss = onDismiss
     ) {
-        Box {
+        Box(modifier = Modifier.fillMaxHeight(fraction = 0.9f)) {
             Column(
                 modifier = Modifier
                     .background(RadixTheme.colors.defaultBackground)
@@ -114,7 +114,7 @@ private fun LSUAssetDialogContent(
                     fungibleResource = state.validatorWithStakes?.liquidStakeUnit?.fungibleResource
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.fillMaxWidth(),
                     color = RadixTheme.colors.gray4
                 )
@@ -149,7 +149,7 @@ private fun LSUAssetDialogContent(
                     validatorWithStakes = state.validatorWithStakes,
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.fillMaxWidth(),
                     color = RadixTheme.colors.gray4
                 )

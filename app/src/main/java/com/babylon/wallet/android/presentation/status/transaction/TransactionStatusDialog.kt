@@ -1,44 +1,29 @@
 package com.babylon.wallet.android.presentation.status.transaction
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.rememberSwipeableState
-import androidx.compose.material.swipeable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
@@ -47,13 +32,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.SomethingWentWrongDialogContent
-import com.babylon.wallet.android.presentation.ui.modifier.applyIf
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 @Suppress("CyclomaticComplexMethod")
 fun TransactionStatusDialog(
@@ -75,134 +56,72 @@ fun TransactionStatusDialog(
             }
         }
     }
-    val interactionSource = remember { MutableInteractionSource() }
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .clickable(interactionSource = interactionSource, indication = null) { dismissHandler() }
-    ) {
-        BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
-            val maxHeight = with(LocalDensity.current) {
-                maxHeight.toPx()
-            }
-            val swipeableState = rememberSwipeableState(initialValue = SwipeState.Expanded)
-            LaunchedEffect(swipeableState) {
-                snapshotFlow {
-                    swipeableState.currentValue
-                }.distinctUntilChanged().collect {
-                    if (it == SwipeState.Collapsed) {
-                        dismissHandler()
-                    }
-                }
-            }
-            Column(
-                modifier = Modifier
-                    .applyIf(
-                        !state.blockUntilComplete,
-                        Modifier
-                            .swipeable(
-                                state = swipeableState,
-                                anchors = mapOf(
-                                    0f to SwipeState.Expanded,
-                                    maxHeight to SwipeState.Collapsed
-                                ),
-                                orientation = Orientation.Vertical,
-                            )
-                            .offset {
-                                IntOffset(
-                                    x = 0,
-                                    y = swipeableState.offset.value
-                                        .roundToInt()
-                                        .coerceIn(0, maxHeight.roundToInt())
-                                )
-                            }
-                    )
-                    .animateContentSize()
-                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopMedium)
-                    .clip(RadixTheme.shapes.roundedRectTopMedium)
-
+    BottomSheetDialogWrapper(modifier = modifier, onDismiss = dismissHandler, dragToDismissEnabled = !state.blockUntilComplete, content = {
+        Box {
+            androidx.compose.animation.AnimatedVisibility(
+                visible = state.isCompleting,
+                enter = fadeIn(),
+                exit = fadeOut()
             ) {
-                if (!state.blockUntilComplete) {
-                    BottomDialogDragHandle(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = RadixTheme.dimensions.paddingSmall),
-                        onDismissRequest = {
-                            dismissHandler()
+                CompletingContent()
+            }
+
+            androidx.compose.animation.AnimatedVisibility(
+                visible = state.isFailed,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                val title = when (state.walletErrorType) {
+                    WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
+                        stringResource(id = R.string.transactionStatus_failed_title)
+                    }
+
+                    WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
+                        stringResource(id = R.string.transactionStatus_rejected_title)
+                    }
+
+                    WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
+                        stringResource(id = R.string.transactionStatus_error_title)
+                    }
+
+                    else -> {
+                        stringResource(id = R.string.common_somethingWentWrong)
+                    }
+                }
+                SomethingWentWrongDialogContent(
+                    title = title,
+                    subtitle = state.failureError,
+                    transactionAddress = state.transactionId
+                )
+            }
+
+            androidx.compose.animation.AnimatedVisibility(
+                visible = state.isSuccess,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                // Need to send the correct transaction id
+                SuccessContent(transactionAddress = state.transactionId)
+            }
+
+            if (state.isIgnoreTransactionModalShowing) {
+                BasicPromptAlertDialog(
+                    finish = { accepted ->
+                        if (accepted) {
+                            viewModel.onDismissConfirmed()
+                        } else {
+                            viewModel.onDismissCanceled()
                         }
-                    )
-                }
-                Box {
-                    androidx.compose.animation.AnimatedVisibility(
-                        visible = state.isCompleting,
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        CompletingContent()
-                    }
-
-                    androidx.compose.animation.AnimatedVisibility(
-                        visible = state.isFailed,
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        val title = when (state.walletErrorType) {
-                            WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
-                                stringResource(id = R.string.transactionStatus_failed_title)
-                            }
-
-                            WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
-                                stringResource(id = R.string.transactionStatus_rejected_title)
-                            }
-
-                            WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
-                                stringResource(id = R.string.transactionStatus_error_title)
-                            }
-
-                            else -> {
-                                stringResource(id = R.string.common_somethingWentWrong)
-                            }
-                        }
-                        SomethingWentWrongDialogContent(
-                            title = title,
-                            subtitle = state.failureError,
-                            transactionAddress = state.transactionId
-                        )
-                    }
-
-                    androidx.compose.animation.AnimatedVisibility(
-                        visible = state.isSuccess,
-                        enter = fadeIn(),
-                        exit = fadeOut()
-                    ) {
-                        // Need to send the correct transaction id
-                        SuccessContent(transactionAddress = state.transactionId)
-                    }
-                }
-
-                if (state.isIgnoreTransactionModalShowing) {
-                    BasicPromptAlertDialog(
-                        finish = { accepted ->
-                            if (accepted) {
-                                viewModel.onDismissConfirmed()
-                            } else {
-                                viewModel.onDismissCanceled()
-                            }
-                        },
-                        text = {
-                            Text(text = stringResource(id = R.string.transactionStatus_dismissDialog_message))
-                        },
-                        confirmText = stringResource(id = R.string.common_ok),
-                        dismissText = null
-                    )
-                }
+                    },
+                    text = {
+                        Text(text = stringResource(id = R.string.transactionStatus_dismissDialog_message))
+                    },
+                    confirmText = stringResource(id = R.string.common_ok),
+                    dismissText = null
+                )
             }
         }
-    }
-}
-
-enum class SwipeState {
-    Expanded, Collapsed
+    })
 }
 
 @Composable

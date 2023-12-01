@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation.dapp.authorized
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.dapp.authorized.account.chooseAccounts
@@ -16,10 +16,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.sel
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
-import com.google.accompanist.navigation.animation.navigation
 
 @Suppress("LongMethod")
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.dappLoginAuthorizedNavGraph(navController: NavController) {
     navigation(
         startDestination = ROUTE_DAPP_LOGIN_AUTHORIZED_SCREEN,

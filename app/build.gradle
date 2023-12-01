@@ -161,7 +161,6 @@ dependencies {
     // Accompanist
     implementation libs.accompanistPagerIndicators
     implementation libs.accompanistDrawablePainter
-    implementation libs.accompanistNavigationAnimation
     implementation libs.accompanistPermissions
     implementation libs.accompanistPlaceholder
     implementation libs.accompanistSystemUiController

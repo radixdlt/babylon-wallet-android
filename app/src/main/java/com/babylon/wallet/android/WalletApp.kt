@@ -3,7 +3,6 @@ package com.babylon.wallet.android
 import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,6 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
@@ -37,11 +37,9 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
 import com.babylon.wallet.android.utils.AppEvent
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 @Suppress("ModifierMissing")
 fun WalletApp(
@@ -51,7 +49,7 @@ fun WalletApp(
 ) {
     val context = LocalContext.current
     val state by mainViewModel.state.collectAsStateWithLifecycle()
-    val navController = rememberAnimatedNavController()
+    val navController = rememberNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     NavigationHost(
         modifier = modifier,

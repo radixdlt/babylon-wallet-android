@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -173,7 +173,7 @@ fun TransactionAccountWithGuaranteesCard(
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-            Divider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.gray4)
+            HorizontalDivider(Modifier.fillMaxWidth(), 1.dp, RadixTheme.colors.gray4)
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 

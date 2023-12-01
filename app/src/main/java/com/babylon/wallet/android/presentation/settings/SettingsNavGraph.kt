@@ -1,9 +1,10 @@
 package com.babylon.wallet.android.presentation.settings
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
+import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityNavGraph
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityScreen
@@ -17,11 +18,8 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.p
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.status.assets.fungible.fungibleAssetDialog
 import com.babylon.wallet.android.presentation.status.assets.nonfungible.nonFungibleAssetDialog
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.navigation
 
 @Suppress("LongMethod")
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.settingsNavGraph(
     navController: NavController,
 ) {
@@ -57,7 +55,6 @@ fun NavGraphBuilder.settingsNavGraph(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 private fun NavGraphBuilder.settingsAll(navController: NavController) {
     composable(
         route = Screen.SettingsAllDestination.route

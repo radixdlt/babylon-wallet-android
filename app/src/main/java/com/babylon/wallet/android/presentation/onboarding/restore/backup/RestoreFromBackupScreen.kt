@@ -29,7 +29,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
@@ -175,7 +175,7 @@ private fun RestoreFromBackupContent(
             },
             bottomBar = {
                 Column(Modifier.navigationBarsPadding()) {
-                    Divider(color = RadixTheme.colors.gray5)
+                    HorizontalDivider(color = RadixTheme.colors.gray5)
 
                     RadixPrimaryButton(
                         modifier = Modifier
@@ -412,7 +412,7 @@ private fun PasswordSheet(
 
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        Divider(color = RadixTheme.colors.gray5)
+        HorizontalDivider(color = RadixTheme.colors.gray5)
 
         RadixPrimaryButton(
             modifier = Modifier

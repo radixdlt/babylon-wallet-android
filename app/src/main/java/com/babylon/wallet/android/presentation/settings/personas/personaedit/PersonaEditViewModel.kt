@@ -96,7 +96,7 @@ class PersonaEditViewModel @Inject constructor(
 }
 
 sealed interface PersonaEditEvent : OneOffEvent {
-    object PersonaSaved : PersonaEditEvent
+    data object PersonaSaved : PersonaEditEvent
 }
 
 data class PersonaEditUiState(

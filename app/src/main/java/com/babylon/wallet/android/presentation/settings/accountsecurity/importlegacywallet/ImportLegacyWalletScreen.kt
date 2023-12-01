@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -221,7 +222,7 @@ private fun ImportLegacyWalletContent(
 ) {
     val focusManager = LocalFocusManager.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
-    val pagerState = rememberPagerState()
+    val pagerState = rememberPagerState(0) { pages.size }
     val scope = rememberCoroutineScope()
     var cameraVisible by remember {
         mutableStateOf(false)
@@ -324,8 +325,6 @@ private fun ImportLegacyWalletContent(
             }
         ) { padding ->
             HorizontalPager(
-                modifier = Modifier.padding(padding),
-                pageCount = pages.size,
                 state = pagerState,
                 userScrollEnabled = false
             ) { page ->
@@ -335,14 +334,14 @@ private fun ImportLegacyWalletContent(
                             cameraPermissionGranted = cameraPermissionState.status.isGranted,
                             onQrCodeScanned = onQrCodeScanned,
                             isVisible = cameraVisible,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.padding(padding).fillMaxSize(),
                             qrChunkInfo = qrChunkInfo
                         )
                     }
 
                     Page.AccountsToImportList -> {
                         AccountsToImportListPage(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.padding(padding).fillMaxSize(),
                             olympiaAccountsToImport = olympiaAccountsToImport,
                             onImportAccounts = onImportAccounts,
                             importButtonEnabled = importButtonEnabled,
@@ -351,7 +350,7 @@ private fun ImportLegacyWalletContent(
 
                     Page.MnemonicInput -> {
                         VerifyWithYourSeedPhrasePage(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.padding(padding).fillMaxSize(),
                             seedPhraseWords = seedPhraseWords,
                             bip39Passphrase = bip39Passphrase,
                             onWordChanged = onWordChanged,
@@ -366,7 +365,7 @@ private fun ImportLegacyWalletContent(
 
                     Page.HardwareAccounts -> {
                         VerifyWithLedgerDevicePage(
-                            Modifier.fillMaxSize(),
+                            Modifier.padding(padding).fillMaxSize(),
                             hardwareAccountsLeft = hardwareAccountsLeft,
                             waitingForLedgerResponse = waitingForLedgerResponse,
                             verifiedLedgerDevices = verifiedLedgerDevices,
@@ -376,7 +375,7 @@ private fun ImportLegacyWalletContent(
 
                     Page.ImportComplete -> {
                         ImportCompletePage(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.padding(padding).fillMaxSize(),
                             migratedAccounts = migratedAccounts,
                             onContinue = onContinue
                         )
@@ -492,8 +491,8 @@ private fun ScanQrPage(
             )
             CameraPreview(
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth()
+                    .aspectRatio(1f)
                     .clip(RadixTheme.shapes.roundedRectMedium),
                 disableBackHandler = false,
                 isVisible = isVisible,

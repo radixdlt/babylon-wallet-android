@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation.dapp.unauthorized
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.chooseAccountsOneTime
@@ -13,10 +13,8 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.personaonetime.
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
-import com.google.accompanist.navigation.animation.navigation
 
 @Suppress("LongMethod")
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.dappLoginUnauthorizedNavGraph(navController: NavController) {
     navigation(
         startDestination = ROUTE_DAPP_LOGIN_UNAUTHORIZED_SCREEN,

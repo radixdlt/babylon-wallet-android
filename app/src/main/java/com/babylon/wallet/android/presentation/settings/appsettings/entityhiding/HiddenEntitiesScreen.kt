@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -97,7 +97,7 @@ private fun HiddenEntitiesContent(
                 .background(RadixTheme.colors.gray5)
                 .padding(padding)
         ) {
-            Divider(color = RadixTheme.colors.gray5)
+            HorizontalDivider(color = RadixTheme.colors.gray5)
             Text(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                 text = stringResource(R.string.appSettings_entityHiding_info),

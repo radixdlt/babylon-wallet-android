@@ -1,18 +1,17 @@
 package com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.ROUTE_DAPP_LOGIN_UNAUTHORIZED_GRAPH
-import com.google.accompanist.navigation.animation.composable
 
 @VisibleForTesting
 internal const val ARG_NUMBER_OF_ACCOUNTS = "number_of_accounts"
@@ -37,7 +36,6 @@ fun NavController.chooseAccountsOneTime(numberOfAccounts: Int, isExactAccountsCo
 }
 
 @Suppress("LongParameterList")
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.chooseAccountsOneTime(
     exitRequestFlow: () -> Unit,
     onAccountCreationClick: () -> Unit,
