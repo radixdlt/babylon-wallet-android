@@ -17,7 +17,6 @@ class RootDetectionViewModel @Inject constructor(
 
     fun onAcknowledgeClick() {
         viewModelScope.launch {
-            // Switch val in datastore
             preferencesManager.markDeviceRootedDialogShown()
             sendEvent(RootDetectionEvent.RootAcknowledged)
         }
