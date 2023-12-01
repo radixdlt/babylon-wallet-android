@@ -256,8 +256,21 @@ tasks.withType(Test.class).configureEach {
  */
 task buildDefaultLanguage {
     copy {
-        from ('src/main/res/values-en/strings.xml')
-        into ('src/main/res/values/')
+        from('src/main/res/values-en/strings.xml') {
+            filter {
+                line -> if (line.isEmpty()) {
+                    '\\n\\n'
+                } else {
+                    line
+                }
+            }
+        }
+        into 'src/main/res/values/'
+    }
+    // Move content from values/strings.xml to values-en/strings.xml
+    copy {
+        from('src/main/res/values/strings.xml')
+        into 'src/main/res/values-en/'
     }
 }
 preBuild.dependsOn buildDefaultLanguage
