@@ -4,9 +4,11 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -319,15 +321,34 @@ private fun EntitiesView(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
         state.recoverableFactorSource?.let { recoverable ->
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
-                contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
-            ) {
-                items(recoverable.associatedAccounts) { account ->
-                    SimpleAccountCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        account = account
+            if (recoverable.areAllAccountsHidden) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
+                        .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium)
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(RadixTheme.dimensions.paddingXLarge),
+                        text = stringResource(id = R.string.recoverSeedPhrase_hidden_accounts_only),
+                        textAlign = TextAlign.Center,
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray2
                     )
+                }
+            } else {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+                    contentPadding = PaddingValues(RadixTheme.dimensions.paddingDefault)
+                ) {
+                    items(recoverable.nonHiddenAccountsToDisplay) { account ->
+                        SimpleAccountCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            account = account
+                        )
+                    }
                 }
             }
         }

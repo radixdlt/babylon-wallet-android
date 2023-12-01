@@ -8,7 +8,7 @@ import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
-import rdx.works.profile.data.model.extensions.isNotHidden
+import rdx.works.profile.data.model.extensions.isHidden
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceFlag
@@ -48,8 +48,8 @@ data class Profile(
         header = header.copy(
             contentHint = Header.ContentHint(
                 numberOfNetworks = networks.size,
-                numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.count { it.isNotHidden() } },
-                numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.count { it.isNotHidden() } }
+                numberOfAccountsOnAllNetworksInTotal = networks.sumOf { network -> network.accounts.count { it.isHidden().not() } },
+                numberOfPersonasOnAllNetworksInTotal = networks.sumOf { network -> network.personas.count { it.isHidden().not() } }
             )
         )
     )
