@@ -31,7 +31,6 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 
@@ -313,6 +312,7 @@ private fun LiquidStakeUnitItem(
     }
 }
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 private fun StakeClaimNftItem(
     epoch: Long?,

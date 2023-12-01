@@ -64,7 +64,7 @@ private fun AccountSecurityContent(
         ) {
             Divider(color = RadixTheme.colors.gray5)
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                appSettings.forEachIndexed { index, accountSecurityAndSettingsItem ->
+                appSettings.forEach { accountSecurityAndSettingsItem ->
                     item {
                         DefaultSettingsItem(
                             title = stringResource(id = accountSecurityAndSettingsItem.descriptionRes()),
