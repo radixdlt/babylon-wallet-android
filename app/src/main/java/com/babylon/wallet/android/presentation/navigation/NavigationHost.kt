@@ -39,6 +39,8 @@ import com.babylon.wallet.android.presentation.onboarding.restore.backup.restore
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
+import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
+import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.ROUTE_REVEAL_SEED_PHRASE
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
@@ -146,6 +148,9 @@ fun NavigationHost(
             },
             onNavigateToIncompatibleProfile = {
                 navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
+            },
+            onNavigateToRootDetectedContent = {
+                navController.navigate(ROUTE_ROOT_DETECTION)
             },
             onNavigateToMnemonicBackup = {
                 navController.seedPhrases()
@@ -352,6 +357,13 @@ fun NavigationHost(
             route = ROUTE_INCOMPATIBLE_PROFILE
         ) {
             IncompatibleProfileContent(hiltViewModel(), onProfileDeleted = {
+                navController.popBackStack(MAIN_ROUTE, false)
+            })
+        }
+        composable(
+            route = ROUTE_ROOT_DETECTION
+        ) {
+            RootDetectionContent(hiltViewModel(), onAcknowledgeDeviceRooted = {
                 navController.popBackStack(MAIN_ROUTE, false)
             })
         }

@@ -212,6 +212,9 @@ dependencies {
     implementation libs.cameraLifecycle
     implementation libs.cameraView
 
+    // Rootcheck
+    implementation libs.rootCheck
+
     // apache commons validator
     implementation libs.apacheCommonsValidator
 
