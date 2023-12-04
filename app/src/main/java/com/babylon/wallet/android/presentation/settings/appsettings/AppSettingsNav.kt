@@ -10,11 +10,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
-import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
-import com.babylon.wallet.android.presentation.settings.appsettings.backup.backupScreen
-import com.babylon.wallet.android.presentation.settings.appsettings.backup.systemBackupSettingsScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.entityhiding.hiddenEntitiesScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewaysScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.linkedConnectorsScreen
@@ -43,17 +40,6 @@ fun NavGraphBuilder.appSettingsNavGraph(
         hiddenEntitiesScreen(onBackClick = {
             navController.popBackStack()
         })
-        backupScreen(
-            onSystemBackupSettingsClick = {
-                navController.systemBackupSettingsScreen()
-            },
-            onProfileDeleted = {
-                navController.popBackStack(MAIN_ROUTE, false)
-            },
-            onClose = {
-                navController.popBackStack()
-            }
-        )
     }
 }
 
@@ -86,10 +72,6 @@ fun NavGraphBuilder.appSettingsScreen(
 
                     SettingsItem.AppSettingsItem.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
-                    }
-
-                    is SettingsItem.AppSettingsItem.Backups -> {
-                        navController.backupScreen()
                     }
 
                     is SettingsItem.AppSettingsItem.DeveloperMode -> {}

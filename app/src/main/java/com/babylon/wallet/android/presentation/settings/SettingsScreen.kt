@@ -159,7 +159,7 @@ private fun SettingsContent(
                                     },
                                     icon = settingsItem.getIcon(),
                                     title = stringResource(id = settingsItem.descriptionRes()),
-                                    showNotificationDot = (settingsItem as? SettingsItem.TopLevelSettings.AppSettings)
+                                    showNotificationDot = (settingsItem as? SettingsItem.TopLevelSettings.AccountSecurityAndSettings)
                                         ?.showNotificationWarning ?: false
                                 )
                             }
@@ -327,8 +327,8 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
                 SettingsItem.TopLevelSettings.ImportOlympiaWallet,
                 SettingsItem.TopLevelSettings.AuthorizedDapps,
                 SettingsItem.TopLevelSettings.Personas(),
-                SettingsItem.TopLevelSettings.AccountSecurityAndSettings,
-                SettingsItem.TopLevelSettings.AppSettings(showNotificationWarning = true)
+                SettingsItem.TopLevelSettings.AccountSecurityAndSettings(showNotificationWarning = true),
+                SettingsItem.TopLevelSettings.AppSettings
             ),
             onSettingClick = {},
             onHideImportOlympiaWalletSettingBox = {},

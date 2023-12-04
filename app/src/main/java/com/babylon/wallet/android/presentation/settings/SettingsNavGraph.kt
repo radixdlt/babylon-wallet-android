@@ -82,7 +82,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.personasScreen()
                     }
 
-                    SettingsItem.TopLevelSettings.AccountSecurityAndSettings -> {
+                    is SettingsItem.TopLevelSettings.AccountSecurityAndSettings -> {
                         navController.accountSecurityScreen()
                     }
 
