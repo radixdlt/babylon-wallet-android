@@ -19,6 +19,7 @@ import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.gateways
 import javax.inject.Inject
 
+@Suppress("MagicNumber")
 @HiltViewModel
 class AccountSecurityViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,

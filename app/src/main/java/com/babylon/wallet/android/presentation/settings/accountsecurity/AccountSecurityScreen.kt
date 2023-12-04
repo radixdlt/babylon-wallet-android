@@ -104,7 +104,7 @@ private fun AccountSecurityContent(
                                     null
                                 },
 
-                                )
+                            )
                         }
                         HorizontalDivider(color = RadixTheme.colors.gray5)
                     }
