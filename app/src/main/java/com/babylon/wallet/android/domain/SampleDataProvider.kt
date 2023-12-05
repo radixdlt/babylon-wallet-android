@@ -99,7 +99,11 @@ class SampleDataProvider {
                 metadata = listOf(
                     Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
                     Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                    Metadata.Primitive(key = ExplicitMetadataKey.DESCRIPTION.key, value = "a very xxx token", valueType = MetadataType.String)
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.DESCRIPTION.key,
+                        value = "a very xxx token",
+                        valueType = MetadataType.String
+                    )
                 )
             ),
             isNewlyCreated = true

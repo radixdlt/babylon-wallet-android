@@ -1,18 +1,18 @@
 package com.babylon.wallet.android.domain.model.resources
 
 import android.net.Uri
-import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.iconUrl
+import com.babylon.wallet.android.domain.model.resources.metadata.name
 
 data class Badge(
     val address: String,
-    private val nameMetadataItem: NameMetadataItem? = null,
-    private val iconMetadataItem: IconUrlMetadataItem? = null
+    val metadata: List<Metadata> = emptyList()
 ) {
 
     val name: String?
-        get() = nameMetadataItem?.name
+        get() = metadata.name()
 
     val icon: Uri?
-        get() = iconMetadataItem?.url
+        get() = metadata.iconUrl()
 }

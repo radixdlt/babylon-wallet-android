@@ -160,7 +160,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, 50u)
         )
         coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
-            Badge(address = "", nameMetadataItem = null, iconMetadataItem = null)
+            Badge(address = "")
         )
         coEvery { transactionClient.signTransaction(any(), any(), any(), any()) } returns Result.success(
             NotarizedTransactionResult(

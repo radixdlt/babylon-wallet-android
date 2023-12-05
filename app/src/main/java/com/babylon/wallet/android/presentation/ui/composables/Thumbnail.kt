@@ -611,7 +611,7 @@ fun NFTsPreview() {
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
                             "https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images/" +
-                                    "Filling+Station+Breakfast-large.jpg",
+                                "Filling+Station+Breakfast-large.jpg",
                             valueType = MetadataType.Url
                         )
                     )
@@ -627,7 +627,8 @@ fun NFTsPreview() {
                     metadata = listOf(
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
-                            value = "https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images/Fried+Kway+Teow-large.jpg",
+                            value = "https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images/" +
+                                "Fried+Kway+Teow-large.jpg",
                             valueType = MetadataType.Url
                         )
                     )
@@ -660,7 +661,7 @@ fun NFTsPreview() {
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
                             value = "https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images/" +
-                                    "Fried+Kway+Teow-large.jpg",
+                                "Fried+Kway+Teow-large.jpg",
                             valueType = MetadataType.Url
                         )
                     )

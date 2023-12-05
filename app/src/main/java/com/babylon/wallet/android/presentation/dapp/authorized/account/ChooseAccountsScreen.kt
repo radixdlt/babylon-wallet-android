@@ -11,9 +11,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
@@ -166,7 +168,9 @@ fun ChooseAccountContentPreview() {
             onCreateNewAccount = {},
             dapp = DApp(
                 dAppAddress = "account_tdx_abc",
-                nameItem = NameMetadataItem("dApp")
+                metadata = listOf(
+                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "dApp", MetadataType.String)
+                )
             ),
             isOneTime = false,
             isSingleChoice = false,

@@ -193,8 +193,8 @@ sealed class Resource {
                 get() = metadata.claimAmount()
 
             val nonStandardMetadata: List<Metadata>
-                get() = metadata.filterNot {
-                    it.key in setOf(
+                get() = metadata.filterNot { metadataItem ->
+                    metadataItem.key in setOf(
                         ExplicitMetadataKey.NAME,
                         ExplicitMetadataKey.KEY_IMAGE_URL,
                         ExplicitMetadataKey.CLAIM_AMOUNT,

@@ -52,7 +52,7 @@ class ROLAClient @Inject constructor(
         }
         val ownerKeys = getEntitiesOwnerKeysUseCase(listOf(entity)).getOrNull()?.get(entity)
         val publicKeyHashes = mutableListOf<FactorInstance.PublicKey>()
-        val ownerKeysHashes = ownerKeys?.keyHashes.orEmpty()
+        val ownerKeysHashes = ownerKeys.orEmpty()
         val authSigningPublicKey = when (val badge = authSigningFactorInstance.badge) {
             is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
                 badge.publicKey

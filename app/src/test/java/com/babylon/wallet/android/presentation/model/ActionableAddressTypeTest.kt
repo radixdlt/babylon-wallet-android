@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.model
 
+import com.babylon.wallet.android.domain.model.resources.Resource
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,12 +23,13 @@ internal class ActionableAddressTypeTest(
         @Parameterized.Parameters(name = "\"{0}\" => {1}")
         fun data() : Collection<Array<Any?>> {
             return listOf(
-                arrayOf(RESOURCE_ADDRESS, ActionableAddress.Type.RESOURCE),
-                arrayOf(RESOURCE_NFT_ADDRESS, ActionableAddress.Type.RESOURCE),
-                arrayOf(ACCOUNT_ADDRESS, ActionableAddress.Type.ACCOUNT),
-                arrayOf(PACKAGE_ADDRESS, ActionableAddress.Type.PACKAGE),
-                arrayOf(TRANSACTION_ADDRESS, ActionableAddress.Type.TRANSACTION),
-                arrayOf(COMPONENT_ADDRESS, ActionableAddress.Type.COMPONENT),
+                arrayOf(RESOURCE_ADDRESS, ActionableAddress.Type.Global.Resource),
+                arrayOf(RESOURCE_NFT_ADDRESS, ActionableAddress.Type.Global.Resource),
+                arrayOf(ACCOUNT_ADDRESS, ActionableAddress.Type.Global.Account),
+                arrayOf(PACKAGE_ADDRESS, ActionableAddress.Type.Global.Package),
+                arrayOf(TRANSACTION_ADDRESS, ActionableAddress.Type.Global.Transaction),
+                arrayOf(COMPONENT_ADDRESS, ActionableAddress.Type.Global.Component),
+                arrayOf("#1#", ActionableAddress.Type.LocalId(id = Resource.NonFungibleResource.Item.ID.Companion.from("#1#"))),
                 arrayOf(UNKNOWN_ADDRESS, null)
             )
         }

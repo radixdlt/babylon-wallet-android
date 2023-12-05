@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.babylon.wallet.android.domain.model.resources.metadata
 
 import android.net.Uri
@@ -109,7 +111,7 @@ fun List<Metadata>.relatedWebsites(): List<String>? = findCollection(
     type = MetadataType.Url
 )?.map { it.value }
 
-fun List<Metadata>.claimedWebsites(): List<String>? =  findCollection(
+fun List<Metadata>.claimedWebsites(): List<String>? = findCollection(
     key = ExplicitMetadataKey.CLAIMED_WEBSITES,
     type = MetadataType.Url
 )?.map { it.value }
@@ -119,17 +121,17 @@ fun List<Metadata>.claimedEntities(): List<String>? = findCollection(
     type = MetadataType.Address
 )?.map { it.value }
 
-fun List<Metadata>.ownerKeyHashes(): List<KeyHash>? = findCollection(
+fun List<Metadata>.ownerKeyHashes(): List<PublicKeyHash>? = findCollection(
     key = ExplicitMetadataKey.OWNER_KEYS,
     type = MetadataType.PublicKeyHashEcdsaSecp256k1
 )?.map { primitive ->
-    KeyHash.EcdsaSecp256k1(primitive.value)
+    PublicKeyHash.EcdsaSecp256k1(primitive.value)
 }?.let {
     val eddsa = findCollection(
         key = ExplicitMetadataKey.OWNER_KEYS,
         type = MetadataType.PublicKeyHashEddsaEd25519
     )?.map { primitive ->
-        KeyHash.EddsaEd25519(primitive.value)
+        PublicKeyHash.EddsaEd25519(primitive.value)
     }
 
     if (eddsa != null) {
@@ -137,129 +139,4 @@ fun List<Metadata>.ownerKeyHashes(): List<KeyHash>? = findCollection(
     } else {
         it
     }
-}
-
-/**
- * Metadata items that are known to the wallet and are prominently presented.
- *
- * See the documentation [here](https://docs-babylon.radixdlt.com/main/standards/metadata-for-wallet-display.html)
- */
-sealed interface StandardMetadataItem : MetadataItem
-
-data class DescriptionMetadataItem(
-    val description: String
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.DESCRIPTION.key
-}
-
-data class SymbolMetadataItem(
-    val symbol: String
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.SYMBOL.key
-}
-
-data class NameMetadataItem(
-    val name: String
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.NAME.key
-}
-
-data class DAppDefinitionsMetadataItem(
-    val addresses: List<String> // TODO maybe change to component address
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.DAPP_DEFINITION.key
-}
-
-data class RelatedWebsitesMetadataItem(
-    val websites: List<String>
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.RELATED_WEBSITES.key
-}
-
-data class ClaimedWebsitesMetadataItem(
-    val websites: List<String>
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.CLAIMED_WEBSITES.key
-}
-
-data class ClaimedEntitiesMetadataItem(
-    val entities: List<String>
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.CLAIMED_ENTITIES.key
-}
-
-data class AccountTypeMetadataItem(
-    val type: AccountType
-) : StandardMetadataItem {
-
-    override val key: String = ExplicitMetadataKey.ACCOUNT_TYPE.key
-
-    companion object {
-        fun from(value: String) = AccountType.values()
-            .find { it.asString == value }
-            ?.let {
-                AccountTypeMetadataItem(it)
-            }
-    }
-}
-
-data class InfoUrlMetadataItem(
-    val url: Uri
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.INFO_URL.key
-}
-
-data class IconUrlMetadataItem(
-    val url: Uri
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.ICON_URL.key
-}
-
-data class TagsMetadataItem(
-    val tags: List<String>
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.TAGS.key
-}
-
-data class OwnerKeyHashesMetadataItem(
-    val keyHashes: List<KeyHash>
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.OWNER_KEYS.key
-
-}
-
-data class ValidatorMetadataItem(
-    val validatorAddress: String
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.VALIDATOR.key
-}
-
-data class ClaimAmountMetadataItem(
-    val amount: BigDecimal
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.CLAIM_AMOUNT.key
-}
-
-data class ClaimEpochMetadataItem(
-    val claimEpoch: Long
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.CLAIM_EPOCH.key
-}
-
-data class PoolMetadataItem(
-    val poolAddress: String
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.POOL.key
-}
-
-data class PoolUnitMetadataItem(
-    val resourceAddress: String
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.POOL_UNIT.key
-}
-
-data class ClaimNftMetadataItem(
-    val stakeClaimNftAddress: String
-) : StandardMetadataItem {
-    override val key: String = ExplicitMetadataKey.CLAIM_NFT.key
 }

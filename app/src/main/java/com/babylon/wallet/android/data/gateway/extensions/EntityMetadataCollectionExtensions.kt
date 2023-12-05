@@ -38,25 +38,15 @@ import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEcdsaSe
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEddsaEd25519
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEcdsaSecp256k1
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEddsaEd25519
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType.Integer.Size
-
-fun EntityMetadataItem.toMetadataItem(): MetadataItem? {
-    val explicitMetadataKey = ExplicitMetadataKey.from(key = key)
-    return explicitMetadataKey?.toStandardMetadataItem(value)
-}
-
-fun EntityMetadataCollection.asMetadataItems(): List<MetadataItem> {
-    return items.mapNotNull { item -> item.toMetadataItem() }
-}
 
 fun EntityMetadataCollection.toMetadata(): List<Metadata> {
     return items.mapNotNull { item -> item.toMetadata() }
 }
 
+@Suppress("CyclomaticComplexMethod", "LongMethod")
 fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) {
     is MetadataBoolValue -> Metadata.Primitive(
         key = key,

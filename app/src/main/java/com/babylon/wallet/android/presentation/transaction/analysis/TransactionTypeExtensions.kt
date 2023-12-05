@@ -270,6 +270,7 @@ private fun NonFungibleLocalIdVecSource.toGuaranteeType(defaultDepositGuarantees
 
 private fun Map<String, MetadataValue?>.toMetadata(): List<Metadata> = mapNotNull { it.toMetadata() }
 
+@Suppress("CyclomaticComplexMethod", "LongMethod")
 private fun Map.Entry<String, MetadataValue?>.toMetadata(): Metadata? = when (val typed = value) {
     is MetadataValue.BoolValue -> Metadata.Primitive(
         key = key,

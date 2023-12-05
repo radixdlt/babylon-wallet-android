@@ -52,6 +52,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -63,9 +64,8 @@ import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedWebsitesMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
@@ -85,6 +85,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
@@ -109,6 +110,7 @@ fun DappDetailScreen(
                 is DappDetailEvent.EditPersona -> {
                     onEditPersona(it.personaAddress, it.requiredPersonaFields)
                 }
+
                 is DappDetailEvent.OnFungibleClick -> onFungibleClick(it.resource)
                 is DappDetailEvent.OnNonFungibleClick -> onNonFungibleClick(it.resource)
             }
@@ -336,7 +338,7 @@ private fun DappDetails(
                 if (websites.isNotEmpty()) {
                     item {
                         DAppWebsiteAddressRow(
-                            websiteAddresses = websites,
+                            websiteAddresses = websites.toPersistentList(),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = dimensions.paddingDefault)
@@ -735,13 +737,24 @@ fun DappDetailContentPreview() {
             dAppWithResources = DAppWithResources(
                 dApp = DApp(
                     dAppAddress = "account_tdx_abc",
-                    nameItem = NameMetadataItem("Dapp"),
-                    descriptionItem = DescriptionMetadataItem("Description"),
-                    claimedWebsitesItem = ClaimedWebsitesMetadataItem(
-                        websites = listOf(
-                            "https://hammunet-dashboard.rdx-works-main.extratools.works",
-                            "https://ansharnet-dashboard.rdx-works-main.extratools.works"
-                        )
+                    metadata = listOf(
+                        Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Dapp", MetadataType.String),
+                        Metadata.Primitive(ExplicitMetadataKey.DESCRIPTION.key, "Description", MetadataType.String),
+                        Metadata.Collection(
+                            ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                            listOf(
+                                Metadata.Primitive(
+                                    ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                    "https://hammunet-dashboard.rdx-works-main.extratools.works",
+                                    MetadataType.Url
+                                ),
+                                Metadata.Primitive(
+                                    ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                    "https://ansharnet-dashboard.rdx-works-main.extratools.works",
+                                    MetadataType.Url
+                                ),
+                            )
+                        ),
                     )
                 ),
                 resources = DAppResources(emptyList(), emptyList()),

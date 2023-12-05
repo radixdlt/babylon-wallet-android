@@ -261,7 +261,11 @@ fun TargetAccountCardPreview() {
                                 resourceAddress = "resource_rdx_abcd",
                                 ownedAmount = BigDecimal.TEN,
                                 metadata = listOf(
-                                    Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Radix", valueType = MetadataType.String),
+                                    Metadata.Primitive(
+                                        key = ExplicitMetadataKey.NAME.key,
+                                        value = "Radix",
+                                        valueType = MetadataType.String
+                                    ),
                                     Metadata.Primitive(
                                         key = ExplicitMetadataKey.SYMBOL.key,
                                         value = XrdResource.SYMBOL,

@@ -27,6 +27,7 @@ abstract class StateDatabase : RoomDatabase() {
     companion object {
         // Initial schema version
         const val VERSION_1 = 1
+
         // Update to metadata schema
         const val VERSION_2 = 2
 

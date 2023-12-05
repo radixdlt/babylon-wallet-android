@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "fff807871698e08eb10eda805c24e9e3",
+    "identityHash": "18c5bd1e6c148ab3f121fab1f662dc2f",
     "entities": [
       {
         "tableName": "AccountResourceJoin",
@@ -348,31 +348,13 @@
       },
       {
         "tableName": "ValidatorEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `name` TEXT, `description` TEXT, `icon_url` TEXT, `stake_unit_resource_address` TEXT, `claim_token_resource_address` TEXT, `total_stake` TEXT, `state_version` INTEGER NOT NULL, PRIMARY KEY(`address`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `stake_unit_resource_address` TEXT, `claim_token_resource_address` TEXT, `total_stake` TEXT, `metadata` TEXT, `state_version` INTEGER NOT NULL, PRIMARY KEY(`address`))",
         "fields": [
           {
             "fieldPath": "address",
             "columnName": "address",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "iconUrl",
-            "columnName": "icon_url",
-            "affinity": "TEXT",
-            "notNull": false
           },
           {
             "fieldPath": "stakeUnitResourceAddress",
@@ -389,6 +371,12 @@
           {
             "fieldPath": "totalStake",
             "columnName": "total_stake",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metadata",
+            "columnName": "metadata",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -484,7 +472,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fff807871698e08eb10eda805c24e9e3')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '18c5bd1e6c148ab3f121fab1f662dc2f')"
     ]
   }
 }

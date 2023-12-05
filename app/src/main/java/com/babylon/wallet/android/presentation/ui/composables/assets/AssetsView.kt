@@ -33,7 +33,6 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import java.math.BigDecimal
@@ -291,10 +290,10 @@ fun AssetsViewWithAssets() {
                     ValidatorWithStakes(
                         validatorDetail = ValidatorDetail(
                             address = "validator_abc",
-                            name = "Awesome Validator",
-                            url = null,
-                            description = null,
-                            totalXrdStake = BigDecimal(1000)
+                            totalXrdStake = BigDecimal(1000),
+                            metadata = listOf(
+                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Awesome Validator", MetadataType.String)
+                            )
                         ),
                         liquidStakeUnit = LiquidStakeUnit(
                             Resource.FungibleResource(
@@ -320,10 +319,10 @@ fun AssetsViewWithAssets() {
                     ValidatorWithStakes(
                         validatorDetail = ValidatorDetail(
                             address = "validator_abcd",
-                            name = "Another Validator",
-                            url = null,
-                            description = null,
-                            totalXrdStake = BigDecimal(10000)
+                            totalXrdStake = BigDecimal(10000),
+                            metadata = listOf(
+                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Another Validator", MetadataType.String)
+                            )
                         ),
                         liquidStakeUnit = LiquidStakeUnit(
                             Resource.FungibleResource(

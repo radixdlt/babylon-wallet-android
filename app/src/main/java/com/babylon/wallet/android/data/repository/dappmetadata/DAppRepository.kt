@@ -3,7 +3,6 @@ package com.babylon.wallet.android.data.repository.dappmetadata
 import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.ENTITY_DETAILS_PAGE_LIMIT
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.divisibility
 import com.babylon.wallet.android.data.gateway.extensions.extractBehaviours
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
@@ -26,7 +25,6 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.presentation.model.ActionableAddress
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
@@ -155,9 +153,9 @@ class DAppRepositoryImpl @Inject constructor(
             ),
             map = { response ->
                 response.items.map { dAppResponse ->
-                    DApp.from(
-                        address = dAppResponse.address,
-                        metadataItems = dAppResponse.metadata.asMetadataItems()
+                    DApp(
+                        dAppAddress = dAppResponse.address,
+                        metadata = dAppResponse.metadata.toMetadata()
                     )
                 }
             },

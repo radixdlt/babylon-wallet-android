@@ -4,7 +4,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Ignore
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -41,7 +40,7 @@ data class AccountPortfolioResponse(
     val details: AccountDetails? = stateVersion?.let { version ->
         AccountDetails(
             stateVersion = version,
-            typeMetadataItem = accountType?.let { AccountTypeMetadataItem(it) }
+            accountType = accountType
         )
     }
 

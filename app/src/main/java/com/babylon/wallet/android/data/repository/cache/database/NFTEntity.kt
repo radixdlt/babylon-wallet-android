@@ -4,12 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.claimAmount
-import com.babylon.wallet.android.domain.model.resources.metadata.claimEpoch
-import com.babylon.wallet.android.domain.model.resources.metadata.keyImageUrl
-import com.babylon.wallet.android.domain.model.resources.metadata.name
 import java.time.Instant
 
 @Entity(primaryKeys = ["address", "local_id"])

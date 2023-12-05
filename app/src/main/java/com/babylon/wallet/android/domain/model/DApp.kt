@@ -2,53 +2,40 @@ package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedEntitiesMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedWebsitesMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.RelatedWebsitesMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadataItem
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toPersistentList
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.accountType
+import com.babylon.wallet.android.domain.model.resources.metadata.claimedEntities
+import com.babylon.wallet.android.domain.model.resources.metadata.claimedWebsites
+import com.babylon.wallet.android.domain.model.resources.metadata.dAppDefinitions
+import com.babylon.wallet.android.domain.model.resources.metadata.description
+import com.babylon.wallet.android.domain.model.resources.metadata.iconUrl
+import com.babylon.wallet.android.domain.model.resources.metadata.name
 
 data class DApp(
     val dAppAddress: String,
-    private val nameItem: NameMetadataItem? = null,
-    private val descriptionItem: DescriptionMetadataItem? = null,
-    private val iconMetadataItem: IconUrlMetadataItem? = null,
-    private val relatedWebsitesItem: RelatedWebsitesMetadataItem? = null,
-    private val claimedWebsitesItem: ClaimedWebsitesMetadataItem? = null,
-    private val claimedEntitiesItem: ClaimedEntitiesMetadataItem? = null,
-    private val accountTypeItem: AccountTypeMetadataItem? = null,
-    private val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
-    private val nonExplicitMetadataItems: List<StringMetadataItem> = emptyList()
+    val metadata: List<Metadata> = listOf()
 ) {
 
     val name: String?
-        get() = nameItem?.name
+        get() = metadata.name()
 
     val description: String?
-        get() = descriptionItem?.description
+        get() = metadata.description()
 
     val iconUrl: Uri?
-        get() = iconMetadataItem?.url
+        get() = metadata.iconUrl()
 
     val isDappDefinition: Boolean
-        get() = accountTypeItem?.type == AccountType.DAPP_DEFINITION
+        get() = metadata.accountType() == AccountType.DAPP_DEFINITION
 
     val definitionAddresses: List<String>
-        get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
+        get() = metadata.dAppDefinitions().orEmpty()
 
-    val claimedWebsites: ImmutableList<String>
-        get() = claimedWebsitesItem?.websites.orEmpty().toPersistentList()
+    val claimedWebsites: List<String>
+        get() = metadata.claimedWebsites().orEmpty()
 
     val claimedEntities: List<String>
-        get() = claimedEntitiesItem?.entities.orEmpty()
+        get() = metadata.claimedEntities().orEmpty()
 
     @Suppress("SwallowedException")
     fun isRelatedWith(origin: String): Boolean {
@@ -60,24 +47,6 @@ data class DApp(
             } catch (e: Exception) {
                 false
             }
-        }
-    }
-
-    companion object {
-        fun from(address: String, metadataItems: List<MetadataItem> = listOf()): DApp {
-            val remainingItems = metadataItems.toMutableList()
-            return DApp(
-                dAppAddress = address,
-                nameItem = remainingItems.consume(),
-                descriptionItem = remainingItems.consume(),
-                iconMetadataItem = remainingItems.consume(),
-                relatedWebsitesItem = remainingItems.consume(),
-                claimedWebsitesItem = remainingItems.consume(),
-                claimedEntitiesItem = remainingItems.consume(),
-                dAppDefinitionsMetadataItem = remainingItems.consume(),
-                accountTypeItem = remainingItems.consume(),
-                nonExplicitMetadataItems = remainingItems.filterIsInstance<StringMetadataItem>()
-            )
         }
     }
 }

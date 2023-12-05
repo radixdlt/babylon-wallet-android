@@ -1,40 +1,5 @@
 package com.babylon.wallet.android.data.gateway.model
 
-import android.net.Uri
-import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataItemValue
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataDecimalValue
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataGlobalAddressArrayValue
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataGlobalAddressValue
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataI64Value
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataOriginArrayValue
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataPublicKeyHashArrayValue
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataStringArrayValue
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataStringValue
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataUrlArrayValue
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataUrlValue
-import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEcdsaSecp256k1
-import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEddsaEd25519
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimNftMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedEntitiesMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedWebsitesMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.InfoUrlMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.KeyHash
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.PoolMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.PoolUnitMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.RelatedWebsitesMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.StandardMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ValidatorMetadataItem
-
 /**
  * Common metadata keys used in the wallet app and defined
  * by the most dApps and resources
@@ -60,63 +25,6 @@ enum class ExplicitMetadataKey(val key: String) {
     POOL_UNIT("pool_unit"),
     CLAIM_NFT("claim_nft"),
     OWNER_KEYS("owner_keys");
-
-    @Suppress("CyclomaticComplexMethod")
-    fun toStandardMetadataItem(value: EntityMetadataItemValue): StandardMetadataItem? = when (this) {
-        DESCRIPTION -> DescriptionMetadataItem(
-            description = value.typed<MetadataStringValue>()?.value.orEmpty()
-        )
-        SYMBOL -> SymbolMetadataItem(
-            symbol = value.typed<MetadataStringValue>()?.value.orEmpty()
-        )
-        NAME -> NameMetadataItem(
-            name = value.typed<MetadataStringValue>()?.value.orEmpty()
-        )
-        DAPP_DEFINITION -> DAppDefinitionsMetadataItem(
-            addresses = value.typed<MetadataGlobalAddressValue>()?.value?.let { listOf(it) }.orEmpty()
-        )
-        DAPP_DEFINITIONS -> DAppDefinitionsMetadataItem(
-            addresses = value.typed<MetadataGlobalAddressArrayValue>()?.propertyValues.orEmpty()
-        )
-        RELATED_WEBSITES -> RelatedWebsitesMetadataItem(
-            websites = value.typed<MetadataUrlArrayValue>()?.propertyValues.orEmpty()
-        )
-        ACCOUNT_TYPE -> AccountTypeMetadataItem.from(
-            value = value.typed<MetadataStringValue>()?.value.orEmpty()
-        )
-        CLAIMED_WEBSITES -> ClaimedWebsitesMetadataItem(
-            websites = value.typed<MetadataOriginArrayValue>()?.propertyValues.orEmpty()
-        )
-        CLAIMED_ENTITIES -> ClaimedEntitiesMetadataItem(
-            entities = value.typed<MetadataGlobalAddressArrayValue>()?.propertyValues.orEmpty()
-        )
-        TAGS -> TagsMetadataItem(
-            tags = value.typed<MetadataStringArrayValue>()?.propertyValues.orEmpty()
-        )
-        KEY_IMAGE_URL -> IconUrlMetadataItem(
-            url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty())
-        )
-        INFO_URL -> InfoUrlMetadataItem(
-            url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty())
-        )
-        ICON_URL -> IconUrlMetadataItem(
-            url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty())
-        )
-        OWNER_KEYS -> OwnerKeyHashesMetadataItem(
-             keyHashes = value.typed<MetadataPublicKeyHashArrayValue>()?.propertyValues?.map { hash ->
-                when (hash) {
-                    is PublicKeyHashEcdsaSecp256k1 -> KeyHash.EcdsaSecp256k1(hash.hashHex)
-                    is PublicKeyHashEddsaEd25519 -> KeyHash.EddsaEd25519(hash.hashHex)
-                }
-            }.orEmpty()
-        )
-        VALIDATOR -> ValidatorMetadataItem(value.typed<MetadataGlobalAddressValue>()?.value.orEmpty())
-        CLAIM_AMOUNT -> value.typed<MetadataDecimalValue>()?.value?.toBigDecimalOrNull()?.let { ClaimAmountMetadataItem(it) }
-        CLAIM_EPOCH -> ClaimEpochMetadataItem(value.typed<MetadataI64Value>()?.value?.toLong() ?: 0)
-        POOL -> PoolMetadataItem(value.typed<MetadataGlobalAddressValue>()?.value.orEmpty())
-        POOL_UNIT -> PoolUnitMetadataItem(value.typed<MetadataGlobalAddressValue>()?.value.orEmpty())
-        CLAIM_NFT -> ClaimNftMetadataItem(value.typed<MetadataGlobalAddressValue>()?.value.orEmpty())
-    }
 
     companion object {
 
