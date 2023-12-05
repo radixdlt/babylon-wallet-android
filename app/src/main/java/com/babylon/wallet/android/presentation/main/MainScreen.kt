@@ -22,28 +22,20 @@ fun MainScreen(
     onNavigateToMnemonicRestore: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
-    onNavigateToIncompatibleProfile: () -> Unit,
-    onNavigateToRootDetectedContent: () -> Unit
+    onNavigateToIncompatibleProfile: () -> Unit
 ) {
     val state by mainUiState.collectAsStateWithLifecycle()
     when (state.initialAppState) {
         is AppState.Wallet -> {
-            val initialWalletState = state.initialAppState as AppState.Wallet
-            if (initialWalletState.showDeviceRootedWarning) {
-                LaunchedEffect(Unit) {
-                    onNavigateToRootDetectedContent()
-                }
-            } else {
-                WalletScreen(
-                    modifier = modifier,
-                    viewModel = hiltViewModel(),
-                    onMenuClick = onMenuClick,
-                    onAccountClick = onAccountClick,
-                    onAccountCreationClick = onAccountCreationClick,
-                    onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
-                    onNavigateToMnemonicRestore = onNavigateToMnemonicRestore
-                )
-            }
+            WalletScreen(
+                modifier = modifier,
+                viewModel = hiltViewModel(),
+                onMenuClick = onMenuClick,
+                onAccountClick = onAccountClick,
+                onAccountCreationClick = onAccountCreationClick,
+                onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
+                onNavigateToMnemonicRestore = onNavigateToMnemonicRestore
+            )
         }
         is AppState.IncompatibleProfile -> {
             LaunchedEffect(state.initialAppState) {
@@ -54,15 +46,8 @@ fun MainScreen(
             FullscreenCircularProgressContent()
         }
         is AppState.OnBoarding -> {
-            val initialWalletState = state.initialAppState as AppState.OnBoarding
-            if (initialWalletState.showDeviceRootedWarning) {
-                LaunchedEffect(Unit) {
-                    onNavigateToRootDetectedContent()
-                }
-            } else {
-                LaunchedEffect(initialWalletState) {
-                    onNavigateToOnBoarding()
-                }
+            LaunchedEffect(state.initialAppState) {
+                onNavigateToOnBoarding()
             }
         }
     }

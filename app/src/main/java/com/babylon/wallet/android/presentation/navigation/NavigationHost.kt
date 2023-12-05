@@ -149,9 +149,6 @@ fun NavigationHost(
             onNavigateToIncompatibleProfile = {
                 navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
             },
-            onNavigateToRootDetectedContent = {
-                navController.navigate(ROUTE_ROOT_DETECTION)
-            },
             onNavigateToMnemonicBackup = {
                 navController.seedPhrases()
             },

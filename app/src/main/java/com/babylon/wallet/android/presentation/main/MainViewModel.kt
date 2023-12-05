@@ -107,9 +107,9 @@ class MainViewModel @Inject constructor(
                 _state.update {
                     MainUiState(
                         initialAppState = AppState.from(
-                            profileState = profileState,
-                            showDeviceRootedWarning = deviceSecurityHelper.isDeviceRooted() && !isDeviceRootedDialogShown
-                        )
+                            profileState = profileState
+                        ),
+                        showDeviceRootedWarning = deviceSecurityHelper.isDeviceRooted() && !isDeviceRootedDialogShown
                     )
                 }
             }.collect()
@@ -311,29 +311,24 @@ sealed interface OlympiaErrorState {
 }
 
 sealed interface AppState {
-    data class OnBoarding(
-        val showDeviceRootedWarning: Boolean
-    ) : AppState
-    data class Wallet(
-        val showDeviceRootedWarning: Boolean
-    ) : AppState
+    data object OnBoarding : AppState
+    data object Wallet : AppState
     data object IncompatibleProfile : AppState
     data object Loading : AppState
 
     companion object {
         fun from(
-            profileState: ProfileState,
-            showDeviceRootedWarning: Boolean
+            profileState: ProfileState
         ) = when (profileState) {
             is ProfileState.Incompatible -> IncompatibleProfile
             is ProfileState.Restored -> if (profileState.hasAnyAccounts()) {
-                Wallet(showDeviceRootedWarning)
+                Wallet
             } else {
-                OnBoarding(showDeviceRootedWarning)
+                OnBoarding
             }
 
-            is ProfileState.None -> OnBoarding(showDeviceRootedWarning)
-            is ProfileState.NotInitialised -> OnBoarding(showDeviceRootedWarning)
+            is ProfileState.None -> OnBoarding
+            is ProfileState.NotInitialised -> OnBoarding
         }
     }
 }

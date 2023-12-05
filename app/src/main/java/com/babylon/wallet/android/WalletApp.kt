@@ -30,6 +30,7 @@ import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
+import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReview
@@ -82,6 +83,12 @@ fun WalletApp(
         }
     }
     SyncStatusBarWithScreenChanges(navController)
+
+    LaunchedEffect(state.showDeviceRootedWarning) {
+        if (state.showDeviceRootedWarning) {
+            navController.navigate(ROUTE_ROOT_DETECTION)
+        }
+    }
 
     LaunchedEffect(Unit) {
         mainViewModel.appNotSecureEvent.collect {
