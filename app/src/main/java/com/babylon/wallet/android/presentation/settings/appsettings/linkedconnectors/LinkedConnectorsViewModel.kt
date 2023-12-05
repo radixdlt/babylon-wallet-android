@@ -39,10 +39,7 @@ class LinkedConnectorsViewModel @Inject constructor(
             getProfileUseCase.p2pLinks
                 .collect { p2pLinks ->
                     _state.update {
-                        it.copy(
-                            isLoading = false,
-                            activeConnectors = p2pLinks.toPersistentList()
-                        )
+                        it.copy(activeConnectors = p2pLinks.toPersistentList())
                     }
                 }
         }
@@ -75,7 +72,6 @@ internal sealed interface Event : OneOffEvent {
 }
 
 data class LinkedConnectorsUiState(
-    val isLoading: Boolean = true,
     val activeConnectors: ImmutableList<P2PLink> = persistentListOf(),
     val showAddLinkConnectorScreen: Boolean = false,
     val triggerCameraPermissionPrompt: Boolean = false

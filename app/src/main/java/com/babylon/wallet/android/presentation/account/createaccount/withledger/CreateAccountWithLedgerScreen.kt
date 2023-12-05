@@ -117,7 +117,6 @@ fun CreateAccountWithLedgerScreen(
             AddLinkConnectorScreen(
                 modifier = Modifier,
                 showContent = addLinkConnectorState.showContent,
-                isLoading = addLinkConnectorState.isLoading,
                 onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
                 onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
                 connectorDisplayName = addLinkConnectorState.connectorDisplayName,

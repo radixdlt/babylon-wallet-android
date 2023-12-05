@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,7 +35,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -67,7 +65,6 @@ fun LinkedConnectorsScreen(
         AddLinkConnectorScreen(
             modifier = modifier,
             showContent = addLinkConnectorState.showContent,
-            isLoading = addLinkConnectorState.isLoading,
             onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
             onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
             connectorDisplayName = addLinkConnectorState.connectorDisplayName,
@@ -86,7 +83,7 @@ fun LinkedConnectorsScreen(
     } else {
         LinkedConnectorsContent(
             modifier = modifier,
-            isLoading = state.isLoading,
+            isAddingNewLinkConnectorInProgress = addLinkConnectorState.isAddingNewLinkConnectorInProgress,
             activeLinkedConnectorsList = state.activeConnectors,
             onLinkNewConnectorClick = viewModel::onLinkNewConnectorClick,
             onDeleteConnectorClick = viewModel::onDeleteConnectorClick,
@@ -98,7 +95,7 @@ fun LinkedConnectorsScreen(
 @Composable
 private fun LinkedConnectorsContent(
     modifier: Modifier = Modifier,
-    isLoading: Boolean,
+    isAddingNewLinkConnectorInProgress: Boolean,
     activeLinkedConnectorsList: ImmutableList<P2PLink>,
     onLinkNewConnectorClick: () -> Unit,
     onDeleteConnectorClick: (String) -> Unit,
@@ -120,15 +117,11 @@ private fun LinkedConnectorsContent(
             HorizontalDivider(color = RadixTheme.colors.gray5)
 
             Box(modifier = Modifier.fillMaxSize()) {
-                if (isLoading) {
-                    FullscreenCircularProgressContent()
-                }
-
                 ActiveLinkedConnectorDetails(
                     activeLinkedConnectorsList = activeLinkedConnectorsList,
                     onLinkNewConnectorClick = onLinkNewConnectorClick,
                     onDeleteConnectorClick = { connectionPasswordToDelete = it },
-                    isLoading = isLoading,
+                    isAddingNewLinkConnectorInProgress = isAddingNewLinkConnectorInProgress,
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -168,7 +161,7 @@ private fun ActiveLinkedConnectorDetails(
     activeLinkedConnectorsList: ImmutableList<P2PLink>,
     onLinkNewConnectorClick: () -> Unit,
     onDeleteConnectorClick: (String) -> Unit,
-    isLoading: Boolean,
+    isAddingNewLinkConnectorInProgress: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -182,7 +175,7 @@ private fun ActiveLinkedConnectorDetails(
         ActiveLinkedConnectorsListContent(
             activeLinkedConnectorsList = activeLinkedConnectorsList,
             onDeleteConnectorClick = onDeleteConnectorClick,
-            isLoading = isLoading,
+            isAddingNewLinkConnectorInProgress = isAddingNewLinkConnectorInProgress,
             onLinkNewConnectorClick = onLinkNewConnectorClick
         )
     }
@@ -193,7 +186,7 @@ private fun ActiveLinkedConnectorsListContent(
     modifier: Modifier = Modifier,
     activeLinkedConnectorsList: ImmutableList<P2PLink>,
     onDeleteConnectorClick: (String) -> Unit,
-    isLoading: Boolean,
+    isAddingNewLinkConnectorInProgress: Boolean,
     onLinkNewConnectorClick: () -> Unit
 ) {
     LazyColumn(modifier) {
@@ -210,23 +203,23 @@ private fun ActiveLinkedConnectorsListContent(
             }
         )
         item {
-            AnimatedVisibility(!isLoading) {
-                Column {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    RadixSecondaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                        text = stringResource(id = R.string.linkedConnectors_linkNewConnector),
-                        onClick = onLinkNewConnectorClick,
-                        leadingContent = {
-                            Icon(
-                                painter = painterResource(id = DSR.ic_qr_code_scanner),
-                                contentDescription = null
-                            )
-                        }
-                    )
-                }
+            Column {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                RadixSecondaryButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                    text = stringResource(id = R.string.linkedConnectors_linkNewConnector),
+                    onClick = onLinkNewConnectorClick,
+                    leadingContent = {
+                        Icon(
+                            painter = painterResource(id = DSR.ic_qr_code_scanner),
+                            contentDescription = null
+                        )
+                    },
+                    isLoading = isAddingNewLinkConnectorInProgress,
+                    enabled = isAddingNewLinkConnectorInProgress.not()
+                )
             }
         }
     }
@@ -273,7 +266,7 @@ fun LinkedConnectorsContentWithoutActiveLinkedConnectorsPreview() {
         LinkedConnectorsContent(
             activeLinkedConnectorsList = persistentListOf(),
             onLinkNewConnectorClick = {},
-            isLoading = false,
+            isAddingNewLinkConnectorInProgress = false,
             onBackClick = {},
             onDeleteConnectorClick = {}
         )
@@ -288,7 +281,7 @@ fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
         LinkedConnectorsContent(
             activeLinkedConnectorsList = SampleDataProvider().p2pLinksSample.toPersistentList(),
             onLinkNewConnectorClick = {},
-            isLoading = false,
+            isAddingNewLinkConnectorInProgress = false,
             onBackClick = {},
             onDeleteConnectorClick = {}
         )

@@ -145,7 +145,7 @@ internal class WebRtcManager(applicationContext: Context) {
     suspend fun addRemoteIceCandidate(remoteIceCandidate: RemoteIceCandidate): Result<Unit> {
         return peerConnection.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)
             .onSuccess {
-                Timber.d("🔌 added successfully ice candidate")
+//                Timber.d("🔌 added successfully ice candidate")
                 Result.success(Unit)
             }
             .onFailure { throwable ->
@@ -156,7 +156,6 @@ internal class WebRtcManager(applicationContext: Context) {
 
     fun close() {
         Timber.d("🔌 close data channel and peer connection")
-        dataChannel.close()
         peerConnection.close()
     }
 

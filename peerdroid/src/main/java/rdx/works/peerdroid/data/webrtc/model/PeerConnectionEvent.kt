@@ -30,9 +30,9 @@ internal sealed interface PeerConnectionEvent {
         )
     }
 
-    object RenegotiationNeeded : PeerConnectionEvent
+    data object RenegotiationNeeded : PeerConnectionEvent
 
-    object Connected : PeerConnectionEvent
+    data object Connected : PeerConnectionEvent
 
     data class Disconnected(
         val remoteClientId: String
