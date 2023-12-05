@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -29,7 +28,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.AddLinkConnectorUiState
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.qrcode.CameraPreview
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -41,7 +39,6 @@ import com.google.accompanist.permissions.rememberPermissionState
 fun AddLinkConnectorScreen(
     modifier: Modifier,
     showContent: AddLinkConnectorUiState.ShowContent,
-    isLoading: Boolean,
     onQrCodeScanned: (String) -> Unit,
     onConnectorDisplayNameChanged: (String) -> Unit,
     connectorDisplayName: String,
@@ -61,7 +58,6 @@ fun AddLinkConnectorScreen(
     AddLinkConnectorContent(
         modifier = modifier,
         showContent = showContent,
-        isLoading = isLoading,
         isCameraPermissionGranted = cameraPermissionState.status.isGranted,
         onQrCodeScanned = onQrCodeScanned,
         onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
@@ -97,12 +93,10 @@ fun AddLinkConnectorScreen(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun AddLinkConnectorContent(
     modifier: Modifier = Modifier,
     showContent: AddLinkConnectorUiState.ShowContent,
-    isLoading: Boolean,
     isCameraPermissionGranted: Boolean,
     onQrCodeScanned: (String) -> Unit,
     connectorDisplayName: String,
@@ -125,9 +119,6 @@ private fun AddLinkConnectorContent(
     ) { padding ->
         val keyboardController = LocalSoftwareKeyboardController.current
         Column(modifier = Modifier.padding(padding)) {
-            if (isLoading) {
-                FullscreenCircularProgressContent()
-            }
             when (showContent) {
                 AddLinkConnectorUiState.ShowContent.ScanQrCode -> {
                     if (isCameraPermissionGranted) {
@@ -262,7 +253,6 @@ fun NameNewConnectorPreview() {
     RadixWalletTheme {
         AddLinkConnectorContent(
             showContent = AddLinkConnectorUiState.ShowContent.NameLinkConnector,
-            isLoading = false,
             isCameraPermissionGranted = true,
             onQrCodeScanned = {},
             onConnectorDisplayNameChanged = {},

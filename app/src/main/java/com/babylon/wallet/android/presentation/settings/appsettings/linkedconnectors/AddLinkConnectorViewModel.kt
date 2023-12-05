@@ -49,7 +49,7 @@ class AddLinkConnectorViewModel @Inject constructor(
     fun onContinueClick() {
         viewModelScope.launch {
             _state.update {
-                it.copy(isLoading = true)
+                it.copy(isAddingNewLinkConnectorInProgress = true)
             }
             val encryptionKey = currentConnectionPassword?.let {
                 parseEncryptionKeyFromConnectionPassword(connectionPassword = it.value)
@@ -82,7 +82,7 @@ class AddLinkConnectorViewModel @Inject constructor(
 }
 
 data class AddLinkConnectorUiState(
-    val isLoading: Boolean,
+    val isAddingNewLinkConnectorInProgress: Boolean,
     val showContent: ShowContent,
     val isContinueButtonEnabled: Boolean,
     val connectorDisplayName: String,
@@ -95,7 +95,7 @@ data class AddLinkConnectorUiState(
 
     companion object {
         val init = AddLinkConnectorUiState(
-            isLoading = false,
+            isAddingNewLinkConnectorInProgress = false,
             showContent = ShowContent.ScanQrCode,
             isContinueButtonEnabled = false,
             connectorDisplayName = ""
