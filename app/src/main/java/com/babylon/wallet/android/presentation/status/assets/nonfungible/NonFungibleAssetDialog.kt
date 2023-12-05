@@ -130,7 +130,7 @@ private fun NonFungibleAssetDialogContent(
                     }
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     if (state.item != null) {
-                        state.item.nameMetadataItem?.name?.let { name ->
+                        state.item.name?.let { name ->
                             AssetMetadataRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -145,24 +145,14 @@ private fun NonFungibleAssetDialogContent(
                             }
                         }
 
-                        state.item.remainingMetadata.forEach { field ->
+                        state.item.nonStandardMetadata.forEach { metadata ->
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
                             AssetMetadataRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                                key = field.key
-                            ) {
-                                Text(
-                                    text = when (field) {
-                                        is StringMetadataItem -> field.value
-                                        else -> stringResource(id = R.string.assetDetails_NFTDetails_complexData)
-                                    },
-                                    style = RadixTheme.typography.body1HighImportance,
-                                    color = RadixTheme.colors.gray1
-                                )
-                            }
+                                metadata = metadata
+                            )
                         }
                     } else {
                         Box(

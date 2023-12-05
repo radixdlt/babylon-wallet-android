@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import android.net.Uri
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedEntitiesMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedWebsitesMetadataItem
@@ -38,7 +39,7 @@ data class DApp(
         get() = iconMetadataItem?.url
 
     val isDappDefinition: Boolean
-        get() = accountTypeItem?.type == AccountTypeMetadataItem.AccountType.DAPP_DEFINITION
+        get() = accountTypeItem?.type == AccountType.DAPP_DEFINITION
 
     val definitionAddresses: List<String>
         get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()

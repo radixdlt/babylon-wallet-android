@@ -1,12 +1,11 @@
 package com.babylon.wallet.android.data.repository.cache.database
 
-import android.net.Uri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.divisibility
 import com.babylon.wallet.android.data.gateway.extensions.extractBehaviours
+import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.extensions.totalSupply
 import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCollection
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItem
@@ -15,16 +14,12 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.PoolMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ValidatorMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import com.babylon.wallet.android.domain.model.resources.metadata.poolAddress
+import com.babylon.wallet.android.domain.model.resources.metadata.validatorAddress
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -37,55 +32,51 @@ enum class ResourceEntityType {
 data class ResourceEntity(
     @PrimaryKey val address: String,
     val type: ResourceEntityType,
-    val name: String?,
-    val symbol: String?,
-    val description: String?,
-    @ColumnInfo("icon_url")
-    val iconUrl: String?,
-    val tags: TagsColumn?,
+    val metadata: MetadataColumn?,
+    val divisibility: Int?,
+    val behaviours: BehavioursColumn?,
     @ColumnInfo("validator_address")
     val validatorAddress: String?,
     @ColumnInfo("pool_address")
     val poolAddress: String?,
-    @ColumnInfo("dapp_definitions")
-    val dAppDefinitions: DappDefinitionsColumn?,
-    val divisibility: Int?,
-    val behaviours: BehavioursColumn?,
     val supply: BigDecimal?,
     val synced: Instant
 ) {
 
     @Suppress("CyclomaticComplexMethod")
-    fun toResource(amount: BigDecimal?): Resource = when (type) {
-        ResourceEntityType.FUNGIBLE -> Resource.FungibleResource(
-            resourceAddress = address,
-            ownedAmount = amount,
-            nameMetadataItem = name?.let { NameMetadataItem(it) },
-            symbolMetadataItem = symbol?.let { SymbolMetadataItem(it) },
-            descriptionMetadataItem = description?.let { DescriptionMetadataItem(it) },
-            iconUrlMetadataItem = iconUrl?.let { IconUrlMetadataItem(Uri.parse(it)) },
-            tagsMetadataItem = tags?.let { TagsMetadataItem(it.tags) },
-            assetBehaviours = behaviours?.behaviours?.toSet(),
-            currentSupply = supply,
-            validatorMetadataItem = validatorAddress?.let { ValidatorMetadataItem(it) },
-            poolMetadataItem = poolAddress?.let { PoolMetadataItem(it) },
-            dAppDefinitionsMetadataItem = dAppDefinitions?.let { DAppDefinitionsMetadataItem(it.dappDefinitions) },
-            divisibility = divisibility
-        )
+    fun toResource(amount: BigDecimal?): Resource {
+        val validatorAndPoolMetadata = listOf(
+            validatorAddress?.let {
+                Metadata.Primitive(ExplicitMetadataKey.VALIDATOR.key, it, MetadataType.Address)
+            },
+            poolAddress?.let {
+                Metadata.Primitive(ExplicitMetadataKey.POOL.key, it, MetadataType.Address)
+            }
+        ).mapNotNull { it }
 
-        ResourceEntityType.NON_FUNGIBLE -> Resource.NonFungibleResource(
-            resourceAddress = address,
-            amount = amount?.toLong() ?: 0L,
-            nameMetadataItem = name?.let { NameMetadataItem(it) },
-            descriptionMetadataItem = description?.let { DescriptionMetadataItem(it) },
-            iconMetadataItem = iconUrl?.let { IconUrlMetadataItem(Uri.parse(it)) },
-            tagsMetadataItem = tags?.let { TagsMetadataItem(it.tags) },
-            assetBehaviours = behaviours?.behaviours?.toSet(),
-            items = emptyList(),
-            currentSupply = supply?.toInt(),
-            validatorMetadataItem = validatorAddress?.let { ValidatorMetadataItem(it) },
-            dAppDefinitionsMetadataItem = dAppDefinitions?.let { DAppDefinitionsMetadataItem(it.dappDefinitions) },
-        )
+        return when (type) {
+            ResourceEntityType.FUNGIBLE -> {
+                Resource.FungibleResource(
+                    resourceAddress = address,
+                    ownedAmount = amount,
+                    assetBehaviours = behaviours?.behaviours?.toSet(),
+                    currentSupply = supply,
+                    divisibility = divisibility,
+                    metadata = metadata?.metadata.orEmpty() + validatorAndPoolMetadata
+                )
+            }
+
+            ResourceEntityType.NON_FUNGIBLE -> {
+                Resource.NonFungibleResource(
+                    resourceAddress = address,
+                    amount = amount?.toLong() ?: 0L,
+                    assetBehaviours = behaviours?.behaviours?.toSet(),
+                    items = emptyList(),
+                    currentSupply = supply?.toInt(),
+                    metadata = metadata?.metadata.orEmpty() + validatorAndPoolMetadata
+                )
+            }
+        }
     }
 
     companion object {
@@ -93,34 +84,30 @@ data class ResourceEntity(
             is Resource.FungibleResource -> ResourceEntity(
                 address = resourceAddress,
                 type = ResourceEntityType.FUNGIBLE,
-                name = nameMetadataItem?.name,
-                symbol = symbolMetadataItem?.symbol,
-                description = descriptionMetadataItem?.description,
-                iconUrl = iconUrlMetadataItem?.url?.toString(),
-                tags = tagsMetadataItem?.tags?.let { TagsColumn(it) },
-                validatorAddress = validatorMetadataItem?.address,
-                poolAddress = poolMetadataItem?.address,
-                dAppDefinitions = dAppDefinitionsMetadataItem?.addresses?.let { DappDefinitionsColumn(it) },
                 divisibility = divisibility,
                 behaviours = behaviours?.let { BehavioursColumn(it) },
                 supply = currentSupply,
+                validatorAddress = metadata.validatorAddress(),
+                poolAddress = metadata.poolAddress(),
+                metadata = metadata
+                    .filterNot { it.key in setOf(ExplicitMetadataKey.POOL.key, ExplicitMetadataKey.VALIDATOR.key) }
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { MetadataColumn(it) },
                 synced = synced
             )
 
             is Resource.NonFungibleResource -> ResourceEntity(
                 address = resourceAddress,
                 type = ResourceEntityType.NON_FUNGIBLE,
-                name = nameMetadataItem?.name,
-                description = descriptionMetadataItem?.description,
-                iconUrl = iconMetadataItem?.url?.toString(),
-                tags = tagsMetadataItem?.tags?.let { TagsColumn(it) },
                 behaviours = behaviours?.let { BehavioursColumn(it) },
-                validatorAddress = validatorMetadataItem?.address,
                 supply = currentSupply?.toBigDecimal(),
-                dAppDefinitions = dAppDefinitionsMetadataItem?.addresses?.let { DappDefinitionsColumn(it) },
                 divisibility = null,
-                poolAddress = null,
-                symbol = null,
+                validatorAddress = metadata.validatorAddress(),
+                poolAddress = metadata.poolAddress(),
+                metadata = metadata
+                    .filterNot { it.key in setOf(ExplicitMetadataKey.POOL.key, ExplicitMetadataKey.VALIDATOR.key) }
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { MetadataColumn(it) },
                 synced = synced
             )
         }
@@ -132,7 +119,7 @@ data class ResourceEntity(
             details: StateEntityDetailsResponseItemDetails? = null
         ): ResourceEntity = from(
             address = resourceAddress,
-            metadata = explicitMetadata,
+            metadataCollection = explicitMetadata,
             details = details,
             type = ResourceEntityType.FUNGIBLE,
             synced = synced
@@ -145,7 +132,7 @@ data class ResourceEntity(
             details: StateEntityDetailsResponseItemDetails? = null
         ): ResourceEntity = from(
             address = resourceAddress,
-            metadata = explicitMetadata,
+            metadataCollection = explicitMetadata,
             details = details,
             type = ResourceEntityType.NON_FUNGIBLE,
             synced = synced
@@ -162,7 +149,7 @@ data class ResourceEntity(
             }
             return from(
                 address = address,
-                metadata = metadata,
+                metadataCollection = metadata,
                 details = details,
                 type = type,
                 synced = synced
@@ -171,26 +158,24 @@ data class ResourceEntity(
 
         private fun from(
             address: String,
-            metadata: EntityMetadataCollection?,
+            metadataCollection: EntityMetadataCollection?,
             details: StateEntityDetailsResponseItemDetails?,
             type: ResourceEntityType,
             synced: Instant
         ): ResourceEntity {
-            val metaDataItems = metadata?.asMetadataItems().orEmpty().toMutableList()
+            val metadata = metadataCollection?.toMetadata().orEmpty()
             return ResourceEntity(
                 address = address,
                 type = type,
-                name = metaDataItems.consume<NameMetadataItem>()?.name,
-                symbol = metaDataItems.consume<SymbolMetadataItem>()?.symbol,
-                description = metaDataItems.consume<DescriptionMetadataItem>()?.description,
-                iconUrl = metaDataItems.consume<IconUrlMetadataItem>()?.url?.toString(),
-                tags = metaDataItems.consume<TagsMetadataItem>()?.tags?.let { TagsColumn(tags = it) },
-                validatorAddress = metaDataItems.consume<ValidatorMetadataItem>()?.address,
-                poolAddress = metaDataItems.consume<PoolMetadataItem>()?.address,
-                dAppDefinitions = metaDataItems.consume<DAppDefinitionsMetadataItem>()?.addresses?.let { DappDefinitionsColumn(it) },
                 divisibility = details?.divisibility(),
                 behaviours = details?.let { BehavioursColumn(it.extractBehaviours()) },
                 supply = details?.totalSupply()?.toBigDecimalOrNull(),
+                validatorAddress = metadata.validatorAddress(),
+                poolAddress = metadata.poolAddress(),
+                metadata = metadata
+                    .filterNot { it.key in setOf(ExplicitMetadataKey.VALIDATOR.key, ExplicitMetadataKey.POOL.key) }
+                    .takeIf { it.isNotEmpty() }
+                    ?.let { MetadataColumn(it) },
                 synced = synced
             )
         }

@@ -1,30 +1,26 @@
 package com.babylon.wallet.android.domain.model.resources
 
 import android.net.Uri
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
 import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPerNetwork
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinitionsMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.PoolMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ValidatorMetadataItem
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.EntityType.GLOBAL_MULTI_RESOURCE_POOL
-import com.radixdlt.ret.EntityType.GLOBAL_ONE_RESOURCE_POOL
-import com.radixdlt.ret.EntityType.GLOBAL_TWO_RESOURCE_POOL
-import com.radixdlt.ret.EntityType.GLOBAL_VALIDATOR
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.claimAmount
+import com.babylon.wallet.android.domain.model.resources.metadata.claimEpoch
+import com.babylon.wallet.android.domain.model.resources.metadata.dAppDefinitions
+import com.babylon.wallet.android.domain.model.resources.metadata.description
+import com.babylon.wallet.android.domain.model.resources.metadata.iconUrl
+import com.babylon.wallet.android.domain.model.resources.metadata.keyImageUrl
+import com.babylon.wallet.android.domain.model.resources.metadata.name
+import com.babylon.wallet.android.domain.model.resources.metadata.poolAddress
+import com.babylon.wallet.android.domain.model.resources.metadata.symbol
+import com.babylon.wallet.android.domain.model.resources.metadata.tags
+import com.babylon.wallet.android.domain.model.resources.metadata.validatorAddress
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
-import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
@@ -45,54 +41,37 @@ sealed class Resource {
     data class FungibleResource(
         override val resourceAddress: String,
         val ownedAmount: BigDecimal?,
-        val nameMetadataItem: NameMetadataItem? = null,
-        val symbolMetadataItem: SymbolMetadataItem? = null,
-        val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        val iconUrlMetadataItem: IconUrlMetadataItem? = null,
-        val tagsMetadataItem: TagsMetadataItem? = null,
         private val assetBehaviours: AssetBehaviours? = null,
         val currentSupply: BigDecimal? = null,
-        val validatorMetadataItem: ValidatorMetadataItem? = null,
-        val poolMetadataItem: PoolMetadataItem? = null,
-        val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
-        val divisibility: Int? = null
+        val divisibility: Int? = null,
+        val metadata: List<Metadata> = emptyList()
     ) : Resource(), Comparable<FungibleResource> {
         override val name: String
-            get() = nameMetadataItem?.name.orEmpty()
+            get() = metadata.name().orEmpty()
 
         val symbol: String
-            get() = symbolMetadataItem?.symbol.orEmpty()
+            get() = metadata.symbol().orEmpty()
 
         val description: String
-            get() = descriptionMetadataItem?.description.orEmpty()
+            get() = metadata.description().orEmpty()
 
         override val iconUrl: Uri?
-            get() = iconUrlMetadataItem?.url
+            get() = metadata.iconUrl()
 
         val validatorAddress: String?
-            get() = validatorMetadataItem?.address?.takeIf {
-                runCatching {
-                    val retAddress = Address(it)
-                    retAddress.entityType() == GLOBAL_VALIDATOR
-                }.getOrNull() == true
-            }
+            get() = metadata.validatorAddress()
 
         val poolAddress: String?
-            get() = poolMetadataItem?.address?.takeIf {
-                runCatching {
-                    val retAddress = Address(it)
-                    retAddress.entityType() in setOf(GLOBAL_ONE_RESOURCE_POOL, GLOBAL_TWO_RESOURCE_POOL, GLOBAL_MULTI_RESOURCE_POOL)
-                }.getOrNull() == true
-            }
+            get() = metadata.poolAddress()
 
         val dappDefinitions: List<String>
-            get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
+            get() = metadata.dAppDefinitions().orEmpty()
 
         val tags: List<Tag>
             get() = if (isXrd) {
-                tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }?.plus(Tag.Official).orEmpty()
+                metadata.tags()?.map { Tag.Dynamic(name = it) }?.plus(Tag.Official).orEmpty()
             } else {
-                tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
+                metadata.tags()?.map { Tag.Dynamic(name = it) }.orEmpty()
             }
 
         val behaviours: AssetBehaviours? = if (assetBehaviours != null && isXrd) {
@@ -100,9 +79,6 @@ sealed class Resource {
         } else {
             assetBehaviours
         }
-
-        val currentSupplyToDisplay: String?
-            get() = currentSupply?.displayableQuantity()
 
         val displayTitle: String
             get() = if (symbol.isNotBlank()) {
@@ -129,19 +105,21 @@ sealed class Resource {
                 return 1
             }
 
+            val symbol = metadata.symbol()
+            val otherSymbol = other.metadata.symbol()
+
+            val name = metadata.name()
+            val otherName = other.metadata.name()
+
             val symbolDiff = when {
-                symbolMetadataItem == null && other.symbolMetadataItem != null -> 1
-                symbolMetadataItem != null && other.symbolMetadataItem == null -> -1
-                symbolMetadataItem != null && other.symbolMetadataItem != null -> symbolMetadataItem.symbol.compareTo(
-                    other.symbolMetadataItem.symbol
-                )
+                symbol == null && otherSymbol != null -> 1
+                symbol != null && otherSymbol == null -> -1
+                symbol != null && otherSymbol != null -> symbol.compareTo(otherSymbol)
 
                 else -> when {
-                    nameMetadataItem == null && other.nameMetadataItem != null -> 1
-                    nameMetadataItem != null && other.nameMetadataItem == null -> -1
-                    nameMetadataItem != null && other.nameMetadataItem != null -> nameMetadataItem.name.compareTo(
-                        other.nameMetadataItem.name
-                    )
+                    name == null && otherName != null -> 1
+                    name != null && otherName == null -> -1
+                    name != null && otherName != null -> name.compareTo(otherName)
 
                     else -> 0
                 }
@@ -160,72 +138,73 @@ sealed class Resource {
     data class NonFungibleResource(
         override val resourceAddress: String,
         val amount: Long,
-        val nameMetadataItem: NameMetadataItem? = null,
-        val descriptionMetadataItem: DescriptionMetadataItem? = null,
-        val iconMetadataItem: IconUrlMetadataItem? = null,
-        val tagsMetadataItem: TagsMetadataItem? = null,
         private val assetBehaviours: AssetBehaviours? = null,
         val items: List<Item>,
         val currentSupply: Int? = null,
-        val validatorMetadataItem: ValidatorMetadataItem? = null,
-        val dAppDefinitionsMetadataItem: DAppDefinitionsMetadataItem? = null,
+        val metadata: List<Metadata> = emptyList(),
     ) : Resource(), Comparable<NonFungibleResource> {
         override val name: String
-            get() = nameMetadataItem?.name.orEmpty()
+            get() = metadata.name().orEmpty()
 
         val description: String
-            get() = descriptionMetadataItem?.description.orEmpty()
+            get() = metadata.description().orEmpty()
 
         override val iconUrl: Uri?
-            get() = iconMetadataItem?.url
+            get() = metadata.iconUrl()
 
         val tags: List<Tag>
-            get() = tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
+            get() = metadata.tags().orEmpty().map { Tag.Dynamic(name = it) }
 
         val validatorAddress: String?
-            get() = validatorMetadataItem?.address?.takeIf {
-                runCatching {
-                    val retAddress = Address(it)
-                    retAddress.entityType() == GLOBAL_VALIDATOR
-                }.getOrNull() == true
-            }
+            get() = metadata.validatorAddress()
 
         val dappDefinitions: List<String>
-            get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
+            get() = metadata.dAppDefinitions().orEmpty()
 
         val behaviours: AssetBehaviours? = assetBehaviours
 
-        override fun compareTo(other: NonFungibleResource): Int = when {
-            nameMetadataItem == null && other.nameMetadataItem != null -> 1
-            nameMetadataItem != null && other.nameMetadataItem == null -> -1
-            nameMetadataItem != null && other.nameMetadataItem != null -> nameMetadataItem.name.compareTo(
-                other.nameMetadataItem.name
-            )
-
-            else -> resourceAddress.compareTo(other.resourceAddress)
+        override fun compareTo(other: NonFungibleResource): Int {
+            val name = metadata.name()
+            val otherName = other.metadata.name()
+            return when {
+                name == null && otherName != null -> 1
+                name != null && otherName == null -> -1
+                name != null && otherName != null -> name.compareTo(otherName)
+                else -> resourceAddress.compareTo(other.resourceAddress)
+            }
         }
 
         data class Item(
             val collectionAddress: String,
             val localId: ID,
-            val nameMetadataItem: NameMetadataItem? = null,
-            val iconMetadataItem: IconUrlMetadataItem? = null,
-            val claimEpochMetadataItem: ClaimEpochMetadataItem? = null,
-            val claimAmountMetadataItem: ClaimAmountMetadataItem? = null,
-            val remainingMetadata: List<MetadataItem> = emptyList()
+            val metadata: List<Metadata> = emptyList()
         ) : Comparable<Item> {
 
             val globalAddress: String
                 get() = "$collectionAddress:${localId.code}"
 
+            val name: String?
+                get() = metadata.name()
+
             val imageUrl: Uri?
-                get() = iconMetadataItem?.url
+                get() = metadata.keyImageUrl()
 
             val claimAmountXrd: BigDecimal?
-                get() = claimAmountMetadataItem?.amount
+                get() = metadata.claimAmount()
+
+            val nonStandardMetadata: List<Metadata>
+                get() = metadata.filterNot {
+                    it.key in setOf(
+                        ExplicitMetadataKey.NAME,
+                        ExplicitMetadataKey.KEY_IMAGE_URL,
+                        ExplicitMetadataKey.CLAIM_AMOUNT,
+                        ExplicitMetadataKey.CLAIM_EPOCH
+                    ).map { it.key }
+                }
 
             fun isReadyToClaim(currentEpoch: Long): Boolean {
-                return claimEpochMetadataItem?.claimEpoch != null && claimEpochMetadataItem.claimEpoch <= currentEpoch
+                val claimEpoch = metadata.claimEpoch()
+                return claimEpoch != null && claimEpoch <= currentEpoch
             }
 
             override fun compareTo(other: Item): Int = when (localId) {

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -28,8 +29,8 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
@@ -200,8 +201,18 @@ fun AccountCardPreview() {
                             Resource.FungibleResource(
                                 resourceAddress = "resource_address",
                                 ownedAmount = BigDecimal.valueOf(237659),
-                                nameMetadataItem = NameMetadataItem("cool XRD"),
-                                symbolMetadataItem = SymbolMetadataItem(XrdResource.SYMBOL)
+                                metadata = listOf(
+                                    Metadata.Primitive(
+                                        key = ExplicitMetadataKey.NAME.key,
+                                        value = "Radix",
+                                        valueType = MetadataType.String
+                                    ),
+                                    Metadata.Primitive(
+                                        key = ExplicitMetadataKey.SYMBOL.key,
+                                        value = XrdResource.SYMBOL,
+                                        valueType = MetadataType.String
+                                    )
+                                )
                             )
                         ),
                         nonFungibles = listOf(),

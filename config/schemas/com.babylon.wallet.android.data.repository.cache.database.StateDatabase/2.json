@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 1,
-    "identityHash": "afe977bdc9536723c9f021b80eaf43a1",
+    "version": 2,
+    "identityHash": "fff807871698e08eb10eda805c24e9e3",
     "entities": [
       {
         "tableName": "AccountResourceJoin",
@@ -193,7 +193,7 @@
       },
       {
         "tableName": "ResourceEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `type` TEXT NOT NULL, `name` TEXT, `symbol` TEXT, `description` TEXT, `icon_url` TEXT, `tags` TEXT, `validator_address` TEXT, `pool_address` TEXT, `dapp_definitions` TEXT, `metadata` TEXT, `divisibility` INTEGER, `behaviours` TEXT, `supply` TEXT, `synced` INTEGER NOT NULL, PRIMARY KEY(`address`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `type` TEXT NOT NULL, `metadata` TEXT, `divisibility` INTEGER, `behaviours` TEXT, `validator_address` TEXT, `pool_address` TEXT, `supply` TEXT, `synced` INTEGER NOT NULL, PRIMARY KEY(`address`))",
         "fields": [
           {
             "fieldPath": "address",
@@ -206,54 +206,6 @@
             "columnName": "type",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "symbol",
-            "columnName": "symbol",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "description",
-            "columnName": "description",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "iconUrl",
-            "columnName": "icon_url",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "tags",
-            "columnName": "tags",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "validatorAddress",
-            "columnName": "validator_address",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "poolAddress",
-            "columnName": "pool_address",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "dAppDefinitions",
-            "columnName": "dapp_definitions",
-            "affinity": "TEXT",
-            "notNull": false
           },
           {
             "fieldPath": "metadata",
@@ -270,6 +222,18 @@
           {
             "fieldPath": "behaviours",
             "columnName": "behaviours",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "validatorAddress",
+            "columnName": "validator_address",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "poolAddress",
+            "columnName": "pool_address",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -297,7 +261,7 @@
       },
       {
         "tableName": "NFTEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `local_id` TEXT NOT NULL, `name` TEXT, `image_url` TEXT, `claim_amount` TEXT, `claim_epoch` INTEGER, `metadata` TEXT, `synced` INTEGER NOT NULL, PRIMARY KEY(`address`, `local_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `local_id` TEXT NOT NULL, `metadata` TEXT, `synced` INTEGER NOT NULL, PRIMARY KEY(`address`, `local_id`))",
         "fields": [
           {
             "fieldPath": "address",
@@ -310,30 +274,6 @@
             "columnName": "local_id",
             "affinity": "TEXT",
             "notNull": true
-          },
-          {
-            "fieldPath": "name",
-            "columnName": "name",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "imageUrl",
-            "columnName": "image_url",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "claimAmount",
-            "columnName": "claim_amount",
-            "affinity": "TEXT",
-            "notNull": false
-          },
-          {
-            "fieldPath": "claimEpoch",
-            "columnName": "claim_epoch",
-            "affinity": "INTEGER",
-            "notNull": false
           },
           {
             "fieldPath": "metadata",
@@ -544,7 +484,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'afe977bdc9536723c9f021b80eaf43a1')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fff807871698e08eb10eda805c24e9e3')"
     ]
   }
 }

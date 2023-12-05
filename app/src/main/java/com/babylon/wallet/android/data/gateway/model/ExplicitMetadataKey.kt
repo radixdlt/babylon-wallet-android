@@ -24,6 +24,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.DAppDefinition
 import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.InfoUrlMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.KeyHash
 import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.PoolMetadataItem
@@ -102,10 +103,10 @@ enum class ExplicitMetadataKey(val key: String) {
             url = Uri.parse(value.typed<MetadataUrlValue>()?.value.orEmpty())
         )
         OWNER_KEYS -> OwnerKeyHashesMetadataItem(
-            keyHashes = value.typed<MetadataPublicKeyHashArrayValue>()?.propertyValues?.map { hash ->
+             keyHashes = value.typed<MetadataPublicKeyHashArrayValue>()?.propertyValues?.map { hash ->
                 when (hash) {
-                    is PublicKeyHashEcdsaSecp256k1 -> OwnerKeyHashesMetadataItem.KeyHash.EcdsaSecp256k1(hash.hashHex)
-                    is PublicKeyHashEddsaEd25519 -> OwnerKeyHashesMetadataItem.KeyHash.EddsaEd25519(hash.hashHex)
+                    is PublicKeyHashEcdsaSecp256k1 -> KeyHash.EcdsaSecp256k1(hash.hashHex)
+                    is PublicKeyHashEddsaEd25519 -> KeyHash.EddsaEd25519(hash.hashHex)
                 }
             }.orEmpty()
         )

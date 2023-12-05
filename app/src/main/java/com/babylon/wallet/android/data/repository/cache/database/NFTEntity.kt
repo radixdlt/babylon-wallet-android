@@ -1,20 +1,15 @@
 package com.babylon.wallet.android.data.repository.cache.database
 
-import android.net.Uri
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
+import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimAmountMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimEpochMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ComplexMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadataItem
-import rdx.works.core.toEncodedString
-import java.math.BigDecimal
+import com.babylon.wallet.android.domain.model.resources.metadata.claimAmount
+import com.babylon.wallet.android.domain.model.resources.metadata.claimEpoch
+import com.babylon.wallet.android.domain.model.resources.metadata.keyImageUrl
+import com.babylon.wallet.android.domain.model.resources.metadata.name
 import java.time.Instant
 
 @Entity(primaryKeys = ["address", "local_id"])
@@ -22,30 +17,15 @@ data class NFTEntity(
     val address: String,
     @ColumnInfo("local_id")
     val localId: String,
-    val name: String?,
-    @ColumnInfo("image_url")
-    val imageUrl: String?,
-    @ColumnInfo("claim_amount")
-    val claimAmount: BigDecimal?,
-    @ColumnInfo("claim_epoch")
-    val claimEpoch: Long?,
     @ColumnInfo("metadata")
-    val metadata: StringMetadataColumn?,
+    val metadata: MetadataColumn?,
     val synced: Instant
 ) {
 
     fun toItem() = Resource.NonFungibleResource.Item(
         collectionAddress = address,
         localId = Resource.NonFungibleResource.Item.ID.from(localId),
-        nameMetadataItem = name?.let { NameMetadataItem(it) },
-        iconMetadataItem = imageUrl?.let { IconUrlMetadataItem(Uri.parse(it)) },
-        claimEpochMetadataItem = claimEpoch?.let { ClaimEpochMetadataItem(it) },
-        claimAmountMetadataItem = claimAmount?.let { ClaimAmountMetadataItem(it) },
-        remainingMetadata = metadata?.metadata.orEmpty().map { entry ->
-            entry.second?.let {
-                StringMetadataItem(entry.first, it)
-            } ?: ComplexMetadataItem(entry.first)
-        }
+        metadata = metadata?.metadata.orEmpty()
     )
 
     companion object {
@@ -53,24 +33,14 @@ data class NFTEntity(
             resourceAddress: String,
             synced: Instant
         ): NFTEntity {
-            val metadataItems = asMetadataItems().toMutableList()
             return NFTEntity(
                 address = resourceAddress,
                 localId = nonFungibleId,
-                name = metadataItems.consume<NameMetadataItem>()?.name,
-                imageUrl = metadataItems.consume<IconUrlMetadataItem>()?.url?.toString(),
-                claimAmount = metadataItems.consume<ClaimAmountMetadataItem>()?.amount,
-                claimEpoch = metadataItems.consume<ClaimEpochMetadataItem>()?.claimEpoch,
-                metadata = metadataItems
-                    .mapNotNull { item ->
-                        when (item) {
-                            is StringMetadataItem -> item.key to item.value
-                            is ComplexMetadataItem -> item.key to null
-                            else -> null
-                        }
-                    }
-                    .takeIf { it.isNotEmpty() }
-                    ?.let { StringMetadataColumn(it) },
+                metadata = toMetadata().takeIf {
+                    it.isNotEmpty()
+                }?.let {
+                    MetadataColumn(it)
+                },
                 synced = synced
             )
         }
@@ -78,14 +48,11 @@ data class NFTEntity(
         fun Resource.NonFungibleResource.Item.asEntity(synced: Instant) = NFTEntity(
             address = collectionAddress,
             localId = localId.code,
-            name = nameMetadataItem?.name,
-            imageUrl = iconMetadataItem?.url?.toEncodedString(),
-            claimAmount = claimAmountMetadataItem?.amount,
-            claimEpoch = claimEpochMetadataItem?.claimEpoch,
-            metadata = remainingMetadata
-                .takeIf { it.isNotEmpty() }
-                ?.map { it.key to (if (it is StringMetadataItem) it.value else null) }
-                ?.let { StringMetadataColumn(it) },
+            metadata = metadata.takeIf {
+                it.isNotEmpty()
+            }?.let {
+                MetadataColumn(it)
+            },
             synced = synced
         )
     }

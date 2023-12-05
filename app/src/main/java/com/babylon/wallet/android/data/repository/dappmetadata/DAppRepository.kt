@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.gateway.extensions.ENTITY_DETAILS_PAGE_LI
 import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.divisibility
 import com.babylon.wallet.android.data.gateway.extensions.extractBehaviours
+import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.extensions.totalSupply
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
@@ -210,37 +211,24 @@ class DAppRepositoryImpl @Inject constructor(
                     }
 
                     val fungibleResources = fungibleItems.map { fungibleItem ->
-                        val metadataItems = fungibleItem.metadata.asMetadataItems().toMutableList()
                         Resource.FungibleResource(
                             resourceAddress = fungibleItem.address,
                             ownedAmount = null, // No owned amount given in metadata
-                            nameMetadataItem = metadataItems.consume(),
-                            symbolMetadataItem = metadataItems.consume(),
-                            descriptionMetadataItem = metadataItems.consume(),
-                            iconUrlMetadataItem = metadataItems.consume(),
                             assetBehaviours = fungibleItem.details?.extractBehaviours(),
                             currentSupply = fungibleItem.details?.totalSupply()?.toBigDecimal(),
-                            validatorMetadataItem = metadataItems.consume(),
-                            poolMetadataItem = metadataItems.consume(),
                             divisibility = fungibleItem.details?.divisibility(),
-                            dAppDefinitionsMetadataItem = metadataItems.consume()
+                            metadata = fungibleItem.explicitMetadata?.toMetadata().orEmpty()
                         )
                     }
 
                     val nonFungibleResource = nonFungibleItems.map { nonFungibleItem ->
-                        val metadataItems = nonFungibleItem.metadata.asMetadataItems().toMutableList()
-
                         Resource.NonFungibleResource(
                             resourceAddress = nonFungibleItem.address,
                             amount = 0L,
-                            nameMetadataItem = metadataItems.consume(),
-                            descriptionMetadataItem = metadataItems.consume(),
-                            iconMetadataItem = metadataItems.consume(),
-                            tagsMetadataItem = metadataItems.consume(),
-                            validatorMetadataItem = metadataItems.consume(),
                             items = emptyList(),
                             assetBehaviours = nonFungibleItem.details?.extractBehaviours(),
-                            currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull()
+                            currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull(),
+                            metadata = nonFungibleItem.explicitMetadata?.toMetadata().orEmpty()
                         )
                     }
 

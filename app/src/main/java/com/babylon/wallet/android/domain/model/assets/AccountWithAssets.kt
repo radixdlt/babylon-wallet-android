@@ -4,7 +4,7 @@ import android.net.Uri
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.isXrd
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 
@@ -15,7 +15,7 @@ data class AccountWithAssets(
 ) {
 
     val isDappDefinitionAccountType: Boolean
-        get() = details?.type == AccountTypeMetadataItem.AccountType.DAPP_DEFINITION
+        get() = details?.type == AccountType.DAPP_DEFINITION
 }
 
 data class Assets(

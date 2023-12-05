@@ -2,29 +2,29 @@
 
 package com.babylon.wallet.android.presentation.transaction.analysis
 
-import android.net.Uri
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.findFungible
 import com.babylon.wallet.android.domain.model.resources.findNonFungible
-import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.AuthorizedDepositorsChanges
 import com.radixdlt.ret.DecimalSource
 import com.radixdlt.ret.MetadataValue
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.NonFungibleLocalIdVecSource
+import com.radixdlt.ret.PublicKey
+import com.radixdlt.ret.PublicKeyHash
 import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.ResourceTracker
 import com.radixdlt.ret.TransactionType
+import rdx.works.core.ret.asStr
+import rdx.works.core.toByteArray
+import rdx.works.core.toHexString
 import java.math.BigDecimal
 
 typealias RETResources = com.radixdlt.ret.Resources
@@ -201,22 +201,7 @@ private fun Resource.FungibleResource.Companion.from(
 ): Resource.FungibleResource = Resource.FungibleResource(
     resourceAddress = resourceAddress.addressString(),
     ownedAmount = BigDecimal.ZERO,
-    nameMetadataItem = metadata[ExplicitMetadataKey.NAME.key]?.let { it as? MetadataValue.StringValue }?.let {
-        NameMetadataItem(name = it.value)
-    },
-    symbolMetadataItem = metadata[ExplicitMetadataKey.SYMBOL.key]?.let { it as? MetadataValue.StringValue }?.let {
-        SymbolMetadataItem(symbol = it.value)
-    },
-    descriptionMetadataItem = metadata[ExplicitMetadataKey.DESCRIPTION.key]?.let { it as? MetadataValue.StringValue }
-        ?.let {
-            DescriptionMetadataItem(description = it.value)
-        },
-    iconUrlMetadataItem = metadata[ExplicitMetadataKey.ICON_URL.key]?.let { it as? MetadataValue.UrlValue }?.let {
-        IconUrlMetadataItem(url = Uri.parse(it.value))
-    },
-    tagsMetadataItem = metadata[ExplicitMetadataKey.TAGS.key]?.let { it as MetadataValue.StringArrayValue }?.let {
-        TagsMetadataItem(tags = it.value)
-    }
+    metadata = metadata.toMetadata()
 )
 
 private fun ResourceTracker.NonFungible.toTransferableResource(
@@ -251,19 +236,7 @@ private fun Resource.NonFungibleResource.Companion.from(
 ): Resource.NonFungibleResource = Resource.NonFungibleResource(
     resourceAddress = resourceAddress.addressString(),
     amount = amount,
-    nameMetadataItem = metadata[ExplicitMetadataKey.NAME.key]?.let { it as? MetadataValue.StringValue }?.let {
-        NameMetadataItem(name = it.value)
-    },
-    iconMetadataItem = metadata[ExplicitMetadataKey.ICON_URL.key]?.let { it as? MetadataValue.UrlValue }?.let {
-        IconUrlMetadataItem(url = Uri.parse(it.value))
-    },
-    descriptionMetadataItem = metadata[ExplicitMetadataKey.DESCRIPTION.key]?.let { it as? MetadataValue.StringValue }
-        ?.let {
-            DescriptionMetadataItem(description = it.value)
-        },
-    tagsMetadataItem = metadata[ExplicitMetadataKey.TAGS.key]?.let { it as MetadataValue.StringArrayValue }?.let {
-        TagsMetadataItem(tags = it.value)
-    },
+    metadata = metadata.toMetadata(),
     items = items,
 )
 
@@ -293,4 +266,309 @@ private fun NonFungibleLocalIdVecSource.toGuaranteeType(defaultDepositGuarantees
         instructionIndex = instructionIndex.toLong(),
         guaranteeOffset = defaultDepositGuarantees
     )
+}
+
+private fun Map<String, MetadataValue?>.toMetadata(): List<Metadata> = mapNotNull { it.toMetadata() }
+
+private fun Map.Entry<String, MetadataValue?>.toMetadata(): Metadata? = when (val typed = value) {
+    is MetadataValue.BoolValue -> Metadata.Primitive(
+        key = key,
+        value = typed.value.toString(),
+        valueType = MetadataType.Bool
+    )
+
+    is MetadataValue.BoolArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it.toString(),
+                valueType = MetadataType.Bool
+            )
+        }
+    )
+
+    is MetadataValue.DecimalValue -> Metadata.Primitive(
+        key = key,
+        value = typed.value.asStr(),
+        valueType = MetadataType.Decimal
+    )
+
+    is MetadataValue.DecimalArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it.asStr(),
+                valueType = MetadataType.Decimal
+            )
+        }
+    )
+
+    is MetadataValue.GlobalAddressValue -> Metadata.Primitive(
+        key = key,
+        value = typed.value.addressString(),
+        valueType = MetadataType.Address
+    )
+
+    is MetadataValue.GlobalAddressArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it.addressString(),
+                valueType = MetadataType.Address
+            )
+        },
+    )
+
+    is MetadataValue.I32Value -> Metadata.Primitive(
+        key = key,
+        value = typed.value.toString(),
+        valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.INT)
+    )
+
+    is MetadataValue.I32ArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it.toString(),
+                valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.INT)
+            )
+        }
+    )
+
+    is MetadataValue.I64Value -> Metadata.Primitive(
+        key = key,
+        value = typed.value.toString(),
+        valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.LONG)
+    )
+
+    is MetadataValue.I64ArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it.toString(),
+                valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.LONG)
+            )
+        }
+    )
+
+    is MetadataValue.U8Value -> Metadata.Primitive(
+        key = key,
+        value = typed.value.toString(),
+        valueType = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.INT)
+    )
+
+    is MetadataValue.U8ArrayValue -> Metadata.Primitive(
+        key = key,
+        value = typed.value.toByteArray().toHexString(),
+        valueType = MetadataType.Bytes
+    )
+
+    is MetadataValue.U32Value -> Metadata.Primitive(
+        key = key,
+        value = typed.value.toString(),
+        valueType = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.INT)
+    )
+
+    is MetadataValue.U32ArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it.toString(),
+                valueType = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.INT)
+            )
+        }
+    )
+
+    is MetadataValue.U64Value -> Metadata.Primitive(
+        key = key,
+        value = typed.value.toString(),
+        valueType = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.LONG)
+    )
+
+    is MetadataValue.U64ArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it.toString(),
+                valueType = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.LONG)
+            )
+        },
+    )
+
+    is MetadataValue.InstantValue -> Metadata.Primitive(
+        key = key,
+        value = typed.value.toString(),
+        valueType = MetadataType.Instant
+    )
+
+    is MetadataValue.InstantArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it.toString(),
+                valueType = MetadataType.Instant
+            )
+        }
+    )
+
+    is MetadataValue.NonFungibleGlobalIdValue -> Metadata.Primitive(
+        key = key,
+        value = "${typed.value.resourceAddress().addressString()}:${typed.value.localId().asStr()}",
+        valueType = MetadataType.NonFungibleGlobalId
+    )
+
+    is MetadataValue.NonFungibleGlobalIdArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = "${it.resourceAddress().addressString()}:${it.localId().asStr()}",
+                valueType = MetadataType.NonFungibleGlobalId
+            )
+        }
+    )
+
+    is MetadataValue.NonFungibleLocalIdValue -> Metadata.Primitive(
+        key = key,
+        value = typed.value.asStr(),
+        valueType = MetadataType.NonFungibleLocalId
+    )
+
+    is MetadataValue.NonFungibleLocalIdArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it.asStr(),
+                valueType = MetadataType.NonFungibleLocalId
+            )
+        }
+    )
+
+    is MetadataValue.OriginValue -> Metadata.Primitive(
+        key = key,
+        value = typed.value,
+        valueType = MetadataType.Url
+    )
+
+    is MetadataValue.OriginArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it,
+                valueType = MetadataType.Url
+            )
+        }
+    )
+
+    is MetadataValue.StringValue -> Metadata.Primitive(
+        key = key,
+        value = typed.value,
+        valueType = MetadataType.String
+    )
+
+    is MetadataValue.StringArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it,
+                valueType = MetadataType.String
+            )
+        }
+    )
+
+    is MetadataValue.UrlValue -> Metadata.Primitive(
+        key = key,
+        value = typed.value,
+        valueType = MetadataType.Url
+    )
+
+    is MetadataValue.UrlArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map {
+            Metadata.Primitive(
+                key = key,
+                value = it,
+                valueType = MetadataType.Url
+            )
+        }
+    )
+
+    is MetadataValue.PublicKeyValue -> when (val publicKey = typed.value) {
+        is PublicKey.Secp256k1 -> Metadata.Primitive(
+            key = key,
+            value = publicKey.value.toByteArray().toHexString(),
+            valueType = MetadataType.PublicKeyEcdsaSecp256k1
+        )
+
+        is PublicKey.Ed25519 -> Metadata.Primitive(
+            key = key,
+            value = publicKey.value.toByteArray().toHexString(),
+            valueType = MetadataType.PublicKeyEddsaEd25519
+        )
+    }
+
+    is MetadataValue.PublicKeyArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map { publicKey ->
+            when (publicKey) {
+                is PublicKey.Secp256k1 -> Metadata.Primitive(
+                    key = key,
+                    value = publicKey.value.toByteArray().toHexString(),
+                    valueType = MetadataType.PublicKeyEcdsaSecp256k1
+                )
+
+                is PublicKey.Ed25519 -> Metadata.Primitive(
+                    key = key,
+                    value = publicKey.value.toByteArray().toHexString(),
+                    valueType = MetadataType.PublicKeyEddsaEd25519
+                )
+            }
+        }
+    )
+
+    is MetadataValue.PublicKeyHashValue -> when (val publicKeyHash = typed.value) {
+        is PublicKeyHash.Secp256k1 -> Metadata.Primitive(
+            key = key,
+            value = publicKeyHash.value.toByteArray().toHexString(),
+            valueType = MetadataType.PublicKeyHashEcdsaSecp256k1
+        )
+
+        is PublicKeyHash.Ed25519 -> Metadata.Primitive(
+            key = key,
+            value = publicKeyHash.value.toByteArray().toHexString(),
+            valueType = MetadataType.PublicKeyHashEddsaEd25519
+        )
+    }
+
+    is MetadataValue.PublicKeyHashArrayValue -> Metadata.Collection(
+        key = key,
+        values = typed.value.map { publicKeyHash ->
+            when (publicKeyHash) {
+                is PublicKeyHash.Secp256k1 -> Metadata.Primitive(
+                    key = key,
+                    value = publicKeyHash.value.toByteArray().toHexString(),
+                    valueType = MetadataType.PublicKeyHashEcdsaSecp256k1
+                )
+
+                is PublicKeyHash.Ed25519 -> Metadata.Primitive(
+                    key = key,
+                    value = publicKeyHash.value.toByteArray().toHexString(),
+                    valueType = MetadataType.PublicKeyHashEddsaEd25519
+                )
+            }
+        }
+    )
+
+    else -> null
 }

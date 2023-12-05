@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository.cache.database
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
 import java.math.BigDecimal
 import java.time.Instant
@@ -11,7 +12,7 @@ data class AccountPortfolioResponse(
     @ColumnInfo("account_address")
     val address: String,
     @ColumnInfo("account_type")
-    val accountType: AccountTypeMetadataItem.AccountType?,
+    val accountType: AccountType?,
     @ColumnInfo("account_synced")
     val accountSynced: Instant?,
     @ColumnInfo("state_version")
@@ -24,21 +25,14 @@ data class AccountPortfolioResponse(
     @ColumnInfo("address")
     private val resourceAddress: String?,
     private val type: ResourceEntityType?,
-    private val name: String?,
-    private val symbol: String?,
-    private val description: String?,
-    @ColumnInfo("icon_url")
-    private val iconUrl: String?,
-    private val tags: TagsColumn?,
     @ColumnInfo("validator_address")
     private val validatorAddress: String?,
     @ColumnInfo("pool_address")
     private val poolAddress: String?,
-    @ColumnInfo("dapp_definitions")
-    private val dAppDefinitions: DappDefinitionsColumn?,
     private val divisibility: Int?,
     private val behaviours: BehavioursColumn?,
     private val supply: BigDecimal?,
+    private val metadata: MetadataColumn?,
     @ColumnInfo("synced")
     private val resourceSynced: Instant?
 ) {
@@ -56,17 +50,12 @@ data class AccountPortfolioResponse(
         ResourceEntity(
             address = resourceAddress,
             type = type,
-            name = name,
-            symbol = symbol,
-            description = description,
-            iconUrl = iconUrl,
-            tags = tags,
             validatorAddress = validatorAddress,
             poolAddress = poolAddress,
-            dAppDefinitions = dAppDefinitions,
             divisibility = divisibility,
             behaviours = behaviours,
             supply = supply,
+            metadata = metadata,
             synced = resourceSynced
         )
     } else {
@@ -87,21 +76,14 @@ data class PoolWithResourceResponse(
     @ColumnInfo("address")
     private val resourceAddress: String?,
     private val type: ResourceEntityType?,
-    private val name: String?,
-    private val symbol: String?,
-    private val description: String?,
-    @ColumnInfo("icon_url")
-    private val iconUrl: String?,
-    private val tags: TagsColumn?,
     @ColumnInfo("validator_address")
     private val validatorAddress: String?,
     @ColumnInfo("pool_address")
     private val poolAddress: String?,
-    @ColumnInfo("dapp_definitions")
-    private val dAppDefinitions: DappDefinitionsColumn?,
     private val divisibility: Int?,
     private val behaviours: BehavioursColumn?,
     private val supply: BigDecimal?,
+    private val metadata: MetadataColumn?,
     @ColumnInfo("synced")
     private val resourceSynced: Instant?
 ) {
@@ -110,17 +92,12 @@ data class PoolWithResourceResponse(
         ResourceEntity(
             address = resourceAddress,
             type = type,
-            name = name,
-            symbol = symbol,
-            description = description,
-            iconUrl = iconUrl,
-            tags = tags,
             validatorAddress = validatorAddress,
             poolAddress = poolAddress,
-            dAppDefinitions = dAppDefinitions,
             divisibility = divisibility,
             behaviours = behaviours,
             supply = supply,
+            metadata = metadata,
             synced = resourceSynced
         )
     } else {

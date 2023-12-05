@@ -1,11 +1,12 @@
 package com.babylon.wallet.android.domain.model
 
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
-import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource.Item
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource.Item
 import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import junit.framework.TestCase.assertEquals
 import org.junit.Assert
 import org.junit.Test
@@ -206,12 +207,16 @@ class ResourceTests {
     ) = Resource.FungibleResource(
         resourceAddress = address,
         ownedAmount = BigDecimal(1234.5678),
-        nameMetadataItem = name?.let { NameMetadataItem(it) },
-        symbolMetadataItem = symbol?.let { SymbolMetadataItem(it) },
         assetBehaviours = setOf(
             AssetBehaviour.SUPPLY_FLEXIBLE,
             AssetBehaviour.INFORMATION_CHANGEABLE
-        )
+        ),
+        metadata = name?.let {
+            listOf(Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = it, valueType = MetadataType.String))
+        }.orEmpty() + symbol?.let {
+            listOf(Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = it, valueType = MetadataType.String))
+        }.orEmpty()
+
     )
 
     private fun nonFungibleCollection(
@@ -221,10 +226,10 @@ class ResourceTests {
     ): Resource.NonFungibleResource = Resource.NonFungibleResource(
         resourceAddress = address,
         amount = items.size.toLong(),
-        nameMetadataItem = name?.let { NameMetadataItem(name) },
-        descriptionMetadataItem = null,
-        iconMetadataItem = null,
-        items = items
+        items = items,
+        metadata = listOf(
+            name?.let { Metadata.Primitive(ExplicitMetadataKey.NAME.key, it, MetadataType.String) }
+        ).mapNotNull { it }
     )
 
     private fun nft(
@@ -232,8 +237,6 @@ class ResourceTests {
         localId: String
     ) = Item(
         collectionAddress = collectionAddress,
-        localId = Item.ID.from(localId),
-        nameMetadataItem = null,
-        iconMetadataItem = null
+        localId = Item.ID.from(localId)
     )
 }
