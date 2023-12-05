@@ -5,13 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import com.babylon.wallet.android.MainActivity
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
@@ -22,11 +19,11 @@ const val ROUTE_ROOT_DETECTION = "root_detection_route"
 fun RootDetectionContent(
     viewModel: RootDetectionViewModel,
     onAcknowledgeDeviceRooted: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCloseApp: () -> Unit
 ) {
-    val activity = (LocalContext.current as MainActivity)
     BackHandler {
-        activity.finish()
+        onCloseApp()
     }
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
@@ -46,17 +43,11 @@ fun RootDetectionContent(
                 if (it) {
                     viewModel.onAcknowledgeClick()
                 } else {
-                    activity.finish()
+                    onCloseApp()
                 }
             },
-            title = {
-                Text(
-                    text = "Hey, this device looks rooted!  Don’t use the Wallet!", // TODO Crowdin
-                    style = RadixTheme.typography.body2Header,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            text = {},
+            title = "Hey, this device looks rooted!  Don’t use the Wallet!", // TODO Crowdin
+            text = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
             confirmText = "I understand the risk", // TODO Crowdin
             dismissText = stringResource(id = R.string.common_cancel)
         )

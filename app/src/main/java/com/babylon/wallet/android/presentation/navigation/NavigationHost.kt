@@ -363,9 +363,13 @@ fun NavigationHost(
         composable(
             route = ROUTE_ROOT_DETECTION
         ) {
-            RootDetectionContent(hiltViewModel(), onAcknowledgeDeviceRooted = {
-                navController.popBackStack(MAIN_ROUTE, false)
-            })
+            RootDetectionContent(
+                viewModel = hiltViewModel(),
+                onAcknowledgeDeviceRooted = {
+                    navController.popBackStack(MAIN_ROUTE, false)
+                },
+                onCloseApp = onCloseApp
+            )
         }
         dappInteractionDialog(
             onBackPress = {
