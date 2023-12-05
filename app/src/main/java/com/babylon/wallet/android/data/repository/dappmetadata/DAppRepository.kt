@@ -187,7 +187,7 @@ class DAppRepositoryImpl @Inject constructor(
         isRefreshing: Boolean
     ): Result<DAppResources> {
         val claimedResources = dAppMetadata.claimedEntities.filter {
-            ActionableAddress.Type.from(it) == ActionableAddress.Type.RESOURCE
+            ActionableAddress.Type.from(it) == ActionableAddress.Type.Global.Resource
         }
 
         val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
