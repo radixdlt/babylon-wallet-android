@@ -5,4 +5,5 @@ object Constants {
     const val DELAY_300_MS = 300L
     const val ACCOUNT_NAME_MAX_LENGTH = 30
     const val USE_CURRENT_NETWORK = -1
+    const val RADIX_START_PAGE_URL = "https://wallet.radixdlt.com/"
 }

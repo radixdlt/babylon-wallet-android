@@ -42,10 +42,28 @@ class PreferencesManager @Inject constructor(
             preferences[KEY_FIRST_PERSONA_CREATED] ?: false
         }
 
+    suspend fun markFirstPersonaCreated() {
+        dataStore.edit { preferences ->
+            preferences[KEY_FIRST_PERSONA_CREATED] = true
+        }
+    }
+
     val isImportFromOlympiaSettingDismissed: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED] ?: false
         }
+
+    suspend fun markImportFromOlympiaComplete() {
+        dataStore.edit { preferences ->
+            preferences[KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED] = true
+        }
+    }
+
+    fun getBackedUpFactorSourceIds(): Flow<Set<String>> {
+        return dataStore.data.map { preferences ->
+            preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS]?.split(",").orEmpty().toSet()
+        }
+    }
 
     suspend fun markFactorSourceBackedUp(id: String) {
         dataStore.edit { preferences ->
@@ -58,21 +76,14 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    fun getBackedUpFactorSourceIds(): Flow<Set<String>> {
-        return dataStore.data.map { preferences ->
-            preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS]?.split(",").orEmpty().toSet()
+    val isRadixBannerVisible: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_RADIX_BANNER_VISIBLE] ?: false
         }
-    }
 
-    suspend fun markFirstPersonaCreated() {
+    suspend fun changeRadixBannerVisibility(isVisible: Boolean) {
         dataStore.edit { preferences ->
-            preferences[KEY_FIRST_PERSONA_CREATED] = true
-        }
-    }
-
-    suspend fun markImportFromOlympiaComplete() {
-        dataStore.edit { preferences ->
-            preferences[KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED] = true
+            preferences[KEY_RADIX_BANNER_VISIBLE] = isVisible
         }
     }
 
@@ -102,6 +113,7 @@ class PreferencesManager @Inject constructor(
 
     companion object {
         private val KEY_FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
+        private val KEY_RADIX_BANNER_VISIBLE = booleanPreferencesKey("radix_banner_visible")
         private val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
         private val KEY_LAST_BACKUP_INSTANT = stringPreferencesKey("last_backup_instant")
         private val KEY_BACKED_UP_FACTOR_SOURCE_IDS = stringPreferencesKey("backed_up_factor_source_ids")

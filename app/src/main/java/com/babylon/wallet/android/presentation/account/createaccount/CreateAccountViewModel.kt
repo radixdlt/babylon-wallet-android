@@ -16,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
@@ -42,6 +43,7 @@ class CreateAccountViewModel @Inject constructor(
     private val createAccountWithLedgerFactorSourceUseCase: CreateAccountWithLedgerFactorSourceUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
+    private val preferencesManager: PreferencesManager,
     private val appEventBus: AppEventBus
 ) : StateViewModel<CreateAccountViewModel.CreateAccountState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
@@ -98,6 +100,10 @@ class CreateAccountViewModel @Inject constructor(
                 accountId = accountId,
                 accountName = accountName
             )
+        }
+
+        if (args.requestSource == CreateAccountRequestSource.FirstTime) {
+            preferencesManager.changeRadixBannerVisibility(isVisible = true)
         }
 
         sendEvent(
