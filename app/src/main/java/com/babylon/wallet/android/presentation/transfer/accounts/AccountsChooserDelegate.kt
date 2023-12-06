@@ -1,12 +1,15 @@
 package com.babylon.wallet.android.presentation.transfer.accounts
 
+import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import rdx.works.core.AddressValidator
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -14,7 +17,8 @@ import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
 class AccountsChooserDelegate @Inject constructor(
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    private val getWalletAssetsUseCase: GetWalletAssetsUseCase
 ) : ViewModelDelegate<TransferViewModel.State>() {
 
     suspend fun onChooseAccount(
@@ -27,6 +31,7 @@ class AccountsChooserDelegate @Inject constructor(
                 sheet = ChooseAccounts(
                     selectedAccount = slotAccount,
                     ownedAccounts = persistentListOf(),
+                    isLoadingAssetsForAccount = false
                 )
             )
         }
@@ -79,7 +84,7 @@ class AccountsChooserDelegate @Inject constructor(
                 selectedAccount = TargetAccount.Owned(
                     account = account,
                     id = it.selectedAccount.id,
-                    assets = it.selectedAccount.assets
+                    spendingAssets = it.selectedAccount.spendingAssets
                 )
             )
         }
@@ -90,30 +95,50 @@ class AccountsChooserDelegate @Inject constructor(
 
         if (!sheetState.isChooseButtonEnabled) return
 
-        _state.update { state ->
-            val ownedAccount = sheetState.ownedAccounts.find { it.address == sheetState.selectedAccount.address }
-            val selectedAccount = if (ownedAccount != null) {
-                TargetAccount.Owned(
-                    account = ownedAccount,
-                    id = sheetState.selectedAccount.id,
-                    assets = sheetState.selectedAccount.assets
+        _state.update {
+            it.copy(
+                sheet = sheetState.copy(
+                    isLoadingAssetsForAccount = true
                 )
-            } else {
-                sheetState.selectedAccount
-            }
-
-            val targetAccounts = state.targetAccounts.map { targetAccount ->
-                if (targetAccount.id == selectedAccount.id) {
-                    selectedAccount
-                } else {
-                    targetAccount
-                }
-            }
-
-            state.copy(
-                targetAccounts = targetAccounts.toPersistentList(),
-                sheet = TransferViewModel.State.Sheet.None
             )
+        }
+
+        viewModelScope.launch {
+            _state.update { state ->
+                val ownedAccount = sheetState.ownedAccounts.find { it.address == sheetState.selectedAccount.address }
+                val selectedAccount = if (ownedAccount != null) {
+                    TargetAccount.Owned(
+                        account = ownedAccount,
+                        accountAssetsAddresses = getWalletAssetsUseCase(
+                            accounts = listOf(ownedAccount),
+                            isRefreshing = false
+                        ).first()
+                            .first()
+                            .assets
+                            ?.ownedResources
+                            ?.map { resource ->
+                                resource.resourceAddress
+                            }.orEmpty(),
+                        id = sheetState.selectedAccount.id,
+                        spendingAssets = sheetState.selectedAccount.spendingAssets
+                    )
+                } else {
+                    sheetState.selectedAccount
+                }
+
+                val targetAccounts = state.targetAccounts.map { targetAccount ->
+                    if (targetAccount.id == selectedAccount.id) {
+                        selectedAccount
+                    } else {
+                        targetAccount
+                    }
+                }
+
+                state.copy(
+                    targetAccounts = targetAccounts.toPersistentList(),
+                    sheet = TransferViewModel.State.Sheet.None,
+                )
+            }
         }
     }
 

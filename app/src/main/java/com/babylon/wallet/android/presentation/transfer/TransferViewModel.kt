@@ -553,6 +553,7 @@ sealed class TargetAccount {
 
     data class Owned(
         val account: Network.Account,
+        val accountAssetsAddresses: List<String> = emptyList(),
         override val id: String,
         override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
@@ -560,7 +561,10 @@ sealed class TargetAccount {
             get() = account.address
 
         override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean {
-            return account.isSignatureRequiredBasedOnDepositRules(forSpecificAssetAddress = forSpendingAsset.address)
+            return account.isSignatureRequiredBasedOnDepositRules(
+                forSpecificAssetAddress = forSpendingAsset.address,
+                addressesOfAssetsOfTargetAccount = accountAssetsAddresses
+            )
         }
     }
 }
