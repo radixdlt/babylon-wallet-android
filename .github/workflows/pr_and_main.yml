@@ -21,7 +21,7 @@ jobs:
       actions: write
     steps:
       - name: Cancel Previous Runs
-        uses: styfle/cancel-workflow-action@01ce38bf961b4e243a6342cbade0dbc8ba3f0432
+        uses: RDXWorks-actions/cancel-workflow-action@main
 
   snyk_scan_deps_licences:
     name: "Snyk deps/licenses"
@@ -190,7 +190,7 @@ jobs:
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
 
       - name: Dump context
-        uses: crazy-max/ghaction-dump-context@8b55fa205ab4530d36f787a4de1009afaaa7f3b4 # v2.1.0
+        uses: RDXWorks-actions/ghaction-dump-context@master
 
       - uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
         with:
