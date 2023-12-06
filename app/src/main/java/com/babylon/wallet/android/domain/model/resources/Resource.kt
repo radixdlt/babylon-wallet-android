@@ -59,10 +59,10 @@ sealed class Resource {
             get() = metadata.iconUrl()
 
         val validatorAddress: String?
-            get() = metadata.validatorAddress()
+            get() = metadata.validatorAddress()?.takeIf { it.startsWith("validator_") }
 
         val poolAddress: String?
-            get() = metadata.poolAddress()
+            get() = metadata.poolAddress()?.takeIf { it.startsWith("pool_") }
 
         val dappDefinitions: List<String>
             get() = metadata.dAppDefinitions().orEmpty()
@@ -156,7 +156,7 @@ sealed class Resource {
             get() = metadata.tags().orEmpty().map { Tag.Dynamic(name = it) }
 
         val validatorAddress: String?
-            get() = metadata.validatorAddress()
+            get() = metadata.validatorAddress()?.takeIf { it.startsWith("validator_") }
 
         val dappDefinitions: List<String>
             get() = metadata.dAppDefinitions().orEmpty()
