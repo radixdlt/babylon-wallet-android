@@ -61,7 +61,7 @@ fun Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionR
     }
 }
 
-@Suppress("ReturnCount", "UnusedParameter")
+@Suppress("ReturnCount")
 fun Network.Account.isSignatureRequiredBasedOnDepositRules(
     forSpecificAssetAddress: String,
     addressesOfAssetsOfTargetAccount: List<String> = emptyList()
@@ -87,10 +87,10 @@ fun Network.Account.isSignatureRequiredBasedOnDepositRules(
     } else if (hasDenyAll || hasDenyExceptionRuleForAsset) {
         return true
     } else if (hasAcceptKnown) {
-        // TODO will enable when we have the new GW
-//        if (addressesOfAssetsOfTargetAccount.contains(forSpecificAssetAddress)) {
-//            return false
-//        }
+        // and if the receiving account knows the resource then do not require signature
+        if (addressesOfAssetsOfTargetAccount.contains(forSpecificAssetAddress)) {
+            return false
+        }
         return true
     }
 
