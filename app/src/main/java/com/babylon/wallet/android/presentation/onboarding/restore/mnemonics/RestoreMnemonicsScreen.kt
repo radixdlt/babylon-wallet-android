@@ -378,7 +378,7 @@ private fun NoMainSeedPhraseView(
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = stringResource(id = R.string.recoverSeedPhrase_header_subtitleNoMainSeedPhrase)
                 .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-            textAlign = TextAlign.Center,
+            textAlign = TextAlign.Start,
             style = RadixTheme.typography.body1Regular
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
