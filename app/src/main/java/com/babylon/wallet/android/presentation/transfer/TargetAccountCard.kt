@@ -160,7 +160,7 @@ fun TargetAccountCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            targetAccount.assets.forEach { spendingAsset ->
+            targetAccount.spendingAssets.forEach { spendingAsset ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SpendingAssetItem(
                         modifier = Modifier.weight(1f),
@@ -255,7 +255,7 @@ fun TargetAccountCardPreview() {
                 targetAccount = TargetAccount.Owned(
                     account = SampleDataProvider().sampleAccount(),
                     id = UUIDGenerator.uuid().toString(),
-                    assets = persistentSetOf(
+                    spendingAssets = persistentSetOf(
                         SpendingAsset.Fungible(
                             resource = Resource.FungibleResource(
                                 resourceAddress = "resource_rdx_abcd",

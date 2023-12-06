@@ -77,9 +77,9 @@ class PrepareManifestDelegate @Inject constructor(
 
             // Deposit to each target account
             targetAccounts.filter { targetAccount ->
-                targetAccount.assets.any { it.address == resource.resourceAddress }
+                targetAccount.spendingAssets.any { it.address == resource.resourceAddress }
             }.forEach { targetAccount ->
-                val spendingFungibleAsset = targetAccount.assets.find {
+                val spendingFungibleAsset = targetAccount.spendingAssets.find {
                     it.address == resource.resourceAddress
                 } as? SpendingAsset.Fungible
                 if (spendingFungibleAsset != null) {
@@ -108,7 +108,7 @@ class PrepareManifestDelegate @Inject constructor(
         targetAccounts: List<TargetAccount>
     ) = apply {
         targetAccounts.forEach { targetAccount ->
-            val nonFungibleSpendingAssets = targetAccount.assets.filterIsInstance<SpendingAsset.NFT>()
+            val nonFungibleSpendingAssets = targetAccount.spendingAssets.filterIsInstance<SpendingAsset.NFT>()
             nonFungibleSpendingAssets.forEach { nft ->
                 val bucket = newBucket()
 
@@ -171,7 +171,7 @@ class PrepareManifestDelegate @Inject constructor(
      */
     private fun TransferViewModel.State.withdrawingFungibles(): Map<Resource.FungibleResource, BigDecimal> {
         val allFungibles: List<SpendingAsset.Fungible> =
-            targetAccounts.map { it.assets.filterIsInstance<SpendingAsset.Fungible>() }.flatten()
+            targetAccounts.map { it.spendingAssets.filterIsInstance<SpendingAsset.Fungible>() }.flatten()
 
         val fungibleAmounts = mutableMapOf<Resource.FungibleResource, BigDecimal>()
         allFungibles.forEach { fungible ->

@@ -56,7 +56,7 @@ class AccountsChooserDelegate @Inject constructor(
                     address = address,
                     validity = validity,
                     id = sheetState.selectedAccount.id,
-                    assets = sheetState.selectedAccount.assets
+                    spendingAssets = sheetState.selectedAccount.spendingAssets
                 ),
                 mode = ChooseAccounts.Mode.Chooser
             )
