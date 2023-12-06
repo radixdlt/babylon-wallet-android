@@ -49,6 +49,7 @@
   <string name="assetDetails_NFTDetails_whatAreNfts">What are NFTs?</string>
   <string name="assetDetails_NFTDetails_id">ID</string>
   <string name="assetDetails_NFTDetails_name">Name</string>
+  <string name="assetDetails_NFTDetails_description">Description</string>
   <string name="assetDetails_NFTDetails_complexData">complex data</string>
   <string name="assetDetails_NFTDetails_resourceName">Name</string>
   <string name="assetDetails_NFTDetails_nftPlural">%d NFTs</string>

@@ -145,6 +145,22 @@ private fun NonFungibleAssetDialogContent(
                             }
                         }
 
+                        state.item.description?.let { description ->
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                            AssetMetadataRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                                key = stringResource(id = R.string.assetDetails_NFTDetails_description)
+                            ) {
+                                Text(
+                                    text = description,
+                                    style = RadixTheme.typography.body1HighImportance,
+                                    color = RadixTheme.colors.gray1
+                                )
+                            }
+                        }
+
                         state.item.nonStandardMetadata.forEach { metadata ->
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             metadata.View(

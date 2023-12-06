@@ -186,6 +186,9 @@ sealed class Resource {
             val name: String?
                 get() = metadata.name()
 
+            val description: String?
+                get() = metadata.description()
+
             val imageUrl: Uri?
                 get() = metadata.keyImageUrl()
 
@@ -196,6 +199,7 @@ sealed class Resource {
                 get() = metadata.filterNot { metadataItem ->
                     metadataItem.key in setOf(
                         ExplicitMetadataKey.NAME,
+                        ExplicitMetadataKey.DESCRIPTION,
                         ExplicitMetadataKey.KEY_IMAGE_URL,
                         ExplicitMetadataKey.CLAIM_AMOUNT,
                         ExplicitMetadataKey.CLAIM_EPOCH
