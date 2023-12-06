@@ -231,6 +231,7 @@ fun AssetsViewWithAssets() {
                         ),
                         pool = Pool(
                             address = "pool_abc",
+                            poolUnitAddress = "resource_abcd",
                             resources = listOf(
                                 Resource.FungibleResource(
                                     resourceAddress = XrdResource.address(),

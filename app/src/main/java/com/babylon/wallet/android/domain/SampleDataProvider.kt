@@ -350,7 +350,8 @@ class SampleDataProvider {
     }
 
     fun samplePoolUnit(): PoolUnit {
-        return PoolUnit(sampleFungibleResources().first(), Pool(address = "pool_tdx_abc", sampleFungibleResources()))
+        val poolUnit = sampleFungibleResources().first()
+        return PoolUnit(poolUnit, Pool(address = "pool_tdx_abc", poolUnitAddress = poolUnit.resourceAddress, sampleFungibleResources()))
     }
 
     fun sampleLSUUnit(): LiquidStakeUnit {
