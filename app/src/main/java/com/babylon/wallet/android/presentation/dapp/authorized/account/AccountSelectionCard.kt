@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +27,8 @@ fun AccountSelectionCard(
     checked: Boolean,
     isSingleChoice: Boolean,
     radioButtonClicked: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isEnabledForSelection: Boolean = true
 ) {
     Row(
         modifier = modifier
@@ -65,6 +66,7 @@ fun AccountSelectionCard(
                     disabledSelectedColor = Color.White
                 ),
                 onClick = radioButtonClicked,
+                enabled = isEnabledForSelection
             )
         } else {
             Checkbox(
@@ -89,7 +91,8 @@ fun DAppAccountCardPreview() {
             address = "jf932j9f32o",
             isSingleChoice = false,
             radioButtonClicked = {},
-            checked = true
+            checked = true,
+            isEnabledForSelection = true
         )
     }
 }
@@ -104,7 +107,8 @@ fun DAppAccountCardLargeFontPreview() {
             address = "jf932j9f32o",
             isSingleChoice = false,
             radioButtonClicked = {},
-            checked = true
+            checked = true,
+            isEnabledForSelection = true
         )
     }
 }
@@ -118,7 +122,8 @@ fun DAppAccountCardSingleChoicePreview() {
             address = "jf932j9f32o",
             isSingleChoice = true,
             radioButtonClicked = {},
-            checked = true
+            checked = true,
+            isEnabledForSelection = true
         )
     }
 }

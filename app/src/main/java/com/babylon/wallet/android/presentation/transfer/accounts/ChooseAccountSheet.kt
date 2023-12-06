@@ -136,7 +136,8 @@ fun ChooseAccountSheet(
                     modifier = Modifier
                         .padding(RadixTheme.dimensions.paddingDefault)
                         .fillMaxWidth(),
-                    enabled = state.isChooseButtonEnabled
+                    enabled = state.isChooseButtonEnabled,
+                    isLoading = state.isLoadingAssetsForAccount
                 )
             }
         }
@@ -333,7 +334,8 @@ private fun ChooseAccountContent(
                         onOwnedAccountSelected(accountItem)
                         focusManager.clearFocus(true)
                     }
-                }
+                },
+                isEnabledForSelection = state.isLoadingAssetsForAccount.not()
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
