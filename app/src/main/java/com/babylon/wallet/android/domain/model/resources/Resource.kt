@@ -17,6 +17,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.poolAddress
 import com.babylon.wallet.android.domain.model.resources.metadata.symbol
 import com.babylon.wallet.android.domain.model.resources.metadata.tags
 import com.babylon.wallet.android.domain.model.resources.metadata.validatorAddress
+import com.babylon.wallet.android.utils.truncate
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
@@ -46,33 +47,45 @@ sealed class Resource {
         val divisibility: Int? = null,
         val metadata: List<Metadata> = emptyList()
     ) : Resource(), Comparable<FungibleResource> {
-        override val name: String
-            get() = metadata.name().orEmpty()
+        override val name: String by lazy {
+            metadata.name().orEmpty().truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
+        }
 
-        val symbol: String
-            get() = metadata.symbol().orEmpty()
+        val symbol: String by lazy {
+            metadata.symbol().orEmpty()
+        }
 
-        val description: String
-            get() = metadata.description().orEmpty()
+        val description: String by lazy {
+            metadata.description().orEmpty().truncate(maxNumberOfCharacters = DESCRIPTION_MAX_CHARS)
+        }
 
-        override val iconUrl: Uri?
-            get() = metadata.iconUrl()
+        override val iconUrl: Uri? by lazy {
+            metadata.iconUrl()
+        }
 
-        val validatorAddress: String?
-            get() = metadata.validatorAddress()?.takeIf { it.startsWith("validator_") }
+        val validatorAddress: String? by lazy {
+            metadata.validatorAddress()?.takeIf { it.startsWith("validator_") }
+        }
 
-        val poolAddress: String?
-            get() = metadata.poolAddress()?.takeIf { it.startsWith("pool_") }
+        val poolAddress: String? by lazy {
+            metadata.poolAddress()?.takeIf { it.startsWith("pool_") }
+        }
 
-        val dappDefinitions: List<String>
-            get() = metadata.dAppDefinitions().orEmpty()
+        val dappDefinitions: List<String> by lazy {
+            metadata.dAppDefinitions().orEmpty()
+        }
 
-        val tags: List<Tag>
-            get() = if (isXrd) {
-                metadata.tags()?.map { Tag.Dynamic(name = it) }?.plus(Tag.Official).orEmpty()
+        val tags: List<Tag> by lazy {
+            if (isXrd) {
+                metadata.tags()?.map {
+                    Tag.Dynamic(name = it.truncate(maxNumberOfCharacters = TAG_MAX_CHARS))
+                }?.plus(Tag.Official).orEmpty()
             } else {
-                metadata.tags()?.map { Tag.Dynamic(name = it) }.orEmpty()
-            }
+                metadata.tags()?.map {
+                    Tag.Dynamic(name = it.truncate(maxNumberOfCharacters = TAG_MAX_CHARS))
+                }.orEmpty()
+            }.take(TAGS_MAX)
+        }
 
         val behaviours: AssetBehaviours? = if (assetBehaviours != null && isXrd) {
             assetBehaviours.filterNot { it == AssetBehaviour.INFORMATION_CHANGEABLE }.toSet()
@@ -143,23 +156,31 @@ sealed class Resource {
         val currentSupply: Int? = null,
         val metadata: List<Metadata> = emptyList(),
     ) : Resource(), Comparable<NonFungibleResource> {
-        override val name: String
-            get() = metadata.name().orEmpty()
+        override val name: String by lazy {
+            metadata.name().orEmpty().truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
+        }
 
-        val description: String
-            get() = metadata.description().orEmpty()
+        val description: String by lazy {
+            metadata.description().orEmpty().truncate(maxNumberOfCharacters = DESCRIPTION_MAX_CHARS)
+        }
 
-        override val iconUrl: Uri?
-            get() = metadata.iconUrl()
+        override val iconUrl: Uri? by lazy {
+            metadata.iconUrl()
+        }
 
-        val tags: List<Tag>
-            get() = metadata.tags().orEmpty().map { Tag.Dynamic(name = it) }
+        val tags: List<Tag> by lazy {
+            metadata.tags().orEmpty().map {
+                Tag.Dynamic(name = it.truncate(maxNumberOfCharacters = TAG_MAX_CHARS))
+            }.take(TAGS_MAX)
+        }
 
-        val validatorAddress: String?
-            get() = metadata.validatorAddress()?.takeIf { it.startsWith("validator_") }
+        val validatorAddress: String? by lazy {
+            metadata.validatorAddress()?.takeIf { it.startsWith("validator_") }
+        }
 
-        val dappDefinitions: List<String>
-            get() = metadata.dAppDefinitions().orEmpty()
+        val dappDefinitions: List<String> by lazy {
+            metadata.dAppDefinitions().orEmpty()
+        }
 
         val behaviours: AssetBehaviours? = assetBehaviours
 
@@ -183,20 +204,24 @@ sealed class Resource {
             val globalAddress: String
                 get() = "$collectionAddress:${localId.code}"
 
-            val name: String?
-                get() = metadata.name()
+            val name: String? by lazy {
+                metadata.name()?.truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
+            }
 
-            val description: String?
-                get() = metadata.description()
+            val description: String? by lazy {
+                metadata.description()?.truncate(maxNumberOfCharacters = DESCRIPTION_MAX_CHARS)
+            }
 
-            val imageUrl: Uri?
-                get() = metadata.keyImageUrl()
+            val imageUrl: Uri? by lazy {
+                metadata.keyImageUrl()
+            }
 
-            val claimAmountXrd: BigDecimal?
-                get() = metadata.claimAmount()
+            val claimAmountXrd: BigDecimal? by lazy {
+                metadata.claimAmount()
+            }
 
-            val nonStandardMetadata: List<Metadata>
-                get() = metadata.filterNot { metadataItem ->
+            val nonStandardMetadata: List<Metadata> by lazy {
+                metadata.filterNot { metadataItem ->
                     metadataItem.key in setOf(
                         ExplicitMetadataKey.NAME,
                         ExplicitMetadataKey.DESCRIPTION,
@@ -205,6 +230,7 @@ sealed class Resource {
                         ExplicitMetadataKey.CLAIM_EPOCH
                     ).map { it.key }
                 }
+            }
 
             fun isReadyToClaim(currentEpoch: Long): Boolean {
                 val claimEpoch = metadata.claimEpoch()
@@ -321,6 +347,13 @@ sealed class Resource {
         }
 
         companion object
+    }
+
+    companion object {
+        private const val NAME_MAX_CHARS = 32
+        private const val DESCRIPTION_MAX_CHARS = 256
+        private const val TAG_MAX_CHARS = 16
+        private const val TAGS_MAX = 100
     }
 }
 

@@ -134,3 +134,8 @@ fun String.sanitizeAndValidateGatewayUrl(isDevModeEnabled: Boolean = false): Str
         }
     }
 }
+
+fun String.truncate(maxNumberOfCharacters: Int, addEllipsis: Boolean = true): String {
+    val ellipsis = if (addEllipsis && length >= maxNumberOfCharacters) "…" else ""
+    return take(maxNumberOfCharacters) + ellipsis
+}
