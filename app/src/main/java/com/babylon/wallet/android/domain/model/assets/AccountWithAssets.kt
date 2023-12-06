@@ -63,6 +63,17 @@ data class Assets(
         }
     }
 
+    val ownedResources: List<Resource> by lazy {
+        fungibles + nonFungibles +
+            poolUnits.map { it.stake } +
+            validatorsWithStakes
+                .mapNotNull { it.liquidStakeUnit }
+                .map { it.fungibleResource } +
+            validatorsWithStakes
+                .mapNotNull { it.stakeClaimNft }
+                .map { it.nonFungibleResource }
+    }
+
     fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = ownedXrd?.let {
         it.ownedAmount?.let { amount ->
             amount >= minimumBalance
