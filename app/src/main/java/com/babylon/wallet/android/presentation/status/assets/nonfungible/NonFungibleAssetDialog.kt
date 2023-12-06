@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
+import com.babylon.wallet.android.presentation.account.composable.View
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -146,11 +147,10 @@ private fun NonFungibleAssetDialogContent(
 
                         state.item.nonStandardMetadata.forEach { metadata ->
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                            AssetMetadataRow(
+                            metadata.View(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                                metadata = metadata
+                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
                             )
                         }
                     } else {

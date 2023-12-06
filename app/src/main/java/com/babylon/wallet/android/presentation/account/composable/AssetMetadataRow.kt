@@ -2,12 +2,11 @@ package com.babylon.wallet.android.presentation.account.composable
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -51,29 +50,39 @@ fun AssetMetadataRow(
 }
 
 @Composable
-fun AssetMetadataRow(
-    modifier: Modifier,
-    metadata: Metadata,
-) {
-    Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top
-    ) {
-        Text(
-            modifier = Modifier.padding(end = RadixTheme.dimensions.paddingMedium),
-            text = metadata.key.replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-            },
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray2,
-            textAlign = TextAlign.Start
-        )
-
-        metadata.ValueView(
-            modifier = Modifier.fillMaxWidth()
-        )
+fun Metadata.View(modifier: Modifier) {
+    if (this is Metadata.Primitive && this.valueType == MetadataType.Url) {
+        Column(
+            modifier = modifier,
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+        ) {
+            KeyView()
+            ValueView()
+        }
+    } else {
+        Row(
+            modifier = modifier,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            KeyView()
+            ValueView()
+        }
     }
+}
+
+@Composable
+fun Metadata.KeyView(
+    modifier: Modifier = Modifier
+) {
+    Text(
+        modifier = modifier.padding(end = RadixTheme.dimensions.paddingMedium),
+        text = key.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+        },
+        style = RadixTheme.typography.body1Regular,
+        color = RadixTheme.colors.gray2,
+        textAlign = TextAlign.Start
+    )
 }
 
 @Composable
@@ -132,15 +141,14 @@ fun Metadata.ValueView(
                     modifier = modifier
                         .fillMaxWidth()
                         .clickable { context.openUrl(value) },
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.Top
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = value,
                         style = RadixTheme.typography.body1StandaloneLink,
                         color = RadixTheme.colors.blue1
                     )
-                    Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
                     Icon(
                         painter = painterResource(id = R.drawable.ic_external_link),
                         contentDescription = null,
