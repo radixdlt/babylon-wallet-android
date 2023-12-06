@@ -4,12 +4,10 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -100,12 +98,10 @@ fun BottomSheetDialogWrapper(
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     Box(
         modifier = modifier
             .fillMaxSize()
             .applyIf(addScrim, Modifier.background(Color.Black.copy(alpha = 0.4f)))
-            .clickable(interactionSource = interactionSource, indication = null) { onDismiss() }
     ) {
         BoxWithConstraints(Modifier.align(Alignment.BottomCenter)) {
             val maxHeight = with(LocalDensity.current) {
