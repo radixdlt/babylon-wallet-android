@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.security
 import rdx.works.profile.domain.security.UpdateDeveloperModeUseCase
 import javax.inject.Inject
@@ -22,7 +21,6 @@ import javax.inject.Inject
 @HiltViewModel
 class AppSettingsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val getBackupStateUseCase: GetBackupStateUseCase,
     private val updateDeveloperModeUseCase: UpdateDeveloperModeUseCase
 ) : StateViewModel<AppSettingsUiState>() {
 
@@ -42,23 +40,6 @@ class AppSettingsViewModel @Inject constructor(
                         SettingsItem.AppSettingsItem.DeveloperMode(isInDeveloperMode)
                     }
                 }
-        }
-        viewModelScope.launch {
-            getBackupStateUseCase().collect { backupState ->
-                _state.update { settingsUiState ->
-                    val settingsList = if (settingsUiState.settings.any { it is SettingsItem.AppSettingsItem.Backups }) {
-                        settingsUiState.settings.mapWhen(
-                            predicate = { it is SettingsItem.AppSettingsItem.Backups },
-                            mutation = { SettingsItem.AppSettingsItem.Backups(backupState = backupState) }
-                        )
-                    } else {
-                        settingsUiState.settings.toMutableList().apply {
-                            add(2, SettingsItem.AppSettingsItem.Backups(backupState))
-                        }
-                    }
-                    settingsUiState.copy(settings = settingsList.toPersistentSet())
-                }
-            }
         }
     }
 

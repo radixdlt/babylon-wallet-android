@@ -42,8 +42,8 @@ class SettingsViewModel @Inject constructor(
     private val defaultSettings = listOf(
         AuthorizedDapps,
         Personas(),
-        AccountSecurityAndSettings,
-        AppSettings(showNotificationWarning = false)
+        AccountSecurityAndSettings(showNotificationWarning = false),
+        AppSettings
     )
 
     val state: StateFlow<SettingsUiState> = combine(
@@ -64,8 +64,8 @@ class SettingsViewModel @Inject constructor(
             mutated.add(topIndex, ImportOlympiaWallet)
         }
 
-        val withBackupWarning = mutated.mapWhen(predicate = { it is AppSettings }) {
-            AppSettings(showNotificationWarning = backupState.isWarningVisible)
+        val withBackupWarning = mutated.mapWhen(predicate = { it is AccountSecurityAndSettings }) {
+            AccountSecurityAndSettings(showNotificationWarning = backupState.isWarningVisible)
         }
 
         val withPersonaWarning = withBackupWarning.mapWhen(predicate = { it is Personas }) {

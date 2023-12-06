@@ -8,6 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
@@ -17,6 +18,8 @@ import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerha
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.seedPhrases
+import com.babylon.wallet.android.presentation.settings.appsettings.backup.backupScreen
+import com.babylon.wallet.android.presentation.settings.appsettings.backup.systemBackupSettingsScreen
 
 const val ROUTE_ACCOUNT_SECURITY_SCREEN = "settings_account_security_screen"
 const val ROUTE_ACCOUNT_SECURITY_GRAPH = "settings_account_security_graph"
@@ -47,6 +50,17 @@ fun NavGraphBuilder.accountSecurityNavGraph(
         )
         importLegacyWalletScreen(
             onBackClick = {
+                navController.popBackStack()
+            }
+        )
+        backupScreen(
+            onSystemBackupSettingsClick = {
+                navController.systemBackupSettingsScreen()
+            },
+            onProfileDeleted = {
+                navController.popBackStack(MAIN_ROUTE, false)
+            },
+            onClose = {
                 navController.popBackStack()
             }
         )
@@ -97,6 +111,9 @@ fun NavGraphBuilder.accountSecurityScreen(
                     }
                     SettingsItem.AccountSecurityAndSettingsItem.DepositGuarantees -> {
                         navController.depositGuaranteesScreen()
+                    }
+                    is SettingsItem.AccountSecurityAndSettingsItem.Backups -> {
+                        navController.backupScreen()
                     }
                     SettingsItem.AccountSecurityAndSettingsItem.ImportFromLegacyWallet -> {
                         navController.importLegacyWalletScreen()
