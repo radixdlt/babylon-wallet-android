@@ -9,6 +9,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
+import com.radixdlt.ret.Address
 import org.apache.commons.validator.routines.InetAddressValidator
 import org.apache.commons.validator.routines.UrlValidator
 import java.net.URLDecoder
@@ -139,3 +140,5 @@ fun String.truncate(maxNumberOfCharacters: Int, addEllipsis: Boolean = true): St
     val ellipsis = if (addEllipsis && length >= maxNumberOfCharacters) "…" else ""
     return take(maxNumberOfCharacters) + ellipsis
 }
+
+fun String.toAddressOrNull() = runCatching { Address(this) }.getOrNull()

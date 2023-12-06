@@ -27,6 +27,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.utils.isValidUrl
+import com.babylon.wallet.android.utils.toAddressOrNull
 
 fun StateNonFungibleDetailsResponseItem.toMetadata(): List<Metadata> {
     val fields = (data?.programmaticJson as? ProgrammaticScryptoSborValueTuple)?.fields ?: return emptyList()
@@ -39,87 +40,110 @@ private fun ProgrammaticScryptoSborValue.toMetadata(): Metadata? = fieldName?.le
         is ProgrammaticScryptoSborValueString -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
-            valueType = if (sborValue.value.isValidUrl()) MetadataType.Url else MetadataType.String
+            valueType = if (sborValue.value.isValidUrl()) {
+                MetadataType.Url
+            } else if (sborValue.value.toAddressOrNull() != null) {
+                MetadataType.Address
+            } else {
+                MetadataType.String
+            }
         )
+
         is ProgrammaticScryptoSborValueDecimal -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Decimal
         )
+
         is ProgrammaticScryptoSborValuePreciseDecimal -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Decimal
         )
+
         is ProgrammaticScryptoSborValueBool -> Metadata.Primitive(
             key = key,
             value = sborValue.value.toString(),
             valueType = MetadataType.Bool
         )
+
         is ProgrammaticScryptoSborValueI8 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.BYTE)
         )
+
         is ProgrammaticScryptoSborValueI16 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.SHORT)
         )
+
         is ProgrammaticScryptoSborValueI32 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.INT)
         )
+
         is ProgrammaticScryptoSborValueI64 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.LONG)
         )
+
         is ProgrammaticScryptoSborValueI128 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.BIG_INT)
         )
+
         is ProgrammaticScryptoSborValueU8 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.BYTE)
         )
+
         is ProgrammaticScryptoSborValueU16 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.SHORT)
         )
+
         is ProgrammaticScryptoSborValueU32 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.INT)
         )
+
         is ProgrammaticScryptoSborValueU64 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.LONG)
         )
+
         is ProgrammaticScryptoSborValueU128 -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.BIG_INT)
         )
+
         is ProgrammaticScryptoSborValueEnum -> Metadata.Primitive(
             key = key,
             value = sborValue.variantName.orEmpty(),
             valueType = MetadataType.Enum
         )
+
         is ProgrammaticScryptoSborValueBytes -> Metadata.Primitive(
             key = key,
             value = sborValue.hex,
             valueType = MetadataType.Bytes
         )
+
         is ProgrammaticScryptoSborValueArray -> Metadata.Collection(
             key = key,
             values = sborValue.elements.mapNotNull { it.toMetadata() }
         )
+
         is ProgrammaticScryptoSborValueMap -> Metadata.Map(
             key = key,
             values = sborValue.propertyEntries.mapNotNull { entry ->
@@ -128,25 +152,38 @@ private fun ProgrammaticScryptoSborValue.toMetadata(): Metadata? = fieldName?.le
                 entryKey to entryValue
             }.toMap()
         )
+
         is ProgrammaticScryptoSborValueTuple -> Metadata.Collection(
             key = key,
             values = sborValue.fields.mapNotNull { it.toMetadata() }
         )
-        is ProgrammaticScryptoSborValueReference -> Metadata.Primitive(
-            key = key,
-            value = sborValue.value,
-            valueType = MetadataType.Address
-        )
-        is ProgrammaticScryptoSborValueOwn -> Metadata.Primitive(
-            key = key,
-            value = sborValue.value,
-            valueType = MetadataType.Address
-        )
+
+        is ProgrammaticScryptoSborValueReference -> if (sborValue.value.toAddressOrNull() != null) {
+            Metadata.Primitive(
+                key = key,
+                value = sborValue.value,
+                valueType = MetadataType.Address
+            )
+        } else {
+            null
+        }
+
+        is ProgrammaticScryptoSborValueOwn -> if (sborValue.value.toAddressOrNull() != null) {
+            Metadata.Primitive(
+                key = key,
+                value = sborValue.value,
+                valueType = MetadataType.Address
+            )
+        } else {
+            null
+        }
+
         is ProgrammaticScryptoSborValueNonFungibleLocalId -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
             valueType = MetadataType.NonFungibleLocalId
         )
+
         else -> null
     }
 }
