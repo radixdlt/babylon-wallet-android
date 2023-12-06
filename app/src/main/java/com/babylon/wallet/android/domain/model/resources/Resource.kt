@@ -70,7 +70,7 @@ sealed class Resource {
             get() = iconUrlMetadataItem?.url
 
         val validatorAddress: String?
-            get() = validatorMetadataItem?.validatorAddress?.takeIf {
+            get() = validatorMetadataItem?.address?.takeIf {
                 runCatching {
                     val retAddress = Address(it)
                     retAddress.entityType() == GLOBAL_VALIDATOR
@@ -78,7 +78,7 @@ sealed class Resource {
             }
 
         val poolAddress: String?
-            get() = poolMetadataItem?.poolAddress?.takeIf {
+            get() = poolMetadataItem?.address?.takeIf {
                 runCatching {
                     val retAddress = Address(it)
                     retAddress.entityType() in setOf(GLOBAL_ONE_RESOURCE_POOL, GLOBAL_TWO_RESOURCE_POOL, GLOBAL_MULTI_RESOURCE_POOL)
@@ -183,7 +183,7 @@ sealed class Resource {
             get() = tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
 
         val validatorAddress: String?
-            get() = validatorMetadataItem?.validatorAddress?.takeIf {
+            get() = validatorMetadataItem?.address?.takeIf {
                 runCatching {
                     val retAddress = Address(it)
                     retAddress.entityType() == GLOBAL_VALIDATOR
