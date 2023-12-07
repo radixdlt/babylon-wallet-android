@@ -91,7 +91,7 @@ fun ActionableAddressView(
             val copyAction = PopupActionItem(
                 name = context.getString(
                     when {
-                        actionableAddress.type == ActionableAddress.Type.Global.Transaction -> R.string.addressAction_copyTransactionId
+                        actionableAddress.type == ActionableAddress.Type.Global.TRANSACTION -> R.string.addressAction_copyTransactionId
                         actionableAddress.isNft || actionableAddress.type is ActionableAddress.Type.LocalId ->
                             R.string.addressAction_copyNftId
                         else -> R.string.addressAction_copyAddress
@@ -109,7 +109,7 @@ fun ActionableAddressView(
                 }
             }
 
-            val qrAction = if (actionableAddress.type == ActionableAddress.Type.Global.Account) {
+            val qrAction = if (actionableAddress.type == ActionableAddress.Type.Global.ACCOUNT) {
                 PopupActionItem(
                     name = context.getString(R.string.addressAction_showAccountQR),
                     icon = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
@@ -118,7 +118,7 @@ fun ActionableAddressView(
                 null
             }
 
-            val primary = if (actionableAddress.type == ActionableAddress.Type.Global.Transaction && openExternalAction != null) {
+            val primary = if (actionableAddress.type == ActionableAddress.Type.Global.TRANSACTION && openExternalAction != null) {
                 openExternalAction
             } else {
                 copyAction
@@ -134,7 +134,7 @@ fun ActionableAddressView(
             )
 
             // Resolve if address is ledger and attach another action
-            if (actionableAddress.type == ActionableAddress.Type.Global.Account) {
+            if (actionableAddress.type == ActionableAddress.Type.Global.ACCOUNT) {
                 if (useCaseProvider.profileUseCase().accountOnCurrentNetwork(actionableAddress.address)?.isLedgerAccount == true) {
                     val verifyOnLedgerAction = PopupActionItem(
                         name = context.getString(R.string.addressAction_verifyAddressLedger),

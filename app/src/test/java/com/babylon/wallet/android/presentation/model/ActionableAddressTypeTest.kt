@@ -23,12 +23,12 @@ internal class ActionableAddressTypeTest(
         @Parameterized.Parameters(name = "\"{0}\" => {1}")
         fun data() : Collection<Array<Any?>> {
             return listOf(
-                arrayOf(RESOURCE_ADDRESS, ActionableAddress.Type.Global.Resource),
-                arrayOf(RESOURCE_NFT_ADDRESS, ActionableAddress.Type.Global.Resource),
-                arrayOf(ACCOUNT_ADDRESS, ActionableAddress.Type.Global.Account),
-                arrayOf(PACKAGE_ADDRESS, ActionableAddress.Type.Global.Package),
-                arrayOf(TRANSACTION_ADDRESS, ActionableAddress.Type.Global.Transaction),
-                arrayOf(COMPONENT_ADDRESS, ActionableAddress.Type.Global.Component),
+                arrayOf(RESOURCE_ADDRESS, ActionableAddress.Type.Global.RESOURCE),
+                arrayOf(RESOURCE_NFT_ADDRESS, ActionableAddress.Type.Global.RESOURCE),
+                arrayOf(ACCOUNT_ADDRESS, ActionableAddress.Type.Global.ACCOUNT),
+                arrayOf(PACKAGE_ADDRESS, ActionableAddress.Type.Global.PACKAGE),
+                arrayOf(TRANSACTION_ADDRESS, ActionableAddress.Type.Global.TRANSACTION),
+                arrayOf(COMPONENT_ADDRESS, ActionableAddress.Type.Global.COMPONENT),
                 arrayOf("#1#", ActionableAddress.Type.LocalId(id = Resource.NonFungibleResource.Item.ID.Companion.from("#1#"))),
                 arrayOf(UNKNOWN_ADDRESS, null)
             )

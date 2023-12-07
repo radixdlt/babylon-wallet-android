@@ -13,7 +13,7 @@ data class ActionableAddress(
 
     val type: Type? = Type.from(address)
 
-    val isNft: Boolean = type is Type.Global.Resource && address.split(NFT_DELIMITER).size > 1
+    val isNft: Boolean = type == Type.Global.RESOURCE && address.split(NFT_DELIMITER).size > 1
 
     val displayAddress: String = if (isNft) {
         val localId = address.split(NFT_DELIMITER)[1]
@@ -31,8 +31,8 @@ data class ActionableAddress(
             is Type.Global -> {
                 when {
                     isNft -> "nft/$addressUrlEncoded"
-                    type == Type.Global.Transaction -> "transaction/$addressUrlEncoded"
-                    type == Type.Global.Validator -> "component/$addressUrlEncoded"
+                    type == Type.Global.TRANSACTION -> "transaction/$addressUrlEncoded"
+                    type == Type.Global.VALIDATOR -> "component/$addressUrlEncoded"
                     else -> "${type.hrp}/$addressUrlEncoded"
                 }
             }
@@ -47,41 +47,27 @@ data class ActionableAddress(
 
     sealed interface Type {
 
-        sealed interface Global : Type {
-            val hrp: String
-
-            data object Package : Global {
-                override val hrp: String
-                    get() = "package"
-            }
-
-            data object Resource : Global {
-                override val hrp: String
-                    get() = "resource"
-            }
-
-            data object Account : Global {
-                override val hrp: String
-                    get() = "account"
-            }
-
-            data object Validator : Global {
-                override val hrp: String
-                    get() = "validator"
-            }
-
-            data object Transaction : Global {
-                override val hrp: String
-                    get() = "txid"
-            }
-
-            data object Component : Global {
-                override val hrp: String
-                    get() = "component"
-            }
+        enum class Global(val hrp: String) : Type {
+            PACKAGE(HRP.PACKAGE),
+            RESOURCE(HRP.RESOURCE),
+            ACCOUNT(HRP.ACCOUNT),
+            VALIDATOR(HRP.VALIDATOR),
+            TRANSACTION(HRP.TRANSACTION),
+            COMPONENT(HRP.COMPONENT);
 
             companion object {
-                val types = setOf(Package, Resource, Account, Validator, Transaction, Component)
+                private object HRP {
+                    const val ACCOUNT = "account"
+                    const val RESOURCE = "resource"
+                    const val PACKAGE = "package"
+                    const val VALIDATOR = "validator"
+                    const val COMPONENT = "component"
+                    const val TRANSACTION = "txid"
+                }
+
+                fun from(address: String): Type? = Type.Global.entries.find {
+                    address.startsWith(it.hrp)
+                }
             }
         }
 
@@ -91,7 +77,7 @@ data class ActionableAddress(
 
         companion object {
             fun from(address: String): Type? {
-                val globalType = Global.types.find { address.startsWith(it.hrp) }
+                val globalType = Global.from(address)
                 return if (globalType == null) {
                     val localId = runCatching {
                         Resource.NonFungibleResource.Item.ID.from(address)

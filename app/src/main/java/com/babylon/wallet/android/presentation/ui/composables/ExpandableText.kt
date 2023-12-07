@@ -104,19 +104,19 @@ fun ExpandableText(
 @Composable
 fun ExpandableTextPreview() {
     val text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse nec est maximus, ultricies purus ut, " +
-            "molestie neque. Curabitur pellentesque tempus leo non tristique. Vivamus aliquam urna imperdiet orci pharetra interdum. " +
-            "Integer molestie, dolor et imperdiet imperdiet, nisl nisl eleifend diam, ut tristique nisl risus et arcu. " +
-            "Praesent interdum, ipsum lobortis tristique aliquet, massa augue congue quam, non scelerisque dui risus dapibus diam. " +
-            "Fusce fringilla scelerisque enim, vitae mattis lacus pretium ut. Donec aliquam tortor in condimentum commodo. " +
-            "Donec euismod commodo egestas. Etiam eu vulputate sem. Morbi tincidunt enim nec odio vehicula lacinia. " +
-            "Maecenas pellentesque est turpis, mollis accumsan lacus efficitur at. Integer in velit sapien. " +
-            "Phasellus finibus tempus elementum. Vestibulum metus diam, ultricies vitae tortor id, accumsan posuere nulla. " +
-            "Morbi efficitur nulla tempus mauris posuere, nec egestas lacus varius. Suspendisse accumsan ultricies volutpat. " +
-            "Phasellus luctus magna nisi, sed pharetra augue maximus vel. Nullam at sapien massa. Curabitur sed hendrerit leo. " +
-            "Vivamus accumsan at risus sed euismod. Vivamus imperdiet efficitur massa pulvinar congue. " +
-            "Curabitur rhoncus convallis tellus, sed vehicula sapien. Nulla rhoncus finibus augue sed accumsan. " +
-            "Phasellus dictum leo vel tellus suscipit, nec laoreet eros ullamcorper. Etiam nisi erat, pellentesque vel pretium et, " +
-            "dignissim ullamcorper lorem. Duis purus est, auctor ut."
+        "molestie neque. Curabitur pellentesque tempus leo non tristique. Vivamus aliquam urna imperdiet orci pharetra interdum. " +
+        "Integer molestie, dolor et imperdiet imperdiet, nisl nisl eleifend diam, ut tristique nisl risus et arcu. " +
+        "Praesent interdum, ipsum lobortis tristique aliquet, massa augue congue quam, non scelerisque dui risus dapibus diam. " +
+        "Fusce fringilla scelerisque enim, vitae mattis lacus pretium ut. Donec aliquam tortor in condimentum commodo. " +
+        "Donec euismod commodo egestas. Etiam eu vulputate sem. Morbi tincidunt enim nec odio vehicula lacinia. " +
+        "Maecenas pellentesque est turpis, mollis accumsan lacus efficitur at. Integer in velit sapien. " +
+        "Phasellus finibus tempus elementum. Vestibulum metus diam, ultricies vitae tortor id, accumsan posuere nulla. " +
+        "Morbi efficitur nulla tempus mauris posuere, nec egestas lacus varius. Suspendisse accumsan ultricies volutpat. " +
+        "Phasellus luctus magna nisi, sed pharetra augue maximus vel. Nullam at sapien massa. Curabitur sed hendrerit leo. " +
+        "Vivamus accumsan at risus sed euismod. Vivamus imperdiet efficitur massa pulvinar congue. " +
+        "Curabitur rhoncus convallis tellus, sed vehicula sapien. Nulla rhoncus finibus augue sed accumsan. " +
+        "Phasellus dictum leo vel tellus suscipit, nec laoreet eros ullamcorper. Etiam nisi erat, pellentesque vel pretium et, " +
+        "dignissim ullamcorper lorem. Duis purus est, auctor ut."
 
     RadixWalletTheme {
         ExpandableText(
@@ -129,7 +129,7 @@ fun ExpandableTextPreview() {
 @Composable
 fun ExpandableTextWithLessLinesPreview() {
     val text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse nec est maximus, ultricies purus ut, " +
-            "molestie neque. Curabitur pellentesque tempus leo non tristique."
+        "molestie neque. Curabitur pellentesque tempus leo non tristique."
 
     RadixWalletTheme {
         ExpandableText(

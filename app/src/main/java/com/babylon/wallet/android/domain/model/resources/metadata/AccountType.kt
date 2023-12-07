@@ -4,7 +4,6 @@ enum class AccountType(val asString: String) {
     DAPP_DEFINITION("dapp definition");
 
     companion object {
-        fun from(value: String) = AccountType.values()
-            .find { it.asString == value }
+        fun from(value: String) = entries.find { it.asString == value }
     }
 }

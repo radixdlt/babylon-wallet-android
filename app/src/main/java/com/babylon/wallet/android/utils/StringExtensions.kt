@@ -1,4 +1,4 @@
-@file:Suppress("MagicNumber")
+@file:Suppress("MagicNumber", "TooManyFunctions")
 
 package com.babylon.wallet.android.utils
 
