@@ -92,7 +92,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             ?.mapNotNull { factorSource ->
                 val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
 
-                if (associatedAccounts.isEmpty() && !factorSource.isBabylon) return@mapNotNull null
+                if (associatedAccounts.isEmpty() && !factorSource.supportsBabylon) return@mapNotNull null
 
                 RecoverableFactorSource(
                     associatedAccounts = associatedAccounts,
@@ -104,7 +104,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     private fun Profile.mainBabylonFactorSourceId(): FactorSource.FactorSourceID.FromHash? {
         val deviceFactorSources = factorSources.filterIsInstance<DeviceFactorSource>()
-        val babylonFactorSources = deviceFactorSources.filter { it.isBabylon }
+        val babylonFactorSources = deviceFactorSources.filter { it.supportsBabylon }
         return if (babylonFactorSources.size == 1) {
             babylonFactorSources.first().id
         } else {

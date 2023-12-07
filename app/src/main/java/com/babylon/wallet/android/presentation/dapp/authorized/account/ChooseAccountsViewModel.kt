@@ -14,7 +14,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import java.util.Collections.emptyList
 import javax.inject.Inject
 
@@ -35,7 +35,7 @@ class ChooseAccountsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.accountsOnCurrentNetwork.collect { accounts ->
+            getProfileUseCase.activeAccountsOnCurrentNetwork.collect { accounts ->
                 // Check if single or multiple choice (radio or chechbox)
                 val isSingleChoice = args.numberOfAccounts == 1 && args.isExactAccountsCount
                 _state.update { it.copy(isSingleChoice = isSingleChoice) }

@@ -279,7 +279,7 @@ private fun BackupScreenContent(
                             horizontalSpacing = RadixTheme.dimensions.paddingMedium
                         )
 
-                        if (isBackupScreenNavigationSupported()) {
+                        if (state.canAccessSystemBackupSettings) {
                             RadixSecondaryButton(
                                 modifier = Modifier.fillMaxWidth(),
                                 text = stringResource(id = R.string.androidProfileBackup_openSystemBackupSettings),

@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.account
 
 import androidx.annotation.VisibleForTesting
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -53,7 +52,6 @@ fun NavController.chooseAccounts(
 }
 
 @Suppress("LongParameterList", "MagicNumber")
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.chooseAccounts(
     onAccountCreationClick: () -> Unit,
     onChooseAccounts: (Event.ChooseAccounts) -> Unit,

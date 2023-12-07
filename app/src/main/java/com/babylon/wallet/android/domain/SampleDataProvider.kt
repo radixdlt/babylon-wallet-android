@@ -308,7 +308,7 @@ class SampleDataProvider {
             ),
             networks = emptyList()
         )
-        val firstAccount = Network.Account.initAccountWithDeviceFactorSource(
+        val firstAccount = Network.Account.initAccountWithBabylonDeviceFactorSource(
             entityIndex = 0,
             displayName = "first account",
             mnemonicWithPassphrase = mnemonicWithPassphrase,

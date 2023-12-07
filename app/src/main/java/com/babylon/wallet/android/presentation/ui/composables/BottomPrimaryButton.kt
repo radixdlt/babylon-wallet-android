@@ -16,7 +16,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 @Composable
 fun BottomPrimaryButton(
     onClick: () -> Unit,
-    enabled: Boolean,
+    enabled: Boolean = true,
     modifier: Modifier = Modifier,
     text: String,
     buttonPadding: PaddingValues = PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault)

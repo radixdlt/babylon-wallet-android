@@ -21,7 +21,7 @@ import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
-import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
+import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -108,7 +108,7 @@ fun OneTimeChooseAccountsScreen(
         modifier = modifier
     )
     sharedState.interactionState?.let {
-        SigningStatusBottomDialog(
+        FactorSourceInteractionBottomDialog(
             modifier = Modifier.fillMaxHeight(0.8f),
             onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
             interactionState = it

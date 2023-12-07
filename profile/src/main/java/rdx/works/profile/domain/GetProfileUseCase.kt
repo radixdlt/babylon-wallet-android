@@ -13,9 +13,12 @@ import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.factorSourceId
+import rdx.works.profile.data.model.extensions.usesCurve25519
+import rdx.works.profile.data.model.extensions.usesSecp256k1
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -42,7 +45,10 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
 val GetProfileUseCase.entitiesOnCurrentNetwork: Flow<List<Entity>>
     get() = invoke().map { it.currentNetwork.accounts.notHiddenAccounts() + it.currentNetwork.personas.notHiddenPersonas() }
 
-val GetProfileUseCase.accountsOnCurrentNetwork
+val GetProfileUseCase.allAccountsOnCurrentNetwork
+    get() = invoke().map { it.currentNetwork.accounts }
+
+val GetProfileUseCase.activeAccountsOnCurrentNetwork
     get() = invoke().map { it.currentNetwork.accounts.notHiddenAccounts() }
 
 val GetProfileUseCase.hiddenAccountsOnCurrentNetwork
@@ -56,16 +62,35 @@ val GetProfileUseCase.factorSources
 val GetProfileUseCase.deviceFactorSources
     get() = invoke().map { profile -> profile.factorSources.filterIsInstance<DeviceFactorSource>() }
 
-suspend fun GetProfileUseCase.babylonDeviceFactorSource(): DeviceFactorSource? {
-    return deviceFactorSources.firstOrNull()?.find { it.isBabylon }
-}
-
 val GetProfileUseCase.deviceFactorSourcesWithAccounts
     get() = invoke().map { profile ->
         val deviceFactorSources = profile.factorSources.filterIsInstance<DeviceFactorSource>()
         val allAccountsOnNetwork = profile.currentNetwork.accounts.notHiddenAccounts()
         deviceFactorSources.associateWith { deviceFactorSource ->
             allAccountsOnNetwork.filter { it.factorSourceId() == deviceFactorSource.id }
+        }
+    }
+
+suspend fun GetProfileUseCase.mainBabylonFactorSource(): DeviceFactorSource? {
+    val babylonFactorSources = deviceFactorSources.firstOrNull()?.filter { it.supportsBabylon } ?: return null
+    return if (babylonFactorSources.size == 1) {
+        babylonFactorSources.first()
+    } else {
+        babylonFactorSources.firstOrNull { it.common.flags.contains(FactorSourceFlag.Main) }
+    }
+}
+
+val GetProfileUseCase.olympiaFactorSourcesWithAccounts
+    get() = deviceFactorSourcesWithAccounts.map {
+        it.filter { entry -> entry.key.supportsOlympia }.mapValues { entry ->
+            entry.value.filter { account -> account.usesSecp256k1 }
+        }
+    }
+
+val GetProfileUseCase.babylonFactorSourcesWithAccounts
+    get() = deviceFactorSourcesWithAccounts.map {
+        it.filter { entry -> entry.key.supportsBabylon }.mapValues { entry ->
+            entry.value.filter { account -> account.usesCurve25519 }
         }
     }
 
@@ -78,13 +103,19 @@ suspend fun GetProfileUseCase.factorSourceById(
     factorSource.id == id
 }
 
+suspend fun GetProfileUseCase.deviceFactorSourceById(
+    id: FactorSource.FactorSourceID
+) = factorSources.first().filterIsInstance<DeviceFactorSource>().firstOrNull { factorSource ->
+    factorSource.id == id
+}
+
 suspend fun GetProfileUseCase.factorSourceByIdValue(
     value: String
 ) = factorSources.first().firstOrNull { factorSource ->
     factorSource.identifier == value
 }
 
-suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = accountsOnCurrentNetwork.first()
+suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = activeAccountsOnCurrentNetwork.first()
 
 suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     withAddress: String
@@ -104,7 +135,7 @@ suspend fun GetProfileUseCase.nextDerivationPathForAccountOnNetwork(networkId: I
 
 fun GetProfileUseCase.accountOnCurrentNetworkWithAddress(
     address: String
-) = accountsOnCurrentNetwork.map { accounts ->
+) = activeAccountsOnCurrentNetwork.map { accounts ->
     accounts.firstOrNull { account ->
         account.address == address
     }

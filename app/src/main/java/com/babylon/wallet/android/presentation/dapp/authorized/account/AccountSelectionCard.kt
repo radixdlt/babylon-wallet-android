@@ -42,13 +42,15 @@ fun AccountSelectionCard(
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            Text(
-                text = accountName,
-                textAlign = TextAlign.Start,
-                maxLines = 2,
-                style = RadixTheme.typography.body1Header,
-                color = Color.White
-            )
+            if (accountName.isNotBlank()) {
+                Text(
+                    text = accountName,
+                    textAlign = TextAlign.Start,
+                    maxLines = 2,
+                    style = RadixTheme.typography.body1Header,
+                    color = Color.White
+                )
+            }
 
             ActionableAddressView(
                 address = address,

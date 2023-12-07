@@ -58,6 +58,6 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 }
 
 internal sealed interface CreateAccountConfirmationEvent : OneOffEvent {
-    object NavigateToHome : CreateAccountConfirmationEvent
-    object FinishAccountCreation : CreateAccountConfirmationEvent
+    data object NavigateToHome : CreateAccountConfirmationEvent
+    data object FinishAccountCreation : CreateAccountConfirmationEvent
 }

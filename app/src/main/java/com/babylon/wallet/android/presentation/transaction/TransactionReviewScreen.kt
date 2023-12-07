@@ -46,7 +46,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
-import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
+import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
@@ -133,7 +133,7 @@ fun TransactionReviewScreen(
                 )
             }
 
-            else -> SigningStatusBottomDialog(
+            else -> FactorSourceInteractionBottomDialog(
                 modifier = Modifier.fillMaxHeight(0.8f),
                 onDismissDialogClick = viewModel::onBackClick,
                 interactionState = it

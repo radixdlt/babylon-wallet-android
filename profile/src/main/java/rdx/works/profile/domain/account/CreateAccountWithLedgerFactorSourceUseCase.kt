@@ -11,7 +11,7 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithLedgerFactorSource
-import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -50,8 +50,8 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
                 appearanceID = totalAccountsOnNetwork % AccountGradientList.count()
             )
             // Add account to the profile
-            val updatedProfile = profile.addAccount(
-                account = newAccount,
+            val updatedProfile = profile.addAccounts(
+                accounts = listOf(newAccount),
                 onNetwork = networkId
             )
             // Save updated profile

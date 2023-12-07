@@ -1,0 +1,259 @@
+package com.babylon.wallet.android.domain.usecases
+
+import com.babylon.wallet.android.data.dapp.LedgerMessenger
+import com.babylon.wallet.android.data.dapp.model.Curve
+import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
+import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.extensions.defaultDepositRule
+import com.babylon.wallet.android.data.gateway.extensions.isEntityActive
+import com.babylon.wallet.android.data.gateway.extensions.toProfileDepositRule
+import com.babylon.wallet.android.data.gateway.generated.models.DefaultDepositRule
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import com.babylon.wallet.android.data.repository.toResult
+import com.babylon.wallet.android.data.transaction.InteractionState
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
+import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
+import com.babylon.wallet.android.presentation.account.recover.RecoveryFactorSource
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
+import rdx.works.core.UUIDGenerator
+import rdx.works.core.then
+import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.derivationPathEntityIndex
+import rdx.works.profile.data.model.pernetwork.usedAccountDerivationIndices
+import rdx.works.profile.derivation.model.KeyType
+import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.di.coroutines.IoDispatcher
+import rdx.works.profile.domain.GetProfileUseCase
+import timber.log.Timber
+import javax.inject.Inject
+
+class RecoverAccountsForFactorSourceUseCase @Inject constructor(
+    private val stateApi: StateApi,
+    private val getProfileUseCase: GetProfileUseCase,
+    private val ledgerMessenger: LedgerMessenger,
+    @IoDispatcher private val defaultDispatcher: CoroutineDispatcher
+) {
+
+    private var nextDerivationPathOffset: Int = 0
+
+    private val _interactionState = MutableStateFlow<InteractionState?>(null)
+    val interactionState: Flow<InteractionState?> = _interactionState.asSharedFlow()
+
+    fun reset() {
+        nextDerivationPathOffset = 0
+    }
+
+    suspend operator fun invoke(
+        recoveryFS: RecoveryFactorSource,
+        currentNetworkId: NetworkId? = null
+    ): Result<List<AccountWithOnLedgerStatus>> {
+        return withContext(defaultDispatcher) {
+            _interactionState.update { null }
+            val profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.invoke().firstOrNull() else null
+            val networkId = currentNetworkId ?: Radix.Gateway.mainnet.network.networkId()
+            val indicesToScan = computeIndicesToScan(profile, networkId, recoveryFS.factorSourceId())
+            val derivedAccounts = when (recoveryFS) {
+                is RecoveryFactorSource.Device -> {
+                    deriveAccountsForDeviceFactorSource(recoveryFS, indicesToScan, networkId)
+                }
+
+                is RecoveryFactorSource.Ledger -> {
+                    val derivedAccountsResult = derivedAccountsForLedger(recoveryFS, indicesToScan, networkId)
+                    if (derivedAccountsResult.isSuccess) {
+                        derivedAccountsResult.getOrNull().orEmpty()
+                    } else {
+                        _interactionState.update { null }
+                        return@withContext Result.failure(
+                            derivedAccountsResult.exceptionOrNull() ?: Exception("Failed to derive public keys with ledger")
+                        )
+                    }
+                }
+
+                is RecoveryFactorSource.VirtualDeviceFactorSource -> {
+                    deriveAccountsForVirtualDeviceFactorSource(recoveryFS, indicesToScan, networkId)
+                }
+            }
+            val resolvedAccounts = resolveAccountsLedgerState(derivedAccounts)
+            if (isActive) {
+                nextDerivationPathOffset = indicesToScan.last() + 1
+            }
+            _interactionState.update { null }
+            return@withContext resolvedAccounts
+        }
+    }
+
+    private suspend fun derivedAccountsForLedger(
+        recoveryFS: RecoveryFactorSource.Ledger,
+        indicesToScan: Set<Int>,
+        networkId: NetworkId
+    ): Result<List<Network.Account>> {
+        _interactionState.update { InteractionState.Ledger.DerivingPublicKey(recoveryFS.factorSource) }
+        val curve = if (recoveryFS.isOlympia) Curve.Secp256k1 else Curve.Curve25519
+        val derivationPaths = indicesToScan.map { index ->
+            if (recoveryFS.isOlympia) {
+                DerivationPath.forLegacyOlympia(index)
+            } else {
+                DerivationPath.forAccount(networkId, index, KeyType.TRANSACTION_SIGNING)
+            }
+        }
+        val derivedAccountsResult = ledgerMessenger.sendDerivePublicKeyRequest(
+            interactionId = UUIDGenerator.uuid().toString(),
+            keyParameters = derivationPaths.map { LedgerInteractionRequest.KeyParameters(curve, it.path) },
+            ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(recoveryFS.factorSource)
+        ).mapCatching { derivePublicKeyResponse ->
+            derivePublicKeyResponse.publicKeysHex
+        }.then { derivedPublicKeys ->
+            val accounts = derivedPublicKeys.map { derivedPublicKey ->
+                val derivationPath = derivationPaths.first { it.path == derivedPublicKey.derivationPath }
+                Network.Account.initAccountWithLedgerFactorSource(
+                    entityIndex = derivationPath.derivationPathEntityIndex(),
+                    displayName = "Unnamed",
+                    networkId = networkId,
+                    appearanceID = derivationPath.derivationPathEntityIndex() % AccountGradientList.count(),
+                    ledgerFactorSource = recoveryFS.factorSource,
+                    derivedPublicKeyHex = derivedPublicKey.publicKeyHex,
+                    derivationPath = derivationPath,
+                    isOlympia = recoveryFS.isOlympia
+                )
+            }
+            Result.success(accounts)
+        }
+        return derivedAccountsResult
+    }
+
+    private fun deriveAccountsForVirtualDeviceFactorSource(
+        recoveryFS: RecoveryFactorSource.VirtualDeviceFactorSource,
+        indicesToScan: Set<Int>,
+        networkId: NetworkId
+    ): List<Network.Account> {
+        _interactionState.update { InteractionState.Device.DerivingAccounts(recoveryFS.virtualDeviceFactorSource) }
+        Timber.tag("Recovery Scan").d("Last used index ${indicesToScan.last()}")
+        return indicesToScan.map { index ->
+            Network.Account.initAccountWithBabylonDeviceFactorSource(
+                entityIndex = index,
+                displayName = "Unnamed",
+                mnemonicWithPassphrase = recoveryFS.mnemonicWithPassphrase,
+                deviceFactorSource = recoveryFS.virtualDeviceFactorSource,
+                networkId = networkId,
+                appearanceID = index % AccountGradientList.count()
+            )
+        }
+    }
+
+    private fun deriveAccountsForDeviceFactorSource(
+        recoveryFS: RecoveryFactorSource.Device,
+        indicesToScan: Set<Int>,
+        networkId: NetworkId
+    ): List<Network.Account> {
+        _interactionState.update { InteractionState.Device.DerivingAccounts(recoveryFS.factorSource) }
+        Timber.tag("Recovery Scan").d("Last used index ${indicesToScan.last()}")
+        val mnemonic = recoveryFS.mnemonicWithPassphrase
+        return indicesToScan.map { index ->
+            if (recoveryFS.factorSource.supportsOlympia) {
+                Network.Account.initAccountWithOlympiaDeviceFactorSource(
+                    entityIndex = index,
+                    displayName = "Unnamed",
+                    mnemonicWithPassphrase = mnemonic,
+                    deviceFactorSource = recoveryFS.factorSource,
+                    networkId = networkId,
+                    appearanceID = index % AccountGradientList.count(),
+                )
+            } else {
+                Network.Account.initAccountWithBabylonDeviceFactorSource(
+                    entityIndex = index,
+                    displayName = "Unnamed",
+                    mnemonicWithPassphrase = recoveryFS.mnemonicWithPassphrase,
+                    deviceFactorSource = recoveryFS.factorSource,
+                    networkId = networkId,
+                    appearanceID = index % AccountGradientList.count()
+                )
+            }
+        }
+    }
+
+    private fun computeIndicesToScan(
+        profile: Profile?,
+        networkId: NetworkId,
+        factorSourceID: FactorSource.FactorSourceID
+    ): Set<Int> {
+        val usedIndices = profile?.usedAccountDerivationIndices(networkId, factorSourceID).orEmpty()
+        val indicesToScan = mutableSetOf<Int>()
+        val startIndex = nextDerivationPathOffset
+        var currentIndex = startIndex
+        Timber.tag("Recovery Scan").d("Starting scan at $startIndex")
+        do {
+            if (currentIndex !in usedIndices) {
+                indicesToScan.add(currentIndex)
+            }
+            currentIndex++
+        } while (indicesToScan.size < accountsPerScanPage)
+        return indicesToScan
+    }
+
+    private suspend fun resolveAccountsLedgerState(derivedAccounts: List<Network.Account>): Result<List<AccountWithOnLedgerStatus>> {
+        val activeAddresses = mutableSetOf<String>()
+        val defaultDepositRules = mutableMapOf<String, DefaultDepositRule>()
+        derivedAccounts.map { it.address }.chunked(maxItemsPerRequest).forEach { addressesChunk ->
+            stateApi.stateEntityDetails(
+                StateEntityDetailsRequest(
+                    addressesChunk,
+                    optIns = StateEntityDetailsOptIns(
+                        explicitMetadata = listOf(
+                            ExplicitMetadataKey.OWNER_BADGE.key,
+                            ExplicitMetadataKey.OWNER_KEYS.key,
+                        )
+                    )
+                )
+            ).toResult().onSuccess { response ->
+                response.items.forEach { item ->
+                    if (item.isEntityActive) {
+                        activeAddresses.add(item.address)
+                        item.defaultDepositRule?.let { defaultDepositRule ->
+                            defaultDepositRules[item.address] = defaultDepositRule
+                        }
+                    }
+                }
+            }.onFailure {
+                return Result.failure(it)
+            }
+        }
+        return Result.success(
+            derivedAccounts.map { account ->
+                val defaultDepositRule = defaultDepositRules[account.address]?.toProfileDepositRule()
+                val updatedThirdPartyDeposits = account.onLedgerSettings.thirdPartyDeposits.copy(
+                    depositRule = defaultDepositRule ?: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll,
+                    depositorsAllowList = null,
+                    assetsExceptionList = null
+                )
+                AccountWithOnLedgerStatus(
+                    account = account.copy(
+                        onLedgerSettings = account.onLedgerSettings.copy(thirdPartyDeposits = updatedThirdPartyDeposits)
+                    ),
+                    status = if (activeAddresses.contains(account.address)) {
+                        AccountWithOnLedgerStatus.Status.Active
+                    } else {
+                        AccountWithOnLedgerStatus.Status.Inactive
+                    }
+                )
+            }
+        )
+    }
+
+    companion object {
+        private const val maxItemsPerRequest = 20
+        private const val accountsPerScanPage = 50
+    }
+}

@@ -5,15 +5,20 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
 import rdx.works.core.UUIDGenerator
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class GenerateProfileUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
+    private val mnemonicRepository: MnemonicRepository,
     private val deviceInfoRepository: DeviceInfoRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
@@ -29,6 +34,29 @@ class GenerateProfileUseCase @Inject constructor(
                 )
 
                 profileRepository.saveProfile(profile)
+
+                profile
+            }
+        }
+    }
+
+    suspend fun initWithBdfsAndAccounts(
+        bdfs: DeviceFactorSource,
+        mnemonicWithPassphrase: MnemonicWithPassphrase,
+        accounts: List<Network.Account>
+    ): Profile {
+        return when (val state = profileRepository.profileState.first()) {
+            is ProfileState.Restored -> state.profile
+            else -> withContext(defaultDispatcher) {
+                val profile = Profile.initProfileWithRecoveredBDFS(
+                    id = UUIDGenerator.uuid().toString(),
+                    deviceInfo = deviceInfoRepository.getDeviceInfo(),
+                    creationDate = InstantGenerator(),
+                    bdfs = bdfs,
+                    accounts = accounts
+                )
+                profileRepository.saveProfile(profile)
+                mnemonicRepository.saveMnemonic(bdfs.id, mnemonicWithPassphrase)
 
                 profile
             }

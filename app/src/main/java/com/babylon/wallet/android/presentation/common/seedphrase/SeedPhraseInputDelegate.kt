@@ -14,6 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 
 class SeedPhraseInputDelegate(
     private val scope: CoroutineScope
@@ -137,6 +138,9 @@ class SeedPhraseInputDelegate(
 
         val wordsPhrase: String
             get() = seedPhraseWords.joinToString(separator = " ") { it.value }
+
+        val mnemonicWithPassphrase: MnemonicWithPassphrase
+            get() = MnemonicWithPassphrase(wordsPhrase, bip39Passphrase)
     }
 
     override fun initialState(): State {

@@ -14,7 +14,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -54,7 +54,7 @@ class MainViewModel @Inject constructor(
     private val verifyDappUseCase: VerifyDappUseCase,
     private val appEventBus: AppEventBus,
     getProfileStateUseCase: GetProfileStateUseCase,
-    private val deviceSecurityHelper: DeviceSecurityHelper,
+    private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
     private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase
@@ -250,7 +250,7 @@ class MainViewModel @Inject constructor(
     fun onAppToForeground() {
         viewModelScope.launch {
             checkMnemonicIntegrityUseCase()
-            val deviceNotSecure = deviceSecurityHelper.isDeviceSecure().not()
+            val deviceNotSecure = deviceCapabilityHelper.isDeviceSecure().not()
             if (deviceNotSecure) {
                 appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
             } else {

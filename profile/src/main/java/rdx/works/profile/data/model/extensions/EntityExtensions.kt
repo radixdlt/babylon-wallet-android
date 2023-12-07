@@ -10,20 +10,43 @@ import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.data.model.pernetwork.derivationPathEntityIndex
 
-fun Entity.usesCurve25519(): Boolean {
-    val unsecuredEntityControl = (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
-    return when (val virtualBadge = unsecuredEntityControl?.transactionSigning?.badge) {
-        is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-            virtualBadge.publicKey.curve == Slip10Curve.CURVE_25519
+val Entity.usesCurve25519: Boolean
+    get() {
+        val unsecuredEntityControl = (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
+        return when (val virtualBadge = unsecuredEntityControl?.transactionSigning?.badge) {
+            is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+                virtualBadge.publicKey.curve == Slip10Curve.CURVE_25519
+            }
+
+            null -> false
         }
-
-        null -> false
     }
-}
+
+val Entity.usesSecp256k1: Boolean
+    get() {
+        val unsecuredEntityControl = (securityState as? SecurityState.Unsecured)?.unsecuredEntityControl
+        return when (val virtualBadge = unsecuredEntityControl?.transactionSigning?.badge) {
+            is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+                virtualBadge.publicKey.curve == Slip10Curve.SECP_256K1
+            }
+
+            null -> false
+        }
+    }
 
 fun Entity.factorSourceId(): FactorSource.FactorSourceID {
     return (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId
+}
+
+fun Entity.derivationPathEntityIndex(): Int {
+    val transactionSigning = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning
+    return when (transactionSigning.badge) {
+        is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+            transactionSigning.badge.derivationPath.derivationPathEntityIndex()
+        }
+    }
 }
 
 fun Entity.hasAuthSigning(): Boolean {

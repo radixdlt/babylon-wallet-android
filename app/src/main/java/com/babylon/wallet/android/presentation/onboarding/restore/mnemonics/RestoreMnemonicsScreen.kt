@@ -51,7 +51,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsViewModel.Event
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -111,9 +110,9 @@ fun RestoreMnemonicsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is Event.FinishRestoration -> onDismiss(it.isMovingToMain)
-                is Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
-                is Event.CloseApp -> onCloseApp()
+                is RestoreMnemonicsViewModel.Event.FinishRestoration -> onDismiss(it.isMovingToMain)
+                is RestoreMnemonicsViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
+                is RestoreMnemonicsViewModel.Event.CloseApp -> onCloseApp()
             }
         }
     }

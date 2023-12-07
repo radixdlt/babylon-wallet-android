@@ -3,8 +3,12 @@
 
 package rdx.works.profile.data.model.pernetwork
 
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.OlympiaNetwork
 import com.radixdlt.ret.PublicKey
+import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
 import com.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
 import com.radixdlt.ret.deriveVirtualIdentityAddressFromPublicKey
 import kotlinx.serialization.EncodeDefault
@@ -24,8 +28,12 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentGateway
+import rdx.works.profile.data.model.extensions.derivationPathEntityIndex
+import rdx.works.profile.data.model.extensions.factorSourceId
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.EntityFlag
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
@@ -115,10 +123,10 @@ data class Network(
                 val depositRule: DepositRule = DepositRule.AcceptAll,
                 @SerialName("assetsExceptionList")
                 @EncodeDefault
-                val assetsExceptionList: List<AssetException> = emptyList(),
+                val assetsExceptionList: List<AssetException>? = emptyList(),
                 @SerialName("depositorsAllowList")
                 @EncodeDefault
-                val depositorsAllowList: List<DepositorAddress> = emptyList(),
+                val depositorsAllowList: List<DepositorAddress>? = emptyList(),
             ) {
                 @Serializable
                 enum class DepositRule {
@@ -190,7 +198,7 @@ data class Network(
 
         companion object {
             @Suppress("LongParameterList")
-            fun initAccountWithDeviceFactorSource(
+            fun initAccountWithBabylonDeviceFactorSource(
                 entityIndex: Int,
                 displayName: String,
                 mnemonicWithPassphrase: MnemonicWithPassphrase,
@@ -230,6 +238,41 @@ data class Network(
             }
 
             @Suppress("LongParameterList")
+            fun initAccountWithOlympiaDeviceFactorSource(
+                entityIndex: Int,
+                displayName: String,
+                mnemonicWithPassphrase: MnemonicWithPassphrase,
+                deviceFactorSource: DeviceFactorSource,
+                networkId: NetworkId,
+                appearanceID: Int,
+                onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init()
+            ): Account {
+                val derivationPath = DerivationPath.forLegacyOlympia(entityIndex)
+                val publicKey = mnemonicWithPassphrase.compressedPublicKey(Slip10Curve.SECP_256K1, derivationPath)
+                val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
+                    publicKey = PublicKey.Secp256k1(publicKey.toUByteList()),
+                    olympiaNetwork = OlympiaNetwork.MAINNET
+                )
+                val newBabylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
+                    olympiaAccountAddress = olympiaAddress,
+                    networkId = networkId.value.toUByte()
+                ).addressString()
+                return Account(
+                    displayName = displayName,
+                    address = newBabylonAddress,
+                    appearanceID = appearanceID,
+                    networkID = networkId.value,
+                    securityState = SecurityState.unsecured(
+                        entityIndex = entityIndex,
+                        publicKey = FactorInstance.PublicKey(publicKey.toHexString(), Slip10Curve.SECP_256K1),
+                        derivationPath = derivationPath,
+                        factorSourceId = deviceFactorSource.id
+                    ),
+                    onLedgerSettings = onLedgerSettings
+                )
+            }
+
+            @Suppress("LongParameterList")
             fun initAccountWithLedgerFactorSource(
                 entityIndex: Int,
                 displayName: String,
@@ -238,23 +281,46 @@ data class Network(
                 networkId: NetworkId,
                 derivationPath: DerivationPath,
                 appearanceID: Int,
-                onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init()
+                onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init(),
+                isOlympia: Boolean = false
             ): Account {
-                val derivationPathToCheck = DerivationPath.forAccount(
-                    networkId = networkId,
-                    accountIndex = entityIndex,
-                    keyType = KeyType.TRANSACTION_SIGNING
-                )
+                val derivationPathToCheck = if (isOlympia) {
+                    DerivationPath.forLegacyOlympia(
+                        accountIndex = entityIndex,
+                    )
+                } else {
+                    DerivationPath.forAccount(
+                        networkId = networkId,
+                        accountIndex = entityIndex,
+                        keyType = KeyType.TRANSACTION_SIGNING
+                    )
+                }
                 require(derivationPathToCheck.path == derivationPath.path)
 
-                val address = deriveAccountAddress(
-                    networkID = networkId,
-                    publicKey = PublicKey.Ed25519(derivedPublicKeyHex.decodeHex())
-                )
+                val address = if (isOlympia) {
+                    val pk = PublicKey.Secp256k1(derivedPublicKeyHex.decodeHex().toUByteList())
+                    val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
+                        publicKey = pk,
+                        olympiaNetwork = OlympiaNetwork.MAINNET
+                    )
+                    Address.virtualAccountAddressFromOlympiaAddress(
+                        olympiaAccountAddress = olympiaAddress,
+                        networkId = networkId.value.toUByte()
+                    ).addressString()
+                } else {
+                    deriveAccountAddress(
+                        networkID = networkId,
+                        publicKey = PublicKey.Ed25519(derivedPublicKeyHex.decodeHex().toUByteList())
+                    )
+                }
 
                 val unsecuredSecurityState = SecurityState.unsecured(
                     entityIndex = entityIndex,
-                    publicKey = FactorInstance.PublicKey(derivedPublicKeyHex, Slip10Curve.CURVE_25519),
+                    publicKey = if (isOlympia) {
+                        FactorInstance.PublicKey(derivedPublicKeyHex, Slip10Curve.SECP_256K1)
+                    } else {
+                        FactorInstance.PublicKey(derivedPublicKeyHex, Slip10Curve.CURVE_25519)
+                    },
                     derivationPath = derivationPath,
                     factorSourceId = ledgerFactorSource.id
                 )
@@ -476,17 +542,16 @@ data class Shared<T>(
     @SerialName("request") val request: RequestedNumber
 )
 
-fun Profile.addAccount(
-    account: Network.Account,
+fun Profile.addAccounts(
+    accounts: List<Network.Account>,
     onNetwork: NetworkId
 ): Profile {
     val networkExist = this.networks.any { onNetwork.value == it.networkID }
     val newNetworks = if (networkExist) {
         this.networks.mapWhen(predicate = { network -> network.networkID == onNetwork.value }) { network ->
-            val updatedAccounts = network.accounts.toIdentifiedArrayList()
-            updatedAccounts.add(account)
+            val updatedAccounts = network.accounts + accounts
             Network(
-                accounts = updatedAccounts,
+                accounts = updatedAccounts.toIdentifiedArrayList(),
                 authorizedDapps = network.authorizedDapps,
                 networkID = network.networkID,
                 personas = network.personas
@@ -494,7 +559,7 @@ fun Profile.addAccount(
         }
     } else {
         this.networks + Network(
-            accounts = identifiedArrayListOf(account),
+            accounts = accounts.toIdentifiedArrayList(),
             authorizedDapps = listOf(),
             networkID = onNetwork.value,
             personas = emptyIdentifiedArrayList()
@@ -583,16 +648,55 @@ fun Profile.addNetworkIfDoesNotExist(
     }
 }
 
+fun Profile.usedAccountDerivationIndices(
+    forNetworkId: NetworkId? = null,
+    factorSourceID: FactorSource.FactorSourceID? = null
+): Set<Int> {
+    val network = networks.firstOrNull { it.networkID == forNetworkId?.value } ?: return emptySet()
+    val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource()
+    return network.accounts.filter { it.factorSourceId() == factorSource?.id }.map { it.derivationPathEntityIndex() }.toSet()
+}
+
 fun Profile.nextAccountIndex(
-    forNetworkId: NetworkId
+    forNetworkId: NetworkId? = null,
+    factorSourceID: FactorSource.FactorSourceID? = null
 ): Int {
-    return networks.firstOrNull { it.networkID == forNetworkId.value }?.accounts?.size ?: 0
+    val network = networks.firstOrNull { it.networkID == forNetworkId?.value } ?: return 0
+    val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource() ?: return 0
+    val accountsControlledByFactorSource = network.accounts.filter { it.factorSourceId() == factorSource.id }
+    return if (accountsControlledByFactorSource.isEmpty()) {
+        0
+    } else {
+        accountsControlledByFactorSource.maxOf { it.derivationPathEntityIndex() } + 1
+    }
 }
 
 fun Profile.nextPersonaIndex(
-    forNetworkId: NetworkId
+    forNetworkId: NetworkId,
+    factorSourceID: FactorSource.FactorSourceID? = null
 ): Int {
-    return networks.first { it.networkID == forNetworkId.value }.personas.size
+    val network = networks.firstOrNull { it.networkID == forNetworkId.value } ?: return 0
+    val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource() ?: return 0
+    val personasControlledByFactorSource = network.personas.filter { it.factorSourceId() == factorSource.id }
+    return if (personasControlledByFactorSource.isEmpty()) {
+        0
+    } else {
+        personasControlledByFactorSource.maxOf { it.derivationPathEntityIndex() } + 1
+    }
+}
+
+fun Profile.nextAppearanceId(
+    forNetworkId: NetworkId? = null,
+    factorSourceID: FactorSource.FactorSourceID? = null
+): Int {
+    val network = networks.firstOrNull { it.networkID == forNetworkId?.value } ?: return 0
+    val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource() ?: return 0
+    val accountsControlledByFactorSource = network.accounts.filter { it.factorSourceId() == factorSource.id }
+    return if (accountsControlledByFactorSource.isEmpty()) {
+        0
+    } else {
+        (accountsControlledByFactorSource.maxOf { it.appearanceID } + 1) % AccountGradientList.size
+    }
 }
 
 fun Profile.updatePersona(

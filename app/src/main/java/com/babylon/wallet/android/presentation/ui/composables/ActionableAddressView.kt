@@ -56,6 +56,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateways
@@ -86,8 +88,11 @@ fun ActionableAddressView(
 
     LaunchedEffect(actionableAddress) {
         scope.launch {
-            val networkId = useCaseProvider.profileUseCase().gateways.first().current().network.networkId()
-
+            val networkId = if (useCaseProvider.profileUseCase().isInitialized()) {
+                useCaseProvider.profileUseCase().gateways.first().current().network.networkId()
+            } else {
+                Radix.Network.mainnet.networkId()
+            }
             val copyAction = PopupActionItem(
                 name = context.getString(
                     when {

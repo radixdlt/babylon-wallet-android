@@ -37,19 +37,19 @@ import rdx.works.profile.domain.p2pLinks
 import javax.inject.Inject
 
 @HiltViewModel
-class CreateAccountWithLedgerViewModel @Inject constructor(
+class ChooseLedgerViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
     private val ledgerMessenger: LedgerMessenger,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
-) : StateViewModel<CreateAccountWithLedgerUiState>(),
-    OneOffEventHandler<CreateAccountWithLedgerEvent> by OneOffEventHandlerImpl() {
+) : StateViewModel<ChooseLedgerUiState>(),
+    OneOffEventHandler<ChooseLedgerEvent> by OneOffEventHandlerImpl() {
 
-    private val args = CreateAccountWithLedgerArgs(savedStateHandle)
+    private val args = ChooserLedgerArgs(savedStateHandle)
 
-    override fun initialState(): CreateAccountWithLedgerUiState = CreateAccountWithLedgerUiState()
+    override fun initialState(): ChooseLedgerUiState = ChooseLedgerUiState()
 
     init {
         viewModelScope.launch {
@@ -99,7 +99,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         _state.update {
             it.copy(
                 showContent = if (linkConnector) {
-                    CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector(
+                    ChooseLedgerUiState.ShowContent.LinkNewConnector(
                         source == ShowLinkConnectorPromptState.Source.AddLedgerDevice
                     )
                 } else {
@@ -110,53 +110,68 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         }
     }
 
+    @Suppress("LongMethod")
     fun onUseLedgerContinueClick(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
         state.value.ledgerDevices.firstOrNull { selectableLedgerDevice ->
             selectableLedgerDevice.selected
         }?.let { ledgerFactorSource ->
             viewModelScope.launch {
-                // check again if link connector exists
-                if (getProfileUseCase.p2pLinks.first().isEmpty()) {
-                    _state.update {
-                        it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector(false))
-                    }
-                    return@launch
-                } else {
-                    if (!state.value.isLinkConnectionEstablished) {
-                        _state.update {
-                            it.copy(
-                                showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
-                                    ShowLinkConnectorPromptState.Source.UseLedger
+                when (args.ledgerSelectionPurpose) {
+                    LedgerSelectionPurpose.CreateAccount -> {
+                        // check again if link connector exists
+                        if (getProfileUseCase.p2pLinks.first().isEmpty()) {
+                            _state.update {
+                                it.copy(showContent = ChooseLedgerUiState.ShowContent.LinkNewConnector(false))
+                            }
+                            return@launch
+                        } else {
+                            if (!state.value.isLinkConnectionEstablished) {
+                                _state.update {
+                                    it.copy(
+                                        showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
+                                            ShowLinkConnectorPromptState.Source.UseLedger
+                                        )
+                                    )
+                                }
+                                return@launch
+                            }
+                        }
+                        if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
+                            val authenticationResult = deviceBiometricAuthenticationProvider()
+                            if (authenticationResult) {
+                                ensureBabylonFactorSourceExistUseCase()
+                            } else {
+                                // don't move forward without babylon factor source
+                                return@launch
+                            }
+                        }
+                        val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnNetwork(networkIdToCreateAccountOn())
+                        val result = ledgerMessenger.sendDerivePublicKeyRequest(
+                            interactionId = UUIDGenerator.uuid().toString(),
+                            keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
+                            ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource.data)
+                        )
+                        result.onSuccess { response ->
+                            appEventBus.sendEvent(
+                                AppEvent.DerivedAccountPublicKeyWithLedger(
+                                    factorSourceID = ledgerFactorSource.data.id,
+                                    derivationPath = derivationPath,
+                                    derivedPublicKeyHex = response.publicKeysHex.first().publicKeyHex
                                 )
                             )
+                            sendEvent(ChooseLedgerEvent.DerivedPublicKeyForAccount)
                         }
-                        return@launch
                     }
-                }
-                if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
-                    val authenticationResult = deviceBiometricAuthenticationProvider()
-                    if (authenticationResult) {
-                        ensureBabylonFactorSourceExistUseCase()
-                    } else {
-                        // don't move forward without babylon factor source
-                        return@launch
-                    }
-                }
-                val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnNetwork(networkIdToCreateAccountOn())
-                val result = ledgerMessenger.sendDerivePublicKeyRequest(
-                    interactionId = UUIDGenerator.uuid().toString(),
-                    keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
-                    ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource.data)
-                )
-                result.onSuccess { response ->
-                    appEventBus.sendEvent(
-                        AppEvent.DerivedAccountPublicKeyWithLedger(
-                            factorSourceID = ledgerFactorSource.data.id,
-                            derivationPath = derivationPath,
-                            derivedPublicKeyHex = response.publicKeysHex.first().publicKeyHex
+
+                    LedgerSelectionPurpose.RecoveryScanBabylon,
+                    LedgerSelectionPurpose.RecoveryScanOlympia -> {
+                        sendEvent(
+                            ChooseLedgerEvent.RecoverAccounts(
+                                ledgerFactorSource.data,
+                                args.ledgerSelectionPurpose == LedgerSelectionPurpose.RecoveryScanOlympia
+                            )
                         )
-                    )
-                    sendEvent(CreateAccountWithLedgerEvent.DerivedPublicKeyForAccount)
+                    }
                 }
             }
         }
@@ -174,7 +189,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update {
                 if (getProfileUseCase.p2pLinks.first().isEmpty()) {
-                    it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector())
+                    it.copy(showContent = ChooseLedgerUiState.ShowContent.LinkNewConnector())
                 } else {
                     if (!it.isLinkConnectionEstablished) {
                         it.copy(
@@ -183,7 +198,7 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
                             )
                         )
                     } else {
-                        it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLedger)
+                        it.copy(showContent = ChooseLedgerUiState.ShowContent.AddLedger)
                     }
                 }
             }
@@ -192,13 +207,13 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
 
     private fun showAddLedgerDeviceContent() {
         _state.update {
-            it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLedger)
+            it.copy(showContent = ChooseLedgerUiState.ShowContent.AddLedger)
         }
     }
 
     fun onCloseClick() {
         _state.update {
-            it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.ChooseLedger)
+            it.copy(showContent = ChooseLedgerUiState.ShowContent.ChooseLedger)
         }
     }
 
@@ -218,12 +233,12 @@ class CreateAccountWithLedgerViewModel @Inject constructor(
 
     fun onLinkConnectorClick(addDeviceAfterLinking: Boolean) {
         _state.update {
-            it.copy(showContent = CreateAccountWithLedgerUiState.ShowContent.AddLinkConnector(addDeviceAfterLinking))
+            it.copy(showContent = ChooseLedgerUiState.ShowContent.AddLinkConnector(addDeviceAfterLinking))
         }
     }
 }
 
-data class CreateAccountWithLedgerUiState(
+data class ChooseLedgerUiState(
     val loading: Boolean = false,
     val showContent: ShowContent = ShowContent.ChooseLedger,
     val ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>> = persistentListOf(),
@@ -241,6 +256,7 @@ data class CreateAccountWithLedgerUiState(
     }
 }
 
-internal sealed interface CreateAccountWithLedgerEvent : OneOffEvent {
-    data object DerivedPublicKeyForAccount : CreateAccountWithLedgerEvent
+internal sealed interface ChooseLedgerEvent : OneOffEvent {
+    data object DerivedPublicKeyForAccount : ChooseLedgerEvent
+    data class RecoverAccounts(val factorSource: FactorSource, val isOlympia: Boolean) : ChooseLedgerEvent
 }

@@ -15,9 +15,9 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.extensions.addP2PLink
 import rdx.works.profile.data.model.extensions.renameAccountDisplayName
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithDeviceFactorSource
+import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithBabylonDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
-import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
@@ -59,7 +59,7 @@ class ProfileGenerationTest {
 
         println("Profile generated $profile")
 
-        val firstAccount = initAccountWithDeviceFactorSource(
+        val firstAccount = initAccountWithBabylonDeviceFactorSource(
             entityIndex = 0,
             displayName = "first account",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
@@ -68,7 +68,7 @@ class ProfileGenerationTest {
             appearanceID = 0
         )
 
-        profile = profile.addAccount(
+        profile = profile.addAccounts(
             account = firstAccount,
             onNetwork = defaultNetwork.networkId()
         )

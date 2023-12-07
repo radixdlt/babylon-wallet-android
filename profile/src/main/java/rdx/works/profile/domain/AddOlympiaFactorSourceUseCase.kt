@@ -1,5 +1,6 @@
 package rdx.works.profile.domain
 
+import rdx.works.core.mapWhen
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -19,26 +20,44 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
 
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): FactorSource.FactorSourceID.FromHash {
         val olympiaFactorSource = DeviceFactorSource.olympia(mnemonicWithPassphrase)
-        val existingFactorSource = getProfileUseCase.factorSourceById(olympiaFactorSource.id)
+        val existingFactorSource = getProfileUseCase.deviceFactorSourceById(olympiaFactorSource.id)
         val mnemonicExist = mnemonicRepository.mnemonicExist(olympiaFactorSource.id)
         if (mnemonicExist) {
+            existingFactorSource?.let { existing ->
+                if (existingFactorSource.common.cryptoParameters.supportsBabylon) {
+                    profileRepository.updateProfile { profile ->
+                        profile.copy(
+                            factorSources = profile.factorSources.mapWhen(predicate = {
+                                it.id == existing.id
+                            }, mutation = {
+                                existing.copy(
+                                    common = existing.common.copy(
+                                        cryptoParameters = FactorSource.Common.CryptoParameters.olympiaBackwardsCompatible
+                                    )
+                                )
+                            }).toIdentifiedArrayList()
+                        )
+                    }
+                }
+            }
+            return olympiaFactorSource.id
+        } else {
+            // factor source exist without mnemonic, update mnemonic
+            mnemonicRepository.saveMnemonic(
+                key = olympiaFactorSource.id,
+                mnemonicWithPassphrase = mnemonicWithPassphrase
+            )
+            // Seed phrase was just typed by the user, mark it as backed up
+            preferencesManager.markFactorSourceBackedUp(olympiaFactorSource.id.body.value)
+            // we save factor source id only if it does not exist
+            if (existingFactorSource == null) {
+                profileRepository.updateProfile { profile ->
+                    profile.copy(
+                        factorSources = (profile.factorSources + olympiaFactorSource).toIdentifiedArrayList()
+                    )
+                }
+            }
             return olympiaFactorSource.id
         }
-        // factor source exist without mnemonic, update mnemonic
-        mnemonicRepository.saveMnemonic(
-            key = olympiaFactorSource.id,
-            mnemonicWithPassphrase = mnemonicWithPassphrase
-        )
-        // Seed phrase was just typed by the user, mark it as backed up
-        preferencesManager.markFactorSourceBackedUp(olympiaFactorSource.id.body.value)
-        // we save factor source id only if it does not exist
-        if (existingFactorSource == null) {
-            profileRepository.updateProfile { profile ->
-                profile.copy(
-                    factorSources = (profile.factorSources + olympiaFactorSource).toIdentifiedArrayList()
-                )
-            }
-        }
-        return olympiaFactorSource.id
     }
 }

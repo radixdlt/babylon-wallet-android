@@ -21,26 +21,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.IconButton
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -76,7 +74,8 @@ import kotlinx.coroutines.launch
 fun RestoreFromBackupScreen(
     viewModel: RestoreFromBackupViewModel,
     onBack: () -> Unit,
-    onRestoreConfirmed: (Boolean) -> Unit
+    onRestoreConfirmed: (Boolean) -> Unit,
+    onOtherRestoreOptionsClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val openDocument = rememberLauncherForActivityResult(
@@ -98,7 +97,8 @@ fun RestoreFromBackupScreen(
         onPasswordTyped = viewModel::onPasswordTyped,
         onPasswordRevealToggle = viewModel::onPasswordRevealToggle,
         onPasswordSubmitted = viewModel::onPasswordSubmitted,
-        onSubmitClick = viewModel::onSubmitClick
+        onSubmitClick = viewModel::onSubmitClick,
+        onOtherRestoreOptionsClick = onOtherRestoreOptionsClick
     )
 
     LaunchedEffect(Unit) {
@@ -123,7 +123,8 @@ private fun RestoreFromBackupContent(
     onPasswordTyped: (String) -> Unit,
     onPasswordRevealToggle: () -> Unit,
     onPasswordSubmitted: () -> Unit,
-    onSubmitClick: () -> Unit
+    onSubmitClick: () -> Unit,
+    onOtherRestoreOptionsClick: () -> Unit
 ) {
     BackHandler(onBack = onBackClick)
 
@@ -237,8 +238,8 @@ private fun RestoreFromBackupContent(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     color = RadixTheme.colors.gray5,
-                    elevation = if (state.restoringProfile != null) 8.dp else 0.dp,
-                    shape = RadixTheme.shapes.roundedRectMedium,
+                    shadowElevation = if (state.restoringProfile != null) 8.dp else 0.dp,
+                    shape = RadixTheme.shapes.roundedRectMedium
                 ) {
                     if (state.restoringProfile != null) {
                         Row(
@@ -329,8 +330,37 @@ private fun RestoreFromBackupContent(
                     text = stringResource(id = R.string.recoverProfileBackup_importFileButton_title),
                     onClick = onRestoreFromFileClick
                 )
+                OtherRestoreOptionsSection(onOtherRestoreOptionsClick)
             }
         }
+    }
+}
+
+@Composable
+private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        HorizontalDivider(modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault), color = RadixTheme.colors.gray4)
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingLarge,
+                ),
+            text = "Backup not available?", // TODO crowdin
+            textAlign = TextAlign.Center,
+            style = RadixTheme.typography.body1Header,
+            color = RadixTheme.colors.gray1
+        )
+        RadixTextButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            text = "Other Restore Options", // TODO crowdin
+            onClick = onOtherRestoreOptionsClick
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault), color = RadixTheme.colors.gray4)
     }
 }
 
@@ -429,25 +459,19 @@ private fun PasswordSheet(
 @Composable
 fun RestoreFromBackupPreviewBackupExists() {
     RadixWalletTheme {
-        var state by remember {
-            mutableStateOf(
-                RestoreFromBackupViewModel.State(
-                    restoringProfile = SampleDataProvider().sampleProfile()
-                )
-            )
-        }
         RestoreFromBackupContent(
-            state = state,
+            state = RestoreFromBackupViewModel.State(
+                restoringProfile = SampleDataProvider().sampleProfile()
+            ),
             onBackClick = {},
-            onRestoringProfileCheckChanged = {
-                state = state.copy(isRestoringProfileChecked = it)
-            },
+            onRestoringProfileCheckChanged = {},
             onRestoreFromFileClick = {},
             onMessageShown = {},
             onPasswordTyped = {},
             onPasswordRevealToggle = {},
             onPasswordSubmitted = {},
-            onSubmitClick = {}
+            onSubmitClick = {},
+            onOtherRestoreOptionsClick = {}
         )
     }
 }
@@ -467,7 +491,8 @@ fun RestoreFromBackupPreviewNoBackupExists() {
             onPasswordTyped = {},
             onPasswordRevealToggle = {},
             onPasswordSubmitted = {},
-            onSubmitClick = {}
+            onSubmitClick = {},
+            onOtherRestoreOptionsClick = {}
         )
     }
 }

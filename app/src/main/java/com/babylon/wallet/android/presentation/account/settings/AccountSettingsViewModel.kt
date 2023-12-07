@@ -23,7 +23,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.RenameAccountDisplayNameUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -72,7 +72,7 @@ class AccountSettingsViewModel @Inject constructor(
 
     private fun loadAccount() {
         viewModelScope.launch {
-            getProfileUseCase.accountsOnCurrentNetwork.mapNotNull { accounts ->
+            getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accounts ->
                 accounts.firstOrNull { it.address == args.address }
             }.collect { account ->
                 _state.update { state ->
@@ -98,7 +98,7 @@ class AccountSettingsViewModel @Inject constructor(
 
     fun onRenameAccountNameConfirm() {
         viewModelScope.launch {
-            val accountToRename = getProfileUseCase.accountsOnCurrentNetwork.first().find {
+            val accountToRename = getProfileUseCase.activeAccountsOnCurrentNetwork.first().find {
                 args.address == it.address
             }
             accountToRename?.let {

@@ -14,8 +14,9 @@ import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
+import rdx.works.profile.data.model.pernetwork.nextAppearanceId
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -34,16 +35,18 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
             val profile = profileRepository.profile.first()
             val networkId = profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val accountOffset = profile.nextAccountIndex(networkId)
+            val appearanceIdOffset = profile.nextAppearanceId(networkId)
             val migratedAccounts = olympiaAccounts.mapIndexed { index, olympiaAccount ->
                 val babylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
                     olympiaAccountAddress = OlympiaAddress(olympiaAccount.address),
                     networkId = networkId.value.toUByte()
                 ).addressString()
                 val nextAccountIndex = accountOffset + index
+                val nextAppearanceId = (appearanceIdOffset + index) % AccountGradientList.size
                 Network.Account(
                     displayName = olympiaAccount.accountName.ifEmpty { "Unnamed olympia account ${olympiaAccount.index}" },
                     address = babylonAddress,
-                    appearanceID = nextAccountIndex % AccountGradientList.count(),
+                    appearanceID = nextAppearanceId,
                     networkID = networkId.value,
                     securityState = SecurityState.unsecured(
                         entityIndex = nextAccountIndex,
@@ -56,8 +59,8 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
             }
             var updatedProfile = profile
             migratedAccounts.forEach { account ->
-                updatedProfile = updatedProfile.addAccount(
-                    account = account,
+                updatedProfile = updatedProfile.addAccounts(
+                    accounts = listOf(account),
                     onNetwork = networkId
                 )
             }

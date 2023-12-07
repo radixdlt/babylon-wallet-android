@@ -4,6 +4,7 @@ import com.radixdlt.bip44.BIP44_PREFIX
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme.BIP_44_OLYMPIA
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme.CAP_26
 import rdx.works.profile.derivation.model.CoinType
 import rdx.works.profile.derivation.model.EntityType
@@ -69,6 +70,19 @@ data class DerivationPath(
     }
 }
 
+fun DerivationPath.derivationPathEntityIndex(): Int {
+    val pathComponents = path.split("/").drop(1)
+    return when (pathComponents.size) {
+        BabylonDerivationPathComponent.values().size -> {
+            pathComponents.last().lowercase().replace("h", "").toInt()
+        }
+        OlympiaDerivationPathComponent.values().size -> {
+            pathComponents.last().lowercase().replace("h", "").toInt()
+        }
+        else -> throw IllegalArgumentException("Invalid derivation path: $path")
+    }
+}
+
 /**
  * Defines the derivation path used with SLIP10 algorithm to derive private keys.
  *
@@ -127,7 +141,7 @@ private data class IdentityDerivationPathBuilder(
  * The format is:
  *      `m/44'/<COIN_TYPE>'/365'`
  */
-private object FactorSourceIdDerivationPathBuilder : DerivationPathBuilder {
+private data object FactorSourceIdDerivationPathBuilder : DerivationPathBuilder {
     private val coinType: CoinType = CoinType.RadixDlt
     private const val GET_ID = 365
 
@@ -155,7 +169,7 @@ private data class LegacyOlympiaBIP44LikeDerivationPathBuilder(
 
     override fun build() = DerivationPath(
         path = "$BIP44_PREFIX/44H/${coinType.value}H/0H/0/${accountIndex}H",
-        scheme = CAP_26
+        scheme = BIP_44_OLYMPIA
     )
 }
 

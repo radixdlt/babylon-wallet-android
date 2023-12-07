@@ -69,6 +69,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.presentation.account.composable.UnknownDepositRulesStateInfo
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -327,8 +328,8 @@ private fun SpecificAssetsDepositsContent(
     error: UiMessage?,
     onShowAddAssetSheet: (SpecificAssetsTab) -> Unit,
     modifier: Modifier = Modifier,
-    allowedAssets: PersistentList<AssetType.AssetException>,
-    deniedAssets: PersistentList<AssetType.AssetException>,
+    allowedAssets: PersistentList<AssetType.AssetException>?,
+    deniedAssets: PersistentList<AssetType.AssetException>?,
     onDeleteAsset: (ThirdPartyDeposits.AssetException) -> Unit
 ) {
     var selectedTab by remember {
@@ -409,55 +410,74 @@ private fun SpecificAssetsDepositsContent(
             ) { tabIndex ->
                 when (SpecificAssetsTab.values()[tabIndex]) {
                     SpecificAssetsTab.Allowed -> {
-                        if (allowedAssets.isEmpty()) {
-                            Text(
+                        when {
+                            allowedAssets == null -> UnknownDepositRulesStateInfo(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                                text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_emptyAllowAll),
-                                textAlign = TextAlign.Center,
-                                style = RadixTheme.typography.body1HighImportance,
-                                color = RadixTheme.colors.gray2
+                                    .fillMaxSize()
+                                    .padding(RadixTheme.dimensions.paddingDefault)
                             )
-                        } else {
-                            Column(modifier = Modifier.fillMaxSize()) {
+                            allowedAssets.isEmpty() -> {
                                 Text(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                                    text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_allowInfo),
+                                    text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_emptyAllowAll),
+                                    textAlign = TextAlign.Center,
                                     style = RadixTheme.typography.body1HighImportance,
                                     color = RadixTheme.colors.gray2
                                 )
-                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                                AssetsList(assets = allowedAssets, onDeleteAsset = onDeleteAsset)
+                            }
+
+                            else -> {
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    Text(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                                        text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_allowInfo),
+                                        style = RadixTheme.typography.body1HighImportance,
+                                        color = RadixTheme.colors.gray2
+                                    )
+                                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                                    AssetsList(assets = allowedAssets, onDeleteAsset = onDeleteAsset)
+                                }
                             }
                         }
                     }
 
                     SpecificAssetsTab.Denied -> {
-                        if (deniedAssets.isEmpty()) {
-                            Text(
+                        when {
+                            deniedAssets == null -> UnknownDepositRulesStateInfo(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                                text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_emptyDenyAll),
-                                textAlign = TextAlign.Center,
-                                style = RadixTheme.typography.body1HighImportance,
-                                color = RadixTheme.colors.gray2
+                                    .fillMaxSize()
+                                    .padding(RadixTheme.dimensions.paddingDefault)
                             )
-                        } else {
-                            Column(modifier = Modifier.fillMaxSize()) {
+
+                            deniedAssets.isEmpty() -> {
                                 Text(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                                    text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_denyInfo),
+                                    text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_emptyDenyAll),
+                                    textAlign = TextAlign.Center,
                                     style = RadixTheme.typography.body1HighImportance,
                                     color = RadixTheme.colors.gray2
                                 )
-                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                                AssetsList(assets = deniedAssets, onDeleteAsset = onDeleteAsset)
+                            }
+
+                            else -> {
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    Text(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                                        text = stringResource(id = R.string.accountSettings_specificAssetsDeposits_denyInfo),
+                                        style = RadixTheme.typography.body1HighImportance,
+                                        color = RadixTheme.colors.gray2
+                                    )
+                                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                                    AssetsList(assets = deniedAssets, onDeleteAsset = onDeleteAsset)
+                                }
                             }
                         }
                     }
@@ -514,6 +534,7 @@ private fun AssetItem(
                 modifier = Modifier.size(44.dp),
                 shape = RadixTheme.shapes.roundedRectSmall
             )
+
             else -> {}
         }
         Column(

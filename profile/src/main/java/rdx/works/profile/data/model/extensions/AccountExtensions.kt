@@ -77,15 +77,15 @@ fun Network.Account.isSignatureRequiredBasedOnDepositRules(
 
     val hasAcceptKnown = thirdPartyDeposits.depositRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown
 
-    val hasDenyExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList.any {
+    val hasDenyExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList?.any {
         it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny &&
             it.address == forSpecificAssetAddress
-    }
+    } == true
 
-    val hasAllowExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList.any {
+    val hasAllowExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList?.any {
         it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow &&
             it.address == forSpecificAssetAddress
-    }
+    } == true
 
     if (hasAllowExceptionRuleForAsset) {
         return false

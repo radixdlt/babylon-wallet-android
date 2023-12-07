@@ -14,7 +14,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.updateThirdPartyDepositSettings
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.TestData
@@ -113,7 +113,7 @@ class TransferBetweenOwnedAccountsTest {
         val mnemonicRepository = mockk<MnemonicRepository>()
         coEvery { mnemonicRepository() } returns mnemonicWithPassphrase
 
-        targetAccount = Network.Account.initAccountWithDeviceFactorSource(
+        targetAccount = Network.Account.initAccountWithBabylonDeviceFactorSource(
             entityIndex = 0,
             displayName = "target account",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
@@ -122,7 +122,7 @@ class TransferBetweenOwnedAccountsTest {
             appearanceID = 0
         )
 
-        profile = profile.addAccount(
+        profile = profile.addAccounts(
             account = targetAccount,
             onNetwork = defaultNetwork.networkId()
         )

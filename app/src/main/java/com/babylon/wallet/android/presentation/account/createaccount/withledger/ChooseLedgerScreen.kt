@@ -39,16 +39,18 @@ import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Composable
-fun CreateAccountWithLedgerScreen(
-    viewModel: CreateAccountWithLedgerViewModel,
+fun ChooseLedgerScreen(
+    viewModel: ChooseLedgerViewModel,
     addLedgerDeviceViewModel: AddLedgerDeviceViewModel,
     addLinkConnectorViewModel: AddLinkConnectorViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     goBackToCreateAccount: () -> Unit,
+    onStartRecovery: (FactorSource, Boolean) -> Unit
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -59,7 +61,8 @@ fun CreateAccountWithLedgerScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                CreateAccountWithLedgerEvent.DerivedPublicKeyForAccount -> goBackToCreateAccount()
+                is ChooseLedgerEvent.DerivedPublicKeyForAccount -> goBackToCreateAccount()
+                is ChooseLedgerEvent.RecoverAccounts -> onStartRecovery(event.factorSource, event.isOlympia)
             }
         }
     }
@@ -87,7 +90,7 @@ fun CreateAccountWithLedgerScreen(
         )
     }
     when (val showContent = state.showContent) {
-        CreateAccountWithLedgerUiState.ShowContent.ChooseLedger -> {
+        ChooseLedgerUiState.ShowContent.ChooseLedger -> {
             ChooseLedgerDeviceContent(
                 modifier = modifier,
                 onBackClick = onBackClick,
@@ -103,7 +106,7 @@ fun CreateAccountWithLedgerScreen(
             )
         }
 
-        is CreateAccountWithLedgerUiState.ShowContent.LinkNewConnector -> {
+        is ChooseLedgerUiState.ShowContent.LinkNewConnector -> {
             LinkConnectorScreen(
                 modifier = Modifier.fillMaxSize(),
                 onLinkConnectorClick = {
@@ -113,7 +116,7 @@ fun CreateAccountWithLedgerScreen(
             )
         }
 
-        is CreateAccountWithLedgerUiState.ShowContent.AddLinkConnector -> {
+        is ChooseLedgerUiState.ShowContent.AddLinkConnector -> {
             AddLinkConnectorScreen(
                 modifier = Modifier,
                 showContent = addLinkConnectorState.showContent,
@@ -134,7 +137,7 @@ fun CreateAccountWithLedgerScreen(
             )
         }
 
-        CreateAccountWithLedgerUiState.ShowContent.AddLedger -> {
+        ChooseLedgerUiState.ShowContent.AddLedger -> {
             AddLedgerDeviceScreen(
                 modifier = Modifier,
                 showContent = addLedgerDeviceState.showContent,
@@ -220,7 +223,7 @@ private fun ChooseLedgerDeviceContent(
 
 @Preview(showBackground = true)
 @Composable
-fun CreateAccountWithLedgerScreenPreview() {
+fun ChooseLedgerScreenPreview() {
     RadixWalletTheme {
         ChooseLedgerDeviceContent(
             modifier = Modifier.fillMaxSize(),

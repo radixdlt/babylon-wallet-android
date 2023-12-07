@@ -93,7 +93,7 @@ fun Profile.addMainBabylonDeviceFactorSource(
 ): Profile {
     val existingBabylonDeviceFactorSources = factorSources
         .mapWhen(
-            predicate = { factorSource -> factorSource is DeviceFactorSource && factorSource.isBabylon }
+            predicate = { factorSource -> factorSource is DeviceFactorSource && factorSource.supportsBabylon }
         ) { deviceBabylonFactorSource ->
             (deviceBabylonFactorSource as DeviceFactorSource).copy(
                 common = deviceBabylonFactorSource.common.copy(
@@ -105,4 +105,14 @@ fun Profile.addMainBabylonDeviceFactorSource(
     return copy(
         factorSources = (listOf(mainBabylonFactorSource) + existingBabylonDeviceFactorSources).toIdentifiedArrayList()
     )
+}
+
+fun Profile.mainBabylonFactorSource(): DeviceFactorSource? {
+    val deviceFactorSources = factorSources.filterIsInstance<DeviceFactorSource>()
+    val babylonFactorSources = deviceFactorSources.filter { it.supportsBabylon }
+    return if (babylonFactorSources.size == 1) {
+        babylonFactorSources.first()
+    } else {
+        babylonFactorSources.firstOrNull { it.common.flags.contains(FactorSourceFlag.Main) }
+    }
 }

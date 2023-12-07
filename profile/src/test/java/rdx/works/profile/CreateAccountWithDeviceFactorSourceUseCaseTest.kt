@@ -18,7 +18,7 @@ import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
@@ -70,7 +70,7 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
                 displayName = accountName
             )
 
-            val updatedProfile = profile.addAccount(
+            val updatedProfile = profile.addAccounts(
                 account = account,
                 onNetwork = network.network.networkId()
             )

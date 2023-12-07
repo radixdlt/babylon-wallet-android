@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod, CyclomaticComplexity")
+
 package com.babylon.wallet.android.data.gateway.model
 
 /**
@@ -24,7 +26,8 @@ enum class ExplicitMetadataKey(val key: String) {
     POOL("pool"),
     POOL_UNIT("pool_unit"),
     CLAIM_NFT("claim_nft"),
-    OWNER_KEYS("owner_keys");
+    OWNER_KEYS("owner_keys"),
+    OWNER_BADGE("owner_badge");
 
     companion object {
 

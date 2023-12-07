@@ -31,6 +31,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.DeviceFactorSourceData
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
@@ -149,7 +150,7 @@ private fun SeedPhraseContent(
 }
 
 @Composable
-private fun SeedPhraseCard(
+fun SeedPhraseCard(
     modifier: Modifier,
     data: DeviceFactorSourceData
 ) {
@@ -186,7 +187,7 @@ private fun SeedPhraseCard(
                 )
                 Text(
                     text = stringResource(
-                        id = if (data.deviceFactorSource.isBabylon) {
+                        id = if (data.deviceFactorSource.supportsBabylon) {
                             if (data.accounts.size == 1) {
                                 R.string.displayMnemonics_connectedAccountsPersonasLabel_one
                             } else {
@@ -209,7 +210,7 @@ private fun SeedPhraseCard(
             }
             Icon(
                 painter = painterResource(
-                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
+                    id = DSR.ic_chevron_right
                 ),
                 contentDescription = null,
                 tint = RadixTheme.colors.gray1

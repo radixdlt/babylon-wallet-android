@@ -37,7 +37,7 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
 
     suspend fun babylonMnemonicNeedsRecovery(): FactorSource.FactorSourceID.FromHash? {
         val babylonFactorSources =
-            getProfileUseCase.deviceFactorSources.firstOrNull()?.filter { it.isBabylon }
+            getProfileUseCase.deviceFactorSources.firstOrNull()?.filter { it.supportsBabylon }
                 ?: return null
         val mainBabylonFactorSourceToRecover = if (babylonFactorSources.size == 1) {
             babylonFactorSources.first()

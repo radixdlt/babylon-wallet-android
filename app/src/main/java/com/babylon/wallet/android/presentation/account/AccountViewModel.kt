@@ -45,7 +45,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -67,7 +67,7 @@ class AccountViewModel @Inject constructor(
 
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountFlow = combine(
-        getProfileUseCase.accountsOnCurrentNetwork.mapNotNull { accountsInProfile ->
+        getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accountsInProfile ->
             accountsInProfile.find { it.address == accountAddress }
         },
         refreshFlow

@@ -9,7 +9,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 
-private const val ROUTE_RESTORE_FROM_BACKUP = "restore_from_backup"
+const val ROUTE_RESTORE_FROM_BACKUP = "restore_from_backup"
 
 fun NavController.restoreFromBackupScreen() {
     navigate(route = ROUTE_RESTORE_FROM_BACKUP)
@@ -17,7 +17,8 @@ fun NavController.restoreFromBackupScreen() {
 
 fun NavGraphBuilder.restoreFromBackupScreen(
     onBack: () -> Unit,
-    onRestoreConfirmed: (Boolean) -> Unit
+    onRestoreConfirmed: (Boolean) -> Unit,
+    onOtherRestoreOptionsClick: () -> Unit
 ) {
     composable(
         route = ROUTE_RESTORE_FROM_BACKUP,
@@ -31,7 +32,8 @@ fun NavGraphBuilder.restoreFromBackupScreen(
         RestoreFromBackupScreen(
             viewModel = hiltViewModel(),
             onBack = onBack,
-            onRestoreConfirmed = onRestoreConfirmed
+            onRestoreConfirmed = onRestoreConfirmed,
+            onOtherRestoreOptionsClick = onOtherRestoreOptionsClick
         )
     }
 }

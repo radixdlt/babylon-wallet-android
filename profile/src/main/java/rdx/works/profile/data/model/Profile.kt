@@ -1,3 +1,5 @@
+@file:Suppress("LongParameterList")
+
 package rdx.works.profile.data.model
 
 import kotlinx.serialization.encodeToString
@@ -5,6 +7,7 @@ import kotlinx.serialization.json.Json
 import rdx.works.core.IdentifiedArrayList
 import rdx.works.core.annotations.DebugOnly
 import rdx.works.core.emptyIdentifiedArrayList
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
@@ -69,18 +72,18 @@ data class Profile(
         get() = factorSources
             .filterIsInstance<DeviceFactorSource>()
             .firstOrNull { deviceFactorSource ->
-                deviceFactorSource.isBabylon && deviceFactorSource.common.flags.any { it == FactorSourceFlag.Main }
+                deviceFactorSource.supportsBabylon && deviceFactorSource.common.flags.any { it == FactorSourceFlag.Main }
             } ?: factorSources
             .filterIsInstance<DeviceFactorSource>()
             .first { deviceFactorSource ->
-                deviceFactorSource.isBabylon
+                deviceFactorSource.supportsBabylon
             }
 
     val babylonDeviceFactorSourceExist: Boolean
         get() = factorSources
             .filterIsInstance<DeviceFactorSource>()
             .any {
-                it.isBabylon
+                it.supportsBabylon
             }
 
     companion object {
@@ -88,7 +91,7 @@ data class Profile(
             id: String,
             deviceInfo: DeviceInfo,
             creationDate: Instant,
-            gateways: Gateways = Gateways.preset
+            gateways: Gateways = Gateways.preset,
         ): Profile {
             val networks = listOf(
                 Network(
@@ -116,6 +119,44 @@ data class Profile(
                 ),
                 appPreferences = appPreferences,
                 factorSources = emptyIdentifiedArrayList(),
+                networks = networks
+            )
+        }
+
+        fun initProfileWithRecoveredBDFS(
+            id: String,
+            deviceInfo: DeviceInfo,
+            creationDate: Instant,
+            gateways: Gateways = Gateways.preset,
+            bdfs: FactorSource,
+            accounts: List<Network.Account>
+        ): Profile {
+            val networks = listOf(
+                Network(
+                    accounts = accounts,
+                    authorizedDapps = listOf(),
+                    networkID = gateways.current().network.id,
+                    personas = listOf()
+                )
+            )
+
+            val appPreferences = AppPreferences(
+                transaction = Transaction.default,
+                display = Display.default,
+                security = Security.default,
+                gateways = gateways,
+                p2pLinks = listOf()
+            )
+
+            return Profile(
+                header = Header.init(
+                    id = id,
+                    deviceInfo = deviceInfo,
+                    creationDate = creationDate,
+                    numberOfNetworks = networks.size
+                ),
+                appPreferences = appPreferences,
+                factorSources = identifiedArrayListOf(bdfs),
                 networks = networks
             )
         }

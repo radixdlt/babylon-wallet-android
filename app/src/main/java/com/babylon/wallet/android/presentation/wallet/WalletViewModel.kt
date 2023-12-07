@@ -42,7 +42,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
-import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.factorSources
 import timber.log.Timber
@@ -64,7 +64,7 @@ class WalletViewModel @Inject constructor(
 
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountsFlow = combine(
-        getProfileUseCase.accountsOnCurrentNetwork.distinctUntilChanged(),
+        getProfileUseCase.activeAccountsOnCurrentNetwork.distinctUntilChanged(),
         refreshFlow
     ) { accounts, _ ->
         accounts

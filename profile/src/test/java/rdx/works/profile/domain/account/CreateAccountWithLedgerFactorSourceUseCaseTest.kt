@@ -13,7 +13,7 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.derivation.model.KeyType
@@ -55,7 +55,7 @@ internal class CreateAccountWithLedgerFactorSourceUseCaseTest {
                 ledgerFactorSourceID = TestData.ledgerFactorSource.id
             )
 
-            val updatedProfile = profile.addAccount(
+            val updatedProfile = profile.addAccounts(
                 account = account,
                 onNetwork = network.network.networkId()
             )
