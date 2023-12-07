@@ -34,11 +34,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
@@ -331,7 +333,9 @@ fun SelectPersonaPreview() {
             onSelectPersona = {},
             dapp = DApp(
                 dAppAddress = "account_tdx_abc",
-                nameItem = NameMetadataItem("Collabo.fi")
+                metadata = listOf(
+                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Collabo.fi", MetadataType.String)
+                )
             ),
             firstTimeLogin = false,
             continueButtonEnabled = false,
@@ -353,7 +357,9 @@ fun SelectPersonaFirstTimePreview() {
             onSelectPersona = {},
             dapp = DApp(
                 dAppAddress = "account_tdx_abc",
-                nameItem = NameMetadataItem("Collabo.fi")
+                metadata = listOf(
+                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Collabo.fi", MetadataType.String)
+                )
             ),
             firstTimeLogin = true,
             continueButtonEnabled = false,

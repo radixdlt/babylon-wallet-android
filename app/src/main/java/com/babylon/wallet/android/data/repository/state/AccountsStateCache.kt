@@ -28,7 +28,7 @@ import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
 import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -185,7 +185,7 @@ class AccountsStateCache @Inject constructor(
             // Parse details for this account
             val cachedDetails = AccountCachedData(
                 stateVersion = cache.stateVersion,
-                typeMetadataItem = cache.accountType?.let { AccountTypeMetadataItem(it) },
+                accountType = cache.accountType,
             )
 
             // Compile all resources owned by this account
@@ -254,7 +254,7 @@ class AccountsStateCache @Inject constructor(
 
     private data class AccountCachedData(
         val stateVersion: Long?,
-        val typeMetadataItem: AccountTypeMetadataItem?,
+        val accountType: AccountType?,
         val fungibles: MutableList<Resource.FungibleResource> = mutableListOf(),
         val nonFungibles: MutableList<Resource.NonFungibleResource> = mutableListOf(),
     ) {
@@ -357,7 +357,7 @@ class AccountsStateCache @Inject constructor(
                 address = accountAddress,
                 details = AccountDetails(
                     stateVersion = stateVersion,
-                    typeMetadataItem = typeMetadataItem
+                    accountType = accountType
                 ),
                 assets = Assets(
                     fungibles = resultingFungibles.sorted(),

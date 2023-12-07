@@ -1,8 +1,11 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.domain.model.DAppWithResources
-import com.babylon.wallet.android.domain.model.resources.metadata.ClaimedWebsitesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import rdx.works.core.mapWhen
 import javax.inject.Inject
 
 class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
@@ -18,23 +21,36 @@ class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
         needMostRecentData = false
     ).mapCatching { dAppMetadata ->
         // If well known file verification fails, we dont want claimed websites
-        val websites = dAppMetadata.claimedWebsites.map {
-            val validDapp = dAppRepository.verifyDapp(
+        val validWebsites = dAppMetadata.claimedWebsites.filter {
+            dAppRepository.verifyDapp(
                 origin = it,
                 dAppDefinitionAddress = dAppMetadata.dAppAddress,
                 wellKnownFileCheck = false
             ).getOrThrow()
-
-            it to validDapp
-        }.filterNot { !it.second }
+        }
 
         val updatedDAppMetadata = dAppMetadata.copy(
-            claimedWebsitesItem = ClaimedWebsitesMetadataItem(websites = websites.map { it.first })
+            metadata = dAppMetadata.metadata.mapWhen(
+                predicate = { it.key == ExplicitMetadataKey.CLAIMED_WEBSITES.key },
+                mutation = {
+                    Metadata.Collection(
+                        key = ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                        values = validWebsites.map { website ->
+                            Metadata.Primitive(
+                                key = ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                value = website,
+                                valueType = MetadataType.Url
+                            )
+                        }
+                    )
+                }
+            )
         )
         val verified = when (claimedEntityValidation) {
             is ClaimedEntityValidation.PerformFor -> {
                 dAppMetadata.claimedEntities.contains(claimedEntityValidation.entityAddress)
             }
+
             ClaimedEntityValidation.None -> true
         }
 

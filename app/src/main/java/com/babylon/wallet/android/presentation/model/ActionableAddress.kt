@@ -13,25 +13,31 @@ data class ActionableAddress(
 
     val type: Type? = Type.from(address)
 
-    val isNft: Boolean = type == Type.RESOURCE && address.split(NFT_DELIMITER).size > 1
-
-    val isCopyPrimaryAction: Boolean = type != Type.TRANSACTION
+    val isNft: Boolean = type == Type.Global.RESOURCE && address.split(NFT_DELIMITER).size > 1
 
     val displayAddress: String = if (isNft) {
         val localId = address.split(NFT_DELIMITER)[1]
         Resource.NonFungibleResource.Item.ID.from(localId).displayable
+    } else if (type is Type.LocalId) {
+        type.id.displayable
     } else {
         if (shouldTruncateAddressForDisplay) address.truncatedHash() else address
     }
 
-    fun toDashboardUrl(networkId: NetworkId): String {
+    fun toDashboardUrl(networkId: NetworkId): String? {
         val addressUrlEncoded = address.encodeUtf8()
-        val suffix = when {
-            isNft -> "nft/$addressUrlEncoded"
-            type == Type.TRANSACTION -> "transaction/$addressUrlEncoded"
-            type == Type.VALIDATOR -> "component/$addressUrlEncoded"
-            type != null -> "${type.prefix}/$addressUrlEncoded"
-            else -> addressUrlEncoded
+        val suffix = when (type) {
+            is Type.LocalId -> return null
+            is Type.Global -> {
+                when {
+                    isNft -> "nft/$addressUrlEncoded"
+                    type == Type.Global.TRANSACTION -> "transaction/$addressUrlEncoded"
+                    type == Type.Global.VALIDATOR -> "component/$addressUrlEncoded"
+                    else -> "${type.hrp}/$addressUrlEncoded"
+                }
+            }
+
+            null -> addressUrlEncoded
         }
 
         val url = networkId.dashboardUrl()
@@ -39,28 +45,52 @@ data class ActionableAddress(
         return "$url/$suffix"
     }
 
-    enum class Type(
-        val prefix: String
-    ) {
-        PACKAGE(HRP.PACKAGE),
-        RESOURCE(HRP.RESOURCE),
-        ACCOUNT(HRP.ACCOUNT),
-        VALIDATOR(HRP.VALIDATOR),
-        TRANSACTION(HRP.TRANSACTION),
-        COMPONENT(HRP.COMPONENT);
+    sealed interface Type {
+
+        enum class Global(val hrp: String) : Type {
+            PACKAGE(HRP.PACKAGE),
+            RESOURCE(HRP.RESOURCE),
+            ACCOUNT(HRP.ACCOUNT),
+            VALIDATOR(HRP.VALIDATOR),
+            TRANSACTION(HRP.TRANSACTION),
+            COMPONENT(HRP.COMPONENT);
+
+            companion object {
+                private object HRP {
+                    const val ACCOUNT = "account"
+                    const val RESOURCE = "resource"
+                    const val PACKAGE = "package"
+                    const val VALIDATOR = "validator"
+                    const val COMPONENT = "component"
+                    const val TRANSACTION = "txid"
+                }
+
+                fun from(address: String): Type? = Type.Global.entries.find {
+                    address.startsWith(it.hrp)
+                }
+            }
+        }
+
+        data class LocalId(
+            val id: Resource.NonFungibleResource.Item.ID
+        ) : Type
 
         companion object {
-            private object HRP {
-                const val ACCOUNT = "account"
-                const val RESOURCE = "resource"
-                const val PACKAGE = "package"
-                const val VALIDATOR = "validator"
-                const val COMPONENT = "component"
-                const val TRANSACTION = "txid"
-            }
+            fun from(address: String): Type? {
+                val globalType = Global.from(address)
+                return if (globalType == null) {
+                    val localId = runCatching {
+                        Resource.NonFungibleResource.Item.ID.from(address)
+                    }.getOrNull()
 
-            fun from(address: String): Type? = Type.values().find {
-                address.startsWith(it.prefix)
+                    if (localId != null) {
+                        LocalId(localId)
+                    } else {
+                        null
+                    }
+                } else {
+                    globalType
+                }
             }
         }
     }

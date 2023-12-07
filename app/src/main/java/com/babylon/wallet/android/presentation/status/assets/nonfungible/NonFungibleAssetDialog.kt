@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
+import com.babylon.wallet.android.presentation.account.composable.View
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -129,7 +130,7 @@ private fun NonFungibleAssetDialogContent(
                     }
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     if (state.item != null) {
-                        state.item.nameMetadataItem?.name?.let { name ->
+                        state.item.name?.let { name ->
                             AssetMetadataRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -144,21 +145,29 @@ private fun NonFungibleAssetDialogContent(
                             }
                         }
 
-                        state.item.remainingMetadata.forEach { field ->
+                        state.item.description?.let { description ->
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
                             AssetMetadataRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                                key = field.key
+                                key = stringResource(id = R.string.assetDetails_NFTDetails_description)
                             ) {
                                 Text(
-                                    text = field.value,
+                                    text = description,
                                     style = RadixTheme.typography.body1HighImportance,
                                     color = RadixTheme.colors.gray1
                                 )
                             }
+                        }
+
+                        state.item.nonStandardMetadata.forEach { metadata ->
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                            metadata.View(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                            )
                         }
                     } else {
                         Box(
