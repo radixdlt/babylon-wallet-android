@@ -21,6 +21,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.ExpandableText
 import com.babylon.wallet.android.utils.openUrl
 import rdx.works.core.displayableQuantity
 import java.util.Locale
@@ -105,7 +106,6 @@ fun Metadata.ValueView(
             is MetadataType.Integer,
             MetadataType.Bytes,
             MetadataType.Instant,
-            MetadataType.String,
             MetadataType.Enum,
             MetadataType.PublicKeyEcdsaSecp256k1,
             MetadataType.PublicKeyEddsaEd25519,
@@ -119,7 +119,18 @@ fun Metadata.ValueView(
                     textAlign = TextAlign.End,
                     maxLines = 2
                 )
-
+            MetadataType.String -> ExpandableText(
+                modifier = modifier,
+                text = value,
+                style = RadixTheme.typography.body1HighImportance.copy(
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End
+                ),
+                toggleStyle = RadixTheme.typography.body1HighImportance.copy(
+                    color = RadixTheme.colors.gray2,
+                    textAlign = TextAlign.End
+                ),
+            )
             MetadataType.Address, MetadataType.NonFungibleGlobalId, MetadataType.NonFungibleLocalId ->
                 ActionableAddressView(
                     modifier = modifier,
@@ -129,7 +140,8 @@ fun Metadata.ValueView(
             MetadataType.Decimal ->
                 Text(
                     modifier = modifier,
-                    text = value.toBigDecimalOrNull()?.displayableQuantity().orEmpty(),
+                    // If value is unable to transform to big decimal we just display raw value
+                    text = value.toBigDecimalOrNull()?.displayableQuantity() ?: value,
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End,
