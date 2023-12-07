@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.AddressValidator
+import rdx.works.profile.data.model.extensions.hasAcceptKnownDepositRule
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -107,21 +108,33 @@ class AccountsChooserDelegate @Inject constructor(
             _state.update { state ->
                 val ownedAccount = sheetState.ownedAccounts.find { it.address == sheetState.selectedAccount.address }
                 val selectedAccount = if (ownedAccount != null) {
-                    TargetAccount.Owned(
-                        account = ownedAccount,
-                        accountAssetsAddresses = getWalletAssetsUseCase(
-                            accounts = listOf(ownedAccount),
-                            isRefreshing = false
-                        ).first()
-                            .first()
-                            .assets
-                            ?.knownResources
-                            ?.map { resource ->
-                                resource.resourceAddress
-                            }.orEmpty(),
-                        id = sheetState.selectedAccount.id,
-                        spendingAssets = sheetState.selectedAccount.spendingAssets
-                    )
+                    val areTargetAccountResourcesRequired = ownedAccount.hasAcceptKnownDepositRule()
+                    // if the target owned account has accept known rule then we need to fetch its known resources
+                    // in order to later check if a an extra signature is required
+                    if (areTargetAccountResourcesRequired) {
+                        TargetAccount.Owned(
+                            account = ownedAccount,
+                            accountAssetsAddresses = getWalletAssetsUseCase(
+                                accounts = listOf(ownedAccount),
+                                isRefreshing = false
+                            ).first()
+                                .first()
+                                .assets
+                                ?.knownResources
+                                ?.map { resource ->
+                                    resource.resourceAddress
+                                }.orEmpty(),
+                            id = sheetState.selectedAccount.id,
+                            spendingAssets = sheetState.selectedAccount.spendingAssets
+                        )
+                    } else {
+                        TargetAccount.Owned(
+                            account = ownedAccount,
+                            accountAssetsAddresses = emptyList(),
+                            id = sheetState.selectedAccount.id,
+                            spendingAssets = sheetState.selectedAccount.spendingAssets
+                        )
+                    }
                 } else {
                     sheetState.selectedAccount
                 }

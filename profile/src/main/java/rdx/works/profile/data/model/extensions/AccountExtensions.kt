@@ -61,6 +61,11 @@ fun Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionR
     }
 }
 
+fun Network.Account.hasAcceptKnownDepositRule(): Boolean {
+    val thirdPartyDeposits = this.onLedgerSettings.thirdPartyDeposits
+    return thirdPartyDeposits.depositRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown
+}
+
 @Suppress("ReturnCount")
 fun Network.Account.isSignatureRequiredBasedOnDepositRules(
     forSpecificAssetAddress: String,
