@@ -114,9 +114,13 @@ class AccountsChooserDelegate @Inject constructor(
 
                     TargetAccount.Owned(
                         account = ownedAccount,
-                        accountAssetsAddresses = if (areTargetAccountResourcesRequired) fetchKnownResourcesOfOwnedAccount(
-                            ownedAccount = ownedAccount
-                        ) else emptyList(),
+                        accountAssetsAddresses = if (areTargetAccountResourcesRequired) {
+                            fetchKnownResourcesOfOwnedAccount(
+                                ownedAccount = ownedAccount
+                            )
+                        } else {
+                            emptyList()
+                        },
                         id = sheetState.selectedAccount.id,
                         spendingAssets = sheetState.selectedAccount.spendingAssets
                     )
