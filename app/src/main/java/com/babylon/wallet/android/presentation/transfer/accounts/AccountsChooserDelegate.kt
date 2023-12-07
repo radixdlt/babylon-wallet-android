@@ -115,7 +115,7 @@ class AccountsChooserDelegate @Inject constructor(
                         ).first()
                             .first()
                             .assets
-                            ?.ownedResources
+                            ?.knownResources
                             ?.map { resource ->
                                 resource.resourceAddress
                             }.orEmpty(),

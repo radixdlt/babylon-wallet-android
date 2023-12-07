@@ -63,7 +63,10 @@ data class Assets(
         }
     }
 
-    val ownedResources: List<Resource> by lazy {
+    // knownResources of an account is when
+    // it contains a resource with an amount greater than 0
+    // or it had a resource in the past but the amount is 0 now
+    val knownResources: List<Resource> by lazy {
         fungibles + nonFungibles +
             poolUnits.map { it.stake } +
             validatorsWithStakes
