@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -17,6 +20,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -113,15 +117,23 @@ private fun RawProfileContent(
     modifier: Modifier,
     profileSnapshot: String
 ) {
-    Text(
-        modifier = modifier
-            .verticalScroll(rememberScrollState())
-            .horizontalScroll(rememberScrollState()),
-        text = profileSnapshot,
-        color = RadixTheme.colors.gray1,
-        fontSize = 13.sp,
-        fontFamily = FontFamily(Typeface(android.graphics.Typeface.MONOSPACE)),
+    val customTextSelectionColors = TextSelectionColors(
+        handleColor = RadixTheme.colors.gray4,
+        backgroundColor = RadixTheme.colors.gray4
     )
+    CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
+        SelectionContainer() {
+            Text(
+                modifier = modifier
+                    .verticalScroll(rememberScrollState())
+                    .horizontalScroll(rememberScrollState()),
+                text = profileSnapshot,
+                color = RadixTheme.colors.gray1,
+                fontSize = 13.sp,
+                fontFamily = FontFamily(Typeface(android.graphics.Typeface.MONOSPACE)),
+            )
+        }
+    }
 }
 
 @Composable
