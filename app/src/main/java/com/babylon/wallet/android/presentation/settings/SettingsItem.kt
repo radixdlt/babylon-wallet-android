@@ -15,6 +15,7 @@ sealed interface SettingsItem {
         data class Personas(val showBackupSecurityPrompt: Boolean = false) : TopLevelSettings
         data class AccountSecurityAndSettings(val showNotificationWarning: Boolean) : TopLevelSettings
         data object AppSettings : TopLevelSettings
+        data object DebugSettings : TopLevelSettings
 
         @StringRes
         fun descriptionRes(): Int {
@@ -25,6 +26,7 @@ sealed interface SettingsItem {
                 is Personas -> R.string.settings_personas
                 is AccountSecurityAndSettings -> R.string.settings_accountSecurityAndSettings
                 is AppSettings -> R.string.settings_appSettings
+                is DebugSettings -> R.string.settings_debugSettings
             }
         }
 
@@ -35,6 +37,7 @@ sealed interface SettingsItem {
                 is Personas -> DSR.ic_personas
                 is AccountSecurityAndSettings -> DSR.ic_security
                 is AppSettings -> DSR.ic_app_settings
+                is DebugSettings -> DSR.ic_app_settings
                 else -> null
             }
         }
@@ -94,6 +97,30 @@ sealed interface SettingsItem {
                 EntityHiding -> com.babylon.wallet.android.designsystem.R.drawable.ic_entity_hiding
                 else -> null
             }
+        }
+    }
+
+    sealed interface DebugSettingsItem {
+        data object InspectProfile: DebugSettingsItem
+
+        @StringRes
+        fun descriptionRes(): Int {
+            return when (this) {
+                InspectProfile -> R.string.settings_debugSettings_inspectProfile
+            }
+        }
+
+        @DrawableRes
+        fun getIcon(): Int? { // add rest of icons
+            return when (this) {
+                InspectProfile -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
+            }
+        }
+
+        companion object {
+            fun values() = setOf(
+                InspectProfile
+            )
         }
     }
 }
