@@ -181,7 +181,7 @@ class WalletViewModel @Inject constructor(
     }
 
     fun onRadixBannerDismiss() = viewModelScope.launch {
-        preferencesManager.changeRadixBannerVisibility(isVisible = false)
+        preferencesManager.setRadixBannerVisibility(isVisible = false)
     }
 }
 

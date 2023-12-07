@@ -81,7 +81,7 @@ class PreferencesManager @Inject constructor(
             preferences[KEY_RADIX_BANNER_VISIBLE] ?: false
         }
 
-    suspend fun changeRadixBannerVisibility(isVisible: Boolean) {
+    suspend fun setRadixBannerVisibility(isVisible: Boolean) {
         dataStore.edit { preferences ->
             preferences[KEY_RADIX_BANNER_VISIBLE] = isVisible
         }

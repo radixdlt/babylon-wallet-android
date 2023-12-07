@@ -103,7 +103,7 @@ class CreateAccountViewModel @Inject constructor(
         }
 
         if (args.requestSource == CreateAccountRequestSource.FirstTime) {
-            preferencesManager.changeRadixBannerVisibility(isVisible = true)
+            preferencesManager.setRadixBannerVisibility(isVisible = true)
         }
 
         sendEvent(
