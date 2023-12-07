@@ -7,6 +7,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.presentation.settings.SettingsItem.DebugSettingsItem.InspectProfile
+import com.babylon.wallet.android.presentation.settings.debug.profile.inspectProfile
 
 const val ROUTE_DEBUG_SETTINGS_SCREEN = "settings_debug_settings_screen"
 const val ROUTE_DEBUG_SETTINGS_GRAPH = "settings_debug_settings_graph"
@@ -45,10 +46,15 @@ fun NavGraphBuilder.debugSettings(
                 },
                 onItemClick = { item ->
                     when (item) {
-                        InspectProfile -> TODO()
+                        InspectProfile -> navController.inspectProfile()
                     }
                 }
             )
         }
+        inspectProfile(
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
     }
 }
