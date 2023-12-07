@@ -145,7 +145,10 @@ class ChooseLedgerViewModel @Inject constructor(
                                 return@launch
                             }
                         }
-                        val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnNetwork(networkIdToCreateAccountOn())
+                        val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnNetwork(
+                            networkIdToCreateAccountOn(),
+                            ledgerFactorSource.data.id
+                        )
                         val result = ledgerMessenger.sendDerivePublicKeyRequest(
                             interactionId = UUIDGenerator.uuid().toString(),
                             keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),

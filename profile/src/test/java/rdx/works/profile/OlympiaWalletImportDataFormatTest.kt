@@ -31,7 +31,7 @@ internal class OlympiaWalletExportFormatTest {
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
 
-    private val parser = OlympiaWalletDataParser(getCurrentGatewayUseCase, getProfileUseCase)
+    private val parser = OlympiaWalletDataParser(getCurrentGatewayUseCase)
 
     @Before
     fun setUp() {

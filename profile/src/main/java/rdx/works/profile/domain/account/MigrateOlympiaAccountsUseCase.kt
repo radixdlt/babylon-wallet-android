@@ -34,7 +34,7 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
             val networkId = profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
-            val accountOffset = profile.nextAccountIndex(networkId)
+            val accountOffset = profile.nextAccountIndex(networkId, factorSourceId)
             val appearanceIdOffset = profile.nextAppearanceId(networkId)
             val migratedAccounts = olympiaAccounts.mapIndexed { index, olympiaAccount ->
                 val babylonAddress = Address.virtualAccountAddressFromOlympiaAddress(

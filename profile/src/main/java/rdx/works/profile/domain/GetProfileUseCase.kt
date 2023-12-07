@@ -123,12 +123,15 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     account.address == withAddress
 }
 
-suspend fun GetProfileUseCase.nextDerivationPathForAccountOnNetwork(networkId: Int): DerivationPath {
+suspend fun GetProfileUseCase.nextDerivationPathForAccountOnNetwork(
+    networkId: Int,
+    factorSourceId: FactorSource.FactorSourceID
+): DerivationPath {
     val profile = invoke().first()
     val network = requireNotNull(NetworkId.from(networkId))
     return DerivationPath.forAccount(
         networkId = network,
-        accountIndex = profile.nextAccountIndex(network),
+        accountIndex = profile.nextAccountIndex(network, factorSourceId),
         keyType = KeyType.TRANSACTION_SIGNING
     )
 }
