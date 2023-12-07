@@ -1,14 +1,19 @@
 package com.babylon.wallet.android.presentation.settings.debug.profile
 
+import android.content.ClipData
+import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -16,11 +21,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.Typeface
 import androidx.compose.ui.unit.sp
+import androidx.core.content.getSystemService
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
@@ -62,6 +69,27 @@ fun InspectProfileScreen(
                 },
                 windowInsets = WindowInsets.statusBars
             )
+        },
+        floatingActionButton = {
+            if (state.rawSnapshot != null) {
+                val context = LocalContext.current
+                FloatingActionButton(
+                    shape = CircleShape,
+                    containerColor = RadixTheme.colors.gray4,
+                    contentColor = RadixTheme.colors.gray1,
+                    onClick = {
+                        context.getSystemService<android.content.ClipboardManager>()?.let { clipboardManager ->
+                            val clipData = ClipData.newPlainText(
+                                "Radix Address",
+                                state.rawSnapshot
+                            )
+                            clipboardManager.setPrimaryClip(clipData)
+                        }
+                    }
+                ) {
+                    Icon(painter = painterResource(id = R.drawable.ic_copy), contentDescription = null)
+                }
+            }
         }
     ) { padding ->
         if (state.isRawProfileVisible) {

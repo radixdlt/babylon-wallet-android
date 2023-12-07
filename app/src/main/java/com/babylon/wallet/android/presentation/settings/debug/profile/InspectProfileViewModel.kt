@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class InspectProfileViewModel @Inject constructor(
-    getProfileUseCase: GetProfileUseCase
+    getProfileUseCase: GetProfileUseCase,
 ): StateViewModel<State>() {
 
     override fun initialState(): State = State()
