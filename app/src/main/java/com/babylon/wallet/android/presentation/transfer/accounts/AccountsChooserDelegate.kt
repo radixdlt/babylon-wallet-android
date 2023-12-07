@@ -108,33 +108,18 @@ class AccountsChooserDelegate @Inject constructor(
             _state.update { state ->
                 val ownedAccount = sheetState.ownedAccounts.find { it.address == sheetState.selectedAccount.address }
                 val selectedAccount = if (ownedAccount != null) {
-                    val areTargetAccountResourcesRequired = ownedAccount.hasAcceptKnownDepositRule()
                     // if the target owned account has accept known rule then we need to fetch its known resources
                     // in order to later check if a an extra signature is required
-                    if (areTargetAccountResourcesRequired) {
-                        TargetAccount.Owned(
-                            account = ownedAccount,
-                            accountAssetsAddresses = getWalletAssetsUseCase(
-                                accounts = listOf(ownedAccount),
-                                isRefreshing = false
-                            ).first()
-                                .first()
-                                .assets
-                                ?.knownResources
-                                ?.map { resource ->
-                                    resource.resourceAddress
-                                }.orEmpty(),
-                            id = sheetState.selectedAccount.id,
-                            spendingAssets = sheetState.selectedAccount.spendingAssets
-                        )
-                    } else {
-                        TargetAccount.Owned(
-                            account = ownedAccount,
-                            accountAssetsAddresses = emptyList(),
-                            id = sheetState.selectedAccount.id,
-                            spendingAssets = sheetState.selectedAccount.spendingAssets
-                        )
-                    }
+                    val areTargetAccountResourcesRequired = ownedAccount.hasAcceptKnownDepositRule()
+
+                    TargetAccount.Owned(
+                        account = ownedAccount,
+                        accountAssetsAddresses = if (areTargetAccountResourcesRequired) fetchKnownResourcesOfOwnedAccount(
+                            ownedAccount = ownedAccount
+                        ) else emptyList(),
+                        id = sheetState.selectedAccount.id,
+                        spendingAssets = sheetState.selectedAccount.spendingAssets
+                    )
                 } else {
                     sheetState.selectedAccount
                 }
@@ -153,6 +138,19 @@ class AccountsChooserDelegate @Inject constructor(
                 )
             }
         }
+    }
+
+    private suspend fun fetchKnownResourcesOfOwnedAccount(ownedAccount: Network.Account): List<String> {
+        return getWalletAssetsUseCase(
+            accounts = listOf(ownedAccount),
+            isRefreshing = false
+        ).first()
+            .first()
+            .assets
+            ?.knownResources
+            ?.map { resource ->
+                resource.resourceAddress
+            }.orEmpty()
     }
 
     private fun updateSheetState(
