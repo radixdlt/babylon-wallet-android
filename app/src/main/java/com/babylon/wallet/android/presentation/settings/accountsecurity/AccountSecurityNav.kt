@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.accountsecurity
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -80,7 +79,6 @@ fun NavGraphBuilder.accountSecurityNavGraph(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.accountSecurityScreen(
     navController: NavController
 ) {

@@ -2,6 +2,7 @@ package rdx.works.profile.domain
 
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.Header
@@ -69,7 +70,7 @@ object TestData {
             ),
             networks = listOf(
                 Network(
-                    accounts = listOf(
+                    accounts = identifiedArrayListOf(
                         Network.Account(
                             address = "fj3489fj348f",
                             appearanceID = 123,
@@ -129,10 +130,10 @@ object TestData {
                     ),
                     authorizedDapps = emptyList(),
                     networkID = network1.network.networkId().value,
-                    personas = emptyList()
+                    personas = emptyIdentifiedArrayList()
                 ),
                 Network(
-                    accounts = listOf(
+                    accounts = identifiedArrayListOf(
                         Network.Account(
                             address = "fj3489fj348f",
                             appearanceID = 123,
@@ -192,7 +193,7 @@ object TestData {
                     ),
                     authorizedDapps = emptyList(),
                     networkID = network2.network.networkId().value,
-                    personas = emptyList()
+                    personas = emptyIdentifiedArrayList()
                 )
             )
         )

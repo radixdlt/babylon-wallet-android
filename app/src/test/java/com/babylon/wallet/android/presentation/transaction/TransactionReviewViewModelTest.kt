@@ -67,7 +67,9 @@ import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import rdx.works.core.displayableQuantity
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.ret.crypto.PrivateKey
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
@@ -118,11 +120,12 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { instructions() } returns mockk<Instructions>().apply { every { asStr() } returns "" }
         every { blobs() } returns listOf()
     }
+    private val sampleProfile = profile(accounts = identifiedArrayListOf(account(address = "adr_1", name = "primary")))
     private val fromAccount = account(
         address = "account_tdx_19jd32jd3928jd3892jd329",
         name = "From Account"
     )
-    private val otherAccounts = listOf(
+    private val otherAccounts = identifiedArrayListOf(
         account(
             address = "account_tdx_3j892dj3289dj32d2d2d2d9",
             name = "To Account 1"
@@ -213,7 +216,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             transactionTypes = listOf(),
             reservedInstructions = listOf()
         )
-        every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(fromAccount) + otherAccounts))
+        every { getProfileUseCase() } returns flowOf(profile(accounts = (identifiedArrayListOf(fromAccount) + otherAccounts).toIdentifiedArrayList()))
         coEvery { getResourcesUseCase(any()) } returns Result.success(listOf())
     }
 

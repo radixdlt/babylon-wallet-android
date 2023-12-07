@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
@@ -92,7 +93,7 @@ class SearchFeePayersUseCaseTest {
             ).build(networkId)
 
         private object ProfileRepositoryFake : ProfileRepository {
-            private val profile = profile(accounts = listOf(account1, account2))
+            private val profile = profile(accounts = identifiedArrayListOf(account1, account2))
 
             override val profileState: Flow<ProfileState> = flowOf(ProfileState.Restored(profile = profile))
 

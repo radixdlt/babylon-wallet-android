@@ -2,6 +2,7 @@ package com.babylon.wallet.android.mockdata
 
 import com.babylon.wallet.android.domain.SampleDataProvider
 import rdx.works.core.HexCoded32Bytes
+import rdx.works.core.IdentifiedArrayList
 import rdx.works.core.InstantGenerator
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Header
@@ -20,8 +21,8 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.TestData
 
 fun profile(
-    accounts: List<Network.Account> = listOf(account("acc-1"), account("acc-2")),
-    personas: List<Network.Persona> = listOf(SampleDataProvider().samplePersona()),
+    accounts: IdentifiedArrayList<Network.Account> = identifiedArrayListOf(account("acc-1"), account("acc-2")),
+    personas: IdentifiedArrayList<Network.Persona> = identifiedArrayListOf(SampleDataProvider().samplePersona()),
     dApps: List<Network.AuthorizedDapp> = emptyList(),
     p2pLinks: List<P2PLink> = emptyList(),
     gateway: Radix.Gateway = Radix.Gateway.default,

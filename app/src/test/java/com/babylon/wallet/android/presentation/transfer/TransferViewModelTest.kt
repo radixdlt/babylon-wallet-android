@@ -27,6 +27,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
@@ -86,7 +87,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     override fun setUp() = runTest {
         super.setUp()
         every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address
-        every { getProfileUseCase() } returns flowOf(profile(accounts = listOf(fromAccount) + otherAccounts))
+        every { getProfileUseCase() } returns flowOf(profile(accounts = (listOf(fromAccount) + otherAccounts).toIdentifiedArrayList()))
     }
 
     @Test

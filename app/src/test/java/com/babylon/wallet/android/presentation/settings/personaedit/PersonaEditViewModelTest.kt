@@ -29,6 +29,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.domain.GetProfileUseCase
@@ -68,7 +69,7 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
         coEvery { updatePersonaUseCase(any()) } just Runs
         every { getProfileUseCase() } returns flowOf(
             profile(
-                personas = listOf(
+                personas = identifiedArrayListOf(
                     SampleDataProvider().samplePersona("1")
                 )
             )

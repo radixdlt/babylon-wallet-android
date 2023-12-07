@@ -88,10 +88,10 @@ data class Profile(
         ): Profile {
             val networks = listOf(
                 Network(
-                    accounts = listOf(),
+                    accounts = emptyIdentifiedArrayList(),
                     authorizedDapps = listOf(),
                     networkID = gateways.current().network.id,
-                    personas = listOf()
+                    personas = emptyIdentifiedArrayList()
                 )
             )
 

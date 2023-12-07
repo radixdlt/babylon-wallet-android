@@ -31,6 +31,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -194,7 +195,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any(),) } returns Result.success(any())
         every { getProfileUseCase() } returns flowOf(
             profile(
-                personas = listOf(samplePersona),
+                personas = identifiedArrayListOf(samplePersona),
                 dApps = listOf(
                     Network.AuthorizedDapp(
                         networkID = Radix.Gateway.nebunet.network.id,
