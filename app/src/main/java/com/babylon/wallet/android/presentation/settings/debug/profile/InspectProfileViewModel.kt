@@ -34,7 +34,7 @@ class InspectProfileViewModel @Inject constructor(
 
     data class State(
         val profile: Profile? = null,
-        val isRawProfileVisible: Boolean = false
+        val isRawProfileVisible: Boolean = true // Currently default viewer is raw json
     ): UiState {
         @OptIn(DebugOnly::class)
         val rawSnapshot: String? by lazy {

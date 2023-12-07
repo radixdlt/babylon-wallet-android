@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.Typeface
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import androidx.core.content.getSystemService
 import com.babylon.wallet.android.R
@@ -46,6 +48,7 @@ fun InspectProfileScreen(
 ) {
     val state by viewModel.state.collectAsState()
     Scaffold(
+        modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(id = R.string.settings_debugSettings_inspectProfile),
@@ -98,13 +101,13 @@ fun InspectProfileScreen(
     ) { padding ->
         if (state.isRawProfileVisible) {
             RawProfileContent(
-                modifier = modifier.padding(padding),
+                modifier = Modifier.padding(padding),
                 profileSnapshot = state.rawSnapshot.orEmpty()
             )
         } else {
             val profile = state.profile
             if (profile != null) {
-                ProfileContent(modifier = modifier.padding(padding), profile = profile)
+                ProfileContent(modifier = Modifier.padding(padding), profile = profile)
             } else {
                 FullscreenCircularProgressContent()
             }
@@ -141,5 +144,5 @@ private fun ProfileContent(
     modifier: Modifier,
     profile: Profile
 ) {
-
+    Text(modifier = modifier.fillMaxSize(), text = "Profile viewer tbd", textAlign = TextAlign.Center)
 }
