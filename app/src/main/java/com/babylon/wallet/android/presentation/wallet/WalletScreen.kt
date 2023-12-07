@@ -3,7 +3,10 @@
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +18,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Badge
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Surface
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
@@ -33,10 +37,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -48,7 +56,9 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.Constants.RADIX_START_PAGE_URL
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
+import com.babylon.wallet.android.utils.openUrl
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -73,7 +83,8 @@ fun WalletScreen(
         onAccountCreationClick = onAccountCreationClick,
         onRefresh = viewModel::onRefresh,
         onMessageShown = viewModel::onMessageShown,
-        onApplySecuritySettings = viewModel::onApplySecuritySettings
+        onApplySecuritySettings = viewModel::onApplySecuritySettings,
+        onRadixBannerDismiss = viewModel::onRadixBannerDismiss
     )
 
     LaunchedEffect(Unit) {
@@ -102,6 +113,7 @@ private fun WalletContent(
     onAccountCreationClick: () -> Unit,
     onRefresh: () -> Unit,
     onMessageShown: () -> Unit,
+    onRadixBannerDismiss: () -> Unit,
     onApplySecuritySettings: (Network.Account, SecurityPromptType) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
@@ -169,7 +181,8 @@ private fun WalletContent(
                 state = state,
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
-                onApplySecuritySettings = onApplySecuritySettings
+                onApplySecuritySettings = onApplySecuritySettings,
+                onRadixBannerDismiss = onRadixBannerDismiss
             )
 
             AnimatedVisibility(visible = state.isLoading) {
@@ -193,6 +206,7 @@ private fun WalletAccountList(
     state: WalletUiState,
     onAccountClick: (Network.Account) -> Unit,
     onAccountCreationClick: () -> Unit,
+    onRadixBannerDismiss: () -> Unit,
     onApplySecuritySettings: (Network.Account, SecurityPromptType) -> Unit,
 ) {
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -229,10 +243,89 @@ private fun WalletAccountList(
             RadixSecondaryButton(
                 text = stringResource(id = R.string.homePage_createNewAccount),
                 onClick = onAccountCreationClick,
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .padding(bottom = RadixTheme.dimensions.paddingLarge)
+                modifier = Modifier.fillMaxWidth(0.8f)
             )
+        }
+
+        item {
+            if (state.isRadixBannerVisible) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+                RadixBanner(
+                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                    onDismiss = onRadixBannerDismiss
+                )
+            } else {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            }
+        }
+    }
+}
+
+@Composable
+private fun RadixBanner(
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit
+) {
+    Surface(
+        modifier = modifier,
+        shape = RadixTheme.shapes.roundedRectDefault,
+        color = RadixTheme.colors.gray5
+    ) {
+        Box {
+            Column(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+            ) {
+                Image(
+                    modifier = Modifier.height(50.dp),
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_radix_banner),
+                    contentScale = ContentScale.FillHeight,
+                    contentDescription = null
+                )
+
+                Text(
+                    text = stringResource(id = R.string.homePage_radixBanner_title),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                )
+
+                Text(
+                    text = stringResource(id = R.string.homePage_radixBanner_subtitle),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2,
+                    textAlign = TextAlign.Center
+                )
+
+                val context = LocalContext.current
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(id = R.string.homePage_radixBanner_action),
+                    contentColor = RadixTheme.colors.gray1,
+                    onClick = {
+                        context.openUrl(RADIX_START_PAGE_URL)
+                    },
+                    trailingContent = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_external_link),
+                            contentDescription = null,
+                            tint = RadixTheme.colors.gray1
+                        )
+                    }
+                )
+            }
+
+            IconButton(
+                modifier = Modifier.align(Alignment.TopEnd),
+                onClick = onDismiss
+            ) {
+                Icon(
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_close),
+                    contentDescription = null,
+                    tint = RadixTheme.colors.gray2
+                )
+            }
         }
     }
 }
@@ -255,7 +348,8 @@ fun WalletContentPreview() {
                 onAccountCreationClick = { },
                 onRefresh = { },
                 onMessageShown = {},
-                onApplySecuritySettings = { _, _ -> }
+                onApplySecuritySettings = { _, _ -> },
+                onRadixBannerDismiss = {}
             )
         }
     }

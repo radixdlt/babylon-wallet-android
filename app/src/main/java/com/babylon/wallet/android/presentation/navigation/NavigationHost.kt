@@ -107,7 +107,7 @@ fun NavigationHost(
             },
             onRestoreConfirmed = { fromCloud ->
                 navController.restoreMnemonics(
-                    args = RestoreMnemonicsArgs.RestoreProfile(
+                    args = RestoreMnemonicsArgs(
                         backupType = if (fromCloud) BackupType.Cloud else BackupType.File.PlainText
                     )
                 )
@@ -152,7 +152,7 @@ fun NavigationHost(
             },
             onNavigateToMnemonicRestore = {
                 navController.restoreMnemonics(
-                    args = RestoreMnemonicsArgs.RestoreProfile()
+                    args = RestoreMnemonicsArgs()
                 )
             },
         )
@@ -175,7 +175,7 @@ fun NavigationHost(
                 },
                 onNavigateToMnemonicRestore = {
                     navController.restoreMnemonics(
-                        args = RestoreMnemonicsArgs.RestoreProfile()
+                        args = RestoreMnemonicsArgs()
                     )
                 },
                 onFungibleResourceClick = { resource, account ->

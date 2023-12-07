@@ -25,6 +25,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.identifiedArrayListOf
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
@@ -40,6 +41,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsForSecurityPromptUseCase = mockk<GetEntitiesWithSecurityPromptUseCase>()
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
+    private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
 
     private val sampleProfile = profile(accounts = identifiedArrayListOf(account(address = "adr_1", name = "primary")))
@@ -55,6 +57,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         getAccountsForSecurityPromptUseCase,
         appEventBus,
         ensureBabylonFactorSourceExistUseCase,
+        preferencesManager,
         getBackupStateUseCase
     )
 
@@ -65,6 +68,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         every { getBackupStateUseCase() } returns flowOf(BackupState.Closed)
         every { getProfileUseCase() } returns flowOf(sampleProfile)
         every { appEventBus.events } returns MutableSharedFlow()
+        every { preferencesManager.isRadixBannerVisible } returns flowOf(false)
     }
 
     @Test

@@ -55,26 +55,22 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
     override fun initialState(): State = State(
-        isMandatory = (args as? RestoreMnemonicsArgs.RestoreProfile)?.isMandatory == true
+        isMandatory = args.isMandatory
     )
 
     init {
         viewModelScope.launch {
-            when (args) {
-                is RestoreMnemonicsArgs.RestoreProfile -> {
-                    val profile = args.backupType?.let { backupType ->
-                        getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGateway(Radix.Gateway.mainnet)
-                    } ?: run {
-                        getProfileUseCase().firstOrNull()
-                    }
-                    val factorSources = profile.recoverableFactorSources()
-                    _state.update {
-                        it.copy(
-                            recoverableFactorSources = factorSources,
-                            mainBabylonFactorSourceId = profile?.mainBabylonFactorSourceId()
-                        )
-                    }
-                }
+            val profile = args.backupType?.let { backupType ->
+                getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGateway(Radix.Gateway.mainnet)
+            } ?: run {
+                getProfileUseCase().firstOrNull()
+            }
+            val factorSources = profile.recoverableFactorSources()
+            _state.update {
+                it.copy(
+                    recoverableFactorSources = factorSources,
+                    mainBabylonFactorSourceId = profile?.mainBabylonFactorSourceId()
+                )
             }
 
             showNextRecoverableFactorSourceOrFinish()
@@ -121,17 +117,13 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update { it.copy(screenType = State.ScreenType.Entities, isMovingForward = false) }
         } else {
             viewModelScope.launch {
-                when (args) {
-                    is RestoreMnemonicsArgs.RestoreProfile -> {
-                        if (args.backupType is BackupType.File) {
-                            discardTemporaryRestoredFileForBackupUseCase(BackupType.File.PlainText)
-                        }
-                        if (args.isMandatory) {
-                            sendEvent(Event.CloseApp)
-                        } else {
-                            sendEvent(Event.FinishRestoration(isMovingToMain = false))
-                        }
-                    }
+                if (args.backupType is BackupType.File) {
+                    discardTemporaryRestoredFileForBackupUseCase(BackupType.File.PlainText)
+                }
+                if (args.isMandatory) {
+                    sendEvent(Event.CloseApp)
+                } else {
+                    sendEvent(Event.FinishRestoration(isMovingToMain = false))
                 }
             }
         }
@@ -195,10 +187,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 bip39Passphrase = _state.value.seedPhraseState.bip39Passphrase
             )
         ).onSuccess {
-            if (args is RestoreMnemonicsArgs.RestoreProfile) {
-                args.backupType?.let { backupType ->
-                    restoreProfileFromBackupUseCase(backupType)
-                }
+            args.backupType?.let { backupType ->
+                restoreProfileFromBackupUseCase(backupType)
             }
 
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
@@ -226,7 +216,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             if (_state.value.hasSkippedMainSeedPhrase) {
                 _state.update { it.copy(isRestoring = true) }
 
-                (args as? RestoreMnemonicsArgs.RestoreProfile)?.backupType?.let { backupType ->
+                args.backupType?.let { backupType ->
                     if (biometricAuthProvider().not()) return
                     restoreAndCreateMainSeedPhraseUseCase(backupType)
                 }
@@ -239,7 +229,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 }
             }
 
-            sendEvent(Event.FinishRestoration(isMovingToMain = args is RestoreMnemonicsArgs.RestoreProfile))
+            sendEvent(Event.FinishRestoration(isMovingToMain = true))
         }
     }
 
