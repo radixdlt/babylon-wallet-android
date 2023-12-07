@@ -129,6 +129,7 @@ interface StateDao {
         """
         SELECT 
             PoolEntity.address AS pool_entity_address, 
+            PoolEntity.resource_address AS pool_unit_address, 
             PoolResourceJoin.state_version AS account_state_version, 
             PoolResourceJoin.amount AS amount,
             ResourceEntity.*

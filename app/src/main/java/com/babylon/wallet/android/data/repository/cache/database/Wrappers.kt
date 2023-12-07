@@ -77,6 +77,8 @@ data class AccountPortfolioResponse(
 data class PoolWithResourceResponse(
     @ColumnInfo("pool_entity_address")
     val address: String,
+    @ColumnInfo("pool_unit_address")
+    val poolUnitAddress: String,
     @ColumnInfo("account_state_version")
     val accountStateVersion: Long?,
     val amount: BigDecimal?,

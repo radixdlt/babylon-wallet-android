@@ -15,6 +15,11 @@ import com.babylon.wallet.android.domain.model.resources.metadata.StringMetadata
 import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.TagsMetadataItem
 import com.babylon.wallet.android.domain.model.resources.metadata.ValidatorMetadataItem
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.EntityType.GLOBAL_MULTI_RESOURCE_POOL
+import com.radixdlt.ret.EntityType.GLOBAL_ONE_RESOURCE_POOL
+import com.radixdlt.ret.EntityType.GLOBAL_TWO_RESOURCE_POOL
+import com.radixdlt.ret.EntityType.GLOBAL_VALIDATOR
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
@@ -65,10 +70,20 @@ sealed class Resource {
             get() = iconUrlMetadataItem?.url
 
         val validatorAddress: String?
-            get() = validatorMetadataItem?.validatorAddress
+            get() = validatorMetadataItem?.address?.takeIf {
+                runCatching {
+                    val retAddress = Address(it)
+                    retAddress.entityType() == GLOBAL_VALIDATOR
+                }.getOrNull() == true
+            }
 
         val poolAddress: String?
-            get() = poolMetadataItem?.poolAddress
+            get() = poolMetadataItem?.address?.takeIf {
+                runCatching {
+                    val retAddress = Address(it)
+                    retAddress.entityType() in setOf(GLOBAL_ONE_RESOURCE_POOL, GLOBAL_TWO_RESOURCE_POOL, GLOBAL_MULTI_RESOURCE_POOL)
+                }.getOrNull() == true
+            }
 
         val dappDefinitions: List<String>
             get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
@@ -168,7 +183,12 @@ sealed class Resource {
             get() = tagsMetadataItem?.tags?.map { Tag.Dynamic(name = it) }.orEmpty()
 
         val validatorAddress: String?
-            get() = validatorMetadataItem?.validatorAddress
+            get() = validatorMetadataItem?.address?.takeIf {
+                runCatching {
+                    val retAddress = Address(it)
+                    retAddress.entityType() == GLOBAL_VALIDATOR
+                }.getOrNull() == true
+            }
 
         val dappDefinitions: List<String>
             get() = dAppDefinitionsMetadataItem?.addresses.orEmpty()
