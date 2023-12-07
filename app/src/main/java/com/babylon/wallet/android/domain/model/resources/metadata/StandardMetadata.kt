@@ -5,6 +5,11 @@ package com.babylon.wallet.android.domain.model.resources.metadata
 import android.net.Uri
 import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import com.babylon.wallet.android.utils.toAddressOrNull
+import com.radixdlt.ret.EntityType.GLOBAL_MULTI_RESOURCE_POOL
+import com.radixdlt.ret.EntityType.GLOBAL_ONE_RESOURCE_POOL
+import com.radixdlt.ret.EntityType.GLOBAL_TWO_RESOURCE_POOL
+import com.radixdlt.ret.EntityType.GLOBAL_VALIDATOR
 import java.math.BigDecimal
 
 private fun List<Metadata>.findPrimitive(key: ExplicitMetadataKey, type: MetadataType): Metadata.Primitive? = find {
@@ -53,12 +58,16 @@ fun List<Metadata>.keyImageUrl(): Uri? = findPrimitive(
 fun List<Metadata>.validatorAddress(): String? = findPrimitive(
     key = ExplicitMetadataKey.VALIDATOR,
     type = MetadataType.Address
-)?.value
+)?.value?.takeIf { value ->
+    value.toAddressOrNull()?.entityType() == GLOBAL_VALIDATOR
+}
 
 fun List<Metadata>.poolAddress(): String? = findPrimitive(
     key = ExplicitMetadataKey.POOL,
     type = MetadataType.Address
-)?.value
+)?.value?.takeIf { value ->
+    value.toAddressOrNull()?.entityType() in setOf(GLOBAL_ONE_RESOURCE_POOL, GLOBAL_TWO_RESOURCE_POOL, GLOBAL_MULTI_RESOURCE_POOL)
+}
 
 fun List<Metadata>.poolUnit(): String? = findPrimitive(
     key = ExplicitMetadataKey.POOL_UNIT,

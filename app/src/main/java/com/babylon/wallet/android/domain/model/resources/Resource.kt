@@ -64,11 +64,11 @@ sealed class Resource {
         }
 
         val validatorAddress: String? by lazy {
-            metadata.validatorAddress()?.takeIf { it.startsWith("validator_") }
+            metadata.validatorAddress()
         }
 
         val poolAddress: String? by lazy {
-            metadata.poolAddress()?.takeIf { it.startsWith("pool_") }
+            metadata.poolAddress()
         }
 
         val dappDefinitions: List<String> by lazy {
@@ -175,7 +175,7 @@ sealed class Resource {
         }
 
         val validatorAddress: String? by lazy {
-            metadata.validatorAddress()?.takeIf { it.startsWith("validator_") }
+            metadata.validatorAddress()
         }
 
         val dappDefinitions: List<String> by lazy {
