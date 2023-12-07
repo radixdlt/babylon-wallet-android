@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
@@ -62,12 +63,18 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             name = "To account 3"
         )
     )
+    private val account1WithAssets = AccountWithAssets(
+        account = otherAccounts[0],
+        details = null,
+        assets = null
+    )
 
     override fun initVM(): TransferViewModel {
         return TransferViewModel(
             getProfileUseCase = getProfileUseCase,
             accountsChooserDelegate = AccountsChooserDelegate(
-                getProfileUseCase = getProfileUseCase
+                getProfileUseCase = getProfileUseCase,
+                getWalletAssetsUseCase = getWalletAssetsUseCase
             ),
             assetsChooserDelegate = AssetsChooserDelegate(
                 getWalletAssetsUseCase = getWalletAssetsUseCase,
@@ -88,6 +95,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         super.setUp()
         every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address
         every { getProfileUseCase() } returns flowOf(profile(accounts = (listOf(fromAccount) + otherAccounts).toIdentifiedArrayList()))
+        every { getWalletAssetsUseCase(listOf(otherAccounts[0]), false) } returns flowOf(listOf(account1WithAssets))
     }
 
     @Test
@@ -177,7 +185,8 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         assertEquals(
             TransferViewModel.State.Sheet.ChooseAccounts(
                 selectedAccount = skeleton,
-                ownedAccounts = persistentListOf()
+                ownedAccounts = persistentListOf(),
+                isLoadingAssetsForAccount = false
             ),
             awaitItem().sheet
         )
@@ -189,7 +198,8 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
             assertEquals(
                 TransferViewModel.State.Sheet.ChooseAccounts(
                     selectedAccount = skeleton,
-                    ownedAccounts = remainingAccounts.toPersistentList()
+                    ownedAccounts = remainingAccounts.toPersistentList(),
+                    isLoadingAssetsForAccount = false
                 ),
                 awaitItem().sheet
             )
@@ -210,6 +220,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         )
 
         viewModel.onChooseAccountSubmitted()
+        awaitItem()
         assertEquals(
             TransferViewModel.State(
                 fromAccount = fromAccount,
@@ -243,6 +254,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         assertFalse(sheetState.isOwnedAccountsEnabled)
 
         viewModel.onChooseAccountSubmitted()
+        awaitItem()
         assertEquals(
             TransferViewModel.State(
                 fromAccount = fromAccount,

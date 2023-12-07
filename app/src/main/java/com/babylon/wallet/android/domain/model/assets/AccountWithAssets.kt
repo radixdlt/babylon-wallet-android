@@ -63,6 +63,20 @@ data class Assets(
         }
     }
 
+    // knownResources of an account is when
+    // it contains a resource with an amount greater than 0
+    // or it had a resource in the past but the amount is 0 now
+    val knownResources: List<Resource> by lazy {
+        fungibles + nonFungibles +
+            poolUnits.map { it.stake } +
+            validatorsWithStakes
+                .mapNotNull { it.liquidStakeUnit }
+                .map { it.fungibleResource } +
+            validatorsWithStakes
+                .mapNotNull { it.stakeClaimNft }
+                .map { it.nonFungibleResource }
+    }
+
     fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = ownedXrd?.let {
         it.ownedAmount?.let { amount ->
             amount >= minimumBalance
