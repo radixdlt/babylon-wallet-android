@@ -28,6 +28,7 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.core.then
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
@@ -64,7 +65,13 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
             _interactionState.update { null }
             val profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.invoke().firstOrNull() else null
             val networkId = currentNetworkId ?: Radix.Gateway.mainnet.network.networkId()
-            val indicesToScan = computeIndicesToScan(profile, networkId, recoveryFS.factorSourceId())
+            val indicesToScan =
+                computeIndicesToScan(
+                    derivationPathScheme = recoveryFS.derivationPathScheme,
+                    networkId = networkId,
+                    factorSourceID = recoveryFS.factorSourceId,
+                    profile = profile
+                )
             val derivedAccounts = when (recoveryFS) {
                 is RecoveryFactorSource.Device -> {
                     deriveAccountsForDeviceFactorSource(recoveryFS, indicesToScan, networkId)
@@ -162,7 +169,7 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
         Timber.tag("Recovery Scan").d("Last used index ${indicesToScan.last()}")
         val mnemonic = recoveryFS.mnemonicWithPassphrase
         return indicesToScan.map { index ->
-            if (recoveryFS.factorSource.supportsOlympia) {
+            if (recoveryFS.isOlympia) {
                 Network.Account.initAccountWithOlympiaDeviceFactorSource(
                     entityIndex = index,
                     displayName = "Unnamed",
@@ -185,11 +192,12 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
     }
 
     private fun computeIndicesToScan(
+        derivationPathScheme: DerivationPathScheme,
         profile: Profile?,
         networkId: NetworkId,
         factorSourceID: FactorSource.FactorSourceID
     ): Set<Int> {
-        val usedIndices = profile?.usedAccountDerivationIndices(networkId, factorSourceID).orEmpty()
+        val usedIndices = profile?.usedAccountDerivationIndices(derivationPathScheme, networkId, factorSourceID).orEmpty()
         val indicesToScan = mutableSetOf<Int>()
         val startIndex = nextDerivationPathOffset
         var currentIndex = startIndex

@@ -15,6 +15,7 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.usesCurve25519
 import rdx.works.profile.data.model.extensions.usesSecp256k1
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -62,12 +63,12 @@ val GetProfileUseCase.factorSources
 val GetProfileUseCase.deviceFactorSources
     get() = invoke().map { profile -> profile.factorSources.filterIsInstance<DeviceFactorSource>() }
 
-val GetProfileUseCase.deviceFactorSourcesWithAccounts
+private val GetProfileUseCase.deviceFactorSourcesWithAccounts
     get() = invoke().map { profile ->
         val deviceFactorSources = profile.factorSources.filterIsInstance<DeviceFactorSource>()
         val allAccountsOnNetwork = profile.currentNetwork.accounts.notHiddenAccounts()
         deviceFactorSources.associateWith { deviceFactorSource ->
-            allAccountsOnNetwork.filter { it.factorSourceId() == deviceFactorSource.id }
+            allAccountsOnNetwork.filter { it.factorSourceId == deviceFactorSource.id }
         }
     }
 
@@ -124,6 +125,7 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
 }
 
 suspend fun GetProfileUseCase.nextDerivationPathForAccountOnNetwork(
+    derivationPathScheme: DerivationPathScheme,
     networkId: Int,
     factorSourceId: FactorSource.FactorSourceID
 ): DerivationPath {
@@ -131,7 +133,7 @@ suspend fun GetProfileUseCase.nextDerivationPathForAccountOnNetwork(
     val network = requireNotNull(NetworkId.from(networkId))
     return DerivationPath.forAccount(
         networkId = network,
-        accountIndex = profile.nextAccountIndex(network, factorSourceId),
+        accountIndex = profile.nextAccountIndex(derivationPathScheme, network, factorSourceId),
         keyType = KeyType.TRANSACTION_SIGNING
     )
 }

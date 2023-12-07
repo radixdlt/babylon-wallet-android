@@ -52,7 +52,7 @@ fun ChooseSeedPhraseScreen(
     viewModel: ChooseSeedPhraseViewModel,
     onBack: () -> Unit,
     onAddSeedPhrase: (MnemonicType) -> Unit,
-    onRecoveryScanWithFactorSource: (FactorSource) -> Unit,
+    onRecoveryScanWithFactorSource: (FactorSource, Boolean) -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     ChooseSeedPhraseContent(
@@ -68,7 +68,7 @@ fun ChooseSeedPhraseScreen(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 is ChooseSeedPhraseViewModel.Event.UseFactorSource -> {
-                    onRecoveryScanWithFactorSource(event.factorSource)
+                    onRecoveryScanWithFactorSource(event.factorSource, event.isOlympia)
                 }
             }
         }

@@ -172,7 +172,7 @@ class AccountViewModel @Inject constructor(
     fun onApplySecuritySettings(securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
             val factorSourceId = _state.value.accountWithAssets?.account
-                ?.factorSourceId() as? FactorSourceID.FromHash ?: return@launch
+                ?.factorSourceId as? FactorSourceID.FromHash ?: return@launch
 
             when (securityPromptType) {
                 SecurityPromptType.NEEDS_BACKUP -> sendEvent(NavigateToMnemonicBackup(factorSourceId))

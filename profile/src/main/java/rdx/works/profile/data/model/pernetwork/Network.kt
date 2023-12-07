@@ -29,8 +29,10 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.extensions.derivationPathEntityIndex
+import rdx.works.profile.data.model.extensions.derivationPathScheme
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -488,7 +490,7 @@ data class Network(
                     dateOfBirth,
                     companyName
                 ) + emailAddresses?.ids.orEmpty() + phoneNumbers?.ids.orEmpty() + urls?.ids.orEmpty() + postalAddresses?.ids.orEmpty() +
-                    creditCards?.ids.orEmpty()
+                        creditCards?.ids.orEmpty()
             }
 
             companion object {
@@ -649,39 +651,48 @@ fun Profile.addNetworkIfDoesNotExist(
 }
 
 fun Profile.usedAccountDerivationIndices(
+    derivationPathScheme: DerivationPathScheme,
     forNetworkId: NetworkId? = null,
     factorSourceID: FactorSource.FactorSourceID? = null
 ): Set<Int> {
     val network = networks.firstOrNull { it.networkID == forNetworkId?.value } ?: return emptySet()
     val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource()
-    return network.accounts.filter { it.factorSourceId() == factorSource?.id }.map { it.derivationPathEntityIndex() }.toSet()
+    return network.accounts.filter {
+        it.factorSourceId == factorSource?.id && it.derivationPathScheme == derivationPathScheme
+    }.map { it.derivationPathEntityIndex }.toSet()
 }
 
 fun Profile.nextAccountIndex(
+    derivationPathScheme: DerivationPathScheme,
     forNetworkId: NetworkId? = null,
     factorSourceID: FactorSource.FactorSourceID? = null
 ): Int {
     val network = networks.firstOrNull { it.networkID == forNetworkId?.value } ?: return 0
     val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource() ?: return 0
-    val accountsControlledByFactorSource = network.accounts.filter { it.factorSourceId() == factorSource.id }
+    val accountsControlledByFactorSource = network.accounts.filter {
+        it.factorSourceId == factorSource.id && it.derivationPathScheme == derivationPathScheme
+    }
     return if (accountsControlledByFactorSource.isEmpty()) {
         0
     } else {
-        accountsControlledByFactorSource.maxOf { it.derivationPathEntityIndex() } + 1
+        accountsControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1
     }
 }
 
 fun Profile.nextPersonaIndex(
+    derivationPathScheme: DerivationPathScheme,
     forNetworkId: NetworkId,
     factorSourceID: FactorSource.FactorSourceID? = null
 ): Int {
     val network = networks.firstOrNull { it.networkID == forNetworkId.value } ?: return 0
     val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource() ?: return 0
-    val personasControlledByFactorSource = network.personas.filter { it.factorSourceId() == factorSource.id }
+    val personasControlledByFactorSource = network.personas.filter {
+        it.factorSourceId == factorSource.id && it.derivationPathScheme == derivationPathScheme
+    }
     return if (personasControlledByFactorSource.isEmpty()) {
         0
     } else {
-        personasControlledByFactorSource.maxOf { it.derivationPathEntityIndex() } + 1
+        personasControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1
     }
 }
 
@@ -691,7 +702,7 @@ fun Profile.nextAppearanceId(
 ): Int {
     val network = networks.firstOrNull { it.networkID == forNetworkId?.value } ?: return 0
     val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource() ?: return 0
-    val accountsControlledByFactorSource = network.accounts.filter { it.factorSourceId() == factorSource.id }
+    val accountsControlledByFactorSource = network.accounts.filter { it.factorSourceId == factorSource.id }
     return if (accountsControlledByFactorSource.isEmpty()) {
         0
     } else {

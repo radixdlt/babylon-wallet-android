@@ -90,7 +90,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             ?.filterIsInstance<DeviceFactorSource>()
             ?.filter { !mnemonicRepository.mnemonicExist(it.id) }
             ?.mapNotNull { factorSource ->
-                val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
+                val associatedAccounts = allAccounts.filter { it.factorSourceId == factorSource.id }
 
                 if (associatedAccounts.isEmpty() && !factorSource.supportsBabylon) return@mapNotNull null
 

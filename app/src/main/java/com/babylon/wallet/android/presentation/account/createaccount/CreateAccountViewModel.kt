@@ -24,7 +24,7 @@ import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
-import rdx.works.profile.domain.account.CreateAccountWithDeviceFactorSourceUseCase
+import rdx.works.profile.domain.account.CreateAccountWithBabylonDeviceFactorSourceUseCase
 import rdx.works.profile.domain.account.CreateAccountWithLedgerFactorSourceUseCase
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
@@ -39,7 +39,7 @@ class CreateAccountViewModel @Inject constructor(
     private val getProfileStateUseCase: GetProfileStateUseCase,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase,
-    private val createAccountWithDeviceFactorSourceUseCase: CreateAccountWithDeviceFactorSourceUseCase,
+    private val createAccountWithBabylonDeviceFactorSourceUseCase: CreateAccountWithBabylonDeviceFactorSourceUseCase,
     private val createAccountWithLedgerFactorSourceUseCase: CreateAccountWithLedgerFactorSourceUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
@@ -139,7 +139,7 @@ class CreateAccountViewModel @Inject constructor(
                 sendEvent(CreateAccountEvent.AddLedgerDevice(args.networkId))
             } else {
                 handleAccountCreate { name, networkId ->
-                    createAccountWithDeviceFactorSourceUseCase(
+                    createAccountWithBabylonDeviceFactorSourceUseCase(
                         displayName = name,
                         networkID = networkId
                     )

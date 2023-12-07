@@ -3,7 +3,6 @@ package rdx.works.profile
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -23,10 +22,9 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.TestData
-import rdx.works.profile.domain.account.CreateAccountWithDeviceFactorSourceUseCase
+import rdx.works.profile.domain.account.CreateAccountWithBabylonDeviceFactorSourceUseCase
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class CreateAccountWithDeviceFactorSourceUseCaseTest {
+class CreateAccountWithBabylonDeviceFactorSourceUseCaseTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
@@ -59,19 +57,19 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
             whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
             coEvery { ensureBabylonFactorSourceExistUseCase() } returns profile
 
-            val createAccountWithDeviceFactorSourceUseCase = CreateAccountWithDeviceFactorSourceUseCase(
+            val createAccountWithBabylonDeviceFactorSourceUseCase = CreateAccountWithBabylonDeviceFactorSourceUseCase(
                 mnemonicRepository = mnemonicRepository,
                 profileRepository = profileRepository,
                 ensureBabylonFactorSourceExistUseCase = ensureBabylonFactorSourceExistUseCase,
                 defaultDispatcher = testDispatcher
             )
 
-            val account = createAccountWithDeviceFactorSourceUseCase(
+            val account = createAccountWithBabylonDeviceFactorSourceUseCase(
                 displayName = accountName
             )
 
             val updatedProfile = profile.addAccounts(
-                account = account,
+                accounts = listOf(account),
                 onNetwork = network.network.networkId()
             )
 

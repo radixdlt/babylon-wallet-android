@@ -171,7 +171,7 @@ class WalletViewModel @Inject constructor(
     fun onApplySecuritySettings(account: Network.Account, securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
             val factorSourceId =
-                getProfileUseCase.accountOnCurrentNetwork(account.address)?.factorSourceId() as? FactorSourceID.FromHash ?: return@launch
+                getProfileUseCase.accountOnCurrentNetwork(account.address)?.factorSourceId as? FactorSourceID.FromHash ?: return@launch
 
             when (securityPromptType) {
                 SecurityPromptType.NEEDS_BACKUP -> sendEvent(WalletEvent.NavigateToMnemonicBackup(factorSourceId))
@@ -251,7 +251,7 @@ data class WalletUiState(
 
     private fun isLedgerAccount(forAccount: Network.Account): Boolean {
         val factorSource = factorSources.find {
-            it.id == forAccount.factorSourceId()
+            it.id == forAccount.factorSourceId
         }?.id?.kind
 
         return factorSource == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET

@@ -107,8 +107,8 @@ fun NavGraphBuilder.accountSecurityNavGraph(
             onAddSeedPhrase = {
                 navController.recoverSingleMnemonic(mnemonicType = it)
             },
-            onRecoveryScanWithFactorSource = {
-                navController.accountRecoveryScan(it.identifier)
+            onRecoveryScanWithFactorSource = { factorSource, isOlympia ->
+                navController.accountRecoveryScan(factorSource.identifier, isOlympia)
             }
         )
     }

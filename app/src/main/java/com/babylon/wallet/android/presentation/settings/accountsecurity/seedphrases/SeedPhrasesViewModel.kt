@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.accountsecurity.seedphr
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.DeviceFactorSourceData
+import com.babylon.wallet.android.domain.usecases.GetSeedPhrasesWithAccountsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -19,15 +20,13 @@ import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.deviceFactorSourcesWithAccounts
 import javax.inject.Inject
 
 @HiltViewModel
 class SeedPhrasesViewModel @Inject constructor(
-    private val getProfileUseCase: GetProfileUseCase,
     private val mnemonicRepository: MnemonicRepository,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val getSeedPhrasesWithAccountsUseCase: GetSeedPhrasesWithAccountsUseCase
 ) : StateViewModel<SeedPhrasesViewModel.SeedPhraseUiState>(),
     OneOffEventHandler<SeedPhrasesViewModel.Effect> by OneOffEventHandlerImpl() {
 
@@ -37,22 +36,18 @@ class SeedPhrasesViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             combine(
-                getProfileUseCase.deviceFactorSourcesWithAccounts,
+                getSeedPhrasesWithAccountsUseCase(),
                 refreshFlow
             ) { factorSources, _ ->
                 val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()
-                factorSources.map { entry ->
-                    val mnemonicExist = mnemonicRepository.mnemonicExist(entry.key.id)
+                factorSources.map { data ->
+                    val mnemonicExist = mnemonicRepository.mnemonicExist(data.deviceFactorSource.id)
                     val mnemonicState = when {
                         !mnemonicExist -> DeviceFactorSourceData.MnemonicState.NeedRecover
-                        backedUpFactorSourceIds.contains(entry.key.id.body.value) -> DeviceFactorSourceData.MnemonicState.BackedUp
+                        backedUpFactorSourceIds.contains(data.deviceFactorSource.id.body.value) -> DeviceFactorSourceData.MnemonicState.BackedUp
                         else -> DeviceFactorSourceData.MnemonicState.NotBackedUp
                     }
-                    DeviceFactorSourceData(
-                        deviceFactorSource = entry.key,
-                        accounts = entry.value.toPersistentList(),
-                        mnemonicState = mnemonicState
-                    )
+                    data.copy(mnemonicState = mnemonicState)
                 }
             }.collect { deviceFactorSources ->
                 _state.update { it.copy(deviceFactorSourcesWithAccounts = deviceFactorSources.toPersistentList()) }

@@ -4,8 +4,8 @@ import rdx.works.core.mapWhen
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.currentGateway
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.EntityFlag
-import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -36,18 +36,29 @@ val Entity.usesSecp256k1: Boolean
         }
     }
 
-fun Entity.factorSourceId(): FactorSource.FactorSourceID {
-    return (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId
-}
+val Entity.factorSourceId
+    get() = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId
 
-fun Entity.derivationPathEntityIndex(): Int {
-    val transactionSigning = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning
-    return when (transactionSigning.badge) {
-        is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-            transactionSigning.badge.derivationPath.derivationPathEntityIndex()
+
+val Entity.derivationPathScheme: DerivationPathScheme
+    get() {
+        val transactionSigning = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning
+        return when (transactionSigning.badge) {
+            is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+                transactionSigning.badge.derivationPath.scheme
+            }
         }
     }
-}
+
+val Entity.derivationPathEntityIndex: Int
+    get() {
+        val transactionSigning = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning
+        return when (transactionSigning.badge) {
+            is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
+                transactionSigning.badge.derivationPath.derivationPathEntityIndex()
+            }
+        }
+    }
 
 fun Entity.hasAuthSigning(): Boolean {
     return when (val state = securityState) {

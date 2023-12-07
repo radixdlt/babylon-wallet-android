@@ -71,7 +71,7 @@ class ChooseSeedPhraseViewModel @Inject constructor(
     fun onUseFactorSource() {
         _state.value.selectedFactorSource?.let { factorSource ->
             viewModelScope.launch {
-                sendEvent(Event.UseFactorSource(factorSource))
+                sendEvent(Event.UseFactorSource(factorSource, args.recoveryType == MnemonicType.Olympia))
             }
         }
     }
@@ -86,6 +86,6 @@ class ChooseSeedPhraseViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        data class UseFactorSource(val factorSource: DeviceFactorSource) : Event
+        data class UseFactorSource(val factorSource: DeviceFactorSource, val isOlympia: Boolean) : Event
     }
 }

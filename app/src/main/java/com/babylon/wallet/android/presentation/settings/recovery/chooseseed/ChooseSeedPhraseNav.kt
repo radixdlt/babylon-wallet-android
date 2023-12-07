@@ -34,7 +34,7 @@ fun NavController.chooseSeedPhrase(mnemonicType: MnemonicType) {
 fun NavGraphBuilder.chooseSeedPhrase(
     onBack: () -> Unit,
     onAddSeedPhrase: (MnemonicType) -> Unit,
-    onRecoveryScanWithFactorSource: (FactorSource) -> Unit
+    onRecoveryScanWithFactorSource: (FactorSource, Boolean) -> Unit
 ) {
     composable(
         route = ROUTE,

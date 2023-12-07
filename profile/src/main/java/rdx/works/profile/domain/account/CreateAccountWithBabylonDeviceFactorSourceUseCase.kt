@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithBabylonDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.addAccounts
@@ -16,7 +17,7 @@ import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import javax.inject.Inject
 
-class CreateAccountWithDeviceFactorSourceUseCase @Inject constructor(
+class CreateAccountWithBabylonDeviceFactorSourceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val profileRepository: ProfileRepository,
@@ -32,7 +33,7 @@ class CreateAccountWithDeviceFactorSourceUseCase @Inject constructor(
 
             // Construct new account
             val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
-            val nextAccountIndex = profile.nextAccountIndex(networkId, factorSource.id)
+            val nextAccountIndex = profile.nextAccountIndex(DerivationPathScheme.CAP_26, networkId, factorSource.id)
             val nextAppearanceId = profile.nextAppearanceId(networkId)
             val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.id).getOrNull())
             val newAccount = initAccountWithBabylonDeviceFactorSource(

@@ -24,6 +24,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -75,7 +76,7 @@ class AccountRecoveryViewModel @Inject constructor(
                         val mnemonic = mnemonicRepository.readMnemonic(factorSource.id).getOrThrow()
                         _state.update {
                             it.copy(
-                                recoveryFactorSource = RecoveryFactorSource.Device(factorSource, mnemonic)
+                                recoveryFactorSource = RecoveryFactorSource.Device(factorSource, mnemonic, args.isOlympia == true)
                             )
                         }
                         startRecoveryScan()
@@ -239,14 +240,27 @@ sealed interface RecoveryFactorSource {
         val mnemonicWithPassphrase: MnemonicWithPassphrase
     ) : RecoveryFactorSource
 
-    data class Device(val factorSource: DeviceFactorSource, val mnemonicWithPassphrase: MnemonicWithPassphrase) : RecoveryFactorSource
+    data class Device(val factorSource: DeviceFactorSource, val mnemonicWithPassphrase: MnemonicWithPassphrase, val isOlympia: Boolean) :
+        RecoveryFactorSource
+
     data class Ledger(val factorSource: LedgerHardwareWalletFactorSource, val isOlympia: Boolean) : RecoveryFactorSource
 
-    fun factorSourceId(): FactorSource.FactorSourceID = when (this) {
-        is VirtualDeviceFactorSource -> virtualDeviceFactorSource.id
-        is Device -> factorSource.id
-        is Ledger -> factorSource.id
-    }
+    val factorSourceId: FactorSource.FactorSourceID
+        get() =
+            when (this) {
+                is VirtualDeviceFactorSource -> virtualDeviceFactorSource.id
+                is Device -> factorSource.id
+                is Ledger -> factorSource.id
+            }
+
+    val derivationPathScheme: DerivationPathScheme
+        get() =
+            when (this) {
+                is VirtualDeviceFactorSource -> DerivationPathScheme.CAP_26
+                is Device -> if (isOlympia) DerivationPathScheme.BIP_44_OLYMPIA else DerivationPathScheme.CAP_26
+                is Ledger -> if (isOlympia) DerivationPathScheme.BIP_44_OLYMPIA else DerivationPathScheme.CAP_26
+            }
+
 }
 
 sealed interface Event : OneOffEvent {

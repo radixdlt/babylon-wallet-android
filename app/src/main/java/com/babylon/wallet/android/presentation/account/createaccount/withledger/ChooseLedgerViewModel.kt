@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
@@ -146,6 +147,7 @@ class ChooseLedgerViewModel @Inject constructor(
                             }
                         }
                         val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnNetwork(
+                            DerivationPathScheme.CAP_26,
                             networkIdToCreateAccountOn(),
                             ledgerFactorSource.data.id
                         )
