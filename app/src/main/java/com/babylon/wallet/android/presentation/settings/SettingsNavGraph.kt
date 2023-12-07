@@ -5,6 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityNavGraph
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityScreen
@@ -53,7 +54,9 @@ fun NavGraphBuilder.settingsNavGraph(
         )
         accountSecurityNavGraph(navController)
         appSettingsNavGraph(navController)
-        debugSettings(navController)
+        if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
+            debugSettings(navController)
+        }
     }
 }
 

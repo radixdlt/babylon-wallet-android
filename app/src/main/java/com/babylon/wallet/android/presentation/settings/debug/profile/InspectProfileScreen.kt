@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.debug.profile
 
 import android.content.ClipData
-import android.os.Build
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.WindowInsets
@@ -38,7 +36,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import rdx.works.profile.data.model.Profile
 
 @Composable
 fun InspectProfileScreen(
@@ -107,7 +104,7 @@ fun InspectProfileScreen(
         } else {
             val profile = state.profile
             if (profile != null) {
-                ProfileContent(modifier = Modifier.padding(padding), profile = profile)
+                ProfileContent(modifier = Modifier.padding(padding))
             } else {
                 FullscreenCircularProgressContent()
             }
@@ -125,7 +122,7 @@ private fun RawProfileContent(
         backgroundColor = RadixTheme.colors.gray4
     )
     CompositionLocalProvider(LocalTextSelectionColors provides customTextSelectionColors) {
-        SelectionContainer() {
+        SelectionContainer {
             Text(
                 modifier = modifier
                     .verticalScroll(rememberScrollState())
@@ -141,8 +138,7 @@ private fun RawProfileContent(
 
 @Composable
 private fun ProfileContent(
-    modifier: Modifier,
-    profile: Profile
+    modifier: Modifier
 ) {
     Text(modifier = modifier.fillMaxSize(), text = "Profile viewer tbd", textAlign = TextAlign.Center)
 }

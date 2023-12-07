@@ -16,7 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class InspectProfileViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
-): StateViewModel<State>() {
+) : StateViewModel<State>() {
 
     override fun initialState(): State = State()
 
@@ -35,7 +35,7 @@ class InspectProfileViewModel @Inject constructor(
     data class State(
         val profile: Profile? = null,
         val isRawProfileVisible: Boolean = true // Currently default viewer is raw json
-    ): UiState {
+    ) : UiState {
         @OptIn(DebugOnly::class)
         val rawSnapshot: String? by lazy {
             profile?.prettyPrinted()

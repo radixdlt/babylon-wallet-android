@@ -101,7 +101,7 @@ sealed interface SettingsItem {
     }
 
     sealed interface DebugSettingsItem {
-        data object InspectProfile: DebugSettingsItem
+        data object InspectProfile : DebugSettingsItem
 
         @StringRes
         fun descriptionRes(): Int {
