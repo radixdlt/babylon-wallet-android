@@ -1,6 +1,9 @@
 package rdx.works.profile.data.model
 
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import rdx.works.core.IdentifiedArrayList
+import rdx.works.core.annotations.DebugOnly
 import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
@@ -13,6 +16,7 @@ import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.di.SerializerModule
 import java.time.Instant
 
 data class Profile(
@@ -129,3 +133,15 @@ val Profile.currentNetwork: Network
             "No per-network found for gateway: $currentGateway. This should not happen $networks"
         )
     }
+
+/**
+ * Used only by debug features, like inspect profile, where it is the only place
+ * in UI where the profile's json needs to be previewed.
+ */
+@Suppress("JSON_FORMAT_REDUNDANT")
+@DebugOnly
+fun Profile.prettyPrinted(): String {
+    return Json(from = SerializerModule.provideProfileSerializer()) {
+        prettyPrint = true
+    }.encodeToString(snapshot())
+}

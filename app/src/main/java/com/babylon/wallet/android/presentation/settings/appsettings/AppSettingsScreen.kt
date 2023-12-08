@@ -75,7 +75,7 @@ private fun AppSettingsContent(
 //                    color = RadixTheme.colors.gray2
 //                )
 //            }
-                appSettings.forEachIndexed { index, appSettingsItem ->
+                appSettings.forEach { appSettingsItem ->
                     item {
                         when (appSettingsItem) {
                             is SettingsItem.AppSettingsItem.DeveloperMode -> {
