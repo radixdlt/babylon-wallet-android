@@ -135,6 +135,7 @@ fun BottomSheetDialogWrapper(
             }
             Column(
                 modifier = Modifier
+                    .clickable(interactionSource = interactionSource, indication = null) { /* Disable content click */ }
                     .applyIf(
                         dragToDismissEnabled,
                         Modifier
