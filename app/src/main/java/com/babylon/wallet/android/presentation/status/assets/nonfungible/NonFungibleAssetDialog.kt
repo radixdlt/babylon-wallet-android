@@ -156,7 +156,8 @@ private fun NonFungibleAssetDialogContent(
                                 Text(
                                     text = description,
                                     style = RadixTheme.typography.body1HighImportance,
-                                    color = RadixTheme.colors.gray1
+                                    color = RadixTheme.colors.gray1,
+                                    textAlign = TextAlign.End
                                 )
                             }
                         }
