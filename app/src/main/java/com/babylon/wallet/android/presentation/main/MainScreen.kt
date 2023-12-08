@@ -22,7 +22,8 @@ fun MainScreen(
     onNavigateToMnemonicRestore: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
-    onNavigateToIncompatibleProfile: () -> Unit
+    onNavigateToIncompatibleProfile: () -> Unit,
+    onNavigateToWallet: () -> Unit
 ) {
     val state by mainUiState.collectAsStateWithLifecycle()
     when (state.initialAppState) {

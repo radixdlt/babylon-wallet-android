@@ -10,11 +10,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 
@@ -23,11 +25,7 @@ fun UnknownDepositRulesStateInfo(modifier: Modifier = Modifier) {
     val inlineContentId = "icon"
     val annotatedText = buildAnnotatedString {
         appendInlineContent(inlineContentId)
-        append(
-            "Sorry, this Account's third-party exceptions and depositor lists are in an unknown state and cannot be viewed" +
-                " or edited because it was imported using only a seed phrase or Ledger. A forthcoming wallet " +
-                "update will enable viewing and editing of these lists." // TODO crowdin
-        )
+        append(stringResource(id = R.string.accountSettings_specificAssetsDeposits_modificationDisabledForRecoveredAccount))
     }
     val inlineContent = mapOf(
         inlineContentId to InlineTextContent(Placeholder(24.sp, 20.sp, PlaceholderVerticalAlign.Center)) {

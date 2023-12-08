@@ -17,7 +17,8 @@ fun NavGraphBuilder.main(
     onNavigateToMnemonicRestore: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
-    onNavigateToIncompatibleProfile: () -> Unit
+    onNavigateToIncompatibleProfile: () -> Unit,
+    onNavigateToWallet: () -> Unit
 ) {
     composable(route = MAIN_ROUTE) {
         MainScreen(
@@ -28,7 +29,8 @@ fun NavGraphBuilder.main(
             onNavigateToOnBoarding = onNavigateToOnBoarding,
             onNavigateToIncompatibleProfile = onNavigateToIncompatibleProfile,
             onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
-            onNavigateToMnemonicRestore = onNavigateToMnemonicRestore
+            onNavigateToMnemonicRestore = onNavigateToMnemonicRestore,
+            onNavigateToWallet = onNavigateToWallet
         )
     }
 }

@@ -70,6 +70,7 @@ import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.profile.domain.backup.BackupType
+import wallet
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -176,14 +177,35 @@ fun NavigationHost(
                     Screen.AccountDestination.routeWithArgs(account.address)
                 )
             },
+            onNavigateToMnemonicBackup = {
+                navController.seedPhrases()
+            },
+            onNavigateToMnemonicRestore = {
+                navController.restoreMnemonics(
+                    args = RestoreMnemonicsArgs()
+                )
+            },
             onAccountCreationClick = {
                 navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
             },
             onNavigateToOnBoarding = {
                 navController.navigate(Screen.OnboardingDestination.route)
             },
+            onNavigateToWallet = {
+                navController.wallet()
+            },
             onNavigateToIncompatibleProfile = {
                 navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
+            }
+        )
+        wallet(
+            onMenuClick = {
+                navController.navigate(Screen.SettingsAllDestination.route)
+            },
+            onAccountClick = { account ->
+                navController.navigate(
+                    Screen.AccountDestination.routeWithArgs(account.address)
+                )
             },
             onNavigateToMnemonicBackup = {
                 navController.seedPhrases()
@@ -193,6 +215,9 @@ fun NavigationHost(
                     args = RestoreMnemonicsArgs()
                 )
             },
+            onAccountCreationClick = {
+                navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
+            }
         )
         composable(
             route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ADDRESS}",

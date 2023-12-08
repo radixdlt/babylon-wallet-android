@@ -58,7 +58,7 @@ private fun RecoveryScanCompleteContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault),
-                text = "Recovery Complete", // TODO crowdin
+                text = stringResource(id = R.string.recoverWalletWithoutProfileComplete_header_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
@@ -67,9 +67,7 @@ private fun RecoveryScanCompleteContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = "Accounts discovered in the scan have been added to your wallet.\n" +
-                    "\n" +
-                    "You can repeat this process for other seed phrases or Ledger hardware wallet devices.", // TODO crowdin
+                text = stringResource(id = R.string.recoverWalletWithoutProfileComplete_header_subtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )

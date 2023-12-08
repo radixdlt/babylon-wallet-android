@@ -267,7 +267,7 @@ private fun SeedPhraseView(
 
 @Composable
 private fun SeedPhraseLength.description(): String {
-    return stringResource(id = R.string.seedPhraeWords, words)
+    return stringResource(id = R.string.seedPhraseWords, words)
 }
 
 @Composable

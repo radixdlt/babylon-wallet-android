@@ -31,11 +31,6 @@ enum class ExplicitMetadataKey(val key: String) {
 
     companion object {
 
-        val forEntities: Set<ExplicitMetadataKey>
-            get() = setOf(
-                OWNER_KEYS
-            )
-
         val forAssets: Set<ExplicitMetadataKey>
             get() = setOf(
                 NAME,
@@ -50,19 +45,6 @@ enum class ExplicitMetadataKey(val key: String) {
                 DAPP_DEFINITIONS
             )
 
-        val forResources: Set<ExplicitMetadataKey>
-            get() = setOf(
-                NAME,
-                SYMBOL,
-                DESCRIPTION,
-                KEY_IMAGE_URL,
-                ICON_URL,
-                INFO_URL,
-                TAGS,
-                VALIDATOR,
-                POOL
-            )
-
         val forDapp: Set<ExplicitMetadataKey>
             get() = setOf(
                 NAME,
@@ -73,14 +55,6 @@ enum class ExplicitMetadataKey(val key: String) {
                 CLAIMED_WEBSITES,
                 CLAIMED_ENTITIES,
                 ICON_URL
-            )
-
-        val forValidatorsAndPools: Set<ExplicitMetadataKey>
-            get() = setOf(
-                NAME,
-                ICON_URL,
-                POOL_UNIT,
-                CLAIM_NFT
             )
 
         fun from(key: String) = ExplicitMetadataKey.values().find { it.key == key }

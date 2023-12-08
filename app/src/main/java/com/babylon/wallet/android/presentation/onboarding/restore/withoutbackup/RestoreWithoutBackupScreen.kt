@@ -59,13 +59,11 @@ fun RestoreWithoutBackupScreen(
             title = "No Babylon Seed Phrase", // TODO crowdin
             text = when (state.dialogPrompt) {
                 RestoreWithoutBackupViewModel.State.PromptState.Olympia -> {
-                    "Tap “I’m a New Wallet User”. After completing wallet creation, in Settings you can perform an “account recovery scan” using your Olympia device" // TODO crowdin,
+                    stringResource(id = R.string.recoverWalletWithoutProfileStart_useNewWalletInstead_alert_message)
                 }
-
                 RestoreWithoutBackupViewModel.State.PromptState.Ledger -> {
-                    "Tap “I’m a New Wallet User”. After completing wallet creation, in Settings you can perform an “account recovery scan” using your Ledger seed phrase" // TODO crowdin,
+                    stringResource(id = R.string.recoverWalletWithoutProfileStart_useNewWalletInstead_alert_message)
                 }
-
                 else -> ""
             },
             confirmText = stringResource(id = R.string.common_continue),
@@ -132,7 +130,7 @@ private fun RestoreWithoutBackupContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = "Recover Control Without Backup", // TODO crowdin
+                text = stringResource(id = R.string.recoverWalletWithoutProfileInfo_header_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title
             )
@@ -186,8 +184,7 @@ private fun SelectRecoveryOptionSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = "If you have no wallet backup in the cloud or as an exported backup file, you still have " +
-                    "other restore options.", // TODO crowdin
+            text = stringResource(id = R.string.recoverWalletWithoutProfileStart_header_subtitle),
             style = RadixTheme.typography.body1Regular
         )
         HorizontalDivider(color = RadixTheme.colors.gray4)
@@ -198,7 +195,9 @@ private fun SelectRecoveryOptionSection(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingSmall
                 ),
-            text = "I have my main “Babylon” 24-word seed phrase.", // TODO crowdin
+            text = stringResource(id = R.string.recoverWalletWithoutProfileStart_section_babylon_title).formattedSpans(
+                RadixTheme.typography.body1Header.toSpanStyle()
+            ),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1

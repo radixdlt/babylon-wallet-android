@@ -347,7 +347,7 @@ private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, m
                 .padding(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                 ),
-            text = "Backup not available?", // TODO crowdin
+            text = stringResource(id = R.string.recoverProfileBackup_backupNotAvailable),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1
@@ -356,7 +356,7 @@ private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, m
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = "Other Restore Options", // TODO crowdin
+            text = stringResource(id = R.string.recoverProfileBackup_otherRestoreOptionsButton),
             onClick = onOtherRestoreOptionsClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
