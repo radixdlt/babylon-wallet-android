@@ -23,14 +23,26 @@ class RestoreWithoutBackupViewModel @Inject constructor() :
         viewModelScope.launch { sendEvent(Event.OnDismiss) }
     }
 
-    fun onShowLedgerOrOlympiaPrompt(visible: Boolean) {
-        _state.update { it.copy(showLedgerOrOlympiaPrompt = visible) }
+    fun onShowLedgerPrompt() {
+        _state.update { it.copy(dialogPrompt = State.PromptState.Ledger) }
+    }
+
+    fun onShowOlympiaPrompt() {
+        _state.update { it.copy(dialogPrompt = State.PromptState.Olympia) }
+    }
+
+    fun onDismissPrompt() {
+        _state.update { it.copy(dialogPrompt = State.PromptState.None) }
     }
 
     data class State(
-        val showLedgerOrOlympiaPrompt: Boolean = false,
+        val dialogPrompt: PromptState = PromptState.None,
         val uiMessage: UiMessage? = null
-    ) : UiState
+    ) : UiState {
+        enum class PromptState {
+            None, Olympia, Ledger
+        }
+    }
 
     sealed interface Event : OneOffEvent {
         data object OnDismiss : Event

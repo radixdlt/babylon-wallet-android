@@ -17,9 +17,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Text
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,9 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -49,24 +47,36 @@ fun RestoreWithoutBackupScreen(
     onNewUserConfirmClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    if (state.showLedgerOrOlympiaPrompt) {
+    if (state.dialogPrompt != RestoreWithoutBackupViewModel.State.PromptState.None) {
         BasicPromptAlertDialog(
             finish = { accepted ->
                 if (accepted) {
                     onNewUserConfirmClick()
                 } else {
-                    viewModel.onShowLedgerOrOlympiaPrompt(false)
+                    viewModel.onDismissPrompt()
                 }
             },
             title = "No Babylon Seed Phrase", // TODO crowdin
-            text = "Tap “I’m a New Wallet User”. After completing wallet creation, you can recover any Olympia or Ledger-based" +
-                " Accounts in Settings.", // TODO crowdin,
+            text = when (state.dialogPrompt) {
+                RestoreWithoutBackupViewModel.State.PromptState.Olympia -> {
+                    "Tap “I’m a New Wallet User”. After completing wallet creation, in Settings you can perform an “account recovery scan” using your Ledger device" // TODO crowdin,
+                }
+
+                RestoreWithoutBackupViewModel.State.PromptState.Ledger -> {
+                    "Tap “I’m a New Wallet User”. After completing wallet creation, in Settings you can perform an “account recovery scan” using your Olympia seed phrase" // TODO crowdin,
+                }
+
+                else -> ""
+            },
             confirmText = stringResource(id = R.string.common_continue),
         )
     }
-    RestoreWithoutBackupContent(onBackClick = viewModel::onBackClick, onLedgerOrOlympiaRestoreClick = {
-        viewModel.onShowLedgerOrOlympiaPrompt(true)
-    }, onConfirmRecoverWithMainSeedPhrase = onRestoreConfirmed)
+    RestoreWithoutBackupContent(
+        onBackClick = viewModel::onBackClick,
+        onShowLedgerPrompt = viewModel::onShowLedgerPrompt,
+        onShowOlympiaPrompt = viewModel::onShowOlympiaPrompt,
+        onConfirmRecoverWithMainSeedPhrase = onRestoreConfirmed
+    )
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
@@ -81,8 +91,9 @@ fun RestoreWithoutBackupScreen(
 private fun RestoreWithoutBackupContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    onLedgerOrOlympiaRestoreClick: () -> Unit,
+    onShowLedgerPrompt: () -> Unit,
     onConfirmRecoverWithMainSeedPhrase: () -> Unit,
+    onShowOlympiaPrompt: () -> Unit,
 ) {
     val pages = Pages.values()
     val pagerState = rememberPagerState(pageCount = { pages.size })
@@ -139,7 +150,8 @@ private fun RestoreWithoutBackupContent(
                                     pagerState.animateScrollToPage(pagerState.currentPage + 1)
                                 }
                             },
-                            onLedgerOrOlympiaRestoreClick = onLedgerOrOlympiaRestoreClick,
+                            onShowLedgerPrompt = onShowLedgerPrompt,
+                            onShowOlympiaPrompt = onShowOlympiaPrompt,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
@@ -162,8 +174,9 @@ private fun RestoreWithoutBackupContent(
 @Composable
 private fun SelectRecoveryOptionSection(
     onRecoverWithMainSeedPhraseClick: () -> Unit,
-    onLedgerOrOlympiaRestoreClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onShowLedgerPrompt: () -> Unit,
+    modifier: Modifier = Modifier,
+    onShowOlympiaPrompt: () -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -174,11 +187,10 @@ private fun SelectRecoveryOptionSection(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
             text = "If you have no wallet backup in the cloud or as an exported backup file, you still have " +
-                "other restore options.", // TODO crowdin
-            textAlign = TextAlign.Center,
+                    "other restore options.", // TODO crowdin
             style = RadixTheme.typography.body1Regular
         )
-        Divider(color = RadixTheme.colors.gray4)
+        HorizontalDivider(color = RadixTheme.colors.gray4)
         Text(
             modifier = Modifier
                 .fillMaxWidth()
@@ -196,16 +208,7 @@ private fun SelectRecoveryOptionSection(
             text = "Recover Control with Main Seed Phrase",
             onClick = onRecoverWithMainSeedPhraseClick
         )
-        Divider(color = RadixTheme.colors.gray4)
-        val text = buildAnnotatedString {
-            append("I only want to restore Ledger hardware wallet Accounts.") // TODO crowdin
-            append("\n\n")
-            withStyle(style = RadixTheme.typography.body1Regular.toSpanStyle()) {
-                append("OR") // TODO crowdin
-            }
-            append("\n\n")
-            append("I only have Accounts created on the Radix Olympia network.") // TODO crowdin
-        }
+        HorizontalDivider(color = RadixTheme.colors.gray4)
         Text(
             modifier = Modifier
                 .fillMaxWidth()
@@ -213,15 +216,33 @@ private fun SelectRecoveryOptionSection(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingSmall
                 ),
-            text = text,
+            text = "I only want to restore Ledger hardware wallet Accounts.", // TODO crowdin
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1
         )
         RadixSecondaryButton(
             modifier = Modifier.fillMaxWidth(),
-            text = "Ledger-only or Olympia-only Restore",
-            onClick = onLedgerOrOlympiaRestoreClick
+            text = "Ledger-only restore",
+            onClick = onShowLedgerPrompt
+        )
+        HorizontalDivider(color = RadixTheme.colors.gray4)
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingLarge,
+                    vertical = RadixTheme.dimensions.paddingSmall
+                ),
+            text = "I only have Accounts created on the Radix Olympia network.", // TODO crowdin
+            textAlign = TextAlign.Center,
+            style = RadixTheme.typography.body1Header,
+            color = RadixTheme.colors.gray1
+        )
+        RadixSecondaryButton(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Olympia-only Restore",
+            onClick = onShowOlympiaPrompt
         )
     }
 }
@@ -257,8 +278,9 @@ fun RestoreWithoutBackupPreview() {
     RadixWalletTheme {
         RestoreWithoutBackupContent(
             onBackClick = {},
-            onLedgerOrOlympiaRestoreClick = {},
-            onConfirmRecoverWithMainSeedPhrase = {}
+            onShowLedgerPrompt = {},
+            onConfirmRecoverWithMainSeedPhrase = {},
+            onShowOlympiaPrompt = {}
         )
     }
 }
