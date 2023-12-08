@@ -117,10 +117,8 @@ class AccountRecoveryViewModel @Inject constructor(
     fun onDismissSigningStatusDialog() {
         runningScan?.cancel()
         _state.update { it.copy(interactionState = null) }
-        if (_state.value.recoveredAccounts.isEmpty()) {
-            viewModelScope.launch {
-                sendEvent(Event.CloseScan)
-            }
+        viewModelScope.launch {
+            sendEvent(Event.CloseScan)
         }
     }
 

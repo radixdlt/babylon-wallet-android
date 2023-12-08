@@ -83,6 +83,14 @@ fun DerivationPath.derivationPathEntityIndex(): Int {
     }
 }
 
+fun DerivationPath.isBip44LikePath(): Boolean {
+    val pathComponents = path.split("/").drop(1)
+    if (pathComponents.size != OlympiaDerivationPathComponent.values().size) {
+        return false
+    }
+    return true
+}
+
 /**
  * Defines the derivation path used with SLIP10 algorithm to derive private keys.
  *

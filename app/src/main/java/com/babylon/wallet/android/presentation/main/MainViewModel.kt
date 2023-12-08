@@ -36,6 +36,7 @@ import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
+import rdx.works.profile.domain.CorrectLegacyAccountsDerivationPathSchemeUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.IsAnyEntityCreatedWithOlympiaUseCase
@@ -57,7 +58,8 @@ class MainViewModel @Inject constructor(
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
-    private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase
+    private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase,
+    private val correctLegacyAccountsDerivationPathSchemeUseCase: CorrectLegacyAccountsDerivationPathSchemeUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -254,6 +256,7 @@ class MainViewModel @Inject constructor(
             if (deviceNotSecure) {
                 appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
             } else {
+                correctLegacyAccountsDerivationPathSchemeUseCase()
                 val entitiesCreatedWithOlympiaLegacyFactorSource = isAnyEntityCreatedWithOlympiaUseCase()
                 if (entitiesCreatedWithOlympiaLegacyFactorSource) {
                     _state.update { state ->

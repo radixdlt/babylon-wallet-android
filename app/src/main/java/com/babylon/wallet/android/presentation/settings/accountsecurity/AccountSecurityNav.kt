@@ -24,7 +24,7 @@ import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphra
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.systemBackupSettingsScreen
 import com.babylon.wallet.android.presentation.settings.recovery.chooseseed.chooseSeedPhrase
-import com.babylon.wallet.android.presentation.settings.recovery.deriveLegacyAccount
+import com.babylon.wallet.android.presentation.settings.recovery.accountRecoveryScanSelection
 
 const val ROUTE_ACCOUNT_SECURITY_SCREEN = "settings_account_security_screen"
 const val ROUTE_ACCOUNT_SECURITY_GRAPH = "settings_account_security_graph"
@@ -83,7 +83,7 @@ fun NavGraphBuilder.accountSecurityNavGraph(
                 navController.confirmSeedPhrase(factorSourceId, mnemonicSize)
             }
         )
-        deriveLegacyAccount(
+        accountRecoveryScanSelection(
             onBack = {
                 navController.popBackStack()
             },
@@ -157,7 +157,7 @@ fun NavGraphBuilder.accountSecurityScreen(
                     }
 
                     SettingsItem.AccountSecurityAndSettingsItem.AccountRecovery -> {
-                        navController.deriveLegacyAccount()
+                        navController.accountRecoveryScanSelection()
                     }
                 }
             },

@@ -25,8 +25,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.data.model.extensions.isCurrentNetworkMainnet
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import javax.inject.Inject
@@ -61,7 +60,7 @@ class SettingsViewModel @Inject constructor(
             topIndex += 1
         }
 
-        val isImportFeatureAvailable = EXPERIMENTAL_FEATURES_ENABLED || profile.currentNetwork.networkID == Radix.Network.mainnet.id
+        val isImportFeatureAvailable = EXPERIMENTAL_FEATURES_ENABLED || profile.isCurrentNetworkMainnet()
         if (!isImportFromOlympiaSettingDismissed && !defaultSettings.contains(ImportOlympiaWallet) && isImportFeatureAvailable) {
             mutated.add(topIndex, ImportOlympiaWallet)
         }

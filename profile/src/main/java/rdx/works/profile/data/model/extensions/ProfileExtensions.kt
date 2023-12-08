@@ -5,7 +5,9 @@ import rdx.works.core.mapWhen
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Transaction
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceFlag
@@ -115,4 +117,8 @@ fun Profile.mainBabylonFactorSource(): DeviceFactorSource? {
     } else {
         babylonFactorSources.firstOrNull { it.common.flags.contains(FactorSourceFlag.Main) }
     }
+}
+
+fun Profile.isCurrentNetworkMainnet(): Boolean {
+    return currentNetwork.networkID == Radix.Network.mainnet.id
 }
