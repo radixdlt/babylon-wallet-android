@@ -17,6 +17,9 @@
   <string name="homePage_profileOlympiaError_title">SERIOUS ERROR - PLEASE READ</string>
   <string name="homePage_profileOlympiaError_subtitle">Your wallet is in a rare condition that must be resolved manually. Please email support at hello@radixdlt.com with subject line BDFS ERROR. Somebody will respond and help you resolve the issue safely.</string>
   <string name="homePage_profileOlympiaError_okCountdown">OK (%d)</string>
+  <string name="homePage_radixBanner_title">Start Using Radix</string>
+  <string name="homePage_radixBanner_subtitle">Complete setting up your wallet and start staking, using dApps and more!</string>
+  <string name="homePage_radixBanner_action">Get Started Now</string>
   <string name="account_transfer">Transfer</string>
   <string name="account_tokens">Tokens</string>
   <string name="account_nfts">NFTs</string>
@@ -507,7 +510,6 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="error_transactionFailure_rejected">Transaction rejected</string>
   <string name="error_transactionFailure_unknown">Unknown error</string>
   <string name="error_transactionFailure_failedToFindLedger">Failed to find ledger</string>
-  <string name="error_transactionFailure_doesNotAllowThirdPartyDeposits">One of the receiving accounts does not allow third-party deposits</string>
   <string name="error_transactionFailure_failedToAddLockFee">Failed to add Transaction Fee, try a different amount of fee payer.</string>
   <string name="error_transactionFailure_failedToAddGuarantee">Failed to add Guarantee, try a different percentage, or try skip adding a guarantee.</string>
   <string name="error_transactionFailure_reviewFailure">A proposed transaction could not be processed.</string>
