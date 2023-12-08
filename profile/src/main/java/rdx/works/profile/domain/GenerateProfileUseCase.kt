@@ -3,6 +3,7 @@ package rdx.works.profile.domain
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.core.IdentifiedArrayList
 import rdx.works.core.InstantGenerator
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -43,7 +44,7 @@ class GenerateProfileUseCase @Inject constructor(
     suspend fun initWithBdfsAndAccounts(
         bdfs: DeviceFactorSource,
         mnemonicWithPassphrase: MnemonicWithPassphrase,
-        accounts: List<Network.Account>
+        accounts: IdentifiedArrayList<Network.Account>
     ): Profile {
         return when (val state = profileRepository.profileState.first()) {
             is ProfileState.Restored -> state.profile

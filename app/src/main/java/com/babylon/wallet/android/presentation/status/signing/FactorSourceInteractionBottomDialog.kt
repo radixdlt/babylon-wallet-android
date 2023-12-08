@@ -124,23 +124,29 @@ private fun SignatureRequestContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         val subtitle = when (interactionState) {
             is InteractionState.Device.Success -> {
-                signingPurposeDescription(interactionState.signingPurpose)
+                stringResource(id = signingPurposeDescription(interactionState.signingPurpose))
             }
 
             is InteractionState.Device.Pending -> {
-                signingPurposeDescription(interactionState.signingPurpose)
+                stringResource(id = signingPurposeDescription(interactionState.signingPurpose))
             }
 
             is InteractionState.Ledger.Success,
             is InteractionState.Ledger.Pending -> {
-                com.babylon.wallet.android.R.string.signing_signatureRequest_body
+                stringResource(id = com.babylon.wallet.android.R.string.signing_signatureRequest_body)
+            }
+            is InteractionState.Ledger.DerivingAccounts -> {
+                stringResource(id = com.babylon.wallet.android.R.string.signing_signatureRequest_body)
+            }
+            is InteractionState.Device.DerivingAccounts -> {
+                "Authenticate to your phone to complete using your phone’s signing key."
             }
 
             else -> null
         }
         Text(
             text = subtitle?.let {
-                stringResource(it).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
+                it.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
             } ?: AnnotatedString(""),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1,

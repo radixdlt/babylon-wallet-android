@@ -2,6 +2,7 @@ package rdx.works.profile.domain
 
 import kotlinx.coroutines.flow.first
 import rdx.works.core.mapWhen
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.extensions.hasWrongDerivationPathScheme
 import rdx.works.profile.data.model.extensions.updateDerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
@@ -34,7 +35,7 @@ class CorrectLegacyAccountsDerivationPathSchemeUseCase @Inject constructor(
                         account.hasWrongDerivationPathScheme
                     }, mutation = { account ->
                         account.updateDerivationPathScheme(DerivationPathScheme.BIP_44_OLYMPIA)
-                    }))
+                    }).toIdentifiedArrayList())
                 })
                 p.copy(networks = updatedNetworks)
             }

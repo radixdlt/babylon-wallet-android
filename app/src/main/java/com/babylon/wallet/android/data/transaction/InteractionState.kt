@@ -32,15 +32,16 @@ sealed class InteractionState(val factorSource: FactorSource) {
         private val ledgerFactorSource: LedgerHardwareWalletFactorSource
     ) : InteractionState(ledgerFactorSource) {
 
-        data class DerivingPublicKey(private val ledgerFactorSource: LedgerHardwareWalletFactorSource) : Ledger(ledgerFactorSource)
+        data class DerivingPublicKey(val ledgerFactorSource: LedgerHardwareWalletFactorSource) : Ledger(ledgerFactorSource)
+        data class DerivingAccounts(val ledgerFactorSource: LedgerHardwareWalletFactorSource) : Ledger(ledgerFactorSource)
 
         data class Pending(
-            private val ledgerFactorSource: LedgerHardwareWalletFactorSource,
+            val ledgerFactorSource: LedgerHardwareWalletFactorSource,
             val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
         ) : Ledger(ledgerFactorSource)
 
         data class Success(
-            private val ledgerFactorSource: LedgerHardwareWalletFactorSource,
+            val ledgerFactorSource: LedgerHardwareWalletFactorSource,
             val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
         ) : Ledger(ledgerFactorSource)
 

@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
@@ -116,7 +117,8 @@ class AccountRecoveryViewModel @Inject constructor(
 
     fun onDismissSigningStatusDialog() {
         runningScan?.cancel()
-        _state.update { it.copy(interactionState = null) }
+        _state.update { State() }
+        recoverAccountsForFactorSourceUseCase.reset()
         viewModelScope.launch {
             sendEvent(Event.CloseScan)
         }
@@ -143,7 +145,7 @@ class AccountRecoveryViewModel @Inject constructor(
                     generateProfileUseCase.initWithBdfsAndAccounts(
                         bdfs = bdfs,
                         mnemonicWithPassphrase = mnemonicWithPassphrase,
-                        accounts = accounts
+                        accounts = accounts.toIdentifiedArrayList()
                     )
                     sendEvent(Event.RecoverComplete)
                 }

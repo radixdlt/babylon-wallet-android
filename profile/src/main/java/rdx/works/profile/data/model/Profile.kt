@@ -129,14 +129,14 @@ data class Profile(
             creationDate: Instant,
             gateways: Gateways = Gateways.preset,
             bdfs: FactorSource,
-            accounts: List<Network.Account>
+            accounts: IdentifiedArrayList<Network.Account>
         ): Profile {
             val networks = listOf(
                 Network(
                     accounts = accounts,
                     authorizedDapps = listOf(),
                     networkID = gateways.current().network.id,
-                    personas = listOf()
+                    personas = emptyIdentifiedArrayList()
                 )
             )
 

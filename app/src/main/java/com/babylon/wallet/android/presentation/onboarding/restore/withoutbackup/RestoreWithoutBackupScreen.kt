@@ -59,11 +59,11 @@ fun RestoreWithoutBackupScreen(
             title = "No Babylon Seed Phrase", // TODO crowdin
             text = when (state.dialogPrompt) {
                 RestoreWithoutBackupViewModel.State.PromptState.Olympia -> {
-                    "Tap “I’m a New Wallet User”. After completing wallet creation, in Settings you can perform an “account recovery scan” using your Ledger device" // TODO crowdin,
+                    "Tap “I’m a New Wallet User”. After completing wallet creation, in Settings you can perform an “account recovery scan” using your Olympia device" // TODO crowdin,
                 }
 
                 RestoreWithoutBackupViewModel.State.PromptState.Ledger -> {
-                    "Tap “I’m a New Wallet User”. After completing wallet creation, in Settings you can perform an “account recovery scan” using your Olympia seed phrase" // TODO crowdin,
+                    "Tap “I’m a New Wallet User”. After completing wallet creation, in Settings you can perform an “account recovery scan” using your Ledger seed phrase" // TODO crowdin,
                 }
 
                 else -> ""

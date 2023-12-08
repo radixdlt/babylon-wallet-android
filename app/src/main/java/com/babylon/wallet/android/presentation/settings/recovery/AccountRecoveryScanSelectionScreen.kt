@@ -144,7 +144,7 @@ private fun AccountRecoveryScanSelectionContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = RadixTheme.dimensions.paddingDefault),
-                    text = "Scan for Accounts originally created on the previous *Olympia* network.\n\n" +
+                    text = "Scan for Accounts originally created on the previous *Olympia* network.\n\n".formattedSpans(RadixTheme.typography.body1Header.toSpanStyle()) +
                             "(If you have Olympia Accounts in the Radix Olympia Desktop Wallet, consider using *Import from a Legacy Wallet* instead.)".formattedSpans(
                                 RadixTheme.typography.body1Header.toSpanStyle()
                             ), // TODO crowdin
