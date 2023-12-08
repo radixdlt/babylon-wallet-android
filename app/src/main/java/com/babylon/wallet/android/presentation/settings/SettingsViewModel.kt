@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWall
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.AccountSecurityAndSettings
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.AppSettings
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.AuthorizedDapps
+import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.DebugSettings
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.ImportOlympiaWallet
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
@@ -42,9 +43,10 @@ class SettingsViewModel @Inject constructor(
     private val defaultSettings = listOf(
         AuthorizedDapps,
         Personas(),
-        AccountSecurityAndSettings,
-        AppSettings(showNotificationWarning = false)
-    )
+        AccountSecurityAndSettings(showNotificationWarning = false),
+        AppSettings,
+        if (EXPERIMENTAL_FEATURES_ENABLED) DebugSettings else null
+    ).mapNotNull { it }
 
     val state: StateFlow<SettingsUiState> = combine(
         getProfileUseCase(),
@@ -64,8 +66,8 @@ class SettingsViewModel @Inject constructor(
             mutated.add(topIndex, ImportOlympiaWallet)
         }
 
-        val withBackupWarning = mutated.mapWhen(predicate = { it is AppSettings }) {
-            AppSettings(showNotificationWarning = backupState.isWarningVisible)
+        val withBackupWarning = mutated.mapWhen(predicate = { it is AccountSecurityAndSettings }) {
+            AccountSecurityAndSettings(showNotificationWarning = backupState.isWarningVisible)
         }
 
         val withPersonaWarning = withBackupWarning.mapWhen(predicate = { it is Personas }) {

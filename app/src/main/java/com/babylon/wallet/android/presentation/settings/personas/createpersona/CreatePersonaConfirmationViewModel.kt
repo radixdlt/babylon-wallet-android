@@ -41,5 +41,5 @@ class CreatePersonaConfirmationViewModel @Inject constructor(
 }
 
 internal sealed interface CreatePersonaConfirmationEvent : OneOffEvent {
-    object FinishPersonaCreation : CreatePersonaConfirmationEvent
+    data object FinishPersonaCreation : CreatePersonaConfirmationEvent
 }

@@ -27,7 +27,7 @@ fun StateDao.getCachedPools(poolAddresses: Set<String>, atStateVersion: Long): M
         val pool = pools[poolResource.poolAddress]
         pools[poolResource.poolAddress!!] = pool?.copy(
             resources = pool.resources.toMutableList().apply { add(resource) }
-        ) ?: Pool(address = join.address, resources = listOf(resource))
+        ) ?: Pool(address = join.address, poolUnitAddress = join.poolUnitAddress, resources = listOf(resource))
     }
     return pools
 }

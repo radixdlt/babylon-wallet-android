@@ -159,7 +159,7 @@ private fun SettingsContent(
                                     },
                                     icon = settingsItem.getIcon(),
                                     title = stringResource(id = settingsItem.descriptionRes()),
-                                    showNotificationDot = (settingsItem as? SettingsItem.TopLevelSettings.AppSettings)
+                                    showNotificationDot = (settingsItem as? SettingsItem.TopLevelSettings.AccountSecurityAndSettings)
                                         ?.showNotificationWarning ?: false
                                 )
                             }
@@ -201,7 +201,7 @@ private fun NotBackedUpPersonasWarning(modifier: Modifier) {
             tint = RadixTheme.colors.orange1
         )
         Text(
-            text = stringResource(id = R.string.settings_personas_seedPhraseWarning),
+            text = "Write down main seed phrase", // TODO R.string.settings_personas_seedPhraseWarning),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.orange1
         )
@@ -327,8 +327,8 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
                 SettingsItem.TopLevelSettings.ImportOlympiaWallet,
                 SettingsItem.TopLevelSettings.AuthorizedDapps,
                 SettingsItem.TopLevelSettings.Personas(),
-                SettingsItem.TopLevelSettings.AccountSecurityAndSettings,
-                SettingsItem.TopLevelSettings.AppSettings(showNotificationWarning = true)
+                SettingsItem.TopLevelSettings.AccountSecurityAndSettings(showNotificationWarning = true),
+                SettingsItem.TopLevelSettings.AppSettings
             ),
             onSettingClick = {},
             onHideImportOlympiaWalletSettingBox = {},

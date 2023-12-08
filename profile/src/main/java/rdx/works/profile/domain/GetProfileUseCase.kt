@@ -3,6 +3,7 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.ret.Address
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
@@ -17,6 +18,7 @@ import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
@@ -37,7 +39,7 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
 /**
  * Accounts on network
  */
-val GetProfileUseCase.entitiesOnCurrentNetwork
+val GetProfileUseCase.entitiesOnCurrentNetwork: Flow<List<Entity>>
     get() = invoke().map { it.currentNetwork.accounts.notHiddenAccounts() + it.currentNetwork.personas.notHiddenPersonas() }
 
 val GetProfileUseCase.accountsOnCurrentNetwork
@@ -164,10 +166,10 @@ val GetProfileUseCase.p2pLinks
 suspend fun GetProfileUseCase.defaultDepositGuarantee() =
     invoke().map { it.appPreferences.transaction.defaultDepositGuarantee }.first()
 
-fun List<Network.Account>.notHiddenAccounts(): List<Network.Account> {
+fun Collection<Network.Account>.notHiddenAccounts(): List<Network.Account> {
     return filter { it.flags.contains(EntityFlag.DeletedByUser).not() }
 }
 
-private fun List<Network.Persona>.notHiddenPersonas(): List<Network.Persona> {
+private fun Collection<Network.Persona>.notHiddenPersonas(): List<Network.Persona> {
     return filter { it.flags.contains(EntityFlag.DeletedByUser).not() }
 }

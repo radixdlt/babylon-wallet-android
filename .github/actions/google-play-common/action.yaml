@@ -23,7 +23,7 @@ runs:
   using: 'composite'
   steps:
   - name: Dump context
-    uses: crazy-max/ghaction-dump-context@8b55fa205ab4530d36f787a4de1009afaaa7f3b4 # v2.1.0
+    uses: RDXWorks-actions/ghaction-dump-context@master
 
   - name: Download Ruby (action)
     uses: ruby/setup-ruby@5311f05890856149502132d25c4a24985a00d426 # v1.153.0

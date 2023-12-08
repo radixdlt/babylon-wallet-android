@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.Header
@@ -78,7 +79,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
             factorSources = identifiedArrayListOf(DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)),
             networks = listOf(
                 Network(
-                    accounts = listOf(
+                    accounts = identifiedArrayListOf(
                         Network.Account(
                             address = "fj3489fj348f",
                             appearanceID = 123,
@@ -108,7 +109,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
                     ),
                     authorizedDapps = emptyList(),
                     networkID = network.network.networkId().value,
-                    personas = emptyList()
+                    personas = emptyIdentifiedArrayList()
                 )
             )
         )

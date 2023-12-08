@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "dac403e8fa9ea43e170f4e9cae578908",
+    "identityHash": "afe977bdc9536723c9f021b80eaf43a1",
     "entities": [
       {
         "tableName": "AccountResourceJoin",
@@ -193,7 +193,7 @@
       },
       {
         "tableName": "ResourceEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `type` TEXT NOT NULL, `name` TEXT, `symbol` TEXT, `description` TEXT, `icon_url` TEXT, `tags` TEXT, `validator_address` TEXT, `pool_address` TEXT, `dapp_definitions` TEXT, `divisibility` INTEGER, `behaviours` TEXT, `supply` TEXT, `synced` INTEGER NOT NULL, PRIMARY KEY(`address`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `type` TEXT NOT NULL, `name` TEXT, `symbol` TEXT, `description` TEXT, `icon_url` TEXT, `tags` TEXT, `validator_address` TEXT, `pool_address` TEXT, `dapp_definitions` TEXT, `metadata` TEXT, `divisibility` INTEGER, `behaviours` TEXT, `supply` TEXT, `synced` INTEGER NOT NULL, PRIMARY KEY(`address`))",
         "fields": [
           {
             "fieldPath": "address",
@@ -252,6 +252,12 @@
           {
             "fieldPath": "dAppDefinitions",
             "columnName": "dapp_definitions",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metadata",
+            "columnName": "metadata",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -538,7 +544,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dac403e8fa9ea43e170f4e9cae578908')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'afe977bdc9536723c9f021b80eaf43a1')"
     ]
   }
 }

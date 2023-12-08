@@ -4,7 +4,11 @@ import android.net.Uri
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.isXrd
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.description
+import com.babylon.wallet.android.domain.model.resources.metadata.iconUrl
+import com.babylon.wallet.android.domain.model.resources.metadata.name
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 
@@ -15,7 +19,7 @@ data class AccountWithAssets(
 ) {
 
     val isDappDefinitionAccountType: Boolean
-        get() = details?.type == AccountTypeMetadataItem.AccountType.DAPP_DEFINITION
+        get() = details?.accountType == AccountType.DAPP_DEFINITION
 }
 
 data class Assets(
@@ -59,6 +63,20 @@ data class Assets(
         }
     }
 
+    // knownResources of an account is when
+    // it contains a resource with an amount greater than 0
+    // or it had a resource in the past but the amount is 0 now
+    val knownResources: List<Resource> by lazy {
+        fungibles + nonFungibles +
+            poolUnits.map { it.stake } +
+            validatorsWithStakes
+                .mapNotNull { it.liquidStakeUnit }
+                .map { it.fungibleResource } +
+            validatorsWithStakes
+                .mapNotNull { it.stakeClaimNft }
+                .map { it.nonFungibleResource }
+    }
+
     fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = ownedXrd?.let {
         it.ownedAmount?.let { amount ->
             amount >= minimumBalance
@@ -74,13 +92,20 @@ data class Assets(
 
 data class ValidatorDetail(
     val address: String,
-    val name: String,
-    val url: Uri?,
-    val description: String?,
     val totalXrdStake: BigDecimal?,
     val stakeUnitResourceAddress: String? = null,
-    val claimTokenResourceAddress: String? = null
-)
+    val claimTokenResourceAddress: String? = null,
+    val metadata: List<Metadata> = emptyList()
+) {
+    val name: String
+        get() = metadata.name().orEmpty()
+
+    val url: Uri?
+        get() = metadata.iconUrl()
+
+    val description: String?
+        get() = metadata.description()
+}
 
 data class ValidatorWithStakes(
     val validatorDetail: ValidatorDetail,

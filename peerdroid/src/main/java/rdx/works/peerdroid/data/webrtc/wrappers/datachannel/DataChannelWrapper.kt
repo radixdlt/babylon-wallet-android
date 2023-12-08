@@ -219,8 +219,15 @@ data class DataChannelWrapper(
     }
 
     fun close() {
-        Timber.d("📯 DataChannelWrapper of ${this.webRtcDataChannel} close for remote connector: ${connectionIdHolder.id} 🔻")
+        Timber.d(
+            "📯 DataChannelWrapper of ${this.webRtcDataChannel} close for remote connector: " +
+                "${connectionIdHolder.id} 🔻 and with remote client id ${this.webRtcDataChannel.label()}"
+        )
+        webRtcDataChannel.unregisterObserver()
         webRtcDataChannel.close()
-        Timber.d("📯 ${this.webRtcDataChannel} state: ${this.webRtcDataChannel.state()}, for remote connector: ${connectionIdHolder.id}")
+        Timber.d(
+            "📯 ${this.webRtcDataChannel} state: ${this.webRtcDataChannel.state()}, for remote connector: " +
+                "${connectionIdHolder.id} and with remote client id ${this.webRtcDataChannel.label()}"
+        )
     }
 }

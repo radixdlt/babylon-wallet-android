@@ -45,7 +45,7 @@ jobs:
           token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
       - name: Dump context
-        uses: crazy-max/ghaction-dump-context@8b55fa205ab4530d36f787a4de1009afaaa7f3b4 # v2.1.0
+        uses: RDXWorks-actions/ghaction-dump-context@master
 
       - name: Download Ruby (action)
         uses: ruby/setup-ruby@8575951200e472d5f2d95c625da0c7bec8217c42
@@ -69,7 +69,7 @@ jobs:
           parse_json: true
 
       - name: Decode Google Service account credentials
-        uses: timheuer/base64-to-file@604a8926a81a2da120d09b06bb76da9bba5aee6e
+        uses: RDXWorks-actions/base64-to-file@main
         id: google_application_credentials
         with:
           fileName: "service_account.json"
@@ -257,7 +257,7 @@ jobs:
           SNYK_TOKEN: ${{ env.SNYK_TOKEN }}
           RADIX_DEBUG_PREVIEW_KEYSTORE_FILE: config/signing/release/keystore.jks
       - name: Upload SBOM
-        uses: svenstaro/upload-release-action@1beeb572c19a9242f4361f4cee78f8e0d9aec5df # v2.7.0
+        uses: RDXWorks-actions/upload-release-action@master
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: sbom.json

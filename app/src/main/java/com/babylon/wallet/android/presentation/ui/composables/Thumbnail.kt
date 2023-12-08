@@ -46,6 +46,7 @@ import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import coil.request.NullRequestDataException
 import com.babylon.wallet.android.BuildConfig
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -57,7 +58,8 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Badge
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.isXrd
-import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import rdx.works.core.toEncodedString
 import rdx.works.profile.data.model.pernetwork.Network
@@ -436,8 +438,12 @@ fun FungibleResourcesPreview() {
                 token = Resource.FungibleResource(
                     resourceAddress = SampleDataProvider().randomAddress(),
                     ownedAmount = BigDecimal.ZERO,
-                    iconUrlMetadataItem = IconUrlMetadataItem(
-                        Uri.parse("https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png")
+                    metadata = listOf(
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.ICON_URL.key,
+                            value = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png",
+                            valueType = MetadataType.Url
+                        )
                     )
                 )
             )
@@ -457,7 +463,13 @@ fun FungibleResourcesPreview() {
                 token = Resource.FungibleResource(
                     resourceAddress = SampleDataProvider().randomAddress(),
                     ownedAmount = BigDecimal.ZERO,
-                    iconUrlMetadataItem = IconUrlMetadataItem(Uri.parse("https://upload.wikimedia.org/wikipedia/commons/thumb/"))
+                    metadata = listOf(
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.ICON_URL.key,
+                            value = "https://upload.wikimedia.org/wikipedia/commons/thumb/",
+                            valueType = MetadataType.Url
+                        )
+                    )
                 )
             )
         }
@@ -481,10 +493,14 @@ fun NonFungibleResourcesPreview() {
                     Resource.NonFungibleResource(
                         resourceAddress = SampleDataProvider().randomAddress(),
                         amount = 0,
-                        iconMetadataItem = IconUrlMetadataItem(
-                            Uri.parse("https://upload.wikimedia.org/wikipedia/commons/b/be/VeKings.png")
-                        ),
-                        items = emptyList()
+                        items = emptyList(),
+                        metadata = listOf(
+                            Metadata.Primitive(
+                                ExplicitMetadataKey.ICON_URL.key,
+                                "https://upload.wikimedia.org/wikipedia/commons/b/be/VeKings.png",
+                                MetadataType.Url
+                            )
+                        )
                     )
                 }
 
@@ -530,8 +546,14 @@ fun NonFungibleResourcesPreview() {
                     Resource.NonFungibleResource(
                         resourceAddress = SampleDataProvider().randomAddress(),
                         amount = 0,
-                        iconMetadataItem = IconUrlMetadataItem(Uri.parse("https://upload.wikimedia.org/wikipedia/commons/")),
-                        items = emptyList()
+                        items = emptyList(),
+                        metadata = listOf(
+                            Metadata.Primitive(
+                                ExplicitMetadataKey.ICON_URL.key,
+                                "https://upload.wikimedia.org/wikipedia/commons/",
+                                MetadataType.Url
+                            ),
+                        )
                     )
                 }
 
@@ -569,8 +591,12 @@ fun NFTsPreview() {
                 nft = Resource.NonFungibleResource.Item(
                     collectionAddress = SampleDataProvider().randomAddress(),
                     localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
-                    iconMetadataItem = IconUrlMetadataItem(
-                        Uri.parse("https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images/KL%20Haze-medium.jpg")
+                    metadata = listOf(
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
+                            "https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images/KL%20Haze-medium.jpg",
+                            valueType = MetadataType.Url
+                        )
                     )
                 )
             )
@@ -581,10 +607,12 @@ fun NFTsPreview() {
                 nft = Resource.NonFungibleResource.Item(
                     collectionAddress = SampleDataProvider().randomAddress(),
                     localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
-                    iconMetadataItem = IconUrlMetadataItem(
-                        Uri.parse(
+                    metadata = listOf(
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
                             "https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images/" +
-                                "Filling+Station+Breakfast-large.jpg"
+                                "Filling+Station+Breakfast-large.jpg",
+                            valueType = MetadataType.Url
                         )
                     )
                 )
@@ -596,9 +624,12 @@ fun NFTsPreview() {
                 nft = Resource.NonFungibleResource.Item(
                     collectionAddress = SampleDataProvider().randomAddress(),
                     localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
-                    iconMetadataItem = IconUrlMetadataItem(
-                        Uri.parse(
-                            "https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images/Fried+Kway+Teow-large.jpg"
+                    metadata = listOf(
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
+                            value = "https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images/" +
+                                "Fried+Kway+Teow-large.jpg",
+                            valueType = MetadataType.Url
                         )
                     )
                 )
@@ -610,8 +641,12 @@ fun NFTsPreview() {
                 nft = Resource.NonFungibleResource.Item(
                     collectionAddress = SampleDataProvider().randomAddress(),
                     localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
-                    iconMetadataItem = IconUrlMetadataItem(
-                        Uri.parse("https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images")
+                    metadata = listOf(
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
+                            value = "https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images",
+                            valueType = MetadataType.Url
+                        )
                     )
                 )
             )
@@ -622,9 +657,12 @@ fun NFTsPreview() {
                 nft = Resource.NonFungibleResource.Item(
                     collectionAddress = SampleDataProvider().randomAddress(),
                     localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
-                    iconMetadataItem = IconUrlMetadataItem(
-                        Uri.parse(
-                            "https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images/Fried+Kway+Teow-large.jpg"
+                    metadata = listOf(
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
+                            value = "https://image-service-test-images.s3.eu-west-2.amazonaws.com/wallet_test_images/" +
+                                "Fried+Kway+Teow-large.jpg",
+                            valueType = MetadataType.Url
                         )
                     )
                 ),

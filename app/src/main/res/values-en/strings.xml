@@ -17,6 +17,9 @@
   <string name="homePage_profileOlympiaError_title">SERIOUS ERROR - PLEASE READ</string>
   <string name="homePage_profileOlympiaError_subtitle">Your wallet is in a rare condition that must be resolved manually. Please email support at hello@radixdlt.com with subject line BDFS ERROR. Somebody will respond and help you resolve the issue safely.</string>
   <string name="homePage_profileOlympiaError_okCountdown">OK (%d)</string>
+  <string name="homePage_radixBanner_title">Start Using Radix</string>
+  <string name="homePage_radixBanner_subtitle">Complete setting up your wallet and start staking, using dApps and more!</string>
+  <string name="homePage_radixBanner_action">Get Started Now</string>
   <string name="account_transfer">Transfer</string>
   <string name="account_tokens">Tokens</string>
   <string name="account_nfts">NFTs</string>
@@ -49,6 +52,8 @@
   <string name="assetDetails_NFTDetails_whatAreNfts">What are NFTs?</string>
   <string name="assetDetails_NFTDetails_id">ID</string>
   <string name="assetDetails_NFTDetails_name">Name</string>
+  <string name="assetDetails_NFTDetails_description">Description</string>
+  <string name="assetDetails_NFTDetails_complexData">complex data</string>
   <string name="assetDetails_NFTDetails_resourceName">Name</string>
   <string name="assetDetails_NFTDetails_nftPlural">%d NFTs</string>
   <string name="assetDetails_NFTDetails_ownedOfTotal">%d NFTs of total supply %d</string>
@@ -161,7 +166,7 @@
   <string name="settings_depositGuarantees_title">Deposit Guarantees</string>
   <string name="settings_depositGuarantees_subtitle">Set your default guaranteed minimum for estimated deposits</string>
   <string name="settings_depositGuarantees_text">Set the guaranteed minimum deposit to be applied whenever a deposit in a transaction can only be estimated.
-
+\n\n
 You can always change the guarantee from this default in each transaction.</string>
   <string name="settings_multiFactor">Multi-Factor Setup</string>
   <string name="settings_appVersion">Version: %s build #%s</string>
@@ -173,7 +178,6 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="settings_importFromLegacyWalletHeader_title">Radix Olympia Desktop Wallet user?</string>
   <string name="settings_importFromLegacyWalletHeader_subtitle">Get started importing your Olympia accounts into your new Radix Wallet</string>
   <string name="settings_importFromLegacyWalletHeader_importLegacyAccounts">Import Legacy Accounts</string>
-  <string name="settings_personas_seedPhraseWarning">Write down main seed phrase</string>
   <string name="linkedConnectors_title">Linked Connectors</string>
   <string name="linkedConnectors_subtitle">Connect your Radix Wallet to desktop web browsers by linking to the Radix Connector browser extension. Here are your linked Connectors.</string>
   <string name="linkedConnectors_lastConnected">Last connected %s</string>
@@ -487,6 +491,8 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="common_choose">Choose</string>
   <string name="common_max">Max</string>
   <string name="common_optional">Optional</string>
+  <string name="common_showMore">Show More</string>
+  <string name="common_showLess">Show Less</string>
   <string name="error_dappRequest_invalidPersonaId">Invalid Persona specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to import Radix Wallet backup: %s</string>
@@ -544,7 +550,6 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="importOlympiaAccounts_noNewAccounts">No new accounts were found on this Ledger device</string>
   <string name="importOlympiaAccounts_passphrase">Passphrase</string>
   <string name="importOlympiaAccounts_seedPhrase">Seed phrase</string>
-  <string name="importOlympiaAccounts_noAddresses">No addresses verified. The currently connected Ledger device is not related to any accounts to be imported, or has already been used.</string>
   <string name="onboarding_newUser">I\'m a New Radix Wallet User</string>
   <string name="onboarding_restoreFromBackup">Restore Wallet from Backup</string>
   <string name="onboarding_step1_title">Welcome to the Radix Wallet</string>
@@ -563,6 +568,8 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="splash_incompatibleProfileVersionAlert_title">Wallet Data is Incompatible</string>
   <string name="splash_passcodeCheckFailedAlert_title">Warning</string>
   <string name="splash_passcodeCheckFailedAlert_message">Passcode is not set up. Please update settings.</string>
+  <string name="splash_rootDetection_title">It appears that your device might be rooted. To ensure the security of your Accounts and assets, using the Radix Wallet on rooted devices is not recommended. Please confirm if you wish to continue anyway at your own risk.</string>
+  <string name="splash_rootDetection_acknowledgeButton">I Understand the Risk</string>
   <string name="transactionSigning_title">Approve Transaction</string>
   <string name="transactionSigning_preparingTransaction">Incoming Transaction</string>
   <string name="transactionSigning_signTransactionButtonTitle">Approve Transaction</string>
@@ -630,7 +637,6 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="assetTransfer_error_insufficientBalance">Total amount exceeds your current balance</string>
   <string name="assetTransfer_maxAmountDialog_title">Sending All XRD</string>
   <string name="assetTransfer_maxAmountDialog_body">Sending the full amount of XRD in this account will require you to pay the transaction fee from a different account. Or, the wallet can reduce the amount transferred so the fee can be paid from this account. Choose the amount to transfer:</string>
-  <string name="assetTransfer_maxAmountDialog_body2">Sending the full amount of XRD in this account will require you to pay the transaction fee from a different account.</string>
   <string name="assetTransfer_maxAmountDialog_sendAllButton">%s (send all XRD)</string>
   <string name="assetTransfer_maxAmountDialog_saveXrdForFeeButton">%s (save 1 XRD for fee)</string>
   <string name="assetTransfer_extraSignature_label">You will be asked for an extra signature</string>
@@ -698,8 +704,6 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="seedPhrases_seedPhrase_reveal">Reveal Seed Phrase</string>
   <string name="seedPhrases_seedPhrase_oneConnectedAccount">Connected to 1 Account</string>
   <string name="seedPhrases_seedPhrase_multipleConnectedAccounts">Connected to %d Accounts</string>
-  <string name="seedPhrases_seedPhrase_confirmTitle">Confirm Your Seed Phrase</string>
-  <string name="seedPhrases_seedPhrase_confirmSubtitle">Confirm you have written down the seed phrase by entering the missing words below.</string>
   <string name="appSettings_title">App Settings</string>
   <string name="appSettings_subtitle">Customize your Radix Wallet</string>
   <string name="appSettings_developerMode_title">Developer Mode</string>
@@ -739,12 +743,12 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="addLedgerDevice_nameLedger_namePlaceholder">Green Ledger Nano S+</string>
   <string name="addLedgerDevice_nameLedger_continueButtonTitle">Save and Continue</string>
   <string name="profileBackup_headerTitle">Backing up your wallet ensures that you can restore access to your Accounts, Personas, and wallet settings on a new phone by re-entering your seed phrase(s).
-
+\n\n
 **For security, backups do not contain any seed phrases or private keys. You must write them down separately.**</string>
   <string name="profileBackup_automaticBackups_title">Automatic Backups (recommended)</string>
   <string name="profileBackup_manualBackups_title">Manual Backups</string>
   <string name="profileBackup_manualBackups_subtitle">A manually exported wallet backup file may also be used for recovery, along with your seed phrase(s).
-
+\n\n
 Only the **current configuration** of your wallet is backed up with each manual export.</string>
   <string name="profileBackup_manualBackups_exportButtonTitle">Export Wallet Backup File</string>
   <string name="profileBackup_manualBackups_encryptBackupDialogTitle">Encrypt this backup with a password?</string>
@@ -774,7 +778,7 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="androidProfileBackup_backupWalletData_title">Backup Wallet Data to Cloud</string>
   <string name="androidProfileBackup_backupWalletData_message">Warning: If disabled you might lose access to your Accounts and Personas.</string>
   <string name="androidProfileBackup_deleteWallet_subtitle">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any cloud backup.
-
+\n\n
 **Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.**</string>
   <string name="androidProfileBackup_deleteWallet_confirmButton">Delete Wallet</string>
   <string name="iOSProfileBackup_automaticBackups_enable">Enable Backup to iCloud</string>
@@ -796,7 +800,7 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="iOSProfileBackup_totalPersonasNumberLabel">Number of Personas: %d</string>
   <string name="iOSProfileBackup_incompatibleWalletDataLabel">Incompatible Wallet data</string>
   <string name="iOSProfileBackup_deleteWallet_subtitle">You may delete your wallet. This will clear the Radix Wallet app, clears its contents, and delete any iCloud backup.
-
+\n\n
 **Access to any Accounts or Personas will be permanently lost unless you have a manual backup file.**</string>
   <string name="iOSProfileBackup_deleteWallet_confirmButton">Delete Wallet and iCloud Backup</string>
   <string name="iOSProfileBackup_profileNotFoundInCloud">Unable to find wallet backup in iCloud.</string>
@@ -824,9 +828,9 @@ Only the **current configuration** of your wallet is backed up with each manual 
   <string name="recoverSeedPhrase_header_subtitleMainSeedPhrase">Your **Personas** and the following **Accounts** are controlled by your main seed phrase. To recover control, you must re-enter it.</string>
   <string name="recoverSeedPhrase_header_subtitleOtherSeedPhrase">The following **Accounts** are controlled by a seed phrase. To recover control, you must re-enter it.</string>
   <string name="recoverSeedPhrase_header_subtitleNoMainSeedPhrase">The Radix Wallet always uses a single main “Babylon” seed phrase to generate new Personas and new Accounts (when not using a Ledger device).
-
+\n\n
 If you do not have access to your previous main seed phrase, you can skip entering it for now. **The Radix Wallet will create a new one, which will be used for new Personas and Accounts.**
-
+\n\n
 Your old Accounts and Personas will still be listed, but you will have to enter their original seed phrase to use them. Alternatively, you can hide them if you no longer are interested in using them.</string>
   <string name="recoverSeedPhrase_skipButton">Skip This Seed Phrase For Now</string>
   <string name="recoverSeedPhrase_noMainSeedPhraseButton">I Don’t Have the Main Seed Phrase</string>

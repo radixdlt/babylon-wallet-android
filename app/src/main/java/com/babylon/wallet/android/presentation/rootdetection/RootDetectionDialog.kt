@@ -46,9 +46,9 @@ fun RootDetectionContent(
                     onCloseApp()
                 }
             },
-            title = "Hey, this device looks rooted!  Don’t use the Wallet!", // TODO Crowdin
+            title = stringResource(id = R.string.splash_rootDetection_title),
             text = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
-            confirmText = "I understand the risk", // TODO Crowdin
+            confirmText = stringResource(id = R.string.splash_rootDetection_acknowledgeButton),
             dismissText = stringResource(id = R.string.common_cancel)
         )
     }

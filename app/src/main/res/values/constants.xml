@@ -3,4 +3,6 @@
     <!-- Strings not needing translation -->
     <string name="dot_separator" translatable="false">\u2022</string>
     <string name="empty" translatable="false"/>
+    <string name="settings_debugSettings" translatable="false">Debug Settings</string>
+    <string name="settings_debugSettings_inspectProfile" translatable="false">Inspect Profile</string>
 </resources>

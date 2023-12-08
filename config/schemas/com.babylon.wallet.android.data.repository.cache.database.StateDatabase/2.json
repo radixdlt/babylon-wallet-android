@@ -1,0 +1,478 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "18c5bd1e6c148ab3f121fab1f662dc2f",
+    "entities": [
+      {
+        "tableName": "AccountResourceJoin",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`account_address` TEXT NOT NULL, `resource_address` TEXT NOT NULL, `amount` TEXT NOT NULL, `state_version` INTEGER NOT NULL, `vault_address` TEXT, `next_cursor` TEXT, PRIMARY KEY(`account_address`, `resource_address`), FOREIGN KEY(`account_address`) REFERENCES `AccountEntity`(`address`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`resource_address`) REFERENCES `ResourceEntity`(`address`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "accountAddress",
+            "columnName": "account_address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resourceAddress",
+            "columnName": "resource_address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stateVersion",
+            "columnName": "state_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vaultAddress",
+            "columnName": "vault_address",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nextCursor",
+            "columnName": "next_cursor",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "account_address",
+            "resource_address"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_AccountResourceJoin_resource_address",
+            "unique": false,
+            "columnNames": [
+              "resource_address"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_AccountResourceJoin_resource_address` ON `${TABLE_NAME}` (`resource_address`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "AccountEntity",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "account_address"
+            ],
+            "referencedColumns": [
+              "address"
+            ]
+          },
+          {
+            "table": "ResourceEntity",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "resource_address"
+            ],
+            "referencedColumns": [
+              "address"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "AccountEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `account_type` TEXT, `synced` INTEGER, `state_version` INTEGER, PRIMARY KEY(`address`))",
+        "fields": [
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "accountType",
+            "columnName": "account_type",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "stateVersion",
+            "columnName": "state_version",
+            "affinity": "INTEGER",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "address"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "AccountNFTJoin",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`account_address` TEXT NOT NULL, `resource_address` TEXT NOT NULL, `local_id` TEXT NOT NULL, `state_version` INTEGER NOT NULL, PRIMARY KEY(`account_address`, `resource_address`, `local_id`), FOREIGN KEY(`resource_address`, `local_id`) REFERENCES `NFTEntity`(`address`, `local_id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "accountAddress",
+            "columnName": "account_address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resourceAddress",
+            "columnName": "resource_address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localId",
+            "columnName": "local_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stateVersion",
+            "columnName": "state_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "account_address",
+            "resource_address",
+            "local_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_AccountNFTJoin_resource_address_local_id",
+            "unique": false,
+            "columnNames": [
+              "resource_address",
+              "local_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_AccountNFTJoin_resource_address_local_id` ON `${TABLE_NAME}` (`resource_address`, `local_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "NFTEntity",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "resource_address",
+              "local_id"
+            ],
+            "referencedColumns": [
+              "address",
+              "local_id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "ResourceEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `type` TEXT NOT NULL, `metadata` TEXT, `divisibility` INTEGER, `behaviours` TEXT, `validator_address` TEXT, `pool_address` TEXT, `supply` TEXT, `synced` INTEGER NOT NULL, PRIMARY KEY(`address`))",
+        "fields": [
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metadata",
+            "columnName": "metadata",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "divisibility",
+            "columnName": "divisibility",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "behaviours",
+            "columnName": "behaviours",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "validatorAddress",
+            "columnName": "validator_address",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "poolAddress",
+            "columnName": "pool_address",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "supply",
+            "columnName": "supply",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "address"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "NFTEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `local_id` TEXT NOT NULL, `metadata` TEXT, `synced` INTEGER NOT NULL, PRIMARY KEY(`address`, `local_id`))",
+        "fields": [
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localId",
+            "columnName": "local_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metadata",
+            "columnName": "metadata",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "synced",
+            "columnName": "synced",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "address",
+            "local_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "PoolEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `resource_address` TEXT NOT NULL, PRIMARY KEY(`address`), FOREIGN KEY(`resource_address`) REFERENCES `ResourceEntity`(`address`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resourceAddress",
+            "columnName": "resource_address",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "address"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_PoolEntity_resource_address",
+            "unique": false,
+            "columnNames": [
+              "resource_address"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_PoolEntity_resource_address` ON `${TABLE_NAME}` (`resource_address`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "ResourceEntity",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "resource_address"
+            ],
+            "referencedColumns": [
+              "address"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "ValidatorEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `stake_unit_resource_address` TEXT, `claim_token_resource_address` TEXT, `total_stake` TEXT, `metadata` TEXT, `state_version` INTEGER NOT NULL, PRIMARY KEY(`address`))",
+        "fields": [
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stakeUnitResourceAddress",
+            "columnName": "stake_unit_resource_address",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "claimTokenResourceAddress",
+            "columnName": "claim_token_resource_address",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "totalStake",
+            "columnName": "total_stake",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "metadata",
+            "columnName": "metadata",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "stateVersion",
+            "columnName": "state_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "address"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "PoolResourceJoin",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`pool_address` TEXT NOT NULL, `resource_address` TEXT NOT NULL, `amount` TEXT, `state_version` INTEGER NOT NULL, PRIMARY KEY(`pool_address`, `resource_address`), FOREIGN KEY(`pool_address`) REFERENCES `PoolEntity`(`address`) ON UPDATE NO ACTION ON DELETE NO ACTION , FOREIGN KEY(`resource_address`) REFERENCES `ResourceEntity`(`address`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "poolAddress",
+            "columnName": "pool_address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "resourceAddress",
+            "columnName": "resource_address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "stateVersion",
+            "columnName": "state_version",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "pool_address",
+            "resource_address"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_PoolResourceJoin_resource_address",
+            "unique": false,
+            "columnNames": [
+              "resource_address"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_PoolResourceJoin_resource_address` ON `${TABLE_NAME}` (`resource_address`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "PoolEntity",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "pool_address"
+            ],
+            "referencedColumns": [
+              "address"
+            ]
+          },
+          {
+            "table": "ResourceEntity",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "resource_address"
+            ],
+            "referencedColumns": [
+              "address"
+            ]
+          }
+        ]
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '18c5bd1e6c148ab3f121fab1f662dc2f')"
+    ]
+  }
+}

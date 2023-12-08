@@ -22,8 +22,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.toResult
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
-import com.babylon.wallet.android.domain.model.resources.metadata.PoolUnitMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -116,8 +115,8 @@ suspend fun StateApi.fetchPools(
         stateVersion = stateVersion,
     ) { poolComponents ->
         poolComponents.items.forEach { pool ->
-            val metadata = pool.explicitMetadata?.asMetadataItems().orEmpty().toMutableList()
-            val associatedResource = metadata.consume<PoolUnitMetadataItem>()?.resourceAddress.orEmpty()
+            val metadata = pool.explicitMetadata?.toMetadata().orEmpty()
+            val associatedResource = metadata.poolUnit().orEmpty()
             resourceToPoolComponentAssociation[associatedResource] = pool.address
             poolWithResources[pool.address] = pool.fungibleResources?.items.orEmpty()
         }

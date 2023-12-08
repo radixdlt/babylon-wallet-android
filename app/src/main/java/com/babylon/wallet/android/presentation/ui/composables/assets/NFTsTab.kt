@@ -189,7 +189,7 @@ private fun NonFungibleResourceItem(
                 modifier = Modifier.fillMaxWidth(),
                 nft = item
             )
-            item.nameMetadataItem?.name?.let { name ->
+            item.name?.let { name ->
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = name,

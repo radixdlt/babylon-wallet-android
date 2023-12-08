@@ -24,6 +24,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
@@ -61,7 +62,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
         every { savedStateHandle.get<String>(ARG_PERSONA_ADDRESS) } returns "1"
         every { getProfileUseCase() } returns flowOf(
             profile(
-                personas = listOf(
+                personas = identifiedArrayListOf(
                     SampleDataProvider().samplePersona("1")
                 )
             )

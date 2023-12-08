@@ -1,6 +1,7 @@
 package rdx.works.profile.data.model.extensions
 
 import rdx.works.core.mapWhen
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.EntityFlag
@@ -48,7 +49,7 @@ fun Profile.hidePersona(address: String): Profile {
                 mutation = { persona ->
                     persona.copy(flags = persona.flags + EntityFlag.DeletedByUser)
                 }
-            ),
+            ).toIdentifiedArrayList(),
             authorizedDapps = updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas.isNotEmpty() }
         )
     })
@@ -85,9 +86,9 @@ fun Profile.hideAccount(address: String): Profile {
             mutation = { account ->
                 account.copy(flags = account.flags + EntityFlag.DeletedByUser)
             }
-        )
+        ).toSet()
         network.copy(
-            accounts = updatedAccounts,
+            accounts = updatedAccounts.toIdentifiedArrayList(),
             authorizedDapps = updatedAuthorizedDapps.filter { it.referencesToAuthorizedPersonas.isNotEmpty() }
         )
     })
@@ -100,10 +101,10 @@ fun Profile.unhideAllEntities(): Profile {
         network.copy(
             personas = network.personas.map { persona ->
                 persona.copy(flags = persona.flags - EntityFlag.DeletedByUser)
-            },
+            }.toIdentifiedArrayList(),
             accounts = network.accounts.map { persona ->
                 persona.copy(flags = persona.flags - EntityFlag.DeletedByUser)
-            }
+            }.toIdentifiedArrayList()
         )
     })
     return copy(networks = updatedNetworks).withUpdatedContentHint()

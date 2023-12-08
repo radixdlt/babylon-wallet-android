@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository.cache.database
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -10,77 +11,39 @@ import java.math.BigDecimal
 import java.time.Instant
 
 @Serializable
-data class TagsColumn(val tags: List<String>)
-
-@Serializable
-data class DappDefinitionsColumn(val dappDefinitions: List<String>)
-
-@Serializable
 data class BehavioursColumn(val behaviours: Set<AssetBehaviour>)
 
 @Serializable
-data class StringMetadataColumn(val metadata: List<Pair<String, String>>)
-
-@Serializable
-data class NFTIdsColumn(val ids: List<String>)
+data class MetadataColumn(val metadata: List<Metadata>)
 
 @Suppress("TooManyFunctions")
 @ProvidedTypeConverter
 class StateDatabaseConverters {
 
-    // TAGS
-    @TypeConverter
-    fun stringToTags(string: String?): TagsColumn? {
-        return string?.let { TagsColumn(tags = Json.decodeFromString(string)) }
-    }
-
-    @TypeConverter
-    fun tagsToString(column: TagsColumn?): String? {
-        return column?.let { Json.encodeToString(it.tags) }
-    }
-
-    // DApp Definitions
-    @TypeConverter
-    fun stringToDappDefinitions(string: String?): DappDefinitionsColumn? {
-        return string?.let { DappDefinitionsColumn(dappDefinitions = Json.decodeFromString(string)) }
-    }
-
-    @TypeConverter
-    fun dAppDefinitionsToString(column: DappDefinitionsColumn?): String? {
-        return column?.let { Json.encodeToString(it.dappDefinitions) }
+    private val json = Json {
+        allowStructuredMapKeys = true
     }
 
     // Behaviours
     @TypeConverter
     fun stringToBehaviours(string: String?): BehavioursColumn? {
-        return string?.let { BehavioursColumn(behaviours = Json.decodeFromString(string)) }
+        return string?.let { BehavioursColumn(behaviours = json.decodeFromString(string)) }
     }
 
     @TypeConverter
     fun behavioursToString(column: BehavioursColumn?): String? {
-        return column?.let { Json.encodeToString(it.behaviours) }
+        return column?.let { json.encodeToString(it.behaviours) }
     }
 
-    // String Metadata
+    // Metadata
     @TypeConverter
-    fun stringToStringMetadata(string: String?): StringMetadataColumn? {
-        return string?.let { StringMetadataColumn(metadata = Json.decodeFromString(string)) }
-    }
-
-    @TypeConverter
-    fun stringMetadataToString(column: StringMetadataColumn?): String? {
-        return column?.let { Json.encodeToString(it.metadata) }
-    }
-
-    // NFT IDs
-    @TypeConverter
-    fun stringToNFTIds(string: String?): NFTIdsColumn? {
-        return string?.let { NFTIdsColumn(ids = Json.decodeFromString(string)) }
+    fun stringToMetadata(string: String?): MetadataColumn? {
+        return string?.let { MetadataColumn(metadata = json.decodeFromString(string)) }
     }
 
     @TypeConverter
-    fun nftIdsToString(column: NFTIdsColumn?): String? {
-        return column?.let { Json.encodeToString(it.ids) }
+    fun metadataToString(column: MetadataColumn?): String? {
+        return column?.let { json.encodeToString(it.metadata) }
     }
 
     // BigDecimal

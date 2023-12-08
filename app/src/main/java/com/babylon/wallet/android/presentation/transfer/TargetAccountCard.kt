@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
@@ -34,8 +35,8 @@ import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import kotlinx.collections.immutable.persistentSetOf
@@ -73,6 +74,7 @@ fun TargetAccountCard(
                         ),
                         shape = RadixTheme.shapes.roundedRectTopMedium
                     )
+
             is TargetAccount.Other ->
                 Modifier
                     .background(
@@ -100,6 +102,7 @@ fun TargetAccountCard(
                         onClick = onChooseAccountClick
                     )
                 }
+
                 is TargetAccount.Other -> {
                     Text(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
@@ -108,6 +111,7 @@ fun TargetAccountCard(
                         color = RadixTheme.colors.white
                     )
                 }
+
                 is TargetAccount.Owned -> {
                     Text(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
@@ -156,7 +160,7 @@ fun TargetAccountCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            targetAccount.assets.forEach { spendingAsset ->
+            targetAccount.spendingAssets.forEach { spendingAsset ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SpendingAssetItem(
                         modifier = Modifier.weight(1f),
@@ -189,7 +193,9 @@ fun TargetAccountCard(
                             .align(Alignment.Start)
                     ) {
                         Icon(
-                            modifier = Modifier.size(14.dp).align(Alignment.CenterVertically),
+                            modifier = Modifier
+                                .size(14.dp)
+                                .align(Alignment.CenterVertically),
                             painter = painterResource(
                                 id = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
                             ),
@@ -237,9 +243,7 @@ fun TargetAccountCardPreview() {
 
             val item = Resource.NonFungibleResource.Item(
                 collectionAddress = "resource_rdx_abcde",
-                localId = Resource.NonFungibleResource.Item.ID.from("<local_id>"),
-                nameMetadataItem = null,
-                iconMetadataItem = null
+                localId = Resource.NonFungibleResource.Item.ID.from("<local_id>")
             )
             TargetAccountCard(
                 onChooseAccountClick = {},
@@ -251,21 +255,37 @@ fun TargetAccountCardPreview() {
                 targetAccount = TargetAccount.Owned(
                     account = SampleDataProvider().sampleAccount(),
                     id = UUIDGenerator.uuid().toString(),
-                    assets = persistentSetOf(
+                    spendingAssets = persistentSetOf(
                         SpendingAsset.Fungible(
                             resource = Resource.FungibleResource(
                                 resourceAddress = "resource_rdx_abcd",
                                 ownedAmount = BigDecimal.TEN,
-                                nameMetadataItem = NameMetadataItem("Radix"),
-                                symbolMetadataItem = SymbolMetadataItem(XrdResource.SYMBOL)
+                                metadata = listOf(
+                                    Metadata.Primitive(
+                                        key = ExplicitMetadataKey.NAME.key,
+                                        value = "Radix",
+                                        valueType = MetadataType.String
+                                    ),
+                                    Metadata.Primitive(
+                                        key = ExplicitMetadataKey.SYMBOL.key,
+                                        value = XrdResource.SYMBOL,
+                                        valueType = MetadataType.String
+                                    )
+                                )
                             )
                         ),
                         SpendingAsset.NFT(
                             resource = Resource.NonFungibleResource(
                                 resourceAddress = "resource_rdx_abcde",
                                 amount = 1L,
-                                nameMetadataItem = NameMetadataItem("NFT Collection"),
-                                items = listOf(item)
+                                items = listOf(item),
+                                metadata = listOf(
+                                    Metadata.Primitive(
+                                        key = ExplicitMetadataKey.NAME.key,
+                                        value = "NFT Collection",
+                                        valueType = MetadataType.String
+                                    ),
+                                )
                             ),
                             item = item
                         )

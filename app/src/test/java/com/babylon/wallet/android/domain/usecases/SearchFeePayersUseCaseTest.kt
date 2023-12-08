@@ -9,7 +9,7 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.PublicKeyHash
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.radixdlt.ret.Address
@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
@@ -92,7 +93,7 @@ class SearchFeePayersUseCaseTest {
             ).build(networkId)
 
         private object ProfileRepositoryFake : ProfileRepository {
-            private val profile = profile(accounts = listOf(account1, account2))
+            private val profile = profile(accounts = identifiedArrayListOf(account1, account2))
 
             override val profileState: Flow<ProfileState> = flowOf(ProfileState.Restored(profile = profile))
 
@@ -160,7 +161,7 @@ class SearchFeePayersUseCaseTest {
                 )
             }
 
-            override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, OwnerKeyHashesMetadataItem>> {
+            override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>> {
                 error("Not needed")
             }
 

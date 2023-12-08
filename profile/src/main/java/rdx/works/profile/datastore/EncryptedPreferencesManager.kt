@@ -1,23 +1,25 @@
 package rdx.works.profile.datastore
 
 import androidx.datastore.core.DataStore
+import androidx.datastore.core.IOException
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retryWhen
 import rdx.works.core.KeySpec
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import rdx.works.profile.di.ProfileDataStore
 import rdx.works.profile.di.coroutines.IoDispatcher
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,7 +30,17 @@ class EncryptedPreferencesManager @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 
-    val encryptedProfile = preferences.data.catchIOException().map { preferences ->
+    val encryptedProfile = preferences.data.retryWhen { cause, attempt ->
+        // It seem that some users are experiencing IOException which results in empty preferences returned.
+        // We retry to read preferences if IOException occurred, before we go to catchIOException() handler
+        // Until we have crash reporting in place, we can try this.
+        if (cause is IOException && attempt < RETRY_COUNT) {
+            delay(RETRY_DELAY)
+            true
+        } else {
+            false
+        }
+    }.catchIOException().map { preferences ->
         val preferencesKey = stringPreferencesKey(PROFILE_PREFERENCES_KEY)
         val encryptedValue = preferences[preferencesKey]
         if (encryptedValue.isNullOrEmpty()) {
@@ -135,5 +147,7 @@ class EncryptedPreferencesManager @Inject constructor(
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
         private const val RESTORED_PROFILE_CLOUD_PREFERENCES_KEY = "restored_cloud_profile_key"
         private const val RESTORED_PROFILE_FILE_PREFERENCES_KEY = "restored_file_profile_key"
+        private const val RETRY_COUNT = 3L
+        private const val RETRY_DELAY = 1500L
     }
 }

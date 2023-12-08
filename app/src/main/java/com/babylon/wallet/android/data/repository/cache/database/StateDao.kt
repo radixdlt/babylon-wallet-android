@@ -5,12 +5,11 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
+import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
+import com.babylon.wallet.android.domain.model.resources.metadata.accountType
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
 import java.math.BigDecimal
@@ -82,11 +81,11 @@ interface StateDao {
                 nonFungibleItem.asAccountResourceJoin(item.address, syncInfo)
             }.orEmpty()
 
-            val accountMetadataItems = item.explicitMetadata?.asMetadataItems()?.toMutableList()
+            val accountMetadata = item.explicitMetadata?.toMetadata()
             insertAccountDetails(
                 AccountEntity(
                     address = item.address,
-                    accountType = accountMetadataItems?.consume<AccountTypeMetadataItem>()?.type,
+                    accountType = accountMetadata?.accountType(),
                     synced = syncInfo.synced,
                     stateVersion = syncInfo.accountStateVersion
                 )
@@ -129,6 +128,7 @@ interface StateDao {
         """
         SELECT 
             PoolEntity.address AS pool_entity_address, 
+            PoolEntity.resource_address AS pool_unit_address, 
             PoolResourceJoin.state_version AS account_state_version, 
             PoolResourceJoin.amount AS amount,
             ResourceEntity.*

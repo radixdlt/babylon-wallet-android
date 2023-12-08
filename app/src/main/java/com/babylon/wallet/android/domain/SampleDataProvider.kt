@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.domain
 
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.DAppResources
@@ -17,13 +18,13 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.DescriptionMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -94,11 +95,16 @@ class SampleDataProvider {
             resource = Resource.FungibleResource(
                 resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
                 ownedAmount = null,
-                nameMetadataItem = NameMetadataItem(name = "XXX"),
-                symbolMetadataItem = SymbolMetadataItem(symbol = "XXX"),
-                descriptionMetadataItem = DescriptionMetadataItem(description = "a very xxx token"),
-                tagsMetadataItem = null,
-                currentSupply = BigDecimal("69696969696969.666999666999666999")
+                currentSupply = BigDecimal("69696969696969.666999666999666999"),
+                metadata = listOf(
+                    Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
+                    Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.DESCRIPTION.key,
+                        value = "a very xxx token",
+                        valueType = MetadataType.String
+                    )
+                )
             ),
             isNewlyCreated = true
         )
@@ -310,11 +316,11 @@ class SampleDataProvider {
             networkId = networkId,
             appearanceID = 0
         )
-        return profile.copy(networks = listOf(network.copy(accounts = listOf(firstAccount))))
+        return profile.copy(networks = listOf(network.copy(accounts = identifiedArrayListOf(firstAccount))))
     }
 
     fun network(networkId: Int): Network {
-        return Network(networkId, emptyList(), emptyList(), emptyList())
+        return Network(networkId, emptyIdentifiedArrayList(), emptyIdentifiedArrayList(), emptyList())
     }
 
     fun sampleFungibleResources(
@@ -327,11 +333,16 @@ class SampleDataProvider {
                     Resource.FungibleResource(
                         resourceAddress = randomAddress(),
                         ownedAmount = amount.first,
-                        nameMetadataItem = NameMetadataItem(name = "XXX"),
-                        symbolMetadataItem = SymbolMetadataItem(symbol = "XXX"),
-                        descriptionMetadataItem = DescriptionMetadataItem(description = "a very xxx token"),
-                        tagsMetadataItem = null,
-                        currentSupply = BigDecimal("69696969696969.666999666999666999")
+                        currentSupply = BigDecimal("69696969696969.666999666999666999"),
+                        metadata = listOf(
+                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
+                            Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
+                            Metadata.Primitive(
+                                key = ExplicitMetadataKey.DESCRIPTION.key,
+                                value = "a very xxx token",
+                                valueType = MetadataType.String
+                            ),
+                        )
                     )
                 )
             }
@@ -342,15 +353,16 @@ class SampleDataProvider {
         return Resource.NonFungibleResource(
             resourceAddress = randomAddress(),
             amount = 1,
-            nameMetadataItem = NameMetadataItem(name),
-            descriptionMetadataItem = null,
-            iconMetadataItem = null,
-            items = emptyList()
+            items = emptyList(),
+            metadata = listOf(
+                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = name, valueType = MetadataType.String),
+            )
         )
     }
 
     fun samplePoolUnit(): PoolUnit {
-        return PoolUnit(sampleFungibleResources().first(), Pool(address = "pool_tdx_abc", sampleFungibleResources()))
+        val poolUnit = sampleFungibleResources().first()
+        return PoolUnit(poolUnit, Pool(address = "pool_tdx_abc", poolUnitAddress = poolUnit.resourceAddress, sampleFungibleResources()))
     }
 
     fun sampleLSUUnit(): LiquidStakeUnit {

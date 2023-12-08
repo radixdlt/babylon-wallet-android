@@ -8,6 +8,7 @@ import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
 import kotlinx.coroutines.flow.first
 import okio.ByteString.Companion.decodeBase64
+import rdx.works.core.Identified
 import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.core.decodeHex
 import rdx.works.core.toUByteList
@@ -47,7 +48,7 @@ class OlympiaWalletDataParser @Inject constructor(
             try {
                 val accountsToMigrate = fullPayload.split(OuterSeparator).mapIndexed { index, singleAccountData ->
                     parseSingleAccount(singleAccountData, currentNetworkId, existingAccountHashes, accountIndexOffset, index)
-                }
+                }.toSet()
                 return OlympiaWalletData(header.mnemonicWordCount, accountsToMigrate)
             } catch (e: Exception) {
                 Timber.d(e)
@@ -134,7 +135,7 @@ fun Collection<ByteArray>.containsWithEqualityCheck(value: ByteArray): Boolean {
     return this.any { it.contentEquals(value) }
 }
 
-data class OlympiaWalletData(val mnemonicWordCount: Int, val accountData: List<OlympiaAccountDetails>)
+data class OlympiaWalletData(val mnemonicWordCount: Int, val accountData: Set<OlympiaAccountDetails>)
 
 data class PayloadHeader(
     val payloadCount: Int,
@@ -157,7 +158,10 @@ data class OlympiaAccountDetails(
     val newBabylonAddress: String,
     val appearanceId: Int,
     val alreadyImported: Boolean = false
-)
+) : Identified {
+    override val identifier: String
+        get() = newBabylonAddress
+}
 
 enum class OlympiaAccountType {
     Hardware, Software;

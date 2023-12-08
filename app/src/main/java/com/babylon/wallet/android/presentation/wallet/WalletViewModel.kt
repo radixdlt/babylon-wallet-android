@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isOlympiaAccount
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -47,6 +48,7 @@ import rdx.works.profile.domain.factorSources
 import timber.log.Timber
 import javax.inject.Inject
 
+@Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class WalletViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
@@ -54,6 +56,7 @@ class WalletViewModel @Inject constructor(
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
+    private val preferencesManager: PreferencesManager,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -127,6 +130,11 @@ class WalletViewModel @Inject constructor(
                 _state.update { it.copy(entitiesWithSecurityPrompt = accounts) }
             }
         }
+        viewModelScope.launch {
+            preferencesManager.isRadixBannerVisible.collect { isVisible ->
+                _state.update { it.copy(isRadixBannerVisible = isVisible) }
+            }
+        }
     }
 
     private fun observeProfileBackupState(getBackupStateUseCase: GetBackupStateUseCase) {
@@ -171,6 +179,10 @@ class WalletViewModel @Inject constructor(
             }
         }
     }
+
+    fun onRadixBannerDismiss() = viewModelScope.launch {
+        preferencesManager.setRadixBannerVisibility(isVisible = false)
+    }
 }
 
 internal sealed interface WalletEvent : OneOffEvent {
@@ -184,6 +196,7 @@ data class WalletUiState(
     private val refreshing: Boolean = false,
     private val entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList(),
     private val factorSources: List<FactorSource> = emptyList(),
+    val isRadixBannerVisible: Boolean = false,
     val isBackupWarningVisible: Boolean = false,
     val error: UiMessage? = null,
 ) : UiState {

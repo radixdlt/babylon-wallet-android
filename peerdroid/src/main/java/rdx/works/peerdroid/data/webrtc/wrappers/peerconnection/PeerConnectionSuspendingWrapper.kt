@@ -32,41 +32,31 @@ internal suspend fun PeerConnection.createSuspendingOffer(
 
             p0?.let {
                 continuation.resume(
-                    Result.success(
-                        SessionDescriptionValue(p0.description)
-                    )
+                    Result.success(SessionDescriptionValue(p0.description))
                 )
             } ?: continuation.resume(
-                Result.failure(
-                    Throwable("sessionDescription is null")
-                )
+                Result.failure(Throwable("sessionDescription is null"))
             )
         }
 
         override fun onSetSuccess() {
             Timber.d("🔌 createOffer, onSetSuccess")
             continuation.resume(
-                Result.failure(
-                    Throwable("")
-                )
+                Result.failure(Throwable(""))
             )
         }
 
         override fun onCreateFailure(p0: String?) {
             Timber.e("🔌 createOffer, onCreateFailure $p0")
             continuation.resume(
-                Result.failure(
-                    Throwable("failed to create offer: $p0")
-                )
+                Result.failure(Throwable("failed to create offer: $p0"))
             )
         }
 
         override fun onSetFailure(p0: String?) {
             Timber.e("🔌 createOffer, onSetFailure: $p0")
             continuation.resume(
-                Result.failure(
-                    Throwable("")
-                )
+                Result.failure(Throwable(""))
             )
         }
     }
@@ -91,41 +81,31 @@ internal suspend fun PeerConnection.createSuspendingAnswer(
 
             p0?.let {
                 continuation.resume(
-                    Result.success(
-                        SessionDescriptionValue(p0.description)
-                    )
+                    Result.success(SessionDescriptionValue(p0.description))
                 )
             } ?: continuation.resume(
-                Result.failure(
-                    Throwable("sessionDescription is null")
-                )
+                Result.failure(Throwable("sessionDescription is null"))
             )
         }
 
         override fun onSetSuccess() {
             Timber.d("🔌 createAnswer, onSetSuccess")
             continuation.resume(
-                Result.failure(
-                    Throwable("")
-                )
+                Result.failure(Throwable(""))
             )
         }
 
         override fun onCreateFailure(p0: String?) {
             Timber.e("🔌 createAnswer, onCreateFailure $p0")
             continuation.resume(
-                Result.failure(
-                    Throwable(p0)
-                )
+                Result.failure(Throwable(p0))
             )
         }
 
         override fun onSetFailure(p0: String?) {
             Timber.e("🔌 createAnswer, onSetFailure $p0")
             continuation.resume(
-                Result.failure(
-                    Throwable(p0)
-                )
+                Result.failure(Throwable(p0))
             )
         }
     }
@@ -148,32 +128,28 @@ internal suspend fun PeerConnection.setSuspendingLocalDescription(
             // we want to SET the local session description, not to create one
             // thus return Error result
             continuation.resume(
-                Result.failure(
-                    Throwable("on create success")
-                )
+                Result.failure(Throwable("on create success"))
             )
         }
 
         override fun onSetSuccess() {
             Timber.d("🔌 set successfully local session description")
-            continuation.resume(Result.success(Unit))
+            continuation.resume(
+                Result.success(Unit)
+            )
         }
 
         override fun onCreateFailure(p0: String?) {
             Timber.e("🔌 setLocalDescription, onCreateFailure $p0")
             continuation.resume(
-                Result.failure(
-                    Throwable(p0)
-                )
+                Result.failure(Throwable(p0))
             )
         }
 
         override fun onSetFailure(p0: String?) {
             Timber.e("🔌 setLocalDescription, onSetFailure $p0")
             continuation.resume(
-                Result.failure(
-                    Throwable(p0)
-                )
+                Result.failure(Throwable(p0))
             )
         }
     }
@@ -197,32 +173,28 @@ internal suspend fun PeerConnection.setSuspendingRemoteDescription(
             // we want to SET the remote session description, not to create one
             // thus return Error result
             continuation.resume(
-                Result.failure(
-                    Throwable("on create success")
-                )
+                Result.failure(Throwable("on create success"))
             )
         }
 
         override fun onSetSuccess() {
             Timber.d("🔌 set successfully remote session description")
-            continuation.resume(Result.success(Unit))
+            continuation.resume(
+                Result.success(Unit)
+            )
         }
 
         override fun onCreateFailure(p0: String?) {
             Timber.e("🔌 failed to create remote session description: $p0")
             continuation.resume(
-                Result.failure(
-                    Throwable(p0)
-                )
+                Result.failure(Throwable(p0))
             )
         }
 
         override fun onSetFailure(p0: String?) {
             Timber.e("🔌 failed to set remote session description: $p0")
             continuation.resume(
-                Result.failure(
-                    Throwable(p0)
-                )
+                Result.failure(Throwable(p0))
             )
         }
     }
@@ -242,14 +214,14 @@ internal suspend fun PeerConnection.addSuspendingIceCandidate(
 
     val observer = object : AddIceObserver {
         override fun onAddSuccess() {
-            continuation.resume(Result.success(Unit))
+            continuation.resume(
+                Result.success(Unit)
+            )
         }
 
         override fun onAddFailure(p0: String?) {
             continuation.resume(
-                Result.failure(
-                    Throwable(p0)
-                )
+                Result.failure(Throwable(p0))
             )
         }
     }

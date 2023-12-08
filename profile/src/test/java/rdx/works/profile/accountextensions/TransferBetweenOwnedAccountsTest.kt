@@ -218,7 +218,6 @@ class TransferBetweenOwnedAccountsTest {
         assertTrue(profile.networks[0].accounts[0].isSignatureRequiredBasedOnDepositRules(asset1address))
     }
 
-    @Ignore("will enable when we have the new GW")
     @Test
     fun `given accept known and target account has Asset1, when transfer Asset1 from user's own account to user's target account, then signature is not required`() {
         profile = profile.updateThirdPartyDepositSettings(

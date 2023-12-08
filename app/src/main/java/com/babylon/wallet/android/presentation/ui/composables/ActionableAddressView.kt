@@ -56,7 +56,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateways
@@ -92,49 +91,50 @@ fun ActionableAddressView(
             val copyAction = PopupActionItem(
                 name = context.getString(
                     when {
-                        actionableAddress.type == ActionableAddress.Type.TRANSACTION -> R.string.addressAction_copyTransactionId
-                        actionableAddress.isNft -> R.string.addressAction_copyNftId
+                        actionableAddress.type == ActionableAddress.Type.Global.TRANSACTION -> R.string.addressAction_copyTransactionId
+                        actionableAddress.isNft || actionableAddress.type is ActionableAddress.Type.LocalId ->
+                            R.string.addressAction_copyNftId
                         else -> R.string.addressAction_copyAddress
                     }
                 ),
                 icon = R.drawable.ic_copy
             ) { OnAction.CallbackBasedAction.CopyToClipboard(actionableAddress) }
 
-            val openExternalAction = PopupActionItem(
-                name = context.getString(R.string.addressAction_viewOnDashboard),
-                icon = R.drawable.ic_external_link,
-            ) {
-                OnAction.CallbackBasedAction.OpenExternalWebView(
-                    actionableAddress = actionableAddress,
-                    networkId = networkId
-                )
-            }
-
-            val qrAction = PopupActionItem(
-                name = context.getString(R.string.addressAction_showAccountQR),
-                icon = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
-            ) { OnAction.ViewBasedAction.QRCode(actionableAddress) }
-
-            actions = if (actionableAddress.isCopyPrimaryAction) {
-                val secondaryActions = if (actionableAddress.type == ActionableAddress.Type.ACCOUNT) {
-                    listOf(qrAction, openExternalAction)
-                } else {
-                    listOf(openExternalAction)
+            val openExternalAction = actionableAddress.toDashboardUrl(networkId)?.let { url ->
+                PopupActionItem(
+                    name = context.getString(R.string.addressAction_viewOnDashboard),
+                    icon = R.drawable.ic_external_link,
+                ) {
+                    OnAction.CallbackBasedAction.OpenExternalWebView(url)
                 }
-
-                PopupActions(
-                    primary = copyAction,
-                    secondary = secondaryActions
-                )
-            } else {
-                PopupActions(
-                    primary = openExternalAction,
-                    secondary = listOf(copyAction)
-                )
             }
+
+            val qrAction = if (actionableAddress.type == ActionableAddress.Type.Global.ACCOUNT) {
+                PopupActionItem(
+                    name = context.getString(R.string.addressAction_showAccountQR),
+                    icon = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
+                ) { OnAction.ViewBasedAction.QRCode(actionableAddress) }
+            } else {
+                null
+            }
+
+            val primary = if (actionableAddress.type == ActionableAddress.Type.Global.TRANSACTION && openExternalAction != null) {
+                openExternalAction
+            } else {
+                copyAction
+            }
+            val secondary = listOf(
+                qrAction,
+                if (primary == openExternalAction) null else openExternalAction
+            ).mapNotNull { it }
+
+            actions = PopupActions(
+                primary = primary,
+                secondary = secondary
+            )
 
             // Resolve if address is ledger and attach another action
-            if (actionableAddress.type == ActionableAddress.Type.ACCOUNT) {
+            if (actionableAddress.type == ActionableAddress.Type.Global.ACCOUNT) {
                 if (useCaseProvider.profileUseCase().accountOnCurrentNetwork(actionableAddress.address)?.isLedgerAccount == true) {
                     val verifyOnLedgerAction = PopupActionItem(
                         name = context.getString(R.string.addressAction_verifyAddressLedger),
@@ -338,13 +338,12 @@ private sealed interface OnAction {
         }
 
         data class OpenExternalWebView(
-            private val actionableAddress: ActionableAddress,
-            private val networkId: NetworkId
+            private val url: String
         ) : CallbackBasedAction {
 
             @Suppress("SwallowedException")
             override fun onAction(context: Context) {
-                context.openUrl(actionableAddress.toDashboardUrl(networkId))
+                context.openUrl(url)
             }
         }
 

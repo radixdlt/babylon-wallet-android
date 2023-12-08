@@ -28,7 +28,7 @@ import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountTypeMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
 import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -185,7 +185,7 @@ class AccountsStateCache @Inject constructor(
             // Parse details for this account
             val cachedDetails = AccountCachedData(
                 stateVersion = cache.stateVersion,
-                typeMetadataItem = cache.accountType?.let { AccountTypeMetadataItem(it) },
+                accountType = cache.accountType,
             )
 
             // Compile all resources owned by this account
@@ -254,7 +254,7 @@ class AccountsStateCache @Inject constructor(
 
     private data class AccountCachedData(
         val stateVersion: Long?,
-        val typeMetadataItem: AccountTypeMetadataItem?,
+        val accountType: AccountType?,
         val fungibles: MutableList<Resource.FungibleResource> = mutableListOf(),
         val nonFungibles: MutableList<Resource.NonFungibleResource> = mutableListOf(),
     ) {
@@ -288,7 +288,11 @@ class AccountsStateCache @Inject constructor(
             while (fungiblesIterator.hasNext()) {
                 val fungible = fungiblesIterator.next()
 
-                val pool = pools[fungible.poolAddress]
+                val pool = pools[fungible.poolAddress]?.takeIf { pool ->
+                    // The fungible claims that it is part of the poolAddress.
+                    // We need to check if pool points back to this resource
+                    pool.poolUnitAddress == fungible.resourceAddress
+                }
                 if (pool != null) {
                     resultingPoolUnits.add(
                         PoolUnit(
@@ -300,7 +304,11 @@ class AccountsStateCache @Inject constructor(
                     fungiblesIterator.remove()
                 }
 
-                val validatorDetails = stakeUnitAddressToValidator[fungible.resourceAddress]
+                val validatorDetails = stakeUnitAddressToValidator[fungible.resourceAddress]?.takeIf { validator ->
+                    // The fungible claims that it is a LSU,
+                    // so we need to check if the validator points back to this resource
+                    validator.address == fungible.validatorAddress
+                }
                 if (validatorDetails != null) {
                     val lsu = LiquidStakeUnit(fungible)
 
@@ -318,7 +326,11 @@ class AccountsStateCache @Inject constructor(
             while (nonFungiblesIterator.hasNext()) {
                 val nonFungible = nonFungiblesIterator.next()
 
-                val validatorDetails = claimTokenAddressToValidator[nonFungible.resourceAddress]
+                val validatorDetails = claimTokenAddressToValidator[nonFungible.resourceAddress]?.takeIf { validator ->
+                    // The non-fungible claims that it is a claim token,
+                    // so we need to check if the validator points back to this resource
+                    validator.address == nonFungible.validatorAddress
+                }
                 if (validatorDetails != null) {
                     val existingValidatorWithStakes = resultingStakeUnits[validatorDetails]
                     if (existingValidatorWithStakes != null) {
@@ -345,7 +357,7 @@ class AccountsStateCache @Inject constructor(
                 address = accountAddress,
                 details = AccountDetails(
                     stateVersion = stateVersion,
-                    typeMetadataItem = typeMetadataItem
+                    accountType = accountType
                 ),
                 assets = Assets(
                     fungibles = resultingFungibles.sorted(),

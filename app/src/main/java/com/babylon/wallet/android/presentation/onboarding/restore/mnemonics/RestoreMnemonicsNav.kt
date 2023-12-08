@@ -14,28 +14,30 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.profile.domain.backup.BackupType
 
-private const val ARGS_RESTORE_MNEMONICS = "restoreMnemonicsArgs"
-private const val ROUTE = "restore_mnemonics?restoreMnemonicsArgs={$ARGS_RESTORE_MNEMONICS}"
+private const val ARGS_BACKUP_TYPE = "backup_type"
+private const val ARGS_MANDATORY = "mandatory"
+private const val ROUTE = "restore_mnemonics?$ARGS_BACKUP_TYPE={$ARGS_BACKUP_TYPE}&$ARGS_MANDATORY={$ARGS_MANDATORY}"
 
 fun NavController.restoreMnemonics(
     args: RestoreMnemonicsArgs
 ) {
-    navigate(route = "restore_mnemonics?restoreMnemonicsArgs=${Json.encodeToString(args)}")
+    val backupType = Json.encodeToString(args.backupType)
+    navigate(route = "restore_mnemonics?$ARGS_BACKUP_TYPE=$backupType&$ARGS_MANDATORY=${args.isMandatory}")
 }
 
 @Serializable
-sealed interface RestoreMnemonicsArgs {
-    @Serializable
-    data class RestoreProfile(
-        val backupType: BackupType? = null,
-        val isMandatory: Boolean = false
-    ) : RestoreMnemonicsArgs
-
+data class RestoreMnemonicsArgs(
+    val backupType: BackupType? = null,
+    val isMandatory: Boolean = false
+) {
     companion object {
         fun from(savedStateHandle: SavedStateHandle): RestoreMnemonicsArgs {
-            val serialised: String = requireNotNull(savedStateHandle[ARGS_RESTORE_MNEMONICS])
+            val backupType: BackupType? = savedStateHandle.get<String>(ARGS_BACKUP_TYPE)?.let {
+                Json.decodeFromString(it)
+            }
+            val isMandatory: Boolean = requireNotNull(savedStateHandle[ARGS_MANDATORY])
 
-            return Json.decodeFromString(serialised)
+            return RestoreMnemonicsArgs(backupType, isMandatory)
         }
     }
 }
@@ -49,10 +51,17 @@ fun NavGraphBuilder.restoreMnemonicsScreen(
         route = ROUTE,
         arguments = listOf(
             navArgument(
-                name = ARGS_RESTORE_MNEMONICS,
+                name = ARGS_BACKUP_TYPE,
+            ) {
+                nullable = true
+                type = NavType.StringType
+            },
+            navArgument(
+                name = ARGS_MANDATORY,
             ) {
                 nullable = false
-                type = NavType.StringType
+                type = NavType.BoolType
+                defaultValue = false
             }
         ),
         enterTransition = {

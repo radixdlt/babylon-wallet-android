@@ -2,12 +2,12 @@ package com.babylon.wallet.android.presentation.settings.accountsecurity
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
@@ -17,6 +17,8 @@ import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerha
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.seedPhrases
+import com.babylon.wallet.android.presentation.settings.appsettings.backup.backupScreen
+import com.babylon.wallet.android.presentation.settings.appsettings.backup.systemBackupSettingsScreen
 
 const val ROUTE_ACCOUNT_SECURITY_SCREEN = "settings_account_security_screen"
 const val ROUTE_ACCOUNT_SECURITY_GRAPH = "settings_account_security_graph"
@@ -36,7 +38,7 @@ fun NavGraphBuilder.accountSecurityNavGraph(
         seedPhrases(
             onBackClick = { navController.popBackStack() },
             onNavigateToRecoverMnemonic = {
-                navController.restoreMnemonics(args = RestoreMnemonicsArgs.RestoreProfile())
+                navController.restoreMnemonics(args = RestoreMnemonicsArgs())
             },
             onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.body.value) }
         )
@@ -47,6 +49,17 @@ fun NavGraphBuilder.accountSecurityNavGraph(
         )
         importLegacyWalletScreen(
             onBackClick = {
+                navController.popBackStack()
+            }
+        )
+        backupScreen(
+            onSystemBackupSettingsClick = {
+                navController.systemBackupSettingsScreen()
+            },
+            onProfileDeleted = {
+                navController.popBackStack(MAIN_ROUTE, false)
+            },
+            onClose = {
                 navController.popBackStack()
             }
         )
@@ -66,7 +79,6 @@ fun NavGraphBuilder.accountSecurityNavGraph(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.accountSecurityScreen(
     navController: NavController
 ) {
@@ -97,6 +109,9 @@ fun NavGraphBuilder.accountSecurityScreen(
                     }
                     SettingsItem.AccountSecurityAndSettingsItem.DepositGuarantees -> {
                         navController.depositGuaranteesScreen()
+                    }
+                    is SettingsItem.AccountSecurityAndSettingsItem.Backups -> {
+                        navController.backupScreen()
                     }
                     SettingsItem.AccountSecurityAndSettingsItem.ImportFromLegacyWallet -> {
                         navController.importLegacyWalletScreen()
