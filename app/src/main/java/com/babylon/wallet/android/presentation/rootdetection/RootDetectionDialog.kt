@@ -46,8 +46,7 @@ fun RootDetectionContent(
                     onCloseApp()
                 }
             },
-            title = stringResource(id = R.string.splash_rootDetection_title),
-            text = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
+            text = stringResource(id = R.string.splash_rootDetection_title),
             confirmText = stringResource(id = R.string.splash_rootDetection_acknowledgeButton),
             dismissText = stringResource(id = R.string.common_cancel)
         )
