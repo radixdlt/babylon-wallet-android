@@ -146,7 +146,7 @@ class CreateAccountViewModel @Inject constructor(
         if (!state.value.isCancelable) return@launch
 
         if (!getProfileStateUseCase.isInitialized()) {
-            deleteProfileUseCase()
+            deleteProfileUseCase.deleteProfileDataOnly()
         }
         sendEvent(CreateAccountEvent.Dismiss)
     }

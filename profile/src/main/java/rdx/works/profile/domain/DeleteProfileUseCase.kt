@@ -20,7 +20,7 @@ class DeleteProfileUseCase @Inject constructor(
     suspend operator fun invoke() {
         val profileThatWasBackedUpToCloud = backupProfileRepository.getTemporaryRestoringProfile(BackupType.Cloud)
 
-        profileRepository.clear()
+        profileRepository.clearAllWalletData()
         keystoreManager.removeKeys().onFailure {
             Timber.d(it, "Failed to delete encryption keys")
         }
@@ -33,5 +33,9 @@ class DeleteProfileUseCase @Inject constructor(
                 backupType = BackupType.Cloud
             )
         }
+    }
+
+    suspend fun deleteProfileDataOnly() {
+        profileRepository.clearProfileDataOnly()
     }
 }
