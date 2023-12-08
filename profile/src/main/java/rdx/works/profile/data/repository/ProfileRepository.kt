@@ -35,7 +35,9 @@ interface ProfileRepository {
 
     suspend fun saveProfile(profile: Profile)
 
-    suspend fun clear()
+    suspend fun clearProfileDataOnly()
+
+    suspend fun clearAllWalletData()
 
     fun deriveProfileState(content: String): ProfileState
 }
@@ -111,9 +113,13 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun clear() {
-        encryptedPreferencesManager.clear()
+    override suspend fun clearAllWalletData() {
+        clearProfileDataOnly()
         preferencesManager.clear()
+    }
+
+    override suspend fun clearProfileDataOnly() {
+        encryptedPreferencesManager.clear()
         profileStateFlow.update { ProfileState.None }
         backupManager.dataChanged()
     }

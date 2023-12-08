@@ -22,6 +22,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
@@ -29,6 +31,7 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
@@ -52,6 +55,7 @@ class MainViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     getProfileStateUseCase: GetProfileStateUseCase,
     private val deviceSecurityHelper: DeviceSecurityHelper,
+    private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
     private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
@@ -96,10 +100,19 @@ class MainViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileStateUseCase()
-                .collect { profileState ->
-                    _state.update { MainUiState(initialAppState = AppState.from(profileState)) }
+            combine(
+                getProfileStateUseCase(),
+                preferencesManager.isDeviceRootedDialogShown
+            ) { profileState, isDeviceRootedDialogShown ->
+                _state.update {
+                    MainUiState(
+                        initialAppState = AppState.from(
+                            profileState = profileState
+                        ),
+                        showDeviceRootedWarning = deviceSecurityHelper.isDeviceRooted() && !isDeviceRootedDialogShown
+                    )
                 }
+            }.collect()
         }
         handleAllIncomingRequests()
     }
@@ -286,6 +299,7 @@ sealed class MainEvent : OneOffEvent {
 
 data class MainUiState(
     val initialAppState: AppState = AppState.Loading,
+    val showDeviceRootedWarning: Boolean = false,
     val dappRequestFailure: RadixWalletException.DappRequestException? = null,
     val olympiaErrorState: OlympiaErrorState = OlympiaErrorState.None
 ) : UiState
@@ -303,7 +317,9 @@ sealed interface AppState {
     data object Loading : AppState
 
     companion object {
-        fun from(profileState: ProfileState) = when (profileState) {
+        fun from(
+            profileState: ProfileState
+        ) = when (profileState) {
             is ProfileState.Incompatible -> IncompatibleProfile
             is ProfileState.Restored -> if (profileState.hasAnyAccounts()) {
                 Wallet

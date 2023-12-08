@@ -53,6 +53,11 @@ class PreferencesManager @Inject constructor(
             preferences[KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED] ?: false
         }
 
+    val isDeviceRootedDialogShown: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_DEVICE_ROOTED_DIALOG_SHOWN] ?: false
+        }
+
     suspend fun markImportFromOlympiaComplete() {
         dataStore.edit { preferences ->
             preferences[KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED] = true
@@ -109,6 +114,12 @@ class PreferencesManager @Inject constructor(
         }
     }
 
+    suspend fun markDeviceRootedDialogShown() {
+        dataStore.edit { preferences ->
+            preferences[KEY_DEVICE_ROOTED_DIALOG_SHOWN] = true
+        }
+    }
+
     suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
@@ -119,5 +130,6 @@ class PreferencesManager @Inject constructor(
         private val KEY_BACKED_UP_FACTOR_SOURCE_IDS = stringPreferencesKey("backed_up_factor_source_ids")
         private val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED =
             booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
+        private val KEY_DEVICE_ROOTED_DIALOG_SHOWN = booleanPreferencesKey("device_rooted_dialog_shown")
     }
 }
