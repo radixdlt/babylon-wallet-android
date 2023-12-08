@@ -3,8 +3,6 @@ package com.babylon.wallet.android.domain.model
 import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.radixdlt.ret.Instructions
 import com.radixdlt.ret.TransactionManifest
-import rdx.works.core.toByteArray
-import rdx.works.core.toUByteList
 
 data class TransactionManifestData(
     val instructions: String,
@@ -15,15 +13,13 @@ data class TransactionManifestData(
 ) {
 
     fun toTransactionManifest() = runCatching {
-        with(blobs.map { it.toUByteList() }) {
-            TransactionManifest(
-                instructions = Instructions.fromString(
-                    string = instructions,
-                    networkId = networkId.toUByte()
-                ),
-                blobs = this
-            )
-        }
+        TransactionManifest(
+            instructions = Instructions.fromString(
+                string = instructions,
+                networkId = networkId.toUByte()
+            ),
+            blobs = blobs
+        )
     }
 
     companion object {
@@ -35,7 +31,7 @@ data class TransactionManifestData(
             instructions = manifest.instructions().asStr(),
             version = TransactionVersion.Default.value,
             networkId = networkId,
-            blobs = manifest.blobs().map { it.toByteArray() },
+            blobs = manifest.blobs(),
             message = message
         )
     }

@@ -23,7 +23,6 @@ import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.ResourceTracker
 import com.radixdlt.ret.TransactionType
 import rdx.works.core.ret.asStr
-import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
 import java.math.BigDecimal
 
@@ -365,7 +364,7 @@ private fun Map.Entry<String, MetadataValue?>.toMetadata(): Metadata? = when (va
 
     is MetadataValue.U8ArrayValue -> Metadata.Primitive(
         key = key,
-        value = typed.value.toByteArray().toHexString(),
+        value = typed.value.toHexString(),
         valueType = MetadataType.Bytes
     )
 
@@ -508,13 +507,13 @@ private fun Map.Entry<String, MetadataValue?>.toMetadata(): Metadata? = when (va
     is MetadataValue.PublicKeyValue -> when (val publicKey = typed.value) {
         is PublicKey.Secp256k1 -> Metadata.Primitive(
             key = key,
-            value = publicKey.value.toByteArray().toHexString(),
+            value = publicKey.value.toHexString(),
             valueType = MetadataType.PublicKeyEcdsaSecp256k1
         )
 
         is PublicKey.Ed25519 -> Metadata.Primitive(
             key = key,
-            value = publicKey.value.toByteArray().toHexString(),
+            value = publicKey.value.toHexString(),
             valueType = MetadataType.PublicKeyEddsaEd25519
         )
     }
@@ -525,13 +524,13 @@ private fun Map.Entry<String, MetadataValue?>.toMetadata(): Metadata? = when (va
             when (publicKey) {
                 is PublicKey.Secp256k1 -> Metadata.Primitive(
                     key = key,
-                    value = publicKey.value.toByteArray().toHexString(),
+                    value = publicKey.value.toHexString(),
                     valueType = MetadataType.PublicKeyEcdsaSecp256k1
                 )
 
                 is PublicKey.Ed25519 -> Metadata.Primitive(
                     key = key,
-                    value = publicKey.value.toByteArray().toHexString(),
+                    value = publicKey.value.toHexString(),
                     valueType = MetadataType.PublicKeyEddsaEd25519
                 )
             }
@@ -541,13 +540,13 @@ private fun Map.Entry<String, MetadataValue?>.toMetadata(): Metadata? = when (va
     is MetadataValue.PublicKeyHashValue -> when (val publicKeyHash = typed.value) {
         is PublicKeyHash.Secp256k1 -> Metadata.Primitive(
             key = key,
-            value = publicKeyHash.value.toByteArray().toHexString(),
+            value = publicKeyHash.value.toHexString(),
             valueType = MetadataType.PublicKeyHashEcdsaSecp256k1
         )
 
         is PublicKeyHash.Ed25519 -> Metadata.Primitive(
             key = key,
-            value = publicKeyHash.value.toByteArray().toHexString(),
+            value = publicKeyHash.value.toHexString(),
             valueType = MetadataType.PublicKeyHashEddsaEd25519
         )
     }
@@ -558,13 +557,13 @@ private fun Map.Entry<String, MetadataValue?>.toMetadata(): Metadata? = when (va
             when (publicKeyHash) {
                 is PublicKeyHash.Secp256k1 -> Metadata.Primitive(
                     key = key,
-                    value = publicKeyHash.value.toByteArray().toHexString(),
+                    value = publicKeyHash.value.toHexString(),
                     valueType = MetadataType.PublicKeyHashEcdsaSecp256k1
                 )
 
                 is PublicKeyHash.Ed25519 -> Metadata.Primitive(
                     key = key,
-                    value = publicKeyHash.value.toByteArray().toHexString(),
+                    value = publicKeyHash.value.toHexString(),
                     valueType = MetadataType.PublicKeyHashEddsaEd25519
                 )
             }

@@ -9,7 +9,7 @@ fun ByteArray.toUByteList() = toUByteArray().toTypedArray().toList()
 @OptIn(ExperimentalUnsignedTypes::class)
 fun List<UByte>.toByteArray() = toUByteArray().toByteArray()
 
-fun ByteArray.blake2Hash(): ByteArray = hash(data = toUByteList()).bytes().toByteArray()
+fun ByteArray.blake2Hash(): ByteArray = hash(data = this).bytes()
 
 fun String.blake2Hash(): ByteArray = toByteArray().blake2Hash()
 

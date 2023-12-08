@@ -13,7 +13,6 @@ import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.PublicKeyHash
 import com.radixdlt.ret.ResourcePreference
 import com.radixdlt.ret.TransactionManifest
-import rdx.works.core.toByteArray
 
 @Suppress("TooManyFunctions")
 class BabylonManifestBuilder {
@@ -30,10 +29,10 @@ class BabylonManifestBuilder {
         return this
     }
 
-    fun accountTryDepositBatchOrAbort(
+    fun accountTryDepositEntireWorktopOrAbort(
         toAddress: Address,
     ): BabylonManifestBuilder {
-        manifestBuilder = manifestBuilder.accountTryDepositBatchOrAbort(
+        manifestBuilder = manifestBuilder.accountTryDepositEntireWorktopOrAbort(
             accountAddress = toAddress,
             authorizedDepositorBadge = null
         )
@@ -45,7 +44,7 @@ class BabylonManifestBuilder {
         fromBucket: ManifestBuilderBucket
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.accountTryDepositOrAbort(
-            accountAddress = toAddress,
+            address = toAddress,
             authorizedDepositorBadge = null,
             bucket = fromBucket
         )
@@ -57,7 +56,7 @@ class BabylonManifestBuilder {
         fromBucket: ManifestBuilderBucket
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.accountDeposit(
-            accountAddress = toAddress,
+            address = toAddress,
             bucket = fromBucket
         )
         return this
@@ -95,8 +94,8 @@ class BabylonManifestBuilder {
         fungible: Address,
         amount: Decimal
     ): BabylonManifestBuilder {
-        manifestBuilder = manifestBuilder.withdrawFromAccount(
-            accountAddress = fromAddress,
+        manifestBuilder = manifestBuilder.accountWithdraw(
+            address = fromAddress,
             resourceAddress = fungible,
             amount = amount
         )
@@ -107,8 +106,8 @@ class BabylonManifestBuilder {
         fromAddress: Address,
         nonFungible: NonFungibleGlobalId
     ): BabylonManifestBuilder {
-        manifestBuilder = manifestBuilder.withdrawNonFungiblesFromAccount(
-            accountAddress = fromAddress,
+        manifestBuilder = manifestBuilder.accountWithdrawNonFungibles(
+            address = fromAddress,
             resourceAddress = nonFungible.resourceAddress(),
             ids = listOf(
                 nonFungible.localId()
@@ -121,7 +120,7 @@ class BabylonManifestBuilder {
         address: Address,
         ownerKeyHashes: List<PublicKeyHash>
     ): BabylonManifestBuilder {
-        manifestBuilder = manifestBuilder.setMetadata(
+        manifestBuilder = manifestBuilder.metadataSet(
             address = address,
             key = "owner_keys",
             value = MetadataValue.PublicKeyHashArrayValue(
@@ -214,7 +213,7 @@ class BabylonManifestBuilder {
 }
 
 fun NonFungibleLocalId.asStr() = when (this) {
-    is NonFungibleLocalId.Bytes -> "[${value.toByteArray()}]"
+    is NonFungibleLocalId.Bytes -> "[$value]"
     is NonFungibleLocalId.Integer -> "#$value#"
     is NonFungibleLocalId.Str -> "<$value>"
     is NonFungibleLocalId.Ruid -> "{$value}"

@@ -20,7 +20,6 @@ import com.radixdlt.ret.TransactionType
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
 import rdx.works.core.then
-import rdx.works.core.toUByteList
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import java.math.BigDecimal
@@ -61,7 +60,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             notaryAndSigners = notaryAndSigners
         ).mapCatching { preview ->
             manifest
-                .analyzeExecution(transactionReceipt = preview.encodedReceipt.decodeHex().toUByteList())
+                .analyzeExecution(transactionReceipt = preview.encodedReceipt.decodeHex())
                 .resolvePreview(notaryAndSigners)
                 .resolveFees(notaryAndSigners)
         }.mapCatching { transactionFees ->

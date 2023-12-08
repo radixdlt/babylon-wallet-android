@@ -20,7 +20,6 @@ import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
 import rdx.works.core.toIdentifiedArrayList
-import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.compressedPublicKey
@@ -209,7 +208,7 @@ data class Network(
                 val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
                 val address = deriveAccountAddress(
                     networkID = networkId,
-                    publicKey = PublicKey.Ed25519(compressedPublicKey.toUByteList())
+                    publicKey = PublicKey.Ed25519(compressedPublicKey)
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
@@ -250,7 +249,7 @@ data class Network(
 
                 val address = deriveAccountAddress(
                     networkID = networkId,
-                    publicKey = PublicKey.Ed25519(derivedPublicKeyHex.decodeHex().toUByteList())
+                    publicKey = PublicKey.Ed25519(derivedPublicKeyHex.decodeHex())
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
@@ -335,7 +334,7 @@ data class Network(
 
                 val address = deriveIdentityAddress(
                     networkID = networkId,
-                    publicKey = PublicKey.Ed25519(compressedPublicKey.toUByteList())
+                    publicKey = PublicKey.Ed25519(compressedPublicKey)
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(

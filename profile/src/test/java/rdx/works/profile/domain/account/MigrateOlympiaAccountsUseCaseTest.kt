@@ -146,7 +146,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
             val derivationPath = DerivationPath.forLegacyOlympia(accountIndex = index)
             val publicKey = seed.toKey(derivationPath.path, EllipticCurveType.Secp256k1).keyPair.getCompressedPublicKey()
             val address = deriveOlympiaAccountAddressFromPublicKey(
-                PublicKey.Secp256k1(publicKey.toUByteList()),
+                PublicKey.Secp256k1(publicKey),
                 OlympiaNetwork.MAINNET
             )
             OlympiaAccountDetails(
