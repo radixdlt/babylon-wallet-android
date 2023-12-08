@@ -89,8 +89,8 @@ fun ChooseAssetsSheet(
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
         val collapsibleAssetsState = rememberAssetsViewState(assets = state.assets)
-        val selectedAssets = remember(state.targetAccount.assets) {
-            state.targetAccount.assets.map { it.address }
+        val selectedAssets = remember(state.targetAccount.spendingAssets) {
+            state.targetAccount.spendingAssets.map { it.address }
         }
         LazyColumn(
             modifier = Modifier

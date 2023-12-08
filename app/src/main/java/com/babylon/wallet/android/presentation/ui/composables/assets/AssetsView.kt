@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -30,8 +31,8 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import java.math.BigDecimal
@@ -193,28 +194,44 @@ fun AssetsViewWithAssets() {
                     Resource.FungibleResource(
                         resourceAddress = XrdResource.address(),
                         ownedAmount = BigDecimal(1000),
-                        symbolMetadataItem = SymbolMetadataItem("XRD")
+                        metadata = listOf(
+                            Metadata.Primitive(
+                                key = ExplicitMetadataKey.SYMBOL.key,
+                                value = XrdResource.SYMBOL,
+                                valueType = MetadataType.String
+                            )
+                        )
                     )
                 ) + SampleDataProvider().sampleFungibleResources(),
                 nonFungibles = listOf(
                     Resource.NonFungibleResource(
                         resourceAddress = SampleDataProvider().randomAddress(),
-                        nameMetadataItem = NameMetadataItem("abc"),
                         amount = 10,
-                        items = emptyList()
+                        items = emptyList(),
+                        metadata = listOf(
+                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "abc", MetadataType.String)
+                        )
                     ),
                     SampleDataProvider().nonFungibleResource("cde"),
                     with(SampleDataProvider().randomAddress()) {
                         Resource.NonFungibleResource(
                             resourceAddress = this,
-                            nameMetadataItem = NameMetadataItem("abc"),
                             amount = 1,
                             items = listOf(
                                 Resource.NonFungibleResource.Item(
                                     collectionAddress = this,
                                     localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
-                                    nameMetadataItem = NameMetadataItem("Some NFT")
+                                    metadata = listOf(
+                                        Metadata.Primitive(
+                                            key = ExplicitMetadataKey.NAME.key,
+                                            value = "Some NFT",
+                                            valueType = MetadataType.String
+                                        )
+                                    )
                                 )
+                            ),
+                            metadata = listOf(
+                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "abc", MetadataType.String)
                             )
                         )
                     },
@@ -224,23 +241,46 @@ fun AssetsViewWithAssets() {
                         stake = Resource.FungibleResource(
                             resourceAddress = "resource_abcd",
                             ownedAmount = BigDecimal(2.5),
-                            nameMetadataItem = NameMetadataItem("Custom Pool"),
-                            symbolMetadataItem = SymbolMetadataItem("CPL"),
                             divisibility = 18,
-                            currentSupply = BigDecimal(1_000_000)
+                            currentSupply = BigDecimal(1_000_000),
+                            metadata = listOf(
+                                Metadata.Primitive(
+                                    key = ExplicitMetadataKey.NAME.key,
+                                    value = "Custom Pool",
+                                    valueType = MetadataType.String
+                                ),
+                                Metadata.Primitive(
+                                    key = ExplicitMetadataKey.SYMBOL.key,
+                                    value = "CPL",
+                                    valueType = MetadataType.String
+                                )
+                            )
                         ),
                         pool = Pool(
                             address = "pool_abc",
+                            poolUnitAddress = "resource_abcd",
                             resources = listOf(
                                 Resource.FungibleResource(
                                     resourceAddress = XrdResource.address(),
                                     ownedAmount = BigDecimal(1000),
-                                    symbolMetadataItem = SymbolMetadataItem("XRD")
+                                    metadata = listOf(
+                                        Metadata.Primitive(
+                                            key = ExplicitMetadataKey.SYMBOL.key,
+                                            value = XrdResource.SYMBOL,
+                                            valueType = MetadataType.String
+                                        )
+                                    )
                                 ),
                                 Resource.FungibleResource(
                                     resourceAddress = "resource_abcdef",
                                     ownedAmount = BigDecimal(100),
-                                    symbolMetadataItem = SymbolMetadataItem("CTM")
+                                    metadata = listOf(
+                                        Metadata.Primitive(
+                                            key = ExplicitMetadataKey.SYMBOL.key,
+                                            value = "CTM",
+                                            valueType = MetadataType.String
+                                        )
+                                    )
                                 )
                             )
                         )
@@ -250,16 +290,22 @@ fun AssetsViewWithAssets() {
                     ValidatorWithStakes(
                         validatorDetail = ValidatorDetail(
                             address = "validator_abc",
-                            name = "Awesome Validator",
-                            url = null,
-                            description = null,
-                            totalXrdStake = BigDecimal(1000)
+                            totalXrdStake = BigDecimal(1000),
+                            metadata = listOf(
+                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Awesome Validator", MetadataType.String)
+                            )
                         ),
                         liquidStakeUnit = LiquidStakeUnit(
                             Resource.FungibleResource(
                                 resourceAddress = "resource_dfgh",
                                 ownedAmount = BigDecimal(100),
-                                nameMetadataItem = NameMetadataItem("Liquid Stake Unit")
+                                metadata = listOf(
+                                    Metadata.Primitive(
+                                        key = ExplicitMetadataKey.NAME.key,
+                                        value = "Liquid Stake Unit",
+                                        valueType = MetadataType.String
+                                    )
+                                )
                             )
                         ),
                         stakeClaimNft = StakeClaim(
@@ -273,16 +319,22 @@ fun AssetsViewWithAssets() {
                     ValidatorWithStakes(
                         validatorDetail = ValidatorDetail(
                             address = "validator_abcd",
-                            name = "Another Validator",
-                            url = null,
-                            description = null,
-                            totalXrdStake = BigDecimal(10000)
+                            totalXrdStake = BigDecimal(10000),
+                            metadata = listOf(
+                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Another Validator", MetadataType.String)
+                            )
                         ),
                         liquidStakeUnit = LiquidStakeUnit(
                             Resource.FungibleResource(
                                 resourceAddress = "resource_dfg",
                                 ownedAmount = BigDecimal(21),
-                                nameMetadataItem = NameMetadataItem("Liquid Stake Unit")
+                                metadata = listOf(
+                                    Metadata.Primitive(
+                                        key = ExplicitMetadataKey.NAME.key,
+                                        value = "Liquid Stake Unit",
+                                        valueType = MetadataType.String
+                                    )
+                                )
                             )
                         )
                     )

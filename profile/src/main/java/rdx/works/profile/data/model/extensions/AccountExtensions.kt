@@ -3,6 +3,7 @@ package rdx.works.profile.data.model.extensions
 import com.radixdlt.ret.AccountDefaultDepositRule
 import com.radixdlt.ret.ResourcePreference
 import rdx.works.core.mapWhen
+import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.Slip10Curve
@@ -38,7 +39,7 @@ fun Profile.renameAccountDisplayName(
                     accounts = network.accounts.mapWhen(
                         predicate = { it == accountToRename },
                         mutation = { renamedAccount }
-                    )
+                    ).toIdentifiedArrayList()
                 )
             }
         )
@@ -60,7 +61,12 @@ fun Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionR
     }
 }
 
-@Suppress("ReturnCount", "UnusedParameter")
+fun Network.Account.hasAcceptKnownDepositRule(): Boolean {
+    val thirdPartyDeposits = this.onLedgerSettings.thirdPartyDeposits
+    return thirdPartyDeposits.depositRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown
+}
+
+@Suppress("ReturnCount")
 fun Network.Account.isSignatureRequiredBasedOnDepositRules(
     forSpecificAssetAddress: String,
     addressesOfAssetsOfTargetAccount: List<String> = emptyList()
@@ -86,10 +92,10 @@ fun Network.Account.isSignatureRequiredBasedOnDepositRules(
     } else if (hasDenyAll || hasDenyExceptionRuleForAsset) {
         return true
     } else if (hasAcceptKnown) {
-        // TODO will enable when we have the new GW
-//        if (addressesOfAssetsOfTargetAccount.contains(forSpecificAssetAddress)) {
-//            return false
-//        }
+        // and if the receiving account knows the resource then do not require signature
+        if (addressesOfAssetsOfTargetAccount.contains(forSpecificAssetAddress)) {
+            return false
+        }
         return true
     }
 

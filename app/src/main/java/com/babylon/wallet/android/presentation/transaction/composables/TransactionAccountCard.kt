@@ -303,7 +303,7 @@ private fun TransferableNftItemContent(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = (nftItem.nameMetadataItem?.name ?: transferable.resource.name).ifEmpty {
+                text = (nftItem.name ?: transferable.resource.name).ifEmpty {
                     stringResource(id = R.string.transactionReview_unknown)
                 },
                 style = RadixTheme.typography.body2HighImportance,

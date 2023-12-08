@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.wallet
 
-import android.net.Uri
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -38,9 +38,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
@@ -283,11 +282,21 @@ fun AssetsContentRowPreview() {
                 Resource.FungibleResource(
                     resourceAddress = "resource_address",
                     ownedAmount = BigDecimal.valueOf(237659),
-                    nameMetadataItem = NameMetadataItem("AWE"),
-                    symbolMetadataItem = SymbolMetadataItem("AWE"),
-                    iconUrlMetadataItem = IconUrlMetadataItem(
-                        url = Uri.parse(
-                            "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
+                    metadata = listOf(
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.NAME.key,
+                            value = "Awesome token",
+                            valueType = MetadataType.String
+                        ),
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.SYMBOL.key,
+                            value = "AWE",
+                            valueType = MetadataType.String
+                        ),
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.ICON_URL.key,
+                            value = "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg",
+                            valueType = MetadataType.Url
                         )
                     )
                 )
@@ -297,28 +306,28 @@ fun AssetsContentRowPreview() {
                 Resource.NonFungibleResource(
                     resourceAddress = "resource_address1",
                     amount = 1117,
-                    nameMetadataItem = NameMetadataItem("F1"),
                     items = List(1117) {
                         Resource.NonFungibleResource.Item(
                             collectionAddress = "resource_address1",
-                            localId = Resource.NonFungibleResource.Item.ID.from("<f1_$it>"),
-                            nameMetadataItem = null,
-                            iconMetadataItem = null
+                            localId = Resource.NonFungibleResource.Item.ID.from("<f1_$it>")
                         )
-                    }
+                    },
+                    metadata = listOf(
+                        Metadata.Primitive(ExplicitMetadataKey.NAME.key, "F1", MetadataType.String)
+                    )
                 ),
                 Resource.NonFungibleResource(
                     resourceAddress = "resource_address2",
                     amount = 3,
-                    nameMetadataItem = NameMetadataItem("NBA"),
                     items = List(3) {
                         Resource.NonFungibleResource.Item(
                             collectionAddress = "resource_address2",
-                            localId = Resource.NonFungibleResource.Item.ID.from("<nba_$it>"),
-                            nameMetadataItem = null,
-                            iconMetadataItem = null
+                            localId = Resource.NonFungibleResource.Item.ID.from("<nba_$it>")
                         )
-                    }
+                    },
+                    metadata = listOf(
+                        Metadata.Primitive(ExplicitMetadataKey.NAME.key, "NBA", MetadataType.String)
+                    )
                 )
             )
 

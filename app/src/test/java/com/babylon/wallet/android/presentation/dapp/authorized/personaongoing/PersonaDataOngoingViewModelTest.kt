@@ -19,6 +19,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.domain.GetProfileUseCase
 
@@ -53,7 +54,7 @@ internal class PersonaDataOngoingViewModelTest {
                 )
             )
         )
-        every { getProfileUseCase() } returns flowOf(profile(personas = listOf(samplePersona)))
+        every { getProfileUseCase() } returns flowOf(profile(personas = identifiedArrayListOf(samplePersona)))
     }
 
     @Test

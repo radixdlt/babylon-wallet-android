@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.fetchValidators
 import com.babylon.wallet.android.data.gateway.extensions.getNextNftItems
 import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
+import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
@@ -28,8 +28,8 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
-import com.babylon.wallet.android.domain.model.resources.metadata.OwnerKeyHashesMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.PublicKeyHash
+import com.babylon.wallet.android.domain.model.resources.metadata.ownerKeyHashes
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -58,7 +58,7 @@ interface StateRepository {
 
     suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>>
 
-    suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, OwnerKeyHashesMetadataItem>>
+    suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>>
 
     suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>>
 
@@ -357,21 +357,18 @@ class StateRepositoryImpl @Inject constructor(
     override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> =
         accountsStateCache.getOwnedXRD(accounts = accounts)
 
-    override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, OwnerKeyHashesMetadataItem>> = runCatching {
+    override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>> = runCatching {
         if (entities.isEmpty()) return@runCatching mapOf()
 
-        val entitiesWithOwnerKeys = mutableMapOf<Entity, OwnerKeyHashesMetadataItem>()
+        val entitiesWithOwnerKeys = mutableMapOf<Entity, List<PublicKeyHash>>()
         stateApi.paginateDetails(
             addresses = entities.map { it.address }.toSet(),
             metadataKeys = setOf(ExplicitMetadataKey.OWNER_KEYS),
         ) { page ->
             page.items.forEach { item ->
-                val keyHash = item.explicitMetadata
-                    ?.asMetadataItems()
-                    ?.toMutableList()
-                    ?.consume<OwnerKeyHashesMetadataItem>() ?: return@forEach
+                val publicKeys = item.explicitMetadata?.toMetadata()?.ownerKeyHashes() ?: return@forEach
                 val entity = entities.find { item.address == it.address } ?: return@forEach
-                entitiesWithOwnerKeys[entity] = keyHash
+                entitiesWithOwnerKeys[entity] = publicKeys
             }
         }
         entitiesWithOwnerKeys
@@ -398,7 +395,7 @@ class StateRepositoryImpl @Inject constructor(
         }
 
         items.map { item ->
-            DApp.from(address = item.address, metadataItems = item.explicitMetadata?.asMetadataItems().orEmpty())
+            DApp(dAppAddress = item.address, metadata = item.explicitMetadata?.toMetadata().orEmpty())
         }
     }
 

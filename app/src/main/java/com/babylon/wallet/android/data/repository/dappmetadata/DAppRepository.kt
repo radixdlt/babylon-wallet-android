@@ -3,9 +3,9 @@ package com.babylon.wallet.android.data.repository.dappmetadata
 import com.babylon.wallet.android.data.gateway.apis.DAppDefinitionApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.ENTITY_DETAILS_PAGE_LIMIT
-import com.babylon.wallet.android.data.gateway.extensions.asMetadataItems
 import com.babylon.wallet.android.data.gateway.extensions.divisibility
 import com.babylon.wallet.android.data.gateway.extensions.extractBehaviours
+import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.extensions.totalSupply
 import com.babylon.wallet.android.data.gateway.generated.models.ResourceAggregationLevel
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
@@ -25,7 +25,6 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataItem.Companion.consume
 import com.babylon.wallet.android.presentation.model.ActionableAddress
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.CoroutineDispatcher
@@ -154,9 +153,9 @@ class DAppRepositoryImpl @Inject constructor(
             ),
             map = { response ->
                 response.items.map { dAppResponse ->
-                    DApp.from(
-                        address = dAppResponse.address,
-                        metadataItems = dAppResponse.metadata.asMetadataItems()
+                    DApp(
+                        dAppAddress = dAppResponse.address,
+                        metadata = dAppResponse.metadata.toMetadata()
                     )
                 }
             },
@@ -186,7 +185,7 @@ class DAppRepositoryImpl @Inject constructor(
         isRefreshing: Boolean
     ): Result<DAppResources> {
         val claimedResources = dAppMetadata.claimedEntities.filter {
-            ActionableAddress.Type.from(it) == ActionableAddress.Type.RESOURCE
+            ActionableAddress.Type.from(it) == ActionableAddress.Type.Global.RESOURCE
         }
 
         val listOfEntityDetailsResponsesResult = getStateEntityDetailsResponse(
@@ -210,37 +209,24 @@ class DAppRepositoryImpl @Inject constructor(
                     }
 
                     val fungibleResources = fungibleItems.map { fungibleItem ->
-                        val metadataItems = fungibleItem.metadata.asMetadataItems().toMutableList()
                         Resource.FungibleResource(
                             resourceAddress = fungibleItem.address,
                             ownedAmount = null, // No owned amount given in metadata
-                            nameMetadataItem = metadataItems.consume(),
-                            symbolMetadataItem = metadataItems.consume(),
-                            descriptionMetadataItem = metadataItems.consume(),
-                            iconUrlMetadataItem = metadataItems.consume(),
                             assetBehaviours = fungibleItem.details?.extractBehaviours(),
                             currentSupply = fungibleItem.details?.totalSupply()?.toBigDecimal(),
-                            validatorMetadataItem = metadataItems.consume(),
-                            poolMetadataItem = metadataItems.consume(),
                             divisibility = fungibleItem.details?.divisibility(),
-                            dAppDefinitionsMetadataItem = metadataItems.consume()
+                            metadata = fungibleItem.explicitMetadata?.toMetadata().orEmpty()
                         )
                     }
 
                     val nonFungibleResource = nonFungibleItems.map { nonFungibleItem ->
-                        val metadataItems = nonFungibleItem.metadata.asMetadataItems().toMutableList()
-
                         Resource.NonFungibleResource(
                             resourceAddress = nonFungibleItem.address,
                             amount = 0L,
-                            nameMetadataItem = metadataItems.consume(),
-                            descriptionMetadataItem = metadataItems.consume(),
-                            iconMetadataItem = metadataItems.consume(),
-                            tagsMetadataItem = metadataItems.consume(),
-                            validatorMetadataItem = metadataItems.consume(),
                             items = emptyList(),
                             assetBehaviours = nonFungibleItem.details?.extractBehaviours(),
-                            currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull()
+                            currentSupply = nonFungibleItem.details?.totalSupply()?.toIntOrNull(),
+                            metadata = nonFungibleItem.explicitMetadata?.toMetadata().orEmpty()
                         )
                     }
 

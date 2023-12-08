@@ -311,7 +311,7 @@ class TransferViewModel @Inject constructor(
             val nonFungibleBalances = mutableMapOf<Resource.NonFungibleResource.Item, Int>()
 
             targetAccounts
-                .map { it.assets.filterIsInstance<SpendingAsset.Fungible>() }
+                .map { it.spendingAssets.filterIsInstance<SpendingAsset.Fungible>() }
                 .flatten()
                 .forEach { fungible ->
                     val spentAmount = fungibleBalances[fungible.resource] ?: BigDecimal.ZERO
@@ -319,7 +319,7 @@ class TransferViewModel @Inject constructor(
                 }
 
             targetAccounts
-                .map { it.assets.filterIsInstance<SpendingAsset.NFT>() }
+                .map { it.spendingAssets.filterIsInstance<SpendingAsset.NFT>() }
                 .flatten()
                 .forEach { nft ->
                     val spent = nonFungibleBalances[nft.item] ?: 0
@@ -354,7 +354,8 @@ class TransferViewModel @Inject constructor(
             data class ChooseAccounts(
                 val selectedAccount: TargetAccount,
                 val ownedAccounts: PersistentList<Network.Account>,
-                val mode: Mode = Mode.Chooser
+                val mode: Mode = Mode.Chooser,
+                val isLoadingAssetsForAccount: Boolean
             ) : Sheet {
 
                 val isOwnedAccountsEnabled: Boolean
@@ -388,7 +389,7 @@ class TransferViewModel @Inject constructor(
 
                 val isSubmitEnabled: Boolean
                     get() {
-                        val currentAssetAddresses = targetAccount.assets.map { it.address }.toSet()
+                        val currentAssetAddresses = targetAccount.spendingAssets.map { it.address }.toSet()
                         val currentSub = currentAssetAddresses subtract initialAssetAddress
                         val initialSub = initialAssetAddress subtract currentAssetAddresses
                         val result = currentSub union initialSub
@@ -396,7 +397,7 @@ class TransferViewModel @Inject constructor(
                     }
 
                 val assetsSelectedCount: Int
-                    get() = targetAccount.assets.size
+                    get() = targetAccount.spendingAssets.size
 
                 fun onNFTsLoading(forResource: Resource.NonFungibleResource): ChooseAssets {
                     return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.resourceAddress)
@@ -438,7 +439,7 @@ class TransferViewModel @Inject constructor(
 
                 companion object {
                     fun init(forTargetAccount: TargetAccount): ChooseAssets = ChooseAssets(
-                        initialAssetAddress = forTargetAccount.assets.map { it.address }.toPersistentSet(),
+                        initialAssetAddress = forTargetAccount.spendingAssets.map { it.address }.toPersistentSet(),
                         targetAccount = forTargetAccount
                     )
                 }
@@ -467,7 +468,7 @@ class TransferViewModel @Inject constructor(
 sealed class TargetAccount {
     abstract val address: String
     abstract val id: String
-    abstract val assets: ImmutableSet<SpendingAsset>
+    abstract val spendingAssets: ImmutableSet<SpendingAsset>
 
     abstract fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean
 
@@ -480,54 +481,54 @@ sealed class TargetAccount {
 
     val isValidForSubmission: Boolean
         get() = when (this) {
-            is Other -> assets.isNotEmpty() && assets.all { it.isValidForSubmission }
-            is Owned -> assets.isNotEmpty() && assets.all { it.isValidForSubmission }
-            is Skeleton -> assets.isEmpty()
+            is Other -> spendingAssets.isNotEmpty() && spendingAssets.all { it.isValidForSubmission }
+            is Owned -> spendingAssets.isNotEmpty() && spendingAssets.all { it.isValidForSubmission }
+            is Skeleton -> spendingAssets.isEmpty()
         }
 
     val factorSourceId: FactorSource.FactorSourceID.FromHash?
         get() = (this as? Owned)?.account?.factorSourceId() as? FactorSource.FactorSourceID.FromHash
 
-    fun amountSpent(fungibleAsset: SpendingAsset.Fungible): BigDecimal = assets
+    fun amountSpent(fungibleAsset: SpendingAsset.Fungible): BigDecimal = spendingAssets
         .filterIsInstance<SpendingAsset.Fungible>()
         .find { it.address == fungibleAsset.address }
         ?.amountDecimal ?: BigDecimal.ZERO
 
     fun updateAssets(onUpdate: (ImmutableSet<SpendingAsset>) -> ImmutableSet<SpendingAsset>): TargetAccount {
         return when (this) {
-            is Owned -> copy(assets = onUpdate(assets))
-            is Other -> copy(assets = onUpdate(assets))
-            is Skeleton -> copy(assets = onUpdate(assets))
+            is Owned -> copy(spendingAssets = onUpdate(spendingAssets))
+            is Other -> copy(spendingAssets = onUpdate(spendingAssets))
+            is Skeleton -> copy(spendingAssets = onUpdate(spendingAssets))
         }
     }
 
     fun addAsset(asset: SpendingAsset): TargetAccount {
-        val newAssets = assets.toMutableSet().apply {
+        val newSpendingAssets = spendingAssets.toMutableSet().apply {
             add(asset)
         }.toPersistentSet()
 
         return when (this) {
-            is Owned -> copy(assets = newAssets)
-            is Other -> copy(assets = newAssets)
-            is Skeleton -> copy(assets = newAssets)
+            is Owned -> copy(spendingAssets = newSpendingAssets)
+            is Other -> copy(spendingAssets = newSpendingAssets)
+            is Skeleton -> copy(spendingAssets = newSpendingAssets)
         }
     }
 
     fun removeAsset(asset: SpendingAsset): TargetAccount {
-        val newAssets = assets.toMutableSet().apply {
+        val newSpendingAssets = spendingAssets.toMutableSet().apply {
             removeIf { it.address == asset.address }
         }.toPersistentSet()
 
         return when (this) {
-            is Owned -> copy(assets = newAssets)
-            is Other -> copy(assets = newAssets)
-            is Skeleton -> copy(assets = newAssets)
+            is Owned -> copy(spendingAssets = newSpendingAssets)
+            is Other -> copy(spendingAssets = newSpendingAssets)
+            is Skeleton -> copy(spendingAssets = newSpendingAssets)
         }
     }
 
     data class Skeleton(
         override val id: String = UUIDGenerator.uuid().toString(),
-        override val assets: ImmutableSet<SpendingAsset> = persistentSetOf()
+        override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
         override val address: String = ""
 
@@ -538,7 +539,7 @@ sealed class TargetAccount {
         override val address: String,
         val validity: AddressValidity,
         override val id: String,
-        override val assets: ImmutableSet<SpendingAsset> = persistentSetOf()
+        override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
 
         override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean = false
@@ -552,14 +553,18 @@ sealed class TargetAccount {
 
     data class Owned(
         val account: Network.Account,
+        val accountAssetsAddresses: List<String> = emptyList(),
         override val id: String,
-        override val assets: ImmutableSet<SpendingAsset> = persistentSetOf()
+        override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
         override val address: String
             get() = account.address
 
         override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean {
-            return account.isSignatureRequiredBasedOnDepositRules(forSpecificAssetAddress = forSpendingAsset.address)
+            return account.isSignatureRequiredBasedOnDepositRules(
+                forSpecificAssetAddress = forSpendingAsset.address,
+                addressesOfAssetsOfTargetAccount = accountAssetsAddresses
+            )
         }
     }
 }

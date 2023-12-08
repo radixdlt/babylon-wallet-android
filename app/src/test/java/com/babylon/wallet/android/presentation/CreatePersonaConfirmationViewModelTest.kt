@@ -20,6 +20,7 @@ import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 import rdx.works.core.HexCoded32Bytes
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -70,7 +71,7 @@ class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaC
         super.setUp()
         whenever(savedStateHandle.get<String>(ARG_PERSONA_ID)).thenReturn(personaId)
         whenever(getProfileUseCase()).thenReturn(flowOf(
-            profile(personas = listOf(persona))
+            profile(personas = identifiedArrayListOf(persona))
         ))
     }
 
@@ -92,8 +93,9 @@ class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaC
     @Test
     fun `given view model init, when persona created clicked, verify finish person creation event sent`() = runTest {
         // given
-        whenever(getProfileUseCase()).thenReturn(flowOf(
-            profile(personas = listOf(persona, persona))
+        whenever(getProfileUseCase()).thenReturn(
+            flowOf(
+            profile(personas = identifiedArrayListOf(persona, persona.copy(address = "addr1")))
         ))
         val viewModel = vm.value
         val event = mutableListOf<CreatePersonaConfirmationEvent>()

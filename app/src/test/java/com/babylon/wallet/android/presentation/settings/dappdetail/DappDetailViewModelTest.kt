@@ -22,6 +22,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
 import rdx.works.profile.data.model.pernetwork.Shared
@@ -37,7 +38,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
-    private val samplePersonas = listOf(
+    private val samplePersonas = identifiedArrayListOf(
         sampleDataProvider.samplePersona("address1"),
         sampleDataProvider.samplePersona(sampleDataProvider.randomAddress())
     )

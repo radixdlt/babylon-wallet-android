@@ -37,16 +37,19 @@ fun MainScreen(
                 onNavigateToMnemonicRestore = onNavigateToMnemonicRestore
             )
         }
+
         is AppState.IncompatibleProfile -> {
-            LaunchedEffect(state.initialAppState) {
+            LaunchedEffect(Unit) {
                 onNavigateToIncompatibleProfile()
             }
         }
+
         is AppState.Loading -> {
             FullscreenCircularProgressContent()
         }
+
         is AppState.OnBoarding -> {
-            LaunchedEffect(state.initialAppState) {
+            LaunchedEffect(Unit) {
                 onNavigateToOnBoarding()
             }
         }

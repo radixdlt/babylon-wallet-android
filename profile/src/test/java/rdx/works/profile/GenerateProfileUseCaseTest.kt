@@ -11,6 +11,7 @@ import org.mockito.Mockito
 import org.mockito.kotlin.whenever
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.Header
@@ -78,7 +79,7 @@ class GenerateProfileUseCaseTest {
                 ),
                 networks = listOf(
                     Network(
-                        accounts = listOf(
+                        accounts = identifiedArrayListOf(
                             Network.Account(
                                 address = "fj3489fj348f",
                                 appearanceID = 123,
@@ -108,7 +109,7 @@ class GenerateProfileUseCaseTest {
                         ),
                         authorizedDapps = emptyList(),
                         networkID = 999,
-                        personas = emptyList()
+                        personas = emptyIdentifiedArrayList()
                     )
                 )
             )

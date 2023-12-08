@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
-import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -48,13 +47,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.IconUrlMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.NameMetadataItem
-import com.babylon.wallet.android.domain.model.resources.metadata.SymbolMetadataItem
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.displayableQuantity
@@ -276,9 +275,9 @@ private fun NonFungibleSpendingAsset(
                 style = RadixTheme.typography.body2Regular
             )
 
-            if (nft.nameMetadataItem != null) {
+            nft.name?.let {
                 Text(
-                    text = nft.nameMetadataItem.name,
+                    text = it,
                     color = RadixTheme.colors.gray1,
                     style = RadixTheme.typography.body1HighImportance
                 )
@@ -319,8 +318,10 @@ fun SpendingAssetItemsPreview() {
                     Resource.FungibleResource(
                         resourceAddress = "resource_rdx_abcd",
                         ownedAmount = BigDecimal.TEN,
-                        nameMetadataItem = NameMetadataItem("Radix"),
-                        symbolMetadataItem = SymbolMetadataItem(XrdResource.SYMBOL)
+                        metadata = listOf(
+                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Radix", MetadataType.String),
+                            Metadata.Primitive(ExplicitMetadataKey.SYMBOL.key, XrdResource.SYMBOL, MetadataType.String),
+                        )
                     ),
                     amountString = firstAmount,
                 ),
@@ -338,8 +339,10 @@ fun SpendingAssetItemsPreview() {
                     resource = Resource.FungibleResource(
                         resourceAddress = "resource_rdx_abcd",
                         ownedAmount = BigDecimal.TEN,
-                        nameMetadataItem = NameMetadataItem("Radix"),
-                        symbolMetadataItem = SymbolMetadataItem(XrdResource.SYMBOL)
+                        metadata = listOf(
+                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Radix", MetadataType.String),
+                            Metadata.Primitive(ExplicitMetadataKey.SYMBOL.key, XrdResource.SYMBOL, MetadataType.String),
+                        )
                     ),
                     amountString = secondAmount,
                     exceedingBalance = secondAmount.toBigDecimalOrNull()?.compareTo(BigDecimal.TEN) == 1
@@ -355,18 +358,22 @@ fun SpendingAssetItemsPreview() {
             val item = Resource.NonFungibleResource.Item(
                 collectionAddress = "resource_rdx_abcd",
                 localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_39>"),
-                nameMetadataItem = NameMetadataItem(name = "Local item with ID 39"),
-                iconMetadataItem = IconUrlMetadataItem(
-                    url = Uri.parse(
-                        "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg"
+                metadata = listOf(
+                    Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, "Local item with ID 39", valueType = MetadataType.String),
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
+                        "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg",
+                        valueType = MetadataType.Url
                     )
                 )
             )
             val collection = Resource.NonFungibleResource(
                 resourceAddress = "resource_rdx_abcd",
                 amount = 1,
-                nameMetadataItem = NameMetadataItem("NFT Collection"),
-                items = listOf(item)
+                items = listOf(item),
+                metadata = listOf(
+                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "NFT Collection", MetadataType.String),
+                )
             )
             SpendingAssetItem(
                 asset = SpendingAsset.NFT(

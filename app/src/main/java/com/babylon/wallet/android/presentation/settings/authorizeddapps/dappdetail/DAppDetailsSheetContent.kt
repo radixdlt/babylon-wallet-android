@@ -27,6 +27,7 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.card.NonFungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.displayName
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun DAppDetailsSheetContent(
@@ -84,7 +85,7 @@ fun DAppDetailsSheetContent(
             if (dApp.dApp.claimedWebsites.isNotEmpty()) {
                 item {
                     DAppWebsiteAddressRow(
-                        websiteAddresses = dApp.dApp.claimedWebsites,
+                        websiteAddresses = dApp.dApp.claimedWebsites.toPersistentList(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
