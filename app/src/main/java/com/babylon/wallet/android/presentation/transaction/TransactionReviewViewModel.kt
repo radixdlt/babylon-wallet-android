@@ -224,6 +224,10 @@ class TransactionReviewViewModel @Inject constructor(
         _state.update { it.copy(isNoMnemonicErrorVisible = false) }
     }
 
+    fun dismissDepositRulesErrorDialog() {
+        _state.update { it.copy(isDepositRulesErrorVisible = false) }
+    }
+
     sealed interface Event : OneOffEvent {
         data class OnFungibleClick(
             val resource: FungibleResource,
@@ -252,6 +256,7 @@ class TransactionReviewViewModel @Inject constructor(
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: UiMessage? = null,
         val isNoMnemonicErrorVisible: Boolean = false,
+        val isDepositRulesErrorVisible: Boolean = false,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val interactionState: InteractionState? = null,
         val isTransactionDismissed: Boolean = false

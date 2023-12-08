@@ -66,6 +66,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data class SignCompiledTransactionIntent(override val cause: Throwable? = null) : PrepareTransactionException(cause)
         data class PrepareNotarizedTransaction(override val cause: Throwable? = null) : PrepareTransactionException(cause)
         data class SubmitNotarizedTransaction(override val cause: Throwable? = null) : PrepareTransactionException()
+        data object ReceivingAccountDoesNotAllowDeposits : PrepareTransactionException()
 
         override val ceError: ConnectorExtensionError
             get() = when (this) {
@@ -79,6 +80,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
                 CompileTransactionIntent -> WalletErrorType.FailedToCompileTransaction
                 is SignCompiledTransactionIntent -> WalletErrorType.FailedToSignTransaction
+                ReceivingAccountDoesNotAllowDeposits -> WalletErrorType.FailedToPrepareTransaction
             }
     }
 
@@ -291,7 +293,10 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
                 R.string.error_transactionFailure_noFundsToApproveTransaction
 
             RadixWalletException.PrepareTransactionException.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
-            is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent -> R.string.error_transactionFailure_prepare
+            is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent ->
+                R.string.error_transactionFailure_prepare
+            RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ->
+                R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits
         }
     )
 }

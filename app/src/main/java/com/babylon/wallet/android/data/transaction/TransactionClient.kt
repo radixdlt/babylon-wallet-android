@@ -230,7 +230,14 @@ class TransactionClient @Inject constructor(
         ).fold(
             onSuccess = { preview ->
                 if (preview.receipt.isFailed) {
-                    Result.failure(Throwable(preview.receipt.errorMessage))
+                    val errorMessage = preview.receipt.errorMessage.orEmpty()
+                    val isFailureDueToDepositRules = errorMessage.contains("AccountError(DepositIsDisallowed") ||
+                        errorMessage.contains("AccountError(NotAllBucketsCouldBeDeposited")
+                    if (isFailureDueToDepositRules) {
+                        Result.failure(RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits)
+                    } else {
+                        Result.failure(Throwable(preview.receipt.errorMessage))
+                    }
                 } else {
                     Result.success(preview)
                 }

@@ -164,12 +164,19 @@ class TransactionAnalysisDelegate @Inject constructor(
     private fun reportFailure(error: Throwable) {
         logger.w(error)
 
+        val isDepositRulesFailure = error is RadixWalletException.PrepareTransactionException
+            .ReceivingAccountDoesNotAllowDeposits
         _state.update {
             it.copy(
                 isLoading = false,
                 isNetworkFeeLoading = false,
+                isDepositRulesErrorVisible = isDepositRulesFailure,
                 previewType = PreviewType.None,
-                error = UiMessage.ErrorMessage(error)
+                error = if (isDepositRulesFailure.not()) {
+                    UiMessage.ErrorMessage(error)
+                } else {
+                    it.error
+                }
             )
         }
     }

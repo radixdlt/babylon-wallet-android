@@ -89,6 +89,19 @@ fun TransactionReviewScreen(
             dismissText = null
         )
     }
+    if (state.isDepositRulesErrorVisible) {
+        val body = stringResource(id = R.string.error_transactionFailure_reviewFailure)
+        val subBody = stringResource(id = R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits)
+        BasicPromptAlertDialog(
+            finish = {
+                viewModel.dismissDepositRulesErrorDialog()
+            },
+            title = stringResource(id = R.string.common_errorAlertTitle),
+            text = "$body\n\n$subBody",
+            confirmText = stringResource(id = R.string.common_ok),
+            dismissText = null
+        )
+    }
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
