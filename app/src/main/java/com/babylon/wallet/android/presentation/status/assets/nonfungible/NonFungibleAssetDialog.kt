@@ -73,7 +73,14 @@ private fun NonFungibleAssetDialogContent(
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier,
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        title = if (state.item != null && state.localId != null) {
+            state.item.name
+        } else if (state.localId == null && state.resource != null) {
+            state.resource.name
+        } else {
+            ""
+        }
     ) {
         Box(modifier = Modifier.fillMaxHeight(fraction = 0.9f)) {
             Column(
@@ -91,6 +98,7 @@ private fun NonFungibleAssetDialogContent(
                             nft = state.item,
                             cropped = false
                         )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     } else if (state.item == null) {
                         Box(
                             modifier = Modifier
@@ -102,8 +110,27 @@ private fun NonFungibleAssetDialogContent(
                                     shape = RoundedCornerShape(NFTCornerRadius)
                                 )
                         )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+                    if (!state.item?.description.isNullOrBlank()) {
+                        Text(
+                            modifier = Modifier
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                                .fillMaxWidth(),
+                            text = state.item?.description.orEmpty(),
+                            style = RadixTheme.typography.body2Regular,
+                            color = RadixTheme.colors.gray1
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                            color = RadixTheme.colors.gray4
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    }
 
                     AssetMetadataRow(
                         modifier = Modifier
@@ -128,41 +155,17 @@ private fun NonFungibleAssetDialogContent(
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    if (state.item != null) {
-                        state.item.name?.let { name ->
-                            AssetMetadataRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                                key = stringResource(id = R.string.assetDetails_name)
-                            ) {
-                                Text(
-                                    text = name,
-                                    style = RadixTheme.typography.body1HighImportance,
-                                    color = RadixTheme.colors.gray1
-                                )
-                            }
-                        }
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
-                        state.item.description?.let { description ->
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                            AssetMetadataRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                                key = stringResource(id = R.string.assetDetails_NFTDetails_description)
-                            ) {
-                                Text(
-                                    text = description,
-                                    style = RadixTheme.typography.body1HighImportance,
-                                    color = RadixTheme.colors.gray1,
-                                    textAlign = TextAlign.End
-                                )
-                            }
-                        }
+                    if (!state.item?.nonStandardMetadata.isNullOrEmpty()) {
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                            color = RadixTheme.colors.gray4
+                        )
 
-                        state.item.nonStandardMetadata.forEach { metadata ->
+                        state.item?.nonStandardMetadata?.forEach { metadata ->
                             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                             metadata.View(
                                 modifier = Modifier
@@ -170,23 +173,14 @@ private fun NonFungibleAssetDialogContent(
                                     .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
                             )
                         }
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(16.dp)
-                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
-                                .radixPlaceholder(visible = true)
-                        )
+
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
 
                 if (state.localId != null) {
                     HorizontalDivider(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(top = RadixTheme.dimensions.paddingDefault),
+                        modifier = Modifier.fillMaxWidth(),
                         color = RadixTheme.colors.gray4
                     )
                 }
@@ -241,7 +235,7 @@ private fun NonFungibleAssetDialogContent(
                             .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
                         address = state.resourceAddress
                     )
-                    if (!state.resource?.name.isNullOrBlank()) {
+                    if (!state.resource?.name.isNullOrBlank() && state.localId != null) {
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                         AssetMetadataRow(
                             modifier = Modifier

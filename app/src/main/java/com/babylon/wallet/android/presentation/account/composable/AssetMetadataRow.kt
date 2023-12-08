@@ -155,7 +155,7 @@ fun Metadata.ValueView(
                     modifier = modifier
                         .fillMaxWidth()
                         .clickable { context.openUrl(value) },
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
