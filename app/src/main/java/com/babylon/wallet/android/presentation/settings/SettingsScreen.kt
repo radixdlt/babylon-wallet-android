@@ -201,7 +201,7 @@ private fun NotBackedUpPersonasWarning(modifier: Modifier) {
             tint = RadixTheme.colors.orange1
         )
         Text(
-            text = stringResource(id = R.string.settings_personas_seedPhraseWarning),
+            text = "Write down main seed phrase", // TODO R.string.settings_personas_seedPhraseWarning),
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.orange1
         )
