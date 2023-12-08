@@ -28,7 +28,11 @@ private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : 
         profileStateSource.update { ProfileState.Restored(profile) }
     }
 
-    override suspend fun clear() {
+    override suspend fun clearProfileDataOnly() {
+        profileStateSource.update { ProfileState.None }
+    }
+
+    override suspend fun clearAllWalletData() {
         profileStateSource.update { ProfileState.None }
     }
 

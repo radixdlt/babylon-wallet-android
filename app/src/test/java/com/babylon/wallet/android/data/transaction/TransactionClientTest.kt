@@ -87,7 +87,11 @@ internal class TransactionClientTest {
                 error("Not needed")
             }
 
-            override suspend fun clear() {
+            override suspend fun clearProfileDataOnly() {
+                error("Not needed")
+            }
+
+            override suspend fun clearAllWalletData() {
                 error("Not needed")
             }
 
