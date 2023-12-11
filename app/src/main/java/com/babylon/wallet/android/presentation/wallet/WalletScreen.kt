@@ -279,7 +279,7 @@ private fun RadixBanner(
             ) {
                 Image(
                     modifier = Modifier.height(50.dp),
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_radix_banner),
+                    painter = painterResource(id = R.drawable.ic_radix_banner),
                     contentScale = ContentScale.FillHeight,
                     contentDescription = null
                 )
