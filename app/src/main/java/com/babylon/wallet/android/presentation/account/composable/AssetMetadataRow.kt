@@ -52,13 +52,13 @@ fun AssetMetadataRow(
 
 @Composable
 fun Metadata.View(modifier: Modifier) {
-    if (this is Metadata.Primitive && this.valueType == MetadataType.Url) {
+    if (isRenderedInNewLine) {
         Column(
             modifier = modifier,
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
             KeyView()
-            ValueView()
+            ValueView(isRenderedInNewLine = true)
         }
     } else {
         Row(
@@ -66,7 +66,7 @@ fun Metadata.View(modifier: Modifier) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             KeyView()
-            ValueView()
+            ValueView(isRenderedInNewLine = false)
         }
     }
 }
@@ -88,7 +88,8 @@ fun Metadata.KeyView(
 
 @Composable
 fun Metadata.ValueView(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isRenderedInNewLine: Boolean
 ) {
     val context = LocalContext.current
     when (this) {
@@ -97,7 +98,7 @@ fun Metadata.ValueView(
             text = stringResource(id = R.string.assetDetails_NFTDetails_complexData),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.End,
+            textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
             maxLines = 2
         )
 
@@ -116,21 +117,22 @@ fun Metadata.ValueView(
                     text = value,
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
-                    textAlign = TextAlign.End,
+                    textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                     maxLines = 2
                 )
+
             MetadataType.String -> ExpandableText(
                 modifier = modifier,
                 text = value,
                 style = RadixTheme.typography.body1HighImportance.copy(
                     color = RadixTheme.colors.gray1,
-                    textAlign = TextAlign.End
+                    textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                 ),
                 toggleStyle = RadixTheme.typography.body1HighImportance.copy(
-                    color = RadixTheme.colors.gray2,
-                    textAlign = TextAlign.End
+                    color = RadixTheme.colors.gray2
                 ),
             )
+
             MetadataType.Address, MetadataType.NonFungibleGlobalId, MetadataType.NonFungibleLocalId ->
                 ActionableAddressView(
                     modifier = modifier,
@@ -144,7 +146,7 @@ fun Metadata.ValueView(
                     text = value.toBigDecimalOrNull()?.displayableQuantity() ?: value,
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
-                    textAlign = TextAlign.End,
+                    textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                     maxLines = 2
                 )
 
@@ -153,7 +155,7 @@ fun Metadata.ValueView(
                     modifier = modifier
                         .fillMaxWidth()
                         .clickable { context.openUrl(value) },
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -170,3 +172,10 @@ fun Metadata.ValueView(
         }
     }
 }
+
+private const val ASSET_METADATA_SHORT_STRING_THRESHOLD = 40
+private val Metadata.isRenderedInNewLine: Boolean
+    get() = this is Metadata.Primitive && (
+        valueType is MetadataType.Url ||
+            (valueType is MetadataType.String && value.length > ASSET_METADATA_SHORT_STRING_THRESHOLD)
+        )
