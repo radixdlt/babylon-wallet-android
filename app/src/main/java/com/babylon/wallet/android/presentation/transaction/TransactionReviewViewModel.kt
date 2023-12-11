@@ -220,11 +220,7 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    fun dismissNoMnemonicErrorDialog() {
-        _state.update { it.copy(error = null) }
-    }
-
-    fun dismissDepositRulesErrorDialog() {
+    fun dismissTransactionErrorDialog() {
         _state.update { it.copy(error = null) }
     }
 

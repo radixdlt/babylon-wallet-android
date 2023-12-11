@@ -7,6 +7,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.domain.ProfileException
 
 sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = cause) {
     data object DappMetadataEmpty : RadixWalletException()
@@ -20,7 +21,9 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data class Unknown(override val cause: Throwable? = null) : IncomingMessageException(cause)
     }
 
-    sealed class DappRequestException(cause: Throwable? = null) : RadixWalletException(cause = cause), ConnectorExtensionThrowable {
+    sealed class DappRequestException(cause: Throwable? = null) :
+        RadixWalletException(cause = cause),
+        ConnectorExtensionThrowable {
 
         data object GetEpoch : DappRequestException()
         data object RejectedByUser : DappRequestException()
@@ -29,7 +32,9 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object InvalidPersona : DappRequestException()
         data object InvalidRequestChallenge : DappRequestException()
         data object NotPossibleToAuthenticateAutomatically : DappRequestException()
-        data class FailedToSignAuthChallenge(override val cause: Throwable? = null) : DappRequestException(cause = cause)
+        data class FailedToSignAuthChallenge(override val cause: Throwable? = null) :
+            DappRequestException(cause = cause)
+
         data class WrongNetwork(
             val currentNetworkId: Int,
             val requestNetworkId: Int
@@ -58,13 +63,19 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
             }
     }
 
-    sealed class PrepareTransactionException(cause: Throwable? = null) : RadixWalletException(cause = cause), ConnectorExtensionThrowable {
+    sealed class PrepareTransactionException(cause: Throwable? = null) :
+        RadixWalletException(cause = cause),
+        ConnectorExtensionThrowable {
         data object ConvertManifest : PrepareTransactionException()
         data class BuildTransactionHeader(override val cause: Throwable) : PrepareTransactionException(cause)
         data object FailedToFindAccountWithEnoughFundsToLockFee : PrepareTransactionException()
         data object CompileTransactionIntent : PrepareTransactionException()
-        data class SignCompiledTransactionIntent(override val cause: Throwable? = null) : PrepareTransactionException(cause)
-        data class PrepareNotarizedTransaction(override val cause: Throwable? = null) : PrepareTransactionException(cause)
+        data class SignCompiledTransactionIntent(override val cause: Throwable? = null) :
+            PrepareTransactionException(cause)
+
+        data class PrepareNotarizedTransaction(override val cause: Throwable? = null) :
+            PrepareTransactionException(cause)
+
         data class SubmitNotarizedTransaction(override val cause: Throwable? = null) : PrepareTransactionException()
         data object ReceivingAccountDoesNotAllowDeposits : PrepareTransactionException()
 
@@ -233,7 +244,11 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
         )
 
         is RadixWalletException.DappRequestException.WrongNetwork -> {
-            context.getString(R.string.dAppRequest_requestWrongNetworkAlert_message, currentNetworkName, requestNetworkName)
+            context.getString(
+                R.string.dAppRequest_requestWrongNetworkAlert_message,
+                currentNetworkName,
+                requestNetworkName
+            )
         }
 
         is RadixWalletException.DappRequestException.FailedToSignAuthChallenge -> context.getString(
@@ -283,6 +298,11 @@ fun RadixWalletException.TransactionSubmitException.toUserFriendlyMessage(contex
 }
 
 fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(context: Context): String {
+    // Consists of two strings
+    if (this is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits) {
+        return "${context.getString(R.string.error_transactionFailure_reviewFailure)}\n\n" +
+            context.getString(R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits)
+    }
     return context.getString(
         when (this) {
             is RadixWalletException.PrepareTransactionException.BuildTransactionHeader -> R.string.error_transactionFailure_header
@@ -294,7 +314,12 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
 
             RadixWalletException.PrepareTransactionException.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
             is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent ->
-                R.string.error_transactionFailure_prepare
+                if (this.cause is ProfileException.NoMnemonic) {
+                    R.string.transactionReview_noMnemonicError_text
+                } else {
+                    R.string.error_transactionFailure_prepare
+                }
+
             RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ->
                 R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits
         }

@@ -117,8 +117,7 @@ fun TransactionReviewScreen(
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
         onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
-        dismissNoMnemonicErrorDialog = viewModel::dismissNoMnemonicErrorDialog,
-        dismissDepositRulesErrorDialog = viewModel::dismissDepositRulesErrorDialog
+        dismissTransactionErrorDialog = viewModel::dismissTransactionErrorDialog
     )
 
     state.interactionState?.let {
@@ -175,8 +174,7 @@ private fun TransactionPreviewContent(
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
     onViewAdvancedModeClick: () -> Unit,
-    dismissNoMnemonicErrorDialog: () -> Unit,
-    dismissDepositRulesErrorDialog: () -> Unit
+    dismissTransactionErrorDialog: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -186,29 +184,15 @@ private fun TransactionPreviewContent(
 
     state.error?.let { transactionError ->
         if (transactionError.isPreviewedInDialog) {
-            if (transactionError.isNoMnemonicErrorVisible) {
-                BasicPromptAlertDialog(
-                    finish = {
-                        dismissNoMnemonicErrorDialog()
-                    },
-                    title = stringResource(id = R.string.transactionReview_noMnemonicError_title),
-                    text = stringResource(id = R.string.transactionReview_noMnemonicError_text),
-                    dismissText = null
-                )
-            }
-            if (transactionError.isDepositRulesErrorVisible) {
-                val body = stringResource(id = R.string.error_transactionFailure_reviewFailure)
-                val subBody = stringResource(id = R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits)
-                BasicPromptAlertDialog(
-                    finish = {
-                        dismissDepositRulesErrorDialog()
-                    },
-                    title = stringResource(id = R.string.common_errorAlertTitle),
-                    text = "$body\n\n$subBody",
-                    confirmText = stringResource(id = R.string.common_ok),
-                    dismissText = null
-                )
-            }
+            BasicPromptAlertDialog(
+                finish = {
+                    dismissTransactionErrorDialog()
+                },
+                title = transactionError.getTitle(),
+                text = transactionError.getMessage(),
+                confirmText = stringResource(id = R.string.common_ok),
+                dismissText = null
+            )
         } else {
             SnackbarUIMessage(
                 message = transactionError,
@@ -507,8 +491,7 @@ fun TransactionPreviewContentPreview() {
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},
             onViewAdvancedModeClick = {},
-            dismissDepositRulesErrorDialog = {},
-            dismissNoMnemonicErrorDialog = {}
+            dismissTransactionErrorDialog = {}
         )
     }
 }

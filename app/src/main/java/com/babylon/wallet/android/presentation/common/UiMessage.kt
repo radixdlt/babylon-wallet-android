@@ -87,13 +87,22 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         private val error: Throwable?
     ) : UiMessage() {
 
-        val isDepositRulesErrorVisible = error is RadixWalletException.PrepareTransactionException
+        private val isDepositRulesErrorVisible = error is RadixWalletException.PrepareTransactionException
             .ReceivingAccountDoesNotAllowDeposits
 
-        val isNoMnemonicErrorVisible = error?.cause is ProfileException.NoMnemonic
+        private val isNoMnemonicErrorVisible = error?.cause is ProfileException.NoMnemonic
 
         val isPreviewedInDialog: Boolean
             get() = isDepositRulesErrorVisible || isNoMnemonicErrorVisible
+
+        @Composable
+        fun getTitle(): String {
+            return if (isNoMnemonicErrorVisible) {
+                stringResource(id = R.string.transactionReview_noMnemonicError_title)
+            } else {
+                stringResource(id = R.string.common_errorAlertTitle)
+            }
+        }
 
         @Composable
         override fun getMessage(): String {
