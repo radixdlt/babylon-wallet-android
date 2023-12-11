@@ -260,7 +260,6 @@ sealed interface RecoveryFactorSource {
                 is Device -> if (isOlympia) DerivationPathScheme.BIP_44_OLYMPIA else DerivationPathScheme.CAP_26
                 is Ledger -> if (isOlympia) DerivationPathScheme.BIP_44_OLYMPIA else DerivationPathScheme.CAP_26
             }
-
 }
 
 sealed interface Event : OneOffEvent {

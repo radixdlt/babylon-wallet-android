@@ -187,7 +187,7 @@ fun SeedPhraseCard(
                 )
                 Text(
                     text = stringResource(
-                        id = if (data.deviceFactorSource.supportsBabylon) {
+                        id = if (data.personas.isNotEmpty()) {
                             if (data.accounts.size == 1) {
                                 R.string.displayMnemonics_connectedAccountsPersonasLabel_one
                             } else {

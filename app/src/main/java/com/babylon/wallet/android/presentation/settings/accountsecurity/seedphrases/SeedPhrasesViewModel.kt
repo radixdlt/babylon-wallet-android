@@ -44,7 +44,9 @@ class SeedPhrasesViewModel @Inject constructor(
                     val mnemonicExist = mnemonicRepository.mnemonicExist(data.deviceFactorSource.id)
                     val mnemonicState = when {
                         !mnemonicExist -> DeviceFactorSourceData.MnemonicState.NeedRecover
-                        backedUpFactorSourceIds.contains(data.deviceFactorSource.id.body.value) -> DeviceFactorSourceData.MnemonicState.BackedUp
+                        backedUpFactorSourceIds.contains(
+                            data.deviceFactorSource.id.body.value
+                        ) -> DeviceFactorSourceData.MnemonicState.BackedUp
                         else -> DeviceFactorSourceData.MnemonicState.NotBackedUp
                     }
                     data.copy(mnemonicState = mnemonicState)

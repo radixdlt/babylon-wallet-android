@@ -32,9 +32,6 @@ data class DeviceFactorSource(
     val supportsOlympia: Boolean
         get() = common.cryptoParameters.supportsOlympia
 
-    val isMainBabylon: Boolean
-        get() = common.flags.contains(FactorSourceFlag.Main) && supportsBabylon
-
     companion object {
 
         fun babylon(

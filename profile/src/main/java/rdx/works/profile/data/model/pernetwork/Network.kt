@@ -20,7 +20,6 @@ import rdx.works.core.Identified
 import rdx.works.core.IdentifiedArrayList
 import rdx.works.core.decodeHex
 import rdx.works.core.emptyIdentifiedArrayList
-import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
 import rdx.works.core.toIdentifiedArrayList
@@ -490,7 +489,7 @@ data class Network(
                     dateOfBirth,
                     companyName
                 ) + emailAddresses?.ids.orEmpty() + phoneNumbers?.ids.orEmpty() + urls?.ids.orEmpty() + postalAddresses?.ids.orEmpty() +
-                        creditCards?.ids.orEmpty()
+                    creditCards?.ids.orEmpty()
             }
 
             companion object {

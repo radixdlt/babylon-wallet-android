@@ -41,7 +41,6 @@ val Entity.usesSecp256k1: Boolean
 val Entity.factorSourceId
     get() = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId
 
-
 val Entity.derivationPathScheme: DerivationPathScheme
     get() {
         val transactionSigning = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning
@@ -72,7 +71,8 @@ val Entity.hasWrongDerivationPathScheme: Boolean
         val transactionSigning = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning
         return when (transactionSigning.badge) {
             is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-                transactionSigning.badge.derivationPath.isBip44LikePath() && transactionSigning.badge.derivationPath.scheme == DerivationPathScheme.CAP_26
+                transactionSigning.badge.derivationPath.isBip44LikePath() &&
+                        transactionSigning.badge.derivationPath.scheme == DerivationPathScheme.CAP_26
             }
         }
     }

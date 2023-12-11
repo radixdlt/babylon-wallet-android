@@ -40,7 +40,9 @@ fun AccountRecoveryScanSelectionScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     AccountRecoveryScanSelectionContent(
-        onBackClick = viewModel::onBackClick, onUseFactorSource = viewModel::onUseFactorSource, isMainnet = state.isMainnet
+        onBackClick = viewModel::onBackClick,
+        onUseFactorSource = viewModel::onUseFactorSource,
+        isMainnet = state.isMainnet
     )
 
     LaunchedEffect(Unit) {
@@ -69,9 +71,12 @@ private fun AccountRecoveryScanSelectionContent(
     }
     Scaffold(modifier = modifier, topBar = {
         RadixCenteredTopAppBar(
-            windowInsets = WindowInsets.statusBars, title = stringResource(id = R.string.empty), onBackClick = {
+            windowInsets = WindowInsets.statusBars,
+            title = stringResource(id = R.string.empty),
+            onBackClick = {
                 backCallback()
-            }, backIconType = BackIconType.Close
+            },
+            backIconType = BackIconType.Close
         )
     }, containerColor = RadixTheme.colors.defaultBackground) { padding ->
         Column(
@@ -110,22 +115,29 @@ private fun AccountRecoveryScanSelectionContent(
                     .fillMaxWidth()
                     .padding(
                         vertical = RadixTheme.dimensions.paddingDefault
-                    ), text = "Scan for Accounts originally created on the *Babylon* network:".formattedSpans(
+                    ),
+                text = "Scan for Accounts originally created on the *Babylon* network:".formattedSpans(
                     RadixTheme.typography.body1Header.toSpanStyle()
                 ), // TODO crowdin
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
-            RadixSecondaryButton(modifier = Modifier.fillMaxWidth(), text = "Use Seed Phrase", // TODO crowdin
+            RadixSecondaryButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = "Use Seed Phrase", // TODO crowdin
                 onClick = {
                     onUseFactorSource(RecoveryType.DeviceBabylon)
-                })
+                }
+            )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            RadixSecondaryButton(modifier = Modifier.fillMaxWidth(), text = "Use Ledger Hardware Wallet", // TODO crowdin
+            RadixSecondaryButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = "Use Ledger Hardware Wallet", // TODO crowdin
                 onClick = {
                     onUseFactorSource(RecoveryType.LedgerBabylon)
-                })
+                }
+            )
             if (isMainnet) {
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
@@ -145,22 +157,28 @@ private fun AccountRecoveryScanSelectionContent(
                         .fillMaxWidth()
                         .padding(vertical = RadixTheme.dimensions.paddingDefault),
                     text = "Scan for Accounts originally created on the previous *Olympia* network.\n\n".formattedSpans(RadixTheme.typography.body1Header.toSpanStyle()) +
-                            "(If you have Olympia Accounts in the Radix Olympia Desktop Wallet, consider using *Import from a Legacy Wallet* instead.)".formattedSpans(
-                                RadixTheme.typography.body1Header.toSpanStyle()
-                            ), // TODO crowdin
+                        "(If you have Olympia Accounts in the Radix Olympia Desktop Wallet, consider using *Import from a Legacy Wallet* instead.)".formattedSpans(
+                            RadixTheme.typography.body1Header.toSpanStyle()
+                        ), // TODO crowdin
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Center
                 )
-                RadixSecondaryButton(modifier = Modifier.fillMaxWidth(), text = "Use Seed Phrase", // TODO crowdin
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Use Seed Phrase", // TODO crowdin
                     onClick = {
                         onUseFactorSource(RecoveryType.DeviceOlympia)
-                    })
+                    }
+                )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-                RadixSecondaryButton(modifier = Modifier.fillMaxWidth(), text = "Use Ledger Hardware Wallet", // TODO crowdin
+                RadixSecondaryButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Use Ledger Hardware Wallet", // TODO crowdin
                     onClick = {
                         onUseFactorSource(RecoveryType.LedgerOlympia)
-                    })
+                    }
+                )
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()

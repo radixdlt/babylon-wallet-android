@@ -8,7 +8,9 @@ import rdx.works.profile.data.model.pernetwork.Network
 data class DeviceFactorSourceData(
     val deviceFactorSource: DeviceFactorSource,
     val accounts: ImmutableList<Network.Account> = persistentListOf(),
-    val mnemonicState: MnemonicState = MnemonicState.NotBackedUp
+    val personas: ImmutableList<Network.Persona> = persistentListOf(),
+    val mnemonicState: MnemonicState = MnemonicState.NotBackedUp,
+    val isBabylon: Boolean = false
 ) {
     enum class MnemonicState {
         BackedUp, NotBackedUp, NeedRecover

@@ -40,13 +40,13 @@ import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScr
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.ROUTE_RESTORE_FROM_BACKUP
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.recoverSingleMnemonic
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
+import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
-import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.ROUTE_REVEAL_SEED_PHRASE
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
@@ -135,7 +135,7 @@ fun NavigationHost(
                 }
             }
         )
-        recoverSingleMnemonic(
+        addSingleMnemonic(
             navController = navController,
             onBackClick = {
                 navController.popBackStack()
@@ -147,7 +147,7 @@ fun NavigationHost(
         restoreWithoutBackupScreen(
             onBack = { navController.popBackStack() },
             onRestoreConfirmed = {
-                navController.recoverSingleMnemonic(mnemonicType = MnemonicType.BabylonMain)
+                navController.addSingleMnemonic(mnemonicType = MnemonicType.BabylonMain)
             },
             onNewUserConfirmClick = {
                 navController.popBackStack(ROUTE_RESTORE_FROM_BACKUP, inclusive = true)

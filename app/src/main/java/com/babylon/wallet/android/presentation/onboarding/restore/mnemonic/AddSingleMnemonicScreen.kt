@@ -56,15 +56,15 @@ import kotlinx.collections.immutable.toPersistentList
 import rdx.works.profile.data.model.SeedPhraseLength
 
 @Composable
-fun RecoverSingleMnemonicScreen(
-    viewModel: RecoverSingleMnemonicViewModel,
+fun AddSingleMnemonicScreen(
+    viewModel: AddSingleMnemonicViewModel,
     onBackClick: () -> Unit,
     sharedViewModel: AccountRecoveryViewModel? = null,
     onStartRecovery: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
-    RecoverSingleMnemonicsContent(
+    AddSingleMnemonicsContent(
         state = state,
         onBackClick = onBackClick,
         onSubmitClick = {
@@ -93,17 +93,17 @@ fun RecoverSingleMnemonicScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                RecoverSingleMnemonicViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
-                RecoverSingleMnemonicViewModel.Event.FactorSourceAdded -> onBackClick()
+                AddSingleMnemonicViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
+                AddSingleMnemonicViewModel.Event.FactorSourceAdded -> onBackClick()
             }
         }
     }
 }
 
 @Composable
-private fun RecoverSingleMnemonicsContent(
+private fun AddSingleMnemonicsContent(
     modifier: Modifier = Modifier,
-    state: RecoverSingleMnemonicViewModel.State,
+    state: AddSingleMnemonicViewModel.State,
     onBackClick: () -> Unit,
     onSubmitClick: () -> Unit,
     onWordTyped: (Int, String) -> Unit,
@@ -271,7 +271,7 @@ private fun SeedPhraseLength.description(): String {
 }
 
 @Composable
-private fun isSuggestionsVisible(state: RecoverSingleMnemonicViewModel.State): Boolean {
+private fun isSuggestionsVisible(state: AddSingleMnemonicViewModel.State): Boolean {
     val density = LocalDensity.current
     val imeInsets = WindowInsets.ime
     val keyboardVisible by remember {
@@ -282,10 +282,10 @@ private fun isSuggestionsVisible(state: RecoverSingleMnemonicViewModel.State): B
 
 @Preview
 @Composable
-fun RestoreMnemonicsSeedPhraseContent() {
+fun AddMnemonicsSeedPhraseContent() {
     RadixWalletTheme {
-        RecoverSingleMnemonicsContent(
-            state = RecoverSingleMnemonicViewModel.State(),
+        AddSingleMnemonicsContent(
+            state = AddSingleMnemonicViewModel.State(),
             onBackClick = {},
             onSubmitClick = {},
             onWordTyped = { _, _ -> },

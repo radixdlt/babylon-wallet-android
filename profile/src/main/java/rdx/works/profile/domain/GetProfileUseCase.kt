@@ -206,6 +206,6 @@ fun Collection<Network.Account>.notHiddenAccounts(): List<Network.Account> {
     return filter { it.flags.contains(EntityFlag.DeletedByUser).not() }
 }
 
-private fun Collection<Network.Persona>.notHiddenPersonas(): List<Network.Persona> {
+fun Collection<Network.Persona>.notHiddenPersonas(): List<Network.Persona> {
     return filter { it.flags.contains(EntityFlag.DeletedByUser).not() }
 }

@@ -111,7 +111,7 @@ class MainViewModel @Inject constructor(
                         initialAppState = AppState.from(
                             profileState = profileState
                         ),
-                        showDeviceRootedWarning = deviceSecurityHelper.isDeviceRooted() && !isDeviceRootedDialogShown
+                        showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown
                     )
                 }
             }.collect()

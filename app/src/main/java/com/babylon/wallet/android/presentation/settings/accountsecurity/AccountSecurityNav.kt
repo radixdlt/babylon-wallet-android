@@ -11,7 +11,7 @@ import com.babylon.wallet.android.presentation.account.createaccount.withledger.
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
 import com.babylon.wallet.android.presentation.account.recover.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.recoverSingleMnemonic
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
@@ -23,8 +23,8 @@ import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphra
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.seedPhrases
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.systemBackupSettingsScreen
-import com.babylon.wallet.android.presentation.settings.recovery.chooseseed.chooseSeedPhrase
 import com.babylon.wallet.android.presentation.settings.recovery.accountRecoveryScanSelection
+import com.babylon.wallet.android.presentation.settings.recovery.chooseseed.chooseSeedPhrase
 
 const val ROUTE_ACCOUNT_SECURITY_SCREEN = "settings_account_security_screen"
 const val ROUTE_ACCOUNT_SECURITY_GRAPH = "settings_account_security_graph"
@@ -105,7 +105,7 @@ fun NavGraphBuilder.accountSecurityNavGraph(
                 navController.popBackStack()
             },
             onAddSeedPhrase = {
-                navController.recoverSingleMnemonic(mnemonicType = it)
+                navController.addSingleMnemonic(mnemonicType = it)
             },
             onRecoveryScanWithFactorSource = { factorSource, isOlympia ->
                 navController.accountRecoveryScan(factorSource.identifier, isOlympia)

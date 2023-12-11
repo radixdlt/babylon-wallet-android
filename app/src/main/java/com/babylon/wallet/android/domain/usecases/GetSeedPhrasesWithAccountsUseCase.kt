@@ -11,6 +11,7 @@ import rdx.works.profile.data.model.extensions.usesSecp256k1
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.notHiddenAccounts
+import rdx.works.profile.domain.notHiddenPersonas
 import javax.inject.Inject
 
 class GetSeedPhrasesWithAccountsUseCase @Inject constructor(
@@ -22,15 +23,48 @@ class GetSeedPhrasesWithAccountsUseCase @Inject constructor(
             val result = mutableListOf<DeviceFactorSourceData>()
             val deviceFactorSources = profile.factorSources.filterIsInstance<DeviceFactorSource>()
             val allAccountsOnNetwork = profile.currentNetwork.accounts.notHiddenAccounts()
+            val allPersonasOnNetwork = profile.currentNetwork.personas.notHiddenPersonas()
             deviceFactorSources.forEach { deviceFactorSource ->
                 if (deviceFactorSource.supportsOlympia && deviceFactorSource.supportsBabylon) {
-                    val olympiaAccounts = allAccountsOnNetwork.filter { it.factorSourceId == deviceFactorSource.id && it.usesSecp256k1 }
-                    val babylonAccounts = allAccountsOnNetwork.filter { it.factorSourceId == deviceFactorSource.id && it.usesCurve25519 }
-                    result.add(DeviceFactorSourceData(deviceFactorSource, babylonAccounts.toPersistentList()))
-                    result.add(DeviceFactorSourceData(deviceFactorSource, olympiaAccounts.toPersistentList()))
+                    val olympiaAccounts = allAccountsOnNetwork.filter {
+                        it.factorSourceId == deviceFactorSource.id && it.usesSecp256k1
+                    }
+                    val babylonAccounts = allAccountsOnNetwork.filter {
+                        it.factorSourceId == deviceFactorSource.id && it.usesCurve25519
+                    }
+                    val babylonPersonas = allPersonasOnNetwork.filter {
+                        it.factorSourceId == deviceFactorSource.id && it.usesCurve25519
+                    }
+                    result.add(
+                        DeviceFactorSourceData(
+                            deviceFactorSource = deviceFactorSource,
+                            accounts = babylonAccounts.toPersistentList(),
+                            isBabylon = true,
+                            personas = babylonPersonas.toPersistentList()
+                        )
+                    )
+                    result.add(
+                        DeviceFactorSourceData(
+                            deviceFactorSource = deviceFactorSource,
+                            accounts = olympiaAccounts.toPersistentList(),
+                            isBabylon = false
+                        )
+                    )
                 } else {
                     val accounts = allAccountsOnNetwork.filter { it.factorSourceId == deviceFactorSource.id }
-                    result.add(DeviceFactorSourceData(deviceFactorSource, accounts.toPersistentList()))
+                    val personas = if (deviceFactorSource.supportsBabylon) {
+                        allPersonasOnNetwork.filter { it.factorSourceId == deviceFactorSource.id }
+                    } else {
+                        emptyList()
+                    }
+                    result.add(
+                        DeviceFactorSourceData(
+                            deviceFactorSource = deviceFactorSource,
+                            accounts = accounts.toPersistentList(),
+                            isBabylon = deviceFactorSource.supportsBabylon,
+                            personas = personas.toPersistentList()
+                        )
+                    )
                 }
             }
             result

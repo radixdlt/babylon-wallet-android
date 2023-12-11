@@ -17,14 +17,14 @@ import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import javax.inject.Inject
 
 @HiltViewModel
-class RecoverSingleMnemonicViewModel @Inject constructor(
+class AddSingleMnemonicViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase
-) : StateViewModel<RecoverSingleMnemonicViewModel.State>(),
-    OneOffEventHandler<RecoverSingleMnemonicViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<AddSingleMnemonicViewModel.State>(),
+    OneOffEventHandler<AddSingleMnemonicViewModel.Event> by OneOffEventHandlerImpl() {
 
-    private val args = RestoreSingleMnemonicNavArgs(savedStateHandle)
+    private val args = AddSingleMnemonicNavArgs(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
 
     override fun initialState(): State = State(mnemonicType = args.mnemonicType)

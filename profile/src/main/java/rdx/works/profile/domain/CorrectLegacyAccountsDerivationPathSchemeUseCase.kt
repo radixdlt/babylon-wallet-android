@@ -31,11 +31,13 @@ class CorrectLegacyAccountsDerivationPathSchemeUseCase @Inject constructor(
                         it.hasWrongDerivationPathScheme
                     }
                 }, mutation = { network ->
-                    network.copy(accounts = network.accounts.mapWhen(predicate = { account ->
-                        account.hasWrongDerivationPathScheme
-                    }, mutation = { account ->
-                        account.updateDerivationPathScheme(DerivationPathScheme.BIP_44_OLYMPIA)
-                    }).toIdentifiedArrayList())
+                    network.copy(
+                        accounts = network.accounts.mapWhen(predicate = { account ->
+                            account.hasWrongDerivationPathScheme
+                        }, mutation = { account ->
+                            account.updateDerivationPathScheme(DerivationPathScheme.BIP_44_OLYMPIA)
+                        }).toIdentifiedArrayList()
+                    )
                 })
                 p.copy(networks = updatedNetworks)
             }

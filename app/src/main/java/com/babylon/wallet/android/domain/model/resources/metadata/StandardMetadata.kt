@@ -153,7 +153,7 @@ fun List<Metadata>.ownerKeyHashes(): PublicKeyHashes? = findCollection(
         it
     }
     PublicKeyHashes(
-        keys = keys, lastUpdatedAtStateVersion = keys.firstOrNull()?.lastUpdatedAtStateVersion ?: 0L
+        keys = keys,
+        lastUpdatedAtStateVersion = keys.firstOrNull()?.lastUpdatedAtStateVersion ?: 0L
     )
-
 }

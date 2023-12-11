@@ -4,6 +4,7 @@ import android.app.KeyguardManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import com.scottyab.rootbeer.RootBeer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
@@ -24,4 +25,6 @@ class DeviceCapabilityHelper @Inject constructor(
             context.packageManager.queryIntentActivities(backupSettingsScreenIntent, PackageManager.MATCH_ALL)
         }.size > 0
     }
+
+    fun isDeviceRooted(): Boolean = RootBeer(context).isRooted
 }
