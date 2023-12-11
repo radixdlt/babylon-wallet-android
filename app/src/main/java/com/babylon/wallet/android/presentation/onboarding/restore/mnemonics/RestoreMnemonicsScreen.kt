@@ -59,7 +59,6 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputFor
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 
@@ -87,16 +86,11 @@ fun RestoreMnemonicsScreen(
                 RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
                     viewModel.skipMainSeedPhraseAndCreateNew()
                 }
-                RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
-                    context.biometricAuthenticate { authenticated ->
-                        if (authenticated) {
-                            viewModel.onSubmit()
-                        }
-                    }
-                }
+
                 else -> {
                     viewModel.onSubmit()
                 }
+
             }
         },
         onWordTyped = viewModel::onWordChanged,
@@ -221,7 +215,7 @@ private fun RestoreMnemonicsContent(
                             }
                         ),
                         enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase ||
-                            state.seedPhraseState.seedPhraseValid,
+                                state.seedPhraseState.seedPhraseValid,
                         isLoading = state.isRestoring,
                         onClick = onSubmitClick
                     )
@@ -249,6 +243,7 @@ private fun RestoreMnemonicsContent(
                     )
                 }
             }
+
             RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
                 AnimatedVisibility(
                     modifier = Modifier.padding(padding),
@@ -264,6 +259,7 @@ private fun RestoreMnemonicsContent(
                     )
                 }
             }
+
             RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
                 AnimatedVisibility(
                     modifier = Modifier.padding(padding),

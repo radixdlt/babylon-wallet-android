@@ -188,7 +188,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private suspend fun restoreMnemonic() {
         val factorSourceToRecover = state.value
             .recoverableFactorSource?.factorSource ?: return
-
+        if (biometricAuthProvider.invoke().not()) return
         _state.update { it.copy(isRestoring = true) }
         restoreMnemonicUseCase(
             factorSource = factorSourceToRecover,
@@ -199,7 +199,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         ).onSuccess {
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
             _state.update { state -> state.copy(isRestoring = false) }
-            showNextRecoverableFactorSourceOrFinish()
+            showNextRecoverableFactorSourceOrFinish(skipAuth = true)
         }.onFailure {
             _state.update { state ->
                 state.copy(
@@ -211,7 +211,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     @Suppress("NestedBlockDepth")
-    private suspend fun showNextRecoverableFactorSourceOrFinish() {
+    private suspend fun showNextRecoverableFactorSourceOrFinish(skipAuth: Boolean = false) {
         val nextRecoverableFactorSource = state.value.nextRecoverableFactorSource
         if (nextRecoverableFactorSource != null) {
             seedPhraseInputDelegate.reset()
@@ -223,7 +223,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 _state.update { it.copy(isRestoring = true) }
 
                 args.backupType?.let { backupType ->
-                    if (biometricAuthProvider().not()) return
+                    if (skipAuth.not() && biometricAuthProvider().not()) return
                     restoreAndCreateMainSeedPhraseUseCase(backupType)
                 }
 
@@ -233,9 +233,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
                         hasSkippedMainSeedPhrase = false
                     )
                 }
-            }
-            args.backupType?.let { backupType ->
-                restoreProfileFromBackupUseCase(backupType)
+            } else {
+                args.backupType?.let { backupType ->
+                    restoreProfileFromBackupUseCase(backupType)
+                }
             }
 
             sendEvent(Event.FinishRestoration(isMovingToMain = true))
