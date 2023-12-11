@@ -87,7 +87,9 @@ data class Assets(
 
     fun nonFungiblesSize(): Int = ownedNonFungibles.size
 
-    fun poolUnitsSize(): Int = ownedPoolUnits.size + ownedValidatorsWithStakes.size
+    fun validatorsWithStakesSize() = ownedValidatorsWithStakes.size
+
+    fun poolUnitsSize(): Int = ownedPoolUnits.size
 }
 
 data class ValidatorDetail(

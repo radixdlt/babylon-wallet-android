@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,10 +18,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,6 +45,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
@@ -86,21 +98,28 @@ private fun AssetsContent(
     maxVisibleFungibles: Int,
     iconsOverlap: Dp = 10.dp
 ) {
+    var visibleFungiblesCount by remember(maxVisibleFungibles) {
+        mutableStateOf(maxVisibleFungibles)
+    }
     ConstraintLayout(
         modifier = modifier
     ) {
-        val (visibleFungibles, remainingFungiblesCount) = remember(assets.ownedFungibles) {
+        val (visibleFungibles, remainingFungiblesCount) = remember(assets.ownedFungibles, visibleFungiblesCount) {
             val all = assets.ownedFungibles
-            all.take(maxVisibleFungibles) to (all.size - maxVisibleFungibles).coerceAtLeast(minimumValue = 0)
+            all.take(visibleFungiblesCount) to (all.size - visibleFungiblesCount).coerceAtLeast(minimumValue = 0)
         }
         val nftsCount = remember(assets.nonFungibles) { assets.nonFungiblesSize() }
-        val poolUnitCount = remember(assets.poolUnits, assets.validatorsWithStakes) {
+        val lsusCount = remember(assets.validatorsWithStakes) {
+            assets.validatorsWithStakesSize()
+        }
+        val poolUnitCount = remember(assets.poolUnits) {
             assets.poolUnitsSize()
         }
 
         val fungibleRefs = visibleFungibles.map { createRef() }
         val fungibleCounterBoxRef = if (remainingFungiblesCount > 0) createRef() else null
         val nftsRowRef = if (nftsCount > 0) createRef() else null
+        val lsusRowRef = if (lsusCount > 0) createRef() else null
         val poolUnitRowRef = if (poolUnitCount > 0) createRef() else null
 
         visibleFungibles.forEachIndexed { index, fungible ->
@@ -145,99 +164,122 @@ private fun AssetsContent(
         }
 
         if (nftsRowRef != null) {
-            val fungibleRef = fungibleCounterBoxRef ?: fungibleRefs.lastOrNull()
-
-            Box(
-                modifier = Modifier.constrainAs(nftsRowRef) {
-                    start.linkTo(
-                        anchor = fungibleRef?.end ?: parent.start,
-                        margin = if (fungibleRef != null) 12.dp else 0.dp
-                    )
-                }
-            ) {
-                CounterBox(
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .height(iconSize),
-                    text = "${assets.nonFungiblesSize()}",
-                    contentPadding = PaddingValues(
-                        start = iconSize + RadixTheme.dimensions.paddingSmall,
-                        end = RadixTheme.dimensions.paddingSmall
-                    )
-                )
-
-                Image(
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .size(iconSize + bordersSize * 2)
-                        .border(
-                            width = bordersSize,
-                            color = RadixTheme.colors.white.copy(alpha = 0.2f),
-                            shape = RoundedCornerShape(9.dp)
+            AssetTypeWithCounter(
+                modifier = Modifier
+                    .constrainAs(nftsRowRef) {
+                        val lastRef = fungibleCounterBoxRef ?: fungibleRefs.lastOrNull()
+                        start.linkTo(
+                            anchor = lastRef?.end ?: parent.start,
+                            margin = if (lastRef != null) 12.dp else 0.dp
                         )
-                        .padding(bordersSize)
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(White, White.copy(alpha = 0.73f))
-                            ),
-                            shape = RadixTheme.shapes.roundedRectSmall
+                    }
+                    .checkRenderedOutside {
+                        if (visibleFungiblesCount > 1) {
+                            visibleFungiblesCount -= 1
+                        }
+                    },
+                icon = painterResource(id = R.drawable.ic_nfts),
+                counter = nftsCount.toString(),
+                iconSize = iconSize,
+                bordersSize = bordersSize,
+                shape = RoundedCornerShape(9.dp)
+            )
+        }
+
+        if (lsusRowRef != null) {
+            AssetTypeWithCounter(
+                modifier = Modifier
+                    .constrainAs(lsusRowRef) {
+                        val lastRef = nftsRowRef ?: fungibleCounterBoxRef ?: fungibleRefs.lastOrNull()
+                        start.linkTo(
+                            anchor = lastRef?.end ?: parent.start,
+                            margin = if (lastRef != null) 12.dp else 0.dp
                         )
-                        .padding(4.dp),
-                    painter = painterResource(id = R.drawable.ic_nfts),
-                    contentDescription = null
-                )
-            }
+                    }
+                    .checkRenderedOutside {
+                        if (visibleFungiblesCount > 1) {
+                            visibleFungiblesCount -= 1
+                        }
+                    },
+                icon = painterResource(id = R.drawable.ic_lsu),
+                counter = lsusCount.toString(),
+                iconSize = iconSize,
+                bordersSize = bordersSize,
+                shape = RadixTheme.shapes.circle
+            )
         }
 
         if (poolUnitRowRef != null) {
-            val fungibleRef = fungibleCounterBoxRef ?: fungibleRefs.lastOrNull()
-            Box(
-                modifier = Modifier.constrainAs(poolUnitRowRef) {
-                    val previousElementRef = nftsRowRef ?: fungibleRef
-                    start.linkTo(
-                        anchor = (previousElementRef)?.end ?: parent.start,
-                        margin = if (previousElementRef != null) 12.dp else 0.dp
-                    )
-                }
-            ) {
-                CounterBox(
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .height(iconSize),
-                    text = assets.poolUnitsSize().toString(),
-                    contentPadding = PaddingValues(
-                        start = iconSize + RadixTheme.dimensions.paddingSmall,
-                        end = RadixTheme.dimensions.paddingSmall
-                    )
-                )
-                Image(
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .size(iconSize + bordersSize * 2)
-                        .border(
-                            width = bordersSize,
-                            color = RadixTheme.colors.white.copy(alpha = 0.2f),
-                            shape = CircleShape
+            AssetTypeWithCounter(
+                modifier = Modifier
+                    .constrainAs(poolUnitRowRef) {
+                        val lastRef = lsusRowRef ?: nftsRowRef ?: fungibleCounterBoxRef ?: fungibleRefs.lastOrNull()
+                        start.linkTo(
+                            anchor = lastRef?.end ?: parent.start,
+                            margin = if (lastRef != null) 12.dp else 0.dp
                         )
-                        .padding(bordersSize)
-                        .background(
-                            brush = Brush.linearGradient(
-                                colors = listOf(White, White.copy(alpha = 0.73f))
-                            ),
-                            shape = RadixTheme.shapes.circle
-                        )
-                        .padding(4.dp),
-                    painter = painterResource(id = R.drawable.ic_pool_units),
-                    contentDescription = null
-                )
-            }
+                    }
+                    .checkRenderedOutside {
+                        if (visibleFungiblesCount > 1) {
+                            visibleFungiblesCount -= 1
+                        }
+                    },
+                icon = painterResource(id = R.drawable.ic_pool_units),
+                counter = poolUnitCount.toString(),
+                iconSize = iconSize,
+                bordersSize = bordersSize,
+                shape = RadixTheme.shapes.circle
+            )
         }
     }
 }
 
 @Composable
+private fun AssetTypeWithCounter(
+    modifier: Modifier = Modifier,
+    icon: Painter,
+    counter: String,
+    iconSize: Dp,
+    bordersSize: Dp,
+    shape: Shape
+) {
+    Box(
+        modifier = modifier.height(iconSize)
+    ) {
+        CounterBox(
+            modifier = Modifier.fillMaxHeight(),
+            text = counter,
+            contentPadding = PaddingValues(
+                start = iconSize + RadixTheme.dimensions.paddingSmall,
+                end = RadixTheme.dimensions.paddingSmall
+            )
+        )
+        Image(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .size(iconSize + bordersSize * 2)
+                .border(
+                    width = bordersSize,
+                    color = RadixTheme.colors.white.copy(alpha = 0.2f),
+                    shape = shape
+                )
+                .padding(bordersSize)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(White, White.copy(alpha = 0.73f))
+                    ),
+                    shape = shape
+                )
+                .padding(4.dp),
+            painter = icon,
+            contentDescription = null
+        )
+    }
+}
+
+@Composable
 private fun CounterBox(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     text: String,
     contentPadding: PaddingValues = PaddingValues()
 ) {
@@ -258,6 +300,17 @@ private fun CounterBox(
             color = White,
             textAlign = TextAlign.Center
         )
+    }
+}
+
+@Composable
+private fun Modifier.checkRenderedOutside(
+    onRenderedOutside: (Float) -> Unit
+): Modifier = this then Modifier.onGloballyPositioned {
+    val parent = it.parentCoordinates?.size ?: return@onGloballyPositioned
+    val maxX = it.positionInParent().x + it.size.width
+    if (maxX > parent.width) {
+        onRenderedOutside(maxX - parent.width)
     }
 }
 
@@ -335,8 +388,29 @@ fun AssetsContentRowPreview() {
                 assets = Assets(
                     fungibles = allFungibles,
                     nonFungibles = nonFungibles,
-                    poolUnits = emptyList(),
-                    validatorsWithStakes = emptyList()
+                    poolUnits = List(120) {
+                        PoolUnit(
+                            stake = Resource.FungibleResource(
+                                resourceAddress = "resource_address_$it",
+                                ownedAmount = BigDecimal.valueOf(237659)
+                            ),
+                            pool = null
+                        )
+                    },
+                    validatorsWithStakes = List(100) {
+                        ValidatorWithStakes(
+                            validatorDetail = ValidatorDetail(
+                                address = "validator_$it",
+                                totalXrdStake = BigDecimal.TEN
+                            ),
+                            liquidStakeUnit = LiquidStakeUnit(
+                                Resource.FungibleResource(
+                                    resourceAddress = "resource_address$it",
+                                    ownedAmount = BigDecimal.valueOf(237659)
+                                )
+                            )
+                        )
+                    }
                 ),
                 isLoading = false
             )
