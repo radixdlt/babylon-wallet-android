@@ -4,11 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.toUserFriendlyMessage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.UUIDGenerator
+import rdx.works.profile.domain.ProfileException
 
 @Serializable
 sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
@@ -69,6 +71,29 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
     data class ErrorMessage(
         private val error: Throwable?
     ) : UiMessage() {
+
+        @Composable
+        override fun getMessage(): String {
+            val message = error?.asRadixWalletException()?.toUserFriendlyMessage(LocalContext.current) ?: error?.message
+            return if (message.isNullOrEmpty()) {
+                stringResource(id = R.string.common_somethingWentWrong)
+            } else {
+                message
+            }
+        }
+    }
+
+    data class TransactionErrorMessage(
+        private val error: Throwable?
+    ) : UiMessage() {
+
+        val isDepositRulesErrorVisible = error is RadixWalletException.PrepareTransactionException
+            .ReceivingAccountDoesNotAllowDeposits
+
+        val isNoMnemonicErrorVisible = error?.cause is ProfileException.NoMnemonic
+
+        val isPreviewedInDialog: Boolean
+            get() = isDepositRulesErrorVisible || isNoMnemonicErrorVisible
 
         @Composable
         override fun getMessage(): String {

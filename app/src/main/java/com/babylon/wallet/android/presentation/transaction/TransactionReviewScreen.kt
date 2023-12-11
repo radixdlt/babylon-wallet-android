@@ -79,29 +79,6 @@ fun TransactionReviewScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    if (state.isNoMnemonicErrorVisible) {
-        BasicPromptAlertDialog(
-            finish = {
-                viewModel.dismissNoMnemonicErrorDialog()
-            },
-            title = stringResource(id = R.string.transactionReview_noMnemonicError_title),
-            text = stringResource(id = R.string.transactionReview_noMnemonicError_text),
-            dismissText = null
-        )
-    }
-    if (state.isDepositRulesErrorVisible) {
-        val body = stringResource(id = R.string.error_transactionFailure_reviewFailure)
-        val subBody = stringResource(id = R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits)
-        BasicPromptAlertDialog(
-            finish = {
-                viewModel.dismissDepositRulesErrorDialog()
-            },
-            title = stringResource(id = R.string.common_errorAlertTitle),
-            text = "$body\n\n$subBody",
-            confirmText = stringResource(id = R.string.common_ok),
-            dismissText = null
-        )
-    }
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
@@ -139,7 +116,9 @@ fun TransactionReviewScreen(
         onFeePaddingAmountChanged = viewModel::onFeePaddingAmountChanged,
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
-        onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick
+        onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
+        dismissNoMnemonicErrorDialog = viewModel::dismissNoMnemonicErrorDialog,
+        dismissDepositRulesErrorDialog = viewModel::dismissDepositRulesErrorDialog
     )
 
     state.interactionState?.let {
@@ -195,7 +174,9 @@ private fun TransactionPreviewContent(
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
-    onViewAdvancedModeClick: () -> Unit
+    onViewAdvancedModeClick: () -> Unit,
+    dismissNoMnemonicErrorDialog: () -> Unit,
+    dismissDepositRulesErrorDialog: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -203,11 +184,39 @@ private fun TransactionPreviewContent(
     )
     val snackBarHostState = remember { SnackbarHostState() }
 
-    SnackbarUIMessage(
-        message = state.error,
-        snackbarHostState = snackBarHostState,
-        onMessageShown = onMessageShown
-    )
+    state.error?.let { transactionError ->
+        if (transactionError.isPreviewedInDialog) {
+            if (transactionError.isNoMnemonicErrorVisible) {
+                BasicPromptAlertDialog(
+                    finish = {
+                        dismissNoMnemonicErrorDialog()
+                    },
+                    title = stringResource(id = R.string.transactionReview_noMnemonicError_title),
+                    text = stringResource(id = R.string.transactionReview_noMnemonicError_text),
+                    dismissText = null
+                )
+            }
+            if (transactionError.isDepositRulesErrorVisible) {
+                val body = stringResource(id = R.string.error_transactionFailure_reviewFailure)
+                val subBody = stringResource(id = R.string.error_transactionFailure_doesNotAllowThirdPartyDeposits)
+                BasicPromptAlertDialog(
+                    finish = {
+                        dismissDepositRulesErrorDialog()
+                    },
+                    title = stringResource(id = R.string.common_errorAlertTitle),
+                    text = "$body\n\n$subBody",
+                    confirmText = stringResource(id = R.string.common_ok),
+                    dismissText = null
+                )
+            }
+        } else {
+            SnackbarUIMessage(
+                message = transactionError,
+                snackbarHostState = snackBarHostState,
+                onMessageShown = onMessageShown
+            )
+        }
+    }
 
     BackHandler(onBack = onBackClick)
 
@@ -497,7 +506,9 @@ fun TransactionPreviewContentPreview() {
             onFeePaddingAmountChanged = {},
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},
-            onViewAdvancedModeClick = {}
+            onViewAdvancedModeClick = {},
+            dismissDepositRulesErrorDialog = {},
+            dismissNoMnemonicErrorDialog = {}
         )
     }
 }

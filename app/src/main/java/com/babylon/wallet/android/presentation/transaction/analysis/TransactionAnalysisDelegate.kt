@@ -85,7 +85,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             // wallet unacceptable manifest
             _state.update {
                 it.copy(
-                    error = UiMessage.ErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest)
+                    error = UiMessage.TransactionErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest)
                 )
             }
             PreviewType.UnacceptableManifest
@@ -164,19 +164,12 @@ class TransactionAnalysisDelegate @Inject constructor(
     private fun reportFailure(error: Throwable) {
         logger.w(error)
 
-        val isDepositRulesFailure = error is RadixWalletException.PrepareTransactionException
-            .ReceivingAccountDoesNotAllowDeposits
         _state.update {
             it.copy(
                 isLoading = false,
                 isNetworkFeeLoading = false,
-                isDepositRulesErrorVisible = isDepositRulesFailure,
                 previewType = PreviewType.None,
-                error = if (isDepositRulesFailure.not()) {
-                    UiMessage.ErrorMessage(error)
-                } else {
-                    it.error
-                }
+                error = UiMessage.TransactionErrorMessage(error)
             )
         }
     }
