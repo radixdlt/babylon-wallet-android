@@ -704,6 +704,17 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="seedPhrases_seedPhrase_reveal">Reveal Seed Phrase</string>
   <string name="seedPhrases_seedPhrase_oneConnectedAccount">Connected to 1 Account</string>
   <string name="seedPhrases_seedPhrase_multipleConnectedAccounts">Connected to %d Accounts</string>
+  <string name="seedPhrases_backupWarning">Please write down your Seed Phrase</string>
+  <string name="seedPhrases_hiddenAccountsOnly">Hidden Accounts only</string>
+  <string name="seedPhrases_seedPhrase_headingNeedsImport">Seed Phrase Entry Required</string>
+  <string name="seedPhrases_seedPhrase_headingReveal">Reveal Seed Phrase</string>
+  <string name="seedPhrases_seedPhrase_noConnectedAccountsReveal">Not connected to any Accounts</string>
+  <string name="seedPhrases_seedPhrase_oneConnectedAccountReveal">Connected to 1 Account</string>
+  <string name="seedPhrases_seedPhrase_multipleConnectedAccountsReveal">Connected to %d Accounts</string>
+  <string name="seedPhrases_seedPhrase_headingScan">Seed Phrase</string>
+  <string name="seedPhrases_seedPhrase_noConnectedAccountsScan">Not yet connected to any Accounts</string>
+  <string name="seedPhrases_seedPhrase_oneConnectedAccountScan">Currently connected to 1 Account</string>
+  <string name="seedPhrases_seedPhrase_multipleConnectedAccountsScan">Currently connected to %d Accounts</string>
   <string name="appSettings_title">App Settings</string>
   <string name="appSettings_subtitle">Customize your Radix Wallet</string>
   <string name="appSettings_developerMode_title">Developer Mode</string>
@@ -914,4 +925,21 @@ You will be asked to enter your main seed phrase. This is a set of **24 words** 
   <string name="recoverWalletWithoutProfileStart_useNewWalletInstead_alert_message">Tap “I\'m a New Wallet User”. After completing wallet creation, you can recover any Olympia or Ledger-based Accounts in Settings.</string>
   <string name="recoverWalletWithoutProfileStart_useNewWalletInstead_alert_cancelButton">Cancel</string>
   <string name="recoverWalletWithoutProfileStart_useNewWalletInstead_alert_continueButton">Continue</string>
+  <string name="accountRecoveryScan_title">Account Recovery Scan</string>
+  <string name="accountRecoveryScan_subtitle">The Radix Wallet can scan for previously used accounts using a bare seed phrase or Ledger hardware wallet device</string>
+  <string name="accountRecoveryScan_babylonSection_title">Babylon Accounts</string>
+  <string name="accountRecoveryScan_babylonSection_subtitle">Scan for Accounts originally created on the **Babylon** network.</string>
+  <string name="accountRecoveryScan_olympiaSection_title">Olympia Accounts</string>
+  <string name="accountRecoveryScan_olympiaSection_subtitle">Scan for Accounts originally created on the **Olympia** network.
+
+(If you have Olympia Accounts in the Radix Olympia Desktop Wallet, consider using **Import from a Legacy Wallet** instead.</string>
+  <string name="accountRecoveryScan_olympiaSection_footnote">Note: You will still use the new **Radix Babylon** app on your Ledger device, not the old Radix Ledger app.</string>
+  <string name="accountRecoveryScan_seedPhraseButtonTitle">Use Seed Phrase</string>
+  <string name="accountRecoveryScan_ledgerButtonTitle">Use Ledger Hardware Wallet</string>
+  <string name="accountRecoveryScan_chooseSeedPhrase_title">Choose Seed Phrase</string>
+  <string name="accountRecoveryScan_chooseSeedPhrase_subtitleBabylon">Choose the \"Legacy\" Olympia seed phrase for use for derivation:</string>
+  <string name="accountRecoveryScan_chooseSeedPhrase_subtitleOlympia">Choose the Babylon seed phrase for use for derivation:</string>
+  <string name="accountRecoveryScan_chooseSeedPhrase_addButtonBabylon">Add Babylon Seed Phrase</string>
+  <string name="accountRecoveryScan_chooseSeedPhrase_addButtonOlympia">Add Olympia Seed Phrase</string>
+  <string name="accountRecoveryScan_chooseSeedPhrase_continueButton">Continue</string>
 </resources>
