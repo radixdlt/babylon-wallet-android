@@ -285,14 +285,14 @@ private fun RadixBanner(
                 )
 
                 Text(
-                    text = "", // stringResource(id = R.string.homePage_radixBanner_title),
+                    text = stringResource(id = R.string.homePage_radixBanner_title),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                 )
 
                 Text(
-                    text = "", // stringResource(id = R.string.homePage_radixBanner_subtitle),
+                    text = stringResource(id = R.string.homePage_radixBanner_subtitle),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     textAlign = TextAlign.Center
@@ -301,7 +301,7 @@ private fun RadixBanner(
                 val context = LocalContext.current
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "", // stringResource(id = R.string.homePage_radixBanner_action),
+                    text = stringResource(id = R.string.homePage_radixBanner_action),
                     contentColor = RadixTheme.colors.gray1,
                     onClick = {
                         context.openUrl(RADIX_START_PAGE_URL)
