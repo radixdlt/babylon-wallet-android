@@ -155,11 +155,34 @@ private fun LSUAssetDialogContent(
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
+                if (!state.validatorWithStakes?.liquidStakeUnit?.fungibleResource?.description.isNullOrBlank()) {
+                    Text(
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingSmall),
+                        text = state.validatorWithStakes?.liquidStakeUnit?.fungibleResource?.description.orEmpty(),
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray1
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    HorizontalDivider(Modifier.fillMaxWidth(), color = RadixTheme.colors.gray4)
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
+
                 AddressRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingSmall),
                     address = state.resourceAddress
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+
+                AddressRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingSmall)
+                        .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                        .radixPlaceholder(visible = state.validatorWithStakes == null),
+                    label = stringResource(id = R.string.assetDetails_validator),
+                    address = state.validatorWithStakes?.validatorDetail?.address.orEmpty()
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
@@ -209,24 +232,6 @@ private fun LSUAssetDialogContent(
                     )
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-
-                AssetMetadataRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-                    key = stringResource(id = R.string.assetDetails_validator)
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(start = RadixTheme.dimensions.paddingDefault)
-                            .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
-                            .radixPlaceholder(visible = state.validatorWithStakes == null),
-                        text = state.validatorWithStakes?.validatorDetail?.name.orEmpty(),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.End
-                    )
-                }
 
                 BehavioursSection(state)
 
