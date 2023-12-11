@@ -22,6 +22,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.utils.formattedSpans
 
 @Composable
 fun RecoveryScanCompleteScreen(
@@ -56,7 +57,6 @@ private fun RecoveryScanCompleteContent(
         ) {
             Text(
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault),
                 text = stringResource(id = R.string.recoverWalletWithoutProfileComplete_header_title),
                 style = RadixTheme.typography.title,
@@ -67,7 +67,9 @@ private fun RecoveryScanCompleteContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = stringResource(id = R.string.recoverWalletWithoutProfileComplete_header_subtitle),
+                text = stringResource(id = R.string.recoverWalletWithoutProfileComplete_header_subtitle).formattedSpans(
+                    RadixTheme.typography.body1Header.toSpanStyle()
+                ),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )
