@@ -72,21 +72,20 @@ fun RestoreMnemonicsScreen(
     val state by viewModel.state.collectAsState()
 
     val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.biometricAuthProvider = { context.biometricAuthenticateSuspend() }
+    }
     RestoreMnemonicsContent(
         state = state,
         onBackClick = viewModel::onBackClick,
         onSkipSeedPhraseClick = {
-            viewModel.onSkipSeedPhraseClick {
-                context.biometricAuthenticateSuspend()
-            }
+            viewModel.onSkipSeedPhraseClick()
         },
         onSkipMainSeedPhraseClick = viewModel::onSkipMainSeedPhraseClick,
         onSubmitClick = {
             when (state.screenType) {
                 RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
-                    viewModel.skipMainSeedPhraseAndCreateNew {
-                        context.biometricAuthenticateSuspend()
-                    }
+                    viewModel.skipMainSeedPhraseAndCreateNew()
                 }
                 RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
                     context.biometricAuthenticate { authenticated ->

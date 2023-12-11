@@ -44,7 +44,7 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
         } else {
             babylonFactorSources.firstOrNull { it.common.flags.contains(FactorSourceFlag.Main) }
         } ?: return null
-        return if (!mnemonicRepository.mnemonicExist(mainBabylonFactorSourceToRecover.id)) {
+        return if (mnemonicRepository.mnemonicExist(mainBabylonFactorSourceToRecover.id).not()) {
             mainBabylonFactorSourceToRecover.id
         } else {
             null

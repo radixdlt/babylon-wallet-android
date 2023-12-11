@@ -2,6 +2,7 @@ package rdx.works.profile.domain
 
 import kotlinx.coroutines.flow.first
 import rdx.works.core.mapWhen
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -20,7 +21,8 @@ import javax.inject.Inject
 class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val profileRepository: ProfileRepository,
-    private val deviceInfoRepository: DeviceInfoRepository
+    private val deviceInfoRepository: DeviceInfoRepository,
+    private val preferencesManager: PreferencesManager
 ) {
 
     suspend operator fun invoke(): Profile {
@@ -84,6 +86,8 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
                 profile
             }
         } else {
+            mnemonicRepository.saveMnemonic(deviceFactorSource.id, mnemonic)
+            preferencesManager.markFactorSourceBackedUp(deviceFactorSource.id.body.value)
             profileRepository.updateProfile { p ->
                 p.copy(
                     factorSources = (p.factorSources + deviceFactorSource).toIdentifiedArrayList()

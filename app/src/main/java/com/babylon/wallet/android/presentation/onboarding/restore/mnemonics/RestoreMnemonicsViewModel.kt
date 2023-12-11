@@ -55,6 +55,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     private val args = RestoreMnemonicsArgs.from(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
+    lateinit var biometricAuthProvider: suspend () -> Boolean
 
     override fun initialState(): State = State(
         isMandatory = args.isMandatory
@@ -138,8 +139,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    fun onSkipSeedPhraseClick(biometricAuthProvider: suspend () -> Boolean) {
-        viewModelScope.launch { showNextRecoverableFactorSourceOrFinish(biometricAuthProvider) }
+    fun onSkipSeedPhraseClick() {
+        viewModelScope.launch { showNextRecoverableFactorSourceOrFinish() }
     }
 
     fun onSkipMainSeedPhraseClick() {
@@ -148,10 +149,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    fun skipMainSeedPhraseAndCreateNew(biometricAuthProvider: suspend () -> Boolean) {
+    fun skipMainSeedPhraseAndCreateNew() {
         viewModelScope.launch {
             _state.update { state -> state.copy(hasSkippedMainSeedPhrase = true) }
-            showNextRecoverableFactorSourceOrFinish(biometricAuthProvider)
+            showNextRecoverableFactorSourceOrFinish()
         }
     }
 
@@ -196,10 +197,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 bip39Passphrase = _state.value.seedPhraseState.bip39Passphrase
             )
         ).onSuccess {
-            args.backupType?.let { backupType ->
-                restoreProfileFromBackupUseCase(backupType)
-            }
-
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
             _state.update { state -> state.copy(isRestoring = false) }
             showNextRecoverableFactorSourceOrFinish()
@@ -214,7 +211,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     @Suppress("NestedBlockDepth")
-    private suspend fun showNextRecoverableFactorSourceOrFinish(biometricAuthProvider: suspend () -> Boolean = { true }) {
+    private suspend fun showNextRecoverableFactorSourceOrFinish() {
         val nextRecoverableFactorSource = state.value.nextRecoverableFactorSource
         if (nextRecoverableFactorSource != null) {
             seedPhraseInputDelegate.reset()
@@ -236,6 +233,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
                         hasSkippedMainSeedPhrase = false
                     )
                 }
+            }
+            args.backupType?.let { backupType ->
+                restoreProfileFromBackupUseCase(backupType)
             }
 
             sendEvent(Event.FinishRestoration(isMovingToMain = true))
