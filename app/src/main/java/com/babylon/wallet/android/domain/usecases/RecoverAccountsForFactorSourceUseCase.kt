@@ -19,6 +19,7 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.core.then
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
@@ -49,13 +50,12 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
     }
 
     suspend operator fun invoke(
-        recoveryFS: RecoveryFactorSource,
-        currentNetworkId: NetworkId? = null
+        recoveryFS: RecoveryFactorSource
     ): Result<List<AccountWithOnLedgerStatus>> {
         return withContext(defaultDispatcher) {
             _interactionState.update { null }
             val profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.invoke().firstOrNull() else null
-            val networkId = currentNetworkId ?: Radix.Gateway.mainnet.network.networkId()
+            val networkId = profile?.currentNetwork?.knownNetworkId ?: Radix.Gateway.mainnet.network.networkId()
             val indicesToScan =
                 computeIndicesToScan(
                     derivationPathScheme = recoveryFS.derivationPathScheme,
