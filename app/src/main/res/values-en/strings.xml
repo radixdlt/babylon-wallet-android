@@ -509,6 +509,7 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="error_transactionFailure_prepare">Failed to prepare transaction</string>
   <string name="error_transactionFailure_rejected">Transaction rejected</string>
   <string name="error_transactionFailure_unknown">Unknown error</string>
+  <string name="error_transactionFailure_doesNotAllowThirdPartyDeposits">One of the receiving accounts does not allow Third-Party deposits</string>
   <string name="error_transactionFailure_failedToFindLedger">Failed to find ledger</string>
   <string name="error_transactionFailure_failedToAddLockFee">Failed to add Transaction Fee, try a different amount of fee payer.</string>
   <string name="error_transactionFailure_failedToAddGuarantee">Failed to add Guarantee, try a different percentage, or try skip adding a guarantee.</string>

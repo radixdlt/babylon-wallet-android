@@ -84,7 +84,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             // wallet unacceptable manifest
             _state.update {
                 it.copy(
-                    error = UiMessage.ErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest)
+                    error = UiMessage.TransactionErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest)
                 )
             }
             PreviewType.UnacceptableManifest
@@ -168,7 +168,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 isLoading = false,
                 isNetworkFeeLoading = false,
                 previewType = PreviewType.None,
-                error = UiMessage.ErrorMessage(error)
+                error = UiMessage.TransactionErrorMessage(error)
             )
         }
     }

@@ -79,16 +79,6 @@ fun TransactionReviewScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    if (state.isNoMnemonicErrorVisible) {
-        BasicPromptAlertDialog(
-            finish = {
-                viewModel.dismissNoMnemonicErrorDialog()
-            },
-            title = stringResource(id = R.string.transactionReview_noMnemonicError_title),
-            text = stringResource(id = R.string.transactionReview_noMnemonicError_text),
-            dismissText = null
-        )
-    }
 
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
@@ -126,7 +116,8 @@ fun TransactionReviewScreen(
         onFeePaddingAmountChanged = viewModel::onFeePaddingAmountChanged,
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
-        onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick
+        onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
+        dismissTransactionErrorDialog = viewModel::dismissTransactionErrorDialog
     )
 
     state.interactionState?.let {
@@ -182,7 +173,8 @@ private fun TransactionPreviewContent(
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
-    onViewAdvancedModeClick: () -> Unit
+    onViewAdvancedModeClick: () -> Unit,
+    dismissTransactionErrorDialog: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         initialValue = ModalBottomSheetValue.Hidden,
@@ -190,11 +182,25 @@ private fun TransactionPreviewContent(
     )
     val snackBarHostState = remember { SnackbarHostState() }
 
-    SnackbarUIMessage(
-        message = state.error,
-        snackbarHostState = snackBarHostState,
-        onMessageShown = onMessageShown
-    )
+    state.error?.let { transactionError ->
+        if (transactionError.isPreviewedInDialog) {
+            BasicPromptAlertDialog(
+                finish = {
+                    dismissTransactionErrorDialog()
+                },
+                title = transactionError.getTitle(),
+                text = transactionError.getMessage(),
+                confirmText = stringResource(id = R.string.common_ok),
+                dismissText = null
+            )
+        } else {
+            SnackbarUIMessage(
+                message = transactionError,
+                snackbarHostState = snackBarHostState,
+                onMessageShown = onMessageShown
+            )
+        }
+    }
 
     BackHandler(onBack = onBackClick)
 
@@ -484,7 +490,8 @@ fun TransactionPreviewContentPreview() {
             onFeePaddingAmountChanged = {},
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},
-            onViewAdvancedModeClick = {}
+            onViewAdvancedModeClick = {},
+            dismissTransactionErrorDialog = {}
         )
     }
 }

@@ -27,7 +27,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -210,16 +209,10 @@ class TransactionSubmitDelegate @Inject constructor(
                         return
                     }
                     is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent -> {
-                        val noMnemonic = radixWalletException.cause is ProfileException.NoMnemonic
                         _state.update {
                             it.copy(
                                 isSubmitting = false,
-                                error = if (noMnemonic.not()) {
-                                    UiMessage.ErrorMessage(radixWalletException)
-                                } else {
-                                    it.error
-                                },
-                                isNoMnemonicErrorVisible = noMnemonic
+                                error = UiMessage.TransactionErrorMessage(radixWalletException)
                             )
                         }
                         approvalJob = null
@@ -260,7 +253,7 @@ class TransactionSubmitDelegate @Inject constructor(
     private suspend fun reportFailure(error: Throwable) {
         logger.w(error)
         _state.update {
-            it.copy(isSubmitting = false, error = UiMessage.ErrorMessage(error))
+            it.copy(isSubmitting = false, error = UiMessage.TransactionErrorMessage(error))
         }
 
         val currentState = _state.value
