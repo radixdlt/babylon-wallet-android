@@ -15,7 +15,6 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
-import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
@@ -114,10 +113,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             seedPhraseInputDelegate.state.collect { delegateState ->
                 _state.update { uiState ->
                     uiState.copy(
-                        bip39Passphrase = delegateState.bip39Passphrase,
-                        seedPhraseWords = delegateState.seedPhraseWords,
-                        wordAutocompleteCandidates = delegateState.wordAutocompleteCandidates,
-                        seedPhraseValid = delegateState.seedPhraseValid
+                        seedPhraseInputState = delegateState,
                     )
                 }
             }
@@ -440,7 +436,6 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     override fun initialState(): ImportLegacyWalletUiState {
         return ImportLegacyWalletUiState(
-            seedPhraseWords = persistentListOf(),
             pages = initialPages.toPersistentList()
         )
     }
@@ -515,7 +510,6 @@ data class ImportLegacyWalletUiState(
     val currentPage: Page = Page.ScanQr,
     val importButtonEnabled: Boolean = false,
     val olympiaAccountsToImport: ImmutableList<OlympiaAccountDetails> = persistentListOf(),
-    val bip39Passphrase: String = "",
     val uiMessage: UiMessage? = null,
     val migratedAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val hideBack: Boolean = false,
@@ -525,20 +519,15 @@ data class ImportLegacyWalletUiState(
     val verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
     val addLedgerSheetState: AddLedgerDeviceUiState.ShowContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
-    val seedPhraseWords: ImmutableList<SeedPhraseWord> = persistentListOf(),
-    val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf(),
+    val seedPhraseInputState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
     val shouldShowAddLinkConnectorScreen: Boolean = false,
     val shouldShowAddLedgerDeviceScreen: Boolean = false,
     var existingOlympiaFactorSourceId: FactorSourceID.FromHash? = null,
     val isLinkConnectionEstablished: Boolean = false,
-    val seedPhraseValid: Boolean = false
 ) : UiState {
 
     fun mnemonicWithPassphrase(): MnemonicWithPassphrase {
-        return MnemonicWithPassphrase(
-            mnemonic = seedPhraseWords.joinToString(" ") { it.value },
-            bip39Passphrase = bip39Passphrase
-        )
+        return seedPhraseInputState.mnemonicWithPassphrase
     }
 
     enum class Page {

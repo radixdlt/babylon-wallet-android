@@ -54,6 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -68,6 +69,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.ImportLegacyWalletUiState.Page
@@ -87,6 +89,7 @@ import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.RedWarningText
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
@@ -132,8 +135,6 @@ fun ImportLegacyWalletScreen(
         },
         onCloseScreen = onCloseScreen,
         importButtonEnabled = state.importButtonEnabled,
-        seedPhraseWords = state.seedPhraseWords,
-        bip39Passphrase = state.bip39Passphrase,
         onWordChanged = viewModel::onWordChanged,
         onPassphraseChanged = viewModel::onPassphraseChanged,
         onValidateSoftwareAccounts = {
@@ -154,7 +155,6 @@ fun ImportLegacyWalletScreen(
         addLedgerSheetState = state.addLedgerSheetState,
         onContinueWithLedgerClick = viewModel::onContinueWithLedgerClick,
         deviceModel = state.recentlyConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
-        wordAutocompleteCandidates = state.wordAutocompleteCandidates,
         shouldShowAddLinkConnectorScreen = state.shouldShowAddLinkConnectorScreen,
         addLinkConnectorState = addLinkConnectorState,
         onLinkConnectorQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
@@ -172,7 +172,7 @@ fun ImportLegacyWalletScreen(
         onWordSelected = viewModel::onWordSelected,
         importAllAccounts = viewModel::importAllAccounts,
         onInvalidConnectionPasswordShown = addLinkConnectorViewModel::onInvalidConnectionPasswordShown,
-        seedPhraseValid = state.seedPhraseValid
+        seedPhraseInputState = state.seedPhraseInputState
     )
 }
 
@@ -188,8 +188,6 @@ private fun ImportLegacyWalletContent(
     onImportAccounts: () -> Unit,
     onCloseScreen: () -> Unit,
     importButtonEnabled: Boolean,
-    seedPhraseWords: ImmutableList<SeedPhraseWord>,
-    bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onValidateSoftwareAccounts: () -> Unit,
@@ -206,7 +204,6 @@ private fun ImportLegacyWalletContent(
     addLedgerSheetState: AddLedgerDeviceUiState.ShowContent,
     onContinueWithLedgerClick: () -> Unit,
     deviceModel: String?,
-    wordAutocompleteCandidates: ImmutableList<String>,
     shouldShowAddLinkConnectorScreen: Boolean,
     addLinkConnectorState: AddLinkConnectorUiState,
     onLinkConnectorQrCodeScanned: (String) -> Unit,
@@ -218,7 +215,7 @@ private fun ImportLegacyWalletContent(
     onWordSelected: (Int, String) -> Unit,
     importAllAccounts: () -> Unit,
     onInvalidConnectionPasswordShown: () -> Unit,
-    seedPhraseValid: Boolean
+    seedPhraseInputState: SeedPhraseInputDelegate.State
 ) {
     val focusManager = LocalFocusManager.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
@@ -306,9 +303,9 @@ private fun ImportLegacyWalletContent(
             },
             containerColor = RadixTheme.colors.defaultBackground,
             bottomBar = {
-                if (seedPhraseSuggestionsVisible(wordAutocompleteCandidates = wordAutocompleteCandidates)) {
+                if (seedPhraseSuggestionsVisible(wordAutocompleteCandidates = seedPhraseInputState.wordAutocompleteCandidates)) {
                     SeedPhraseSuggestions(
-                        wordAutocompleteCandidates = wordAutocompleteCandidates,
+                        wordAutocompleteCandidates = seedPhraseInputState.wordAutocompleteCandidates,
                         modifier = Modifier
                             .fillMaxWidth()
                             .imePadding()
@@ -334,14 +331,18 @@ private fun ImportLegacyWalletContent(
                             cameraPermissionGranted = cameraPermissionState.status.isGranted,
                             onQrCodeScanned = onQrCodeScanned,
                             isVisible = cameraVisible,
-                            modifier = Modifier.padding(padding).fillMaxSize(),
+                            modifier = Modifier
+                                .padding(padding)
+                                .fillMaxSize(),
                             qrChunkInfo = qrChunkInfo
                         )
                     }
 
                     Page.AccountsToImportList -> {
                         AccountsToImportListPage(
-                            modifier = Modifier.padding(padding).fillMaxSize(),
+                            modifier = Modifier
+                                .padding(padding)
+                                .fillMaxSize(),
                             olympiaAccountsToImport = olympiaAccountsToImport,
                             onImportAccounts = onImportAccounts,
                             importButtonEnabled = importButtonEnabled,
@@ -350,22 +351,26 @@ private fun ImportLegacyWalletContent(
 
                     Page.MnemonicInput -> {
                         VerifyWithYourSeedPhrasePage(
-                            modifier = Modifier.padding(padding).fillMaxSize(),
-                            seedPhraseWords = seedPhraseWords,
-                            bip39Passphrase = bip39Passphrase,
+                            modifier = Modifier
+                                .padding(padding)
+                                .fillMaxSize(),
+                            seedPhraseWords = seedPhraseInputState.seedPhraseWords,
+                            bip39Passphrase = seedPhraseInputState.bip39Passphrase,
                             onWordChanged = onWordChanged,
                             onPassphraseChanged = onPassphraseChanged,
                             onImportSoftwareAccounts = onValidateSoftwareAccounts,
                             onFocusedWordIndexChanged = {
                                 focusedWordIndex = it
                             },
-                            seedPhraseValid = seedPhraseValid
+                            seedPhraseInputState = seedPhraseInputState
                         )
                     }
 
                     Page.HardwareAccounts -> {
                         VerifyWithLedgerDevicePage(
-                            Modifier.padding(padding).fillMaxSize(),
+                            Modifier
+                                .padding(padding)
+                                .fillMaxSize(),
                             hardwareAccountsLeft = hardwareAccountsLeft,
                             waitingForLedgerResponse = waitingForLedgerResponse,
                             verifiedLedgerDevices = verifiedLedgerDevices,
@@ -375,7 +380,9 @@ private fun ImportLegacyWalletContent(
 
                     Page.ImportComplete -> {
                         ImportCompletePage(
-                            modifier = Modifier.padding(padding).fillMaxSize(),
+                            modifier = Modifier
+                                .padding(padding)
+                                .fillMaxSize(),
                             migratedAccounts = migratedAccounts,
                             onContinue = onContinue
                         )
@@ -761,7 +768,7 @@ private fun VerifyWithYourSeedPhrasePage(
     onPassphraseChanged: (String) -> Unit,
     onImportSoftwareAccounts: () -> Unit,
     onFocusedWordIndexChanged: (Int) -> Unit,
-    seedPhraseValid: Boolean
+    seedPhraseInputState: SeedPhraseInputDelegate.State
 ) {
     var showOlympiaSeedPhrasePrompt by remember { mutableStateOf(false) }
     if (showOlympiaSeedPhrasePrompt) {
@@ -822,6 +829,14 @@ private fun VerifyWithYourSeedPhrasePage(
             modifier = Modifier.fillMaxWidth(),
             onFocusedWordIndexChanged = onFocusedWordIndexChanged
         )
+        if (seedPhraseInputState.seedPhraseInputValid && seedPhraseInputState.seedPhraseBIP39Valid.not()) {
+            RedWarningText(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = RadixTheme.dimensions.paddingDefault),
+                text = AnnotatedString(stringResource(R.string.importMnemonic_checksumFailure))
+            )
+        }
         RadixPrimaryButton(
             text = stringResource(R.string.importOlympiaAccounts_importLabel),
             onClick = {
@@ -829,7 +844,7 @@ private fun VerifyWithYourSeedPhrasePage(
             },
             modifier = Modifier.fillMaxWidth(),
             throttleClicks = true,
-            enabled = seedPhraseValid
+            enabled = seedPhraseInputState.seedPhraseInputValid && seedPhraseInputState.seedPhraseBIP39Valid
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
@@ -859,7 +874,7 @@ fun InputSeedPhrasePagePreview() {
             onPassphraseChanged = {},
             onImportSoftwareAccounts = {},
             onFocusedWordIndexChanged = {},
-            seedPhraseValid = false
+            seedPhraseInputState = SeedPhraseInputDelegate.State()
         )
     }
 }

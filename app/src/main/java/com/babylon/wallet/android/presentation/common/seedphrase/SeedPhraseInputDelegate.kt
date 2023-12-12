@@ -4,6 +4,8 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.common.Stateful
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.toMnemonicWords
+import com.radixdlt.bip39.model.MnemonicWords
+import com.radixdlt.bip39.validate
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -133,8 +135,11 @@ class SeedPhraseInputDelegate(
         val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf(),
     ) : UiState {
 
-        val seedPhraseValid: Boolean
+        val seedPhraseInputValid: Boolean
             get() = seedPhraseWords.all { it.valid }
+
+        val seedPhraseBIP39Valid: Boolean
+            get() = seedPhraseInputValid && MnemonicWords(seedPhraseWords.map { it.value }).validate(WORDLIST_ENGLISH)
 
         val wordsPhrase: String
             get() = seedPhraseWords.joinToString(separator = " ") { it.value }

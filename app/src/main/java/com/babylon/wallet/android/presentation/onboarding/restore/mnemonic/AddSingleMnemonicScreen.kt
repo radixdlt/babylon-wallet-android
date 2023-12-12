@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -49,17 +50,17 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.recover.AccountRecoveryViewModel
-import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
+import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.RedWarningText
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import kotlinx.collections.immutable.ImmutableList
 import rdx.works.profile.data.model.SeedPhraseLength
 
 @Composable
@@ -169,7 +170,7 @@ private fun AddSingleMnemonicsContent(
                             .imePadding()
                             .padding(RadixTheme.dimensions.paddingDefault),
                         text = stringResource(R.string.common_continue),
-                        enabled = state.seedPhraseState.seedPhraseValid,
+                        enabled = state.seedPhraseState.seedPhraseInputValid && state.seedPhraseState.seedPhraseBIP39Valid,
                         onClick = onSubmitClick
                     )
                 }
@@ -197,11 +198,9 @@ private fun AddSingleMnemonicsContent(
             onWordChanged = onWordTyped,
             onPassphraseChanged = onPassphraseChanged,
             onFocusedWordIndexChanged = { focusedWordIndex = it },
-            bip39Passphrase = state.seedPhraseState.bip39Passphrase,
-            seedPhraseWords = state.seedPhraseState.seedPhraseWords,
-            allowSeedPhraseLengthChange = isOlympia,
+            seedPhraseState = state.seedPhraseState,
             onSeedPhraseLengthChanged = onSeedPhraseLengthChanged,
-            showAdvancedMode = isOlympia
+            isOlympia = isOlympia
         )
     }
 }
@@ -210,14 +209,12 @@ private fun AddSingleMnemonicsContent(
 private fun SeedPhraseView(
     modifier: Modifier = Modifier,
     title: String,
-    seedPhraseWords: ImmutableList<SeedPhraseWord>,
-    bip39Passphrase: String,
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onFocusedWordIndexChanged: (Int) -> Unit,
-    allowSeedPhraseLengthChange: Boolean = false,
     onSeedPhraseLengthChanged: (Int) -> Unit = {},
-    showAdvancedMode: Boolean
+    seedPhraseState: SeedPhraseInputDelegate.State,
+    isOlympia: Boolean
 ) {
     SecureScreen()
     Column(
@@ -245,7 +242,7 @@ private fun SeedPhraseView(
             iconRes = DSR.ic_warning_error
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        if (allowSeedPhraseLengthChange) {
+        if (isOlympia) {
             val tabs = SeedPhraseLength.values()
             var tabIndex by remember { mutableStateOf(0) }
             TabRow(
@@ -295,13 +292,20 @@ private fun SeedPhraseView(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            seedPhraseWords = seedPhraseWords,
-            bip39Passphrase = bip39Passphrase,
+            seedPhraseWords = seedPhraseState.seedPhraseWords,
+            bip39Passphrase = seedPhraseState.bip39Passphrase,
             onWordChanged = onWordChanged,
             onPassphraseChanged = onPassphraseChanged,
             onFocusedWordIndexChanged = onFocusedWordIndexChanged,
-            showAdvancedMode = showAdvancedMode
+            showAdvancedMode = isOlympia
         )
+        if (seedPhraseState.seedPhraseInputValid && seedPhraseState.seedPhraseBIP39Valid.not()) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            RedWarningText(
+                modifier = Modifier.fillMaxWidth(),
+                text = AnnotatedString(stringResource(R.string.importMnemonic_checksumFailure))
+            )
+        }
     }
 }
 
