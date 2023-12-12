@@ -251,7 +251,7 @@ data class Network(
                 val derivationPath = DerivationPath.forLegacyOlympia(entityIndex)
                 val publicKey = mnemonicWithPassphrase.compressedPublicKey(Slip10Curve.SECP_256K1, derivationPath)
                 val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
-                    publicKey = PublicKey.Secp256k1(publicKey.toUByteList()),
+                    publicKey = PublicKey.Secp256k1(publicKey),
                     olympiaNetwork = OlympiaNetwork.MAINNET
                 )
                 val newBabylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
@@ -299,7 +299,7 @@ data class Network(
                 require(derivationPathToCheck.path == derivationPath.path)
 
                 val address = if (isOlympia) {
-                    val pk = PublicKey.Secp256k1(derivedPublicKeyHex.decodeHex().toUByteList())
+                    val pk = PublicKey.Secp256k1(derivedPublicKeyHex.decodeHex())
                     val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
                         publicKey = pk,
                         olympiaNetwork = OlympiaNetwork.MAINNET
@@ -311,7 +311,7 @@ data class Network(
                 } else {
                     deriveAccountAddress(
                         networkID = networkId,
-                        publicKey = PublicKey.Ed25519(derivedPublicKeyHex.decodeHex().toUByteList())
+                        publicKey = PublicKey.Ed25519(derivedPublicKeyHex.decodeHex())
                     )
                 }
 
