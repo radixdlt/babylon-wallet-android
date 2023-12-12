@@ -434,6 +434,7 @@ class TransferViewModel @Inject constructor(
                 enum class Tab {
                     Tokens,
                     NFTs,
+                    Staking,
                     PoolUnits
                 }
 

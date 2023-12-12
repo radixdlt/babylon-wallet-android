@@ -48,14 +48,16 @@ fun EmptyResourcesContent(
 @DrawableRes
 private fun ResourceTab.toEmptyIconRes() = when (this) {
     ResourceTab.Tokens -> R.drawable.ic_empty_fungibles
-    ResourceTab.Nfts -> R.drawable.ic_empty_non_fungibles
-    ResourceTab.PoolUnits -> R.drawable.ic_empty_pool_tokens
+    ResourceTab.Nfts -> com.babylon.wallet.android.designsystem.R.drawable.ic_nfts
+    ResourceTab.Staking -> com.babylon.wallet.android.designsystem.R.drawable.ic_lsu
+    ResourceTab.PoolUnits -> com.babylon.wallet.android.designsystem.R.drawable.ic_pool_units
 }
 
 @StringRes
 private fun ResourceTab.toEmptyTitleRes() = when (this) {
     ResourceTab.Tokens -> R.string.assetDetails_tokenDetails_noTokens
     ResourceTab.Nfts -> R.string.assetDetails_NFTDetails_noNfts
+    ResourceTab.Staking -> R.string.assetDetails_stakingDetails_noStakes
     ResourceTab.PoolUnits -> R.string.assetDetails_poolUnitDetails_noPoolUnits
 }
 
@@ -64,5 +66,6 @@ private fun ResourceTab.toEmptyTitleRes() = when (this) {
 private fun ResourceTab.toEmptyInfoRes() = when (this) {
     ResourceTab.Tokens -> R.string.assetDetails_tokenDetails_whatAreTokens
     ResourceTab.Nfts -> R.string.assetDetails_NFTDetails_whatAreNfts
+    ResourceTab.Staking -> R.string.assetDetails_poolUnitDetails_whatIsStaking
     ResourceTab.PoolUnits -> R.string.assetDetails_poolUnitDetails_whatArePoolUnits
 }

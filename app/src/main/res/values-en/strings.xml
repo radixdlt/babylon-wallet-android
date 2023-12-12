@@ -23,6 +23,7 @@
   <string name="account_transfer">Transfer</string>
   <string name="account_tokens">Tokens</string>
   <string name="account_nfts">NFTs</string>
+  <string name="account_staking">Staking</string>
   <string name="account_poolUnits">Pool Units</string>
   <string name="account_poolUnits_lsuResourceHeader">Radix Network XRD Stake</string>
   <string name="account_poolUnits_unstaking">Unstaking</string>
@@ -57,7 +58,9 @@
   <string name="assetDetails_NFTDetails_resourceName">Name</string>
   <string name="assetDetails_NFTDetails_nftPlural">%d NFTs</string>
   <string name="assetDetails_NFTDetails_ownedOfTotal">%d NFTs of total supply %d</string>
+  <string name="assetDetails_stakingDetails_noStakes">You have no Stakes</string>
   <string name="assetDetails_poolUnitDetails_noPoolUnits">You have no Pool units</string>
+  <string name="assetDetails_poolUnitDetails_whatIsStaking">What is Staking?</string>
   <string name="assetDetails_poolUnitDetails_whatArePoolUnits">What are Pool units?</string>
   <string name="assetDetails_badgeDetails_noBadges">You have no badges</string>
   <string name="assetDetails_badgeDetails_whatAreBadges">What are badges?</string>

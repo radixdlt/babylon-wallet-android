@@ -28,7 +28,8 @@ fun AssetsTabs(
         ResourceTab.values().indexOf(selectedTab)
     }
     TabRow(
-        modifier = modifier,
+        modifier = modifier
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
         selectedTabIndex = tabIndex,
         containerColor = Color.Transparent,
         divider = {},
@@ -71,11 +72,13 @@ fun AssetsTabs(
 private fun ResourceTab.name(): String = when (this) {
     ResourceTab.Tokens -> stringResource(id = R.string.account_tokens)
     ResourceTab.Nfts -> stringResource(id = R.string.account_nfts)
+    ResourceTab.Staking -> stringResource(id = R.string.account_staking)
     ResourceTab.PoolUnits -> stringResource(id = R.string.account_poolUnits)
 }
 
 enum class ResourceTab {
     Tokens,
     Nfts,
+    Staking,
     PoolUnits
 }

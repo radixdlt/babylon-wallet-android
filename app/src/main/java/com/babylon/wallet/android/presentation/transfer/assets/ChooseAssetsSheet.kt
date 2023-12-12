@@ -104,6 +104,7 @@ fun ChooseAssetsSheet(
                 selectedTab = when (state.selectedTab) {
                     ChooseAssets.Tab.Tokens -> ResourceTab.Tokens
                     ChooseAssets.Tab.NFTs -> ResourceTab.Nfts
+                    ChooseAssets.Tab.Staking -> ResourceTab.Staking
                     ChooseAssets.Tab.PoolUnits -> ResourceTab.PoolUnits
                 },
                 onTabSelected = {
@@ -111,6 +112,7 @@ fun ChooseAssetsSheet(
                         when (it) {
                             ResourceTab.Tokens -> ChooseAssets.Tab.Tokens
                             ResourceTab.Nfts -> ChooseAssets.Tab.NFTs
+                            ResourceTab.Staking -> ChooseAssets.Tab.Staking
                             ResourceTab.PoolUnits -> ChooseAssets.Tab.PoolUnits
                         }
                     )

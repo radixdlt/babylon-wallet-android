@@ -48,8 +48,6 @@ fun LazyListScope.assetsView(
 ) {
     item {
         AssetsTabs(
-            modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
             selectedTab = selectedTab,
             onTabSelected = onTabSelected
         )
@@ -70,12 +68,18 @@ fun LazyListScope.assetsView(
                 action = action
             )
 
-            ResourceTab.PoolUnits -> poolUnitsTab(
+            ResourceTab.Staking -> liquidStakeUnitsTab(
                 assets = assets,
                 epoch = epoch,
                 collapsibleAssetsState = collapsibleAssetsState,
                 action = action
             )
+
+            ResourceTab.PoolUnits -> poolUnitsTab(
+                assets = assets,
+                action = action
+            )
+
         }
     }
 }

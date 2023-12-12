@@ -30,6 +30,8 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
+import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
@@ -44,7 +46,14 @@ fun LazyListScope.liquidStakeUnitsTab(
     collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
     action: AssetsViewAction
 ) {
-    if (assets.ownedValidatorsWithStakes.isNotEmpty()) {
+    if (assets.ownedValidatorsWithStakes.isEmpty()) {
+        item {
+            EmptyResourcesContent(
+                modifier = Modifier.fillMaxWidth(),
+                tab = ResourceTab.Staking
+            )
+        }
+    } else {
         item {
             LSUHeader(
                 collapsibleAssetsState = collapsibleAssetsState,
