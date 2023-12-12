@@ -90,7 +90,7 @@ private fun AccountRecoveryScanSelectionContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = RadixTheme.dimensions.paddingDefault),
-                text = "Account Recovery Scan", // TODO crowdin
+                text = stringResource(id = R.string.settings_accountRecovery),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center

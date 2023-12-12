@@ -215,7 +215,9 @@ private fun SelectRecoveryOptionSection(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingSmall
                 ),
-            text = "I only want to restore Ledger hardware wallet Accounts.", // TODO crowdin
+            text = stringResource(id = R.string.recoverWalletWithoutProfileStart_section_olympia_onlyHardwareAccounts_title).formattedSpans(
+                RadixTheme.typography.body1Header.toSpanStyle()
+            ),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1
@@ -233,7 +235,9 @@ private fun SelectRecoveryOptionSection(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingSmall
                 ),
-            text = "I only have Accounts created on the Radix Olympia network.", // TODO crowdin
+            text = stringResource(id = R.string.recoverWalletWithoutProfileStart_section_olympia_onlySoftwareAccounts_title).formattedSpans(
+                RadixTheme.typography.body1Header.toSpanStyle()
+            ),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1
