@@ -911,7 +911,7 @@ You will be asked to enter your main seed phrase. This is a set of **24 words** 
   <string name="accountRecoveryScan_babylonSection_subtitle">Scan for Accounts originally created on the **Babylon** network.</string>
   <string name="accountRecoveryScan_olympiaSection_title">Olympia Accounts</string>
   <string name="accountRecoveryScan_olympiaSection_subtitle">Scan for Accounts originally created on the **Olympia** network.
-
+\n\n
 (If you have Olympia Accounts in the Radix Olympia Desktop Wallet, consider using **Import from a Legacy Wallet** instead.</string>
   <string name="accountRecoveryScan_olympiaSection_footnote">Note: You will still use the new **Radix Babylon** app on your Ledger device, not the old Radix Ledger app.</string>
   <string name="accountRecoveryScan_seedPhraseButtonTitle">Use Seed Phrase</string>

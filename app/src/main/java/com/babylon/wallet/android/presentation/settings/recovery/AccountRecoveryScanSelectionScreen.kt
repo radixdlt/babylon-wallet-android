@@ -98,15 +98,14 @@ private fun AccountRecoveryScanSelectionContent(
             Text(
                 modifier = Modifier
                     .fillMaxWidth(),
-                text = "The Radix Wallet can scan for previously used accounts using a bare seed phrase or " +
-                    "Ledger hardware wallet device.", // TODO crowdin
+                text = stringResource(id = R.string.accountRecoveryScan_subtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge), color = RadixTheme.colors.gray4)
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Babylon Accounts", // TODO crowdin
+                text = stringResource(id = R.string.accountRecoveryScan_babylonSection_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.header,
                 color = RadixTheme.colors.gray1
@@ -117,16 +116,16 @@ private fun AccountRecoveryScanSelectionContent(
                     .padding(
                         vertical = RadixTheme.dimensions.paddingDefault
                     ),
-                text = "Scan for Accounts originally created on the *Babylon* network:".formattedSpans(
+                text = stringResource(id = R.string.accountRecoveryScan_babylonSection_subtitle).formattedSpans(
                     RadixTheme.typography.body1Header.toSpanStyle()
-                ), // TODO crowdin
+                ),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
             RadixSecondaryButton(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Use Seed Phrase", // TODO crowdin
+                text = stringResource(id = R.string.accountRecoveryScan_seedPhraseButtonTitle),
                 onClick = {
                     onUseFactorSource(RecoveryType.DeviceBabylon)
                 }
@@ -134,7 +133,7 @@ private fun AccountRecoveryScanSelectionContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             RadixSecondaryButton(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Use Ledger Hardware Wallet", // TODO crowdin
+                text = stringResource(id = R.string.accountRecoveryScan_ledgerButtonTitle),
                 onClick = {
                     onUseFactorSource(RecoveryType.LedgerBabylon)
                 }
@@ -148,7 +147,7 @@ private fun AccountRecoveryScanSelectionContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = "Olympia Accounts", // TODO crowdin
+                    text = stringResource(id = R.string.accountRecoveryScan_olympiaSection_title),
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.header,
                     color = RadixTheme.colors.gray1
@@ -157,22 +156,16 @@ private fun AccountRecoveryScanSelectionContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = RadixTheme.dimensions.paddingDefault),
-                    text = "Scan for Accounts originally created on the previous *Olympia* network.\n\n".formattedSpans(
+                    text = stringResource(id = R.string.accountRecoveryScan_olympiaSection_subtitle).formattedSpans(
                         RadixTheme.typography.body1Header.toSpanStyle()
-                    ) +
-                        (
-                            "(If you have Olympia Accounts in the Radix Olympia Desktop Wallet, consider" +
-                                " using *Import from a Legacy Wallet* instead.)"
-                            ).formattedSpans(
-                            RadixTheme.typography.body1Header.toSpanStyle()
-                        ), // TODO crowdin
+                    ),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.Center
                 )
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "Use Seed Phrase", // TODO crowdin
+                    text = stringResource(id = R.string.accountRecoveryScan_seedPhraseButtonTitle),
                     onClick = {
                         onUseFactorSource(RecoveryType.DeviceOlympia)
                     }
@@ -180,7 +173,7 @@ private fun AccountRecoveryScanSelectionContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "Use Ledger Hardware Wallet", // TODO crowdin
+                    text = stringResource(id = R.string.accountRecoveryScan_ledgerButtonTitle), // TODO crowdin
                     onClick = {
                         onUseFactorSource(RecoveryType.LedgerOlympia)
                     }

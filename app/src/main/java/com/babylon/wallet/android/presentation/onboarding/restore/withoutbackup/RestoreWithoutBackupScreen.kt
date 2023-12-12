@@ -64,7 +64,7 @@ fun RestoreWithoutBackupScreen(
                 RestoreWithoutBackupViewModel.State.PromptState.Ledger -> {
                     stringResource(id = R.string.recoverWalletWithoutProfileStart_useNewWalletInstead_alert_message)
                 }
-                else -> ""
+                else -> stringResource(id = R.string.empty)
             },
             confirmText = stringResource(id = R.string.common_continue),
         )

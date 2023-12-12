@@ -161,10 +161,9 @@ private fun ChooseSeedPhraseContent(
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                         text = when (recoveryType) {
                             MnemonicType.BabylonMain,
-                            MnemonicType.Babylon -> "Add Babylon Seed Phrase"
-
-                            MnemonicType.Olympia -> "Add Olympia Seed Phrase"
-                        }, // TODO crowdin
+                            MnemonicType.Babylon -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_addButtonBabylon)
+                            MnemonicType.Olympia -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_addButtonOlympia)
+                        },
                         onClick = {
                             onAddSeedPhrase(recoveryType)
                         }
