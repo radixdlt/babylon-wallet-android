@@ -26,7 +26,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECParameterSpec
 import org.bouncycastle.jce.spec.ECPublicKeySpec
 import org.bouncycastle.util.encoders.Hex
-import rdx.works.core.toUByteList
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.SecureRandom
@@ -177,7 +176,7 @@ sealed class PrivateKey {
         }
 
         override fun signToSignature(hashedData: ByteArray): Signature.Secp256k1 {
-            return Signature.Secp256k1(sign(hashedData).toUByteList())
+            return Signature.Secp256k1(sign(hashedData))
         }
 
         override fun signToSignatureWithPublicKey(
@@ -195,7 +194,7 @@ sealed class PrivateKey {
         // Public Key methods
 
         override fun publicKey(): PublicKey.Secp256k1 {
-            return PublicKey.Secp256k1(publicKeyByteArray(true).toUByteList())
+            return PublicKey.Secp256k1(publicKeyByteArray(true))
         }
 
         private fun publicKeyByteArray(compressed: Boolean): ByteArray {
@@ -312,7 +311,7 @@ sealed class PrivateKey {
         }
 
         override fun signToSignature(hashedData: ByteArray): Signature.Ed25519 {
-            return Signature.Ed25519(sign(hashedData).toUByteList())
+            return Signature.Ed25519(sign(hashedData))
         }
 
         override fun signToSignatureWithPublicKey(
@@ -330,7 +329,7 @@ sealed class PrivateKey {
         // Public Key methods
 
         override fun publicKey(): PublicKey.Ed25519 {
-            return PublicKey.Ed25519(publicKey.encoded.toUByteList())
+            return PublicKey.Ed25519(publicKey.encoded)
         }
 
         override fun equals(other: Any?): Boolean {

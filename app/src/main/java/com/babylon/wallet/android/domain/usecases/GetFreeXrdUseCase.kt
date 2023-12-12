@@ -44,7 +44,7 @@ class GetFreeXrdUseCase @Inject constructor(
             val manifest = BabylonManifestBuilder()
                 .lockFee()
                 .freeXrd()
-                .accountTryDepositBatchOrAbort(
+                .accountTryDepositEntireWorktopOrAbort(
                     toAddress = Address(address)
                 )
                 .buildSafely(gateway.network.id)

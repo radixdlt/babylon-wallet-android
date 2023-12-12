@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.decodeHex
 import rdx.works.core.toHexString
-import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.extensions.updateLastUsed
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
@@ -143,14 +142,14 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 when (signatureOfSigner.derivedPublicKey.curve) {
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
                         SignatureWithPublicKey.Ed25519(
-                            signature = signatureOfSigner.signature.decodeHex().toUByteList(),
-                            publicKey = signatureOfSigner.derivedPublicKey.publicKeyHex.decodeHex().toUByteList()
+                            signature = signatureOfSigner.signature.decodeHex(),
+                            publicKey = signatureOfSigner.derivedPublicKey.publicKeyHex.decodeHex()
                         )
                     }
 
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> {
                         SignatureWithPublicKey.Secp256k1(
-                            signature = signatureOfSigner.signature.decodeHex().toUByteList()
+                            signature = signatureOfSigner.signature.decodeHex()
                         )
                     }
                 }

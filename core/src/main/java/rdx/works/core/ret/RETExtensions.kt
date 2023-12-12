@@ -12,19 +12,17 @@ import org.bouncycastle.math.ec.ECPoint
 import org.bouncycastle.util.encoders.Hex
 import rdx.works.core.blake2Hash
 import rdx.works.core.ret.crypto.ECKeyUtils
-import rdx.works.core.toByteArray
-import rdx.works.core.toUByteList
 import java.math.BigInteger
 
 fun ECKeyPair.toEnginePublicKeyModel(): PublicKey {
     return when (this.publicKey.curveType) {
         EllipticCurveType.Secp256k1 -> {
             // Required size 33 bytes
-            PublicKey.Secp256k1(getCompressedPublicKey().toUByteList())
+            PublicKey.Secp256k1(getCompressedPublicKey())
         }
         EllipticCurveType.Ed25519 -> {
             // Required size 32 bytes
-            PublicKey.Ed25519(getCompressedPublicKey().removeLeadingZero().toUByteList())
+            PublicKey.Ed25519(getCompressedPublicKey().removeLeadingZero())
         }
         EllipticCurveType.P256 -> error("Curve EllipticCurveType.P256 not supported")
     }
@@ -61,7 +59,7 @@ fun PrivateKey.toEngineModel(): rdx.works.core.ret.crypto.PrivateKey {
 @Suppress("MagicNumber")
 fun SignatureWithPublicKey.Secp256k1.publicKey(message: ByteArray): PublicKey.Secp256k1 {
     // Extracting the v, r, and s parameters from the 65-byte long signature.
-    val signatureBytes: ByteArray = signature.toByteArray()
+    val signatureBytes: ByteArray = signature
 
     val v: Byte = signatureBytes[0]
     val r = BigInteger(1, signatureBytes.sliceArray(1..32))
@@ -81,15 +79,15 @@ fun SignatureWithPublicKey.Secp256k1.publicKey(message: ByteArray): PublicKey.Se
     // Getting the bytes of the compressed public key (below, true = compress) and then
     // creating a new public key object.
     val publicKeyBytes: ByteArray = ecPoint.getEncoded(true)
-    return PublicKey.Secp256k1(publicKeyBytes.toUByteList())
+    return PublicKey.Secp256k1(publicKeyBytes)
 }
 fun SignatureWithPublicKey.Ed25519.publicKey() = PublicKey.Ed25519(publicKey)
 
 fun SignatureWithPublicKey.Secp256k1.signature() = Signature.Secp256k1(signature)
 fun SignatureWithPublicKey.Ed25519.signature() = Signature.Ed25519(signature)
 
-fun Signature.Secp256k1.toHexString(): String = Hex.toHexString(value.toByteArray())
-fun Signature.Ed25519.toHexString(): String = Hex.toHexString(value.toByteArray())
+fun Signature.Secp256k1.toHexString(): String = Hex.toHexString(value)
+fun Signature.Ed25519.toHexString(): String = Hex.toHexString(value)
 
-fun PublicKey.Secp256k1.toHexString(): String = Hex.toHexString(value.toByteArray())
-fun PublicKey.Ed25519.toHexString(): String = Hex.toHexString(value.toByteArray())
+fun PublicKey.Secp256k1.toHexString(): String = Hex.toHexString(value)
+fun PublicKey.Ed25519.toHexString(): String = Hex.toHexString(value)

@@ -14,7 +14,6 @@ import rdx.works.core.compressedPublicKeyHash
 import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
-import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -80,8 +79,8 @@ class ROLAClient @Inject constructor(
             ownerKeyHashes = ownerPublicKeys.map { key ->
                 val bytes = key.compressedData.compressedPublicKeyHashBytes()
                 when (key.curve) {
-                    Slip10Curve.SECP_256K1 -> PublicKeyHash.Secp256k1(bytes.toUByteList())
-                    Slip10Curve.CURVE_25519 -> PublicKeyHash.Secp256k1(bytes.toUByteList())
+                    Slip10Curve.SECP_256K1 -> PublicKeyHash.Secp256k1(bytes)
+                    Slip10Curve.CURVE_25519 -> PublicKeyHash.Secp256k1(bytes)
                 }
             }
         )

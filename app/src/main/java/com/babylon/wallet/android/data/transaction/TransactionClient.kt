@@ -20,7 +20,6 @@ import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.core.then
-import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -93,8 +92,8 @@ class TransactionClient @Inject constructor(
             val signatures = collectSignersSignaturesUseCase(
                 signers = notaryAndSigners.signers,
                 signRequest = SignRequest.SignTransactionRequest(
-                    dataToSign = compiledTransactionIntent.toByteArray(),
-                    hashedDataToSign = transactionIntentHash.bytes().toByteArray()
+                    dataToSign = compiledTransactionIntent,
+                    hashedDataToSign = transactionIntentHash.bytes()
                 ),
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             ).getOrElse { throwable ->
@@ -120,7 +119,7 @@ class TransactionClient @Inject constructor(
                 return Result.failure(RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction(error))
             }
 
-            val notarySignature = notaryAndSigners.signWithNotary(hashedData = signedIntentHash.bytes().toByteArray())
+            val notarySignature = notaryAndSigners.signWithNotary(hashedData = signedIntentHash.bytes())
             val compiledNotarizedIntent = runCatching {
                 NotarizedTransaction(
                     signedIntent = signedTransactionIntent,
@@ -132,7 +131,7 @@ class TransactionClient @Inject constructor(
             Result.success(
                 NotarizedTransactionResult(
                     txIdHash = transactionIntentHash.asStr(),
-                    notarizedTransactionIntentHex = compiledNotarizedIntent.toByteArray().toHexString(),
+                    notarizedTransactionIntentHex = compiledNotarizedIntent.toHexString(),
                     transactionHeader = header
                 )
             )
@@ -223,7 +222,7 @@ class TransactionClient @Inject constructor(
                     assumeAllSignatureProofs = false,
                     skipEpochCheck = false
                 ),
-                blobsHex = manifest.blobs().map { it.toByteArray().toHexString() },
+                blobsHex = manifest.blobs().map { it.toHexString() },
                 notaryPublicKey = notaryAndSigners.notaryPublicKey().asGatewayPublicKey(),
                 notaryIsSignatory = notaryAndSigners.notaryIsSignatory
             )

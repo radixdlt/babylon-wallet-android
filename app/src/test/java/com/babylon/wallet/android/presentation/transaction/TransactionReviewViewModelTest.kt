@@ -169,7 +169,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                     1U,
                     5U,
                     10u,
-                    com.radixdlt.ret.PublicKey.Ed25519(emptyList()),
+                    com.radixdlt.ret.PublicKey.Ed25519(byteArrayOf()),
                     false,
                     10u
                 )

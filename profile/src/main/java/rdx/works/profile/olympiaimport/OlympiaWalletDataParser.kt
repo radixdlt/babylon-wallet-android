@@ -11,7 +11,6 @@ import okio.ByteString.Companion.decodeBase64
 import rdx.works.core.Identified
 import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.core.decodeHex
-import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.derivation.model.NetworkId
@@ -69,7 +68,7 @@ class OlympiaWalletDataParser @Inject constructor(
         val singleAccountDataChunks = singleAccountData.split(InnerSeparator)
         val type = requireNotNull(OlympiaAccountType.from(singleAccountDataChunks[0]))
         val publicKeyHex = requireNotNull(singleAccountDataChunks[1].decodeBase64()?.hex())
-        val publicKey = PublicKey.Secp256k1(publicKeyHex.decodeHex().toUByteList())
+        val publicKey = PublicKey.Secp256k1(publicKeyHex.decodeHex())
         val publicKeyHash = publicKeyHex.compressedPublicKeyHashBytes()
         val parsedIndex = requireNotNull(singleAccountDataChunks[2].toInt())
         val name = if (singleAccountDataChunks.size == 4) {

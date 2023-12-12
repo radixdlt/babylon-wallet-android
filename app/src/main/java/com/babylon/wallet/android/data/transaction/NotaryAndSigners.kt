@@ -8,7 +8,6 @@ import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.Signature
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.core.ret.toEnginePublicKeyModel
-import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -38,10 +37,10 @@ data class NotaryAndSigners(
                 }
                 when (publicKey.curve) {
                     Slip10Curve.CURVE_25519 -> PublicKey.Ed25519(
-                        value = HexString(publicKey.compressedData).hexToByteArray().toUByteList()
+                        value = HexString(publicKey.compressedData).hexToByteArray()
                     )
                     Slip10Curve.SECP_256K1 -> PublicKey.Secp256k1(
-                        value = HexString(publicKey.compressedData).hexToByteArray().toUByteList()
+                        value = HexString(publicKey.compressedData).hexToByteArray()
                     )
                 }
             }

@@ -112,7 +112,7 @@ fun GetProfileUseCase.accountOnCurrentNetworkWithAddress(
 
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
-        val addressData = Address(it.address).bytes().toByteArray()
+        val addressData = Address(it.address).bytes()
         // last 29 bytes of addressData are hash of public key of this account
         addressData.takeLast(PUBLIC_KEY_HASH_LENGTH).toByteArray()
     }.toSet()
