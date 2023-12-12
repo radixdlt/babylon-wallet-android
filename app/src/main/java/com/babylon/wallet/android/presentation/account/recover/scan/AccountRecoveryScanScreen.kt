@@ -75,15 +75,15 @@ fun AccountRecoveryScanScreen(
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     LaunchedEffect(Unit) {
-        context.biometricAuthenticate { authenticated ->
-            if (authenticated) {
-                if (state.recoveryFactorSource is RecoveryFactorSource.VirtualDeviceFactorSource) {
-                    viewModel.startRecoveryScan()
-                } else {
+        if (state.recoveryFactorSource is RecoveryFactorSource.VirtualDeviceFactorSource) {
+            viewModel.startRecoveryScan()
+        } else {
+            context.biometricAuthenticate { authenticated ->
+                if (authenticated) {
                     viewModel.startScanForExistingFactorSource()
+                } else {
+                    onBackClick()
                 }
-            } else {
-                onBackClick()
             }
         }
     }
