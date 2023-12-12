@@ -1,10 +1,12 @@
 package com.babylon.wallet.android.presentation.ui.composables.assets
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
@@ -21,11 +23,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.StakeSummary
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -33,8 +37,10 @@ import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
+import java.math.BigDecimal
 
 const val STAKE_COLLECTION_ID = "-1"
 
@@ -55,9 +61,10 @@ fun LazyListScope.liquidStakeUnitsTab(
         }
     } else {
         item {
-            LSUHeader(
-                collapsibleAssetsState = collapsibleAssetsState,
-                assets = assets
+            StakingHeader(
+                assets = assets,
+                epoch = epoch,
+                action = action
             )
         }
 
@@ -94,12 +101,6 @@ private fun LSUItem(
         allItemsSize = allSize,
         roundTopCorners = false
     ) {
-        LaunchedEffect(item) {
-            if (!item.isDetailsAvailable) {
-                action.onStakesRequest()
-            }
-        }
-
         ValidatorDetailsItem(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
@@ -156,51 +157,114 @@ private fun LSUItem(
 }
 
 @Composable
-private fun LSUHeader(
-    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
-    assets: Assets
+private fun StakingHeader(
+    modifier: Modifier = Modifier,
+    epoch: Long?,
+    assets: Assets,
+    action: AssetsViewAction
 ) {
-    val isCollapsed = collapsibleAssetsState.isStakeSectionCollapsed()
-    CollapsibleAssetCard(
-        modifier = Modifier
+    AssetCard(
+        modifier = modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
             .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-        isCollapsed = isCollapsed,
-        collapsedItems = assets.ownedValidatorsWithStakes.size
+        itemIndex = 0,
+        allItemsSize = 1
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    collapsibleAssetsState[STAKE_COLLECTION_ID] = !collapsibleAssetsState.isStakeSectionCollapsed()
-                }
-                .padding(RadixTheme.dimensions.paddingLarge),
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+                .padding(
+                    horizontal = RadixTheme.dimensions.paddingDefault,
+                    vertical = RadixTheme.dimensions.paddingSemiLarge
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_splash),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(RadixTheme.shapes.roundedRectSmall),
-                tint = Color.Unspecified
+            Image(
+                modifier = Modifier.size(56.dp),
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_lsu),
+                contentDescription = null
             )
-            Column(verticalArrangement = Arrangement.Center) {
-                Text(
-                    stringResource(id = R.string.account_poolUnits_lsuResourceHeader),
-                    style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 2
-                )
-                Text(
-                    stringResource(id = R.string.account_poolUnits_numberOfStakes, assets.ownedValidatorsWithStakes.size),
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray2,
-                    maxLines = 1
-                )
+
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(id = R.string.account_poolUnits_lsuResourceHeader),
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                maxLines = 2
+            )
+        }
+
+        val summary = remember(assets.ownedValidatorsWithStakes, epoch) {
+            assets.stakeSummary(epoch)
+        }
+
+        LaunchedEffect(summary) {
+            if (summary == null) {
+                action.onStakesRequest()
             }
         }
+
+        StakeAmount(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            label = stringResource(id = R.string.account_poolUnits_staked),
+            amount = summary?.staked,
+            amountStyle = RadixTheme.typography.body2HighImportance.copy(
+                color = if (summary?.hasStakedValue == true) RadixTheme.colors.gray1 else RadixTheme.colors.gray2
+            )
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+        StakeAmount(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            label = stringResource(id = R.string.account_poolUnits_unstaking),
+            amount = summary?.unstaking
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+        StakeAmount(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            label = stringResource(id = R.string.account_poolUnits_readyToClaim),
+            amount = summary?.readyToClaim,
+            labelStyle = if (summary?.hasReadyToClaimValue == true) {
+                RadixTheme.typography.body2Link.copy(color = RadixTheme.colors.blue2)
+            } else {
+                RadixTheme.typography.body2HighImportance.copy(color = RadixTheme.colors.gray2)
+            }
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+    }
+}
+
+@Composable
+private fun StakeAmount(
+    modifier: Modifier = Modifier,
+    label: String,
+    amount: BigDecimal?,
+    labelStyle: TextStyle = RadixTheme.typography.body2HighImportance.copy(
+        color = RadixTheme.colors.gray2
+    ),
+    amountStyle: TextStyle = RadixTheme.typography.body2HighImportance.copy(
+        color = RadixTheme.colors.gray2
+    )
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+    ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = label,
+            style = labelStyle,
+            maxLines = 1
+        )
+
+        Text(
+            modifier = Modifier
+                .weight(1f)
+                .radixPlaceholder(visible = amount == null),
+            text = amount?.let { "${it.displayableQuantity()} XRD" }.orEmpty(),
+            style = amountStyle,
+            textAlign = TextAlign.End
+        )
     }
 }
 

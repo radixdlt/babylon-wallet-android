@@ -25,7 +25,7 @@
   <string name="account_nfts">NFTs</string>
   <string name="account_staking">Staking</string>
   <string name="account_poolUnits">Pool Units</string>
-  <string name="account_poolUnits_lsuResourceHeader">Radix Network XRD Stake</string>
+  <string name="account_poolUnits_lsuResourceHeader">Radix Network XRD Stake Summary</string>
   <string name="account_poolUnits_unstaking">Unstaking</string>
   <string name="account_poolUnits_readyToClaim">Ready to Claim</string>
   <string name="account_poolUnits_liquidStakeUnits">LIQUID STAKE UNITS</string>

@@ -30,7 +30,7 @@ fun LazyListScope.poolUnitsTab(
     assets: Assets,
     action: AssetsViewAction
 ) {
-    if (assets.ownedValidatorsWithStakes.isEmpty() && assets.ownedPoolUnits.isEmpty()) {
+    if (assets.ownedPoolUnits.isEmpty()) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
