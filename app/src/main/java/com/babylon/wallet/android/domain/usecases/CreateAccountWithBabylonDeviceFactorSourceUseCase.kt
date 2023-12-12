@@ -1,6 +1,11 @@
-package rdx.works.profile.domain.account
+package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.data.transaction.InteractionState
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
@@ -21,8 +26,13 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val profileRepository: ProfileRepository,
+    private val resolveAccountsLedgerStateUseCase: ResolveAccountsLedgerStateUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
+
+    private val _interactionState = MutableStateFlow<InteractionState?>(null)
+    val interactionState: Flow<InteractionState?> = _interactionState.asSharedFlow()
+
     suspend operator fun invoke(
         displayName: String,
         networkID: NetworkId? = null
@@ -30,6 +40,7 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCase @Inject constructor(
         return withContext(defaultDispatcher) {
             val profile = ensureBabylonFactorSourceExistUseCase()
             val factorSource = profile.babylonMainDeviceFactorSource
+            _interactionState.update { InteractionState.Device.DerivingAccounts(factorSource) }
 
             // Construct new account
             val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
@@ -45,12 +56,22 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCase @Inject constructor(
                 appearanceID = nextAppearanceId
             )
             // Add account to the profile
-            val updatedProfile = profile.addAccounts(
-                accounts = listOf(newAccount),
-                onNetwork = networkId
-            )
+            val resolveResult = resolveAccountsLedgerStateUseCase.invoke(listOf(newAccount))
+            // Add account to the profile
+            val updatedProfile = if (resolveResult.isSuccess) {
+                profile.addAccounts(
+                    accounts = listOf(resolveResult.getOrThrow().first().account),
+                    onNetwork = networkId
+                )
+            } else {
+                profile.addAccounts(
+                    accounts = listOf(newAccount),
+                    onNetwork = networkId
+                )
+            }
             // Save updated profile
             profileRepository.saveProfile(updatedProfile)
+            _interactionState.update { null }
             // Return new account
             newAccount
         }

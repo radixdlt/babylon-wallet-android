@@ -72,7 +72,7 @@ val Entity.hasWrongDerivationPathScheme: Boolean
         return when (transactionSigning.badge) {
             is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
                 transactionSigning.badge.derivationPath.isBip44LikePath() &&
-                        transactionSigning.badge.derivationPath.scheme == DerivationPathScheme.CAP_26
+                    transactionSigning.badge.derivationPath.scheme == DerivationPathScheme.CAP_26
             }
         }
     }

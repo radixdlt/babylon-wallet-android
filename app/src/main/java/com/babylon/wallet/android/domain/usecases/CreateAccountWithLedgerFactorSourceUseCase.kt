@@ -1,4 +1,4 @@
-package rdx.works.profile.domain.account
+package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import kotlinx.coroutines.CoroutineDispatcher
@@ -10,7 +10,6 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithLedgerFactorSource
 import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
@@ -21,6 +20,7 @@ import javax.inject.Inject
 
 class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
+    private val resolveAccountsLedgerStateUseCase: ResolveAccountsLedgerStateUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
     suspend operator fun invoke(
@@ -40,7 +40,7 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
             // Construct new account
             val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val totalAccountsOnNetwork = profile.currentNetwork.accounts.size
-            val newAccount = initAccountWithLedgerFactorSource(
+            val newAccount = Network.Account.initAccountWithLedgerFactorSource(
                 entityIndex = profile.nextAccountIndex(derivationPath.scheme, networkId, ledgerFactorSourceID),
                 displayName = displayName,
                 derivedPublicKeyHex = derivedPublicKeyHex,
@@ -49,11 +49,19 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
                 derivationPath = derivationPath,
                 appearanceID = totalAccountsOnNetwork % AccountGradientList.count()
             )
+            val resolveResult = resolveAccountsLedgerStateUseCase.invoke(listOf(newAccount))
             // Add account to the profile
-            val updatedProfile = profile.addAccounts(
-                accounts = listOf(newAccount),
-                onNetwork = networkId
-            )
+            val updatedProfile = if (resolveResult.isSuccess) {
+                profile.addAccounts(
+                    accounts = listOf(resolveResult.getOrThrow().first().account),
+                    onNetwork = networkId
+                )
+            } else {
+                profile.addAccounts(
+                    accounts = listOf(newAccount),
+                    onNetwork = networkId
+                )
+            }
             // Save updated profile
             profileRepository.saveProfile(updatedProfile)
             // Return new account

@@ -51,18 +51,15 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.recover.AccountRecoveryViewModel
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.presentation.ui.composables.DefaultSelector
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
-import com.babylon.wallet.android.presentation.ui.composables.SelectorItem
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toPersistentList
 import rdx.works.profile.data.model.SeedPhraseLength
 
 @Composable
@@ -292,16 +289,6 @@ private fun SeedPhraseView(
                     }
                 }
             }
-            DefaultSelector(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                items = SeedPhraseLength.values().map { SelectorItem(it, it.description()) }.toPersistentList(),
-                selectedItem = SeedPhraseLength.from(seedPhraseWords.size).let { SelectorItem(it, it.description()) },
-                onItemSelected = {
-                    onSeedPhraseLengthChanged(it.item.words)
-                }
-            )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         }
         SeedPhraseInputForm(
@@ -316,11 +303,6 @@ private fun SeedPhraseView(
             showAdvancedMode = showAdvancedMode
         )
     }
-}
-
-@Composable
-private fun SeedPhraseLength.description(): String {
-    return stringResource(id = R.string.seedPhraseWords, words)
 }
 
 @Composable

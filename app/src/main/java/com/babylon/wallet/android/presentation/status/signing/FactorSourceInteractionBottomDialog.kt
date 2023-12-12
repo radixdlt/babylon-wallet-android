@@ -78,6 +78,7 @@ fun FactorSourceInteractionBottomDialogContent(
     }
 }
 
+@Suppress("CyclomaticComplexity")
 @Composable
 private fun SignatureRequestContent(
     interactionState: InteractionState?,

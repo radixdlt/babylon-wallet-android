@@ -98,7 +98,8 @@ private fun AccountRecoveryScanSelectionContent(
             Text(
                 modifier = Modifier
                     .fillMaxWidth(),
-                text = "The Radix Wallet can scan for previously used accounts using a bare seed phrase or " + "Ledger hardware wallet device.", // TODO crowdin
+                text = "The Radix Wallet can scan for previously used accounts using a bare seed phrase or " +
+                    "Ledger hardware wallet device.", // TODO crowdin
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )
@@ -156,8 +157,13 @@ private fun AccountRecoveryScanSelectionContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = RadixTheme.dimensions.paddingDefault),
-                    text = "Scan for Accounts originally created on the previous *Olympia* network.\n\n".formattedSpans(RadixTheme.typography.body1Header.toSpanStyle()) +
-                        "(If you have Olympia Accounts in the Radix Olympia Desktop Wallet, consider using *Import from a Legacy Wallet* instead.)".formattedSpans(
+                    text = "Scan for Accounts originally created on the previous *Olympia* network.\n\n".formattedSpans(
+                        RadixTheme.typography.body1Header.toSpanStyle()
+                    ) +
+                        (
+                            "(If you have Olympia Accounts in the Radix Olympia Desktop Wallet, consider" +
+                                " using *Import from a Legacy Wallet* instead.)"
+                            ).formattedSpans(
                             RadixTheme.typography.body1Header.toSpanStyle()
                         ), // TODO crowdin
                     style = RadixTheme.typography.body1Regular,
@@ -183,9 +189,10 @@ private fun AccountRecoveryScanSelectionContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = RadixTheme.dimensions.paddingSmall, horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = "Note: You must still use the new *Radix Babylon* app on your Ledger device, not the old Radix Ledger app.".formattedSpans(
-                        RadixTheme.typography.body1HighImportance.toSpanStyle()
-                    ), // TODO crowdin
+                    text = "Note: You must still use the new *Radix Babylon* app on your Ledger device, not the old Radix Ledger app."
+                        .formattedSpans(
+                            RadixTheme.typography.body1HighImportance.toSpanStyle()
+                        ), // TODO crowdin
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
                 )

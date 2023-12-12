@@ -2,6 +2,9 @@ package com.babylon.wallet.android.presentation.account.createaccount
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.transaction.InteractionState
+import com.babylon.wallet.android.domain.usecases.CreateAccountWithBabylonDeviceFactorSourceUseCase
+import com.babylon.wallet.android.domain.usecases.CreateAccountWithLedgerFactorSourceUseCase
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -24,8 +27,6 @@ import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
-import rdx.works.profile.domain.account.CreateAccountWithBabylonDeviceFactorSourceUseCase
-import rdx.works.profile.domain.account.CreateAccountWithLedgerFactorSourceUseCase
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
@@ -64,6 +65,11 @@ class CreateAccountViewModel @Inject constructor(
                         derivedPublicKeyHex = it.derivedPublicKeyHex
                     )
                 }
+        }
+        viewModelScope.launch {
+            createAccountWithBabylonDeviceFactorSourceUseCase.interactionState.collect { interactionState ->
+                _state.update { it.copy(interactionState = interactionState) }
+            }
         }
     }
 
@@ -157,6 +163,10 @@ class CreateAccountViewModel @Inject constructor(
         sendEvent(CreateAccountEvent.Dismiss)
     }
 
+    fun onDismissSigningStatusDialog() {
+        _state.update { it.copy(interactionState = null) }
+    }
+
     @Suppress("UnsafeCallOnNullableType")
     private suspend fun switchNetworkIfNeeded(): NetworkId? {
         val switchNetwork = args.switchNetwork ?: false
@@ -179,7 +189,8 @@ class CreateAccountViewModel @Inject constructor(
         val accountName: String = "",
         val firstTime: Boolean = false,
         val useLedgerSelected: Boolean = false,
-        val isCancelable: Boolean = true
+        val isCancelable: Boolean = true,
+        val interactionState: InteractionState? = null
     ) : UiState
 
     companion object {
