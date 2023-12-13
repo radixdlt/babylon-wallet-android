@@ -7,13 +7,13 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
 import com.babylon.wallet.android.presentation.account.recover.RecoveryFactorSource
+import com.babylon.wallet.android.utils.Constants
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.then
@@ -84,9 +84,7 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
                 }
             }
             val resolvedAccounts = resolveAccountsLedgerStateUseCase(derivedAccounts)
-            if (isActive) {
-                nextDerivationPathOffset = indicesToScan.last() + 1
-            }
+            nextDerivationPathOffset = indicesToScan.last() + 1
             _interactionState.update { null }
             return@withContext resolvedAccounts
         }
@@ -117,7 +115,7 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
                 val derivationPath = derivationPaths.first { it.path == derivedPublicKey.derivationPath }
                 Network.Account.initAccountWithLedgerFactorSource(
                     entityIndex = derivationPath.derivationPathEntityIndex(),
-                    displayName = "Unnamed",
+                    displayName = Constants.DEFAULT_ACCOUNT_NAME,
                     networkId = networkId,
                     appearanceID = derivationPath.derivationPathEntityIndex() % AccountGradientList.count(),
                     ledgerFactorSource = recoveryFS.factorSource,
@@ -140,7 +138,7 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
         return indicesToScan.map { index ->
             Network.Account.initAccountWithBabylonDeviceFactorSource(
                 entityIndex = index,
-                displayName = "Unnamed",
+                displayName = Constants.DEFAULT_ACCOUNT_NAME,
                 mnemonicWithPassphrase = recoveryFS.mnemonicWithPassphrase,
                 deviceFactorSource = recoveryFS.virtualDeviceFactorSource,
                 networkId = networkId,
@@ -160,7 +158,7 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
             if (recoveryFS.isOlympia) {
                 Network.Account.initAccountWithOlympiaDeviceFactorSource(
                     entityIndex = index,
-                    displayName = "Unnamed",
+                    displayName = Constants.DEFAULT_ACCOUNT_NAME,
                     mnemonicWithPassphrase = mnemonic,
                     deviceFactorSource = recoveryFS.factorSource,
                     networkId = networkId,
@@ -169,7 +167,7 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
             } else {
                 Network.Account.initAccountWithBabylonDeviceFactorSource(
                     entityIndex = index,
-                    displayName = "Unnamed",
+                    displayName = Constants.DEFAULT_ACCOUNT_NAME,
                     mnemonicWithPassphrase = recoveryFS.mnemonicWithPassphrase,
                     deviceFactorSource = recoveryFS.factorSource,
                     networkId = networkId,
