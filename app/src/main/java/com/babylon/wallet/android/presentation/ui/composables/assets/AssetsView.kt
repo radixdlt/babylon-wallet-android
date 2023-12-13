@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.CircularProgressIndicator
@@ -68,7 +67,7 @@ fun LazyListScope.assetsView(
                 action = action
             )
 
-            ResourceTab.Staking -> liquidStakeUnitsTab(
+            ResourceTab.Staking -> stakingTab(
                 assets = assets,
                 epoch = epoch,
                 collapsibleAssetsState = collapsibleAssetsState,
@@ -128,7 +127,11 @@ sealed interface AssetsViewAction {
 @Composable
 fun rememberAssetsViewState(assets: Assets?): SnapshotStateMap<String, Boolean> {
     val collections = remember(assets) {
-        assets?.nonFungibles?.map { it.resourceAddress }.orEmpty() + listOf(STAKE_COLLECTION_ID)
+        assets?.nonFungibles?.map {
+            it.resourceAddress
+        }.orEmpty() + assets?.validatorsWithStakes?.map {
+            it.validatorDetail.address
+        }.orEmpty()
     }
     return remember(collections) {
         SnapshotStateMap<String, Boolean>().apply {

@@ -93,27 +93,15 @@ data class Assets(
 
     fun stakeSummary(epoch: Long?): StakeSummary? {
         if (epoch == null || ownedValidatorsWithStakes.any { !it.isDetailsAvailable }) return null
-        var staked = BigDecimal.ZERO
-        var unstaking = BigDecimal.ZERO
-        var readyToClaim = BigDecimal.ZERO
-
-        ownedValidatorsWithStakes.forEach { stake ->
-            staked += stake.stakeValue() ?: BigDecimal.ZERO
-
-            stake.stakeClaimNft?.nonFungibleResource?.items?.forEach { item ->
-                val claimAmount = item.claimAmountXrd
-                if (item.isReadyToClaim(epoch)) {
-                    readyToClaim += claimAmount ?: BigDecimal.ZERO
-                } else {
-                    unstaking += claimAmount ?: BigDecimal.ZERO
-                }
-            }
-        }
 
         return StakeSummary(
-            staked = staked,
-            unstaking = unstaking,
-            readyToClaim = readyToClaim
+            staked = ownedValidatorsWithStakes.sumOf { it.stakeValue() ?: BigDecimal.ZERO },
+            unstaking = ownedValidatorsWithStakes.sumOf { validator ->
+                validator.stakeClaimNft?.unstakingNFTs(epoch)?.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO } ?: BigDecimal.ZERO
+            },
+            readyToClaim = ownedValidatorsWithStakes.sumOf { validator ->
+                validator.stakeClaimNft?.readyToClaimNFTs(epoch)?.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO } ?: BigDecimal.ZERO
+            }
         )
     }
 }
@@ -144,6 +132,9 @@ data class ValidatorWithStakes(
     val isDetailsAvailable: Boolean
         get() = validatorDetail.totalXrdStake != null && liquidStakeUnit != null && liquidStakeUnit.fungibleResource.isDetailsAvailable &&
                 (stakeClaimNft == null || stakeClaimNft.nonFungibleResource.amount.toInt() == stakeClaimNft.nonFungibleResource.items.size)
+
+    val hasClaims: Boolean
+        get() = (stakeClaimNft?.nonFungibleResource?.amount ?: 0) > 0L
 
     fun stakeValue(): BigDecimal? {
         if (validatorDetail.totalXrdStake == null) return null

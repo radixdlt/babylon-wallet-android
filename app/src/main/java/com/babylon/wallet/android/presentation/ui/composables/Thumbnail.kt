@@ -106,12 +106,12 @@ object Thumbnail {
     @Composable
     fun NonFungible(
         modifier: Modifier = Modifier,
-        collection: Resource.NonFungibleResource,
+        collection: Resource.NonFungibleResource?,
         shape: Shape
     ) {
         var viewSize: IntSize? by remember { mutableStateOf(null) }
         val imageType = remember(collection, viewSize) {
-            val icon = collection.iconUrl
+            val icon = collection?.iconUrl
             val size = viewSize
             if (icon != null && size != null) {
                 ImageType.External(icon, ThumbnailRequestSize.closest(size))
@@ -127,7 +127,7 @@ object Thumbnail {
             emptyDrawable = R.drawable.ic_nfts,
             emptyContentScale = CustomContentScale.standard(density = density),
             shape = shape,
-            contentDescription = collection.name
+            contentDescription = collection?.name.orEmpty()
         )
     }
 
@@ -260,15 +260,15 @@ object Thumbnail {
     @Composable
     fun LSU(
         modifier: Modifier = Modifier,
-        liquidStakeUnit: LiquidStakeUnit
+        liquidStakeUnit: LiquidStakeUnit?
     ) {
         Custom(
             modifier = modifier,
-            imageType = liquidStakeUnit.fungibleResource.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
+            imageType = liquidStakeUnit?.fungibleResource?.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
-            contentDescription = liquidStakeUnit.fungibleResource.displayTitle
+            contentDescription = liquidStakeUnit?.fungibleResource?.displayTitle.orEmpty()
         )
     }
 
