@@ -15,7 +15,6 @@ import rdx.works.profile.data.model.pernetwork.Network
 @Composable
 fun MainScreen(
     modifier: Modifier = Modifier,
-    mainUiState: StateFlow<MainUiState>,
     onMenuClick: () -> Unit,
     onAccountClick: (Network.Account) -> Unit = { },
     onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
@@ -23,9 +22,10 @@ fun MainScreen(
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit,
-    onNavigateToWallet: () -> Unit
+    onNavigateToWallet: () -> Unit,
+    viewModel: MainScreenViewModel
 ) {
-    val state by mainUiState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     when (state.initialAppState) {
         is AppState.Wallet -> {
             WalletScreen(

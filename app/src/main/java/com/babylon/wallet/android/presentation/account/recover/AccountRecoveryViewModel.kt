@@ -18,7 +18,9 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -31,6 +33,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.domain.AddRecoveredAccountsToProfileUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
@@ -47,7 +50,8 @@ class AccountRecoveryViewModel @Inject constructor(
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val mnemonicRepository: MnemonicRepository,
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    @ApplicationScope private val applicationScope: CoroutineScope
 ) : StateViewModel<AccountRecoveryViewModel.State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountRecoveryScanArgs(savedStateHandle)
@@ -137,16 +141,19 @@ class AccountRecoveryViewModel @Inject constructor(
             }
 
             is RecoveryFactorSource.VirtualDeviceFactorSource -> {
-                val bdfs = recoveryFS.virtualDeviceFactorSource
-                val mnemonicWithPassphrase = recoveryFS.mnemonicWithPassphrase
-                val accounts = state.value.activeAccounts + state.value.inactiveAccounts.filter { it.selected }.map { it.data }
-                viewModelScope.launch {
-                    _state.update { it.copy(isRestoring = true) }
+                applicationScope.launch {
+                    val bdfs = recoveryFS.virtualDeviceFactorSource
+                    val mnemonicWithPassphrase = recoveryFS.mnemonicWithPassphrase
+                    val accounts = state.value.activeAccounts + state.value.inactiveAccounts.filter { it.selected }.map { it.data }
+                    delay(FLOW_COMPLETION_DELAY_MS)
                     generateProfileUseCase.initWithBdfsAndAccounts(
                         bdfs = bdfs,
                         mnemonicWithPassphrase = mnemonicWithPassphrase,
                         accounts = accounts.toIdentifiedArrayList()
                     )
+                }
+                viewModelScope.launch {
+                    _state.update { it.copy(isRestoring = true) }
                     sendEvent(Event.RecoverComplete)
                 }
             }
@@ -231,6 +238,10 @@ class AccountRecoveryViewModel @Inject constructor(
             ScanInProgress,
             ScanComplete
         }
+    }
+
+    companion object {
+        const val FLOW_COMPLETION_DELAY_MS = 500L
     }
 }
 

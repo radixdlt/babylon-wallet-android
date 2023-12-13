@@ -168,7 +168,6 @@ fun NavigationHost(
             navController.popBackStack()
         })
         main(
-            mainUiState = mainUiState,
             onMenuClick = {
                 navController.navigate(Screen.SettingsAllDestination.route)
             },

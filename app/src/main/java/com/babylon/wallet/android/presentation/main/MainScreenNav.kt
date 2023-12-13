@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation.main
 
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import kotlinx.coroutines.flow.StateFlow
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -10,7 +10,6 @@ const val MAIN_ROUTE = "main"
 
 @Suppress("LongParameterList")
 fun NavGraphBuilder.main(
-    mainUiState: StateFlow<MainUiState>,
     onMenuClick: () -> Unit,
     onAccountClick: (Network.Account) -> Unit,
     onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
@@ -18,11 +17,10 @@ fun NavGraphBuilder.main(
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
     onNavigateToIncompatibleProfile: () -> Unit,
-    onNavigateToWallet: () -> Unit
+    onNavigateToWallet: () -> Unit,
 ) {
     composable(route = MAIN_ROUTE) {
         MainScreen(
-            mainUiState = mainUiState,
             onMenuClick = onMenuClick,
             onAccountClick = onAccountClick,
             onAccountCreationClick = onAccountCreationClick,
@@ -30,7 +28,8 @@ fun NavGraphBuilder.main(
             onNavigateToIncompatibleProfile = onNavigateToIncompatibleProfile,
             onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
             onNavigateToMnemonicRestore = onNavigateToMnemonicRestore,
-            onNavigateToWallet = onNavigateToWallet
+            onNavigateToWallet = onNavigateToWallet,
+            viewModel = hiltViewModel(),
         )
     }
 }
