@@ -41,7 +41,7 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCase @Inject constructor(
         return withContext(defaultDispatcher) {
             val profile = ensureBabylonFactorSourceExistUseCase()
             val factorSource = profile.mainBabylonFactorSource()
-                ?: throw IllegalStateException("Babylon factor source is not present")
+                ?: error("Babylon factor source is not present")
             _interactionState.update { InteractionState.Device.DerivingAccounts(factorSource) }
 
             // Construct new account

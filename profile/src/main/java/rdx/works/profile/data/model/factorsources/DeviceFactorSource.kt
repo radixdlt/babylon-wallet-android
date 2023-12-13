@@ -29,6 +29,9 @@ data class DeviceFactorSource(
     val supportsBabylon: Boolean
         get() = common.cryptoParameters.supportsBabylon
 
+    val hasBabylonCryptoParameters: Boolean
+        get() = common.cryptoParameters == Common.CryptoParameters.babylon
+
     val supportsOlympia: Boolean
         get() = common.cryptoParameters.supportsOlympia
 

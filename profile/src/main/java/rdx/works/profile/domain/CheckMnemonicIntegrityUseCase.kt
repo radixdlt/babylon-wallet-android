@@ -5,6 +5,7 @@ import rdx.works.core.KeySpec
 import rdx.works.core.KeystoreManager
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.checkIfKeyWasPermanentlyInvalidated
+import rdx.works.profile.data.model.SeedPhraseLength
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -37,7 +38,8 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
 
     suspend fun babylonMnemonicNeedsRecovery(): FactorSource.FactorSourceID.FromHash? {
         val babylonFactorSources =
-            getProfileUseCase.deviceFactorSources.firstOrNull()?.filter { it.supportsBabylon }
+            getProfileUseCase.deviceFactorSources.firstOrNull()
+                ?.filter { it.supportsBabylon && it.hint.mnemonicWordCount == SeedPhraseLength.TWENTY_FOUR.words }
                 ?: return null
         val mainBabylonFactorSourceToRecover = if (babylonFactorSources.size == 1) {
             babylonFactorSources.first()

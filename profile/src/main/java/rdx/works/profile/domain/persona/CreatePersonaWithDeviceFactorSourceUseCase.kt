@@ -32,7 +32,7 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
 
             val networkID = profile.currentGateway.network.networkId()
             val factorSource = profile.mainBabylonFactorSource()
-                ?: throw IllegalStateException("Babylon factor source is not present")
+                ?: error("Babylon factor source is not present")
             val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.id).getOrNull())
             // Construct new persona
             val newPersona = init(

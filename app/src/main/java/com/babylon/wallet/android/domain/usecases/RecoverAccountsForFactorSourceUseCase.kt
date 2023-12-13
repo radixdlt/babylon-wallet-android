@@ -30,7 +30,6 @@ import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.di.coroutines.IoDispatcher
 import rdx.works.profile.domain.GetProfileUseCase
-import timber.log.Timber
 import javax.inject.Inject
 
 class RecoverAccountsForFactorSourceUseCase @Inject constructor(
@@ -138,7 +137,6 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
         networkId: NetworkId
     ): List<Network.Account> {
         _interactionState.update { InteractionState.Device.DerivingAccounts(recoveryFS.virtualDeviceFactorSource) }
-        Timber.tag("Recovery Scan").d("Last used index ${indicesToScan.last()}")
         return indicesToScan.map { index ->
             Network.Account.initAccountWithBabylonDeviceFactorSource(
                 entityIndex = index,
@@ -157,7 +155,6 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
         networkId: NetworkId
     ): List<Network.Account> {
         _interactionState.update { InteractionState.Device.DerivingAccounts(recoveryFS.factorSource) }
-        Timber.tag("Recovery Scan").d("Last used index ${indicesToScan.last()}")
         val mnemonic = recoveryFS.mnemonicWithPassphrase
         return indicesToScan.map { index ->
             if (recoveryFS.isOlympia) {
@@ -192,7 +189,6 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
         val indicesToScan = mutableSetOf<Int>()
         val startIndex = nextDerivationPathOffset
         var currentIndex = startIndex
-        Timber.tag("Recovery Scan").d("Starting scan at $startIndex")
         do {
             if (currentIndex !in usedIndices) {
                 indicesToScan.add(currentIndex)
