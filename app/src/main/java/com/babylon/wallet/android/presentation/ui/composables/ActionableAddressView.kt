@@ -8,13 +8,9 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.InlineTextContent
-import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,17 +25,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.Placeholder
-import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.core.content.getSystemService
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -98,6 +92,7 @@ fun ActionableAddressView(
                         actionableAddress.type == ActionableAddress.Type.Global.TRANSACTION -> R.string.addressAction_copyTransactionId
                         actionableAddress.isNft || actionableAddress.type is ActionableAddress.Type.LocalId ->
                             R.string.addressAction_copyNftId
+
                         else -> R.string.addressAction_copyAddress
                     }
                 ),
@@ -172,49 +167,54 @@ fun ActionableAddressView(
             scope.launch { sheetState.show() }
         }
     }
-
     Box(modifier = modifier) {
-        Row(
-            modifier = Modifier
-                .combinedClickable(
-                    onClick = {
-                        actions?.let { popupActions ->
-                            when (val actionData = popupActions.primary.onAction()) {
-                                is OnAction.CallbackBasedAction -> actionData.onAction(context)
-                                is OnAction.ViewBasedAction -> viewBasedAction = actionData
-                            }
-                        }
-                    },
-                    onLongClick = { isDropdownMenuExpanded = true }
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
-        ) {
-            val inlineContentId = "icon"
-            val text = buildAnnotatedString {
-                append(actionableAddress.displayAddress)
-                append(" ")
-                appendInlineContent(inlineContentId)
-            }
-            val inlineContent = mapOf(
-                inlineContentId to InlineTextContent(Placeholder(14.sp, 14.sp, PlaceholderVerticalAlign.Center)) {
-                    actions?.let { popupActions ->
-                        Icon(
-                            modifier = Modifier.size(14.dp),
-                            painter = painterResource(id = popupActions.primary.icon),
-                            contentDescription = popupActions.primary.name,
-                            tint = iconColor,
-                        )
+        ConstraintLayout(modifier = Modifier.combinedClickable(
+            onClick = {
+                actions?.let { popupActions ->
+                    when (val actionData = popupActions.primary.onAction()) {
+                        is OnAction.CallbackBasedAction -> actionData.onAction(context)
+                        is OnAction.ViewBasedAction -> viewBasedAction = actionData
                     }
                 }
-            )
+            },
+            onLongClick = { isDropdownMenuExpanded = true }
+        )) {
+            val textRef = createRef()
+            val iconRef = actions?.let { createRef() }
+
             Text(
-                text = text,
+                modifier = Modifier.constrainAs(textRef) {
+                    start.linkTo(parent.start)
+                    if (iconRef != null) {
+                        end.linkTo(iconRef.start)
+                    } else {
+                        end.linkTo(parent.end)
+                    }
+                },
+                text = actionableAddress.displayAddress,
                 color = textColor,
                 maxLines = if (shouldTruncateAddressForDisplay) 1 else 2,
                 style = textStyle,
-                inlineContent = inlineContent
+                overflow = if (shouldTruncateAddressForDisplay) TextOverflow.Ellipsis else TextOverflow.Clip
             )
+
+            actions?.let { popupActions ->
+                val iconMargin = RadixTheme.dimensions.paddingSmall
+                Icon(
+                    modifier = Modifier.constrainAs(iconRef!!) {
+                        start.linkTo(textRef.end, margin = iconMargin)
+                        end.linkTo(parent.end)
+                        top.linkTo(textRef.top)
+                        bottom.linkTo(parent.bottom)
+                        horizontalBias = 0f
+                        width = Dimension.value(14.dp)
+                        height = Dimension.value(14.dp)
+                    },
+                    painter = painterResource(id = popupActions.primary.icon),
+                    contentDescription = popupActions.primary.name,
+                    tint = iconColor,
+                )
+            }
         }
 
         DropdownMenu(

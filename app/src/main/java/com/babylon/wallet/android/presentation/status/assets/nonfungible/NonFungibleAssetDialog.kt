@@ -132,30 +132,22 @@ private fun NonFungibleAssetDialogContent(
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }
 
-                    AssetMetadataRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                        key = stringResource(id = R.string.assetDetails_NFTDetails_id)
-                    ) {
-                        if (state.item != null) {
+                    if (state.item != null) {
+                        AssetMetadataRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                            key = stringResource(id = R.string.assetDetails_NFTDetails_id)
+                        ) {
                             ActionableAddressView(
+                                modifier = Modifier.padding(start = RadixTheme.dimensions.paddingDefault),
                                 address = state.item.globalAddress,
                                 textStyle = RadixTheme.typography.body1HighImportance,
                                 textColor = RadixTheme.colors.gray1
                             )
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .size(
-                                        width = RadixTheme.dimensions.paddingXXXLarge * 2,
-                                        height = 16.dp
-                                    )
-                                    .radixPlaceholder(visible = true)
-                            )
                         }
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
                     if (!state.item?.nonStandardMetadata.isNullOrEmpty()) {
                         HorizontalDivider(
