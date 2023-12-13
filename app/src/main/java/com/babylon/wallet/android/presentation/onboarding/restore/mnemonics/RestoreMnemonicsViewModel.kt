@@ -22,11 +22,11 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.changeGateway
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isHidden
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.extensions.usesCurve25519
 import rdx.works.profile.data.model.extensions.usesSecp256k1
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
@@ -72,7 +72,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     recoverableFactorSources = factorSources,
-                    mainBabylonFactorSourceId = profile?.mainBabylonFactorSourceId()
+                    mainBabylonFactorSourceId = profile?.mainBabylonFactorSource()?.id
                 )
             }
 
@@ -110,16 +110,6 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 )
             }
             .orEmpty()
-    }
-
-    private fun Profile.mainBabylonFactorSourceId(): FactorSource.FactorSourceID.FromHash? {
-        val deviceFactorSources = factorSources.filterIsInstance<DeviceFactorSource>()
-        val babylonFactorSources = deviceFactorSources.filter { it.supportsBabylon }
-        return if (babylonFactorSources.size == 1) {
-            babylonFactorSources.first().id
-        } else {
-            babylonFactorSources.firstOrNull { it.common.flags.contains(FactorSourceFlag.Main) }?.id
-        }
     }
 
     fun onBackClick() {
