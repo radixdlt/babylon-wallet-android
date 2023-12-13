@@ -162,7 +162,7 @@ private fun StakingSummary(
                 RadixTheme.typography.body2HighImportance.copy(color = RadixTheme.colors.gray2)
             }
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
     }
 }
 
@@ -390,7 +390,7 @@ private fun StakeClaims(
                 color = RadixTheme.colors.gray1
             )
         }
-        
+
         if (!validatorWithStakes.isDetailsAvailable) {
             Box(
                 modifier = Modifier
@@ -400,7 +400,7 @@ private fun StakeClaims(
                     .radixPlaceholder(visible = true)
             )
         }
-        
+
         val (unstakingItems, claimItems) = remember(validatorWithStakes, epoch) {
             if (epoch == null) return@remember emptyList<Resource.NonFungibleResource.Item>() to emptyList()
             validatorWithStakes.stakeClaimNft
@@ -481,7 +481,9 @@ private fun ValidatorHeader(
             )
 
             Text(
-                modifier = Modifier.fillMaxWidth().radixPlaceholder(visible = stakedAmount == null),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .radixPlaceholder(visible = stakedAmount == null),
                 text = stakedAmount?.let {
                     "${stringResource(id = R.string.account_staking_staked)} ${it.displayableQuantity()} ${XrdResource.SYMBOL}"
                 }.orEmpty(),
@@ -592,7 +594,13 @@ private fun WorthXRD(
     Row(
         modifier = modifier
             .assetOutlineBorder()
-            .padding(vertical = RadixTheme.dimensions.paddingDefault)
+            .padding(
+                vertical = if (trailingContent == null || amount == null) {
+                    RadixTheme.dimensions.paddingDefault
+                } else {
+                    RadixTheme.dimensions.paddingSmall
+                }
+            )
             .padding(start = RadixTheme.dimensions.paddingDefault),
         verticalAlignment = Alignment.CenterVertically,
     ) {
