@@ -101,10 +101,10 @@ class AccountRecoveryViewModel @Inject constructor(
         }
     }
 
-    fun initDeviceFactorSource(mnemonicWithPassphrase: MnemonicWithPassphrase, isMain: Boolean = false) {
+    fun initMainBDFSFactorSource(mnemonicWithPassphrase: MnemonicWithPassphrase) {
         recoverAccountsForFactorSourceUseCase.reset()
         val factorSource =
-            ensureBabylonFactorSourceExistUseCase.initBabylonFactorSourceWithMnemonic(mnemonicWithPassphrase, isMain = isMain)
+            ensureBabylonFactorSourceExistUseCase.initBabylonFactorSourceWithMnemonic(mnemonicWithPassphrase, isMain = true)
         _state.update {
             it.copy(
                 recoveryFactorSource = RecoveryFactorSource.VirtualDeviceFactorSource(

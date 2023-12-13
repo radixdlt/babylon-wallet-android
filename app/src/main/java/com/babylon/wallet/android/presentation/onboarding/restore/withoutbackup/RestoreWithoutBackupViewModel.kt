@@ -5,7 +5,6 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -36,8 +35,7 @@ class RestoreWithoutBackupViewModel @Inject constructor() :
     }
 
     data class State(
-        val dialogPrompt: PromptState = PromptState.None,
-        val uiMessage: UiMessage? = null
+        val dialogPrompt: PromptState = PromptState.None
     ) : UiState {
         enum class PromptState {
             None, Olympia, Ledger

@@ -7,6 +7,7 @@ import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.extensions.addMainBabylonDeviceFactorSource
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.repository.DeviceInfoRepository
@@ -27,7 +28,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
 
     suspend operator fun invoke(): Profile {
         val profile = profileRepository.profile.first()
-        if (profile.babylonDeviceFactorSourceExist) return profile
+        if (profile.mainBabylonFactorSource() != null) return profile
         val deviceInfo = deviceInfoRepository.getDeviceInfo()
         val mnemonic = mnemonicRepository()
         val deviceFactorSource = DeviceFactorSource.babylon(
@@ -98,6 +99,6 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
     }
 
     suspend fun babylonFactorSourceExist(): Boolean {
-        return profileRepository.profile.first().babylonDeviceFactorSourceExist
+        return profileRepository.profile.first().mainBabylonFactorSource() != null
     }
 }

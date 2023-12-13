@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithBabylonDeviceFactorSource
@@ -39,7 +40,8 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCase @Inject constructor(
     ): Network.Account {
         return withContext(defaultDispatcher) {
             val profile = ensureBabylonFactorSourceExistUseCase()
-            val factorSource = profile.babylonMainDeviceFactorSource
+            val factorSource = profile.mainBabylonFactorSource()
+                ?: throw IllegalStateException("Babylon factor source is not present")
             _interactionState.update { InteractionState.Device.DerivingAccounts(factorSource) }
 
             // Construct new account

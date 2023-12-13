@@ -3,6 +3,7 @@ package rdx.works.profile.domain.persona
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.currentGateway
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
@@ -30,7 +31,8 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
             val profile = ensureBabylonFactorSourceExistUseCase()
 
             val networkID = profile.currentGateway.network.networkId()
-            val factorSource = profile.babylonMainDeviceFactorSource
+            val factorSource = profile.mainBabylonFactorSource()
+                ?: throw IllegalStateException("Babylon factor source is not present")
             val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.id).getOrNull())
             // Construct new persona
             val newPersona = init(

@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
-import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.factorSourceId
@@ -35,8 +34,12 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
     operator fun invoke() = profileRepository.profile
 
     suspend fun isInitialized(): Boolean {
-        val profileState = profileRepository.profileState.first()
-        return profileState != ProfileState.NotInitialised && profileState != ProfileState.None
+        return when (val profileState = profileRepository.profileState.first()) {
+            ProfileState.NotInitialised,
+            ProfileState.None -> false
+            ProfileState.Incompatible -> true
+            is ProfileState.Restored -> profileState.hasMainnet()
+        }
     }
 }
 

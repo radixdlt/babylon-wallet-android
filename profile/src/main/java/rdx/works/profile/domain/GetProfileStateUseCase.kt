@@ -15,5 +15,5 @@ class GetProfileStateUseCase @Inject constructor(private val dataSource: Profile
  * This is considered as a profile that is not properly initialized, as a correct profile should have at least one account
  */
 suspend fun GetProfileStateUseCase.isInitialized(): Boolean = invoke().firstOrNull()?.let {
-    it is ProfileState.Restored && it.hasAnyAccounts()
+    it is ProfileState.Restored && it.hasMainnet()
 } == true

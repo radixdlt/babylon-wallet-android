@@ -77,9 +77,8 @@ fun AddSingleMnemonicScreen(
         onBackClick = onBackClick,
         onSubmitClick = {
             if (state.mnemonicType == MnemonicType.BabylonMain) {
-                sharedViewModel?.initDeviceFactorSource(
-                    mnemonicWithPassphrase = state.seedPhraseState.mnemonicWithPassphrase,
-                    isMain = true
+                sharedViewModel?.initMainBDFSFactorSource(
+                    mnemonicWithPassphrase = state.seedPhraseState.mnemonicWithPassphrase
                 )
                 onStartRecovery()
             } else {

@@ -15,9 +15,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.extensions.isHidden
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.di.SerializerModule
 import java.time.Instant
@@ -61,31 +59,6 @@ data class Profile(
         )
     )
 
-    /**
-     * Temporarily the only factor source that the user can use to create accounts/personas.
-     * When new UI is added that allows the user to import other factor sources
-     * (like an Olympia device factor source), we will need to revisit this.
-     *
-     * NOTE that this factor source will always be used when creating the first account.
-     */
-    val babylonMainDeviceFactorSource: DeviceFactorSource
-        get() = factorSources
-            .filterIsInstance<DeviceFactorSource>()
-            .firstOrNull { deviceFactorSource ->
-                deviceFactorSource.supportsBabylon && deviceFactorSource.common.flags.any { it == FactorSourceFlag.Main }
-            } ?: factorSources
-            .filterIsInstance<DeviceFactorSource>()
-            .first { deviceFactorSource ->
-                deviceFactorSource.supportsBabylon
-            }
-
-    val babylonDeviceFactorSourceExist: Boolean
-        get() = factorSources
-            .filterIsInstance<DeviceFactorSource>()
-            .any {
-                it.supportsBabylon
-            }
-
     companion object {
         fun init(
             id: String,
@@ -93,15 +66,6 @@ data class Profile(
             creationDate: Instant,
             gateways: Gateways = Gateways.preset,
         ): Profile {
-            val networks = listOf(
-                Network(
-                    accounts = emptyIdentifiedArrayList(),
-                    authorizedDapps = listOf(),
-                    networkID = gateways.current().network.id,
-                    personas = emptyIdentifiedArrayList()
-                )
-            )
-
             val appPreferences = AppPreferences(
                 transaction = Transaction.default,
                 display = Display.default,
@@ -115,11 +79,11 @@ data class Profile(
                     id = id,
                     deviceInfo = deviceInfo,
                     creationDate = creationDate,
-                    numberOfNetworks = networks.size
+                    numberOfNetworks = 0
                 ),
                 appPreferences = appPreferences,
                 factorSources = emptyIdentifiedArrayList(),
-                networks = networks
+                networks = emptyList()
             )
         }
 

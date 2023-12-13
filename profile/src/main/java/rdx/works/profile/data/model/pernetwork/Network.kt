@@ -547,7 +547,7 @@ fun Profile.addAccounts(
     accounts: List<Network.Account>,
     onNetwork: NetworkId
 ): Profile {
-    val networkExist = this.networks.any { onNetwork.value == it.networkID }
+    val networkExist = networks.any { onNetwork.value == it.networkID }
     val newNetworks = if (networkExist) {
         this.networks.mapWhen(predicate = { network -> network.networkID == onNetwork.value }) { network ->
             val updatedAccounts = network.accounts + accounts

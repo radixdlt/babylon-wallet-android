@@ -324,7 +324,7 @@ sealed interface AppState {
             profileState: ProfileState
         ) = when (profileState) {
             is ProfileState.Incompatible -> IncompatibleProfile
-            is ProfileState.Restored -> if (profileState.hasAnyAccounts()) {
+            is ProfileState.Restored -> if (profileState.hasMainnet()) {
                 Wallet
             } else {
                 OnBoarding
