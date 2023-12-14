@@ -44,7 +44,7 @@ internal class DevSettingsViewModelTest : StateViewModelTest<DevSettingsViewMode
     private val eventBus = mockk<AppEventBus>()
     private val sampleTxId = "txId1"
     private val sampleProfile = sampleDataProvider.sampleProfile()
-    private val sampleAddress = sampleProfile.currentNetwork.accounts.first().address
+    private val sampleAddress = sampleProfile.currentNetwork!!.accounts.first().address
 
     override fun initVM(): DevSettingsViewModel {
         return DevSettingsViewModel(

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.usecases
+package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.extensions.defaultDepositRule
@@ -8,34 +8,20 @@ import com.babylon.wallet.android.data.gateway.generated.models.DefaultDepositRu
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.data.repository.toResult
-import com.babylon.wallet.android.di.JsonConverterFactory
-import com.babylon.wallet.android.di.ShortTimeoutGatewayHttpClient
-import com.babylon.wallet.android.di.buildApi
+import com.babylon.wallet.android.di.ShortTimeoutStateApi
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
-import okhttp3.OkHttpClient
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.ProfileRepository
-import retrofit2.Converter
 import javax.inject.Inject
 
-class ResolveAccountsLedgerStateUseCase @Inject constructor(
-    private val profileRepository: ProfileRepository,
-    @ShortTimeoutGatewayHttpClient private val httpClient: OkHttpClient,
-    @JsonConverterFactory private val jsonConverterFactory: Converter.Factory
+class ResolveAccountsLedgerStateRepository @Inject constructor(
+    @ShortTimeoutStateApi private val stateApi: StateApi
 ) {
 
     suspend operator fun invoke(accounts: List<Network.Account>): Result<List<AccountWithOnLedgerStatus>> {
         val activeAddresses = mutableSetOf<String>()
         val defaultDepositRules = mutableMapOf<String, DefaultDepositRule>()
         accounts.map { it.address }.chunked(maxItemsPerRequest).forEach { addressesChunk ->
-            buildApi<StateApi>(
-                baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
-                okHttpClient = httpClient,
-                jsonConverterFactory = jsonConverterFactory
-            ).stateEntityDetails(
+            stateApi.stateEntityDetails(
                 StateEntityDetailsRequest(
                     addressesChunk,
                     optIns = StateEntityDetailsOptIns(

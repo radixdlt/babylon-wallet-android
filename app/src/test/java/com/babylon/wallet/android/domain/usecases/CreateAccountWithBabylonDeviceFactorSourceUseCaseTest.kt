@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -28,7 +29,7 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCaseTest {
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
-    private val resolveAccountsLedgerStateUseCase = mockk<ResolveAccountsLedgerStateUseCase>()
+    private val resolveAccountsLedgerStateRepository = mockk<ResolveAccountsLedgerStateRepository>()
     private val mnemonicWithPassphrase = MnemonicWithPassphrase(
         mnemonic = "prison post shoot verb lunch blue limb stick later winner tide roof situate excuse joy muffin cruel fix bag evil call glide resist aware",
         bip39Passphrase = ""
@@ -37,7 +38,7 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCaseTest {
     @Before
     fun setUp() {
         coEvery { ensureBabylonFactorSourceExistUseCase() } returns TestData.testProfile2Networks2AccountsEach(mnemonicWithPassphrase)
-        coEvery { resolveAccountsLedgerStateUseCase(any()) } returns Result.failure(Exception(""))
+        coEvery { resolveAccountsLedgerStateRepository(any()) } returns Result.failure(Exception(""))
     }
 
     @Test
@@ -62,7 +63,7 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCaseTest {
                 profileRepository = profileRepository,
                 ensureBabylonFactorSourceExistUseCase = ensureBabylonFactorSourceExistUseCase,
                 defaultDispatcher = testDispatcher,
-                resolveAccountsLedgerStateUseCase = resolveAccountsLedgerStateUseCase
+                resolveAccountsLedgerStateRepository = resolveAccountsLedgerStateRepository
             )
 
             val account = createAccountWithBabylonDeviceFactorSourceUseCase(
@@ -76,7 +77,7 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCaseTest {
 
             verify(profileRepository).saveProfile(updatedProfile)
             coVerify(exactly = 1) { ensureBabylonFactorSourceExistUseCase() }
-            coVerify(exactly = 1) { resolveAccountsLedgerStateUseCase(any()) }
+            coVerify(exactly = 1) { resolveAccountsLedgerStateRepository(any()) }
         }
     }
 }

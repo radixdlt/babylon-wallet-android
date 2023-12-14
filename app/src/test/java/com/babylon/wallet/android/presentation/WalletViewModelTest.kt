@@ -81,13 +81,13 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         advanceUntilIdle()
         coEvery {
             getWalletAssetsUseCase(
-                accounts = sampleProfile.currentNetwork.accounts,
+                accounts = sampleProfile.currentNetwork?.accounts.orEmpty(),
                 isRefreshing = false
             )
         } returns flowOf(
             listOf(
                 AccountWithAssets(
-                    account = sampleProfile.currentNetwork.accounts[0],
+                    account = sampleProfile.currentNetwork!!.accounts[0],
                     assets = Assets(
                         fungibles = listOf(sampleXrdResource),
                         nonFungibles = emptyList(),
@@ -95,7 +95,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
                     )
                 ),
                 AccountWithAssets(
-                    account = sampleProfile.currentNetwork.accounts[0],
+                    account = sampleProfile.currentNetwork!!.accounts[0],
                     assets = Assets(fungibles = emptyList(), nonFungibles = emptyList())
                 )
             )

@@ -9,10 +9,8 @@ import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.derivationPathEntityIndex
-import rdx.works.profile.data.model.pernetwork.isBip44LikePath
 
 val Entity.usesCurve25519: Boolean
     get() {
@@ -47,32 +45,6 @@ val Entity.derivationPathScheme: DerivationPathScheme
         return when (transactionSigning.badge) {
             is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
                 transactionSigning.badge.derivationPath.scheme
-            }
-        }
-    }
-
-fun Network.Account.updateDerivationPathScheme(derivationPathScheme: DerivationPathScheme): Network.Account {
-    val transactionSigning = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning
-    return when (transactionSigning.badge) {
-        is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-            val updatedBadge =
-                transactionSigning.badge.copy(derivationPath = transactionSigning.badge.derivationPath.copy(scheme = derivationPathScheme))
-            val updatedTransactionSigning = transactionSigning.copy(badge = updatedBadge)
-            val updatedUnsecuredEntityControl =
-                this.securityState.unsecuredEntityControl.copy(transactionSigning = updatedTransactionSigning)
-            val updatedSecurityState = SecurityState.Unsecured(unsecuredEntityControl = updatedUnsecuredEntityControl)
-            copy(securityState = updatedSecurityState)
-        }
-    }
-}
-
-val Entity.hasWrongDerivationPathScheme: Boolean
-    get() {
-        val transactionSigning = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning
-        return when (transactionSigning.badge) {
-            is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-                transactionSigning.badge.derivationPath.isBip44LikePath() &&
-                    transactionSigning.badge.derivationPath.scheme == DerivationPathScheme.CAP_26
             }
         }
     }

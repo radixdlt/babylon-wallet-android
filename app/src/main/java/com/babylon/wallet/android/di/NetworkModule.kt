@@ -49,6 +49,14 @@ annotation class CurrentGatewayHttpClient
 @Qualifier
 annotation class ShortTimeoutGatewayHttpClient
 
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class StandardStateApi
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class ShortTimeoutStateApi
+
 /**
  * A simple [OkHttpClient] **without** dynamic change of the base url.
  */
@@ -156,6 +164,18 @@ object NetworkModule {
     @Provides
     fun provideStateApi(
         @CurrentGatewayHttpClient okHttpClient: OkHttpClient,
+        @JsonConverterFactory jsonConverterFactory: Factory,
+        profileRepository: ProfileRepository
+    ): StateApi = buildApi(
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
+        okHttpClient = okHttpClient,
+        jsonConverterFactory = jsonConverterFactory
+    )
+
+    @Provides
+    @ShortTimeoutStateApi
+    fun provideStateApiWithShortTimeout(
+        @ShortTimeoutGatewayHttpClient okHttpClient: OkHttpClient,
         @JsonConverterFactory jsonConverterFactory: Factory,
         profileRepository: ProfileRepository
     ): StateApi = buildApi(

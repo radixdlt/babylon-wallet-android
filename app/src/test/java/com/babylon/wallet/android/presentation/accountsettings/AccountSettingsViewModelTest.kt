@@ -34,7 +34,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     private val renameAccountDisplayNameUseCase = mockk<RenameAccountDisplayNameUseCase>()
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
     private val sampleProfile = sampleDataProvider.sampleProfile()
-    private val sampleAddress = sampleProfile.currentNetwork.accounts.first().address
+    private val sampleAddress = sampleProfile.currentNetwork!!.accounts.first().address
 
     override fun initVM(): AccountSettingsViewModel {
         return AccountSettingsViewModel(

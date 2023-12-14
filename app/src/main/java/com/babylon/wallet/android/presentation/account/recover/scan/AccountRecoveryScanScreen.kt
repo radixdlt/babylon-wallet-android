@@ -303,7 +303,7 @@ private fun ActiveAccountsPage(
             }
         } else {
             items(activeAccounts) { account ->
-                SimpleAccountCard(modifier = Modifier.fillMaxWidth(), account = account, showName = true)
+                SimpleAccountCard(modifier = Modifier.fillMaxWidth(), account = account)
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
         }

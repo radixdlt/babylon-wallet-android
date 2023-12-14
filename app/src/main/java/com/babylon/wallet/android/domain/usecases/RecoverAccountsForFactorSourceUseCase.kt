@@ -3,6 +3,7 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
+import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
@@ -33,7 +34,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 class RecoverAccountsForFactorSourceUseCase @Inject constructor(
-    private val resolveAccountsLedgerStateUseCase: ResolveAccountsLedgerStateUseCase,
+    private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
     @IoDispatcher private val defaultDispatcher: CoroutineDispatcher
@@ -83,7 +84,7 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
                     deriveAccountsForVirtualDeviceFactorSource(recoveryFS, indicesToScan, networkId)
                 }
             }
-            val resolvedAccounts = resolveAccountsLedgerStateUseCase(derivedAccounts)
+            val resolvedAccounts = resolveAccountsLedgerStateRepository(derivedAccounts)
             nextDerivationPathOffset = indicesToScan.last() + 1
             _interactionState.update { null }
             return@withContext resolvedAccounts

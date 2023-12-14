@@ -72,8 +72,7 @@ fun SimpleAccountCard(
 @Composable
 fun SimpleAccountCard(
     modifier: Modifier = Modifier,
-    account: Network.Account,
-    showName: Boolean = true
+    account: Network.Account
 ) {
     Row(
         modifier = modifier
@@ -86,18 +85,16 @@ fun SimpleAccountCard(
                 vertical = RadixTheme.dimensions.paddingDefault
             ),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = if (showName) Arrangement.SpaceBetween else Arrangement.Center
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        if (showName) {
-            Text(
-                modifier = Modifier.padding(end = RadixTheme.dimensions.paddingMedium),
-                text = account.displayName,
-                style = RadixTheme.typography.body1Header,
-                maxLines = 1,
-                color = RadixTheme.colors.white,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
+        Text(
+            modifier = Modifier.padding(end = RadixTheme.dimensions.paddingMedium),
+            text = account.displayName,
+            style = RadixTheme.typography.body1Header,
+            maxLines = 1,
+            color = RadixTheme.colors.white,
+            overflow = TextOverflow.Ellipsis
+        )
         ActionableAddressView(
             address = account.address,
             textStyle = RadixTheme.typography.body2HighImportance,
@@ -118,6 +115,6 @@ fun SimpleAccountCardPreview() {
 @Composable
 fun SimpleAccountCardWithoutNamePreview() {
     RadixWalletTheme {
-        SimpleAccountCard(account = SampleDataProvider().sampleAccount(), modifier = Modifier.fillMaxWidth(), showName = false)
+        SimpleAccountCard(account = SampleDataProvider().sampleAccount(), modifier = Modifier.fillMaxWidth())
     }
 }

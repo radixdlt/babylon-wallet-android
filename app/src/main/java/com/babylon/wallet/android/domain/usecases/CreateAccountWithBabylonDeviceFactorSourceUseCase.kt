@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -27,7 +28,7 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val profileRepository: ProfileRepository,
-    private val resolveAccountsLedgerStateUseCase: ResolveAccountsLedgerStateUseCase,
+    private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
@@ -58,7 +59,7 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCase @Inject constructor(
                 appearanceID = nextAppearanceId
             )
             // Add account to the profile
-            val resolveResult = resolveAccountsLedgerStateUseCase.invoke(listOf(newAccount))
+            val resolveResult = resolveAccountsLedgerStateRepository.invoke(listOf(newAccount))
             // Add account to the profile
             val updatedProfile = if (resolveResult.isSuccess) {
                 profile.addAccounts(
