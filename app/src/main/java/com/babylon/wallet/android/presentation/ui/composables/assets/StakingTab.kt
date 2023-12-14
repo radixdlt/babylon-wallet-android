@@ -32,6 +32,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
@@ -45,6 +46,8 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
+
+private const val CLAIM_FEATURE_ENABLED = true
 
 fun LazyListScope.stakingTab(
     assets: Assets,
@@ -431,17 +434,32 @@ private fun StakeClaims(
         }
 
         if (claimItems.isNotEmpty() && validatorWithStakes.stakeClaimNft != null) {
-            Text(
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
                     .padding(
-                        top = RadixTheme.dimensions.paddingDefault,
-                        bottom = RadixTheme.dimensions.paddingSmall
+                        top = if (CLAIM_FEATURE_ENABLED) RadixTheme.dimensions.paddingSmall else RadixTheme.dimensions.paddingDefault,
+                        bottom = if (CLAIM_FEATURE_ENABLED) 0.dp else RadixTheme.dimensions.paddingDefault
                     ),
-                text = stringResource(id = R.string.account_staking_readyToBeClaimed).uppercase(),
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2
-            )
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(id = R.string.account_staking_readyToBeClaimed).uppercase(),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray2
+                )
+
+                if (action is AssetsViewAction.Click && CLAIM_FEATURE_ENABLED) {
+                    RadixTextButton(
+                        text = stringResource(id = R.string.account_staking_claim),
+                        onClick = {
+                            action.onClaimClick(validatorWithStakes.stakeClaimNft)
+                        },
+                        textStyle = RadixTheme.typography.body2Link
+                    )
+                }
+            }
 
             claimItems.forEachIndexed { index, item ->
                 ClaimWorth(

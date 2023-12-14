@@ -57,6 +57,7 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
@@ -127,6 +128,7 @@ fun AccountScreen(
         onLSUUnitClicked = viewModel::onLSUUnitClicked,
         onNextNFTsPageRequest = viewModel::onNextNftPageRequest,
         onStakesRequest = viewModel::onStakesRequest,
+        onClaimClick = viewModel::onClaimClick
     )
 }
 
@@ -146,7 +148,8 @@ private fun AccountScreenContent(
     onPoolUnitClick: (PoolUnit) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
-    onStakesRequest: () -> Unit
+    onStakesRequest: () -> Unit,
+    onClaimClick: (StakeClaim) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -236,7 +239,8 @@ private fun AccountScreenContent(
                     onLSUUnitClicked(lsu)
                 },
                 onNextNFTsPageRequest = onNextNFTsPageRequest,
-                onStakesRequest = onStakesRequest
+                onStakesRequest = onStakesRequest,
+                onClaimClick = onClaimClick
             )
         }
 
@@ -264,7 +268,8 @@ fun AssetsContent(
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
-    onStakesRequest: () -> Unit
+    onStakesRequest: () -> Unit,
+    onClaimClick: (StakeClaim) -> Unit
 ) {
     Surface(
         modifier = modifier,
@@ -366,7 +371,8 @@ fun AssetsContent(
                     onLSUClick = onLSUUnitClicked,
                     onPoolUnitClick = onPoolUnitClick,
                     onNextNFtsPageRequest = onNextNFTsPageRequest,
-                    onStakesRequest = onStakesRequest
+                    onStakesRequest = onStakesRequest,
+                    onClaimClick = onClaimClick
                 )
             )
         }
@@ -456,7 +462,8 @@ fun AccountContentPreview() {
                 onPoolUnitClick = {},
                 onLSUUnitClicked = {},
                 onNextNFTsPageRequest = {},
-                onStakesRequest = {}
+                onStakesRequest = {},
+                onClaimClick = {}
             )
         }
     }

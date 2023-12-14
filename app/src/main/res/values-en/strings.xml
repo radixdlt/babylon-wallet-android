@@ -34,6 +34,7 @@
   <string name="account_staking_liquidStakeUnits">Liquid Stake Units</string>
   <string name="account_staking_stakeClaimNFTs">Stake Claim NFTs</string>
   <string name="account_staking_worth">WORTH</string>
+  <string name="account_staking_claim">Claim</string>
   <string name="account_poolUnits_numberOfStakes">%d Stakes</string>
   <string name="account_poolUnits_unknownValidatorName">Unknown</string>
   <string name="account_poolUnits_unknownSymbolName">Unknown</string>

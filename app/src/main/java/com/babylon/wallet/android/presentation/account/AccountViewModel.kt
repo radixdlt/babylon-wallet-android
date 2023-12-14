@@ -4,9 +4,11 @@ package com.babylon.wallet.android.presentation.account
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
@@ -15,6 +17,7 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
+import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicRestore
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -58,6 +61,7 @@ class AccountViewModel @Inject constructor(
     private val getNextNFTsPageUseCase: GetNextNFTsPageUseCase,
     private val updateLSUsInfo: UpdateLSUsInfo,
     private val appEventBus: AppEventBus,
+    private val sendClaimRequestUseCase: SendClaimRequestUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
 
@@ -218,6 +222,18 @@ class AccountViewModel @Inject constructor(
                     _state.update { state -> state.copy(pendingStakeUnits = false, uiMessage = UiMessage.ErrorMessage(error)) }
                 }
             }
+        }
+    }
+
+    fun onClaimClick(stakeClaim: StakeClaim) {
+        val account = state.value.accountWithAssets?.account ?: return
+        val epoch = state.value.epoch ?: return
+        viewModelScope.launch {
+            sendClaimRequestUseCase(
+                account = account,
+                claim = stakeClaim,
+                epoch = epoch
+            )
         }
     }
 

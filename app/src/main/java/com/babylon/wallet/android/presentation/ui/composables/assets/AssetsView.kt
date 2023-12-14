@@ -108,6 +108,7 @@ sealed interface AssetsViewAction {
         val onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
         val onLSUClick: (LiquidStakeUnit) -> Unit,
         val onPoolUnitClick: (PoolUnit) -> Unit,
+        val onClaimClick: (StakeClaim) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
         override val onStakesRequest: () -> Unit
     ) : AssetsViewAction
@@ -158,6 +159,7 @@ fun AssetsViewWithLoadingAssets() {
                     onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
+                    onClaimClick = {},
                     onStakesRequest = {}
                 )
             )
@@ -183,6 +185,7 @@ fun AssetsViewWithEmptyAssets() {
                     onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
+                    onClaimClick = {},
                     onStakesRequest = {}
                 )
             )
@@ -368,6 +371,7 @@ fun AssetsViewWithAssets() {
                     onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
+                    onClaimClick = {},
                     onStakesRequest = {}
                 )
             )
