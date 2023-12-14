@@ -521,6 +521,7 @@ You can always change the guarantee from this default in each transaction.</stri
   <string name="error_personaLabel_tooLong">Persona label too long</string>
   <string name="error_accountLabel_tooLong">Account label too long</string>
   <string name="error_accountLabel_missing">Account label required</string>
+  <string name="error_transactionFailure_doesNotAllowThirdPartyDeposits">One of the receiving accounts does not allow Third-Party deposits</string>
   <string name="importOlympiaAccounts_scanQR_title">Import Legacy Olympia Accounts</string>
   <string name="importOlympiaAccounts_scanQR_instructions">Scan the QR code shown in the Export section of the Radix Desktop Wallet for Olympia.</string>
   <string name="importOlympiaAccounts_scanQR_scannedLabel">Scanned: %d/%d</string>
