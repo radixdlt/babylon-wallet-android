@@ -198,6 +198,6 @@ class RecoverAccountsForFactorSourceUseCase @Inject constructor(
     }
 
     companion object {
-        private const val accountsPerScanPage = 50
+        const val accountsPerScanPage = 50
     }
 }

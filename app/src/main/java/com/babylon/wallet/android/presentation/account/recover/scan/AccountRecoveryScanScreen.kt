@@ -24,9 +24,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.Text
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -50,6 +50,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.model.Selectable
+import com.babylon.wallet.android.domain.usecases.RecoverAccountsForFactorSourceUseCase
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -58,6 +59,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
@@ -137,7 +139,7 @@ private fun AccountRecoveryScanContent(
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     val snackBarHostState = remember { SnackbarHostState() }
-    BackHandler(onBack = {
+    val backHandler = {
         if (pagerState.currentPage == ScanCompletePages.InactiveAccounts.ordinal) {
             scope.launch {
                 pagerState.animateScrollToPage(ScanCompletePages.ActiveAccounts.ordinal)
@@ -145,6 +147,9 @@ private fun AccountRecoveryScanContent(
         } else {
             onBackClick()
         }
+    }
+    BackHandler(onBack = {
+        backHandler()
     })
     SnackbarUIMessage(
         message = sharedState.uiMessage,
@@ -156,8 +161,10 @@ private fun AccountRecoveryScanContent(
         modifier = modifier.navigationBarsPadding(),
         topBar = {
             RadixCenteredTopAppBar(
-                title = "",
-                onBackClick = onBackClick,
+                title = stringResource(id = R.string.empty),
+                onBackClick = {
+                    backHandler()
+                },
                 windowInsets = WindowInsets.statusBars
             )
         },
@@ -170,27 +177,39 @@ private fun AccountRecoveryScanContent(
         containerColor = RadixTheme.colors.defaultBackground,
         bottomBar = {
             if (sharedState.contentState == AccountRecoveryScanViewModel.State.ContentState.ScanComplete) {
-                RadixPrimaryButton(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.common_continue),
-                    onClick = {
-                        if (pagerState.currentPage == ScanCompletePages.ActiveAccounts.ordinal) {
-                            if (sharedState.inactiveAccounts.isNotEmpty()) {
-                                scope.launch {
-                                    pagerState.animateScrollToPage(ScanCompletePages.InactiveAccounts.ordinal)
+                val activeAccountsShown = pagerState.currentPage == ScanCompletePages.ActiveAccounts.ordinal
+                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (activeAccountsShown) {
+                        RadixTextButton(
+                            text = stringResource(
+                                id = R.string.accountRecoveryScan_scanComplete_scanNextBatchButton,
+                                RecoverAccountsForFactorSourceUseCase.accountsPerScanPage
+                            ),
+                            onClick = onScanMoreClick
+                        )
+                    }
+                    RadixPrimaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(id = R.string.common_continue),
+                        onClick = {
+                            if (pagerState.currentPage == ScanCompletePages.ActiveAccounts.ordinal) {
+                                if (sharedState.inactiveAccounts.isNotEmpty()) {
+                                    scope.launch {
+                                        pagerState.animateScrollToPage(ScanCompletePages.InactiveAccounts.ordinal)
+                                    }
+                                } else {
+                                    onContinueClick()
                                 }
                             } else {
                                 onContinueClick()
                             }
-                        } else {
-                            onContinueClick()
-                        }
-                    },
-                    enabled = isRestoring.not(),
-                    isLoading = isRestoring
-                )
+                        },
+                        enabled = isRestoring.not(),
+                        isLoading = isRestoring
+                    )
+                }
             }
         }
     ) { padding ->
@@ -212,7 +231,6 @@ private fun AccountRecoveryScanContent(
                             .fillMaxSize()
                             .padding(padding),
                         pagerState = pagerState,
-                        onScanMoreClick = onScanMoreClick,
                         activeAccounts = sharedState.activeAccounts,
                         inactiveAccounts = sharedState.inactiveAccounts,
                         allScannedAccountsSize = sharedState.recoveredAccounts.size,
@@ -228,7 +246,6 @@ private fun AccountRecoveryScanContent(
 fun ScanCompleteContent(
     modifier: Modifier,
     pagerState: PagerState,
-    onScanMoreClick: () -> Unit,
     activeAccounts: PersistentList<Network.Account>,
     inactiveAccounts: PersistentList<Selectable<Network.Account>>,
     allScannedAccountsSize: Int,
@@ -241,8 +258,7 @@ fun ScanCompleteContent(
                 ActiveAccountsPage(
                     modifier = modifier,
                     activeAccounts = activeAccounts,
-                    allScannedAccountsSize = allScannedAccountsSize,
-                    onScanMoreClick = onScanMoreClick
+                    allScannedAccountsSize = allScannedAccountsSize
                 )
             }
 
@@ -257,8 +273,7 @@ fun ScanCompleteContent(
 private fun ActiveAccountsPage(
     modifier: Modifier,
     activeAccounts: PersistentList<Network.Account>,
-    allScannedAccountsSize: Int,
-    onScanMoreClick: () -> Unit
+    allScannedAccountsSize: Int
 ) {
     LazyColumn(
         modifier = modifier,
@@ -270,7 +285,7 @@ private fun ActiveAccountsPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = "Scan Complete",
+                text = stringResource(id = R.string.accountRecoveryScan_scanComplete_header_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
@@ -280,7 +295,12 @@ private fun ActiveAccountsPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = "The following Accounts were found that have been included in at least one transaction:",
+                text = stringResource(
+                    id = R.string.accountRecoveryScan_scanComplete_theFirstNPotentialAccountWereScanned,
+                    allScannedAccountsSize
+                ).formattedSpans(
+                    RadixTheme.typography.body1Header.toSpanStyle()
+                ),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
@@ -293,9 +313,10 @@ private fun ActiveAccountsPage(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
                         .background(RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)
                         .padding(RadixTheme.dimensions.paddingXLarge),
-                    text = "None found.",
+                    text = "No new accounts found.",
                     color = RadixTheme.colors.gray2,
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.secondaryHeader
@@ -306,19 +327,6 @@ private fun ActiveAccountsPage(
                 SimpleAccountCard(modifier = Modifier.fillMaxWidth(), account = account)
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
-        }
-        item {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = "The first $allScannedAccountsSize potential accounts from this signing factor were scanned.",
-                textAlign = TextAlign.Center,
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
-            )
-            RadixTextButton(text = "Tap here to scan the next 50", onClick = onScanMoreClick)
         }
     }
 }
