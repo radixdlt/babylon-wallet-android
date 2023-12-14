@@ -93,7 +93,7 @@ private fun AssetsContent(
             val all = assets.ownedFungibles
             all.take(maxVisibleFungibles) to (all.size - maxVisibleFungibles).coerceAtLeast(minimumValue = 0)
         }
-        val nftsCount = remember(assets.nonFungibles) { assets.nftsSize() }
+        val nftsCount = remember(assets.nonFungibles) { assets.nonFungiblesSize() }
         val poolUnitCount = remember(assets.poolUnits, assets.validatorsWithStakes) {
             assets.poolUnitsSize()
         }
@@ -159,7 +159,7 @@ private fun AssetsContent(
                     modifier = Modifier
                         .align(Alignment.CenterStart)
                         .height(iconSize),
-                    text = "${assets.nftsSize()}",
+                    text = "${assets.nonFungiblesSize()}",
                     contentPadding = PaddingValues(
                         start = iconSize + RadixTheme.dimensions.paddingSmall,
                         end = RadixTheme.dimensions.paddingSmall

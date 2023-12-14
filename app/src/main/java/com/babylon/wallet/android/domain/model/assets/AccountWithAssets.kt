@@ -85,7 +85,7 @@ data class Assets(
 
     fun fungiblesSize(): Int = ownedFungibles.size
 
-    fun nftsSize(): Int = ownedNonFungibles.sumOf { it.amount }.toInt()
+    fun nonFungiblesSize(): Int = ownedNonFungibles.size
 
     fun poolUnitsSize(): Int = ownedPoolUnits.size + ownedValidatorsWithStakes.size
 }

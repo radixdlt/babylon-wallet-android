@@ -40,7 +40,7 @@ fun LazyListScope.nftsTab(
     collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
     action: AssetsViewAction
 ) {
-    if (assets.nftsSize() == 0) {
+    if (assets.nonFungiblesSize() == 0) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
