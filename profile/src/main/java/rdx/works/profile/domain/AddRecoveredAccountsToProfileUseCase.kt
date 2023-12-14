@@ -14,7 +14,7 @@ class AddRecoveredAccountsToProfileUseCase @Inject constructor(
 
     suspend operator fun invoke(accounts: List<Network.Account>): Profile {
         return profileRepository.updateProfile { profile ->
-            val currentNetworkId = profile.currentNetwork.knownNetworkId ?: error("Current network is not known")
+            val currentNetworkId = profile.currentNetwork?.knownNetworkId ?: error("Current network is not known")
             profile.addAccounts(accounts, currentNetworkId)
         }
     }

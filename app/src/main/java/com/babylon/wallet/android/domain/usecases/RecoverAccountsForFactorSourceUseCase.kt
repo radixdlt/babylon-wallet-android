@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
-import com.babylon.wallet.android.presentation.account.recover.RecoveryFactorSource
+import com.babylon.wallet.android.presentation.account.recover.scan.RecoveryFactorSource
 import com.babylon.wallet.android.utils.Constants
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow

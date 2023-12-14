@@ -130,13 +130,10 @@ data class Profile(
 val Profile.currentGateway: Radix.Gateway
     get() = appPreferences.gateways.current()
 
-val Profile.currentNetwork: Network
+val Profile.currentNetwork: Network?
     get() {
         val currentGateway = currentGateway
-
-        return networks.find { it.networkID == currentGateway.network.id } ?: error(
-            "No per-network found for gateway: $currentGateway. This should not happen $networks"
-        )
+        return networks.find { it.networkID == currentGateway.network.id }
     }
 
 /**

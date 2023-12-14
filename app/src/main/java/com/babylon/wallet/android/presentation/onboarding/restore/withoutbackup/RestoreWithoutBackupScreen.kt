@@ -56,7 +56,7 @@ fun RestoreWithoutBackupScreen(
                     viewModel.onDismissPrompt()
                 }
             },
-            title = "No Babylon Seed Phrase", // TODO crowdin
+            title = stringResource(id = R.string.recoverWalletWithoutProfileStart_useNewWalletInstead_alert_title),
             text = when (state.dialogPrompt) {
                 RestoreWithoutBackupViewModel.State.PromptState.Olympia -> {
                     stringResource(id = R.string.recoverWalletWithoutProfileStart_useNewWalletInstead_alert_message)
@@ -263,7 +263,9 @@ private fun BDFSRecoveryInfoSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.settings_bdfsInfo).formattedSpans(RadixTheme.typography.body1Header.toSpanStyle()),
+            text = stringResource(id = R.string.recoverWalletWithoutProfileInfo_header_subtitle).formattedSpans(
+                RadixTheme.typography.body1Header.toSpanStyle()
+            ),
             style = RadixTheme.typography.body1Regular
         )
         Spacer(modifier = Modifier.weight(1f))

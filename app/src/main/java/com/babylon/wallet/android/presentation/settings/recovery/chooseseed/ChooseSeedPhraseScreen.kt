@@ -94,7 +94,7 @@ private fun ChooseSeedPhraseContent(
     Scaffold(modifier = modifier, topBar = {
         RadixCenteredTopAppBar(
             windowInsets = WindowInsets.statusBars,
-            title = "",
+            title = stringResource(id = R.string.empty),
             onBackClick = {
                 backCallback()
             },
@@ -118,7 +118,7 @@ private fun ChooseSeedPhraseContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXLarge, vertical = RadixTheme.dimensions.paddingDefault),
-                text = "Choose Seed Phrase",
+                text = stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
@@ -128,8 +128,8 @@ private fun ChooseSeedPhraseContent(
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXLarge, vertical = RadixTheme.dimensions.paddingDefault),
                 text = when (recoveryType) {
-                    MnemonicType.Olympia -> "Choose the Olympia seed phrase to use for derivation" // TODO crowdin
-                    else -> "Choose the Babylon seed phrase to use for derivation" // TODO crowdin
+                    MnemonicType.Olympia -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_subtitleOlympia)
+                    else -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_subtitleBabylon)
                 },
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1,

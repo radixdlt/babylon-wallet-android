@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.account.recover
+package com.babylon.wallet.android.presentation.account.recover.scan
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.usecases.RecoverAccountsForFactorSourceUseCase
-import com.babylon.wallet.android.presentation.account.recover.scan.AccountRecoveryScanArgs
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -43,7 +42,7 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList")
 @HiltViewModel
-class AccountRecoveryViewModel @Inject constructor(
+class AccountRecoveryScanViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val recoverAccountsForFactorSourceUseCase: RecoverAccountsForFactorSourceUseCase,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
@@ -52,7 +51,7 @@ class AccountRecoveryViewModel @Inject constructor(
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     @ApplicationScope private val applicationScope: CoroutineScope
-) : StateViewModel<AccountRecoveryViewModel.State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<AccountRecoveryScanViewModel.State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountRecoveryScanArgs(savedStateHandle)
 

@@ -173,7 +173,7 @@ private fun AccountRecoveryScanSelectionContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                 RadixSecondaryButton(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(id = R.string.accountRecoveryScan_ledgerButtonTitle), // TODO crowdin
+                    text = stringResource(id = R.string.accountRecoveryScan_ledgerButtonTitle),
                     onClick = {
                         onUseFactorSource(RecoveryType.LedgerOlympia)
                     }
@@ -182,10 +182,10 @@ private fun AccountRecoveryScanSelectionContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = RadixTheme.dimensions.paddingSmall, horizontal = RadixTheme.dimensions.paddingDefault),
-                    text = "Note: You must still use the new *Radix Babylon* app on your Ledger device, not the old Radix Ledger app."
+                    text = stringResource(id = R.string.accountRecoveryScan_olympiaSection_footnote)
                         .formattedSpans(
                             RadixTheme.typography.body1HighImportance.toSpanStyle()
-                        ), // TODO crowdin
+                        ),
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
                 )

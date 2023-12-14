@@ -14,7 +14,7 @@ import rdx.works.profile.domain.notHiddenAccounts
 import rdx.works.profile.domain.notHiddenPersonas
 import javax.inject.Inject
 
-class GetSeedPhrasesWithAccountsUseCase @Inject constructor(
+class GetFactorSourcesWithAccountsUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase
 ) {
 
@@ -22,8 +22,8 @@ class GetSeedPhrasesWithAccountsUseCase @Inject constructor(
         return getProfileUseCase.invoke().map { profile ->
             val result = mutableListOf<DeviceFactorSourceData>()
             val deviceFactorSources = profile.factorSources.filterIsInstance<DeviceFactorSource>()
-            val allAccountsOnNetwork = profile.currentNetwork.accounts.notHiddenAccounts()
-            val allPersonasOnNetwork = profile.currentNetwork.personas.notHiddenPersonas()
+            val allAccountsOnNetwork = profile.currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
+            val allPersonasOnNetwork = profile.currentNetwork?.personas?.notHiddenPersonas().orEmpty()
             deviceFactorSources.forEach { deviceFactorSource ->
                 if (deviceFactorSource.supportsOlympia && deviceFactorSource.supportsBabylon) {
                     val olympiaAccounts = allAccountsOnNetwork.filter {

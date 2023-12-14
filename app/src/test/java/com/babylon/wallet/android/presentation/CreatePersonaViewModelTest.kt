@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaEvent
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaViewModel
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.just
@@ -36,7 +36,7 @@ import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCa
 @OptIn(ExperimentalCoroutinesApi::class)
 class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() {
 
-    private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
+    private val deviceCapabilityHelper = mockk<DeviceCapabilityHelper>()
     private val createPersonaWithDeviceFactorSourceUseCase = mockk<CreatePersonaWithDeviceFactorSourceUseCase>()
     private val preferencesManager = mockk<PreferencesManager>()
 
@@ -48,7 +48,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         super.setUp()
 
         coEvery {
-            deviceSecurityHelper.isDeviceSecure()
+            deviceCapabilityHelper.isDeviceSecure()
         } returns true
         coEvery { preferencesManager.firstPersonaCreated } returns flow {
             emit(true)

@@ -49,7 +49,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.account.recover.AccountRecoveryViewModel
+import com.babylon.wallet.android.presentation.account.recover.scan.AccountRecoveryScanViewModel
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
@@ -67,7 +67,7 @@ import rdx.works.profile.data.model.SeedPhraseLength
 fun AddSingleMnemonicScreen(
     viewModel: AddSingleMnemonicViewModel,
     onBackClick: () -> Unit,
-    sharedViewModel: AccountRecoveryViewModel? = null,
+    sharedViewModel: AccountRecoveryScanViewModel? = null,
     onStartRecovery: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
@@ -184,9 +184,9 @@ private fun AddSingleMnemonicsContent(
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
         val title = when (state.mnemonicType) {
-            MnemonicType.BabylonMain -> "Enter Main Seed Phrase"
-            MnemonicType.Babylon -> "Enter Babylon Seed Phrase" // TODO crowdin
-            MnemonicType.Olympia -> "Enter Legacy Seed Phrase" // TODO crowdin
+            MnemonicType.BabylonMain -> stringResource(id = R.string.enterSeedPhrase_titleBabylonMain)
+            MnemonicType.Babylon -> stringResource(id = R.string.enterSeedPhrase_titleBabylon)
+            MnemonicType.Olympia -> stringResource(id = R.string.enterSeedPhrase_titleOlympia)
         }
         val isOlympia = state.mnemonicType == MnemonicType.Olympia
         SeedPhraseView(

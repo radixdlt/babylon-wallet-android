@@ -7,7 +7,9 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.ARG_NETWORK_ID
+import com.babylon.wallet.android.presentation.account.createaccount.withledger.ARG_SELECTION_PURPOSE
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.ChooseLedgerViewModel
+import com.babylon.wallet.android.presentation.account.createaccount.withledger.LedgerSelectionPurpose
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.Runs
@@ -68,6 +70,7 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
         coEvery { eventBus.sendEvent(any()) } just Runs
         coEvery { getProfileUseCase() } returns flowOf(profile())
         every { savedStateHandle.get<Int>(ARG_NETWORK_ID) } returns Radix.Gateway.mainnet.network.id
+        every { savedStateHandle.get<LedgerSelectionPurpose>(ARG_SELECTION_PURPOSE) } returns LedgerSelectionPurpose.CreateAccount
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.mainnet
         coEvery {
             addLedgerFactorSourceUseCase(

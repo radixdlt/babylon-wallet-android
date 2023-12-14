@@ -35,7 +35,7 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesD
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.ExecutionAnalysis
@@ -97,7 +97,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()
-    private val deviceSecurityHelper = mockk<DeviceSecurityHelper>()
+    private val deviceCapabilityHelper = mockk<DeviceCapabilityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val sampleTxId = "txId1"
@@ -153,7 +153,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     override fun setUp() = runTest {
         super.setUp()
         every { exceptionMessageProvider.throwableMessage(any()) } returns ""
-        every { deviceSecurityHelper.isDeviceSecure() } returns true
+        every { deviceCapabilityHelper.isDeviceSecure() } returns true
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
         coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(

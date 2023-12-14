@@ -9,7 +9,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.account.recover.AccountRecoveryViewModel
+import com.babylon.wallet.android.presentation.account.recover.scan.AccountRecoveryScanViewModel
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
 private const val ARGS_FACTOR_SOURCE_ID = "factor_source_id"
@@ -74,7 +74,7 @@ fun NavGraphBuilder.addSingleMnemonic(
         val parentEntry = remember(entry) {
             navController.getBackStackEntry(ROUTE_ADD_SINGLE_MNEMONIC)
         }
-        val sharedViewModel = hiltViewModel<AccountRecoveryViewModel>(parentEntry)
+        val sharedViewModel = hiltViewModel<AccountRecoveryScanViewModel>(parentEntry)
         AddSingleMnemonicScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,

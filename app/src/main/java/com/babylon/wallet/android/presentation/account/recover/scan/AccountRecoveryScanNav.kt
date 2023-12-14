@@ -9,7 +9,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.account.recover.AccountRecoveryViewModel
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
 @VisibleForTesting
@@ -65,7 +64,7 @@ fun NavGraphBuilder.accountRecoveryScan(
                 navController.previousBackStackEntry
             }
             checkNotNull(parentEntry, lazyMessage = { "Account recovery scan requires AccountRecoveryViewModel started by parent" })
-            hiltViewModel<AccountRecoveryViewModel>(parentEntry)
+            hiltViewModel<AccountRecoveryScanViewModel>(parentEntry)
         } else {
             hiltViewModel()
         }

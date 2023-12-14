@@ -50,9 +50,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.model.Selectable
-import com.babylon.wallet.android.presentation.account.recover.AccountRecoveryViewModel
-import com.babylon.wallet.android.presentation.account.recover.Event
-import com.babylon.wallet.android.presentation.account.recover.RecoveryFactorSource
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -69,7 +66,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 fun AccountRecoveryScanScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    viewModel: AccountRecoveryViewModel,
+    viewModel: AccountRecoveryScanViewModel,
     onRecoveryComplete: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
@@ -130,7 +127,7 @@ private fun AccountRecoveryScanContent(
     onBackClick: () -> Unit,
     onMessageShown: () -> Unit,
     onScanMoreClick: () -> Unit,
-    sharedState: AccountRecoveryViewModel.State,
+    sharedState: AccountRecoveryScanViewModel.State,
     onAccountSelected: (Selectable<Network.Account>) -> Unit,
     onContinueClick: () -> Unit,
     isRestoring: Boolean
@@ -172,7 +169,7 @@ private fun AccountRecoveryScanContent(
         },
         containerColor = RadixTheme.colors.defaultBackground,
         bottomBar = {
-            if (sharedState.contentState == AccountRecoveryViewModel.State.ContentState.ScanComplete) {
+            if (sharedState.contentState == AccountRecoveryScanViewModel.State.ContentState.ScanComplete) {
                 RadixPrimaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -198,7 +195,7 @@ private fun AccountRecoveryScanContent(
         }
     ) { padding ->
         when (sharedState.contentState) {
-            AccountRecoveryViewModel.State.ContentState.ScanInProgress -> {
+            AccountRecoveryScanViewModel.State.ContentState.ScanInProgress -> {
                 AnimatedVisibility(visible = true) {
                     ScanInProgressContent(
                         Modifier
@@ -208,7 +205,7 @@ private fun AccountRecoveryScanContent(
                 }
             }
 
-            AccountRecoveryViewModel.State.ContentState.ScanComplete -> {
+            AccountRecoveryScanViewModel.State.ContentState.ScanComplete -> {
                 AnimatedVisibility(visible = true) {
                     ScanCompleteContent(
                         modifier = Modifier
@@ -427,7 +424,7 @@ internal enum class ScanCompletePages {
 @Composable
 fun RestoreMnemonicsSeedPhraseContent() {
     RadixWalletTheme {
-        val state = AccountRecoveryViewModel.State()
+        val state = AccountRecoveryScanViewModel.State()
         AccountRecoveryScanContent(
             onBackClick = {},
             onMessageShown = {},

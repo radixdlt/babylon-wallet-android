@@ -57,7 +57,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                     DerivationPath.authSigningDerivationPathFromCap26Path(signingEntityDerivationPath)
                 } else {
                     val profile = getProfileUseCase.invoke().first()
-                    val networkId = requireNotNull(profile.currentNetwork.knownNetworkId)
+                    val networkId = requireNotNull(profile.currentNetwork?.knownNetworkId)
                     DerivationPath.authSigningDerivationPathFromBip44LikePath(networkId, signingEntityDerivationPath)
                 }
             }

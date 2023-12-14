@@ -38,8 +38,8 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
                     it.id == ledgerFactorSourceID
                 } as LedgerHardwareWalletFactorSource
             // Construct new account
-            val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
-            val totalAccountsOnNetwork = profile.currentNetwork.accounts.size
+            val networkId = networkID ?: profile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
+            val totalAccountsOnNetwork = profile.networks.find { it.networkID == networkId.value }?.accounts?.size ?: 0
             val newAccount = Network.Account.initAccountWithLedgerFactorSource(
                 entityIndex = profile.nextAccountIndex(derivationPath.scheme, networkId, ledgerFactorSourceID),
                 displayName = displayName,

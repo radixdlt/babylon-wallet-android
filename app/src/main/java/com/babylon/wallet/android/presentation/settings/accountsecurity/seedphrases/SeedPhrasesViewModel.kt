@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.settings.accountsecurity.seedphr
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.DeviceFactorSourceData
-import com.babylon.wallet.android.domain.usecases.GetSeedPhrasesWithAccountsUseCase
+import com.babylon.wallet.android.domain.usecases.GetFactorSourcesWithAccountsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -26,7 +26,7 @@ import javax.inject.Inject
 class SeedPhrasesViewModel @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val preferencesManager: PreferencesManager,
-    private val getSeedPhrasesWithAccountsUseCase: GetSeedPhrasesWithAccountsUseCase
+    private val getFactorSourcesWithAccountsUseCase: GetFactorSourcesWithAccountsUseCase
 ) : StateViewModel<SeedPhrasesViewModel.SeedPhraseUiState>(),
     OneOffEventHandler<SeedPhrasesViewModel.Effect> by OneOffEventHandlerImpl() {
 
@@ -36,7 +36,7 @@ class SeedPhrasesViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             combine(
-                getSeedPhrasesWithAccountsUseCase(),
+                getFactorSourcesWithAccountsUseCase(),
                 refreshFlow
             ) { factorSources, _ ->
                 val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()

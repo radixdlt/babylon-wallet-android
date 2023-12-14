@@ -110,7 +110,7 @@ private fun SignatureRequestContent(
                     com.babylon.wallet.android.R.string.signing_signatureRequest_title
                 }
                 is InteractionState.Device.DerivingAccounts -> {
-                    com.babylon.wallet.android.R.string.recoveryScan_derivingAccounts
+                    com.babylon.wallet.android.R.string.accountRecoveryScan_derivingAccounts
                 }
 
                 is InteractionState.Device -> com.babylon.wallet.android.R.string.signing_signatureRequest_title

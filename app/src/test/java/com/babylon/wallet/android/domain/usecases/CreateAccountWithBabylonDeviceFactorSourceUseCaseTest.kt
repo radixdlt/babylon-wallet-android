@@ -17,6 +17,7 @@ import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
@@ -29,14 +30,14 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCaseTest {
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
     private val resolveAccountsLedgerStateUseCase = mockk<ResolveAccountsLedgerStateUseCase>()
     private val mnemonicWithPassphrase = MnemonicWithPassphrase(
-        mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
+        mnemonic = "prison post shoot verb lunch blue limb stick later winner tide roof situate excuse joy muffin cruel fix bag evil call glide resist aware",
         bip39Passphrase = ""
     )
 
     @Before
     fun setUp() {
         coEvery { ensureBabylonFactorSourceExistUseCase() } returns TestData.testProfile2Networks2AccountsEach(mnemonicWithPassphrase)
-        coEvery { resolveAccountsLedgerStateUseCase(any()) } returns Result.success(emptyList())
+        coEvery { resolveAccountsLedgerStateUseCase(any()) } returns Result.failure(Exception(""))
     }
 
     @Test
@@ -46,10 +47,9 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCaseTest {
             val accountName = "First account"
             val network = Radix.Gateway.hammunet
             val profile = TestData.testProfile2Networks2AccountsEach(mnemonicWithPassphrase)
-
             val mnemonicRepository = mock<MnemonicRepository> {
                 onBlocking {
-                    readMnemonic(profile.babylonMainDeviceFactorSource.id)
+                    readMnemonic(checkNotNull(profile.mainBabylonFactorSource()?.id))
                 } doReturn Result.success(mnemonicWithPassphrase)
             }
 

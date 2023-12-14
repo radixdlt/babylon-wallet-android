@@ -47,17 +47,16 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
  * Accounts on network
  */
 val GetProfileUseCase.entitiesOnCurrentNetwork: Flow<List<Entity>>
-    get() = invoke().map { it.currentNetwork.accounts.notHiddenAccounts() + it.currentNetwork.personas.notHiddenPersonas() }
-
-val GetProfileUseCase.allAccountsOnCurrentNetwork
-    get() = invoke().map { it.currentNetwork.accounts }
+    get() = invoke().map {
+        it.currentNetwork?.accounts?.notHiddenAccounts().orEmpty() + it.currentNetwork?.personas?.notHiddenPersonas().orEmpty()
+    }
 
 val GetProfileUseCase.activeAccountsOnCurrentNetwork
-    get() = invoke().map { it.currentNetwork.accounts.notHiddenAccounts() }
+    get() = invoke().map { it.currentNetwork?.accounts?.notHiddenAccounts().orEmpty() }
 
 val GetProfileUseCase.hiddenAccountsOnCurrentNetwork
     get() = invoke().map {
-        it.currentNetwork.accounts.filter { account -> account.flags.contains(EntityFlag.DeletedByUser) }
+        it.currentNetwork?.accounts?.filter { account -> account.flags.contains(EntityFlag.DeletedByUser) }.orEmpty()
     }
 
 val GetProfileUseCase.factorSources
@@ -69,7 +68,7 @@ val GetProfileUseCase.deviceFactorSources
 private val GetProfileUseCase.deviceFactorSourcesWithAccounts
     get() = invoke().map { profile ->
         val deviceFactorSources = profile.factorSources.filterIsInstance<DeviceFactorSource>()
-        val allAccountsOnNetwork = profile.currentNetwork.accounts.notHiddenAccounts()
+        val allAccountsOnNetwork = profile.currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
         deviceFactorSources.associateWith { deviceFactorSource ->
             allAccountsOnNetwork.filter { it.factorSourceId == deviceFactorSource.id }
         }
@@ -141,14 +140,6 @@ suspend fun GetProfileUseCase.nextDerivationPathForAccountOnNetwork(
     )
 }
 
-fun GetProfileUseCase.accountOnCurrentNetworkWithAddress(
-    address: String
-) = activeAccountsOnCurrentNetwork.map { accounts ->
-    accounts.firstOrNull { account ->
-        account.address == address
-    }
-}
-
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().map {
         val addressData = Address(it.address).bytes()
@@ -161,11 +152,11 @@ suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
  * Personas on network
  */
 val GetProfileUseCase.personasOnCurrentNetwork
-    get() = invoke().map { it.currentNetwork.personas.notHiddenPersonas() }
+    get() = invoke().map { it.currentNetwork?.personas?.notHiddenPersonas().orEmpty() }
 
 val GetProfileUseCase.hiddenPersonasOnCurrentNetwork
     get() = invoke().map {
-        it.currentNetwork.personas.filter { persona -> persona.flags.contains(EntityFlag.DeletedByUser) }
+        it.currentNetwork?.personas?.filter { persona -> persona.flags.contains(EntityFlag.DeletedByUser) }.orEmpty()
     }
 
 suspend fun GetProfileUseCase.personasOnCurrentNetwork() = personasOnCurrentNetwork.first()

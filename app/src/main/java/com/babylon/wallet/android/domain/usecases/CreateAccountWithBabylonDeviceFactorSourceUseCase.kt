@@ -45,7 +45,7 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCase @Inject constructor(
             _interactionState.update { InteractionState.Device.DerivingAccounts(factorSource) }
 
             // Construct new account
-            val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
+            val networkId = networkID ?: profile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val nextAccountIndex = profile.nextAccountIndex(DerivationPathScheme.CAP_26, networkId, factorSource.id)
             val nextAppearanceId = profile.nextAppearanceId(networkId)
             val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.id).getOrNull())

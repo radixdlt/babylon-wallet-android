@@ -112,7 +112,7 @@ private fun AccountSecurityContent(
 @Composable
 private fun getSettingItemSubtitle(accountSecurityAndSettingsItem: AccountSecurityAndSettingsItem): String? {
     return when (accountSecurityAndSettingsItem) {
-        AccountSecurityAndSettingsItem.AccountRecovery -> "Using seed phrase or Ledger device" // TODO crowdin
+        AccountSecurityAndSettingsItem.AccountRecovery -> stringResource(id = R.string.settings_accountRecovery_subtitle)
         AccountSecurityAndSettingsItem.DepositGuarantees -> stringResource(id = R.string.accountSecuritySettings_depositGuarantees_subtitle)
         else -> null
     }
