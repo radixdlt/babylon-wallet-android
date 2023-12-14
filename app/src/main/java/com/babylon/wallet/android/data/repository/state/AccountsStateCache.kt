@@ -35,6 +35,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
@@ -52,6 +53,8 @@ import rdx.works.core.InstantGenerator
 import rdx.works.core.toUnitResult
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import timber.log.Timber
 import java.math.BigDecimal
 import java.time.Instant
@@ -63,11 +66,13 @@ class AccountsStateCache @Inject constructor(
     private val api: StateApi,
     private val dao: StateDao,
     private val database: StateDatabase,
+    private val getProfileUseCase: GetProfileUseCase,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
     @ApplicationScope private val applicationScope: CoroutineScope
 ) {
 
     private val accountsMemoryCache = MutableStateFlow<List<AccountAddressWithAssets>?>(null)
+    private val cacheErrors = MutableStateFlow<Throwable?>(null)
     private val accountsRequested = MutableStateFlow<Set<String>>(emptySet())
     private val deletingDatabaseMutex = Mutex()
 
@@ -84,8 +89,17 @@ class AccountsStateCache @Inject constructor(
     fun observeAccountsOnLedger(
         accounts: List<Network.Account>,
         isRefreshing: Boolean
-    ): Flow<List<AccountWithAssets>> = accountsMemoryCache
-        .filterNotNull()
+    ): Flow<List<AccountWithAssets>> = combineTransform(
+        accountsMemoryCache,
+        cacheErrors
+    ) { cache, error ->
+        if (error != null) {
+            cacheErrors.value = null
+            throw error
+        }
+
+        emit(cache)
+    }.filterNotNull()
         .onStart {
             if (isRefreshing) {
                 logger.d("\uD83D\uDD04 Refreshing accounts")
@@ -177,8 +191,9 @@ class AccountsStateCache @Inject constructor(
     private fun Flow<List<AccountPortfolioResponse>>.collectCachedData() = map { portfolio ->
         val result = mutableMapOf<String, AccountCachedData>()
         val cacheMinBoundary = Instant.ofEpochMilli(accountCacheValidity())
+        val addressesOnNetwork = getProfileUseCase.accountsOnCurrentNetwork().map { it.address }
         portfolio.forEach { cache ->
-            if (cache.accountSynced == null || cache.accountSynced < cacheMinBoundary) {
+            if (cache.accountSynced == null || cache.accountSynced < cacheMinBoundary || cache.address !in addressesOnNetwork) {
                 return@forEach
             }
 
@@ -219,12 +234,17 @@ class AccountsStateCache @Inject constructor(
 
             val allValidatorAddresses = cached.map { it.value.validatorAddresses() }.flatten().toSet()
             val cachedValidators = dao.getCachedValidators(allValidatorAddresses, stateVersion).toMutableMap()
-            val newValidators = api.fetchValidators(
-                allValidatorAddresses - cachedValidators.keys,
-                stateVersion
-            ).asValidators().onEach {
-                cachedValidators[it.address] = it
-            }
+            val newValidators = runCatching {
+                api.fetchValidators(
+                    allValidatorAddresses - cachedValidators.keys,
+                    stateVersion
+                ).asValidators().onEach {
+                    cachedValidators[it.address] = it
+                }
+            }.onFailure { error ->
+                cacheErrors.value = error
+            }.getOrNull() ?: return@transform
+
             if (newValidators.isNotEmpty()) {
                 logger.d("\uD83D\uDCBD Inserting validators")
                 dao.insertValidators(newValidators.asValidatorEntities(SyncInfo(InstantGenerator(), stateVersion)))
@@ -236,9 +256,26 @@ class AccountsStateCache @Inject constructor(
             if (unknownPools.isNotEmpty()) {
                 logger.d("\uD83D\uDCBD Inserting pools")
 
-                val newPools = api.fetchPools(unknownPools, stateVersion)
-                val join = newPools.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
-                dao.updatePools(pools = join)
+                val newPools = runCatching {
+                    api.fetchPools(unknownPools, stateVersion)
+                }.onFailure { error ->
+                    cacheErrors.value = error
+                }.getOrNull() ?: return@transform
+
+                if (newPools.isNotEmpty()) {
+                    val join = newPools.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
+                    dao.updatePools(pools = join)
+                } else {
+                    emit(
+                        cached.mapNotNull {
+                            it.value.toAccountAddressWithAssets(
+                                accountAddress = it.key,
+                                pools = cachedPools,
+                                validators = cachedValidators
+                            )
+                        }
+                    )
+                }
             } else {
                 emit(
                     cached.mapNotNull {
