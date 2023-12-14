@@ -221,7 +221,6 @@ data class Network(
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
-                    entityIndex = entityIndex,
                     publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
                     derivationPath = derivationPath,
                     factorSourceId = deviceFactorSource.id
@@ -264,7 +263,6 @@ data class Network(
                     appearanceID = appearanceID,
                     networkID = networkId.value,
                     securityState = SecurityState.unsecured(
-                        entityIndex = entityIndex,
                         publicKey = FactorInstance.PublicKey(publicKey.toHexString(), Slip10Curve.SECP_256K1),
                         derivationPath = derivationPath,
                         factorSourceId = deviceFactorSource.id
@@ -316,7 +314,6 @@ data class Network(
                 }
 
                 val unsecuredSecurityState = SecurityState.unsecured(
-                    entityIndex = entityIndex,
                     publicKey = if (isOlympia) {
                         FactorInstance.PublicKey(derivedPublicKeyHex, Slip10Curve.SECP_256K1)
                     } else {
@@ -405,7 +402,6 @@ data class Network(
                 )
 
                 val unsecuredSecurityState = SecurityState.unsecured(
-                    entityIndex = entityIndex,
                     publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
                     derivationPath = derivationPath,
                     factorSourceId = factorSource.id

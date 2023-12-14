@@ -13,9 +13,6 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
@@ -118,7 +115,6 @@ class SampleDataProvider {
             networkID = 14,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                    entityIndex = 0,
                     transactionSigning = FactorInstance(
                         badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                             derivationPath = DerivationPath.forAccount(
@@ -200,7 +196,6 @@ class SampleDataProvider {
             networkID = Radix.Gateway.default.network.id,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                    entityIndex = 0,
                     transactionSigning = FactorInstance(
                         badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                             derivationPath = DerivationPath.forAccount(
@@ -234,7 +229,6 @@ class SampleDataProvider {
             networkID = NetworkId.Nebunet.value,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                    entityIndex = 0,
                     transactionSigning = FactorInstance(
                         badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                             derivationPath = DerivationPath.forIdentity(
@@ -357,17 +351,6 @@ class SampleDataProvider {
             metadata = listOf(
                 Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = name, valueType = MetadataType.String),
             )
-        )
-    }
-
-    fun samplePoolUnit(): PoolUnit {
-        val poolUnit = sampleFungibleResources().first()
-        return PoolUnit(poolUnit, Pool(address = "pool_tdx_abc", poolUnitAddress = poolUnit.resourceAddress, sampleFungibleResources()))
-    }
-
-    fun sampleLSUUnit(): LiquidStakeUnit {
-        return LiquidStakeUnit(
-            sampleFungibleResources().first()
         )
     }
 

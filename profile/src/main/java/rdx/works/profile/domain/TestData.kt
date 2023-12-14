@@ -78,7 +78,6 @@ object TestData {
                             networkID = network1.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                    entityIndex = 0,
                                     transactionSigning = FactorInstance(
                                         badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                                             derivationPath = DerivationPath.forAccount(
@@ -106,7 +105,6 @@ object TestData {
                             networkID = network1.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                    entityIndex = 1,
                                     transactionSigning = FactorInstance(
                                         badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                                             derivationPath = DerivationPath.forAccount(
@@ -141,7 +139,6 @@ object TestData {
                             networkID = network2.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                    entityIndex = 2,
                                     transactionSigning = FactorInstance(
                                         badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                                             derivationPath = DerivationPath.forAccount(
@@ -169,7 +166,6 @@ object TestData {
                             networkID = network2.network.networkId().value,
                             securityState = SecurityState.Unsecured(
                                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                    entityIndex = 3,
                                     transactionSigning = FactorInstance(
                                         badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                                             derivationPath = DerivationPath.forAccount(

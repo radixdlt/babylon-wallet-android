@@ -27,9 +27,6 @@ sealed class SecurityState {
     @Serializable
     data class UnsecuredEntityControl(
 
-        @SerialName("entityIndex")
-        val entityIndex: Int,
-
         @SerialName("transactionSigning")
         val transactionSigning: FactorInstance,
 
@@ -40,13 +37,11 @@ sealed class SecurityState {
     companion object {
 
         fun unsecured(
-            entityIndex: Int,
             publicKey: FactorInstance.PublicKey,
             derivationPath: DerivationPath,
             factorSourceId: FactorSource.FactorSourceID.FromHash
         ): Unsecured = Unsecured(
             unsecuredEntityControl = UnsecuredEntityControl(
-                entityIndex = entityIndex,
                 transactionSigning = FactorInstance(
                     badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                         derivationPath = derivationPath,
