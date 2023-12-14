@@ -13,6 +13,7 @@ import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("TooManyFunctions")
 @Singleton
 class PreferencesManager @Inject constructor(
     private val dataStore: DataStore<Preferences>
@@ -92,15 +93,6 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    fun getBackedUpFactorSourceIds(): Flow<Set<String>> {
-        return dataStore.data.map { preferences ->
-            preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS]?.split(",").orEmpty().toSet()
-        }
-    }
-
-    suspend fun markFirstPersonaCreated() {
-        dataStore.edit { preferences ->
-            preferences[KEY_FIRST_PERSONA_CREATED] = true
     val isRadixBannerVisible: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_RADIX_BANNER_VISIBLE] ?: false

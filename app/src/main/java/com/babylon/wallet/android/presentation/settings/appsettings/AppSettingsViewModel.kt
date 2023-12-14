@@ -25,7 +25,6 @@ import javax.inject.Inject
 @HiltViewModel
 class AppSettingsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val getBackupStateUseCase: GetBackupStateUseCase,
     private val preferencesManager: PreferencesManager,
     private val updateDeveloperModeUseCase: UpdateDeveloperModeUseCase
 ) : StateViewModel<AppSettingsUiState>() {
@@ -62,23 +61,6 @@ class AppSettingsViewModel @Inject constructor(
                     _state.updateSetting<SettingsItem.AppSettingsItem.CrashReporting> {
                         SettingsItem.AppSettingsItem.CrashReporting(enabled)
                     }
-                }
-            }
-        }
-        viewModelScope.launch {
-            getBackupStateUseCase().collect { backupState ->
-                _state.update { settingsUiState ->
-                    val settingsList = if (settingsUiState.settings.any { it is SettingsItem.AppSettingsItem.Backups }) {
-                        settingsUiState.settings.mapWhen(
-                            predicate = { it is SettingsItem.AppSettingsItem.Backups },
-                            mutation = { SettingsItem.AppSettingsItem.Backups(backupState = backupState) }
-                        )
-                    } else {
-                        settingsUiState.settings.toMutableList().apply {
-                            add(2, SettingsItem.AppSettingsItem.Backups(backupState))
-                        }
-                    }
-                    settingsUiState.copy(settings = settingsList.toPersistentSet())
                 }
             }
         }

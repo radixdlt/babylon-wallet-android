@@ -73,10 +73,6 @@ fun NavGraphBuilder.appSettingsScreen(
                     SettingsItem.AppSettingsItem.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
-
-                    is SettingsItem.AppSettingsItem.Backups -> {
-                        navController.backupScreen()
-                    }
                     is SettingsItem.AppSettingsItem.CrashReporting,
                     is SettingsItem.AppSettingsItem.DeveloperMode -> {}
                     SettingsItem.AppSettingsItem.EntityHiding -> {
