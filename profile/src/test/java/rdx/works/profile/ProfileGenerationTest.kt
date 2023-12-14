@@ -128,7 +128,7 @@ class ProfileGenerationTest {
 
         Assert.assertTrue(profile.header.id.isNotBlank())
 
-        val newDisplayNameForAccount = "bla bla bla"
+        val newDisplayNameForAccount = "Test account"
         profile = profile.renameAccountDisplayName(
             accountToRename = firstAccount,
             newDisplayName = newDisplayNameForAccount
