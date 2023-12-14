@@ -49,6 +49,8 @@
   <string name="assetDetails_behavior">Behavior</string>
   <string name="assetDetails_tags">Tags</string>
   <string name="assetDetails_tags_officialRadix">Official Radix</string>
+  <string name="assetDetails_staking_readyToClaim">Ready to Claim %s XRD</string>
+  <string name="assetDetails_staking_unstaking">Ready to Claim %s XRD in approx. less than %d minutes</string>
   <string name="assetDetails_associatedDapps">Associated dApps</string>
   <string name="assetDetails_tokenDetails_noTokens">You have no Tokens</string>
   <string name="assetDetails_tokenDetails_whatAreTokens">What are Tokens?</string>

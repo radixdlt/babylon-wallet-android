@@ -36,6 +36,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.account.composable.View
+import com.babylon.wallet.android.presentation.status.assets.nonfungible.NonFungibleAssetDialogViewModel.State.ClaimState
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -49,6 +50,7 @@ import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import rdx.works.core.displayableQuantity
 
 @Composable
 fun NonFungibleAssetDialog(
@@ -146,6 +148,18 @@ private fun NonFungibleAssetDialogContent(
                                 textColor = RadixTheme.colors.gray1
                             )
                         }
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    }
+
+                    state.claimState?.let { claimState ->
+                        Text(
+                            modifier = Modifier
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                                .fillMaxWidth(),
+                            text = claimState.description(),
+                            style = RadixTheme.typography.body2Link,
+                            color = if (claimState is ClaimState.ReadyToClaim) RadixTheme.colors.blue2 else RadixTheme.colors.gray1
+                        )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }
 
@@ -363,4 +377,14 @@ private fun TagsSection(state: NonFungibleAssetDialogViewModel.State) {
             }
         )
     }
+}
+
+@Composable
+private fun ClaimState.description() = when (this) {
+    is ClaimState.ReadyToClaim -> stringResource(id = R.string.assetDetails_staking_readyToClaim, amount.displayableQuantity())
+    is ClaimState.Unstaking -> stringResource(
+        id = R.string.assetDetails_staking_unstaking,
+        amount.displayableQuantity(),
+        approximateClaimMinutes
+    )
 }

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.status.assets.nonfungible
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ObserveResourceUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -16,13 +17,15 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
 class NonFungibleAssetDialogViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     observeResourceUseCase: ObserveResourceUseCase,
-    getNFTDetailsUseCase: GetNFTDetailsUseCase
+    getNFTDetailsUseCase: GetNFTDetailsUseCase,
+    getNetworkInfoUseCase: GetNetworkInfoUseCase,
 ) : StateViewModel<NonFungibleAssetDialogViewModel.State>() {
 
     private val args = NonFungibleAssetDialogArgs(savedStateHandle)
@@ -40,6 +43,13 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
                     localId = args.localId
                 ).onSuccess { item ->
                     _state.update { it.copy(item = item) }
+
+                    if (item.claimAmountXrd != null) {
+                        // Need to get the current epoch so as to resolve the state of the claim
+                        getNetworkInfoUseCase().onSuccess { info ->
+                            _state.update { it.copy(epoch = info.epoch) }
+                        }
+                    }
                 }.onFailure { error ->
                     _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
                 }
@@ -69,7 +79,50 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
         val localId: String?,
         val resource: Resource.NonFungibleResource? = null,
         val item: Resource.NonFungibleResource.Item? = null,
+        val epoch: Long? = null,
         val isNewlyCreated: Boolean,
         val uiMessage: UiMessage? = null
-    ) : UiState
+    ) : UiState {
+
+        val claimState: ClaimState?
+            get() {
+                val claimAmount = item?.claimAmountXrd ?: return null
+                val claimEpoch = item.claimEpoch ?: return null
+                val currentEpoch = epoch ?: return null
+
+                return if (claimEpoch <= currentEpoch) {
+                    ClaimState.ReadyToClaim(
+                        amount = claimAmount
+                    )
+                } else {
+                    ClaimState.Unstaking(
+                        amount = claimAmount,
+                        current = currentEpoch,
+                        claim = claimEpoch
+                    )
+                }
+            }
+
+        sealed class ClaimState {
+            abstract val amount: BigDecimal
+
+            data class Unstaking(
+                override val amount: BigDecimal,
+                private val current: Long,
+                private val claim: Long
+            ): ClaimState() {
+                val approximateClaimMinutes: Long
+                    get() = (claim - current) * EPOCH_TIME_MINUTES
+            }
+
+            data class ReadyToClaim(
+                override val amount: BigDecimal
+            ): ClaimState()
+
+            companion object {
+                private const val EPOCH_TIME_MINUTES = 5
+            }
+        }
+
+    }
 }
