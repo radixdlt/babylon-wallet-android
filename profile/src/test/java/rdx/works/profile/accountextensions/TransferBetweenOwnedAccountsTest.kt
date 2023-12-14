@@ -4,7 +4,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.Assert.assertFalse
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import rdx.works.core.InstantGenerator
 import rdx.works.core.identifiedArrayListOf
@@ -123,7 +122,7 @@ class TransferBetweenOwnedAccountsTest {
         )
 
         profile = profile.addAccounts(
-            account = targetAccount,
+            accounts = listOf(targetAccount),
             onNetwork = defaultNetwork.networkId()
         )
     }

@@ -24,7 +24,6 @@ import rdx.works.core.InstantGenerator
 import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.toHexString
-import rdx.works.core.toUByteList
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -136,7 +135,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
             body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
         ))
         coVerify(exactly = 1) { profileRepository.saveProfile(capture(capturedProfile)) }
-        assert(capturedProfile.captured.currentNetwork.accounts.size == 12)
+        assert(capturedProfile.captured.currentNetwork!!.accounts.size == 12)
     }
 
     private fun getOlympiaTestAccounts(): List<OlympiaAccountDetails> {

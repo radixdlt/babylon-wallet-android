@@ -9,11 +9,11 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
@@ -23,12 +23,14 @@ internal class EnsureBabylonFactorSourceExistUseCaseTest {
     private val profileRepository = mockk<ProfileRepository>()
     private val mnemonicRepository = mockk<MnemonicRepository>()
     private val deviceInfoRepository = mockk<DeviceInfoRepository>()
+    private val preferenceManager = mockk<PreferencesManager>()
 
     private val ensureBabylonFactorSourceExistUseCase =
-        EnsureBabylonFactorSourceExistUseCase(mnemonicRepository, profileRepository, deviceInfoRepository)
+        EnsureBabylonFactorSourceExistUseCase(mnemonicRepository, profileRepository, deviceInfoRepository, preferenceManager)
 
     @Before
     fun setUp() {
+        coEvery { preferenceManager.markFactorSourceBackedUp(any()) } just Runs
         every { deviceInfoRepository.getDeviceInfo() } returns DeviceInfo("device1", "manufacturer1", "model1")
         coEvery { mnemonicRepository() } returns MnemonicWithPassphrase(
             mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +

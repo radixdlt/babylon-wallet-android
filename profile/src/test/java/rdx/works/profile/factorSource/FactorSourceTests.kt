@@ -61,7 +61,7 @@ class FactorSourceTests {
             createdAt = Instant.ofEpochSecond(0)
         )
 
-        assertTrue(factorSource.isOlympia)
+        assertTrue(factorSource.supportsOlympia)
         assertEquals("c23c47a8a37b79298878506692e42f3a1a11967ff1239bb344ad6ab0c21ddda8", factorSource.id.body.value)
     }
 }

@@ -1,11 +1,15 @@
 package rdx.works.profile
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.just
+import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
@@ -25,6 +29,7 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -33,17 +38,23 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.TestData
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class GenerateProfileUseCaseTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private val fakeDeviceInfoRepository = FakeDeviceInfoRepository()
+    private val mnemonicRepository = mockk<MnemonicRepository>()
     private val testScope = TestScope(testDispatcher)
+
+    @Before
+    fun setUp() {
+        coEvery { mnemonicRepository.saveMnemonic(any(), any()) } just Runs
+    }
 
     @Test
     fun `given profile already exists, when generate profile called, return existing profile`() {
@@ -120,7 +131,8 @@ class GenerateProfileUseCaseTest {
             val generateProfileUseCase = GenerateProfileUseCase(
                 profileRepository = profileRepository,
                 deviceInfoRepository = fakeDeviceInfoRepository,
-                defaultDispatcher = testDispatcher
+                defaultDispatcher = testDispatcher,
+                mnemonicRepository = mnemonicRepository
             )
 
             // then
@@ -142,7 +154,8 @@ class GenerateProfileUseCaseTest {
             val generateProfileUseCase = GenerateProfileUseCase(
                 profileRepository = profileRepository,
                 deviceInfoRepository = fakeDeviceInfoRepository,
-                defaultDispatcher = testDispatcher
+                defaultDispatcher = testDispatcher,
+                mnemonicRepository = mnemonicRepository
             )
 
             whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
@@ -152,7 +165,7 @@ class GenerateProfileUseCaseTest {
             Assert.assertEquals(
                 "Factor Source ID",
                 expectedFactorSourceId,
-                profile.babylonMainDeviceFactorSource.id.body.value
+                profile.mainBabylonFactorSource()!!.id.body.value
             )
         }
     }
@@ -161,7 +174,7 @@ class GenerateProfileUseCaseTest {
     fun `given profile does not exist, when generating one, verify correct data generated from other mnemonic`() {
         testScope.runTest {
             val mnemonicWithPassphrase = MnemonicWithPassphrase(
-                mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
+                mnemonic = "travel organ kick vote head divide express recall oblige foster banner spin shield stone scan pretty sort skate knock kangaroo pill test belt father",
                 bip39Passphrase = ""
             )
             val babylonFactorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase)
@@ -171,7 +184,8 @@ class GenerateProfileUseCaseTest {
             val generateProfileUseCase = GenerateProfileUseCase(
                 profileRepository = profileRepository,
                 deviceInfoRepository = fakeDeviceInfoRepository,
-                defaultDispatcher = testDispatcher
+                defaultDispatcher = testDispatcher,
+                mnemonicRepository = mnemonicRepository
             )
 
             whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
@@ -180,7 +194,7 @@ class GenerateProfileUseCaseTest {
             Assert.assertEquals(
                 "Factor Source ID",
                 expectedFactorSourceId,
-                profile.babylonMainDeviceFactorSource.id.body.value
+                profile.mainBabylonFactorSource()!!.id.body.value
             )
         }
     }
