@@ -58,25 +58,22 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCase @Inject constructor(
                 networkId = networkId,
                 appearanceID = nextAppearanceId
             )
-            // Add account to the profile
             val resolveResult = resolveAccountsLedgerStateRepository.invoke(listOf(newAccount))
             // Add account to the profile
-            val updatedProfile = if (resolveResult.isSuccess) {
-                profile.addAccounts(
-                    accounts = listOf(resolveResult.getOrThrow().first().account),
-                    onNetwork = networkId
-                )
+            val accountToAdd = if (resolveResult.isSuccess) {
+                resolveResult.getOrThrow().first().account
             } else {
-                profile.addAccounts(
-                    accounts = listOf(newAccount),
-                    onNetwork = networkId
-                )
+                newAccount
             }
+            val updatedProfile = profile.addAccounts(
+                accounts = listOf(accountToAdd),
+                onNetwork = networkId
+            )
             // Save updated profile
             profileRepository.saveProfile(updatedProfile)
             _interactionState.update { null }
             // Return new account
-            newAccount
+            accountToAdd
         }
     }
 }

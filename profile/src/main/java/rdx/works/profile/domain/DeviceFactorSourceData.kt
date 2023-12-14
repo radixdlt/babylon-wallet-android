@@ -1,14 +1,12 @@
-package com.babylon.wallet.android.domain.model
+package rdx.works.profile.domain
 
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 
 data class DeviceFactorSourceData(
     val deviceFactorSource: DeviceFactorSource,
-    val accounts: ImmutableList<Network.Account> = persistentListOf(),
-    val personas: ImmutableList<Network.Persona> = persistentListOf(),
+    val accounts: List<Network.Account> = emptyList(),
+    val personas: List<Network.Persona> = emptyList(),
     val mnemonicState: MnemonicState = MnemonicState.NotBackedUp,
     val isBabylon: Boolean = false
 ) {

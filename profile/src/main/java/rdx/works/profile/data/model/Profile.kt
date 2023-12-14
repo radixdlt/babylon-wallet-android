@@ -87,12 +87,12 @@ data class Profile(
             )
         }
 
-        fun initProfileWithRecoveredBDFS(
+        fun initWithFactorSource(
             id: String,
             deviceInfo: DeviceInfo,
             creationDate: Instant,
             gateways: Gateways = Gateways.preset,
-            bdfs: FactorSource,
+            factorSource: FactorSource,
             accounts: IdentifiedArrayList<Network.Account>
         ): Profile {
             val networks = listOf(
@@ -120,7 +120,7 @@ data class Profile(
                     numberOfNetworks = networks.size
                 ),
                 appPreferences = appPreferences,
-                factorSources = identifiedArrayListOf(bdfs),
+                factorSources = identifiedArrayListOf(factorSource),
                 networks = networks
             )
         }

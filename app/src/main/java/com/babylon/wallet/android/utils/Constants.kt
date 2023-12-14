@@ -7,4 +7,5 @@ object Constants {
     const val USE_CURRENT_NETWORK = -1
     const val RADIX_START_PAGE_URL = "https://wallet.radixdlt.com/"
     const val DEFAULT_ACCOUNT_NAME = "Unnamed"
+    const val MAX_ITEMS_PER_ENTITY_DETAILS_REQUEST = 20
 }

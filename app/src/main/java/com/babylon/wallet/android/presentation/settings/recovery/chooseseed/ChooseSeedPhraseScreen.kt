@@ -40,13 +40,13 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DeviceFactorSourceData
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.domain.DeviceFactorSourceData
 
 @Composable
 fun ChooseSeedPhraseScreen(
@@ -92,7 +92,7 @@ private fun ChooseSeedPhraseContent(
     BackHandler {
         backCallback()
     }
-    Scaffold(modifier = modifier, topBar = {
+    Scaffold(modifier = modifier.navigationBarsPadding(), topBar = {
         RadixCenteredTopAppBar(
             windowInsets = WindowInsets.statusBars,
             title = stringResource(id = R.string.empty),

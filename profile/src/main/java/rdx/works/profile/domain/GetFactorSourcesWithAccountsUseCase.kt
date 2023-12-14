@@ -1,7 +1,5 @@
-package com.babylon.wallet.android.domain.usecases
+package rdx.works.profile.domain
 
-import com.babylon.wallet.android.domain.model.DeviceFactorSourceData
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import rdx.works.profile.data.model.currentNetwork
@@ -9,9 +7,6 @@ import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.usesCurve25519
 import rdx.works.profile.data.model.extensions.usesSecp256k1
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.notHiddenAccounts
-import rdx.works.profile.domain.notHiddenPersonas
 import javax.inject.Inject
 
 class GetFactorSourcesWithAccountsUseCase @Inject constructor(
@@ -38,15 +33,15 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
                     result.add(
                         DeviceFactorSourceData(
                             deviceFactorSource = deviceFactorSource,
-                            accounts = babylonAccounts.toPersistentList(),
+                            accounts = babylonAccounts,
                             isBabylon = true,
-                            personas = babylonPersonas.toPersistentList()
+                            personas = babylonPersonas
                         )
                     )
                     result.add(
                         DeviceFactorSourceData(
                             deviceFactorSource = deviceFactorSource,
-                            accounts = olympiaAccounts.toPersistentList(),
+                            accounts = olympiaAccounts,
                             isBabylon = false
                         )
                     )
@@ -60,9 +55,9 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
                     result.add(
                         DeviceFactorSourceData(
                             deviceFactorSource = deviceFactorSource,
-                            accounts = accounts.toPersistentList(),
+                            accounts = accounts,
                             isBabylon = deviceFactorSource.supportsBabylon,
-                            personas = personas.toPersistentList()
+                            personas = personas
                         )
                     )
                 }

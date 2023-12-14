@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.di.ShortTimeoutStateApi
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
+import com.babylon.wallet.android.utils.Constants
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 
@@ -20,7 +21,7 @@ class ResolveAccountsLedgerStateRepository @Inject constructor(
     suspend operator fun invoke(accounts: List<Network.Account>): Result<List<AccountWithOnLedgerStatus>> {
         val activeAddresses = mutableSetOf<String>()
         val defaultDepositRules = mutableMapOf<String, DefaultDepositRule>()
-        accounts.map { it.address }.chunked(maxItemsPerRequest).forEach { addressesChunk ->
+        accounts.map { it.address }.chunked(Constants.MAX_ITEMS_PER_ENTITY_DETAILS_REQUEST).forEach { addressesChunk ->
             stateApi.stateEntityDetails(
                 StateEntityDetailsRequest(
                     addressesChunk,
@@ -64,9 +65,5 @@ class ResolveAccountsLedgerStateRepository @Inject constructor(
                 )
             }
         )
-    }
-
-    companion object {
-        private const val maxItemsPerRequest = 20
     }
 }

@@ -49,11 +49,11 @@ class GenerateProfileUseCase @Inject constructor(
         return when (val state = profileRepository.profileState.first()) {
             is ProfileState.Restored -> state.profile
             else -> withContext(defaultDispatcher) {
-                val profile = Profile.initProfileWithRecoveredBDFS(
+                val profile = Profile.initWithFactorSource(
                     id = UUIDGenerator.uuid().toString(),
                     deviceInfo = deviceInfoRepository.getDeviceInfo(),
                     creationDate = InstantGenerator(),
-                    bdfs = bdfs,
+                    factorSource = bdfs,
                     accounts = accounts
                 )
                 profileRepository.saveProfile(profile)

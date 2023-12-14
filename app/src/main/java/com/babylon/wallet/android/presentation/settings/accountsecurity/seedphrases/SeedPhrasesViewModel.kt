@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.model.DeviceFactorSourceData
-import com.babylon.wallet.android.domain.usecases.GetFactorSourcesWithAccountsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -20,6 +18,8 @@ import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.domain.DeviceFactorSourceData
+import rdx.works.profile.domain.GetFactorSourcesWithAccountsUseCase
 import javax.inject.Inject
 
 @HiltViewModel

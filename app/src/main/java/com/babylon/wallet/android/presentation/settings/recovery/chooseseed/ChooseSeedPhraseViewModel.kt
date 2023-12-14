@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.recovery.chooseseed
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.model.DeviceFactorSourceData
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -19,6 +18,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.domain.DeviceFactorSourceData
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.babylonFactorSourcesWithAccounts
 import rdx.works.profile.domain.olympiaFactorSourcesWithAccounts

@@ -31,7 +31,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DeviceFactorSourceData
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
@@ -43,6 +42,7 @@ import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.domain.DeviceFactorSourceData
 
 @Composable
 fun SeedPhrasesScreen(

@@ -58,6 +58,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.Constants
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.PersistentList
@@ -379,7 +380,7 @@ private fun InactiveAccountsPage(
                     .throttleClickable {
                         onAccountSelected(account)
                     },
-                accountName = "",
+                accountName = Constants.DEFAULT_ACCOUNT_NAME,
                 address = account.data.address,
                 checked = account.selected,
                 isSingleChoice = false,
