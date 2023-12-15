@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
@@ -68,6 +69,7 @@ private fun PoolUnitItem(
                     is AssetsViewAction.Click -> {
                         action.onPoolUnitClick(resource)
                     }
+
                     is AssetsViewAction.Selection -> {
                         action.onFungibleCheckChanged(resource.stake, !action.isSelected(resource.resourceAddress))
                     }
@@ -85,7 +87,7 @@ private fun PoolUnitItem(
             )
             Text(
                 modifier = Modifier.weight(1f),
-                text = poolName(resource.stake.displayTitle),
+                text = resource.name(),
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1,
                 maxLines = 2
@@ -152,8 +154,6 @@ fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun poolName(name: String?): String {
-    return name?.ifEmpty {
-        stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
-    } ?: stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
+fun PoolUnit.name() = displayTitle.ifEmpty {
+    stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
 }
