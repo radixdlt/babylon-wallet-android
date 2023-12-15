@@ -99,7 +99,7 @@ private fun AccountSecurityContent(
                                 },
                                 subtitle =
                                 if (accountSecurityAndSettingsItem is AccountSecurityAndSettingsItem.DepositGuarantees) {
-                                    stringResource(id = R.string.settings_depositGuarantees_subtitle)
+                                    stringResource(id = R.string.accountSecuritySettings_depositGuarantees_subtitle)
                                 } else {
                                     null
                                 },

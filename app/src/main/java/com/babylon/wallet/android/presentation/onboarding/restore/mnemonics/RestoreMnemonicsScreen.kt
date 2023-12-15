@@ -332,7 +332,7 @@ private fun EntitiesView(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(RadixTheme.dimensions.paddingXLarge),
-                        text = stringResource(id = R.string.recoverSeedPhrase_hidden_accounts_only),
+                        text = stringResource(id = R.string.recoverSeedPhrase_hiddenAccountsOnly),
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray2

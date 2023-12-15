@@ -100,7 +100,7 @@ private fun HiddenEntitiesContent(
             HorizontalDivider(color = RadixTheme.colors.gray5)
             Text(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.appSettings_entityHiding_info),
+                text = stringResource(R.string.appSettings_entityHiding_text),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray2
             )

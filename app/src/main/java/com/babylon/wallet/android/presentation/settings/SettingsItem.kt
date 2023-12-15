@@ -21,7 +21,7 @@ sealed interface SettingsItem {
         fun descriptionRes(): Int {
             return when (this) {
                 LinkToConnector -> R.string.empty
-                ImportOlympiaWallet -> R.string.settings_importFromLegacyWallet
+                ImportOlympiaWallet -> R.string.accountSecuritySettings_importFromLegacyWallet_title
                 AuthorizedDapps -> R.string.settings_authorizedDapps
                 is Personas -> R.string.settings_personas
                 is AccountSecurityAndSettings -> R.string.settings_accountSecurityAndSettings
@@ -54,10 +54,10 @@ sealed interface SettingsItem {
         fun descriptionRes(): Int {
             return when (this) {
                 SeedPhrases -> R.string.displayMnemonics_seedPhrases
-                LedgerHardwareWallets -> R.string.settings_ledgerHardwareWallets
-                DepositGuarantees -> R.string.settings_depositGuarantees_title
-                is Backups -> R.string.settings_backups
-                ImportFromLegacyWallet -> R.string.settings_importFromLegacyWallet
+                LedgerHardwareWallets -> R.string.accountSecuritySettings_ledgerHardwareWallets_title
+                DepositGuarantees -> R.string.accountSecuritySettings_depositGuarantees_title
+                is Backups -> R.string.accountSecuritySettings_backups_title
+                ImportFromLegacyWallet -> R.string.accountSecuritySettings_importFromLegacyWallet_title
             }
         }
 
@@ -82,8 +82,8 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                LinkedConnectors -> R.string.settings_linkedConnectors
-                Gateways -> R.string.settings_gateways
+                LinkedConnectors -> R.string.appSettings_linkedConnectors_title
+                Gateways -> R.string.appSettings_gateways_title
                 is DeveloperMode -> R.string.appSettings_developerMode_title
                 EntityHiding -> R.string.appSettings_entityHiding_title
             }
