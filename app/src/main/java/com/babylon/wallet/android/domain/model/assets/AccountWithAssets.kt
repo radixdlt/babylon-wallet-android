@@ -59,7 +59,7 @@ data class Assets(
     val ownedValidatorsWithStakes: List<ValidatorWithStakes> by lazy {
         validatorsWithStakes.filterNot {
             (it.liquidStakeUnit == null || it.liquidStakeUnit.fungibleResource.ownedAmount == BigDecimal.ZERO) &&
-            (it.stakeClaimNft == null || it.stakeClaimNft.nonFungibleResource.amount == 0L)
+                (it.stakeClaimNft == null || it.stakeClaimNft.nonFungibleResource.amount == 0L)
         }
     }
 
