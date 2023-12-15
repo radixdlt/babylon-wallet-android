@@ -58,8 +58,8 @@ data class Assets(
 
     val ownedValidatorsWithStakes: List<ValidatorWithStakes> by lazy {
         validatorsWithStakes.filterNot {
-            (it.stakeClaimNft == null || it.stakeClaimNft.nonFungibleResource.amount == 0L) &&
-                it.liquidStakeUnit?.fungibleResource?.ownedAmount == BigDecimal.ZERO
+            (it.liquidStakeUnit == null || it.liquidStakeUnit.fungibleResource.ownedAmount == BigDecimal.ZERO) &&
+                (it.stakeClaimNft == null || it.stakeClaimNft.nonFungibleResource.amount == 0L)
         }
     }
 
@@ -85,7 +85,7 @@ data class Assets(
 
     fun fungiblesSize(): Int = ownedFungibles.size
 
-    fun nftsSize(): Int = ownedNonFungibles.sumOf { it.amount }.toInt()
+    fun nonFungiblesSize(): Int = ownedNonFungibles.size
 
     fun poolUnitsSize(): Int = ownedPoolUnits.size + ownedValidatorsWithStakes.size
 }
