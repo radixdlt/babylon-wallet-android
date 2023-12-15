@@ -298,7 +298,7 @@ private fun ImportOlympiaWalletSettingBox(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.settings_importFromLegacyWalletHeader_importLegacyAccounts),
+                text = stringResource(id = R.string.accountSecuritySettings_importFromLegacyWallet_title),
                 onClick = {
                     onSettingClick(settingsItem)
                 },

@@ -170,7 +170,7 @@ private fun LedgerHardwareWalletsContent(
     Scaffold(
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(R.string.settings_ledgerHardwareWallets),
+                title = stringResource(R.string.accountSecuritySettings_ledgerHardwareWallets_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBars
             )

@@ -214,7 +214,7 @@ private fun BackupScreenContent(
         Scaffold(
             topBar = {
                 RadixCenteredTopAppBar(
-                    title = stringResource(R.string.settings_backups),
+                    title = stringResource(R.string.accountSecuritySettings_backups_title),
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBars
                 )
@@ -329,7 +329,7 @@ private fun BackupScreenContent(
 
                 Text(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.profileBackup_deleteWallet_title),
+                    text = stringResource(id = R.string.profileBackup_deleteWallet_buttonTitle),
                     color = RadixTheme.colors.gray2,
                     style = RadixTheme.typography.body1HighImportance
                 )
