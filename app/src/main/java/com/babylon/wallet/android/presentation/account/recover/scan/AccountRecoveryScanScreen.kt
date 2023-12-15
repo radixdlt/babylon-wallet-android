@@ -286,7 +286,7 @@ private fun ActiveAccountsPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = stringResource(id = R.string.accountRecoveryScan_scanComplete_header_title),
+                text = stringResource(id = R.string.accountRecoveryScan_scanComplete_headerTitle),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
@@ -297,7 +297,7 @@ private fun ActiveAccountsPage(
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                 text = stringResource(
-                    id = R.string.accountRecoveryScan_scanComplete_theFirstNPotentialAccountWereScanned,
+                    id = R.string.accountRecoveryScan_scanComplete_headerSubtitle,
                     allScannedAccountsSize
                 ).formattedSpans(
                     RadixTheme.typography.body1Header.toSpanStyle()

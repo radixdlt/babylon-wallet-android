@@ -59,7 +59,7 @@ sealed interface SettingsItem {
                 DepositGuarantees -> R.string.accountSecuritySettings_depositGuarantees_title
                 is Backups -> R.string.accountSecuritySettings_backups_title
                 ImportFromLegacyWallet -> R.string.accountSecuritySettings_importFromLegacyWallet_title
-                AccountRecovery -> R.string.settings_accountRecovery
+                AccountRecovery -> R.string.accountSecuritySettings_accountRecoveryScan_title
             }
         }
 
