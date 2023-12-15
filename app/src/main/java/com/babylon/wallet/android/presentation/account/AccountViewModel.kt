@@ -146,11 +146,14 @@ class AccountViewModel @Inject constructor(
         nonFungibleResource: Resource.NonFungibleResource,
         item: Resource.NonFungibleResource.Item
     ) {
+        val account = _state.value.accountWithAssets?.account ?: return
+
         viewModelScope.launch {
             sendEvent(
                 AccountEvent.OnNonFungibleClick(
                     resource = nonFungibleResource,
-                    item = item
+                    item = item,
+                    account = account
                 )
             )
         }
@@ -224,13 +227,13 @@ class AccountViewModel @Inject constructor(
         }
     }
 
-    fun onClaimClick(stakeClaim: StakeClaim) {
+    fun onClaimClick(stakeClaims: List<StakeClaim>) {
         val account = state.value.accountWithAssets?.account ?: return
         val epoch = state.value.epoch ?: return
         viewModelScope.launch {
             sendClaimRequestUseCase(
                 account = account,
-                claim = stakeClaim,
+                claims = stakeClaims,
                 epoch = epoch
             )
         }
@@ -255,7 +258,8 @@ internal sealed interface AccountEvent : OneOffEvent {
     data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Network.Account) : AccountEvent
     data class OnNonFungibleClick(
         val resource: Resource.NonFungibleResource,
-        val item: Resource.NonFungibleResource.Item
+        val item: Resource.NonFungibleResource.Item,
+        val account: Network.Account
     ) : AccountEvent
     data class OnPoolUnitClick(val poolUnit: PoolUnit, val account: Network.Account) : AccountEvent
     data class OnLSUClick(val liquidStakeUnit: LiquidStakeUnit, val account: Network.Account) : AccountEvent

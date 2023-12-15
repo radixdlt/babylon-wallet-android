@@ -34,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.account.composable.View
@@ -62,6 +63,7 @@ fun NonFungibleAssetDialog(
     NonFungibleAssetDialogContent(
         state = state,
         onMessageShown = viewModel::onMessageShown,
+        onClaimClick = viewModel::onClaimClick,
         onDismiss = onDismiss
     )
 }
@@ -72,7 +74,8 @@ private fun NonFungibleAssetDialogContent(
     modifier: Modifier = Modifier,
     state: NonFungibleAssetDialogViewModel.State,
     onMessageShown: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onClaimClick: () -> Unit
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier,
@@ -154,14 +157,15 @@ private fun NonFungibleAssetDialogContent(
 
                     if (state.item?.claimEpoch != null && state.item.claimAmountXrd != null) {
                         val claimState = remember(state.epoch) { state.claimState }
-                        Text(
+
+                        RadixPrimaryButton(
                             modifier = Modifier
                                 .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
                                 .fillMaxWidth()
                                 .radixPlaceholder(visible = claimState == null),
                             text = state.claimState?.description().orEmpty(),
-                            style = RadixTheme.typography.body2Link,
-                            color = if (claimState is ClaimState.ReadyToClaim) RadixTheme.colors.blue2 else RadixTheme.colors.gray1
+                            onClick = { onClaimClick() },
+                            enabled = claimState is ClaimState.ReadyToClaim
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }

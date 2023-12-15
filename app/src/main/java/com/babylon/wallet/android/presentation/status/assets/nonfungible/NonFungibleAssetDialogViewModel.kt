@@ -2,10 +2,12 @@ package com.babylon.wallet.android.presentation.status.assets.nonfungible
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ObserveResourceUseCase
+import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -16,6 +18,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountOnCurrentNetwork
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -26,6 +31,8 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
     observeResourceUseCase: ObserveResourceUseCase,
     getNFTDetailsUseCase: GetNFTDetailsUseCase,
     getNetworkInfoUseCase: GetNetworkInfoUseCase,
+    getProfileUseCase: GetProfileUseCase,
+    private val sendClaimRequestUseCase: SendClaimRequestUseCase
 ) : StateViewModel<NonFungibleAssetDialogViewModel.State>() {
 
     private val args = NonFungibleAssetDialogArgs(savedStateHandle)
@@ -58,6 +65,13 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
             }
         }
 
+        if (args.accountAddress != null) {
+            viewModelScope.launch {
+                val account = getProfileUseCase.accountOnCurrentNetwork(withAddress = args.accountAddress)
+                _state.update { it.copy(accountContext = account) }
+            }
+        }
+
         observeResourceUseCase(
             resourceAddress = args.resourceAddress,
             withDetails = !args.isNewlyCreated
@@ -76,11 +90,30 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
+    fun onClaimClick() {
+        val resource = _state.value.resource ?: return
+        val item = _state.value.item ?: return
+        val epoch = _state.value.epoch ?: return
+        val account = _state.value.accountContext ?: return
+
+        if (item.isReadyToClaim(epoch)) {
+            viewModelScope.launch {
+                sendClaimRequestUseCase(
+                    account = account,
+                    claim = StakeClaim(resource),
+                    nft = item,
+                    epoch = epoch
+                )
+            }
+        }
+    }
+
     data class State(
         val resourceAddress: String,
         val localId: String?,
         val resource: Resource.NonFungibleResource? = null,
         val item: Resource.NonFungibleResource.Item? = null,
+        val accountContext : Network.Account? = null,
         val epoch: Long? = null,
         val isNewlyCreated: Boolean,
         val uiMessage: UiMessage? = null

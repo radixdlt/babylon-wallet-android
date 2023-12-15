@@ -156,7 +156,17 @@ private fun StakingSummary(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         StakeAmount(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+                .clickable(enabled = summary?.hasReadyToClaimValue == true && action is AssetsViewAction.Click) {
+                    if (action is AssetsViewAction.Click) {
+                        val claims = assets.ownedValidatorsWithStakes.filter {
+                            it.hasClaims
+                        }.mapNotNull { it.stakeClaimNft }
+
+                        action.onClaimClick(claims)
+                    }
+                },
             label = stringResource(id = R.string.account_staking_readyToClaim),
             amount = summary?.readyToClaim,
             labelStyle = if (summary?.hasReadyToClaimValue == true) {
@@ -456,7 +466,7 @@ private fun StakeClaims(
                     RadixTextButton(
                         text = stringResource(id = R.string.account_staking_claim),
                         onClick = {
-                            action.onClaimClick(validatorWithStakes.stakeClaimNft)
+                            action.onClaimClick(listOf(validatorWithStakes.stakeClaimNft))
                         },
                         textStyle = RadixTheme.typography.body2Link
                     )

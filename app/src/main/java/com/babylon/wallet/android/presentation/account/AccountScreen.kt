@@ -87,7 +87,7 @@ fun AccountScreen(
     onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
     onNavigateToMnemonicRestore: () -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Network.Account) -> Unit,
-    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Network.Account) -> Unit,
     onPoolUnitClick: (PoolUnit, Network.Account) -> Unit,
     onLSUClick: (LiquidStakeUnit, Network.Account) -> Unit,
     onTransferClick: (String) -> Unit
@@ -99,7 +99,7 @@ fun AccountScreen(
                 is AccountEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                 is AccountEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore()
                 is AccountEvent.OnFungibleClick -> onFungibleResourceClick(it.resource, it.account)
-                is AccountEvent.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item)
+                is AccountEvent.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item, it.account)
                 is AccountEvent.OnPoolUnitClick -> onPoolUnitClick(it.poolUnit, it.account)
                 is AccountEvent.OnLSUClick -> onLSUClick(it.liquidStakeUnit, it.account)
             }
@@ -149,7 +149,7 @@ private fun AccountScreenContent(
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
-    onClaimClick: (StakeClaim) -> Unit
+    onClaimClick: (List<StakeClaim>) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -269,7 +269,7 @@ fun AssetsContent(
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
-    onClaimClick: (StakeClaim) -> Unit
+    onClaimClick: (List<StakeClaim>) -> Unit
 ) {
     Surface(
         modifier = modifier,
