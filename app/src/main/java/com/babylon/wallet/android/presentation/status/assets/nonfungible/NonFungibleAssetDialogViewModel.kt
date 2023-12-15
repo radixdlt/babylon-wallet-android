@@ -48,6 +48,8 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
                         // Need to get the current epoch so as to resolve the state of the claim
                         getNetworkInfoUseCase().onSuccess { info ->
                             _state.update { it.copy(epoch = info.epoch) }
+                        }.onFailure { error ->
+                            _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
                         }
                     }
                 }.onFailure { error ->

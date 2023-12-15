@@ -27,6 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -151,12 +152,14 @@ private fun NonFungibleAssetDialogContent(
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }
 
-                    state.claimState?.let { claimState ->
+                    if (state.item?.claimEpoch != null && state.item.claimAmountXrd != null) {
+                        val claimState = remember(state.epoch) { state.claimState }
                         Text(
                             modifier = Modifier
                                 .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
-                                .fillMaxWidth(),
-                            text = claimState.description(),
+                                .fillMaxWidth()
+                                .radixPlaceholder(visible = claimState == null),
+                            text = state.claimState?.description().orEmpty(),
                             style = RadixTheme.typography.body2Link,
                             color = if (claimState is ClaimState.ReadyToClaim) RadixTheme.colors.blue2 else RadixTheme.colors.gray1
                         )
