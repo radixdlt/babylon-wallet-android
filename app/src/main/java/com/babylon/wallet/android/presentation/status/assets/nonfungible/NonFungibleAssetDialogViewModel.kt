@@ -90,19 +90,18 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
+    @Suppress("ComplexCondition")
     fun onClaimClick() {
-        val resource = _state.value.resource ?: return
-        val item = _state.value.item ?: return
-        val epoch = _state.value.epoch ?: return
-        val account = _state.value.accountContext ?: return
-
-        if (item.isReadyToClaim(epoch)) {
+        val state = _state.value
+        if (state.resource != null && state.item != null && state.epoch != null &&
+            state.accountContext != null && state.item.isReadyToClaim(state.epoch)
+        ) {
             viewModelScope.launch {
                 sendClaimRequestUseCase(
-                    account = account,
-                    claim = StakeClaim(resource),
-                    nft = item,
-                    epoch = epoch
+                    account = state.accountContext,
+                    claim = StakeClaim(state.resource),
+                    nft = state.item,
+                    epoch = state.epoch
                 )
             }
         }
@@ -113,7 +112,7 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
         val localId: String?,
         val resource: Resource.NonFungibleResource? = null,
         val item: Resource.NonFungibleResource.Item? = null,
-        val accountContext : Network.Account? = null,
+        val accountContext: Network.Account? = null,
         val epoch: Long? = null,
         val isNewlyCreated: Boolean,
         val uiMessage: UiMessage? = null

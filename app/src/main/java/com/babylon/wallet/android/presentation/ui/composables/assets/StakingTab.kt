@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material.Text
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -46,8 +46,6 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
-
-private const val CLAIM_FEATURE_ENABLED = true
 
 fun LazyListScope.stakingTab(
     assets: Assets,
@@ -447,11 +445,7 @@ private fun StakeClaims(
 
         if (claimItems.isNotEmpty() && validatorWithStakes.stakeClaimNft != null) {
             Row(
-                modifier = Modifier
-                    .padding(
-                        top = if (CLAIM_FEATURE_ENABLED) RadixTheme.dimensions.paddingSmall else RadixTheme.dimensions.paddingDefault,
-                        bottom = if (CLAIM_FEATURE_ENABLED) 0.dp else RadixTheme.dimensions.paddingDefault
-                    ),
+                modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -462,7 +456,7 @@ private fun StakeClaims(
                     color = RadixTheme.colors.gray2
                 )
 
-                if (action is AssetsViewAction.Click && CLAIM_FEATURE_ENABLED) {
+                if (action is AssetsViewAction.Click) {
                     RadixTextButton(
                         text = stringResource(id = R.string.account_staking_claim),
                         onClick = {

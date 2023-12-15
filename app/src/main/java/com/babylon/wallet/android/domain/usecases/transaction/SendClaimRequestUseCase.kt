@@ -87,6 +87,4 @@ class SendClaimRequestUseCase @Inject constructor(
     ).accountDepositEntireWorktop(
         accountAddress = Address(account.address)
     )
-
-
 }
