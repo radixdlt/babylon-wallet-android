@@ -242,8 +242,19 @@ private fun SeedPhraseView(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         if (isOlympia) {
-            val tabs = SeedPhraseLength.values()
+            val tabs = SeedPhraseLength.entries
             var tabIndex by remember { mutableStateOf(0) }
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        vertical = RadixTheme.dimensions.paddingSmall
+                    ),
+                text = stringResource(id = R.string.importMnemonic_numberOfWordsPicker),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
             TabRow(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
