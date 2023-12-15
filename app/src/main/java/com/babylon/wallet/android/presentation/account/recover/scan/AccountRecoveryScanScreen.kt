@@ -60,6 +60,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.Constants
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.coroutines.launch
@@ -105,11 +106,7 @@ fun AccountRecoveryScanScreen(
         sharedState = state,
         onAccountSelected = viewModel::onAccountSelected,
         onContinueClick = {
-            context.biometricAuthenticate { authenticated ->
-                if (authenticated) {
-                    viewModel.onContinueClick()
-                }
-            }
+            viewModel.onContinueClick { context.biometricAuthenticateSuspend() }
         },
         isRestoring = state.isRestoring
     )

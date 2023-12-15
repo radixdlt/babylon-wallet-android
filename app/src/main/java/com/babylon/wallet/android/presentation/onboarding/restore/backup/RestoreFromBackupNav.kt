@@ -1,9 +1,7 @@
-@file:OptIn(ExperimentalAnimationApi::class)
-
 package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.EnterTransition
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -26,7 +24,13 @@ fun NavGraphBuilder.restoreFromBackupScreen(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
         },
         exitTransition = {
+            null
+        },
+        popExitTransition = {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+        },
+        popEnterTransition = {
+            EnterTransition.None
         }
     ) {
         RestoreFromBackupScreen(

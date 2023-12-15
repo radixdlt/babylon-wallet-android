@@ -127,20 +127,27 @@ class AccountRecoveryScanViewModel @Inject constructor(
         }
     }
 
-    fun onContinueClick() {
+    fun onContinueClick(biometricAuthenticationProvider: suspend () -> Boolean) {
         when (val recoveryFS = state.value.recoveryFactorSource) {
             is RecoveryFactorSource.Ledger,
             is RecoveryFactorSource.Device -> {
                 val accounts = state.value.activeAccounts + state.value.inactiveAccounts.filter { it.selected }.map { it.data }
                 viewModelScope.launch {
                     _state.update { it.copy(isRestoring = true) }
-                    addRecoveredAccountsToProfileUseCase(accounts = accounts)
+                    if (accounts.isNotEmpty()) {
+                        val authenticated = biometricAuthenticationProvider()
+                        if (authenticated.not()) return@launch
+                        addRecoveredAccountsToProfileUseCase(accounts = accounts)
+                        sendEvent(Event.RecoverComplete)
+                    }
                     sendEvent(Event.RecoverComplete)
                 }
             }
 
             is RecoveryFactorSource.VirtualDeviceFactorSource -> {
                 applicationScope.launch {
+                    val authenticated = biometricAuthenticationProvider()
+                    if (authenticated.not()) return@launch
                     val bdfs = recoveryFS.virtualDeviceFactorSource
                     val mnemonicWithPassphrase = recoveryFS.mnemonicWithPassphrase
                     val accounts = state.value.activeAccounts + state.value.inactiveAccounts.filter { it.selected }.map { it.data }

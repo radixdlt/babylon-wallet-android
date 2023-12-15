@@ -88,13 +88,13 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
             }
         } else {
             mnemonicRepository.saveMnemonic(deviceFactorSource.id, mnemonic)
-            preferencesManager.markFactorSourceBackedUp(deviceFactorSource.id.body.value)
             profileRepository.updateProfile { p ->
                 p.copy(
                     factorSources = (p.factorSources + deviceFactorSource).toIdentifiedArrayList()
                 )
             }
         }
+        preferencesManager.markFactorSourceBackedUp(deviceFactorSource.id.body.value)
         return updatedProfile
     }
 

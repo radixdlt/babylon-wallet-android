@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 import rdx.works.core.IdentifiedArrayList
 import rdx.works.core.InstantGenerator
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
@@ -21,6 +22,7 @@ class GenerateProfileUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val mnemonicRepository: MnemonicRepository,
     private val deviceInfoRepository: DeviceInfoRepository,
+    private val preferencesManager: PreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
@@ -58,6 +60,7 @@ class GenerateProfileUseCase @Inject constructor(
                 )
                 profileRepository.saveProfile(profile)
                 mnemonicRepository.saveMnemonic(bdfs.id, mnemonicWithPassphrase)
+                preferencesManager.markFactorSourceBackedUp(bdfs.identifier)
 
                 profile
             }
