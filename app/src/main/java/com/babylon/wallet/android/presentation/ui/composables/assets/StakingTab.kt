@@ -289,17 +289,19 @@ fun ValidatorDetails(
         }
 
         if (!isCollapsed) {
-            AssetCard(
-                modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .padding(top = RadixTheme.dimensions.paddingXXSmall),
-                roundTopCorners = false,
-                roundBottomCorners = !validatorWithStakes.hasClaims
-            ) {
-                LiquidStakeUnit(
-                    validatorWithStakes = validatorWithStakes,
-                    action = action
-                )
+            if (validatorWithStakes.hasLSU) {
+                AssetCard(
+                    modifier = Modifier
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                        .padding(top = RadixTheme.dimensions.paddingXXSmall),
+                    roundTopCorners = false,
+                    roundBottomCorners = !validatorWithStakes.hasClaims
+                ) {
+                    LiquidStakeUnit(
+                        validatorWithStakes = validatorWithStakes,
+                        action = action
+                    )
+                }
             }
 
             if (validatorWithStakes.hasClaims) {

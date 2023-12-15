@@ -58,8 +58,7 @@ data class Assets(
 
     val ownedValidatorsWithStakes: List<ValidatorWithStakes> by lazy {
         validatorsWithStakes.filterNot {
-            (it.liquidStakeUnit == null || it.liquidStakeUnit.fungibleResource.ownedAmount == BigDecimal.ZERO) &&
-                (it.stakeClaimNft == null || it.stakeClaimNft.nonFungibleResource.amount == 0L)
+            !it.hasLSU && !it.hasClaims
         }
     }
 
@@ -133,8 +132,11 @@ data class ValidatorWithStakes(
         get() = validatorDetail.totalXrdStake != null && liquidStakeUnit != null && liquidStakeUnit.fungibleResource.isDetailsAvailable &&
             (stakeClaimNft == null || stakeClaimNft.nonFungibleResource.amount.toInt() == stakeClaimNft.nonFungibleResource.items.size)
 
+    val hasLSU: Boolean
+        get() = liquidStakeUnit != null && (liquidStakeUnit.fungibleResource.ownedAmount ?: BigDecimal.ZERO) > BigDecimal.ZERO
+
     val hasClaims: Boolean
-        get() = (stakeClaimNft?.nonFungibleResource?.amount ?: 0) > 0L
+        get() = stakeClaimNft != null && stakeClaimNft.nonFungibleResource.amount > 0L
 
     fun stakeValue(): BigDecimal? {
         if (validatorDetail.totalXrdStake == null) return null
