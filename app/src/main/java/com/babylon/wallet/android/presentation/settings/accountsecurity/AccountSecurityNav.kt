@@ -123,7 +123,7 @@ fun NavGraphBuilder.accountSecurityScreen(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            null
         },
         popExitTransition = {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
