@@ -98,7 +98,6 @@ class GenerateProfileUseCaseTest {
                                 networkID = Radix.Gateway.hammunet.network.id,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                        entityIndex = 0,
                                         transactionSigning = FactorInstance(
                                             badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                                                 derivationPath = DerivationPath.forAccount(

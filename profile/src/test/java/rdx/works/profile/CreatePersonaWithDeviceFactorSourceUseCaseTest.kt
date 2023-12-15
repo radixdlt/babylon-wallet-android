@@ -47,7 +47,6 @@ import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.TestData
 import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class CreatePersonaWithDeviceFactorSourceUseCaseTest {
 
     private val testDispatcher = StandardTestDispatcher()
@@ -102,7 +101,6 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
                                 networkID = network.network.networkId().value,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                        entityIndex = 0,
                                         transactionSigning = FactorInstance(
                                             badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                                                 derivationPath = DerivationPath.forAccount(
