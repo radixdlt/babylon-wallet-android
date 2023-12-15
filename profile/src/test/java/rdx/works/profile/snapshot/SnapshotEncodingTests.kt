@@ -23,39 +23,45 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @RunWith(Parameterized::class)
-class SnapshotEncodingTests(private val versionUnderTest: Int) {
+class SnapshotEncodingTests(private val input: SnapshotTestInput) {
 
     private val serializer = SerializerModule.provideProfileSerializer()
 
     @Test
     fun `test round-trip for multiple `() {
-        val multiple = File("$TEST_VECTOR_DIR/$versionUnderTest/$MULTI_SNAPSHOT_VECTOR_FILE").readText()
+        val multiple = input.multiSnapshot.readText()
         val testVector = serializer.decodeFromString<TestVector>(multiple)
 
         val decryptedSnapshots = testVector.validate(serializer)
         // Validate all decrypted snapshots have the correct version
         assertEquals(
-            List(size = decryptedSnapshots.size) { versionUnderTest }.toSet(),
+            List(size = decryptedSnapshots.size) { input.snapshotVersion }.toSet(),
             decryptedSnapshots.map { it.toProfile().header.snapshotVersion }.toSet()
         )
         // Validate plaintext snapshot has the correct version
-        assertEquals(versionUnderTest, testVector.plaintext.toProfile().header.snapshotVersion)
+        assertEquals(input.snapshotVersion, testVector.plaintext.toProfile().header.snapshotVersion)
 
-        val expected = File("$TEST_VECTOR_DIR/$versionUnderTest/$BASE_SNAPSHOT").readText()
         decryptedSnapshots.forEach { snapshot ->
             val actual = serializer.encodeToString(snapshot)
 
-            JSONAssert.assertEquals(expected, actual, false)
+            if (input.isMostRecentIteration) {
+                // Most recent iterations for the specific version should do a JSON assert round-trip
+                // which is strict regarding fields that are marked as null.
+                val expected = input.baseSnapshot.readText()
+                JSONAssert.assertEquals(expected, actual, false)
+            }
         }
     }
 
     @Test
     fun `test round-trip for snapshot `() {
-        val expected = File("$TEST_VECTOR_DIR/$versionUnderTest/$BASE_SNAPSHOT").readText()
+        val expected = input.baseSnapshot.readText()
         val snapshot = serializer.decodeFromString<ProfileSnapshot>(expected)
 
         val actual = serializer.encodeToString(snapshot)
-        JSONAssert.assertEquals(expected, actual, false)
+        if (input.isMostRecentIteration) {
+            JSONAssert.assertEquals(expected, actual, false)
+        }
     }
 
     @Serializable
@@ -139,16 +145,65 @@ class SnapshotEncodingTests(private val versionUnderTest: Int) {
         private const val MULTI_SNAPSHOT_VECTOR_FILE = "multi_profile_snapshots.json"
         private const val BASE_SNAPSHOT = "base_profile_snapshot.json"
 
+        data class SnapshotTestInput(
+            val snapshotVersion: Int,
+            val iteration: Int?,
+            val latestIteration: Int?
+        ) {
+            val isMostRecentIteration: Boolean
+                get() = iteration == latestIteration
+
+            val multiSnapshot: File
+                get() = if (iteration != null) {
+                    File("$TEST_VECTOR_DIR/$snapshotVersion/$iteration/$MULTI_SNAPSHOT_VECTOR_FILE")
+                } else {
+                    File("$TEST_VECTOR_DIR/$snapshotVersion/$MULTI_SNAPSHOT_VECTOR_FILE")
+                }
+
+            val baseSnapshot: File
+                get() = if (iteration != null) {
+                    File("$TEST_VECTOR_DIR/$snapshotVersion/$iteration/$BASE_SNAPSHOT")
+                } else {
+                    File("$TEST_VECTOR_DIR/$snapshotVersion/$BASE_SNAPSHOT")
+                }
+
+            val latestBaseSnapshot: File
+                get() = if (latestIteration != null) {
+                    File("$TEST_VECTOR_DIR/$snapshotVersion/$latestIteration/$BASE_SNAPSHOT")
+                } else {
+                    File("$TEST_VECTOR_DIR/$snapshotVersion/$BASE_SNAPSHOT")
+                }
+
+        }
+
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
-        fun data(): Collection<Int> {
+        fun data(): Collection<SnapshotTestInput> {
             return File(TEST_VECTOR_DIR)
                 .listFiles()
                 ?.filter { it.name.toIntOrNull() != null }
                 ?.sortedBy { it.name.toInt() }
-                ?.map { vectorDirectory ->
-                    vectorDirectory.name.toInt()
-                }.orEmpty()
+                ?.map { versionDirectory ->
+                    val snapshotVersion = versionDirectory.name.toInt()
+                    if (versionDirectory.isDirectory) {
+                        val iterations = versionDirectory.listFiles()?.map { it.name.toInt() }?.sorted().orEmpty()
+                        iterations.mapIndexed { index, iteration ->
+                            SnapshotTestInput(
+                                snapshotVersion = snapshotVersion,
+                                iteration = iteration,
+                                latestIteration = iterations.max()
+                            )
+                        }
+                    } else {
+                        listOf(
+                            SnapshotTestInput(
+                                snapshotVersion = snapshotVersion,
+                                iteration = null,
+                                latestIteration = null
+                            )
+                        )
+                    }
+                }.orEmpty().flatten()
         }
     }
 

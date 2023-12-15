@@ -20,6 +20,7 @@ import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import rdx.works.profile.di.ProfileDataStore
 import rdx.works.profile.di.coroutines.IoDispatcher
+import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -54,7 +55,7 @@ class EncryptedPreferencesManager @Inject constructor(
             val preferencesKey = stringPreferencesKey(key)
             val encryptedValue = preferences[preferencesKey]
             if (encryptedValue.isNullOrEmpty()) {
-                return@map Result.failure(IllegalStateException("Mnemonic not present in encrypted keystore"))
+                return@map Result.failure(ProfileException.NoMnemonic)
             }
             val result = encryptedValue.decrypt(KeySpec.Mnemonic())
             result

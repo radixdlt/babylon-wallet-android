@@ -53,6 +53,7 @@ import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.usecases.RecoverAccountsForFactorSourceUseCase
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
@@ -75,6 +76,16 @@ fun AccountRecoveryScanScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    if (state.isNoMnemonicErrorVisible) {
+        BasicPromptAlertDialog(
+            finish = {
+                viewModel.dismissNoMnemonicError()
+            },
+            title = stringResource(id = R.string.transactionReview_noMnemonicError_title),
+            text = stringResource(id = R.string.transactionReview_noMnemonicError_text),
+            dismissText = null
+        )
+    }
     LaunchedEffect(Unit) {
         if (state.recoveryFactorSource is RecoveryFactorSource.VirtualDeviceFactorSource) {
             viewModel.startRecoveryScan()
