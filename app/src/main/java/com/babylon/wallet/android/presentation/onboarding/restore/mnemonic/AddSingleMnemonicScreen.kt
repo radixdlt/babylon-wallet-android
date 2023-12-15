@@ -247,7 +247,7 @@ private fun SeedPhraseView(
             TabRow(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectSmall),
+                    .background(RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectSmall),
                 selectedTabIndex = tabIndex,
                 containerColor = Color.Transparent,
                 divider = {},
@@ -257,7 +257,8 @@ private fun SeedPhraseView(
                             .tabIndicatorOffset(tabPositions[tabIndex])
                             .fillMaxHeight()
                             .zIndex(-1f)
-                            .background(RadixTheme.colors.white, RadixTheme.shapes.roundedRectSmall)
+                            .padding(2.dp)
+                            .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectSmall)
                     )
                 }
             ) {

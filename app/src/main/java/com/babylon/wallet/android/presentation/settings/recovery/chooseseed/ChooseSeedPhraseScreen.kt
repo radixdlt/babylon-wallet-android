@@ -27,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -45,6 +46,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.domain.DeviceFactorSourceData
 
@@ -144,6 +146,10 @@ private fun ChooseSeedPhraseContent(
                 items(state.factorSources) { factorSource ->
                     SeedPhraseCard(
                         modifier = Modifier
+                            .clip(RadixTheme.shapes.roundedRectMedium)
+                            .throttleClickable {
+                                onSelectionChanged(factorSource.data.deviceFactorSource.id)
+                            }
                             .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .fillMaxWidth()
                             .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectMedium)
