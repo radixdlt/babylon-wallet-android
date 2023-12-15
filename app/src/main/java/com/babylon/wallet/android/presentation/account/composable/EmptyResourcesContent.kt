@@ -66,6 +66,6 @@ private fun ResourceTab.toEmptyTitleRes() = when (this) {
 private fun ResourceTab.toEmptyInfoRes() = when (this) {
     ResourceTab.Tokens -> R.string.assetDetails_tokenDetails_whatAreTokens
     ResourceTab.Nfts -> R.string.assetDetails_NFTDetails_whatAreNfts
-    ResourceTab.Staking -> R.string.assetDetails_poolUnitDetails_whatIsStaking
+    ResourceTab.Staking -> R.string.assetDetails_stakingDetails_whatIsStaking
     ResourceTab.PoolUnits -> R.string.assetDetails_poolUnitDetails_whatArePoolUnits
 }
