@@ -9,7 +9,6 @@ import com.radixdlt.ret.ManifestBuilderBucket
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 
-
 class SendClaimRequestUseCase @Inject constructor(
     val incomingRequestRepository: IncomingRequestRepository
 ) {
@@ -44,5 +43,4 @@ class SendClaimRequestUseCase @Inject constructor(
 
         incomingRequestRepository.add(request)
     }
-
 }

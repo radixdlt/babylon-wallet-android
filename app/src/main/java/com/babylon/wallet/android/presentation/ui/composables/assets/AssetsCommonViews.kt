@@ -112,7 +112,7 @@ fun AssetCard(
         backgroundColor = backgroundColor,
         elevation = elevation,
         roundTopCorners = itemIndex == 0 && roundTopCorners,
-        roundBottomCorners = itemIndex == allItemsSize -1 && roundBottomCorners,
+        roundBottomCorners = itemIndex == allItemsSize - 1 && roundBottomCorners,
         cornerSizeRadius = cornerSizeRadius,
         removeTopShadow = itemIndex != 0 && allItemsSize != 1,
         content = content

@@ -303,7 +303,6 @@ private fun CounterBox(
     }
 }
 
-@Composable
 private fun Modifier.checkRenderedOutside(
     onRenderedOutside: (Float) -> Unit
 ): Modifier = this then Modifier.onGloballyPositioned {

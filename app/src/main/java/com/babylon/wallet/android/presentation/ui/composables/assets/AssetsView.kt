@@ -78,7 +78,6 @@ fun LazyListScope.assetsView(
                 assets = assets,
                 action = action
             )
-
         }
     }
 }

@@ -68,13 +68,13 @@ data class Assets(
     // or it had a resource in the past but the amount is 0 now
     val knownResources: List<Resource> by lazy {
         fungibles + nonFungibles +
-                poolUnits.map { it.stake } +
-                validatorsWithStakes
-                    .mapNotNull { it.liquidStakeUnit }
-                    .map { it.fungibleResource } +
-                validatorsWithStakes
-                    .mapNotNull { it.stakeClaimNft }
-                    .map { it.nonFungibleResource }
+            poolUnits.map { it.stake } +
+            validatorsWithStakes
+                .mapNotNull { it.liquidStakeUnit }
+                .map { it.fungibleResource } +
+            validatorsWithStakes
+                .mapNotNull { it.stakeClaimNft }
+                .map { it.nonFungibleResource }
     }
 
     fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = ownedXrd?.let {
@@ -131,7 +131,7 @@ data class ValidatorWithStakes(
 
     val isDetailsAvailable: Boolean
         get() = validatorDetail.totalXrdStake != null && liquidStakeUnit != null && liquidStakeUnit.fungibleResource.isDetailsAvailable &&
-                (stakeClaimNft == null || stakeClaimNft.nonFungibleResource.amount.toInt() == stakeClaimNft.nonFungibleResource.items.size)
+            (stakeClaimNft == null || stakeClaimNft.nonFungibleResource.amount.toInt() == stakeClaimNft.nonFungibleResource.items.size)
 
     val hasClaims: Boolean
         get() = (stakeClaimNft?.nonFungibleResource?.amount ?: 0) > 0L

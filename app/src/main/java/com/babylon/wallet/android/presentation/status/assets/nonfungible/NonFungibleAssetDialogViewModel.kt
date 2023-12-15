@@ -112,19 +112,18 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
                 override val amount: BigDecimal,
                 private val current: Long,
                 private val claim: Long
-            ): ClaimState() {
+            ) : ClaimState() {
                 val approximateClaimMinutes: Long
                     get() = (claim - current) * EPOCH_TIME_MINUTES
             }
 
             data class ReadyToClaim(
                 override val amount: BigDecimal
-            ): ClaimState()
+            ) : ClaimState()
 
             companion object {
                 private const val EPOCH_TIME_MINUTES = 5
             }
         }
-
     }
 }

@@ -168,17 +168,19 @@ fun ActionableAddressView(
         }
     }
     Box(modifier = modifier) {
-        ConstraintLayout(modifier = Modifier.combinedClickable(
-            onClick = {
-                actions?.let { popupActions ->
-                    when (val actionData = popupActions.primary.onAction()) {
-                        is OnAction.CallbackBasedAction -> actionData.onAction(context)
-                        is OnAction.ViewBasedAction -> viewBasedAction = actionData
+        ConstraintLayout(
+            modifier = Modifier.combinedClickable(
+                onClick = {
+                    actions?.let { popupActions ->
+                        when (val actionData = popupActions.primary.onAction()) {
+                            is OnAction.CallbackBasedAction -> actionData.onAction(context)
+                            is OnAction.ViewBasedAction -> viewBasedAction = actionData
+                        }
                     }
-                }
-            },
-            onLongClick = { isDropdownMenuExpanded = true }
-        )) {
+                },
+                onLongClick = { isDropdownMenuExpanded = true }
+            )
+        ) {
             val textRef = createRef()
             val iconRef = actions?.let { createRef() }
 
@@ -199,21 +201,23 @@ fun ActionableAddressView(
             )
 
             actions?.let { popupActions ->
-                val iconMargin = RadixTheme.dimensions.paddingSmall
-                Icon(
-                    modifier = Modifier.constrainAs(iconRef!!) {
-                        start.linkTo(textRef.end, margin = iconMargin)
-                        end.linkTo(parent.end)
-                        top.linkTo(textRef.top)
-                        bottom.linkTo(parent.bottom)
-                        horizontalBias = 0f
-                        width = Dimension.value(14.dp)
-                        height = Dimension.value(14.dp)
-                    },
-                    painter = painterResource(id = popupActions.primary.icon),
-                    contentDescription = popupActions.primary.name,
-                    tint = iconColor,
-                )
+                if (iconRef != null) {
+                    val iconMargin = RadixTheme.dimensions.paddingSmall
+                    Icon(
+                        modifier = Modifier.constrainAs(iconRef) {
+                            start.linkTo(textRef.end, margin = iconMargin)
+                            end.linkTo(parent.end)
+                            top.linkTo(textRef.top)
+                            bottom.linkTo(parent.bottom)
+                            horizontalBias = 0f
+                            width = Dimension.value(14.dp)
+                            height = Dimension.value(14.dp)
+                        },
+                        painter = painterResource(id = popupActions.primary.icon),
+                        contentDescription = popupActions.primary.name,
+                        tint = iconColor,
+                    )
+                }
             }
         }
 
