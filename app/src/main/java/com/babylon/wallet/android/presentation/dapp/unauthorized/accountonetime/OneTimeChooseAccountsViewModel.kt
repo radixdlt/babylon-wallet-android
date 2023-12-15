@@ -16,7 +16,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,7 +35,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.accountsOnCurrentNetwork.collect { accounts ->
+            getProfileUseCase.activeAccountsOnCurrentNetwork.collect { accounts ->
                 // user can create a new account at the Choose Accounts screen,
                 // therefore this part ensures that the selection state (if any account was selected)
                 // remains once the user returns from the account creation flow

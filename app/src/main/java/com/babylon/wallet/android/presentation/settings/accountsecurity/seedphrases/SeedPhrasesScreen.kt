@@ -42,6 +42,7 @@ import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.domain.DeviceFactorSourceData
 
 @Composable
 fun SeedPhrasesScreen(
@@ -149,7 +150,7 @@ private fun SeedPhraseContent(
 }
 
 @Composable
-private fun SeedPhraseCard(
+fun SeedPhraseCard(
     modifier: Modifier,
     data: DeviceFactorSourceData
 ) {
@@ -186,7 +187,7 @@ private fun SeedPhraseCard(
                 )
                 Text(
                     text = stringResource(
-                        id = if (data.deviceFactorSource.isBabylon) {
+                        id = if (data.personas.isNotEmpty()) {
                             if (data.accounts.size == 1) {
                                 R.string.displayMnemonics_connectedAccountsPersonasLabel_one
                             } else {
@@ -209,7 +210,7 @@ private fun SeedPhraseCard(
             }
             Icon(
                 painter = painterResource(
-                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right
+                    id = DSR.ic_chevron_right
                 ),
                 contentDescription = null,
                 tint = RadixTheme.colors.gray1

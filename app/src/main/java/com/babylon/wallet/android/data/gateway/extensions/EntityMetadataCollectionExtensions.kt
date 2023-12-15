@@ -215,6 +215,7 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
 
     is MetadataNonFungibleLocalIdValue -> Metadata.Primitive(
         key = key,
+        lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
         value = typed.value,
         valueType = MetadataType.NonFungibleLocalId
     )
@@ -284,12 +285,14 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
     is MetadataPublicKeyValue -> when (typed.value) {
         is PublicKeyEcdsaSecp256k1 -> Metadata.Primitive(
             key = key,
+            lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
             value = typed.value.keyHex,
             valueType = MetadataType.PublicKeyEcdsaSecp256k1
         )
 
         is PublicKeyEddsaEd25519 -> Metadata.Primitive(
             key = key,
+            lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
             value = typed.value.keyHex,
             valueType = MetadataType.PublicKeyEddsaEd25519
         )
@@ -299,6 +302,7 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
 
     is MetadataPublicKeyArrayValue -> Metadata.Collection(
         key = key,
+        lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
         values = typed.propertyValues.map { value ->
             when (value) {
                 is PublicKeyEcdsaSecp256k1 -> Metadata.Primitive(
@@ -321,12 +325,14 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
     is MetadataPublicKeyHashValue -> when (typed.value) {
         is PublicKeyHashEcdsaSecp256k1 -> Metadata.Primitive(
             key = key,
+            lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
             value = typed.value.hashHex,
             valueType = MetadataType.PublicKeyHashEcdsaSecp256k1
         )
 
         is PublicKeyHashEddsaEd25519 -> Metadata.Primitive(
             key = key,
+            lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
             value = typed.value.hashHex,
             valueType = MetadataType.PublicKeyHashEddsaEd25519
         )
@@ -334,16 +340,19 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
 
     is MetadataPublicKeyHashArrayValue -> Metadata.Collection(
         key = key,
+        lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
         values = typed.propertyValues.map { value ->
             when (value) {
                 is PublicKeyHashEcdsaSecp256k1 -> Metadata.Primitive(
                     key = key,
+                    lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
                     value = value.hashHex,
                     valueType = MetadataType.PublicKeyHashEcdsaSecp256k1
                 )
 
                 is PublicKeyHashEddsaEd25519 -> Metadata.Primitive(
                     key = key,
+                    lastUpdatedAtStateVersion = lastUpdatedAtStateVersion,
                     value = value.hashHex,
                     valueType = MetadataType.PublicKeyHashEddsaEd25519
                 )

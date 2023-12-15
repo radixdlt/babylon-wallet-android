@@ -44,7 +44,7 @@ import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
-import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
+import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
@@ -136,7 +136,7 @@ fun PersonaDataOngoingScreen(
         modifier = modifier
     )
     sharedState.interactionState?.let {
-        SigningStatusBottomDialog(
+        FactorSourceInteractionBottomDialog(
             modifier = Modifier.fillMaxHeight(0.8f),
             onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
             interactionState = it

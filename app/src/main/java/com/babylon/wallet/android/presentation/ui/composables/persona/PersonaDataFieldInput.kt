@@ -1,27 +1,19 @@
 package com.babylon.wallet.android.presentation.ui.composables.persona
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.IconButton
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,13 +28,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.LabelType
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.presentation.ui.composables.DefaultSelector
+import com.babylon.wallet.android.presentation.ui.composables.SelectorItem
+import kotlinx.collections.immutable.toPersistentList
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaData.PersonaDataField.Name
 
@@ -213,10 +206,15 @@ fun PersonaNameInput(
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
-            NameOrderSelector(modifier = Modifier.fillMaxWidth(), selectedVariant = state.variant, onVariantChanged = { newVariant ->
-                state.variant = newVariant
-                nameChangedCallback()
-            })
+            DefaultSelector(
+                modifier = Modifier.fillMaxWidth(),
+                items = Name.Variant.values().map { SelectorItem(it, it.description()) }.toPersistentList(),
+                selectedItem = SelectorItem(state.variant, state.variant.description()),
+                onItemSelected = { item ->
+                    state.variant = item.item
+                    nameChangedCallback()
+                }
+            )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             when (state.variant) {
                 Name.Variant.Western -> {
@@ -310,78 +308,10 @@ fun PersonaNameInput(
 }
 
 @Composable
-private fun NameOrderSelector(
-    modifier: Modifier,
-    selectedVariant: Name.Variant,
-    onVariantChanged: (Name.Variant) -> Unit
-) {
-    var isMenuExpanded by remember {
-        mutableStateOf(false)
-    }
-    Box {
-        Row(
-            modifier = modifier
-                .throttleClickable {
-                    isMenuExpanded = true
-                }
-                .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectSmall)
-                .border(1.dp, RadixTheme.colors.gray3, RadixTheme.shapes.roundedRectSmall)
-                .padding(RadixTheme.dimensions.paddingDefault),
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                modifier = Modifier.weight(1f),
-                text = stringResource(
-                    id = if (selectedVariant == Name.Variant.Eastern) {
-                        R.string.authorizedDapps_personaDetails_nameVariantEastern
-                    } else {
-                        R.string.authorizedDapps_personaDetails_nameVariantWestern
-                    }
-                ),
-                style = RadixTheme.typography.body1Regular,
-                color = RadixTheme.colors.gray1
-            )
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_down),
-                contentDescription = null,
-                tint = RadixTheme.colors.gray1
-            )
-        }
-
-        DropdownMenu(
-            modifier = Modifier.background(RadixTheme.colors.gray5),
-            expanded = isMenuExpanded,
-            onDismissRequest = { isMenuExpanded = false }
-        ) {
-            Name.Variant.values().forEach { variant ->
-                DropdownMenuItem(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    text = {
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = stringResource(
-                                id = when (variant) {
-                                    Name.Variant.Western -> R.string.authorizedDapps_personaDetails_nameVariantWestern
-                                    Name.Variant.Eastern -> R.string.authorizedDapps_personaDetails_nameVariantEastern
-                                }
-                            ),
-                            style = RadixTheme.typography.body1Regular,
-                            color = RadixTheme.colors.defaultText
-                        )
-                    },
-                    onClick = {
-                        isMenuExpanded = false
-                        onVariantChanged(variant)
-                    },
-                    contentPadding = PaddingValues(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingXSmall
-                    )
-                )
-            }
-        }
+private fun Name.Variant.description(): String {
+    return when (this) {
+        Name.Variant.Western -> stringResource(id = R.string.authorizedDapps_personaDetails_nameVariantWestern)
+        Name.Variant.Eastern -> stringResource(id = R.string.authorizedDapps_personaDetails_nameVariantEastern)
     }
 }
 

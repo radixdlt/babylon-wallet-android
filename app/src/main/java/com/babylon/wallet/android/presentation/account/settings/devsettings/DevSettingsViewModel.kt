@@ -27,7 +27,7 @@ import rdx.works.profile.data.model.extensions.hasAuthSigning
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -70,7 +70,7 @@ class DevSettingsViewModel @Inject constructor(
 
     private fun loadAccount() {
         viewModelScope.launch {
-            getProfileUseCase.accountsOnCurrentNetwork.mapNotNull { accounts -> accounts.firstOrNull { it.address == args.address } }
+            getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accounts -> accounts.firstOrNull { it.address == args.address } }
                 .collect { account ->
                     _state.update { state ->
                         state.copy(

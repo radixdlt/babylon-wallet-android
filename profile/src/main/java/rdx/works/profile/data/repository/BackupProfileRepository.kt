@@ -8,6 +8,7 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.EncryptedProfileSnapshot
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.ProfileSerializer
 import rdx.works.profile.domain.ProfileException
@@ -112,7 +113,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
      */
     override suspend fun getSnapshotForBackup(backupType: BackupType): String? {
         val profile = profileRepository.profile.firstOrNull()
-        if (profile == null || profile.babylonDeviceFactorSourceExist.not()) return null
+        if (profile == null || profile.mainBabylonFactorSource() == null) return null
         val snapshotSerialised = runCatching {
             profileSnapshotJson.encodeToString(profile.snapshot())
         }.getOrNull() ?: return null

@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface Metadata {
     val key: String
+    val lastUpdatedAtStateVersion: Long
 
     @Serializable
     @SerialName("primitive")
@@ -13,7 +14,8 @@ sealed interface Metadata {
         override val key: String,
         val value: String,
         @SerialName("value_type")
-        val valueType: MetadataType
+        val valueType: MetadataType,
+        override val lastUpdatedAtStateVersion: Long = 0,
     ) : Metadata
 
     @Serializable
@@ -21,13 +23,15 @@ sealed interface Metadata {
     data class Collection(
         override val key: String,
         val values: List<Metadata>,
+        override val lastUpdatedAtStateVersion: Long = 0,
     ) : Metadata
 
     @Serializable
     @SerialName("map")
     data class Map(
         override val key: String,
-        val values: kotlin.collections.Map<Metadata, Metadata>
+        val values: kotlin.collections.Map<Metadata, Metadata>,
+        override val lastUpdatedAtStateVersion: Long = 0L
     ) : Metadata
 }
 

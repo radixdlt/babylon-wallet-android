@@ -38,7 +38,13 @@ enum class SeedPhraseLength(val words: Int) {
     FIFTEEN(15),
     EIGHTEEN(18),
     TWENTY_ONE(21),
-    TWENTY_FOUR(24)
+    TWENTY_FOUR(24);
+
+    companion object {
+        fun from(value: Int): SeedPhraseLength {
+            return values().find { it.words == value } ?: throw IllegalArgumentException("Invalid seed phrase length")
+        }
+    }
 }
 
 /**

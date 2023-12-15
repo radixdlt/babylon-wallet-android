@@ -16,7 +16,9 @@ import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREAT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
-import com.babylon.wallet.android.presentation.account.createaccount.withledger.createAccountWithLedger
+import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
+import com.babylon.wallet.android.presentation.account.recover.complete.recoveryScanComplete
+import com.babylon.wallet.android.presentation.account.recover.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
 import com.babylon.wallet.android.presentation.account.settings.accountSettings
 import com.babylon.wallet.android.presentation.account.settings.devsettings.devSettings
@@ -29,16 +31,19 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauth
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
-import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ADDRESS
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
+import com.babylon.wallet.android.presentation.onboarding.restore.backup.ROUTE_RESTORE_FROM_BACKUP
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.restoreFromBackupScreen
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonicsScreen
+import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
@@ -62,8 +67,8 @@ import com.babylon.wallet.android.presentation.status.transaction.transactionSta
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
-import kotlinx.coroutines.flow.StateFlow
 import rdx.works.profile.domain.backup.BackupType
+import wallet
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -71,7 +76,6 @@ fun NavigationHost(
     modifier: Modifier = Modifier,
     startDestination: String,
     navController: NavHostController,
-    mainUiState: StateFlow<MainUiState>,
     onCloseApp: () -> Unit,
 ) {
     NavHost(
@@ -113,6 +117,9 @@ fun NavigationHost(
                         backupType = if (fromCloud) BackupType.Cloud else BackupType.File.PlainText
                     )
                 )
+            },
+            onOtherRestoreOptionsClick = {
+                navController.restoreWithoutBackupScreen()
             }
         )
         restoreMnemonicsScreen(
@@ -125,13 +132,39 @@ fun NavigationHost(
                 }
             }
         )
+        addSingleMnemonic(
+            navController = navController,
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onStartRecovery = {
+                navController.accountRecoveryScan()
+            }
+        )
+        restoreWithoutBackupScreen(
+            onBack = { navController.popBackStack() },
+            onRestoreConfirmed = {
+                navController.addSingleMnemonic(mnemonicType = MnemonicType.BabylonMain)
+            },
+            onNewUserConfirmClick = {
+                navController.popBackStack(ROUTE_RESTORE_FROM_BACKUP, inclusive = true)
+            }
+        )
+        accountRecoveryScan(
+            navController = navController,
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onRecoveryComplete = {
+                navController.recoveryScanComplete()
+            }
+        )
         confirmSeedPhrase(onMnemonicBackedUp = {
             navController.popBackStack(ROUTE_REVEAL_SEED_PHRASE, inclusive = true)
         }, onDismiss = {
             navController.popBackStack()
         })
         main(
-            mainUiState = mainUiState,
             onMenuClick = {
                 navController.navigate(Screen.SettingsAllDestination.route)
             },
@@ -139,15 +172,6 @@ fun NavigationHost(
                 navController.navigate(
                     Screen.AccountDestination.routeWithArgs(account.address)
                 )
-            },
-            onAccountCreationClick = {
-                navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
-            },
-            onNavigateToOnBoarding = {
-                navController.navigate(Screen.OnboardingDestination.route)
-            },
-            onNavigateToIncompatibleProfile = {
-                navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
             },
             onNavigateToMnemonicBackup = {
                 navController.seedPhrases()
@@ -157,6 +181,35 @@ fun NavigationHost(
                     args = RestoreMnemonicsArgs()
                 )
             },
+            onAccountCreationClick = {
+                navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
+            },
+            onNavigateToOnBoarding = {
+                navController.navigate(Screen.OnboardingDestination.route)
+            }
+        ) {
+            navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
+        }
+        wallet(
+            onMenuClick = {
+                navController.navigate(Screen.SettingsAllDestination.route)
+            },
+            onAccountClick = { account ->
+                navController.navigate(
+                    Screen.AccountDestination.routeWithArgs(account.address)
+                )
+            },
+            onNavigateToMnemonicBackup = {
+                navController.seedPhrases()
+            },
+            onNavigateToMnemonicRestore = {
+                navController.restoreMnemonics(
+                    args = RestoreMnemonicsArgs()
+                )
+            },
+            onAccountCreationClick = {
+                navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
+            }
         )
         composable(
             route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ADDRESS}",
@@ -208,15 +261,18 @@ fun NavigationHost(
                 )
             },
             onAddLedgerDevice = {
-                navController.createAccountWithLedger(networkId = it)
+                navController.chooseLedger(networkId = it)
             }
         )
-        createAccountWithLedger(
+        chooseLedger(
             onBackClick = {
                 navController.navigateUp()
             },
-            goBackToCreateAccount = {
+            onFinish = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
+            },
+            onStartRecovery = { factorSource, isOlympia ->
+                navController.accountRecoveryScan(factorSource.identifier, isOlympia)
             }
         )
         createAccountConfirmationScreen(
@@ -396,6 +452,11 @@ fun NavigationHost(
         lsuAssetDialog(
             onDismiss = {
                 navController.popBackStack()
+            }
+        )
+        recoveryScanComplete(
+            onContinueClick = {
+                navController.popBackStack(MAIN_ROUTE, false)
             }
         )
     }

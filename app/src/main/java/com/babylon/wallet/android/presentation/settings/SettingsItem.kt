@@ -49,6 +49,7 @@ sealed interface SettingsItem {
         data object DepositGuarantees : AccountSecurityAndSettingsItem
         data class Backups(val backupState: BackupState) : AccountSecurityAndSettingsItem
         data object ImportFromLegacyWallet : AccountSecurityAndSettingsItem
+        data object AccountRecovery : AccountSecurityAndSettingsItem
 
         @StringRes
         fun descriptionRes(): Int {
@@ -58,6 +59,7 @@ sealed interface SettingsItem {
                 DepositGuarantees -> R.string.accountSecuritySettings_depositGuarantees_title
                 is Backups -> R.string.accountSecuritySettings_backups_title
                 ImportFromLegacyWallet -> R.string.accountSecuritySettings_importFromLegacyWallet_title
+                AccountRecovery -> R.string.accountSecuritySettings_accountRecoveryScan_title
             }
         }
 
@@ -69,6 +71,7 @@ sealed interface SettingsItem {
                 DepositGuarantees -> com.babylon.wallet.android.designsystem.R.drawable.ic_filter_list
                 is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
                 ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
+                AccountRecovery -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
             }
         }
     }

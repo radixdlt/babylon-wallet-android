@@ -14,7 +14,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.DeviceSecurityHelper
+import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -36,6 +36,7 @@ import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
+import rdx.works.profile.domain.CorrectLegacyAccountsDerivationPathSchemeUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.IsAnyEntityCreatedWithOlympiaUseCase
@@ -54,10 +55,11 @@ class MainViewModel @Inject constructor(
     private val verifyDappUseCase: VerifyDappUseCase,
     private val appEventBus: AppEventBus,
     getProfileStateUseCase: GetProfileStateUseCase,
-    private val deviceSecurityHelper: DeviceSecurityHelper,
+    private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
-    private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase
+    private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase,
+    private val correctLegacyAccountsDerivationPathSchemeUseCase: CorrectLegacyAccountsDerivationPathSchemeUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -109,7 +111,7 @@ class MainViewModel @Inject constructor(
                         initialAppState = AppState.from(
                             profileState = profileState
                         ),
-                        showDeviceRootedWarning = deviceSecurityHelper.isDeviceRooted() && !isDeviceRootedDialogShown
+                        showDeviceRootedWarning = deviceCapabilityHelper.isDeviceRooted() && !isDeviceRootedDialogShown
                     )
                 }
             }.collect()
@@ -250,10 +252,11 @@ class MainViewModel @Inject constructor(
     fun onAppToForeground() {
         viewModelScope.launch {
             checkMnemonicIntegrityUseCase()
-            val deviceNotSecure = deviceSecurityHelper.isDeviceSecure().not()
+            val deviceNotSecure = deviceCapabilityHelper.isDeviceSecure().not()
             if (deviceNotSecure) {
                 appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
             } else {
+                correctLegacyAccountsDerivationPathSchemeUseCase()
                 val entitiesCreatedWithOlympiaLegacyFactorSource = isAnyEntityCreatedWithOlympiaUseCase()
                 if (entitiesCreatedWithOlympiaLegacyFactorSource) {
                     _state.update { state ->
@@ -321,7 +324,7 @@ sealed interface AppState {
             profileState: ProfileState
         ) = when (profileState) {
             is ProfileState.Incompatible -> IncompatibleProfile
-            is ProfileState.Restored -> if (profileState.hasAnyAccounts()) {
+            is ProfileState.Restored -> if (profileState.hasMainnet()) {
                 Wallet
             } else {
                 OnBoarding

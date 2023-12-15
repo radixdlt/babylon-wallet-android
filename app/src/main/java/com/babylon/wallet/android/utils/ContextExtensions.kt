@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.utils
 
 import android.content.ActivityNotFoundException
+import android.content.ComponentName
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
@@ -9,6 +10,14 @@ import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import com.babylon.wallet.android.R
+
+val backupSettingsScreenIntent: Intent
+    get() = Intent().apply {
+        component = ComponentName(
+            "com.google.android.gms",
+            "com.google.android.gms.backup.component.BackupSettingsActivity"
+        )
+    }
 
 fun Context.biometricAuthenticate(authenticationCallback: (successful: Boolean) -> Unit) {
     findFragmentActivity()?.let { activity ->

@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,8 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -96,5 +100,21 @@ fun SimpleAccountCard(
             textStyle = RadixTheme.typography.body2HighImportance,
             textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
         )
+    }
+}
+
+@Preview
+@Composable
+fun SimpleAccountCardPreview() {
+    RadixWalletTheme {
+        SimpleAccountCard(account = SampleDataProvider().sampleAccount(), modifier = Modifier.fillMaxWidth())
+    }
+}
+
+@Preview
+@Composable
+fun SimpleAccountCardWithoutNamePreview() {
+    RadixWalletTheme {
+        SimpleAccountCard(account = SampleDataProvider().sampleAccount(), modifier = Modifier.fillMaxWidth())
     }
 }

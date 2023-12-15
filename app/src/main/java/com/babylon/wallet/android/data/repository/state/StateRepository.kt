@@ -368,7 +368,7 @@ class StateRepositoryImpl @Inject constructor(
             page.items.forEach { item ->
                 val publicKeys = item.explicitMetadata?.toMetadata()?.ownerKeyHashes() ?: return@forEach
                 val entity = entities.find { item.address == it.address } ?: return@forEach
-                entitiesWithOwnerKeys[entity] = publicKeys
+                entitiesWithOwnerKeys[entity] = publicKeys.keys
             }
         }
         entitiesWithOwnerKeys

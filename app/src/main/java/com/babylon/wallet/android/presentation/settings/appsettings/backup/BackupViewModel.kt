@@ -9,6 +9,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -28,10 +29,14 @@ class BackupViewModel @Inject constructor(
     private val backupProfileToFileUseCase: BackupProfileToFileUseCase,
     private val deleteWalletUseCase: DeleteWalletUseCase,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
+    private val deviceCapabilityHelper: DeviceCapabilityHelper,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(), OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
 
-    override fun initialState(): State = State(backupState = BackupState.Closed)
+    override fun initialState(): State = State(
+        backupState = BackupState.Closed,
+        canAccessSystemBackupSettings = deviceCapabilityHelper.canOpenSystemBackupSettings()
+    )
 
     init {
         viewModelScope.launch {
@@ -158,7 +163,8 @@ class BackupViewModel @Inject constructor(
         val isExportFileDialogVisible: Boolean = false,
         val encryptSheet: EncryptSheet = EncryptSheet.Closed,
         val deleteWalletDialogVisible: Boolean = false,
-        val uiMessage: UiMessage? = null
+        val uiMessage: UiMessage? = null,
+        val canAccessSystemBackupSettings: Boolean = false
     ) : UiState {
 
         val isBackupEnabled: Boolean

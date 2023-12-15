@@ -7,7 +7,11 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.babylon.wallet.android.presentation.account.createaccount.withledger.LedgerSelectionPurpose
+import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
+import com.babylon.wallet.android.presentation.account.recover.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
+import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
@@ -19,6 +23,8 @@ import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphra
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.seedPhrases
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.systemBackupSettingsScreen
+import com.babylon.wallet.android.presentation.settings.recovery.accountRecoveryScanSelection
+import com.babylon.wallet.android.presentation.settings.recovery.chooseseed.chooseSeedPhrase
 
 const val ROUTE_ACCOUNT_SECURITY_SCREEN = "settings_account_security_screen"
 const val ROUTE_ACCOUNT_SECURITY_GRAPH = "settings_account_security_graph"
@@ -27,6 +33,7 @@ fun NavController.accountSecurityScreen() {
     navigate(ROUTE_ACCOUNT_SECURITY_SCREEN)
 }
 
+@Suppress("LongMethod")
 fun NavGraphBuilder.accountSecurityNavGraph(
     navController: NavController,
 ) {
@@ -76,6 +83,34 @@ fun NavGraphBuilder.accountSecurityNavGraph(
                 navController.confirmSeedPhrase(factorSourceId, mnemonicSize)
             }
         )
+        accountRecoveryScanSelection(
+            onBack = {
+                navController.popBackStack()
+            },
+            onChooseSeedPhrase = {
+                navController.chooseSeedPhrase(it)
+            },
+            onChooseLedger = { isOlympia ->
+                navController.chooseLedger(
+                    ledgerSelectionPurpose = if (isOlympia) {
+                        LedgerSelectionPurpose.RecoveryScanOlympia
+                    } else {
+                        LedgerSelectionPurpose.RecoveryScanBabylon
+                    }
+                )
+            }
+        )
+        chooseSeedPhrase(
+            onBack = {
+                navController.popBackStack()
+            },
+            onAddSeedPhrase = {
+                navController.addSingleMnemonic(mnemonicType = it)
+            },
+            onRecoveryScanWithFactorSource = { factorSource, isOlympia ->
+                navController.accountRecoveryScan(factorSource.identifier, isOlympia)
+            }
+        )
     }
 }
 
@@ -88,7 +123,7 @@ fun NavGraphBuilder.accountSecurityScreen(
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
         exitTransition = {
-            slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+            null
         },
         popExitTransition = {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
@@ -104,17 +139,25 @@ fun NavGraphBuilder.accountSecurityScreen(
                     SettingsItem.AccountSecurityAndSettingsItem.SeedPhrases -> {
                         navController.seedPhrases()
                     }
+
                     SettingsItem.AccountSecurityAndSettingsItem.LedgerHardwareWallets -> {
                         navController.ledgerHardwareWalletsScreen()
                     }
+
                     SettingsItem.AccountSecurityAndSettingsItem.DepositGuarantees -> {
                         navController.depositGuaranteesScreen()
                     }
+
                     is SettingsItem.AccountSecurityAndSettingsItem.Backups -> {
                         navController.backupScreen()
                     }
+
                     SettingsItem.AccountSecurityAndSettingsItem.ImportFromLegacyWallet -> {
                         navController.importLegacyWalletScreen()
+                    }
+
+                    SettingsItem.AccountSecurityAndSettingsItem.AccountRecovery -> {
+                        navController.accountRecoveryScanSelection()
                     }
                 }
             },

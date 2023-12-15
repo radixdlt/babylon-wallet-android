@@ -4,7 +4,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.Assert.assertFalse
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import rdx.works.core.InstantGenerator
 import rdx.works.core.identifiedArrayListOf
@@ -14,7 +13,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.updateThirdPartyDepositSettings
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.TestData
@@ -113,7 +112,7 @@ class TransferBetweenOwnedAccountsTest {
         val mnemonicRepository = mockk<MnemonicRepository>()
         coEvery { mnemonicRepository() } returns mnemonicWithPassphrase
 
-        targetAccount = Network.Account.initAccountWithDeviceFactorSource(
+        targetAccount = Network.Account.initAccountWithBabylonDeviceFactorSource(
             entityIndex = 0,
             displayName = "target account",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
@@ -122,8 +121,8 @@ class TransferBetweenOwnedAccountsTest {
             appearanceID = 0
         )
 
-        profile = profile.addAccount(
-            account = targetAccount,
+        profile = profile.addAccounts(
+            accounts = listOf(targetAccount),
             onNetwork = defaultNetwork.networkId()
         )
     }

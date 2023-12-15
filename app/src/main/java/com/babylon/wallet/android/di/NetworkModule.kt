@@ -27,6 +27,7 @@ import retrofit2.Converter.Factory
 import retrofit2.Retrofit
 import timber.log.Timber
 import java.net.URL
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -43,6 +44,18 @@ annotation class JsonConverterFactory
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
 annotation class CurrentGatewayHttpClient
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class ShortTimeoutGatewayHttpClient
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class StandardStateApi
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class ShortTimeoutStateApi
 
 /**
  * A simple [OkHttpClient] **without** dynamic change of the base url.
@@ -114,6 +127,20 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @ShortTimeoutGatewayHttpClient
+    fun provideShortTimeoutGatewayHttpClient(
+        baseUrlInterceptor: BaseUrlInterceptor,
+        httpLoggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .callTimeout(SHORT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .addInterceptor(baseUrlInterceptor)
+            .addInterceptor(httpLoggingInterceptor)
+            .build()
+    }
+
+    @Provides
+    @Singleton
     fun provideJsonDeserializer(): Json {
         return Serializer.kotlinxSerializationJson
     }
@@ -137,6 +164,18 @@ object NetworkModule {
     @Provides
     fun provideStateApi(
         @CurrentGatewayHttpClient okHttpClient: OkHttpClient,
+        @JsonConverterFactory jsonConverterFactory: Factory,
+        profileRepository: ProfileRepository
+    ): StateApi = buildApi(
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
+        okHttpClient = okHttpClient,
+        jsonConverterFactory = jsonConverterFactory
+    )
+
+    @Provides
+    @ShortTimeoutStateApi
+    fun provideStateApiWithShortTimeout(
+        @ShortTimeoutGatewayHttpClient okHttpClient: OkHttpClient,
         @JsonConverterFactory jsonConverterFactory: Factory,
         profileRepository: ProfileRepository
     ): StateApi = buildApi(
@@ -176,3 +215,5 @@ object NetworkModule {
         }
     }
 }
+
+private const val SHORT_TIMEOUT_SECONDS = 5L

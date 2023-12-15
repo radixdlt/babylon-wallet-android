@@ -1,5 +1,7 @@
 package rdx.works.profile.data.model
 
+import rdx.works.profile.data.model.apppreferences.Radix
+
 sealed class ProfileState {
 
     /**
@@ -26,8 +28,8 @@ sealed class ProfileState {
      * A compatible [ProfileSnapshot] exists and the user can derive the [Profile].
      */
     data class Restored(val profile: Profile) : ProfileState() {
-        fun hasAnyAccounts(): Boolean {
-            return profile.currentNetwork.accounts.isNotEmpty()
+        fun hasMainnet(): Boolean {
+            return profile.networks.any { it.networkID == Radix.Gateway.mainnet.network.id }
         }
     }
 }

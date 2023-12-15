@@ -7,7 +7,9 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.ARG_NETWORK_ID
-import com.babylon.wallet.android.presentation.account.createaccount.withledger.CreateAccountWithLedgerViewModel
+import com.babylon.wallet.android.presentation.account.createaccount.withledger.ARG_SELECTION_PURPOSE
+import com.babylon.wallet.android.presentation.account.createaccount.withledger.ChooseLedgerViewModel
+import com.babylon.wallet.android.presentation.account.createaccount.withledger.LedgerSelectionPurpose
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import io.mockk.Runs
@@ -36,7 +38,7 @@ import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.p2pLinks
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateAccountWithLedgerViewModel>() {
+internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewModel>() {
 
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val ledgerMessenger = mockk<LedgerMessenger>()
@@ -50,8 +52,8 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
     private val firstDeviceId = "5f47ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010996f5"
     private val secondDeviceId = "5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5"
 
-    override fun initVM(): CreateAccountWithLedgerViewModel {
-        return CreateAccountWithLedgerViewModel(
+    override fun initVM(): ChooseLedgerViewModel {
+        return ChooseLedgerViewModel(
             getProfileUseCase,
             getCurrentGatewayUseCase,
             ledgerMessenger,
@@ -68,6 +70,7 @@ internal class CreateAccountWithLedgerViewModelTest : StateViewModelTest<CreateA
         coEvery { eventBus.sendEvent(any()) } just Runs
         coEvery { getProfileUseCase() } returns flowOf(profile())
         every { savedStateHandle.get<Int>(ARG_NETWORK_ID) } returns Radix.Gateway.mainnet.network.id
+        every { savedStateHandle.get<LedgerSelectionPurpose>(ARG_SELECTION_PURPOSE) } returns LedgerSelectionPurpose.CreateAccount
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.mainnet
         coEvery {
             addLedgerFactorSourceUseCase(

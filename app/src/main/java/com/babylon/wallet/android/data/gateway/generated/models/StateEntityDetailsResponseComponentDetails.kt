@@ -24,10 +24,10 @@ import kotlinx.serialization.Serializable
  *
  * @param type
  * @param blueprintName
- * @param blueprintVersion 
+ * @param blueprintVersion
  * @param packageAddress Bech32m-encoded human readable version of the address.
- * @param state A representation of a component's inner state. If this entity is a `GenericComponent`, this field will be in a programmatic JSON structure (you can deserialize it as a `ProgrammaticScryptoSborValue`). Otherwise, for \"native\" components such as `Account`, `Validator`, `AccessController`, `OneResourcePool`, `TwoResourcePool`, and `MultiResourcePool`, this field will be a  custom JSON model defined in the Core API schema. 
- * @param roleAssignments 
+ * @param state A representation of a component's inner state. If this entity is a `GenericComponent`, this field will be in a programmatic JSON structure (you can deserialize it as a `ProgrammaticScryptoSborValue`). Otherwise, for \"native\" components such as `Account`, `Validator`, `AccessController`, `OneResourcePool`, `TwoResourcePool`, and `MultiResourcePool`, this field will be a  custom JSON model defined in the Core API schema.
+ * @param roleAssignments
  * @param royaltyVaultBalance String-encoded decimal representing the amount of a related fungible resource.
  */
 @Serializable
@@ -69,7 +69,10 @@ data class ComponentEntityState(
     val stakeUnitResourceAddress: String? = null,
 
     @SerialName(value = "claim_token_resource_address")
-    val claimTokenResourceAddress: String? = null
+    val claimTokenResourceAddress: String? = null,
+
+    @SerialName(value = "default_deposit_rule")
+    val defaultDepositRule: DefaultDepositRule? = null
 
 )
 
@@ -86,3 +89,15 @@ data class StakeXrdVault(
     val entityAddress: String? = null
 
 )
+
+@Serializable
+enum class DefaultDepositRule {
+    @SerialName("Accept")
+    Accept,
+
+    @SerialName("Reject")
+    Reject,
+
+    @SerialName("AllowExisting")
+    AllowExisting
+}

@@ -487,7 +487,7 @@ sealed class TargetAccount {
         }
 
     val factorSourceId: FactorSource.FactorSourceID.FromHash?
-        get() = (this as? Owned)?.account?.factorSourceId() as? FactorSource.FactorSourceID.FromHash
+        get() = (this as? Owned)?.account?.factorSourceId as? FactorSource.FactorSourceID.FromHash
 
     fun amountSpent(fungibleAsset: SpendingAsset.Fungible): BigDecimal = spendingAssets
         .filterIsInstance<SpendingAsset.Fungible>()

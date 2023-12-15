@@ -22,9 +22,11 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.changeGateway
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isHidden
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
+import rdx.works.profile.data.model.extensions.usesCurve25519
+import rdx.works.profile.data.model.extensions.usesSecp256k1
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
@@ -53,6 +55,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     private val args = RestoreMnemonicsArgs.from(savedStateHandle)
     private val seedPhraseInputDelegate = SeedPhraseInputDelegate(viewModelScope)
+    lateinit var biometricAuthProvider: suspend () -> Boolean
 
     override fun initialState(): State = State(
         isMandatory = args.isMandatory
@@ -69,7 +72,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     recoverableFactorSources = factorSources,
-                    mainBabylonFactorSourceId = profile?.mainBabylonFactorSourceId()
+                    mainBabylonFactorSourceId = profile?.mainBabylonFactorSource()?.id
                 )
             }
 
@@ -90,26 +93,23 @@ class RestoreMnemonicsViewModel @Inject constructor(
             ?.filterIsInstance<DeviceFactorSource>()
             ?.filter { !mnemonicRepository.mnemonicExist(it.id) }
             ?.mapNotNull { factorSource ->
-                val associatedAccounts = allAccounts.filter { it.factorSourceId() == factorSource.id }
+                val associatedBabylonAccounts = allAccounts.filter {
+                    it.factorSourceId == factorSource.id && it.usesCurve25519
+                }
+                val associatedOlympiaAccounts = allAccounts.filter {
+                    it.factorSourceId == factorSource.id && it.usesSecp256k1
+                }
 
-                if (associatedAccounts.isEmpty() && !factorSource.isBabylon) return@mapNotNull null
+                if (associatedBabylonAccounts.isEmpty() && associatedOlympiaAccounts.isEmpty() && !factorSource.supportsBabylon) {
+                    return@mapNotNull null
+                }
 
                 RecoverableFactorSource(
-                    associatedAccounts = associatedAccounts,
+                    associatedAccounts = associatedBabylonAccounts.ifEmpty { associatedOlympiaAccounts },
                     factorSource = factorSource
                 )
             }
             .orEmpty()
-    }
-
-    private fun Profile.mainBabylonFactorSourceId(): FactorSource.FactorSourceID.FromHash? {
-        val deviceFactorSources = factorSources.filterIsInstance<DeviceFactorSource>()
-        val babylonFactorSources = deviceFactorSources.filter { it.isBabylon }
-        return if (babylonFactorSources.size == 1) {
-            babylonFactorSources.first().id
-        } else {
-            babylonFactorSources.firstOrNull { it.common.flags.contains(FactorSourceFlag.Main) }?.id
-        }
     }
 
     fun onBackClick() {
@@ -129,8 +129,8 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    fun onSkipSeedPhraseClick(biometricAuthProvider: suspend () -> Boolean) {
-        viewModelScope.launch { showNextRecoverableFactorSourceOrFinish(biometricAuthProvider) }
+    fun onSkipSeedPhraseClick() {
+        viewModelScope.launch { showNextRecoverableFactorSourceOrFinish() }
     }
 
     fun onSkipMainSeedPhraseClick() {
@@ -139,10 +139,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
         }
     }
 
-    fun skipMainSeedPhraseAndCreateNew(biometricAuthProvider: suspend () -> Boolean) {
+    fun skipMainSeedPhraseAndCreateNew() {
         viewModelScope.launch {
             _state.update { state -> state.copy(hasSkippedMainSeedPhrase = true) }
-            showNextRecoverableFactorSourceOrFinish(biometricAuthProvider)
+            showNextRecoverableFactorSourceOrFinish()
         }
     }
 
@@ -178,7 +178,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     private suspend fun restoreMnemonic() {
         val factorSourceToRecover = state.value
             .recoverableFactorSource?.factorSource ?: return
-
+        if (biometricAuthProvider.invoke().not()) return
         _state.update { it.copy(isRestoring = true) }
         restoreMnemonicUseCase(
             factorSource = factorSourceToRecover,
@@ -187,13 +187,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 bip39Passphrase = _state.value.seedPhraseState.bip39Passphrase
             )
         ).onSuccess {
-            args.backupType?.let { backupType ->
-                restoreProfileFromBackupUseCase(backupType)
-            }
-
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
             _state.update { state -> state.copy(isRestoring = false) }
-            showNextRecoverableFactorSourceOrFinish()
+            showNextRecoverableFactorSourceOrFinish(skipAuth = true)
         }.onFailure {
             _state.update { state ->
                 state.copy(
@@ -205,7 +201,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     @Suppress("NestedBlockDepth")
-    private suspend fun showNextRecoverableFactorSourceOrFinish(biometricAuthProvider: suspend () -> Boolean = { true }) {
+    private suspend fun showNextRecoverableFactorSourceOrFinish(skipAuth: Boolean = false) {
         val nextRecoverableFactorSource = state.value.nextRecoverableFactorSource
         if (nextRecoverableFactorSource != null) {
             seedPhraseInputDelegate.reset()
@@ -217,7 +213,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                 _state.update { it.copy(isRestoring = true) }
 
                 args.backupType?.let { backupType ->
-                    if (biometricAuthProvider().not()) return
+                    if (skipAuth.not() && biometricAuthProvider().not()) return
                     restoreAndCreateMainSeedPhraseUseCase(backupType)
                 }
 
@@ -226,6 +222,10 @@ class RestoreMnemonicsViewModel @Inject constructor(
                         isRestoring = false,
                         hasSkippedMainSeedPhrase = false
                     )
+                }
+            } else {
+                args.backupType?.let { backupType ->
+                    restoreProfileFromBackupUseCase(backupType)
                 }
             }
 

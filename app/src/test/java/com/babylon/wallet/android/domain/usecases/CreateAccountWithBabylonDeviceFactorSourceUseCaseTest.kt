@@ -1,9 +1,9 @@
-package rdx.works.profile
+package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -18,27 +18,27 @@ import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
+import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.TestData
-import rdx.works.profile.domain.account.CreateAccountWithDeviceFactorSourceUseCase
 
-@OptIn(ExperimentalCoroutinesApi::class)
-class CreateAccountWithDeviceFactorSourceUseCaseTest {
-
+class CreateAccountWithBabylonDeviceFactorSourceUseCaseTest {
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
+    private val resolveAccountsLedgerStateRepository = mockk<ResolveAccountsLedgerStateRepository>()
     private val mnemonicWithPassphrase = MnemonicWithPassphrase(
-        mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
+        mnemonic = "prison post shoot verb lunch blue limb stick later winner tide roof situate excuse joy muffin cruel fix bag evil call glide resist aware",
         bip39Passphrase = ""
     )
 
     @Before
     fun setUp() {
         coEvery { ensureBabylonFactorSourceExistUseCase() } returns TestData.testProfile2Networks2AccountsEach(mnemonicWithPassphrase)
+        coEvery { resolveAccountsLedgerStateRepository(any()) } returns Result.failure(Exception(""))
     }
 
     @Test
@@ -48,10 +48,9 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
             val accountName = "First account"
             val network = Radix.Gateway.hammunet
             val profile = TestData.testProfile2Networks2AccountsEach(mnemonicWithPassphrase)
-
             val mnemonicRepository = mock<MnemonicRepository> {
                 onBlocking {
-                    readMnemonic(profile.babylonMainDeviceFactorSource.id)
+                    readMnemonic(checkNotNull(profile.mainBabylonFactorSource()?.id))
                 } doReturn Result.success(mnemonicWithPassphrase)
             }
 
@@ -59,24 +58,26 @@ class CreateAccountWithDeviceFactorSourceUseCaseTest {
             whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
             coEvery { ensureBabylonFactorSourceExistUseCase() } returns profile
 
-            val createAccountWithDeviceFactorSourceUseCase = CreateAccountWithDeviceFactorSourceUseCase(
+            val createAccountWithBabylonDeviceFactorSourceUseCase = CreateAccountWithBabylonDeviceFactorSourceUseCase(
                 mnemonicRepository = mnemonicRepository,
                 profileRepository = profileRepository,
                 ensureBabylonFactorSourceExistUseCase = ensureBabylonFactorSourceExistUseCase,
-                defaultDispatcher = testDispatcher
+                defaultDispatcher = testDispatcher,
+                resolveAccountsLedgerStateRepository = resolveAccountsLedgerStateRepository
             )
 
-            val account = createAccountWithDeviceFactorSourceUseCase(
+            val account = createAccountWithBabylonDeviceFactorSourceUseCase(
                 displayName = accountName
             )
 
-            val updatedProfile = profile.addAccount(
-                account = account,
+            val updatedProfile = profile.addAccounts(
+                accounts = listOf(account),
                 onNetwork = network.network.networkId()
             )
 
             verify(profileRepository).saveProfile(updatedProfile)
             coVerify(exactly = 1) { ensureBabylonFactorSourceExistUseCase() }
+            coVerify(exactly = 1) { resolveAccountsLedgerStateRepository(any()) }
         }
     }
 }

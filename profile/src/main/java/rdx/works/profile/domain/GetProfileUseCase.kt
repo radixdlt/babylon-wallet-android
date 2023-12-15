@@ -9,13 +9,16 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
-import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.factorSourceId
+import rdx.works.profile.data.model.extensions.usesCurve25519
+import rdx.works.profile.data.model.extensions.usesSecp256k1
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -31,8 +34,12 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
     operator fun invoke() = profileRepository.profile
 
     suspend fun isInitialized(): Boolean {
-        val profileState = profileRepository.profileState.first()
-        return profileState != ProfileState.NotInitialised && profileState != ProfileState.None
+        return when (val profileState = profileRepository.profileState.first()) {
+            ProfileState.NotInitialised,
+            ProfileState.None -> false
+            ProfileState.Incompatible -> true
+            is ProfileState.Restored -> profileState.hasMainnet()
+        }
     }
 }
 
@@ -40,14 +47,16 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
  * Accounts on network
  */
 val GetProfileUseCase.entitiesOnCurrentNetwork: Flow<List<Entity>>
-    get() = invoke().map { it.currentNetwork.accounts.notHiddenAccounts() + it.currentNetwork.personas.notHiddenPersonas() }
+    get() = invoke().map {
+        it.currentNetwork?.accounts?.notHiddenAccounts().orEmpty() + it.currentNetwork?.personas?.notHiddenPersonas().orEmpty()
+    }
 
-val GetProfileUseCase.accountsOnCurrentNetwork
-    get() = invoke().map { it.currentNetwork.accounts.notHiddenAccounts() }
+val GetProfileUseCase.activeAccountsOnCurrentNetwork
+    get() = invoke().map { it.currentNetwork?.accounts?.notHiddenAccounts().orEmpty() }
 
 val GetProfileUseCase.hiddenAccountsOnCurrentNetwork
     get() = invoke().map {
-        it.currentNetwork.accounts.filter { account -> account.flags.contains(EntityFlag.DeletedByUser) }
+        it.currentNetwork?.accounts?.filter { account -> account.flags.contains(EntityFlag.DeletedByUser) }.orEmpty()
     }
 
 val GetProfileUseCase.factorSources
@@ -56,16 +65,35 @@ val GetProfileUseCase.factorSources
 val GetProfileUseCase.deviceFactorSources
     get() = invoke().map { profile -> profile.factorSources.filterIsInstance<DeviceFactorSource>() }
 
-suspend fun GetProfileUseCase.babylonDeviceFactorSource(): DeviceFactorSource? {
-    return deviceFactorSources.firstOrNull()?.find { it.isBabylon }
-}
-
-val GetProfileUseCase.deviceFactorSourcesWithAccounts
+private val GetProfileUseCase.deviceFactorSourcesWithAccounts
     get() = invoke().map { profile ->
         val deviceFactorSources = profile.factorSources.filterIsInstance<DeviceFactorSource>()
-        val allAccountsOnNetwork = profile.currentNetwork.accounts.notHiddenAccounts()
+        val allAccountsOnNetwork = profile.currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
         deviceFactorSources.associateWith { deviceFactorSource ->
-            allAccountsOnNetwork.filter { it.factorSourceId() == deviceFactorSource.id }
+            allAccountsOnNetwork.filter { it.factorSourceId == deviceFactorSource.id }
+        }
+    }
+
+suspend fun GetProfileUseCase.mainBabylonFactorSource(): DeviceFactorSource? {
+    val babylonFactorSources = deviceFactorSources.firstOrNull()?.filter { it.supportsBabylon } ?: return null
+    return if (babylonFactorSources.size == 1) {
+        babylonFactorSources.first()
+    } else {
+        babylonFactorSources.firstOrNull { it.common.flags.contains(FactorSourceFlag.Main) }
+    }
+}
+
+val GetProfileUseCase.olympiaFactorSourcesWithAccounts
+    get() = deviceFactorSourcesWithAccounts.map {
+        it.filter { entry -> entry.key.supportsOlympia }.mapValues { entry ->
+            entry.value.filter { account -> account.usesSecp256k1 }
+        }
+    }
+
+val GetProfileUseCase.babylonFactorSourcesWithAccounts
+    get() = deviceFactorSourcesWithAccounts.map {
+        it.filter { entry -> entry.key.supportsBabylon }.mapValues { entry ->
+            entry.value.filter { account -> account.usesCurve25519 }
         }
     }
 
@@ -78,13 +106,19 @@ suspend fun GetProfileUseCase.factorSourceById(
     factorSource.id == id
 }
 
+suspend fun GetProfileUseCase.deviceFactorSourceById(
+    id: FactorSource.FactorSourceID
+) = factorSources.first().filterIsInstance<DeviceFactorSource>().firstOrNull { factorSource ->
+    factorSource.id == id
+}
+
 suspend fun GetProfileUseCase.factorSourceByIdValue(
     value: String
 ) = factorSources.first().firstOrNull { factorSource ->
     factorSource.identifier == value
 }
 
-suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = accountsOnCurrentNetwork.first()
+suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = activeAccountsOnCurrentNetwork.first()
 
 suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     withAddress: String
@@ -92,22 +126,18 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     account.address == withAddress
 }
 
-suspend fun GetProfileUseCase.nextDerivationPathForAccountOnNetwork(networkId: Int): DerivationPath {
+suspend fun GetProfileUseCase.nextDerivationPathForAccountOnNetwork(
+    derivationPathScheme: DerivationPathScheme,
+    networkId: Int,
+    factorSourceId: FactorSource.FactorSourceID
+): DerivationPath {
     val profile = invoke().first()
     val network = requireNotNull(NetworkId.from(networkId))
     return DerivationPath.forAccount(
         networkId = network,
-        accountIndex = profile.nextAccountIndex(network),
+        accountIndex = profile.nextAccountIndex(derivationPathScheme, network, factorSourceId),
         keyType = KeyType.TRANSACTION_SIGNING
     )
-}
-
-fun GetProfileUseCase.accountOnCurrentNetworkWithAddress(
-    address: String
-) = accountsOnCurrentNetwork.map { accounts ->
-    accounts.firstOrNull { account ->
-        account.address == address
-    }
 }
 
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
@@ -122,11 +152,11 @@ suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
  * Personas on network
  */
 val GetProfileUseCase.personasOnCurrentNetwork
-    get() = invoke().map { it.currentNetwork.personas.notHiddenPersonas() }
+    get() = invoke().map { it.currentNetwork?.personas?.notHiddenPersonas().orEmpty() }
 
 val GetProfileUseCase.hiddenPersonasOnCurrentNetwork
     get() = invoke().map {
-        it.currentNetwork.personas.filter { persona -> persona.flags.contains(EntityFlag.DeletedByUser) }
+        it.currentNetwork?.personas?.filter { persona -> persona.flags.contains(EntityFlag.DeletedByUser) }.orEmpty()
     }
 
 suspend fun GetProfileUseCase.personasOnCurrentNetwork() = personasOnCurrentNetwork.first()
@@ -170,6 +200,6 @@ fun Collection<Network.Account>.notHiddenAccounts(): List<Network.Account> {
     return filter { it.flags.contains(EntityFlag.DeletedByUser).not() }
 }
 
-private fun Collection<Network.Persona>.notHiddenPersonas(): List<Network.Persona> {
+fun Collection<Network.Persona>.notHiddenPersonas(): List<Network.Persona> {
     return filter { it.flags.contains(EntityFlag.DeletedByUser).not() }
 }

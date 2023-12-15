@@ -30,6 +30,7 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -46,14 +47,13 @@ import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.TestData
 import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class CreatePersonaWithDeviceFactorSourceUseCaseTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
     private val mnemonicWithPassphrase = MnemonicWithPassphrase(
-        mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
+        mnemonic = "travel organ kick vote head divide express recall oblige foster banner spin shield stone scan pretty sort skate knock kangaroo pill test belt father",
         bip39Passphrase = ""
     )
 
@@ -101,7 +101,6 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
                                 networkID = network.network.networkId().value,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                        entityIndex = 0,
                                         transactionSigning = FactorInstance(
                                             badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                                                 derivationPath = DerivationPath.forAccount(
@@ -130,7 +129,7 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
 
             val mnemonicRepository = mock<MnemonicRepository> {
                 onBlocking {
-                    readMnemonic(profile.babylonMainDeviceFactorSource.id)
+                    readMnemonic(profile.mainBabylonFactorSource()!!.id)
                 } doReturn Result.success(mnemonicWithPassphrase)
             }
 

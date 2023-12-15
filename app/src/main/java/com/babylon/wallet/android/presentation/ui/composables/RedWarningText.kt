@@ -18,7 +18,7 @@ fun RedWarningText(
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall, alignment = Alignment.CenterHorizontally)
     ) {
         Icon(
             painter = painterResource(

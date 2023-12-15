@@ -42,7 +42,7 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
         }
 
     private suspend fun mapToEntityWithSecurityPrompt(entity: Entity, backedUpFactorSourceIds: Set<String>): EntityWithSecurityPrompt? {
-        val factorSourceId = entity.factorSourceId() as? FactorSourceID.FromHash ?: return null
+        val factorSourceId = entity.factorSourceId as? FactorSourceID.FromHash ?: return null
         val factorSource = getProfileUseCase.factorSourceById(factorSourceId) as? DeviceFactorSource ?: return null
 
         return if (!mnemonicRepository.mnemonicExist(factorSource.id)) {

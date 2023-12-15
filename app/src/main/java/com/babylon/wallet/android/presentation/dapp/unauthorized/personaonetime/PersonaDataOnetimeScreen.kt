@@ -44,7 +44,7 @@ import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRout
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
-import com.babylon.wallet.android.presentation.status.signing.SigningStatusBottomDialog
+import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -128,7 +128,7 @@ fun PersonaDataOnetimeScreen(
         continueButtonEnabled = state.continueButtonEnabled
     )
     sharedState.interactionState?.let {
-        SigningStatusBottomDialog(
+        FactorSourceInteractionBottomDialog(
             modifier = Modifier.fillMaxHeight(0.8f),
             onDismissDialogClick = sharedViewModel::onDismissSigningStatusDialog,
             interactionState = it

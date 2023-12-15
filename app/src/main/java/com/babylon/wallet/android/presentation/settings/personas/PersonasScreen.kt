@@ -129,7 +129,7 @@ fun PersonasContent(
                         persona = personaItem,
                         displaySecurityPrompt = state.securityPrompt(personaItem) != null,
                         onApplySecuritySettings = {
-                            onApplySecuritySettings(personaItem.factorSourceId())
+                            onApplySecuritySettings(personaItem.factorSourceId)
                         }
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

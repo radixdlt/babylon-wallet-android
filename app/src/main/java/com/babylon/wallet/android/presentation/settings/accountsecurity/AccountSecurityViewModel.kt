@@ -27,22 +27,18 @@ class AccountSecurityViewModel @Inject constructor(
 ) : StateViewModel<AccountSecurityUiState>() {
 
     override fun initialState(): AccountSecurityUiState = AccountSecurityUiState(
-        settings = persistentSetOf(
-            SettingsItem.AccountSecurityAndSettingsItem.SeedPhrases,
-            SettingsItem.AccountSecurityAndSettingsItem.LedgerHardwareWallets,
-            SettingsItem.AccountSecurityAndSettingsItem.DepositGuarantees,
-        )
+        settings = defaultSettings
     )
 
     init {
         viewModelScope.launch {
             if (getProfileUseCase.gateways.first().current().network.id == Radix.Network.mainnet.id || EXPERIMENTAL_FEATURES_ENABLED) {
                 _state.update { state ->
+                    val updatedSettings = defaultSettings.toMutableList().apply {
+                        add(indices.last, SettingsItem.AccountSecurityAndSettingsItem.ImportFromLegacyWallet)
+                    }.toPersistentSet()
                     state.copy(
-                        settings = state.settings
-                            .toMutableList()
-                            .apply { add(SettingsItem.AccountSecurityAndSettingsItem.ImportFromLegacyWallet) }
-                            .toPersistentSet()
+                        settings = updatedSettings
                     )
                 }
             }
@@ -64,6 +60,15 @@ class AccountSecurityViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    companion object {
+        private val defaultSettings = persistentSetOf(
+            SettingsItem.AccountSecurityAndSettingsItem.SeedPhrases,
+            SettingsItem.AccountSecurityAndSettingsItem.LedgerHardwareWallets,
+            SettingsItem.AccountSecurityAndSettingsItem.DepositGuarantees,
+            SettingsItem.AccountSecurityAndSettingsItem.AccountRecovery
+        )
     }
 }
 

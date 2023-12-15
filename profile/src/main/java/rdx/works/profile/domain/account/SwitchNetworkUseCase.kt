@@ -24,10 +24,11 @@ class SwitchNetworkUseCase @Inject constructor(
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
             val networkIdToSwitch = if (networkId == -1) {
-                profile.currentNetwork.networkID
+                profile.currentNetwork?.networkID
             } else {
                 networkId
             }
+            if (networkIdToSwitch == null) return@withContext Radix.Gateway.default.network.networkId()
             val gateway = Radix.Gateway(
                 url = networkUrl,
                 network = Radix.Network.allKnownNetworks().first { network ->

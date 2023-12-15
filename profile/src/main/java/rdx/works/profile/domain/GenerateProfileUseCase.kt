@@ -3,18 +3,26 @@ package rdx.works.profile.domain
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.core.IdentifiedArrayList
 import rdx.works.core.InstantGenerator
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
+import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
 
 class GenerateProfileUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
+    private val mnemonicRepository: MnemonicRepository,
     private val deviceInfoRepository: DeviceInfoRepository,
+    private val preferencesManager: PreferencesManager,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
@@ -29,6 +37,30 @@ class GenerateProfileUseCase @Inject constructor(
                 )
 
                 profileRepository.saveProfile(profile)
+
+                profile
+            }
+        }
+    }
+
+    suspend fun initWithBdfsAndAccounts(
+        bdfs: DeviceFactorSource,
+        mnemonicWithPassphrase: MnemonicWithPassphrase,
+        accounts: IdentifiedArrayList<Network.Account>
+    ): Profile {
+        return when (val state = profileRepository.profileState.first()) {
+            is ProfileState.Restored -> state.profile
+            else -> withContext(defaultDispatcher) {
+                val profile = Profile.initWithFactorSource(
+                    id = UUIDGenerator.uuid().toString(),
+                    deviceInfo = deviceInfoRepository.getDeviceInfo(),
+                    creationDate = InstantGenerator(),
+                    factorSource = bdfs,
+                    accounts = accounts
+                )
+                profileRepository.saveProfile(profile)
+                mnemonicRepository.saveMnemonic(bdfs.id, mnemonicWithPassphrase)
+                preferencesManager.markFactorSourceBackedUp(bdfs.identifier)
 
                 profile
             }

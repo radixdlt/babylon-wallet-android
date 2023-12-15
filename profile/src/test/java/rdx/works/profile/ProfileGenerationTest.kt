@@ -14,10 +14,11 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.extensions.addP2PLink
 import rdx.works.profile.data.model.extensions.renameAccountDisplayName
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithDeviceFactorSource
+import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithBabylonDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
-import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
@@ -47,19 +48,20 @@ class ProfileGenerationTest {
         ).copy(factorSources = identifiedArrayListOf(babylonFactorSource))
 
         val defaultNetwork = Radix.Gateway.default.network
-        assertEquals(profile.networks.count(), 1)
-        assertEquals(profile.networks.first().networkID, defaultNetwork.id)
-        assertEquals(profile.networks.first().accounts.count(), 0)
-        assertEquals(profile.networks.first().personas.count(), 0)
+        assertEquals(profile.networks.count(), 0)
         assertEquals(
             "Next derivation index for first account",
             0,
-            (profile.nextAccountIndex(defaultNetwork.networkId()))
+            profile.nextAccountIndex(
+                derivationPathScheme = DerivationPathScheme.CAP_26,
+                forNetworkId = defaultNetwork.networkId(),
+                factorSourceID = babylonFactorSource.id
+            )
         )
 
         println("Profile generated $profile")
 
-        val firstAccount = initAccountWithDeviceFactorSource(
+        val firstAccount = initAccountWithBabylonDeviceFactorSource(
             entityIndex = 0,
             displayName = "first account",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
@@ -68,17 +70,26 @@ class ProfileGenerationTest {
             appearanceID = 0
         )
 
-        profile = profile.addAccount(
-            account = firstAccount,
+        profile = profile.addAccounts(
+            accounts = listOf(firstAccount),
             onNetwork = defaultNetwork.networkId()
         )
+
+        assertEquals(profile.networks.count(), 1)
+        assertEquals(profile.networks.first().networkID, defaultNetwork.id)
+        assertEquals(profile.networks.first().accounts.count(), 1)
+        assertEquals(profile.networks.first().personas.count(), 0)
 
         println("Profile updated generated $profile")
         assertEquals(profile.networks.first().accounts.count(), 1)
         assertEquals(
             "Next derivation index for second account",
             1,
-            profile.nextAccountIndex(defaultNetwork.networkId()),
+            profile.nextAccountIndex(
+                derivationPathScheme = DerivationPathScheme.CAP_26,
+                forNetworkId = defaultNetwork.networkId(),
+                factorSourceID = babylonFactorSource.id
+            )
         )
 
         val firstPersona = init(
@@ -98,7 +109,11 @@ class ProfileGenerationTest {
         assertEquals(
             "Next derivation index for second persona",
             1,
-            profile.nextPersonaIndex(defaultNetwork.networkId())
+            profile.nextPersonaIndex(
+                derivationPathScheme = DerivationPathScheme.CAP_26,
+                forNetworkId = defaultNetwork.networkId(),
+                factorSourceID = babylonFactorSource.id
+            )
         )
 
         val p2pLink = P2PLink.init(
@@ -113,7 +128,7 @@ class ProfileGenerationTest {
 
         Assert.assertTrue(profile.header.id.isNotBlank())
 
-        val newDisplayNameForAccount = "bla bla bla"
+        val newDisplayNameForAccount = "Test account"
         profile = profile.renameAccountDisplayName(
             accountToRename = firstAccount,
             newDisplayName = newDisplayNameForAccount
@@ -168,7 +183,7 @@ class ProfileGenerationTest {
             deviceInfo = TestData.deviceInfo,
             creationDate = InstantGenerator()
         ).copy(factorSources = identifiedArrayListOf(babylonFactorSource1))
-        val firstAccount = initAccountWithDeviceFactorSource(
+        val firstAccount = initAccountWithBabylonDeviceFactorSource(
             entityIndex = 0,
             displayName = "first account",
             mnemonicWithPassphrase = mnemonicWithPassphrase,
@@ -176,11 +191,11 @@ class ProfileGenerationTest {
             networkId = Radix.Gateway.default.network.networkId(),
             appearanceID = 0
         )
-        val updatedProfile = profile.copy(factorSources = (profile.factorSources).toIdentifiedArrayList()).addAccount(
-            account = firstAccount,
+        val updatedProfile = profile.copy(factorSources = (profile.factorSources).toIdentifiedArrayList()).addAccounts(
+            accounts = listOf(firstAccount),
             onNetwork = Radix.Gateway.default.network.networkId()
-        ).addAccount(
-            account = firstAccount,
+        ).addAccounts(
+            accounts = listOf(firstAccount),
             onNetwork = Radix.Gateway.default.network.networkId()
         )
         assertEquals(1, updatedProfile.networks.first().accounts.count())

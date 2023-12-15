@@ -97,12 +97,7 @@ private fun AccountSecurityContent(
                                 onClick = {
                                     onAccountSecuritySettingItemClick(accountSecurityAndSettingsItem)
                                 },
-                                subtitle =
-                                if (accountSecurityAndSettingsItem is AccountSecurityAndSettingsItem.DepositGuarantees) {
-                                    stringResource(id = R.string.accountSecuritySettings_depositGuarantees_subtitle)
-                                } else {
-                                    null
-                                },
+                                subtitle = getSettingItemSubtitle(accountSecurityAndSettingsItem = accountSecurityAndSettingsItem),
 
                             )
                         }
@@ -111,6 +106,15 @@ private fun AccountSecurityContent(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun getSettingItemSubtitle(accountSecurityAndSettingsItem: AccountSecurityAndSettingsItem): String? {
+    return when (accountSecurityAndSettingsItem) {
+        AccountSecurityAndSettingsItem.AccountRecovery -> stringResource(id = R.string.accountSecuritySettings_accountRecoveryScan_subtitle)
+        AccountSecurityAndSettingsItem.DepositGuarantees -> stringResource(id = R.string.accountSecuritySettings_depositGuarantees_subtitle)
+        else -> null
     }
 }
 

@@ -2,19 +2,17 @@
 
 package rdx.works.profile.olympiaimport
 
+import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.OlympiaNetwork
 import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
-import kotlinx.coroutines.flow.first
 import okio.ByteString.Companion.decodeBase64
 import rdx.works.core.Identified
 import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -26,8 +24,7 @@ private const val EndOfAccountName = "}"
 private const val AccountNameForbiddenCharsReplacement = "_"
 
 class OlympiaWalletDataParser @Inject constructor(
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
-    private val getProfileUseCase: GetProfileUseCase
+    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase
 ) {
 
     suspend fun parseOlympiaWalletAccountData(
@@ -35,7 +32,6 @@ class OlympiaWalletDataParser @Inject constructor(
         existingAccountHashes: Set<ByteArray> = emptySet()
     ): OlympiaWalletData? {
         val currentNetworkId = getCurrentGatewayUseCase.invoke().network.networkId()
-        val accountIndexOffset = getProfileUseCase.invoke().first().nextAccountIndex(currentNetworkId)
         val headerToPayloadList = olympiaWalletDataChunks.map { payloadChunk ->
             val headerAndPayload = payloadChunk.split(HeaderSeparator)
             val headerChunks = headerAndPayload[0].split(InnerSeparator)
@@ -45,8 +41,8 @@ class OlympiaWalletDataParser @Inject constructor(
         val header = headerToPayloadList.first().first
         return if (olympiaWalletDataChunks.size == header.payloadCount) {
             try {
-                val accountsToMigrate = fullPayload.split(OuterSeparator).mapIndexed { index, singleAccountData ->
-                    parseSingleAccount(singleAccountData, currentNetworkId, existingAccountHashes, accountIndexOffset, index)
+                val accountsToMigrate = fullPayload.split(OuterSeparator).map { singleAccountData ->
+                    parseSingleAccount(singleAccountData, currentNetworkId, existingAccountHashes)
                 }.toSet()
                 return OlympiaWalletData(header.mnemonicWordCount, accountsToMigrate)
             } catch (e: Exception) {
@@ -61,9 +57,7 @@ class OlympiaWalletDataParser @Inject constructor(
     private fun parseSingleAccount(
         singleAccountData: String,
         currentNetworkId: NetworkId,
-        existingAccountHashes: Set<ByteArray>,
-        accountIndexOffset: Int,
-        index: Int
+        existingAccountHashes: Set<ByteArray>
     ): OlympiaAccountDetails {
         val singleAccountDataChunks = singleAccountData.split(InnerSeparator)
         val type = requireNotNull(OlympiaAccountType.from(singleAccountDataChunks[0]))
@@ -103,7 +97,7 @@ class OlympiaWalletDataParser @Inject constructor(
             derivationPath = DerivationPath.forLegacyOlympia(accountIndex = parsedIndex),
             alreadyImported = existingAccountHashes.containsWithEqualityCheck(publicKeyHash),
             newBabylonAddress = newBabylonAddress,
-            appearanceId = accountIndexOffset + index
+            appearanceId = parsedIndex % AccountGradientList.size
         )
     }
 

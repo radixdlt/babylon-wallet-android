@@ -1,5 +1,6 @@
-package rdx.works.profile.domain.account
+package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
@@ -10,8 +11,7 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithLedgerFactorSource
-import rdx.works.profile.data.model.pernetwork.addAccount
+import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -21,6 +21,7 @@ import javax.inject.Inject
 
 class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
     private val profileRepository: ProfileRepository,
+    private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
     suspend operator fun invoke(
@@ -38,10 +39,10 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
                     it.id == ledgerFactorSourceID
                 } as LedgerHardwareWalletFactorSource
             // Construct new account
-            val networkId = networkID ?: profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
-            val totalAccountsOnNetwork = profile.currentNetwork.accounts.size
-            val newAccount = initAccountWithLedgerFactorSource(
-                entityIndex = profile.nextAccountIndex(networkId),
+            val networkId = networkID ?: profile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
+            val totalAccountsOnNetwork = profile.networks.find { it.networkID == networkId.value }?.accounts?.size ?: 0
+            val newAccount = Network.Account.initAccountWithLedgerFactorSource(
+                entityIndex = profile.nextAccountIndex(derivationPath.scheme, networkId, ledgerFactorSourceID),
                 displayName = displayName,
                 derivedPublicKeyHex = derivedPublicKeyHex,
                 ledgerFactorSource = ledgerHardwareWalletFactorSource,
@@ -49,9 +50,15 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
                 derivationPath = derivationPath,
                 appearanceID = totalAccountsOnNetwork % AccountGradientList.count()
             )
+            val resolveResult = resolveAccountsLedgerStateRepository.invoke(listOf(newAccount))
             // Add account to the profile
-            val updatedProfile = profile.addAccount(
-                account = newAccount,
+            val accountToAdd = if (resolveResult.isSuccess) {
+                resolveResult.getOrThrow().first().account
+            } else {
+                newAccount
+            }
+            val updatedProfile = profile.addAccounts(
+                accounts = listOf(accountToAdd),
                 onNetwork = networkId
             )
             // Save updated profile

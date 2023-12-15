@@ -22,7 +22,7 @@ import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.babylonDeviceFactorSource
+import rdx.works.profile.domain.mainBabylonFactorSource
 import rdx.works.profile.domain.personasOnCurrentNetwork
 import javax.inject.Inject
 
@@ -42,7 +42,7 @@ class PersonasViewModel @Inject constructor(
                 getProfileUseCase.personasOnCurrentNetwork,
                 getEntitiesWithSecurityPromptUseCase()
             ) { personas, entitiesWithSecurityPrompts ->
-                val babylonFactorSource = getProfileUseCase.babylonDeviceFactorSource()
+                val babylonFactorSource = getProfileUseCase.mainBabylonFactorSource()
                 _state.update {
                     it.copy(
                         personas = personas.toPersistentList(),

@@ -100,6 +100,10 @@ sealed class FactorSource : Identified {
             val supportedDerivationPathSchemes: LinkedHashSet<DerivationPathScheme>
         ) {
 
+            val supportsBabylon: Boolean
+                get() = supportedCurves.contains(Slip10Curve.CURVE_25519) &&
+                    supportedDerivationPathSchemes.contains(DerivationPathScheme.CAP_26)
+
             val supportsOlympia: Boolean
                 get() = supportedCurves.contains(Slip10Curve.SECP_256K1) &&
                     supportedDerivationPathSchemes.contains(DerivationPathScheme.BIP_44_OLYMPIA)
@@ -113,6 +117,11 @@ sealed class FactorSource : Identified {
                 val trustedEntity = CryptoParameters(
                     supportedCurves = linkedSetOf(Slip10Curve.CURVE_25519),
                     supportedDerivationPathSchemes = linkedSetOf()
+                )
+
+                val olympia = CryptoParameters(
+                    supportedCurves = linkedSetOf(Slip10Curve.SECP_256K1),
+                    supportedDerivationPathSchemes = linkedSetOf(DerivationPathScheme.BIP_44_OLYMPIA)
                 )
 
                 val olympiaBackwardsCompatible = CryptoParameters(

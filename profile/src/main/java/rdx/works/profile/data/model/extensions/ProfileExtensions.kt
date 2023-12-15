@@ -4,8 +4,11 @@ import rdx.works.core.InstantGenerator
 import rdx.works.core.mapWhen
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.SeedPhraseLength
 import rdx.works.profile.data.model.apppreferences.AppPreferences
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Transaction
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceFlag
@@ -93,7 +96,7 @@ fun Profile.addMainBabylonDeviceFactorSource(
 ): Profile {
     val existingBabylonDeviceFactorSources = factorSources
         .mapWhen(
-            predicate = { factorSource -> factorSource is DeviceFactorSource && factorSource.isBabylon }
+            predicate = { factorSource -> factorSource is DeviceFactorSource && factorSource.supportsBabylon }
         ) { deviceBabylonFactorSource ->
             (deviceBabylonFactorSource as DeviceFactorSource).copy(
                 common = deviceBabylonFactorSource.common.copy(
@@ -105,4 +108,21 @@ fun Profile.addMainBabylonDeviceFactorSource(
     return copy(
         factorSources = (listOf(mainBabylonFactorSource) + existingBabylonDeviceFactorSources).toIdentifiedArrayList()
     )
+}
+
+fun Profile.mainBabylonFactorSource(): DeviceFactorSource? {
+    val babylonFactorSources = factorSources.filterIsInstance<DeviceFactorSource>().filter {
+        it.supportsBabylon && it.hint.mnemonicWordCount == SeedPhraseLength.TWENTY_FOUR.words
+    }
+    return if (babylonFactorSources.size == 1) {
+        babylonFactorSources.first()
+    } else {
+        babylonFactorSources.firstOrNull { it.common.flags.contains(FactorSourceFlag.Main) } ?: babylonFactorSources.firstOrNull {
+            it.hasBabylonCryptoParameters
+        }
+    }
+}
+
+fun Profile.isCurrentNetworkMainnet(): Boolean {
+    return currentNetwork?.networkID == Radix.Network.mainnet.id
 }

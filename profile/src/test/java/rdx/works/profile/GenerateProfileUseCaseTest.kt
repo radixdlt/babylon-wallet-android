@@ -1,18 +1,21 @@
 package rdx.works.profile
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import io.mockk.Runs
+import io.mockk.coEvery
+import io.mockk.just
+import io.mockk.mockk
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert
+import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
-import org.mockito.kotlin.whenever
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -25,6 +28,7 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -33,17 +37,34 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.repository.DeviceInfoRepository
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.TestData
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class GenerateProfileUseCaseTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private val fakeDeviceInfoRepository = FakeDeviceInfoRepository()
+    private val mnemonicRepository = mockk<MnemonicRepository>()
+    private val preferencesManager = mockk<PreferencesManager>()
+    private val profileRepository = mockk<ProfileRepository>()
     private val testScope = TestScope(testDispatcher)
+    val generateProfileUseCase = GenerateProfileUseCase(
+        profileRepository = profileRepository,
+        deviceInfoRepository = fakeDeviceInfoRepository,
+        defaultDispatcher = testDispatcher,
+        mnemonicRepository = mnemonicRepository,
+        preferencesManager = preferencesManager
+    )
+
+    @Before
+    fun setUp() {
+        coEvery { profileRepository.saveProfile(any()) } just Runs
+        coEvery { mnemonicRepository.saveMnemonic(any(), any()) } just Runs
+        coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
+    }
 
     @Test
     fun `given profile already exists, when generate profile called, return existing profile`() {
@@ -51,7 +72,7 @@ class GenerateProfileUseCaseTest {
             // given
             val mnemonicWithPassphrase = MnemonicWithPassphrase(
                 mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                    "humble limb repeat video sudden possible story mask neutral prize goose mandate",
+                        "humble limb repeat video sudden possible story mask neutral prize goose mandate",
                 bip39Passphrase = ""
             )
             val profile = Profile(
@@ -87,7 +108,6 @@ class GenerateProfileUseCaseTest {
                                 networkID = Radix.Gateway.hammunet.network.id,
                                 securityState = SecurityState.Unsecured(
                                     unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                        entityIndex = 0,
                                         transactionSigning = FactorInstance(
                                             badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                                                 derivationPath = DerivationPath.forAccount(
@@ -113,16 +133,7 @@ class GenerateProfileUseCaseTest {
                     )
                 )
             )
-            val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
-
-            // when
-            val generateProfileUseCase = GenerateProfileUseCase(
-                profileRepository = profileRepository,
-                deviceInfoRepository = fakeDeviceInfoRepository,
-                defaultDispatcher = testDispatcher
-            )
-
+            coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
             // then
             Assert.assertEquals(generateProfileUseCase(), profile)
         }
@@ -133,26 +144,19 @@ class GenerateProfileUseCaseTest {
         testScope.runTest {
             val mnemonicWithPassphrase = MnemonicWithPassphrase(
                 mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                    "humble limb repeat video sudden possible story mask neutral prize goose mandate",
+                        "humble limb repeat video sudden possible story mask neutral prize goose mandate",
                 bip39Passphrase = ""
             )
             val babylonFactorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase)
             val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase)
-            val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            val generateProfileUseCase = GenerateProfileUseCase(
-                profileRepository = profileRepository,
-                deviceInfoRepository = fakeDeviceInfoRepository,
-                defaultDispatcher = testDispatcher
-            )
-
-            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
+            coEvery { profileRepository.profileState } returns flowOf(ProfileState.None)
 
             val profile = generateProfileUseCase().copy(factorSources = identifiedArrayListOf(babylonFactorSource))
 
             Assert.assertEquals(
                 "Factor Source ID",
                 expectedFactorSourceId,
-                profile.babylonMainDeviceFactorSource.id.body.value
+                profile.mainBabylonFactorSource()!!.id.body.value
             )
         }
     }
@@ -161,31 +165,24 @@ class GenerateProfileUseCaseTest {
     fun `given profile does not exist, when generating one, verify correct data generated from other mnemonic`() {
         testScope.runTest {
             val mnemonicWithPassphrase = MnemonicWithPassphrase(
-                mnemonic = "noodle question hungry sail type offer grocery clay nation hello mixture forum",
+                mnemonic = "travel organ kick vote head divide express recall oblige foster banner spin shield stone scan pretty sort skate knock kangaroo pill test belt father",
                 bip39Passphrase = ""
             )
             val babylonFactorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase)
 
             val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
-            val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            val generateProfileUseCase = GenerateProfileUseCase(
-                profileRepository = profileRepository,
-                deviceInfoRepository = fakeDeviceInfoRepository,
-                defaultDispatcher = testDispatcher
-            )
-
-            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
+            coEvery { profileRepository.profileState } returns flowOf(ProfileState.None)
             val profile = generateProfileUseCase().copy(factorSources = identifiedArrayListOf(babylonFactorSource))
 
             Assert.assertEquals(
                 "Factor Source ID",
                 expectedFactorSourceId,
-                profile.babylonMainDeviceFactorSource.id.body.value
+                profile.mainBabylonFactorSource()!!.id.body.value
             )
         }
     }
 
-    private class FakeDeviceInfoRepository: DeviceInfoRepository {
+    private class FakeDeviceInfoRepository : DeviceInfoRepository {
         override fun getDeviceInfo(): DeviceInfo = TestData.deviceInfo
 
     }

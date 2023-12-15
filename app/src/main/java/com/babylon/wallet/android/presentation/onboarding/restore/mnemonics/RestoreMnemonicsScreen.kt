@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -51,16 +52,15 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsViewModel.Event
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.RedWarningText
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 
@@ -73,29 +73,22 @@ fun RestoreMnemonicsScreen(
     val state by viewModel.state.collectAsState()
 
     val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.biometricAuthProvider = { context.biometricAuthenticateSuspend() }
+    }
     RestoreMnemonicsContent(
         state = state,
         onBackClick = viewModel::onBackClick,
         onSkipSeedPhraseClick = {
-            viewModel.onSkipSeedPhraseClick {
-                context.biometricAuthenticateSuspend()
-            }
+            viewModel.onSkipSeedPhraseClick()
         },
         onSkipMainSeedPhraseClick = viewModel::onSkipMainSeedPhraseClick,
         onSubmitClick = {
             when (state.screenType) {
                 RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
-                    viewModel.skipMainSeedPhraseAndCreateNew {
-                        context.biometricAuthenticateSuspend()
-                    }
+                    viewModel.skipMainSeedPhraseAndCreateNew()
                 }
-                RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
-                    context.biometricAuthenticate { authenticated ->
-                        if (authenticated) {
-                            viewModel.onSubmit()
-                        }
-                    }
-                }
+
                 else -> {
                     viewModel.onSubmit()
                 }
@@ -111,9 +104,9 @@ fun RestoreMnemonicsScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect {
             when (it) {
-                is Event.FinishRestoration -> onDismiss(it.isMovingToMain)
-                is Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
-                is Event.CloseApp -> onCloseApp()
+                is RestoreMnemonicsViewModel.Event.FinishRestoration -> onDismiss(it.isMovingToMain)
+                is RestoreMnemonicsViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
+                is RestoreMnemonicsViewModel.Event.CloseApp -> onCloseApp()
             }
         }
     }
@@ -223,7 +216,7 @@ private fun RestoreMnemonicsContent(
                             }
                         ),
                         enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase ||
-                            state.seedPhraseState.seedPhraseValid,
+                            (state.seedPhraseState.seedPhraseInputValid && state.seedPhraseState.seedPhraseBIP39Valid),
                         isLoading = state.isRestoring,
                         onClick = onSubmitClick
                     )
@@ -251,6 +244,7 @@ private fun RestoreMnemonicsContent(
                     )
                 }
             }
+
             RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase -> {
                 AnimatedVisibility(
                     modifier = Modifier.padding(padding),
@@ -266,6 +260,7 @@ private fun RestoreMnemonicsContent(
                     )
                 }
             }
+
             RestoreMnemonicsViewModel.State.ScreenType.NoMainSeedPhrase -> {
                 AnimatedVisibility(
                     modifier = Modifier.padding(padding),
@@ -429,6 +424,13 @@ private fun SeedPhraseView(
             onPassphraseChanged = onPassphraseChanged,
             onFocusedWordIndexChanged = onFocusedWordIndexChanged
         )
+        if (state.seedPhraseState.seedPhraseInputValid && state.seedPhraseState.seedPhraseBIP39Valid.not()) {
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            RedWarningText(
+                modifier = Modifier.fillMaxWidth(),
+                text = AnnotatedString(stringResource(R.string.importMnemonic_checksumFailure))
+            )
+        }
     }
 }
 

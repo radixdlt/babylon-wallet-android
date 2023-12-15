@@ -26,14 +26,14 @@ data class DeviceFactorSource(
         val mnemonicWordCount: Int
     )
 
-    val isBabylon: Boolean
+    val supportsBabylon: Boolean
+        get() = common.cryptoParameters.supportsBabylon
+
+    val hasBabylonCryptoParameters: Boolean
         get() = common.cryptoParameters == Common.CryptoParameters.babylon
 
-    val isMainBabylon: Boolean
-        get() = common.flags.contains(FactorSourceFlag.Main) && isBabylon
-
-    val isOlympia: Boolean
-        get() = common.cryptoParameters == Common.CryptoParameters.olympiaBackwardsCompatible
+    val supportsOlympia: Boolean
+        get() = common.cryptoParameters.supportsOlympia
 
     companion object {
 
@@ -47,7 +47,7 @@ data class DeviceFactorSource(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             model = model,
             name = name,
-            isOlympiaCompatible = false,
+            isOlympia = false,
             createdAt = createdAt,
             isMain = isMain
         )
@@ -61,7 +61,7 @@ data class DeviceFactorSource(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             model = model,
             name = name,
-            isOlympiaCompatible = true,
+            isOlympia = true,
             createdAt = createdAt,
             isMain = false
         )
@@ -71,11 +71,11 @@ data class DeviceFactorSource(
             mnemonicWithPassphrase: MnemonicWithPassphrase,
             model: String = "",
             name: String = "",
-            isOlympiaCompatible: Boolean,
+            isOlympia: Boolean,
             createdAt: Instant,
             isMain: Boolean = false
         ): DeviceFactorSource {
-            require((isMain && isOlympiaCompatible).not()) {
+            require((isMain && isOlympia).not()) {
                 "Olympia Device factor source should never be marked 'main'."
             }
             return DeviceFactorSource(
@@ -86,8 +86,8 @@ data class DeviceFactorSource(
                     ),
                 ),
                 common = Common(
-                    cryptoParameters = if (isOlympiaCompatible) {
-                        Common.CryptoParameters.olympiaBackwardsCompatible
+                    cryptoParameters = if (isOlympia) {
+                        Common.CryptoParameters.olympia
                     } else {
                         Common.CryptoParameters.babylon
                     },

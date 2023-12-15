@@ -69,6 +69,11 @@ fun List<Metadata>.poolAddress(): String? = findPrimitive(
     value.toAddressOrNull()?.entityType() in setOf(GLOBAL_ONE_RESOURCE_POOL, GLOBAL_TWO_RESOURCE_POOL, GLOBAL_MULTI_RESOURCE_POOL)
 }
 
+fun List<Metadata>.ownerBadge(): OwnerBadge? = findPrimitive(
+    key = ExplicitMetadataKey.OWNER_BADGE,
+    type = MetadataType.NonFungibleLocalId
+)?.let { OwnerBadge(it.value, it.lastUpdatedAtStateVersion) }
+
 fun List<Metadata>.poolUnit(): String? = findPrimitive(
     key = ExplicitMetadataKey.POOL_UNIT,
     type = MetadataType.Address
@@ -130,22 +135,25 @@ fun List<Metadata>.claimedEntities(): List<String>? = findCollection(
     type = MetadataType.Address
 )?.map { it.value }
 
-fun List<Metadata>.ownerKeyHashes(): List<PublicKeyHash>? = findCollection(
+fun List<Metadata>.ownerKeyHashes(): PublicKeyHashes? = findCollection(
     key = ExplicitMetadataKey.OWNER_KEYS,
     type = MetadataType.PublicKeyHashEcdsaSecp256k1
 )?.map { primitive ->
-    PublicKeyHash.EcdsaSecp256k1(primitive.value)
+    PublicKeyHash.EcdsaSecp256k1(primitive.value, primitive.lastUpdatedAtStateVersion)
 }?.let {
     val eddsa = findCollection(
         key = ExplicitMetadataKey.OWNER_KEYS,
         type = MetadataType.PublicKeyHashEddsaEd25519
     )?.map { primitive ->
-        PublicKeyHash.EddsaEd25519(primitive.value)
+        PublicKeyHash.EddsaEd25519(primitive.value, primitive.lastUpdatedAtStateVersion)
     }
-
-    if (eddsa != null) {
+    val keys = if (eddsa != null) {
         it + eddsa
     } else {
         it
     }
+    PublicKeyHashes(
+        keys = keys,
+        lastUpdatedAtStateVersion = keys.firstOrNull()?.lastUpdatedAtStateVersion ?: 0L
+    )
 }
