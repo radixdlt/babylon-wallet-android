@@ -37,6 +37,7 @@ import rdx.works.profile.domain.AddRecoveredAccountsToProfileUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.factorSourceByIdValue
 import javax.inject.Inject
 
@@ -77,13 +78,22 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 val factorSource = getProfileUseCase.factorSourceByIdValue(factorSourceIdValue) ?: return@launch
                 when (factorSource) {
                     is DeviceFactorSource -> {
-                        val mnemonic = mnemonicRepository.readMnemonic(factorSource.id).getOrThrow()
-                        _state.update {
-                            it.copy(
-                                recoveryFactorSource = RecoveryFactorSource.Device(factorSource, mnemonic, args.isOlympia == true)
-                            )
+                        mnemonicRepository.readMnemonic(factorSource.id).onSuccess { mnemonic ->
+                            _state.update {
+                                it.copy(
+                                    recoveryFactorSource = RecoveryFactorSource.Device(factorSource, mnemonic, args.isOlympia == true)
+                                )
+                            }
+                            startRecoveryScan()
+                        }.onFailure { e ->
+                            val noMnemonic = e is ProfileException.NoMnemonic
+                            _state.update {
+                                it.copy(
+                                    uiMessage = if (noMnemonic) null else UiMessage.ErrorMessage(e),
+                                    isNoMnemonicErrorVisible = noMnemonic
+                                )
+                            }
                         }
-                        startRecoveryScan()
                     }
 
                     is LedgerHardwareWalletFactorSource -> {
@@ -115,6 +125,13 @@ class AccountRecoveryScanViewModel @Inject constructor(
                     mnemonicWithPassphrase
                 )
             )
+        }
+    }
+
+    fun dismissNoMnemonicError() {
+        _state.update { it.copy(isNoMnemonicErrorVisible = false) }
+        viewModelScope.launch {
+            sendEvent(Event.CloseScan)
         }
     }
 
@@ -237,7 +254,8 @@ class AccountRecoveryScanViewModel @Inject constructor(
         val interactionState: InteractionState? = null,
         val activeAccounts: PersistentList<Network.Account> = persistentListOf(),
         val inactiveAccounts: PersistentList<Selectable<Network.Account>> = persistentListOf(),
-        val isRestoring: Boolean = false
+        val isRestoring: Boolean = false,
+        val isNoMnemonicErrorVisible: Boolean = false
     ) : UiState {
 
         enum class ContentState {
