@@ -11,12 +11,11 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
-import org.mockito.kotlin.whenever
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
@@ -49,11 +48,22 @@ class GenerateProfileUseCaseTest {
     private val testDispatcher = StandardTestDispatcher()
     private val fakeDeviceInfoRepository = FakeDeviceInfoRepository()
     private val mnemonicRepository = mockk<MnemonicRepository>()
+    private val preferencesManager = mockk<PreferencesManager>()
+    private val profileRepository = mockk<ProfileRepository>()
     private val testScope = TestScope(testDispatcher)
+    val generateProfileUseCase = GenerateProfileUseCase(
+        profileRepository = profileRepository,
+        deviceInfoRepository = fakeDeviceInfoRepository,
+        defaultDispatcher = testDispatcher,
+        mnemonicRepository = mnemonicRepository,
+        preferencesManager = preferencesManager
+    )
 
     @Before
     fun setUp() {
+        coEvery { profileRepository.saveProfile(any()) } just Runs
         coEvery { mnemonicRepository.saveMnemonic(any(), any()) } just Runs
+        coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
     }
 
     @Test
@@ -62,7 +72,7 @@ class GenerateProfileUseCaseTest {
             // given
             val mnemonicWithPassphrase = MnemonicWithPassphrase(
                 mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                    "humble limb repeat video sudden possible story mask neutral prize goose mandate",
+                        "humble limb repeat video sudden possible story mask neutral prize goose mandate",
                 bip39Passphrase = ""
             )
             val profile = Profile(
@@ -123,17 +133,7 @@ class GenerateProfileUseCaseTest {
                     )
                 )
             )
-            val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.Restored(profile)))
-
-            // when
-            val generateProfileUseCase = GenerateProfileUseCase(
-                profileRepository = profileRepository,
-                deviceInfoRepository = fakeDeviceInfoRepository,
-                defaultDispatcher = testDispatcher,
-                mnemonicRepository = mnemonicRepository
-            )
-
+            coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
             // then
             Assert.assertEquals(generateProfileUseCase(), profile)
         }
@@ -144,20 +144,12 @@ class GenerateProfileUseCaseTest {
         testScope.runTest {
             val mnemonicWithPassphrase = MnemonicWithPassphrase(
                 mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                    "humble limb repeat video sudden possible story mask neutral prize goose mandate",
+                        "humble limb repeat video sudden possible story mask neutral prize goose mandate",
                 bip39Passphrase = ""
             )
             val babylonFactorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase)
             val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase)
-            val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            val generateProfileUseCase = GenerateProfileUseCase(
-                profileRepository = profileRepository,
-                deviceInfoRepository = fakeDeviceInfoRepository,
-                defaultDispatcher = testDispatcher,
-                mnemonicRepository = mnemonicRepository
-            )
-
-            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
+            coEvery { profileRepository.profileState } returns flowOf(ProfileState.None)
 
             val profile = generateProfileUseCase().copy(factorSources = identifiedArrayListOf(babylonFactorSource))
 
@@ -179,15 +171,7 @@ class GenerateProfileUseCaseTest {
             val babylonFactorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase)
 
             val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
-            val profileRepository = Mockito.mock(ProfileRepository::class.java)
-            val generateProfileUseCase = GenerateProfileUseCase(
-                profileRepository = profileRepository,
-                deviceInfoRepository = fakeDeviceInfoRepository,
-                defaultDispatcher = testDispatcher,
-                mnemonicRepository = mnemonicRepository
-            )
-
-            whenever(profileRepository.profileState).thenReturn(flowOf(ProfileState.None))
+            coEvery { profileRepository.profileState } returns flowOf(ProfileState.None)
             val profile = generateProfileUseCase().copy(factorSources = identifiedArrayListOf(babylonFactorSource))
 
             Assert.assertEquals(
@@ -198,7 +182,7 @@ class GenerateProfileUseCaseTest {
         }
     }
 
-    private class FakeDeviceInfoRepository: DeviceInfoRepository {
+    private class FakeDeviceInfoRepository : DeviceInfoRepository {
         override fun getDeviceInfo(): DeviceInfo = TestData.deviceInfo
 
     }

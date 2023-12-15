@@ -47,7 +47,6 @@ class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaC
         personaData = PersonaData(),
         securityState = SecurityState.Unsecured(
             unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                entityIndex = 0,
                 transactionSigning = FactorInstance(
                     badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
                         derivationPath = DerivationPath.forIdentity(
