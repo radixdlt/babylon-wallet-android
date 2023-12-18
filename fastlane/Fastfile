@@ -16,6 +16,23 @@ lane :deployFirebaseAlpha do
     )
 end
 
+desc "Deploy Firebase Release App"
+lane :deployFirebaseRelease do
+    version_name = android_get_version_name(
+        gradle_file: "app/build.gradle"
+    )
+
+    gradle(
+        task: "assemble",
+        flavor: "Release"
+    )
+    firebase_app_distribution(
+        app: ENV["FIREBASE_APP_ID"],
+        release_notes: "The release/" + version_name + " version that will be distributed to Google Play.",
+        groups: ENV["GROUPS"]
+    )
+end
+
 # Optional params:
 # - track: beta, alpha, internal, production
 #   defaults to production
