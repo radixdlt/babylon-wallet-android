@@ -65,8 +65,8 @@ private fun AppSettingsContent(
                 }
                 crashReportingPromptVisible = false
             },
-            title = "Crash Reporting", // TODO crowdin
-            text = "I'm aware Radix Wallet will send crash reports together with device state." // TODO crowdin
+            title = stringResource(id = R.string.appSettings_crashReporting_title),
+            text = stringResource(id = R.string.appSettings_crashReporting_subtitle)
         )
     }
     Scaffold(
