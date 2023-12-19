@@ -56,6 +56,7 @@ fun WalletApp(
         modifier = modifier,
         startDestination = MAIN_ROUTE,
         navController = navController,
+        mainUiState = mainViewModel.state,
         onCloseApp = onCloseApp
     )
     LaunchedEffect(Unit) {
