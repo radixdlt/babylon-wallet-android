@@ -40,7 +40,7 @@ jobs:
           secret_name: "github-actions/radixdlt/babylon-wallet-android/push-pat-token"
           parse_json: true
 
-      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+      - uses: RDXWorks-actions/checkout@main
         with:
           token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
@@ -48,12 +48,12 @@ jobs:
         uses: RDXWorks-actions/ghaction-dump-context@master
 
       - name: Download Ruby (action)
-        uses: ruby/setup-ruby@8575951200e472d5f2d95c625da0c7bec8217c42
+        uses: RDXWorks-actions/setup-ruby@master
         with:
           ruby-version: '3.1.2'
           bundler-cache: true
 
-      - uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
+      - uses: RDXWorks-actions/setup-java@main
         with:
           distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'
@@ -119,7 +119,7 @@ jobs:
           secret_name: "github-actions/radixdlt/babylon-wallet-android/push-pat-token"
           parse_json: true
 
-      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+      - uses: RDXWorks-actions/checkout@main
         with:
           token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
@@ -162,7 +162,7 @@ jobs:
           secret_name: "github-actions/radixdlt/babylon-wallet-android/push-pat-token"
           parse_json: true
 
-      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+      - uses: RDXWorks-actions/checkout@main
         with:
           token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
@@ -194,7 +194,7 @@ jobs:
       pull-requests: read
     name: Publish SBOM
     steps:
-      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+      - uses: RDXWorks-actions/checkout@main
 
       - name: Fetch Snyk credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
@@ -249,7 +249,7 @@ jobs:
           echo "storePassword=${{ env.GH_KEYSTORE_PASSWORD }}" >> config/signing/release/keystore.properties
 
       - name: Generate SBOM
-        uses: snyk/actions/gradle-jdk17@b98d498629f1c368650224d6d212bf7dfa89e4bf # v0.4.0
+        uses: RDXWorks-actions/snyk-actions/gradle-jdk17@master
         with:
           args: --all-projects --org=${{ env.SNYK_COREAPPS_ORG_ID }} --format=cyclonedx1.4+json --json-file-output sbom.json
           command: sbom
