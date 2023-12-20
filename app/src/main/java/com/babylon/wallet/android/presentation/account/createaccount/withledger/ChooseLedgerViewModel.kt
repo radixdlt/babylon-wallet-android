@@ -117,26 +117,26 @@ class ChooseLedgerViewModel @Inject constructor(
             selectableLedgerDevice.selected
         }?.let { ledgerFactorSource ->
             viewModelScope.launch {
+                if (getProfileUseCase.p2pLinks.first().isEmpty()) {
+                    _state.update {
+                        it.copy(showContent = ChooseLedgerUiState.ShowContent.LinkNewConnector(false))
+                    }
+                    return@launch
+                } else {
+                    if (!state.value.isLinkConnectionEstablished) {
+                        _state.update {
+                            it.copy(
+                                showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
+                                    ShowLinkConnectorPromptState.Source.UseLedger
+                                )
+                            )
+                        }
+                        return@launch
+                    }
+                }
                 when (args.ledgerSelectionPurpose) {
                     LedgerSelectionPurpose.CreateAccount -> {
                         // check again if link connector exists
-                        if (getProfileUseCase.p2pLinks.first().isEmpty()) {
-                            _state.update {
-                                it.copy(showContent = ChooseLedgerUiState.ShowContent.LinkNewConnector(false))
-                            }
-                            return@launch
-                        } else {
-                            if (!state.value.isLinkConnectionEstablished) {
-                                _state.update {
-                                    it.copy(
-                                        showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
-                                            ShowLinkConnectorPromptState.Source.UseLedger
-                                        )
-                                    )
-                                }
-                                return@launch
-                            }
-                        }
                         if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
                             val authenticationResult = deviceBiometricAuthenticationProvider()
                             if (authenticationResult) {
