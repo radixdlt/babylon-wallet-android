@@ -367,6 +367,7 @@
   <string name="dAppRequest_personalDataBox_edit">Edit</string>
   <string name="dAppRequest_personalDataBox_requiredInformation">Required information:</string>
   <string name="transactionReview_title">Review Your Transaction</string>
+  <string name="transactionReview_proposingDappSubtitle">Proposed by %s</string>
   <string name="transactionReview_transferTitle">Review Your Transfer</string>
   <string name="transactionReview_approveButtonTitle">Approve</string>
   <string name="transactionReview_customizeGuaranteesButtonTitle">Customize Guarantees</string>
