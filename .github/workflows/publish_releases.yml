@@ -102,7 +102,7 @@ jobs:
 
   firebase_release:
     if: >
-      ( ${{ github.event_name == 'release' && github.event.release.prerelease == false }} ) ||
+      ( github.event_name == 'release' && github.event.release.prerelease == false ) ||
       ( github.event.inputs.track == 'Firebase Release' && github.event_name == 'workflow_dispatch' )
     name: "Publish to Firebase Release"
     runs-on: ubuntu-latest
