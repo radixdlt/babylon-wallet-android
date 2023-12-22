@@ -57,13 +57,13 @@ fun RestoreWithoutBackupScreen(
                     viewModel.onDismissPrompt()
                 }
             },
-            title = stringResource(id = R.string.recoverWalletWithoutProfileStart_useNewWalletInstead_alert_title),
+            title = stringResource(id = R.string.recoverWalletWithoutProfile_start_useNewWalletAlertTitle),
             text = when (state.dialogPrompt) {
                 RestoreWithoutBackupViewModel.State.PromptState.Olympia -> {
-                    stringResource(id = R.string.recoverWalletWithoutProfileStart_useNewWalletInstead_alert_message)
+                    stringResource(id = R.string.recoverWalletWithoutProfile_start_useNewWalletAlertMessageOlympia)
                 }
                 RestoreWithoutBackupViewModel.State.PromptState.Ledger -> {
-                    stringResource(id = R.string.recoverWalletWithoutProfileStart_useNewWalletInstead_alert_message)
+                    stringResource(id = R.string.recoverWalletWithoutProfile_start_useNewWalletAlertMessageHardware)
                 }
                 else -> stringResource(id = R.string.empty)
             },
@@ -131,7 +131,7 @@ private fun RestoreWithoutBackupContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = stringResource(id = R.string.recoverWalletWithoutProfileInfo_header_title),
+                text = stringResource(id = R.string.recoverWalletWithoutProfile_start_headerTitle),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title
             )
@@ -185,7 +185,7 @@ private fun SelectRecoveryOptionSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.recoverWalletWithoutProfileStart_header_subtitle),
+            text = stringResource(id = R.string.recoverWalletWithoutProfile_start_headerSubtitle),
             style = RadixTheme.typography.body1Regular
         )
         HorizontalDivider(color = RadixTheme.colors.gray4)
@@ -196,7 +196,7 @@ private fun SelectRecoveryOptionSection(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingSmall
                 ),
-            text = stringResource(id = R.string.recoverWalletWithoutProfileStart_section_babylon_title).formattedSpans(
+            text = stringResource(id = R.string.recoverWalletWithoutProfile_start_babylonSectionTitle).formattedSpans(
                 RadixTheme.typography.body1Header.toSpanStyle()
             ),
             textAlign = TextAlign.Center,
@@ -216,7 +216,7 @@ private fun SelectRecoveryOptionSection(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingSmall
                 ),
-            text = stringResource(id = R.string.recoverWalletWithoutProfileStart_section_olympia_onlyHardwareAccounts_title).formattedSpans(
+            text = stringResource(id = R.string.recoverWalletWithoutProfile_start_hardwareSectionTitle).formattedSpans(
                 RadixTheme.typography.body1Header.toSpanStyle()
             ),
             textAlign = TextAlign.Center,
@@ -236,7 +236,7 @@ private fun SelectRecoveryOptionSection(
                     horizontal = RadixTheme.dimensions.paddingLarge,
                     vertical = RadixTheme.dimensions.paddingSmall
                 ),
-            text = stringResource(id = R.string.recoverWalletWithoutProfileStart_section_olympia_onlySoftwareAccounts_title).formattedSpans(
+            text = stringResource(id = R.string.recoverWalletWithoutProfile_start_olympiaSectionTitle).formattedSpans(
                 RadixTheme.typography.body1Header.toSpanStyle()
             ),
             textAlign = TextAlign.Center,
@@ -264,7 +264,7 @@ private fun BDFSRecoveryInfoSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = stringResource(id = R.string.recoverWalletWithoutProfileInfo_header_subtitle).formattedSpans(
+            text = stringResource(id = R.string.recoverWalletWithoutProfile_info_headerSubtitle).formattedSpans(
                 RadixTheme.typography.body1Header.toSpanStyle()
             ),
             style = RadixTheme.typography.body1Regular

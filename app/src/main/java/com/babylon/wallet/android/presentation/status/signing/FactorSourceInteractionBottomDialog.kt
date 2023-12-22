@@ -103,7 +103,7 @@ private fun SignatureRequestContent(
         val title = stringResource(
             id = when (interactionState) {
                 is InteractionState.Ledger.DerivingPublicKey -> {
-                    com.babylon.wallet.android.R.string.createAccount_derivePublicKeys_subtitle
+                    com.babylon.wallet.android.R.string.signing_signatureRequest_title
                 }
 
                 is InteractionState.Ledger -> {
