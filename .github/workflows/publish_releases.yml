@@ -15,6 +15,7 @@ on:
         type: choice
         options:
           - 'Firebase Dev'
+          - 'Firebase Release'
         default: 'Firebase Dev'
 
 jobs:
@@ -93,6 +94,118 @@ jobs:
           echo "### Distributed to Firebase Dev! :rocket:" >> $GITHUB_STEP_SUMMARY
         env:
           FIREBASE_APP_ID: ${{ env.GH_FIREBASE_DEV_APP_ID }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.google_application_credentials.outputs.filePath }}
+          GROUPS: "alpha-devs"
+          GIT_USER: ${{ env.GH_GPR_USER }}
+          GPR_USER: ${{ env.GH_GPR_USER }}
+          GPR_TOKEN: ${{ env.GH_GPR_TOKEN }}
+
+  firebase_release:
+    if: >
+      ( ${{ github.event_name == 'release' && github.event.release.prerelease == false }} ) ||
+      ( github.event.inputs.track == 'Firebase Release' && github.event_name == 'workflow_dispatch' )
+    name: "Publish to Firebase Release"
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Fetch Radixbot push commit token
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          app_name: 'wallet-android'
+          step_name: 'gpc-release-1'
+          secret_prefix: 'GH'
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/push-pat-token"
+          parse_json: true
+
+      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+        with:
+          token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
+
+      - name: Dump context
+        uses: RDXWorks-actions/ghaction-dump-context@master
+
+      - name: Download Ruby (action)
+        uses: ruby/setup-ruby@8575951200e472d5f2d95c625da0c7bec8217c42
+        with:
+          ruby-version: '3.1.2'
+          bundler-cache: true
+
+      - uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
+        with:
+          distribution: 'zulu' # See 'Supported distributions' for available options
+          java-version: '17'
+
+      - name: Fetch Firebase Release App ID
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          app_name: 'babylon-wallet-android'
+          step_name: 'fetch-app-id'
+          secret_prefix: 'GH'
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/firebase/secrets"
+          parse_json: true
+
+      - name: Decode Google Service account credentials
+        uses: RDXWorks-actions/base64-to-file@main
+        id: google_application_credentials
+        with:
+          fileName: "service_account.json"
+          encodedString: ${{ env.GH_GOOGLE_SERVICE_ACCOUNT_JSON_FILE_BASE64 }}
+
+      - name: Fetch GPR credentials
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          app_name: 'wallet-android'
+          step_name: 'firebase-release'
+          secret_prefix: 'GH'
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/gpr-credentials"
+          parse_json: true
+
+      - name: Fetch Keystore credentials
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          app_name: 'babylon-wallet-android'
+          step_name: 'snyk-keystore'
+          secret_prefix: 'GH'
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/google-play-console/secrets"
+          parse_json: true
+
+      - name: Fetch keystore.asc value
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          app_name: 'babylon-wallet-android-sa'
+          step_name: 'snyk-keystore-asc'
+          secret_prefix: 'GH_KEYSTORE_ENCRYPTED_BASE64'
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/google-play-console/keystore-asc"
+          parse_json: false
+
+      - name: Decode release keystore credentials
+        shell: bash
+        run: |
+          mkdir config/signing/release
+          echo "${{ env.GH_KEYSTORE_ENCRYPTED_BASE64 }}" > keystore.asc
+          gpg -d --passphrase "${{ env.GH_KEYSTORE_PASSPHRASE }}" --batch keystore.asc > config/signing/release/keystore.jks
+
+          echo "keyAlias=${{ env.GH_KEYSTORE_ALIAS }}" > config/signing/release/keystore.properties
+          echo "keyPassword=${{ env.GH_KEYSTORE_KEY_PASSWORD }}" >> config/signing/release/keystore.properties
+          echo "storeFile=../config/signing/release/keystore.jks" >> config/signing/release/keystore.properties
+          echo "storePassword=${{ env.GH_KEYSTORE_PASSWORD }}" >> config/signing/release/keystore.properties
+
+      - name: Distribute Release to Firebase
+        run: |
+          git config user.name $GIT_USER
+          git config user.email $GIT_USER
+          bundle exec fastlane deployFirebaseRelease
+          echo "### Distributed to Firebase Release! :rocket:" >> $GITHUB_STEP_SUMMARY
+        env:
+          FIREBASE_APP_ID: ${{ env.GH_FIREBASE_RELEASE_APP_ID }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.google_application_credentials.outputs.filePath }}
           GROUPS: "alpha-devs"
           GIT_USER: ${{ env.GH_GPR_USER }}
