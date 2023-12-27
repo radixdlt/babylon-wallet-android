@@ -31,6 +31,7 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauth
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
+import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ADDRESS
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
@@ -67,13 +68,14 @@ import com.babylon.wallet.android.presentation.status.transaction.transactionSta
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
+import kotlinx.coroutines.flow.StateFlow
 import rdx.works.profile.domain.backup.BackupType
-import wallet
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationHost(
     modifier: Modifier = Modifier,
+    mainUiState: StateFlow<MainUiState>,
     startDestination: String,
     navController: NavHostController,
     onCloseApp: () -> Unit,
@@ -165,6 +167,7 @@ fun NavigationHost(
             navController.popBackStack()
         })
         main(
+            mainUiState = mainUiState,
             onMenuClick = {
                 navController.navigate(Screen.SettingsAllDestination.route)
             },
@@ -190,27 +193,6 @@ fun NavigationHost(
         ) {
             navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
         }
-        wallet(
-            onMenuClick = {
-                navController.navigate(Screen.SettingsAllDestination.route)
-            },
-            onAccountClick = { account ->
-                navController.navigate(
-                    Screen.AccountDestination.routeWithArgs(account.address)
-                )
-            },
-            onNavigateToMnemonicBackup = {
-                navController.seedPhrases()
-            },
-            onNavigateToMnemonicRestore = {
-                navController.restoreMnemonics(
-                    args = RestoreMnemonicsArgs()
-                )
-            },
-            onAccountCreationClick = {
-                navController.createAccountScreen(CreateAccountRequestSource.AccountsList)
-            }
-        )
         composable(
             route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ADDRESS}",
             arguments = listOf(
