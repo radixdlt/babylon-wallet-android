@@ -59,7 +59,7 @@ private fun RecoveryScanCompleteContent(
             Text(
                 modifier = Modifier
                     .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.recoverWalletWithoutProfileComplete_header_title),
+                text = stringResource(id = R.string.recoverWalletWithoutProfile_complete_headerTitle),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
@@ -68,7 +68,7 @@ private fun RecoveryScanCompleteContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = stringResource(id = R.string.recoverWalletWithoutProfileComplete_header_subtitle).formattedSpans(
+                text = stringResource(id = R.string.recoverWalletWithoutProfile_complete_headerSubtitle).formattedSpans(
                     RadixTheme.typography.body1Header.toSpanStyle()
                 ),
                 style = RadixTheme.typography.body1Regular,

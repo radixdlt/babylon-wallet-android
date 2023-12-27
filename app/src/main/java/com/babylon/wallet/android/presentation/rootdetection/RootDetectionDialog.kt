@@ -46,7 +46,7 @@ fun RootDetectionContent(
                     onCloseApp()
                 }
             },
-            text = stringResource(id = R.string.splash_rootDetection_title),
+            text = stringResource(id = R.string.splash_rootDetection_messageAndroid),
             confirmText = stringResource(id = R.string.splash_rootDetection_acknowledgeButton),
             dismissText = stringResource(id = R.string.common_cancel)
         )
