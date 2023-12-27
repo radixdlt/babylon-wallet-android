@@ -37,6 +37,7 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
         return when (val profileState = profileRepository.profileState.first()) {
             ProfileState.NotInitialised,
             ProfileState.None -> false
+
             ProfileState.Incompatible -> true
             is ProfileState.Restored -> profileState.hasMainnet()
         }
@@ -75,7 +76,9 @@ private val GetProfileUseCase.deviceFactorSourcesWithAccounts
     }
 
 suspend fun GetProfileUseCase.mainBabylonFactorSource(): DeviceFactorSource? {
-    val babylonFactorSources = deviceFactorSources.firstOrNull()?.filter { it.supportsBabylon } ?: return null
+    val babylonFactorSources = deviceFactorSources.firstOrNull()?.filter {
+        it.isBabylonDeviceFactorSource
+    } ?: return null
     return if (babylonFactorSources.size == 1) {
         babylonFactorSources.first()
     } else {
@@ -85,14 +88,18 @@ suspend fun GetProfileUseCase.mainBabylonFactorSource(): DeviceFactorSource? {
 
 val GetProfileUseCase.olympiaFactorSourcesWithAccounts
     get() = deviceFactorSourcesWithAccounts.map {
-        it.filter { entry -> entry.key.supportsOlympia }.mapValues { entry ->
+        it.filter { entry ->
+            entry.key.supportsOlympia
+        }.mapValues { entry ->
             entry.value.filter { account -> account.usesSecp256k1 }
         }
     }
 
 val GetProfileUseCase.babylonFactorSourcesWithAccounts
     get() = deviceFactorSourcesWithAccounts.map {
-        it.filter { entry -> entry.key.supportsBabylon }.mapValues { entry ->
+        it.filter { entry ->
+            entry.key.isBabylonDeviceFactorSource
+        }.mapValues { entry ->
             entry.value.filter { account -> account.usesCurve25519 }
         }
     }
