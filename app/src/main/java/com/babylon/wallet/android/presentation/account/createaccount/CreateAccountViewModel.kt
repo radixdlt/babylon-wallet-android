@@ -145,10 +145,7 @@ class CreateAccountViewModel @Inject constructor(
                 sendEvent(CreateAccountEvent.AddLedgerDevice(args.networkId))
             } else {
                 handleAccountCreate { name, networkId ->
-                    createAccountWithBabylonDeviceFactorSourceUseCase(
-                        displayName = name,
-                        networkID = networkId
-                    )
+                    createAccountWithBabylonDeviceFactorSourceUseCase(displayName = name)
                 }
             }
         }

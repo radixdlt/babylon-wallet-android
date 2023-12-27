@@ -14,7 +14,6 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.usesCurve25519
 import rdx.works.profile.data.model.extensions.usesSecp256k1
-import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -126,16 +125,10 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     account.address == withAddress
 }
 
-suspend fun GetProfileUseCase.nextDerivationPathForAccountOnNetwork(
-    derivationPathScheme: DerivationPathScheme,
-    networkId: Int,
-    factorSourceId: FactorSource.FactorSourceID
-): DerivationPath {
-    val profile = invoke().first()
-    val network = requireNotNull(NetworkId.from(networkId))
+fun Network.nextDerivationPathForAccountOnNetwork(factorSource: FactorSource): DerivationPath {
     return DerivationPath.forAccount(
-        networkId = network,
-        accountIndex = profile.nextAccountIndex(derivationPathScheme, network, factorSourceId),
+        networkId = NetworkId.from(this.networkID),
+        accountIndex = this.nextAccountIndex(factorSource),
         keyType = KeyType.TRANSACTION_SIGNING
     )
 }

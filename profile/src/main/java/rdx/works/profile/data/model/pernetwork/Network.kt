@@ -41,6 +41,15 @@ import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 
+interface EntityCreation {
+    fun createAccountWithBabylon(
+        displayName: String,
+        mnemonicWithPassphrase: MnemonicWithPassphrase,
+        deviceFactorSource: DeviceFactorSource,
+        onLedgerSettings: Network.Account.OnLedgerSettings
+    ): Network.Account
+}
+
 @Serializable
 data class Network(
     /**
@@ -63,7 +72,46 @@ data class Network(
      * AuthorizedDapp the user has connected with on this network.
      */
     @SerialName("authorizedDapps") val authorizedDapps: List<AuthorizedDapp>
-) {
+) : EntityCreation {
+
+    override fun createAccountWithBabylon(
+        displayName: String,
+        mnemonicWithPassphrase: MnemonicWithPassphrase,
+        deviceFactorSource: DeviceFactorSource,
+        onLedgerSettings: Account.OnLedgerSettings
+    ): Account {
+        val entityIndex = this.nextAccountIndex(
+            factorSource = deviceFactorSource
+        )
+
+        val derivationPath = DerivationPath.forAccount(
+            networkId = NetworkId.from(networkID),
+            accountIndex = entityIndex,
+            keyType = KeyType.TRANSACTION_SIGNING
+        )
+
+        val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
+        val address = deriveVirtualAccountAddressFromPublicKey(
+            publicKey = PublicKey.Ed25519(compressedPublicKey),
+            networkId = networkID.toUByte()
+        )
+
+        val unsecuredSecurityState = SecurityState.unsecured(
+            publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
+            derivationPath = derivationPath,
+            factorSourceId = deviceFactorSource.id
+        )
+
+        return Account(
+            address = address.addressString(),
+            appearanceID = nextAppearanceId(deviceFactorSource),
+            displayName = displayName,
+            networkID = networkID,
+            securityState = unsecuredSecurityState,
+            onLedgerSettings = onLedgerSettings
+
+        )
+    }
 
     val knownNetworkId: NetworkId?
         get() = NetworkId.values().find { it.value == networkID }
@@ -657,15 +705,9 @@ fun Profile.usedAccountDerivationIndices(
     }.map { it.derivationPathEntityIndex }.toSet()
 }
 
-fun Profile.nextAccountIndex(
-    derivationPathScheme: DerivationPathScheme,
-    forNetworkId: NetworkId? = null,
-    factorSourceID: FactorSource.FactorSourceID? = null
-): Int {
-    val network = networks.firstOrNull { it.networkID == forNetworkId?.value } ?: return 0
-    val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource() ?: return 0
-    val accountsControlledByFactorSource = network.accounts.filter {
-        it.factorSourceId == factorSource.id && it.derivationPathScheme == derivationPathScheme
+fun Network.nextAccountIndex(factorSource: FactorSource): Int {
+    val accountsControlledByFactorSource = accounts.filter {
+        it.factorSourceId == factorSource.id && it.derivationPathScheme == DerivationPathScheme.CAP_26
     }
     return if (accountsControlledByFactorSource.isEmpty()) {
         0
@@ -691,13 +733,8 @@ fun Profile.nextPersonaIndex(
     }
 }
 
-fun Profile.nextAppearanceId(
-    forNetworkId: NetworkId? = null,
-    factorSourceID: FactorSource.FactorSourceID? = null
-): Int {
-    val network = networks.firstOrNull { it.networkID == forNetworkId?.value } ?: return 0
-    val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource() ?: return 0
-    val accountsControlledByFactorSource = network.accounts.filter { it.factorSourceId == factorSource.id }
+fun Network.nextAppearanceId(factorSource: FactorSource): Int {
+    val accountsControlledByFactorSource = accounts.filter { it.factorSourceId == factorSource.id }
     return if (accountsControlledByFactorSource.isEmpty()) {
         0
     } else {

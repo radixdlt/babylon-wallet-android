@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
+import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.DerivationPath
@@ -32,8 +33,12 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
     ): List<Network.Account> {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
-            val networkId = profile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
-            val appearanceIdOffset = profile.nextAppearanceId(networkId)
+            val networkId = profile.currentNetwork.knownNetworkId ?: Radix.Gateway.default.network.networkId()
+            var appearanceIdOffset = 0
+            val babylonFactorSource = profile.mainBabylonFactorSource()
+            if (babylonFactorSource != null) {
+                appearanceIdOffset = profile.currentNetwork.nextAppearanceId(babylonFactorSource)
+            }
             val migratedAccounts = olympiaAccounts.mapIndexed { index, olympiaAccount ->
                 val babylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
                     olympiaAccountAddress = OlympiaAddress(olympiaAccount.address),

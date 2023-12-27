@@ -130,10 +130,17 @@ data class Profile(
 val Profile.currentGateway: Radix.Gateway
     get() = appPreferences.gateways.current()
 
-val Profile.currentNetwork: Network?
+val Profile.currentNetwork: Network
     get() {
         val currentGateway = currentGateway
-        return networks.find { it.networkID == currentGateway.network.id }
+        return networks.find {
+            it.networkID == currentGateway.network.id
+        } ?: Network(
+            networkID = Radix.Gateway.default.network.id,
+            accounts = identifiedArrayListOf(),
+            personas = identifiedArrayListOf(),
+            authorizedDapps = emptyList()
+        )
     }
 
 /**

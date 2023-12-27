@@ -12,10 +12,12 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.addP2PLink
 import rdx.works.profile.data.model.extensions.renameAccountDisplayName
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithBabylonDeviceFactorSource
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.addAccounts
@@ -52,10 +54,8 @@ class ProfileGenerationTest {
         assertEquals(
             "Next derivation index for first account",
             0,
-            profile.nextAccountIndex(
-                derivationPathScheme = DerivationPathScheme.CAP_26,
-                forNetworkId = defaultNetwork.networkId(),
-                factorSourceID = babylonFactorSource.id
+            profile.currentNetwork.nextAccountIndex(
+                factorSource = babylonFactorSource
             )
         )
 
@@ -85,10 +85,8 @@ class ProfileGenerationTest {
         assertEquals(
             "Next derivation index for second account",
             1,
-            profile.nextAccountIndex(
-                derivationPathScheme = DerivationPathScheme.CAP_26,
-                forNetworkId = defaultNetwork.networkId(),
-                factorSourceID = babylonFactorSource.id
+            profile.currentNetwork.nextAccountIndex(
+                factorSource = babylonFactorSource
             )
         )
 

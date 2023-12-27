@@ -15,7 +15,7 @@ import org.mockito.kotlin.whenever
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.factorsources.DerivationPathScheme
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.nextAccountIndex
@@ -55,11 +55,7 @@ internal class CreateAccountWithLedgerFactorSourceUseCaseTest {
             )
             val derivationPath = DerivationPath.forAccount(
                 networkId = network.networkId(),
-                accountIndex = profile.nextAccountIndex(
-                    derivationPathScheme = DerivationPathScheme.CAP_26,
-                    forNetworkId = network.networkId(),
-                    factorSourceID = TestData.ledgerFactorSource.id
-                ),
+                accountIndex = profile.currentNetwork.nextAccountIndex(TestData.ledgerFactorSource),
                 keyType = KeyType.TRANSACTION_SIGNING
             )
             val account = createAccountWithLedgerFactorSourceUseCase(

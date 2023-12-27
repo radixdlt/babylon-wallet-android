@@ -26,7 +26,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.model.factorsources.DerivationPathScheme
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
@@ -146,14 +146,14 @@ class ChooseLedgerViewModel @Inject constructor(
                                 return@launch
                             }
                         }
-                        val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnNetwork(
-                            DerivationPathScheme.CAP_26,
-                            networkIdToCreateAccountOn(),
-                            ledgerFactorSource.data.id
-                        )
+                        val derivationPath = getProfileUseCase.invoke().first()
+                            .currentNetwork
+                            .nextDerivationPathForAccountOnNetwork(ledgerFactorSource.data)
                         val result = ledgerMessenger.sendDerivePublicKeyRequest(
                             interactionId = UUIDGenerator.uuid().toString(),
-                            keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
+                            keyParameters = listOf(
+                                LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)
+                            ),
                             ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource.data)
                         )
                         result.onSuccess { response ->
