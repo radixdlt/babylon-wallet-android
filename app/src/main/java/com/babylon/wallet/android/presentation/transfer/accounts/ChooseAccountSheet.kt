@@ -183,6 +183,7 @@ private fun ChooseAccountContent(
 ) {
     LazyColumn(
         modifier = modifier
+            .fillMaxSize()
             .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

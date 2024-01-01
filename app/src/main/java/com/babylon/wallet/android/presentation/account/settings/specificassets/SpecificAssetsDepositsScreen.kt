@@ -28,9 +28,7 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +40,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,7 +49,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -86,7 +84,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SpecificAssetsDepositsScreen(
     sharedViewModel: AccountThirdPartyDepositsViewModel,
@@ -96,8 +94,7 @@ fun SpecificAssetsDepositsScreen(
     val state by sharedViewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
+        skipPartiallyExpanded = true
     )
     val kb = LocalSoftwareKeyboardController.current
     val hideCallback = {
@@ -151,52 +148,55 @@ fun SpecificAssetsDepositsScreen(
             )
         )
     }
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        wrapContent = true,
-        sheetContent = {
-            AddAssetSheet(
-                onResourceAddressChanged = sharedViewModel::assetExceptionAddressTyped,
-                asset = state.assetExceptionToAdd,
-                onAddAsset = {
-                    hideCallback()
-                    sharedViewModel.onAddAssetException()
-                },
-                modifier = Modifier
-                    .navigationBarsPadding()
-                    .fillMaxWidth()
-                    .background(RadixTheme.colors.gray4)
-                    .clip(RadixTheme.shapes.roundedRectTopDefault),
-                onAssetExceptionRuleChanged = sharedViewModel::onAssetExceptionRuleChanged,
-                onDismiss = {
-                    hideCallback()
+
+    SpecificAssetsDepositsContent(
+        onBackClick = onBackClick,
+        onMessageShown = sharedViewModel::onMessageShown,
+        error = state.error,
+        onShowAddAssetSheet = {
+            sharedViewModel.onAssetExceptionRuleChanged(
+                when (it) {
+                    SpecificAssetsTab.Allowed -> ThirdPartyDeposits.DepositAddressExceptionRule.Allow
+                    SpecificAssetsTab.Denied -> ThirdPartyDeposits.DepositAddressExceptionRule.Deny
                 }
             )
+            scope.launch {
+                sheetState.show()
+            }
         },
-        sheetState = sheetState
-    ) {
-        SpecificAssetsDepositsContent(
-            onBackClick = onBackClick,
-            onMessageShown = sharedViewModel::onMessageShown,
-            error = state.error,
-            onShowAddAssetSheet = {
-                sharedViewModel.onAssetExceptionRuleChanged(
-                    when (it) {
-                        SpecificAssetsTab.Allowed -> ThirdPartyDeposits.DepositAddressExceptionRule.Allow
-                        SpecificAssetsTab.Denied -> ThirdPartyDeposits.DepositAddressExceptionRule.Deny
+        modifier = Modifier
+            .navigationBarsPadding()
+            .fillMaxSize()
+            .background(RadixTheme.colors.gray5),
+        allowedAssets = state.allowedAssets,
+        deniedAssets = state.deniedAssets,
+        onDeleteAsset = sharedViewModel::showDeletePrompt
+    )
+
+    if (sheetState.isVisible) {
+        DefaultModalSheetLayout(
+            modifier = modifier,
+            wrapContent = true,
+            sheetContent = {
+                AddAssetSheet(
+                    onResourceAddressChanged = sharedViewModel::assetExceptionAddressTyped,
+                    asset = state.assetExceptionToAdd,
+                    onAddAsset = {
+                        hideCallback()
+                        sharedViewModel.onAddAssetException()
+                    },
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .fillMaxWidth()
+                        .background(RadixTheme.colors.gray4)
+                        .clip(RadixTheme.shapes.roundedRectTopDefault),
+                    onAssetExceptionRuleChanged = sharedViewModel::onAssetExceptionRuleChanged,
+                    onDismiss = {
+                        hideCallback()
                     }
                 )
-                scope.launch {
-                    sheetState.show()
-                }
             },
-            modifier = Modifier
-                .navigationBarsPadding()
-                .fillMaxSize()
-                .background(RadixTheme.colors.gray5),
-            allowedAssets = state.allowedAssets,
-            deniedAssets = state.deniedAssets,
-            onDeleteAsset = sharedViewModel::showDeletePrompt
+            sheetState = sheetState
         )
     }
 }

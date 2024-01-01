@@ -15,12 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -29,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
@@ -100,7 +98,7 @@ fun PersonaEditScreen(
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PersonaEditContent(
     onBackClick: () -> Unit,
@@ -125,7 +123,7 @@ private fun PersonaEditContent(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+        rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     var showCancelPrompt by remember { mutableStateOf(false) }
     BackHandler {
@@ -170,90 +168,92 @@ private fun PersonaEditContent(
         )
     }
 
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        sheetState = bottomSheetState,
-        sheetContent = {
-            AddFieldSheet(
-                onBackClick = {
+    persona?.let { selectedPersona ->
+        Scaffold(
+            topBar = {
+                Column {
+                    RadixCenteredTopAppBar(
+                        title = selectedPersona.displayName,
+                        onBackClick = {
+                            if (wasEdited) {
+                                showCancelPrompt = true
+                            } else {
+                                onBackClick()
+                            }
+                        },
+                        backIconType = BackIconType.Close,
+                        windowInsets = WindowInsets.statusBars
+                    )
+                    HorizontalDivider(color = RadixTheme.colors.gray5)
+                }
+            },
+            bottomBar = {
+                BottomPrimaryButton(
+                    onClick = onSave,
+                    enabled = saveButtonEnabled,
+                    text = stringResource(id = R.string.common_save),
+                    modifier = Modifier
+                        .imePadding()
+                        .navigationBarsPadding()
+                        .fillMaxWidth(),
+                    buttonPadding = PaddingValues(horizontal = dimensions.paddingDefault),
+                )
+            },
+            containerColor = RadixTheme.colors.defaultBackground
+        ) { padding ->
+            PersonaDetailList(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(padding),
+                persona = selectedPersona,
+                onAddField = {
                     scope.launch {
-                        bottomSheetState.hide()
+                        keyboardController?.hide()
+                        bottomSheetState.show()
                     }
                 },
-                fieldsToAdd = fieldsToAdd,
-                onAddFields = {
-                    scope.launch { bottomSheetState.hide() }
-                    onAddFields()
-                },
-                onSelectionChanged = onSelectionChanged,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .navigationBarsPadding(),
-                anyFieldSelected = addButtonEnabled
+                editedFields = editedFields,
+                onDeleteField = onDeleteField,
+                onValueChanged = onValueChanged,
+                onDisplayNameChanged = onDisplayNameChanged,
+                personaDisplayName = personaDisplayName,
+                addButtonEnabled = fieldsToAdd.isNotEmpty(),
+                onFieldFocusChanged = onFieldFocusChanged,
+                onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
+                dappContextEdit = dappContextEdit,
+                missingFields = missingFields
             )
         }
-    ) {
-        persona?.let { persona ->
-            Scaffold(
-                topBar = {
-                    Column {
-                        RadixCenteredTopAppBar(
-                            title = persona.displayName,
-                            onBackClick = {
-                                if (wasEdited) {
-                                    showCancelPrompt = true
-                                } else {
-                                    onBackClick()
-                                }
-                            },
-                            backIconType = BackIconType.Close,
-                            windowInsets = WindowInsets.statusBars
-                        )
-                        HorizontalDivider(color = RadixTheme.colors.gray5)
-                    }
-                },
-                bottomBar = {
-                    BottomPrimaryButton(
-                        onClick = onSave,
-                        enabled = saveButtonEnabled,
-                        text = stringResource(id = R.string.common_save),
-                        modifier = Modifier
-                            .imePadding()
-                            .navigationBarsPadding()
-                            .fillMaxWidth(),
-                        buttonPadding = PaddingValues(horizontal = dimensions.paddingDefault),
-                    )
-                },
-                containerColor = RadixTheme.colors.defaultBackground
-            ) { padding ->
-                PersonaDetailList(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(padding),
-                    persona = persona,
-                    onAddField = {
+    }
+
+    if (persona == null) {
+        FullscreenCircularProgressContent()
+    }
+
+    if (bottomSheetState.isVisible) {
+        DefaultModalSheetLayout(
+            modifier = modifier,
+            sheetState = bottomSheetState,
+            sheetContent = {
+                AddFieldSheet(
+                    onBackClick = {
                         scope.launch {
-                            keyboardController?.hide()
-                            bottomSheetState.show()
+                            bottomSheetState.hide()
                         }
                     },
-                    editedFields = editedFields,
-                    onDeleteField = onDeleteField,
-                    onValueChanged = onValueChanged,
-                    onDisplayNameChanged = onDisplayNameChanged,
-                    personaDisplayName = personaDisplayName,
-                    addButtonEnabled = fieldsToAdd.isNotEmpty(),
-                    onFieldFocusChanged = onFieldFocusChanged,
-                    onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
-                    dappContextEdit = dappContextEdit,
-                    missingFields = missingFields
+                    fieldsToAdd = fieldsToAdd,
+                    onAddFields = {
+                        scope.launch { bottomSheetState.hide() }
+                        onAddFields()
+                    },
+                    onSelectionChanged = onSelectionChanged,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .navigationBarsPadding(),
+                    anyFieldSelected = addButtonEnabled
                 )
             }
-        }
-
-        if (persona == null) {
-            FullscreenCircularProgressContent()
-        }
+        )
     }
 }
 

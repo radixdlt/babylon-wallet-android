@@ -15,12 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -119,7 +118,7 @@ fun PersonaDetailScreen(
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PersonaDetailContent(
     modifier: Modifier = Modifier,
@@ -135,63 +134,65 @@ private fun PersonaDetailContent(
     onHidePersona: () -> Unit
 ) {
     val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+        rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        sheetState = bottomSheetState,
-        sheetContent = {
-            selectedDApp?.let {
-                DAppDetailsSheetContent(
-                    modifier = Modifier.navigationBarsPadding(),
-                    onBackClick = {
-                        scope.launch {
-                            bottomSheetState.hide()
-                        }
-                    },
-                    dApp = it
+    Scaffold(
+        topBar = {
+            Column {
+                RadixCenteredTopAppBar(
+                    title = persona?.displayName.orEmpty(),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBars
                 )
-            }
-        }
-    ) {
-        Scaffold(
-            topBar = {
-                Column {
-                    RadixCenteredTopAppBar(
-                        title = persona?.displayName.orEmpty(),
-                        onBackClick = onBackClick,
-                        windowInsets = WindowInsets.statusBars
-                    )
 
-                    HorizontalDivider(color = RadixTheme.colors.gray5)
-                }
-            },
-            containerColor = RadixTheme.colors.defaultBackground
-        ) { padding ->
-            if (persona != null) {
-                PersonaDetailList(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(padding),
-                    persona = persona,
-                    authorizedDapps = authorizedDapps,
-                    onDAppClick = {
-                        onDAppClick(it)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
-                    },
-                    onEditPersona = onEditPersona,
-                    hasAuthKey = hasAuthKey,
-                    onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
-                    loading = loading,
-                    onHidePersona = onHidePersona
-                )
-            } else {
-                FullscreenCircularProgressContent()
+                HorizontalDivider(color = RadixTheme.colors.gray5)
             }
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        if (persona != null) {
+            PersonaDetailList(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(padding),
+                persona = persona,
+                authorizedDapps = authorizedDapps,
+                onDAppClick = {
+                    onDAppClick(it)
+                    scope.launch {
+                        bottomSheetState.show()
+                    }
+                },
+                onEditPersona = onEditPersona,
+                hasAuthKey = hasAuthKey,
+                onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
+                loading = loading,
+                onHidePersona = onHidePersona
+            )
+        } else {
+            FullscreenCircularProgressContent()
         }
+    }
+
+    if (bottomSheetState.isVisible) {
+        DefaultModalSheetLayout(
+            modifier = modifier,
+            sheetState = bottomSheetState,
+            sheetContent = {
+                selectedDApp?.let {
+                    DAppDetailsSheetContent(
+                        modifier = Modifier.navigationBarsPadding(),
+                        onBackClick = {
+                            scope.launch {
+                                bottomSheetState.hide()
+                            }
+                        },
+                        dApp = it
+                    )
+                }
+            }
+        )
     }
 }
 

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterialApi::class)
-
 package com.babylon.wallet.android.presentation.account.settings
 
 import androidx.activity.compose.BackHandler
@@ -17,14 +15,13 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,7 +54,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountSettingsScreen(
     viewModel: AccountSettingsViewModel,
@@ -69,8 +66,7 @@ fun AccountSettingsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
+        skipPartiallyExpanded = true
     )
     var showHideAccountPrompt by remember { mutableStateOf(false) }
     if (showHideAccountPrompt) {
@@ -106,75 +102,77 @@ fun AccountSettingsScreen(
         }
     }
 
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        wrapContent = true,
-        enableImePadding = true,
-        sheetState = bottomSheetState,
-        sheetContent = {
-            when (state.bottomSheetContent) {
-                AccountPreferenceUiState.BottomSheetContent.RenameAccount -> {
-                    RenameAccountSheet(
-                        modifier = Modifier.navigationBarsPadding(),
-                        accountNameChanged = state.accountNameChanged,
-                        onNewAccountNameChange = viewModel::onRenameAccountNameChange,
-                        isNewNameValid = state.isNewNameValid,
-                        isNewNameLengthMoreThanTheMaximum = state.isNewNameLengthMoreThanTheMaximum,
-                        onRenameAccountNameClick = {
-                            viewModel.onRenameAccountNameConfirm()
-                            scope.launch {
-                                bottomSheetState.hide()
-                                viewModel.resetBottomSheetContent()
-                            }
-                        },
-                        onClose = {
-                            scope.launch {
-                                bottomSheetState.hide()
-                                viewModel.resetBottomSheetContent()
-                            }
-                        }
-                    )
-                }
-
-                AccountPreferenceUiState.BottomSheetContent.AddressQRCode -> {
-                    AddressQRCodeSheet(
-                        accountAddress = state.accountAddress,
-                        dismissAddressQRCodeSheet = {
-                            scope.launch {
-                                bottomSheetState.hide()
-                                viewModel.resetBottomSheetContent()
-                            }
-                        }
-                    )
-                }
-
-                AccountPreferenceUiState.BottomSheetContent.None -> {}
+    AccountSettingsContent(
+        onBackClick = onBackClick,
+        accountName = state.accountName,
+        onShowRenameAccountClick = {
+            scope.launch {
+                viewModel.setBottomSheetContentToRenameAccount()
+                bottomSheetState.show()
             }
+        },
+        onShowAddressQRCodeClick = {
+            scope.launch {
+                viewModel.setBottomSheetContentToAddressQRCode()
+                bottomSheetState.show()
+            }
+        },
+        modifier = Modifier.navigationBarsPadding(),
+        settingsSections = state.settingsSections,
+        onSettingClick = {
+            onSettingItemClick(it, state.accountAddress)
+        },
+        accountAddress = state.accountAddress,
+        onHideAccount = {
+            showHideAccountPrompt = true
         }
-    ) {
-        AccountSettingsContent(
-            onBackClick = onBackClick,
-            accountName = state.accountName,
-            onShowRenameAccountClick = {
-                scope.launch {
-                    viewModel.setBottomSheetContentToRenameAccount()
-                    bottomSheetState.show()
+    )
+
+    if (bottomSheetState.isVisible) {
+        DefaultModalSheetLayout(
+            modifier = modifier,
+            wrapContent = true,
+            enableImePadding = true,
+            sheetState = bottomSheetState,
+            sheetContent = {
+                when (state.bottomSheetContent) {
+                    AccountPreferenceUiState.BottomSheetContent.RenameAccount -> {
+                        RenameAccountSheet(
+                            modifier = Modifier.navigationBarsPadding(),
+                            accountNameChanged = state.accountNameChanged,
+                            onNewAccountNameChange = viewModel::onRenameAccountNameChange,
+                            isNewNameValid = state.isNewNameValid,
+                            isNewNameLengthMoreThanTheMaximum = state.isNewNameLengthMoreThanTheMaximum,
+                            onRenameAccountNameClick = {
+                                viewModel.onRenameAccountNameConfirm()
+                                scope.launch {
+                                    bottomSheetState.hide()
+                                    viewModel.resetBottomSheetContent()
+                                }
+                            },
+                            onClose = {
+                                scope.launch {
+                                    bottomSheetState.hide()
+                                    viewModel.resetBottomSheetContent()
+                                }
+                            }
+                        )
+                    }
+
+                    AccountPreferenceUiState.BottomSheetContent.AddressQRCode -> {
+                        AddressQRCodeSheet(
+                            accountAddress = state.accountAddress,
+                            dismissAddressQRCodeSheet = {
+                                scope.launch {
+                                    bottomSheetState.hide()
+                                    viewModel.resetBottomSheetContent()
+                                }
+                            }
+                        )
+                    }
+
+                    AccountPreferenceUiState.BottomSheetContent.None -> {}
                 }
-            },
-            onShowAddressQRCodeClick = {
-                scope.launch {
-                    viewModel.setBottomSheetContentToAddressQRCode()
-                    bottomSheetState.show()
-                }
-            },
-            modifier = Modifier.navigationBarsPadding(),
-            settingsSections = state.settingsSections,
-            onSettingClick = {
-                onSettingItemClick(it, state.accountAddress)
-            },
-            accountAddress = state.accountAddress,
-            onHideAccount = {
-                showHideAccountPrompt = true
             }
         )
     }

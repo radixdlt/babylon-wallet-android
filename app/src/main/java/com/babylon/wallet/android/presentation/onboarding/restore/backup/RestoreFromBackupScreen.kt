@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterialApi::class)
-
 package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
 import androidx.activity.compose.BackHandler
@@ -20,19 +18,18 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -111,7 +108,7 @@ fun RestoreFromBackupScreen(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RestoreFromBackupContent(
     modifier: Modifier = Modifier,
@@ -136,11 +133,10 @@ private fun RestoreFromBackupContent(
     )
 
     val modalBottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
+        skipPartiallyExpanded = true
     )
     SyncSheetState(
-        bottomSheetState = modalBottomSheetState,
+        state = modalBottomSheetState,
         isSheetVisible = state.isPasswordSheetVisible,
         onSheetClosed = {
             if (state.isPasswordSheetVisible) {
@@ -149,190 +145,192 @@ private fun RestoreFromBackupContent(
         }
     )
 
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        sheetState = modalBottomSheetState,
-        enableImePadding = true,
-        wrapContent = true,
-        sheetContent = {
-            if (state.passwordSheetState is RestoreFromBackupViewModel.State.PasswordSheet.Open) {
-                PasswordSheet(
-                    state = state.passwordSheetState,
-                    onBackClick = onBackClick,
-                    onPasswordTyped = onPasswordTyped,
-                    onPasswordRevealToggle = onPasswordRevealToggle,
-                    onPasswordSubmitted = onPasswordSubmitted
-                )
-            }
-        }
-    ) {
-        Scaffold(
-            topBar = {
-                RadixCenteredTopAppBar(
-                    windowInsets = WindowInsets.statusBars,
-                    title = "",
-                    onBackClick = onBackClick
-                )
-            },
-            bottomBar = {
-                Column(Modifier.navigationBarsPadding()) {
-                    HorizontalDivider(color = RadixTheme.colors.gray5)
+    Scaffold(
+        topBar = {
+            RadixCenteredTopAppBar(
+                windowInsets = WindowInsets.statusBars,
+                title = "",
+                onBackClick = onBackClick
+            )
+        },
+        bottomBar = {
+            Column(Modifier.navigationBarsPadding()) {
+                HorizontalDivider(color = RadixTheme.colors.gray5)
 
-                    RadixPrimaryButton(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = R.string.common_continue),
-                        onClick = onSubmitClick,
-                        enabled = state.isContinueEnabled
-                    )
-                }
-            },
-            snackbarHost = {
-                RadixSnackbarHost(
-                    hostState = snackBarHostState,
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
-                )
-            },
-            containerColor = RadixTheme.colors.defaultBackground
-        ) { padding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = stringResource(id = R.string.recoverProfileBackup_header_title),
-                    textAlign = TextAlign.Center,
-                    style = RadixTheme.typography.title
-                )
-
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                    text = stringResource(id = R.string.recoverProfileBackup_header_subtitle),
-                    textAlign = TextAlign.Center,
-                    style = RadixTheme.typography.body1Regular
-                )
-
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            horizontal = RadixTheme.dimensions.paddingLarge,
-                            vertical = RadixTheme.dimensions.paddingSmall
-                        ),
-                    text = stringResource(id = R.string.androidRecoverProfileBackup_choose_title),
-                    textAlign = TextAlign.Center,
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
-                )
-
-                Surface(
-                    modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    color = RadixTheme.colors.gray5,
-                    shadowElevation = if (state.restoringProfile != null) 8.dp else 0.dp,
-                    shape = RadixTheme.shapes.roundedRectMedium
-                ) {
-                    if (state.restoringProfile != null) {
-                        Row(
-                            modifier = Modifier
-                                .clickable {
-                                    onRestoringProfileCheckChanged(!state.isRestoringProfileChecked)
-                                }
-                                .padding(RadixTheme.dimensions.paddingDefault),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .padding(start = RadixTheme.dimensions.paddingXSmall)
-                            ) {
-                                Text(
-                                    text = stringResource(
-                                        id = R.string.recoverProfileBackup_backupFrom,
-                                        state.restoringProfile.header.lastUsedOnDevice.description
-                                    ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                                    color = RadixTheme.colors.gray2,
-                                    style = RadixTheme.typography.body2Regular
-                                )
-
-                                Text(
-                                    text = stringResource(
-                                        id = R.string.recoverProfileBackup_lastModified,
-                                        state.restoringProfile.header.lastUsedOnDevice.date.toDateString()
-                                    ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                                    color = RadixTheme.colors.gray2,
-                                    style = RadixTheme.typography.body2Regular
-                                )
-
-                                Text(
-                                    text = stringResource(
-                                        id = R.string.recoverProfileBackup_numberOfAccounts,
-                                        state.restoringProfile.header.contentHint.numberOfAccountsOnAllNetworksInTotal
-                                    ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                                    color = RadixTheme.colors.gray2,
-                                    style = RadixTheme.typography.body2Regular
-                                )
-
-                                Text(
-                                    text = stringResource(
-                                        id = R.string.recoverProfileBackup_numberOfPersonas,
-                                        state.restoringProfile.header.contentHint.numberOfPersonasOnAllNetworksInTotal
-                                    ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                                    color = RadixTheme.colors.gray2,
-                                    style = RadixTheme.typography.body2Regular
-                                )
-
-                                if (!state.restoringProfile.header.isCompatible) {
-                                    Text(
-                                        text = stringResource(id = R.string.recoverProfileBackup_incompatibleWalletDataLabel),
-                                        color = RadixTheme.colors.red1,
-                                        style = RadixTheme.typography.body2Regular
-                                    )
-                                }
-                            }
-
-                            Checkbox(
-                                checked = state.isRestoringProfileChecked,
-                                onCheckedChange = onRestoringProfileCheckChanged,
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = RadixTheme.colors.gray1,
-                                    uncheckedColor = RadixTheme.colors.gray2,
-                                    checkmarkColor = Color.White
-                                )
-                            )
-                        }
-                    } else {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(RadixTheme.dimensions.paddingXLarge),
-                            text = stringResource(id = R.string.androidRecoverProfileBackup_noBackupsAvailable),
-                            color = RadixTheme.colors.gray2,
-                            textAlign = TextAlign.Center,
-                            style = RadixTheme.typography.secondaryHeader
-                        )
-                    }
-                }
-
-                RadixTextButton(
+                RadixPrimaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(RadixTheme.dimensions.paddingDefault),
-                    text = stringResource(id = R.string.recoverProfileBackup_importFileButton_title),
-                    onClick = onRestoreFromFileClick
+                    text = stringResource(id = R.string.common_continue),
+                    onClick = onSubmitClick,
+                    enabled = state.isContinueEnabled
                 )
-                OtherRestoreOptionsSection(onOtherRestoreOptionsClick)
             }
+        },
+        snackbarHost = {
+            RadixSnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                text = stringResource(id = R.string.recoverProfileBackup_header_title),
+                textAlign = TextAlign.Center,
+                style = RadixTheme.typography.title
+            )
+
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                text = stringResource(id = R.string.recoverProfileBackup_header_subtitle),
+                textAlign = TextAlign.Center,
+                style = RadixTheme.typography.body1Regular
+            )
+
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        horizontal = RadixTheme.dimensions.paddingLarge,
+                        vertical = RadixTheme.dimensions.paddingSmall
+                    ),
+                text = stringResource(id = R.string.androidRecoverProfileBackup_choose_title),
+                textAlign = TextAlign.Center,
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray1
+            )
+
+            Surface(
+                modifier = Modifier
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                color = RadixTheme.colors.gray5,
+                shadowElevation = if (state.restoringProfile != null) 8.dp else 0.dp,
+                shape = RadixTheme.shapes.roundedRectMedium
+            ) {
+                if (state.restoringProfile != null) {
+                    Row(
+                        modifier = Modifier
+                            .clickable {
+                                onRestoringProfileCheckChanged(!state.isRestoringProfileChecked)
+                            }
+                            .padding(RadixTheme.dimensions.paddingDefault),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = RadixTheme.dimensions.paddingXSmall)
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    id = R.string.recoverProfileBackup_backupFrom,
+                                    state.restoringProfile.header.lastUsedOnDevice.description
+                                ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+                                color = RadixTheme.colors.gray2,
+                                style = RadixTheme.typography.body2Regular
+                            )
+
+                            Text(
+                                text = stringResource(
+                                    id = R.string.recoverProfileBackup_lastModified,
+                                    state.restoringProfile.header.lastUsedOnDevice.date.toDateString()
+                                ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+                                color = RadixTheme.colors.gray2,
+                                style = RadixTheme.typography.body2Regular
+                            )
+
+                            Text(
+                                text = stringResource(
+                                    id = R.string.recoverProfileBackup_numberOfAccounts,
+                                    state.restoringProfile.header.contentHint.numberOfAccountsOnAllNetworksInTotal
+                                ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+                                color = RadixTheme.colors.gray2,
+                                style = RadixTheme.typography.body2Regular
+                            )
+
+                            Text(
+                                text = stringResource(
+                                    id = R.string.recoverProfileBackup_numberOfPersonas,
+                                    state.restoringProfile.header.contentHint.numberOfPersonasOnAllNetworksInTotal
+                                ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+                                color = RadixTheme.colors.gray2,
+                                style = RadixTheme.typography.body2Regular
+                            )
+
+                            if (!state.restoringProfile.header.isCompatible) {
+                                Text(
+                                    text = stringResource(id = R.string.recoverProfileBackup_incompatibleWalletDataLabel),
+                                    color = RadixTheme.colors.red1,
+                                    style = RadixTheme.typography.body2Regular
+                                )
+                            }
+                        }
+
+                        Checkbox(
+                            checked = state.isRestoringProfileChecked,
+                            onCheckedChange = onRestoringProfileCheckChanged,
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = RadixTheme.colors.gray1,
+                                uncheckedColor = RadixTheme.colors.gray2,
+                                checkmarkColor = Color.White
+                            )
+                        )
+                    }
+                } else {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(RadixTheme.dimensions.paddingXLarge),
+                        text = stringResource(id = R.string.androidRecoverProfileBackup_noBackupsAvailable),
+                        color = RadixTheme.colors.gray2,
+                        textAlign = TextAlign.Center,
+                        style = RadixTheme.typography.secondaryHeader
+                    )
+                }
+            }
+
+            RadixTextButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                text = stringResource(id = R.string.recoverProfileBackup_importFileButton_title),
+                onClick = onRestoreFromFileClick
+            )
+            OtherRestoreOptionsSection(onOtherRestoreOptionsClick)
         }
+    }
+
+    if (modalBottomSheetState.isVisible) {
+        DefaultModalSheetLayout(
+            modifier = modifier,
+            sheetState = modalBottomSheetState,
+            enableImePadding = true,
+            wrapContent = true,
+            sheetContent = {
+                if (state.passwordSheetState is RestoreFromBackupViewModel.State.PasswordSheet.Open) {
+                    PasswordSheet(
+                        state = state.passwordSheetState,
+                        onBackClick = onBackClick,
+                        onPasswordTyped = onPasswordTyped,
+                        onPasswordRevealToggle = onPasswordRevealToggle,
+                        onPasswordSubmitted = onPasswordSubmitted
+                    )
+                }
+            }
+        )
     }
 }
 
@@ -364,9 +362,10 @@ private fun OtherRestoreOptionsSection(onOtherRestoreOptionsClick: () -> Unit, m
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SyncSheetState(
-    bottomSheetState: ModalBottomSheetState,
+    state: SheetState,
     isSheetVisible: Boolean,
     onSheetClosed: () -> Unit,
 ) {
@@ -374,14 +373,14 @@ private fun SyncSheetState(
 
     LaunchedEffect(isSheetVisible) {
         if (isSheetVisible) {
-            scope.launch { bottomSheetState.show() }
+            scope.launch { state.show() }
         } else {
-            scope.launch { bottomSheetState.hide() }
+            scope.launch { state.hide() }
         }
     }
 
-    LaunchedEffect(bottomSheetState.isVisible) {
-        if (!bottomSheetState.isVisible) {
+    LaunchedEffect(state.isVisible) {
+        if (!state.isVisible) {
             onSheetClosed()
         }
     }

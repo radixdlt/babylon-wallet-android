@@ -22,15 +22,14 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -135,7 +134,7 @@ fun DappDetailScreen(
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DappDetailContent(
     onBackClick: () -> Unit,
@@ -156,7 +155,7 @@ private fun DappDetailContent(
 ) {
     var showDeleteDappPrompt by remember { mutableStateOf(false) }
     val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+        rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     LaunchedEffect(bottomSheetState) {
         snapshotFlow {
@@ -197,87 +196,88 @@ private fun DappDetailContent(
         )
     }
 
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        sheetState = bottomSheetState,
-        sheetContent = {
-            when (selectedSheetState) {
-                is SelectedSheetState.SelectedPersona -> {
-                    selectedSheetState.persona?.let {
-                        PersonaDetailsSheet(
-                            persona = it,
-                            sharedPersonaAccounts = selectedPersonaSharedAccounts,
-                            onCloseClick = {
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .navigationBarsPadding()
-                                .background(
-                                    RadixTheme.colors.defaultBackground,
-                                    shape = RadixTheme.shapes.roundedRectTopMedium
-                                )
-                                .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
-                            dappName = dAppWithResources?.dApp?.name.orEmpty(),
-                            onDisconnectPersona = { persona ->
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                }
-                                onDisconnectPersona(persona)
-                            },
-                            onEditPersona = onEditPersona,
-                            onEditAccountSharing = onEditAccountSharing
-                        )
-                    }
-                }
-
-                else -> {}
-            }
-        },
-        content = {
-            Scaffold(
-                topBar = {
-                    Column {
-                        RadixCenteredTopAppBar(
-                            title = dAppWithResources?.dApp?.name.orEmpty(),
-                            onBackClick = onBackClick,
-                            windowInsets = WindowInsets.statusBars
-                        )
-                        HorizontalDivider(color = RadixTheme.colors.gray5)
-                    }
-                }
-            ) { padding ->
-                Box(modifier = Modifier.padding(padding)) {
-                    DappDetails(
-                        modifier = Modifier.fillMaxSize(),
-                        dAppWithResources = dAppWithResources,
-                        personaList = personaList,
-                        onPersonaClick = { persona ->
-                            onPersonaClick(persona)
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
-                        },
-                        onFungibleTokenClick = { fungibleResource ->
-                            onFungibleTokenClick(fungibleResource)
-                        },
-                        onNonFungibleClick = { nftItem ->
-                            onNftClick(nftItem)
-                        },
-                        onDeleteDapp = {
-                            showDeleteDappPrompt = true
-                        }
-                    )
-
-                    if (loading) {
-                        FullscreenCircularProgressContent()
-                    }
-                }
+    Scaffold(
+        topBar = {
+            Column {
+                RadixCenteredTopAppBar(
+                    title = dAppWithResources?.dApp?.name.orEmpty(),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBars
+                )
+                HorizontalDivider(color = RadixTheme.colors.gray5)
             }
         }
-    )
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding)) {
+            DappDetails(
+                modifier = Modifier.fillMaxSize(),
+                dAppWithResources = dAppWithResources,
+                personaList = personaList,
+                onPersonaClick = { persona ->
+                    onPersonaClick(persona)
+                    scope.launch {
+                        bottomSheetState.show()
+                    }
+                },
+                onFungibleTokenClick = { fungibleResource ->
+                    onFungibleTokenClick(fungibleResource)
+                },
+                onNonFungibleClick = { nftItem ->
+                    onNftClick(nftItem)
+                },
+                onDeleteDapp = {
+                    showDeleteDappPrompt = true
+                }
+            )
+
+            if (loading) {
+                FullscreenCircularProgressContent()
+            }
+        }
+    }
+
+    if (bottomSheetState.isVisible) {
+        DefaultModalSheetLayout(
+            modifier = modifier,
+            sheetState = bottomSheetState,
+            sheetContent = {
+                when (selectedSheetState) {
+                    is SelectedSheetState.SelectedPersona -> {
+                        selectedSheetState.persona?.let {
+                            PersonaDetailsSheet(
+                                persona = it,
+                                sharedPersonaAccounts = selectedPersonaSharedAccounts,
+                                onCloseClick = {
+                                    scope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .navigationBarsPadding()
+                                    .background(
+                                        RadixTheme.colors.defaultBackground,
+                                        shape = RadixTheme.shapes.roundedRectTopMedium
+                                    )
+                                    .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
+                                dappName = dAppWithResources?.dApp?.name.orEmpty(),
+                                onDisconnectPersona = { persona ->
+                                    scope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                    onDisconnectPersona(persona)
+                                },
+                                onEditPersona = onEditPersona,
+                                onEditAccountSharing = onEditAccountSharing
+                            )
+                        }
+                    }
+
+                    else -> {}
+                }
+            }
+        )
+    }
 }
 
 @Composable
