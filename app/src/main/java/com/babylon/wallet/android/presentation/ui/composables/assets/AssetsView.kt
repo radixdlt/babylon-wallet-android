@@ -122,7 +122,6 @@ data class AssetsViewState(
             )
         }
     }
-
 }
 
 sealed interface AssetsViewAction {
