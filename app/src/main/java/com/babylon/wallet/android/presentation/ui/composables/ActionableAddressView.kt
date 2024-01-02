@@ -11,6 +11,8 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -29,9 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.core.content.getSystemService
@@ -62,12 +68,12 @@ import timber.log.Timber
 fun ActionableAddressView(
     address: String,
     modifier: Modifier = Modifier,
-    shouldTruncateAddressForDisplay: Boolean = true,
+    truncateAddress: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
-    val actionableAddress = resolveAddress(address = address, shouldTruncateAddressForDisplay = shouldTruncateAddressForDisplay)
+    val actionableAddress = resolveAddress(address = address, truncateAddress = truncateAddress)
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -182,7 +188,32 @@ fun ActionableAddressView(
             )
         ) {
             val textRef = createRef()
-            val iconRef = actions?.let { createRef() }
+            val iconRef = if (actions != null && truncateAddress) {
+                createRef()
+            } else {
+                null
+            }
+
+            val inlineContentId = "icon"
+            val inlinedText = buildAnnotatedString {
+                append(actionableAddress.displayAddress)
+                if (!truncateAddress) {
+                    append(" ")
+                    appendInlineContent(inlineContentId)
+                }
+            }
+            val inlineContent = mapOf(
+                inlineContentId to InlineTextContent(Placeholder(14.sp, 14.sp, PlaceholderVerticalAlign.Center)) {
+                    actions?.let { popupActions ->
+                        Icon(
+                            modifier = Modifier.size(14.dp),
+                            painter = painterResource(id = popupActions.primary.icon),
+                            contentDescription = popupActions.primary.name,
+                            tint = iconColor,
+                        )
+                    }
+                }
+            )
 
             Text(
                 modifier = Modifier.constrainAs(textRef) {
@@ -193,11 +224,12 @@ fun ActionableAddressView(
                         end.linkTo(parent.end)
                     }
                 },
-                text = actionableAddress.displayAddress,
+                text = inlinedText,
                 color = textColor,
-                maxLines = if (shouldTruncateAddressForDisplay) 1 else 2,
+                maxLines = if (truncateAddress) 1 else 2,
                 style = textStyle,
-                overflow = if (shouldTruncateAddressForDisplay) TextOverflow.Ellipsis else TextOverflow.Clip
+                overflow = if (truncateAddress) TextOverflow.Ellipsis else TextOverflow.Clip,
+                inlineContent = inlineContent
             )
 
             actions?.let { popupActions ->
@@ -274,8 +306,8 @@ fun ActionableAddressView(
 @Composable
 private fun resolveAddress(
     address: String,
-    shouldTruncateAddressForDisplay: Boolean
-): ActionableAddress = remember(address) { ActionableAddress(address, shouldTruncateAddressForDisplay) }
+    truncateAddress: Boolean
+): ActionableAddress = remember(address) { ActionableAddress(address, truncateAddress) }
 
 private data class PopupActions(
     val primary: PopupActionItem,
