@@ -28,7 +28,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
-import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
@@ -37,14 +37,14 @@ import com.google.accompanist.placeholder.shimmer
 
 fun LazyListScope.nftsTab(
     assets: Assets,
-    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
+    state: AssetsViewState,
     action: AssetsViewAction
 ) {
     if (assets.nonFungiblesSize() == 0) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
-                tab = ResourceTab.Nfts
+                tab = AssetsTab.Nfts
             )
         }
     }
@@ -54,11 +54,15 @@ fun LazyListScope.nftsTab(
             key = collection.resourceAddress,
             contentType = { "collection" }
         ) {
-            NFTHeader(collapsibleAssetsState, collection)
+            NFTHeader(
+                collection = collection,
+                state = state,
+                action = action
+            )
         }
 
         items(
-            count = if (collapsibleAssetsState[collection.resourceAddress] == false) collection.amount.toInt() else 0,
+            count = if (!state.isCollapsed(collection.resourceAddress)) collection.amount.toInt() else 0,
             key = { index -> "${collection.resourceAddress}$index" },
             contentType = { "nft" }
         ) { index ->
@@ -105,10 +109,11 @@ private fun NFTItem(
 
 @Composable
 private fun NFTHeader(
-    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
-    collection: Resource.NonFungibleResource
+    collection: Resource.NonFungibleResource,
+    state: AssetsViewState,
+    action: AssetsViewAction
 ) {
-    val isCollapsed = collapsibleAssetsState[collection.resourceAddress] ?: true
+    val isCollapsed = state.isCollapsed(collection.resourceAddress)
     CollapsibleAssetCard(
         modifier = Modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
@@ -120,7 +125,7 @@ private fun NFTHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    collapsibleAssetsState[collection.resourceAddress] = !isCollapsed
+                    action.onCollectionToggle(collection.resourceAddress)
                 }
                 .padding(RadixTheme.dimensions.paddingLarge),
             verticalAlignment = Alignment.CenterVertically,

@@ -21,11 +21,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 @Composable
 fun AssetsTabs(
     modifier: Modifier = Modifier,
-    selectedTab: ResourceTab,
-    onTabSelected: (ResourceTab) -> Unit
+    selectedTab: AssetsTab,
+    onTabSelected: (AssetsTab) -> Unit
 ) {
     val tabIndex = remember(selectedTab) {
-        ResourceTab.values().indexOf(selectedTab)
+        AssetsTab.entries.indexOf(selectedTab)
     }
     TabRow(
         modifier = modifier
@@ -43,7 +43,7 @@ fun AssetsTabs(
             )
         }
     ) {
-        ResourceTab.values().forEach { tab ->
+        AssetsTab.entries.forEach { tab ->
             val isSelected = tab == selectedTab
             Tab(
                 modifier = Modifier.wrapContentWidth(),
@@ -69,14 +69,14 @@ fun AssetsTabs(
 }
 
 @Composable
-private fun ResourceTab.name(): String = when (this) {
-    ResourceTab.Tokens -> stringResource(id = R.string.account_tokens)
-    ResourceTab.Nfts -> stringResource(id = R.string.account_nfts)
-    ResourceTab.Staking -> stringResource(id = R.string.account_staking)
-    ResourceTab.PoolUnits -> stringResource(id = R.string.account_poolUnits)
+private fun AssetsTab.name(): String = when (this) {
+    AssetsTab.Tokens -> stringResource(id = R.string.account_tokens)
+    AssetsTab.Nfts -> stringResource(id = R.string.account_nfts)
+    AssetsTab.Staking -> stringResource(id = R.string.account_staking)
+    AssetsTab.PoolUnits -> stringResource(id = R.string.account_poolUnits)
 }
 
-enum class ResourceTab {
+enum class AssetsTab {
     Tokens,
     Nfts,
     Staking,

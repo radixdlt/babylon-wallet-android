@@ -26,6 +26,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ADDRESS
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
+import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -239,6 +241,14 @@ class AccountViewModel @Inject constructor(
         }
     }
 
+    fun onTabSelected(tab: AssetsTab) {
+        _state.update { it.copy(assetsViewState = it.assetsViewState.copy(selectedTab = tab)) }
+    }
+
+    fun onCollectionToggle(collectionId: String) {
+        _state.update { it.copy(assetsViewState = it.assetsViewState.onCollectionToggle(collectionId)) }
+    }
+
     private fun onLatestEpochRequest() = viewModelScope.launch {
         getNetworkInfoUseCase().onSuccess { info ->
             _state.update { it.copy(epoch = info.epoch) }
@@ -270,6 +280,7 @@ data class AccountUiState(
     val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
     val pendingStakeUnits: Boolean = false,
     private val securityPromptType: SecurityPromptType? = null,
+    val assetsViewState: AssetsViewState = AssetsViewState.from(assets = null),
     val epoch: Long? = null,
     val isRefreshing: Boolean = false,
     val uiMessage: UiMessage? = null

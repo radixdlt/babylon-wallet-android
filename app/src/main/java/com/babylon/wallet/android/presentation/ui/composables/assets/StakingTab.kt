@@ -17,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,7 +39,7 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
-import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -50,14 +49,14 @@ import java.math.BigDecimal
 fun LazyListScope.stakingTab(
     assets: Assets,
     epoch: Long?,
-    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
+    state: AssetsViewState,
     action: AssetsViewAction
 ) {
     if (assets.ownedValidatorsWithStakes.isEmpty()) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
-                tab = ResourceTab.Staking
+                tab = AssetsTab.Staking
             )
         }
     } else {
@@ -81,7 +80,7 @@ fun LazyListScope.stakingTab(
                 ValidatorDetails(
                     modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingDefault else 0.dp),
                     validatorWithStakes = validatorWithStakes,
-                    collapsibleAssetsState = collapsibleAssetsState,
+                    state = state,
                     epoch = epoch,
                     action = action
                 )
@@ -261,7 +260,7 @@ fun ValidatorDetails(
     modifier: Modifier = Modifier,
     validatorWithStakes: ValidatorWithStakes,
     epoch: Long?,
-    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
+    state: AssetsViewState,
     action: AssetsViewAction
 ) {
     Column {
@@ -277,7 +276,7 @@ fun ValidatorDetails(
             }
             cards
         }
-        val isCollapsed = collapsibleAssetsState[validatorWithStakes.validatorDetail.address] == true
+        val isCollapsed = state.isCollapsed(validatorWithStakes.validatorDetail.address)
         CollapsibleAssetCard(
             modifier = modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -288,7 +287,7 @@ fun ValidatorDetails(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        collapsibleAssetsState[validatorWithStakes.validatorDetail.address] = !isCollapsed
+                        action.onCollectionToggle(validatorWithStakes.validatorDetail.address)
                     }
                     .padding(RadixTheme.dimensions.paddingLarge),
                 validator = validatorWithStakes.validatorDetail,

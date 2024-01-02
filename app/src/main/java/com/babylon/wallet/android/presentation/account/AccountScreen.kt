@@ -31,9 +31,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -60,7 +58,7 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
@@ -70,7 +68,6 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
-import com.babylon.wallet.android.presentation.ui.composables.assets.rememberAssetsViewState
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
@@ -128,7 +125,9 @@ fun AccountScreen(
         onLSUUnitClicked = viewModel::onLSUUnitClicked,
         onNextNFTsPageRequest = viewModel::onNextNftPageRequest,
         onStakesRequest = viewModel::onStakesRequest,
-        onClaimClick = viewModel::onClaimClick
+        onClaimClick = viewModel::onClaimClick,
+        onTabSelected = viewModel::onTabSelected,
+        onCollectionToggle = viewModel::onCollectionToggle
     )
 }
 
@@ -142,6 +141,8 @@ private fun AccountScreenContent(
     onRefresh: () -> Unit,
     onTransferClick: (String) -> Unit,
     onMessageShown: () -> Unit,
+    onTabSelected: (AssetsTab) -> Unit,
+    onCollectionToggle: (String) -> Unit,
     onFungibleItemClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
@@ -240,7 +241,9 @@ private fun AccountScreenContent(
                 },
                 onNextNFTsPageRequest = onNextNFTsPageRequest,
                 onStakesRequest = onStakesRequest,
-                onClaimClick = onClaimClick
+                onClaimClick = onClaimClick,
+                onTabSelected = onTabSelected,
+                onCollectionToggle = onCollectionToggle,
             )
         }
 
@@ -259,6 +262,8 @@ fun AssetsContent(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState,
     state: AccountUiState,
+    onTabSelected: (AssetsTab) -> Unit,
+    onCollectionToggle: (String) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
@@ -278,9 +283,6 @@ fun AssetsContent(
         val accountAddress = remember(state.accountWithAssets) {
             state.accountWithAssets?.account?.address.orEmpty()
         }
-
-        var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
-        val collapsibleAssetsState = rememberAssetsViewState(assets = state.accountWithAssets?.assets)
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -362,9 +364,7 @@ fun AssetsContent(
             assetsView(
                 assets = state.accountWithAssets?.assets,
                 epoch = state.epoch,
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it },
-                collapsibleAssetsState = collapsibleAssetsState,
+                state = state.assetsViewState,
                 action = AssetsViewAction.Click(
                     onFungibleClick = onFungibleTokenClick,
                     onNonFungibleItemClick = onNonFungibleItemClick,
@@ -372,7 +372,9 @@ fun AssetsContent(
                     onPoolUnitClick = onPoolUnitClick,
                     onNextNFtsPageRequest = onNextNFTsPageRequest,
                     onStakesRequest = onStakesRequest,
-                    onClaimClick = onClaimClick
+                    onClaimClick = onClaimClick,
+                    onCollectionToggle = onCollectionToggle,
+                    onTabSelected = onTabSelected
                 )
             )
         }
@@ -463,7 +465,9 @@ fun AccountContentPreview() {
                 onLSUUnitClicked = {},
                 onNextNFTsPageRequest = {},
                 onStakesRequest = {},
-                onClaimClick = {}
+                onClaimClick = {},
+                onTabSelected = {},
+                onCollectionToggle = {}
             )
         }
     }

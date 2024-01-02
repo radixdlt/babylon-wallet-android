@@ -15,12 +15,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 
 @Composable
 fun EmptyResourcesContent(
     modifier: Modifier = Modifier,
-    tab: ResourceTab
+    tab: AssetsTab
 ) {
     Column(
         modifier = modifier,
@@ -46,26 +46,26 @@ fun EmptyResourcesContent(
 }
 
 @DrawableRes
-private fun ResourceTab.toEmptyIconRes() = when (this) {
-    ResourceTab.Tokens -> R.drawable.ic_empty_fungibles
-    ResourceTab.Nfts -> com.babylon.wallet.android.designsystem.R.drawable.ic_nfts
-    ResourceTab.Staking -> com.babylon.wallet.android.designsystem.R.drawable.ic_lsu
-    ResourceTab.PoolUnits -> com.babylon.wallet.android.designsystem.R.drawable.ic_pool_units
+private fun AssetsTab.toEmptyIconRes() = when (this) {
+    AssetsTab.Tokens -> R.drawable.ic_empty_fungibles
+    AssetsTab.Nfts -> com.babylon.wallet.android.designsystem.R.drawable.ic_nfts
+    AssetsTab.Staking -> com.babylon.wallet.android.designsystem.R.drawable.ic_lsu
+    AssetsTab.PoolUnits -> com.babylon.wallet.android.designsystem.R.drawable.ic_pool_units
 }
 
 @StringRes
-private fun ResourceTab.toEmptyTitleRes() = when (this) {
-    ResourceTab.Tokens -> R.string.assetDetails_tokenDetails_noTokens
-    ResourceTab.Nfts -> R.string.assetDetails_NFTDetails_noNfts
-    ResourceTab.Staking -> R.string.assetDetails_stakingDetails_noStakes
-    ResourceTab.PoolUnits -> R.string.assetDetails_poolUnitDetails_noPoolUnits
+private fun AssetsTab.toEmptyTitleRes() = when (this) {
+    AssetsTab.Tokens -> R.string.assetDetails_tokenDetails_noTokens
+    AssetsTab.Nfts -> R.string.assetDetails_NFTDetails_noNfts
+    AssetsTab.Staking -> R.string.assetDetails_stakingDetails_noStakes
+    AssetsTab.PoolUnits -> R.string.assetDetails_poolUnitDetails_noPoolUnits
 }
 
 @Suppress("UnusedPrivateMember") // it will be used soon
 @StringRes
-private fun ResourceTab.toEmptyInfoRes() = when (this) {
-    ResourceTab.Tokens -> R.string.assetDetails_tokenDetails_whatAreTokens
-    ResourceTab.Nfts -> R.string.assetDetails_NFTDetails_whatAreNfts
-    ResourceTab.Staking -> R.string.assetDetails_stakingDetails_whatIsStaking
-    ResourceTab.PoolUnits -> R.string.assetDetails_poolUnitDetails_whatArePoolUnits
+private fun AssetsTab.toEmptyInfoRes() = when (this) {
+    AssetsTab.Tokens -> R.string.assetDetails_tokenDetails_whatAreTokens
+    AssetsTab.Nfts -> R.string.assetDetails_NFTDetails_whatAreNfts
+    AssetsTab.Staking -> R.string.assetDetails_stakingDetails_whatIsStaking
+    AssetsTab.PoolUnits -> R.string.assetDetails_poolUnitDetails_whatArePoolUnits
 }
