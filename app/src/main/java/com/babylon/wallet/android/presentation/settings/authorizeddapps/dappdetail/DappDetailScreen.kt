@@ -118,19 +118,16 @@ fun DappDetailScreen(
     DappDetailContent(
         onBackClick = onBackClick,
         modifier = modifier,
-        personaList = state.personas,
-        dAppWithResources = state.dappWithMetadata,
+        state = state,
         onPersonaClick = viewModel::onPersonaClick,
         onFungibleTokenClick = viewModel::onFungibleTokenClick,
         onNftClick = viewModel::onNftClick,
-        selectedSheetState = state.selectedSheetState,
-        selectedPersonaSharedAccounts = state.sharedPersonaAccounts,
         onDisconnectPersona = viewModel::onDisconnectPersona,
         personaDetailsClosed = viewModel::onPersonaDetailsClosed,
         onDeleteDapp = viewModel::onDeleteDapp,
         onEditPersona = viewModel::onEditPersona,
         onEditAccountSharing = viewModel::onEditAccountSharing,
-        loading = state.loading
+        hidePersonaBottomSheet = viewModel::hidePersonaBottomSheet
     )
 }
 
@@ -139,19 +136,16 @@ fun DappDetailScreen(
 private fun DappDetailContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    personaList: ImmutableList<Network.Persona>,
-    dAppWithResources: DAppWithResources?,
+    state: DappDetailUiState,
     onPersonaClick: (Network.Persona) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNftClick: (Resource.NonFungibleResource) -> Unit,
-    selectedSheetState: SelectedSheetState?,
-    selectedPersonaSharedAccounts: ImmutableList<AccountItemUiModel>,
     onDisconnectPersona: (Network.Persona) -> Unit,
     personaDetailsClosed: () -> Unit,
     onDeleteDapp: () -> Unit,
     onEditPersona: () -> Unit,
     onEditAccountSharing: () -> Unit,
-    loading: Boolean
+    hidePersonaBottomSheet: () -> Unit
 ) {
     var showDeleteDappPrompt by remember { mutableStateOf(false) }
     val bottomSheetState =
@@ -165,6 +159,7 @@ private fun DappDetailContent(
         }
     }
     BackHandler(enabled = bottomSheetState.isVisible) {
+        hidePersonaBottomSheet()
         scope.launch {
             bottomSheetState.hide()
         }
@@ -200,7 +195,7 @@ private fun DappDetailContent(
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = dAppWithResources?.dApp?.name.orEmpty(),
+                    title = state.dappWithMetadata?.dApp?.name.orEmpty(),
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBars
                 )
@@ -211,8 +206,8 @@ private fun DappDetailContent(
         Box(modifier = Modifier.padding(padding)) {
             DappDetails(
                 modifier = Modifier.fillMaxSize(),
-                dAppWithResources = dAppWithResources,
-                personaList = personaList,
+                dAppWithResources = state.dappWithMetadata,
+                personaList = state.personas,
                 onPersonaClick = { persona ->
                     onPersonaClick(persona)
                     scope.launch {
@@ -230,24 +225,25 @@ private fun DappDetailContent(
                 }
             )
 
-            if (loading) {
+            if (state.loading) {
                 FullscreenCircularProgressContent()
             }
         }
     }
 
-    if (bottomSheetState.isVisible) {
+    if (state.isBottomSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
             sheetState = bottomSheetState,
             sheetContent = {
-                when (selectedSheetState) {
+                when (state.selectedSheetState) {
                     is SelectedSheetState.SelectedPersona -> {
-                        selectedSheetState.persona?.let {
+                        state.selectedSheetState.persona?.let {
                             PersonaDetailsSheet(
                                 persona = it,
-                                sharedPersonaAccounts = selectedPersonaSharedAccounts,
+                                sharedPersonaAccounts = state.sharedPersonaAccounts,
                                 onCloseClick = {
+                                    hidePersonaBottomSheet()
                                     scope.launch {
                                         bottomSheetState.hide()
                                     }
@@ -260,8 +256,9 @@ private fun DappDetailContent(
                                         shape = RadixTheme.shapes.roundedRectTopMedium
                                     )
                                     .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
-                                dappName = dAppWithResources?.dApp?.name.orEmpty(),
+                                dappName = state.dappWithMetadata?.dApp?.name.orEmpty(),
                                 onDisconnectPersona = { persona ->
+                                    hidePersonaBottomSheet()
                                     scope.launch {
                                         bottomSheetState.hide()
                                     }
@@ -274,6 +271,12 @@ private fun DappDetailContent(
                     }
 
                     else -> {}
+                }
+            },
+            onDismissRequest = {
+                hidePersonaBottomSheet()
+                scope.launch {
+                    bottomSheetState.hide()
                 }
             }
         )
@@ -733,45 +736,48 @@ fun DappDetailContentPreview() {
     RadixWalletTheme {
         DappDetailContent(
             onBackClick = {},
-            personaList = persistentListOf(SampleDataProvider().samplePersona()),
-            dAppWithResources = DAppWithResources(
-                dApp = DApp(
-                    dAppAddress = "account_tdx_abc",
-                    metadata = listOf(
-                        Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Dapp", MetadataType.String),
-                        Metadata.Primitive(ExplicitMetadataKey.DESCRIPTION.key, "Description", MetadataType.String),
-                        Metadata.Collection(
-                            ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                            listOf(
-                                Metadata.Primitive(
-                                    ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                                    "https://hammunet-dashboard.rdx-works-main.extratools.works",
-                                    MetadataType.Url
-                                ),
-                                Metadata.Primitive(
-                                    ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                                    "https://ansharnet-dashboard.rdx-works-main.extratools.works",
-                                    MetadataType.Url
-                                ),
-                            )
-                        ),
-                    )
+            state = DappDetailUiState(
+                loading = false,
+                dappWithMetadata = DAppWithResources(
+                    dApp = DApp(
+                        dAppAddress = "account_tdx_abc",
+                        metadata = listOf(
+                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Dapp", MetadataType.String),
+                            Metadata.Primitive(ExplicitMetadataKey.DESCRIPTION.key, "Description", MetadataType.String),
+                            Metadata.Collection(
+                                ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                listOf(
+                                    Metadata.Primitive(
+                                        ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                        "https://hammunet-dashboard.rdx-works-main.extratools.works",
+                                        MetadataType.Url
+                                    ),
+                                    Metadata.Primitive(
+                                        ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                        "https://ansharnet-dashboard.rdx-works-main.extratools.works",
+                                        MetadataType.Url
+                                    ),
+                                )
+                            ),
+                        )
+                    ),
+                    resources = DAppResources(emptyList(), emptyList()),
                 ),
-                resources = DAppResources(emptyList(), emptyList()),
+                personas = persistentListOf(SampleDataProvider().samplePersona()),
+                sharedPersonaAccounts = persistentListOf(
+                    AccountItemUiModel("account_tdx_efgh", "Account1", 0)
+                ),
+                selectedSheetState = null
             ),
             onPersonaClick = {},
             onFungibleTokenClick = {},
             onNftClick = {},
-            selectedSheetState = null,
-            selectedPersonaSharedAccounts = persistentListOf(
-                AccountItemUiModel("account_tdx_efgh", "Account1", 0)
-            ),
             onDisconnectPersona = {},
             personaDetailsClosed = {},
             onDeleteDapp = {},
             onEditPersona = {},
             onEditAccountSharing = {},
-            loading = false
+            hidePersonaBottomSheet = {}
         )
     }
 }

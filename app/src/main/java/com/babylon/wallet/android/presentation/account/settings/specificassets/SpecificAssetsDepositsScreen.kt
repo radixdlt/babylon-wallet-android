@@ -99,6 +99,7 @@ fun SpecificAssetsDepositsScreen(
     val kb = LocalSoftwareKeyboardController.current
     val hideCallback = {
         kb?.hide()
+        sharedViewModel.setAddAssetSheetVisible(false)
         scope.launch { sheetState.hide() }
     }
     BackHandler {
@@ -161,6 +162,7 @@ fun SpecificAssetsDepositsScreen(
                 }
             )
             scope.launch {
+                sharedViewModel.setAddAssetSheetVisible(true)
                 sheetState.show()
             }
         },
@@ -173,7 +175,7 @@ fun SpecificAssetsDepositsScreen(
         onDeleteAsset = sharedViewModel::showDeletePrompt
     )
 
-    if (sheetState.isVisible) {
+    if (state.isAddAssetSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
             wrapContent = true,
@@ -196,7 +198,10 @@ fun SpecificAssetsDepositsScreen(
                     }
                 )
             },
-            sheetState = sheetState
+            sheetState = sheetState,
+            onDismissRequest = {
+                hideCallback()
+            }
         )
     }
 }

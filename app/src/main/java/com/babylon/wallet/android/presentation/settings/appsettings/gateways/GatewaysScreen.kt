@@ -51,7 +51,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -68,18 +67,15 @@ fun GatewaysScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     GatewaysContent(
         modifier = modifier,
+        state = state,
         onBackClick = onBackClick,
         onAddGatewayClick = viewModel::onAddGateway,
-        newUrl = state.newUrl,
         onNewUrlChanged = viewModel::onNewUrlChanged,
-        newUrlValid = state.newUrlValid,
-        gatewayList = state.gatewayList,
         onDeleteGateway = viewModel::onDeleteGateway,
-        addingGateway = state.addingGateway,
-        gatewayAddFailure = state.gatewayAddFailure,
         onGatewayClick = viewModel::onGatewayClick,
         oneOffEvent = viewModel.oneOffEvent,
-        onCreateProfile = onCreateProfile
+        onCreateProfile = onCreateProfile,
+        addGatewaySheetVisible = viewModel::setAddGatewaySheetVisible
     )
 }
 
@@ -87,23 +83,21 @@ fun GatewaysScreen(
 @Composable
 private fun GatewaysContent(
     modifier: Modifier = Modifier,
+    state: SettingsUiState,
     onBackClick: () -> Unit,
     onAddGatewayClick: () -> Unit,
-    newUrl: String,
     onNewUrlChanged: (String) -> Unit,
-    newUrlValid: Boolean,
-    gatewayList: PersistentList<GatewayWrapper>,
     onDeleteGateway: (GatewayWrapper) -> Unit,
-    addingGateway: Boolean,
-    gatewayAddFailure: GatewayAddFailure?,
     onGatewayClick: (Radix.Gateway) -> Unit,
+    oneOffEvent: Flow<SettingsEditGatewayEvent>,
     onCreateProfile: (String, Int) -> Unit,
-    oneOffEvent: Flow<SettingsEditGatewayEvent>
+    addGatewaySheetVisible: (Boolean) -> Unit
 ) {
     val bottomSheetState =
         rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     BackHandler(enabled = bottomSheetState.isVisible) {
+        addGatewaySheetVisible(false)
         scope.launch {
             bottomSheetState.hide()
         }
@@ -115,6 +109,7 @@ private fun GatewaysContent(
                     onCreateProfile(it.newUrl, it.networkId)
                 }
                 else -> {
+                    addGatewaySheetVisible(false)
                     scope.launch {
                         bottomSheetState.hide()
                     }
@@ -162,7 +157,7 @@ private fun GatewaysContent(
                         modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     )
                 }
-                items(gatewayList) { gateway ->
+                items(state.gatewayList) { gateway ->
                     GatewayCard(
                         gateway = gateway,
                         onDeleteGateway = onDeleteGateway,
@@ -186,6 +181,7 @@ private fun GatewaysContent(
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(id = R.string.gateways_addNewGatewayButtonTitle),
                         onClick = {
+                            addGatewaySheetVisible(true)
                             scope.launch {
                                 bottomSheetState.show()
                             }
@@ -196,7 +192,7 @@ private fun GatewaysContent(
         }
     }
 
-    if (bottomSheetState.isVisible) {
+    if (state.isAddGatewaySheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
             sheetState = bottomSheetState,
@@ -205,18 +201,25 @@ private fun GatewaysContent(
             sheetContent = {
                 AddGatewaySheet(
                     onAddGatewayClick = onAddGatewayClick,
-                    newUrl = newUrl,
+                    newUrl = state.newUrl,
                     onNewUrlChanged = onNewUrlChanged,
                     onClose = {
+                        addGatewaySheetVisible(false)
                         scope.launch {
                             bottomSheetState.hide()
                         }
                     },
-                    newUrlValid = newUrlValid,
-                    addingGateway = addingGateway,
+                    newUrlValid = state.newUrlValid,
+                    addingGateway = state.addingGateway,
                     modifier = Modifier.navigationBarsPadding(),
-                    gatewayAddFailure = gatewayAddFailure
+                    gatewayAddFailure = state.gatewayAddFailure
                 )
+            },
+            onDismissRequest = {
+                addGatewaySheetVisible(false)
+                scope.launch {
+                    bottomSheetState.hide()
+                }
             }
         )
     }
@@ -388,33 +391,40 @@ private fun Radix.Gateway.displayName(): String = when (network.id) {
 fun GatewaysScreenPreview() {
     RadixWalletTheme {
         GatewaysContent(
+            state = SettingsUiState(
+                currentGateway = Radix.Gateway(
+                    url = "https://babylon-stokenet-gateway.radixdlt.com/",
+                    Radix.Network.stokenet
+                ),
+                gatewayList = persistentListOf(
+                    GatewayWrapper(
+                        gateway = Radix.Gateway(
+                            url = "https://babylon-stokenet-gateway.radixdlt.com/",
+                            Radix.Network.stokenet
+                        ),
+                        selected = true
+                    ),
+                    GatewayWrapper(
+                        gateway = Radix.Gateway(
+                            url = "https://mainnet.radixdlt.com/",
+                            Radix.Network.mainnet
+                        ),
+                        selected = false
+                    )
+                ),
+                newUrl = "",
+                newUrlValid = false,
+                addingGateway = true,
+                gatewayAddFailure = null
+            ),
             onBackClick = {},
             onAddGatewayClick = {},
-            newUrl = "",
             onNewUrlChanged = {},
-            newUrlValid = false,
-            gatewayList = persistentListOf(
-                GatewayWrapper(
-                    gateway = Radix.Gateway(
-                        url = "https://babylon-stokenet-gateway.radixdlt.com/",
-                        Radix.Network.stokenet
-                    ),
-                    selected = true
-                ),
-                GatewayWrapper(
-                    gateway = Radix.Gateway(
-                        url = "https://mainnet.radixdlt.com/",
-                        Radix.Network.mainnet
-                    ),
-                    selected = false
-                )
-            ),
             onDeleteGateway = {},
-            addingGateway = true,
-            gatewayAddFailure = null,
             onGatewayClick = {},
             oneOffEvent = flow { },
-            onCreateProfile = { _, _ -> }
+            onCreateProfile = { _, _ -> },
+            addGatewaySheetVisible = {}
         )
     }
 }

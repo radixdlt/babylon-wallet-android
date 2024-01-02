@@ -97,13 +97,10 @@ fun PersonaDetailScreen(
     }
     PersonaDetailContent(
         modifier = modifier,
+        state = state,
         onBackClick = onBackClick,
-        persona = state.persona,
         onEditPersona = onEditPersona,
-        authorizedDapps = state.authorizedDapps,
-        selectedDApp = state.selectedDApp,
         onDAppClick = viewModel::onDAppClick,
-        hasAuthKey = state.hasAuthKey,
         onCreateAndUploadAuthKey = {
             context.biometricAuthenticate {
                 if (it) {
@@ -114,7 +111,8 @@ fun PersonaDetailScreen(
         loading = state.loading,
         onHidePersona = {
             showHidePersonaPrompt = true
-        }
+        },
+        setDAppDetailSheetHidden = viewModel::setDAppDetailSheetHidden
     )
 }
 
@@ -122,16 +120,14 @@ fun PersonaDetailScreen(
 @Composable
 private fun PersonaDetailContent(
     modifier: Modifier = Modifier,
+    state: PersonaDetailUiState,
     onBackClick: () -> Unit,
-    persona: Network.Persona?,
     onEditPersona: (String) -> Unit,
-    authorizedDapps: ImmutableList<DAppWithResources>,
-    selectedDApp: DAppWithResources?,
     onDAppClick: (DAppWithResources) -> Unit,
-    hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
     loading: Boolean,
-    onHidePersona: () -> Unit
+    onHidePersona: () -> Unit,
+    setDAppDetailSheetHidden: () -> Unit
 ) {
     val bottomSheetState =
         rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -141,7 +137,7 @@ private fun PersonaDetailContent(
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = persona?.displayName.orEmpty(),
+                    title = state.persona?.displayName.orEmpty(),
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBars
                 )
@@ -151,13 +147,13 @@ private fun PersonaDetailContent(
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-        if (persona != null) {
+        if (state.persona != null) {
             PersonaDetailList(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(padding),
-                persona = persona,
-                authorizedDapps = authorizedDapps,
+                persona = state.persona,
+                authorizedDapps = state.authorizedDapps,
                 onDAppClick = {
                     onDAppClick(it)
                     scope.launch {
@@ -165,7 +161,7 @@ private fun PersonaDetailContent(
                     }
                 },
                 onEditPersona = onEditPersona,
-                hasAuthKey = hasAuthKey,
+                hasAuthKey = state.hasAuthKey,
                 onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
                 loading = loading,
                 onHidePersona = onHidePersona
@@ -175,21 +171,28 @@ private fun PersonaDetailContent(
         }
     }
 
-    if (bottomSheetState.isVisible) {
+    if (state.isDAppDetailSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
             sheetState = bottomSheetState,
             sheetContent = {
-                selectedDApp?.let {
+                state.selectedDApp?.let {
                     DAppDetailsSheetContent(
                         modifier = Modifier.navigationBarsPadding(),
                         onBackClick = {
+                            setDAppDetailSheetHidden()
                             scope.launch {
                                 bottomSheetState.hide()
                             }
                         },
                         dApp = it
                     )
+                }
+            },
+            onDismissRequest = {
+                setDAppDetailSheetHidden()
+                scope.launch {
+                    bottomSheetState.hide()
                 }
             }
         )
@@ -319,16 +322,19 @@ fun PersonaDetailContentPreview() {
     RadixWalletTheme {
         PersonaDetailContent(
             modifier = Modifier.fillMaxSize(),
+            state = PersonaDetailUiState(
+                authorizedDapps = persistentListOf(),
+                persona = SampleDataProvider().samplePersona(),
+                hasAuthKey = false,
+                selectedDApp = null
+            ),
             onBackClick = {},
-            persona = SampleDataProvider().samplePersona(),
             onEditPersona = {},
-            authorizedDapps = persistentListOf(),
-            selectedDApp = null,
             onDAppClick = {},
-            hasAuthKey = false,
             onCreateAndUploadAuthKey = {},
             loading = false,
-            onHidePersona = {}
+            onHidePersona = {},
+            setDAppDetailSheetHidden = {}
         )
     }
 }

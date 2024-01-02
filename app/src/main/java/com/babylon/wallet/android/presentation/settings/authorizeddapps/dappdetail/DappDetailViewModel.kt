@@ -146,7 +146,7 @@ class DappDetailViewModel @Inject constructor(
         if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
             _state.update {
                 it.copy(
-                    selectedSheetState = SelectedSheetState.SelectedPersona(null),
+                    selectedSheetState = null,
                     sharedPersonaAccounts = persistentListOf()
                 )
             }
@@ -217,6 +217,10 @@ class DappDetailViewModel @Inject constructor(
             }
         }
     }
+
+    fun hidePersonaBottomSheet() {
+        _state.update { it.copy(selectedSheetState = null) }
+    }
 }
 
 sealed interface DappDetailEvent : OneOffEvent {
@@ -236,7 +240,11 @@ data class DappDetailUiState(
     val personas: ImmutableList<Network.Persona> = persistentListOf(),
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedSheetState: SelectedSheetState? = null
-) : UiState
+) : UiState {
+
+    val isBottomSheetVisible: Boolean
+        get() = selectedSheetState != null
+}
 
 sealed interface SelectedSheetState {
     data class SelectedPersona(

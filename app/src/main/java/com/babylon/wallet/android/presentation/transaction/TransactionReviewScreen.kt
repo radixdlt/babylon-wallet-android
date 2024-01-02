@@ -333,7 +333,7 @@ private fun TransactionPreviewContent(
         }
     }
 
-    if (modalBottomSheetState.isVisible) {
+    if (state.isSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier.fillMaxSize(),
             sheetState = modalBottomSheetState,
@@ -357,7 +357,8 @@ private fun TransactionPreviewContent(
                     onViewDefaultModeClick = onViewDefaultModeClick,
                     onViewAdvancedModeClick = onViewAdvancedModeClick
                 )
-            }
+            },
+            onDismissRequest = onBackClick
         )
     }
 }

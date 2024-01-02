@@ -93,6 +93,10 @@ class PersonaEditViewModel @Inject constructor(
             }
         }
     }
+
+    fun setAddFieldSheetVisible(isVisible: Boolean) {
+        _state.update { it.copy(isAddFieldBottomSheetVisible = isVisible) }
+    }
 }
 
 sealed interface PersonaEditEvent : OneOffEvent {
@@ -108,5 +112,6 @@ data class PersonaEditUiState(
     val saveButtonEnabled: Boolean = false,
     val dappContextEdit: Boolean = false,
     val wasEdited: Boolean = false,
-    val missingFields: ImmutableList<PersonaData.PersonaDataField.Kind> = persistentListOf()
+    val missingFields: ImmutableList<PersonaData.PersonaDataField.Kind> = persistentListOf(),
+    val isAddFieldBottomSheetVisible: Boolean = false
 ) : UiState

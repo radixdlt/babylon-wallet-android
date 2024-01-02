@@ -72,21 +72,18 @@ fun CreatePersonaScreen(
         FullscreenCircularProgressContent()
     } else {
         CreatePersonaContent(
+            state = state,
             onPersonaNameChange = viewModel::onDisplayNameChanged,
             onPersonaCreateClick = viewModel::onPersonaCreateClick,
-            personaName = state.personaDisplayName,
-            continueButtonEnabled = state.continueButtonEnabled,
             onBackClick = onBackClick,
             modifier = modifier,
-            fieldsToAdd = state.fieldsToAdd,
-            currentFields = state.currentFields,
-            anyFieldSelected = state.anyFieldSelected,
             onSelectionChanged = viewModel::onSelectionChanged,
             onAddFields = viewModel::onAddFields,
             onDeleteField = viewModel::onDeleteField,
             onValueChanged = viewModel::onFieldValueChanged,
             onFieldFocusChanged = viewModel::onFieldFocusChanged,
-            onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged
+            onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
+            onAddFieldSheetVisible = viewModel::setAddFieldSheetVisible
         )
     }
 
@@ -104,27 +101,25 @@ fun CreatePersonaScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePersonaContent(
+    state: CreatePersonaViewModel.CreatePersonaUiState,
     onPersonaNameChange: (String) -> Unit,
     onPersonaCreateClick: () -> Unit,
-    personaName: PersonaDisplayNameFieldWrapper,
-    continueButtonEnabled: Boolean,
     onBackClick: () -> Unit,
     modifier: Modifier,
-    fieldsToAdd: ImmutableList<PersonaFieldWrapper>,
-    currentFields: ImmutableList<PersonaFieldWrapper>,
-    anyFieldSelected: Boolean,
     onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onAddFields: () -> Unit,
     onDeleteField: (PersonaDataEntryID) -> Unit,
     onValueChanged: (PersonaDataEntryID, PersonaData.PersonaDataField) -> Unit,
     onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
+    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
+    onAddFieldSheetVisible: (Boolean) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val bottomSheetState =
         rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     BackHandler(enabled = bottomSheetState.isVisible) {
+        onAddFieldSheetVisible(false)
         scope.launch {
             bottomSheetState.hide()
             keyboardController?.hide()
@@ -160,7 +155,7 @@ fun CreatePersonaContent(
                         .padding(dimensions.paddingDefault)
                         .navigationBarsPadding()
                         .imePadding(),
-                    enabled = continueButtonEnabled
+                    enabled = state.continueButtonEnabled
                 )
             }
         },
@@ -168,13 +163,14 @@ fun CreatePersonaContent(
     ) { padding ->
         CreatePersonaContentList(
             onPersonaNameChange = onPersonaNameChange,
-            personaName = personaName,
-            currentFields = currentFields,
+            personaName = state.personaDisplayName,
+            currentFields = state.currentFields,
             onValueChanged = onValueChanged,
             onDeleteField = onDeleteField,
-            addButtonEnabled = fieldsToAdd.isNotEmpty(),
+            addButtonEnabled = state.fieldsToAdd.isNotEmpty(),
             modifier = Modifier.padding(padding),
             onAddFieldClick = {
+                onAddFieldSheetVisible(true)
                 scope.launch {
                     bottomSheetState.show()
                 }
@@ -184,19 +180,21 @@ fun CreatePersonaContent(
         )
     }
 
-    if (bottomSheetState.isVisible) {
+    if (state.isAddFieldBottomSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
             sheetState = bottomSheetState,
             sheetContent = {
                 AddFieldSheet(
                     onBackClick = {
+                        onAddFieldSheetVisible(false)
                         scope.launch {
                             bottomSheetState.hide()
                         }
                     },
-                    fieldsToAdd = fieldsToAdd,
+                    fieldsToAdd = state.fieldsToAdd,
                     onAddFields = {
+                        onAddFieldSheetVisible(false)
                         scope.launch { bottomSheetState.hide() }
                         onAddFields()
                     },
@@ -204,8 +202,14 @@ fun CreatePersonaContent(
                     modifier = Modifier
                         .fillMaxSize()
                         .navigationBarsPadding(),
-                    anyFieldSelected = anyFieldSelected
+                    anyFieldSelected = state.anyFieldSelected
                 )
+            },
+            onDismissRequest = {
+                onAddFieldSheetVisible(false)
+                scope.launch {
+                    bottomSheetState.hide()
+                }
             }
         )
     }
@@ -332,21 +336,25 @@ private fun CreatePersonaContentList(
 fun CreateAccountContentPreview() {
     RadixWalletTheme {
         CreatePersonaContent(
+            state = CreatePersonaViewModel.CreatePersonaUiState(
+                currentFields = persistentListOf(),
+                fieldsToAdd = persistentListOf(),
+                personaDisplayName = PersonaDisplayNameFieldWrapper("Name"),
+                continueButtonEnabled = false,
+                anyFieldSelected = false,
+                isAddFieldBottomSheetVisible = false
+            ),
             onPersonaNameChange = {},
             onPersonaCreateClick = {},
-            personaName = PersonaDisplayNameFieldWrapper("Name"),
-            continueButtonEnabled = false,
             onBackClick = {},
             modifier = Modifier,
-            fieldsToAdd = persistentListOf(),
-            currentFields = persistentListOf(),
-            anyFieldSelected = false,
             onSelectionChanged = { _, _ -> },
             onAddFields = {},
             onDeleteField = {},
-            { _, _ -> },
+            onValueChanged = { _, _ -> },
             onFieldFocusChanged = { _, _ -> },
-            onPersonaDisplayNameFocusChanged = {}
+            onPersonaDisplayNameFocusChanged = {},
+            onAddFieldSheetVisible = {}
         )
     }
 }

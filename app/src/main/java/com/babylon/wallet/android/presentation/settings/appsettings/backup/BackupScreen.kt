@@ -342,7 +342,7 @@ private fun BackupScreenContent(
         }
     }
 
-    if (modalBottomSheetState.isVisible) {
+    if (state.isEncryptSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier.fillMaxSize(),
             sheetState = modalBottomSheetState,
@@ -358,7 +358,8 @@ private fun BackupScreenContent(
                         onBackClick = onBackClick
                     )
                 }
-            }
+            },
+            onDismissRequest = onBackClick
         )
     }
 }

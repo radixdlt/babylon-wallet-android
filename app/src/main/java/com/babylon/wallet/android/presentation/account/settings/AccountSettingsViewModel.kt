@@ -155,6 +155,9 @@ data class AccountPreferenceUiState(
     val bottomSheetContent: BottomSheetContent = BottomSheetContent.None
 ) : UiState {
 
+    val isBottomSheetVisible: Boolean
+        get() = bottomSheetContent != BottomSheetContent.None
+
     enum class BottomSheetContent {
         None, RenameAccount, AddressQRCode
     }

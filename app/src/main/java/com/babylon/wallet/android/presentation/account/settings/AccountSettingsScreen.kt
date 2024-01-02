@@ -128,7 +128,7 @@ fun AccountSettingsScreen(
         }
     )
 
-    if (bottomSheetState.isVisible) {
+    if (state.isBottomSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
             wrapContent = true,
@@ -172,6 +172,12 @@ fun AccountSettingsScreen(
                     }
 
                     AccountPreferenceUiState.BottomSheetContent.None -> {}
+                }
+            },
+            onDismissRequest = {
+                scope.launch {
+                    bottomSheetState.hide()
+                    viewModel.resetBottomSheetContent()
                 }
             }
         )

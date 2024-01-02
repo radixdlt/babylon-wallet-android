@@ -140,6 +140,10 @@ class GatewaysViewModel @Inject constructor(
             sendEvent(SettingsEditGatewayEvent.CreateProfileOnNetwork(urlEncoded, gateway.network.id))
         }
     }
+
+    fun setAddGatewaySheetVisible(isVisible: Boolean) {
+        _state.update { it.copy(isAddGatewaySheetVisible = isVisible) }
+    }
 }
 
 @VisibleForTesting
@@ -155,7 +159,8 @@ data class SettingsUiState(
     val newUrlValid: Boolean = false,
     val addingGateway: Boolean = false,
     val gatewayAddFailure: GatewayAddFailure? = null,
-    val isDeveloperModeEnabled: Boolean = false
+    val isDeveloperModeEnabled: Boolean = false,
+    val isAddGatewaySheetVisible: Boolean = false
 ) : UiState
 
 enum class GatewayAddFailure {

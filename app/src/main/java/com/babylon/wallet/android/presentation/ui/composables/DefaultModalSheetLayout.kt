@@ -25,7 +25,8 @@ fun DefaultModalSheetLayout(
     heightFraction: Float = 0.9f,
     enableImePadding: Boolean = false,
     wrapContent: Boolean = false,
-    sheetContent: @Composable () -> Unit
+    sheetContent: @Composable () -> Unit,
+    onDismissRequest: () -> Unit
 ) {
     val windowInsets = WindowInsets(0)
 
@@ -50,7 +51,7 @@ fun DefaultModalSheetLayout(
                     sheetContent()
                 }
             },
-            onDismissRequest = { }
+            onDismissRequest = onDismissRequest
         )
     }
 }

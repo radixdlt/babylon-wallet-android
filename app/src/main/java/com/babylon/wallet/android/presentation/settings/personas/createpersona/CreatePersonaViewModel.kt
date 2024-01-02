@@ -69,13 +69,18 @@ class CreatePersonaViewModel @Inject constructor(
         }
     }
 
+    fun setAddFieldSheetVisible(isVisible: Boolean) {
+        _state.update { it.copy(isAddFieldBottomSheetVisible = isVisible) }
+    }
+
     data class CreatePersonaUiState(
         val loading: Boolean = false,
         val currentFields: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
         val fieldsToAdd: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
         val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
         val continueButtonEnabled: Boolean = false,
-        val anyFieldSelected: Boolean = false
+        val anyFieldSelected: Boolean = false,
+        val isAddFieldBottomSheetVisible: Boolean = false
     ) : UiState
 }
 

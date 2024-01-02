@@ -81,6 +81,7 @@ fun SpecificDepositorScreen(
     val kb = LocalSoftwareKeyboardController.current
     val hideCallback = {
         kb?.hide()
+        sharedViewModel.setAddDepositorSheetVisible(false)
         scope.launch { sheetState.hide() }
     }
     BackHandler {
@@ -128,6 +129,7 @@ fun SpecificDepositorScreen(
         onMessageShown = sharedViewModel::onMessageShown,
         error = state.error,
         onShowAddAssetSheet = {
+            sharedViewModel.setAddDepositorSheetVisible(true)
             scope.launch {
                 sheetState.show()
             }
@@ -140,7 +142,7 @@ fun SpecificDepositorScreen(
         onDeleteDepositor = sharedViewModel::showDeletePrompt
     )
 
-    if (sheetState.isVisible) {
+    if (state.isAddDepositorSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier.navigationBarsPadding(),
             sheetContent = {
@@ -162,7 +164,10 @@ fun SpecificDepositorScreen(
                 )
             },
             wrapContent = true,
-            sheetState = sheetState
+            sheetState = sheetState,
+            onDismissRequest = {
+                hideCallback()
+            }
         )
     }
 }

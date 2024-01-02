@@ -78,23 +78,16 @@ fun PersonaEditScreen(
     PersonaEditContent(
         onBackClick = onBackClick,
         modifier = modifier,
-        persona = state.persona,
+        state = state,
         onSave = viewModel::onSave,
-        editedFields = state.currentFields,
-        fieldsToAdd = state.fieldsToAdd,
         onAddFields = viewModel::onAddFields,
         onSelectionChanged = viewModel::onSelectionChanged,
         onDeleteField = viewModel::onDeleteField,
         onValueChanged = viewModel::onFieldValueChanged,
         onDisplayNameChanged = viewModel::onDisplayNameChanged,
-        addButtonEnabled = state.addFieldButtonEnabled,
-        personaDisplayName = state.personaDisplayName,
-        saveButtonEnabled = state.saveButtonEnabled,
         onFieldFocusChanged = viewModel::onFieldFocusChanged,
         onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
-        dappContextEdit = state.dappContextEdit,
-        wasEdited = state.wasEdited,
-        missingFields = state.missingFields
+        setAddFieldSheetVisible = viewModel::setAddFieldSheetVisible
     )
 }
 
@@ -103,23 +96,16 @@ fun PersonaEditScreen(
 private fun PersonaEditContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    persona: Network.Persona?,
+    state: PersonaEditUiState,
     onSave: () -> Unit,
-    editedFields: ImmutableList<PersonaFieldWrapper>,
-    fieldsToAdd: ImmutableList<PersonaFieldWrapper>,
     onAddFields: () -> Unit,
     onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onDeleteField: (PersonaDataEntryID) -> Unit,
     onValueChanged: (PersonaDataEntryID, PersonaData.PersonaDataField) -> Unit,
     onDisplayNameChanged: (String) -> Unit,
-    addButtonEnabled: Boolean,
-    personaDisplayName: PersonaDisplayNameFieldWrapper,
-    saveButtonEnabled: Boolean,
     onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
-    dappContextEdit: Boolean,
-    wasEdited: Boolean,
-    missingFields: ImmutableList<PersonaData.PersonaDataField.Kind>
+    setAddFieldSheetVisible: (Boolean) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val bottomSheetState =
@@ -134,7 +120,7 @@ private fun PersonaEditContent(
                 }
             }
 
-            wasEdited -> {
+            state.wasEdited -> {
                 showCancelPrompt = true
             }
 
@@ -168,14 +154,14 @@ private fun PersonaEditContent(
         )
     }
 
-    persona?.let { selectedPersona ->
+    state.persona?.let { selectedPersona ->
         Scaffold(
             topBar = {
                 Column {
                     RadixCenteredTopAppBar(
                         title = selectedPersona.displayName,
                         onBackClick = {
-                            if (wasEdited) {
+                            if (state.wasEdited) {
                                 showCancelPrompt = true
                             } else {
                                 onBackClick()
@@ -190,7 +176,7 @@ private fun PersonaEditContent(
             bottomBar = {
                 BottomPrimaryButton(
                     onClick = onSave,
-                    enabled = saveButtonEnabled,
+                    enabled = state.saveButtonEnabled,
                     text = stringResource(id = R.string.common_save),
                     modifier = Modifier
                         .imePadding()
@@ -207,42 +193,45 @@ private fun PersonaEditContent(
                     .padding(padding),
                 persona = selectedPersona,
                 onAddField = {
+                    setAddFieldSheetVisible(true)
                     scope.launch {
                         keyboardController?.hide()
                         bottomSheetState.show()
                     }
                 },
-                editedFields = editedFields,
+                editedFields = state.currentFields,
                 onDeleteField = onDeleteField,
                 onValueChanged = onValueChanged,
                 onDisplayNameChanged = onDisplayNameChanged,
-                personaDisplayName = personaDisplayName,
-                addButtonEnabled = fieldsToAdd.isNotEmpty(),
+                personaDisplayName = state.personaDisplayName,
+                addButtonEnabled = state.fieldsToAdd.isNotEmpty(),
                 onFieldFocusChanged = onFieldFocusChanged,
                 onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
-                dappContextEdit = dappContextEdit,
-                missingFields = missingFields
+                dappContextEdit = state.dappContextEdit,
+                missingFields = state.missingFields
             )
         }
     }
 
-    if (persona == null) {
+    if (state.persona == null) {
         FullscreenCircularProgressContent()
     }
 
-    if (bottomSheetState.isVisible) {
+    if (state.isAddFieldBottomSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
             sheetState = bottomSheetState,
             sheetContent = {
                 AddFieldSheet(
                     onBackClick = {
+                        setAddFieldSheetVisible(false)
                         scope.launch {
                             bottomSheetState.hide()
                         }
                     },
-                    fieldsToAdd = fieldsToAdd,
+                    fieldsToAdd = state.fieldsToAdd,
                     onAddFields = {
+                        setAddFieldSheetVisible(false)
                         scope.launch { bottomSheetState.hide() }
                         onAddFields()
                     },
@@ -250,8 +239,14 @@ private fun PersonaEditContent(
                     modifier = Modifier
                         .fillMaxSize()
                         .navigationBarsPadding(),
-                    anyFieldSelected = addButtonEnabled
+                    anyFieldSelected = state.addFieldButtonEnabled
                 )
+            },
+            onDismissRequest = {
+                setAddFieldSheetVisible(false)
+                scope.launch {
+                    bottomSheetState.hide()
+                }
             }
         )
     }
@@ -386,23 +381,26 @@ fun DappDetailContentPreview() {
     RadixWalletTheme {
         PersonaEditContent(
             onBackClick = {},
-            persona = null,
+            state = PersonaEditUiState(
+                persona = null,
+                currentFields = persistentListOf(),
+                fieldsToAdd = persistentListOf(),
+                personaDisplayName = PersonaDisplayNameFieldWrapper("Persona"),
+                addFieldButtonEnabled = false,
+                saveButtonEnabled = false,
+                dappContextEdit = false,
+                wasEdited = false,
+                missingFields = persistentListOf()
+            ),
             onSave = {},
-            editedFields = persistentListOf(),
-            fieldsToAdd = persistentListOf(),
             onAddFields = {},
             onSelectionChanged = { _, _ -> },
             onDeleteField = {},
             onValueChanged = { _, _ -> },
             onDisplayNameChanged = {},
-            addButtonEnabled = false,
-            personaDisplayName = PersonaDisplayNameFieldWrapper("Persona"),
-            saveButtonEnabled = false,
             onFieldFocusChanged = { _, _ -> },
             onPersonaDisplayNameFocusChanged = {},
-            dappContextEdit = false,
-            wasEdited = false,
-            missingFields = persistentListOf()
+            setAddFieldSheetVisible = {}
         )
     }
 }

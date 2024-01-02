@@ -341,7 +341,7 @@ fun TransferContent(
         }
     }
 
-    if (bottomSheetState.isVisible) {
+    if (state.isSheetVisible) {
         DefaultModalSheetLayout(
             modifier = Modifier.imePadding(),
             sheetState = bottomSheetState,
@@ -375,7 +375,8 @@ fun TransferContent(
 
                     is State.Sheet.None -> {}
                 }
-            }
+            },
+            onDismissRequest = onSheetClosed
         )
     }
 }

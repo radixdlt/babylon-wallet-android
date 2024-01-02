@@ -313,7 +313,7 @@ private fun RestoreFromBackupContent(
         }
     }
 
-    if (modalBottomSheetState.isVisible) {
+    if (state.isPasswordSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier,
             sheetState = modalBottomSheetState,
@@ -329,7 +329,8 @@ private fun RestoreFromBackupContent(
                         onPasswordSubmitted = onPasswordSubmitted
                     )
                 }
-            }
+            },
+            onDismissRequest = onBackClick
         )
     }
 }
