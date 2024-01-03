@@ -492,6 +492,8 @@
   <string name="common_optional">Optional</string>
   <string name="common_showMore">Show More</string>
   <string name="common_showLess">Show Less</string>
+  <string name="common_component">Component</string>
+  <string name="common_unauthorized">Unauthorized</string>
   <string name="error_dappRequest_invalidPersonaId">Invalid Persona specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to import Radix Wallet backup: %s</string>
