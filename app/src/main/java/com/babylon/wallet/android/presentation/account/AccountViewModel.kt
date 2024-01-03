@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
@@ -15,6 +16,7 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
+import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicBackup
 import com.babylon.wallet.android.presentation.account.AccountEvent.NavigateToMnemonicRestore
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -24,6 +26,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ADDRESS
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
+import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -58,6 +62,7 @@ class AccountViewModel @Inject constructor(
     private val getNextNFTsPageUseCase: GetNextNFTsPageUseCase,
     private val updateLSUsInfo: UpdateLSUsInfo,
     private val appEventBus: AppEventBus,
+    private val sendClaimRequestUseCase: SendClaimRequestUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
 
@@ -143,11 +148,14 @@ class AccountViewModel @Inject constructor(
         nonFungibleResource: Resource.NonFungibleResource,
         item: Resource.NonFungibleResource.Item
     ) {
+        val account = _state.value.accountWithAssets?.account ?: return
+
         viewModelScope.launch {
             sendEvent(
                 AccountEvent.OnNonFungibleClick(
                     resource = nonFungibleResource,
-                    item = item
+                    item = item,
+                    account = account
                 )
             )
         }
@@ -221,6 +229,26 @@ class AccountViewModel @Inject constructor(
         }
     }
 
+    fun onClaimClick(stakeClaims: List<StakeClaim>) {
+        val account = state.value.accountWithAssets?.account ?: return
+        val epoch = state.value.epoch ?: return
+        viewModelScope.launch {
+            sendClaimRequestUseCase(
+                account = account,
+                claims = stakeClaims,
+                epoch = epoch
+            )
+        }
+    }
+
+    fun onTabSelected(tab: AssetsTab) {
+        _state.update { it.copy(assetsViewState = it.assetsViewState.copy(selectedTab = tab)) }
+    }
+
+    fun onCollectionToggle(collectionId: String) {
+        _state.update { it.copy(assetsViewState = it.assetsViewState.onCollectionToggle(collectionId)) }
+    }
+
     private fun onLatestEpochRequest() = viewModelScope.launch {
         getNetworkInfoUseCase().onSuccess { info ->
             _state.update { it.copy(epoch = info.epoch) }
@@ -240,7 +268,8 @@ internal sealed interface AccountEvent : OneOffEvent {
     data class OnFungibleClick(val resource: Resource.FungibleResource, val account: Network.Account) : AccountEvent
     data class OnNonFungibleClick(
         val resource: Resource.NonFungibleResource,
-        val item: Resource.NonFungibleResource.Item
+        val item: Resource.NonFungibleResource.Item,
+        val account: Network.Account
     ) : AccountEvent
     data class OnPoolUnitClick(val poolUnit: PoolUnit, val account: Network.Account) : AccountEvent
     data class OnLSUClick(val liquidStakeUnit: LiquidStakeUnit, val account: Network.Account) : AccountEvent
@@ -251,6 +280,7 @@ data class AccountUiState(
     val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
     val pendingStakeUnits: Boolean = false,
     private val securityPromptType: SecurityPromptType? = null,
+    val assetsViewState: AssetsViewState = AssetsViewState.from(assets = null),
     val epoch: Long? = null,
     val isRefreshing: Boolean = false,
     val uiMessage: UiMessage? = null

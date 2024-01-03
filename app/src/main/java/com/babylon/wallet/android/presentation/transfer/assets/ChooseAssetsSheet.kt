@@ -27,7 +27,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
-import com.babylon.wallet.android.presentation.ui.composables.assets.rememberAssetsViewState
 import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
 
 @Suppress("CyclomaticComplexMethod")
@@ -35,7 +34,8 @@ import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
 fun ChooseAssetsSheet(
     modifier: Modifier = Modifier,
     state: ChooseAssets,
-    onTabSelected: (ChooseAssets.Tab) -> Unit,
+    onTabClick: (AssetsTab) -> Unit,
+    onCollectionClick: (String) -> Unit,
     onCloseClick: () -> Unit,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit,
     onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
@@ -88,7 +88,6 @@ fun ChooseAssetsSheet(
         },
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
-        val collapsibleAssetsState = rememberAssetsViewState(assets = state.assets)
         val selectedAssets = remember(state.targetAccount.spendingAssets) {
             state.targetAccount.spendingAssets.map { it.address }
         }
@@ -101,21 +100,7 @@ fun ChooseAssetsSheet(
             assetsView(
                 assets = state.assets,
                 epoch = state.epoch,
-                selectedTab = when (state.selectedTab) {
-                    ChooseAssets.Tab.Tokens -> ResourceTab.Tokens
-                    ChooseAssets.Tab.NFTs -> ResourceTab.Nfts
-                    ChooseAssets.Tab.PoolUnits -> ResourceTab.PoolUnits
-                },
-                onTabSelected = {
-                    onTabSelected(
-                        when (it) {
-                            ResourceTab.Tokens -> ChooseAssets.Tab.Tokens
-                            ResourceTab.Nfts -> ChooseAssets.Tab.NFTs
-                            ResourceTab.PoolUnits -> ChooseAssets.Tab.PoolUnits
-                        }
-                    )
-                },
-                collapsibleAssetsState = collapsibleAssetsState,
+                state = state.assetsViewState,
                 action = AssetsViewAction.Selection(
                     selectedResources = selectedAssets,
                     onFungibleCheckChanged = { fungible, isChecked ->
@@ -125,7 +110,9 @@ fun ChooseAssetsSheet(
                         onAssetSelectionChanged(SpendingAsset.NFT(collection, nft), isChecked)
                     },
                     onNextNFtsPageRequest = onNextNFtsPageRequest,
-                    onStakesRequest = onStakesRequest
+                    onStakesRequest = onStakesRequest,
+                    onTabClick = onTabClick,
+                    onCollectionClick = onCollectionClick,
                 )
             )
         }
@@ -140,7 +127,8 @@ fun ChooseAssetsSheetPreview() {
             state = ChooseAssets.init(
                 forTargetAccount = TargetAccount.Skeleton()
             ),
-            onTabSelected = {},
+            onTabClick = {},
+            onCollectionClick = {},
             onCloseClick = {},
             onAssetSelectionChanged = { _, _ -> },
             onNextNFtsPageRequest = {},

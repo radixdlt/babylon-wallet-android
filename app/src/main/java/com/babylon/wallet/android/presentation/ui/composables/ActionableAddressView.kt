@@ -8,10 +8,8 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
@@ -29,7 +27,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -38,8 +35,11 @@ import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.core.content.getSystemService
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -68,12 +68,12 @@ import timber.log.Timber
 fun ActionableAddressView(
     address: String,
     modifier: Modifier = Modifier,
-    shouldTruncateAddressForDisplay: Boolean = true,
+    truncateAddress: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
-    val actionableAddress = resolveAddress(address = address, shouldTruncateAddressForDisplay = shouldTruncateAddressForDisplay)
+    val actionableAddress = resolveAddress(address = address, truncateAddress = truncateAddress)
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -98,6 +98,7 @@ fun ActionableAddressView(
                         actionableAddress.type == ActionableAddress.Type.Global.TRANSACTION -> R.string.addressAction_copyTransactionId
                         actionableAddress.isNft || actionableAddress.type is ActionableAddress.Type.LocalId ->
                             R.string.addressAction_copyNftId
+
                         else -> R.string.addressAction_copyAddress
                     }
                 ),
@@ -172,29 +173,34 @@ fun ActionableAddressView(
             scope.launch { sheetState.show() }
         }
     }
-
     Box(modifier = modifier) {
-        Row(
-            modifier = Modifier
-                .combinedClickable(
-                    onClick = {
-                        actions?.let { popupActions ->
-                            when (val actionData = popupActions.primary.onAction()) {
-                                is OnAction.CallbackBasedAction -> actionData.onAction(context)
-                                is OnAction.ViewBasedAction -> viewBasedAction = actionData
-                            }
+        ConstraintLayout(
+            modifier = Modifier.combinedClickable(
+                onClick = {
+                    actions?.let { popupActions ->
+                        when (val actionData = popupActions.primary.onAction()) {
+                            is OnAction.CallbackBasedAction -> actionData.onAction(context)
+                            is OnAction.ViewBasedAction -> viewBasedAction = actionData
                         }
-                    },
-                    onLongClick = { isDropdownMenuExpanded = true }
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+                    }
+                },
+                onLongClick = { isDropdownMenuExpanded = true }
+            )
         ) {
+            val textRef = createRef()
+            val iconRef = if (actions != null && truncateAddress) {
+                createRef()
+            } else {
+                null
+            }
+
             val inlineContentId = "icon"
-            val text = buildAnnotatedString {
+            val inlinedText = buildAnnotatedString {
                 append(actionableAddress.displayAddress)
-                append(" ")
-                appendInlineContent(inlineContentId)
+                if (!truncateAddress) {
+                    append(" ")
+                    appendInlineContent(inlineContentId)
+                }
             }
             val inlineContent = mapOf(
                 inlineContentId to InlineTextContent(Placeholder(14.sp, 14.sp, PlaceholderVerticalAlign.Center)) {
@@ -208,13 +214,43 @@ fun ActionableAddressView(
                     }
                 }
             )
+
             Text(
-                text = text,
+                modifier = Modifier.constrainAs(textRef) {
+                    start.linkTo(parent.start)
+                    if (iconRef != null) {
+                        end.linkTo(iconRef.start)
+                    } else {
+                        end.linkTo(parent.end)
+                    }
+                },
+                text = inlinedText,
                 color = textColor,
-                maxLines = if (shouldTruncateAddressForDisplay) 1 else 2,
+                maxLines = if (truncateAddress) 1 else 2,
                 style = textStyle,
+                overflow = if (truncateAddress) TextOverflow.Ellipsis else TextOverflow.Clip,
                 inlineContent = inlineContent
             )
+
+            actions?.let { popupActions ->
+                if (iconRef != null) {
+                    val iconMargin = RadixTheme.dimensions.paddingSmall
+                    Icon(
+                        modifier = Modifier.constrainAs(iconRef) {
+                            start.linkTo(textRef.end, margin = iconMargin)
+                            end.linkTo(parent.end)
+                            top.linkTo(textRef.top)
+                            bottom.linkTo(parent.bottom)
+                            horizontalBias = 0f
+                            width = Dimension.value(14.dp)
+                            height = Dimension.value(14.dp)
+                        },
+                        painter = painterResource(id = popupActions.primary.icon),
+                        contentDescription = popupActions.primary.name,
+                        tint = iconColor,
+                    )
+                }
+            }
         }
 
         DropdownMenu(
@@ -270,8 +306,8 @@ fun ActionableAddressView(
 @Composable
 private fun resolveAddress(
     address: String,
-    shouldTruncateAddressForDisplay: Boolean
-): ActionableAddress = remember(address) { ActionableAddress(address, shouldTruncateAddressForDisplay) }
+    truncateAddress: Boolean
+): ActionableAddress = remember(address) { ActionableAddress(address, truncateAddress) }
 
 private data class PopupActions(
     val primary: PopupActionItem,

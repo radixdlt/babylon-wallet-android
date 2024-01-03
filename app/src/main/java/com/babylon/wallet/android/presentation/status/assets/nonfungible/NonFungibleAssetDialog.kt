@@ -27,15 +27,18 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.account.composable.View
+import com.babylon.wallet.android.presentation.status.assets.nonfungible.NonFungibleAssetDialogViewModel.State.ClaimState
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -49,6 +52,7 @@ import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import rdx.works.core.displayableQuantity
 
 @Composable
 fun NonFungibleAssetDialog(
@@ -59,6 +63,7 @@ fun NonFungibleAssetDialog(
     NonFungibleAssetDialogContent(
         state = state,
         onMessageShown = viewModel::onMessageShown,
+        onClaimClick = viewModel::onClaimClick,
         onDismiss = onDismiss
     )
 }
@@ -69,7 +74,8 @@ private fun NonFungibleAssetDialogContent(
     modifier: Modifier = Modifier,
     state: NonFungibleAssetDialogViewModel.State,
     onMessageShown: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onClaimClick: () -> Unit
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier,
@@ -132,30 +138,37 @@ private fun NonFungibleAssetDialogContent(
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }
 
-                    AssetMetadataRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                        key = stringResource(id = R.string.assetDetails_NFTDetails_id)
-                    ) {
-                        if (state.item != null) {
+                    if (state.item != null) {
+                        AssetMetadataRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                            key = stringResource(id = R.string.assetDetails_NFTDetails_id)
+                        ) {
                             ActionableAddressView(
+                                modifier = Modifier.padding(start = RadixTheme.dimensions.paddingDefault),
                                 address = state.item.globalAddress,
                                 textStyle = RadixTheme.typography.body1HighImportance,
                                 textColor = RadixTheme.colors.gray1
                             )
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .size(
-                                        width = RadixTheme.dimensions.paddingXXXLarge * 2,
-                                        height = 16.dp
-                                    )
-                                    .radixPlaceholder(visible = true)
-                            )
                         }
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
+                    if (state.item?.claimEpoch != null && state.item.claimAmountXrd != null) {
+                        val claimState = remember(state.epoch) { state.claimState }
+
+                        RadixPrimaryButton(
+                            modifier = Modifier
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                                .fillMaxWidth()
+                                .radixPlaceholder(visible = claimState == null),
+                            text = state.claimState?.description().orEmpty(),
+                            onClick = { onClaimClick() },
+                            enabled = claimState is ClaimState.ReadyToClaim
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    }
 
                     if (!state.item?.nonStandardMetadata.isNullOrEmpty()) {
                         HorizontalDivider(
@@ -371,4 +384,14 @@ private fun TagsSection(state: NonFungibleAssetDialogViewModel.State) {
             }
         )
     }
+}
+
+@Composable
+private fun ClaimState.description() = when (this) {
+    is ClaimState.ReadyToClaim -> stringResource(id = R.string.assetDetails_staking_readyToClaim, amount.displayableQuantity())
+    is ClaimState.Unstaking -> stringResource(
+        id = R.string.assetDetails_staking_unstaking,
+        amount.displayableQuantity(),
+        approximateClaimMinutes
+    )
 }

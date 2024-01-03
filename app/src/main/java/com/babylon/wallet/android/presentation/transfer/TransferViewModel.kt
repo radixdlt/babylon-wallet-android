@@ -11,7 +11,9 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
+import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -200,7 +202,9 @@ class TransferViewModel @Inject constructor(
 
     // Choose assets flow
 
-    fun onChooseAssetTabSelected(tab: State.Sheet.ChooseAssets.Tab) = assetsChooserDelegate.onTabSelected(tab)
+    fun onChooseAssetTabSelected(tab: AssetsTab) = assetsChooserDelegate.onTabSelected(tab)
+
+    fun onChooseAssetCollectionToggle(collectionId: String) = assetsChooserDelegate.onCollectionToggle(collectionId)
 
     fun onAddAssetsClick(targetAccount: TargetAccount) {
         val currentState = state.value
@@ -382,7 +386,7 @@ class TransferViewModel @Inject constructor(
                 val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
                 val pendingStakeUnits: Boolean = false,
                 val targetAccount: TargetAccount,
-                val selectedTab: Tab = Tab.Tokens,
+                val assetsViewState: AssetsViewState = AssetsViewState.from(assets = null),
                 val epoch: Long? = null,
                 val uiMessage: UiMessage? = null
             ) : Sheet {
@@ -430,12 +434,6 @@ class TransferViewModel @Inject constructor(
                     assets = assets?.copy(validatorsWithStakes = validatorsWithStakes),
                     pendingStakeUnits = false
                 )
-
-                enum class Tab {
-                    Tokens,
-                    NFTs,
-                    PoolUnits
-                }
 
                 companion object {
                     fun init(forTargetAccount: TargetAccount): ChooseAssets = ChooseAssets(

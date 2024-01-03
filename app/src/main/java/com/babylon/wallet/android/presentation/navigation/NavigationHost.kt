@@ -218,8 +218,12 @@ fun NavigationHost(
                 onFungibleResourceClick = { resource, account ->
                     navController.fungibleAssetDialog(resource.resourceAddress, account.address)
                 },
-                onNonFungibleResourceClick = { resource, item ->
-                    navController.nonFungibleAssetDialog(resource.resourceAddress, item.localId.code)
+                onNonFungibleResourceClick = { resource, item, account ->
+                    navController.nonFungibleAssetDialog(
+                        resourceAddress = resource.resourceAddress,
+                        localId = item.localId.code,
+                        accountAddress = account.address
+                    )
                 },
                 onPoolUnitClick = { poolUnit, account ->
                     navController.poolUnitAssetDialog(poolUnit.resourceAddress, account.address)
