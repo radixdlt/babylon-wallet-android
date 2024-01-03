@@ -8,10 +8,13 @@ import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import com.babylon.wallet.android.data.repository.cache.database.DAppEntity
+import com.babylon.wallet.android.data.repository.cache.database.MetadataColumn
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
+import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.dAppsCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntity
@@ -384,26 +387,43 @@ class StateRepositoryImpl @Inject constructor(
     override suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>> = runCatching {
         if (definitionAddresses.isEmpty()) return@runCatching listOf()
 
-        val items = mutableListOf<StateEntityDetailsResponseItem>()
-        stateApi.paginateDetails(
-            addresses = definitionAddresses.toSet(),
-            metadataKeys = setOf(
-                ExplicitMetadataKey.NAME,
-                ExplicitMetadataKey.DESCRIPTION,
-                ExplicitMetadataKey.ACCOUNT_TYPE,
-                ExplicitMetadataKey.DAPP_DEFINITION,
-                ExplicitMetadataKey.DAPP_DEFINITIONS,
-                ExplicitMetadataKey.CLAIMED_WEBSITES,
-                ExplicitMetadataKey.CLAIMED_ENTITIES,
-                ExplicitMetadataKey.ICON_URL
-            )
-        ) { page ->
-            items.addAll(page.items)
+        val cachedDApps = stateDao.getDApps(
+            definitionAddresses = definitionAddresses,
+            minValidity = dAppsCacheValidity()
+        ).map {
+            it.toDApp()
+        }.toMutableList()
+
+        val remainingAddresses = definitionAddresses.toSet() subtract cachedDApps.map { it.dAppAddress }.toSet()
+        if (remainingAddresses.isNotEmpty()) {
+            stateApi.paginateDetails(
+                addresses = definitionAddresses.toSet(),
+                metadataKeys = setOf(
+                    ExplicitMetadataKey.NAME,
+                    ExplicitMetadataKey.DESCRIPTION,
+                    ExplicitMetadataKey.ACCOUNT_TYPE,
+                    ExplicitMetadataKey.DAPP_DEFINITION,
+                    ExplicitMetadataKey.DAPP_DEFINITIONS,
+                    ExplicitMetadataKey.CLAIMED_WEBSITES,
+                    ExplicitMetadataKey.CLAIMED_ENTITIES,
+                    ExplicitMetadataKey.ICON_URL
+                )
+            ) { page ->
+                val syncedAt = InstantGenerator()
+                val entities = page.items.map { item ->
+                    DAppEntity(
+                        definitionAddress = item.address,
+                        metadata = item.explicitMetadata?.toMetadata()?.let { MetadataColumn(it) },
+                        synced = syncedAt
+                    )
+                }
+                stateDao.insertDApps(entities)
+
+                cachedDApps.addAll(entities.map { entity -> entity.toDApp() })
+            }
         }
 
-        items.map { item ->
-            DApp(dAppAddress = item.address, metadata = item.explicitMetadata?.toMetadata().orEmpty())
-        }
+        cachedDApps
     }
 
     override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>) = withContext(dispatcher) {
