@@ -4,7 +4,6 @@ import rdx.works.core.InstantGenerator
 import rdx.works.core.mapWhen
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.SeedPhraseLength
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Transaction
@@ -112,7 +111,7 @@ fun Profile.addMainBabylonDeviceFactorSource(
 
 fun Profile.mainBabylonFactorSource(): DeviceFactorSource? {
     val babylonFactorSources = factorSources.filterIsInstance<DeviceFactorSource>().filter {
-        it.supportsBabylon && it.hint.mnemonicWordCount == SeedPhraseLength.TWENTY_FOUR.words
+        it.isBabylonDeviceFactorSource
     }
     return if (babylonFactorSources.size == 1) {
         babylonFactorSources.first()
