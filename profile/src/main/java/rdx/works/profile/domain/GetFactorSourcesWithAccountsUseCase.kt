@@ -21,7 +21,6 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
             val allPersonasOnNetwork = profile.currentNetwork?.personas?.notHiddenPersonas().orEmpty()
             deviceFactorSources.forEach { deviceFactorSource ->
                 if (deviceFactorSource.supportsOlympia && deviceFactorSource.supportsBabylon) {
-                    val hasBabylonSeedPhraseLength = deviceFactorSource.hasBabylonSeedPhraseLength
                     val olympiaAccounts = allAccountsOnNetwork.filter {
                         it.factorSourceId == deviceFactorSource.id && it.usesSecp256k1
                     }
@@ -31,7 +30,7 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
                     val babylonPersonas = allPersonasOnNetwork.filter {
                         it.factorSourceId == deviceFactorSource.id && it.usesCurve25519
                     }
-                    if (hasBabylonSeedPhraseLength) {
+                    if (deviceFactorSource.hasBabylonSeedPhraseLength) {
                         result.add(
                             DeviceFactorSourceData(
                                 deviceFactorSource = deviceFactorSource,
