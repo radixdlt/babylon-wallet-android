@@ -124,7 +124,7 @@ private fun NFTHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    action.onCollectionToggle(collection.resourceAddress)
+                    action.onCollectionClick(collection.resourceAddress)
                 }
                 .padding(RadixTheme.dimensions.paddingLarge),
             verticalAlignment = Alignment.CenterVertically,

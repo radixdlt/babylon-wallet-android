@@ -12,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -46,7 +45,7 @@ fun LazyListScope.assetsView(
     item {
         AssetsTabs(
             selectedTab = state.selectedTab,
-            onTabSelected = action.onTabSelected
+            onTabSelected = action.onTabClick
         )
     }
 
@@ -126,8 +125,8 @@ data class AssetsViewState(
 
 sealed interface AssetsViewAction {
 
-    val onTabSelected: (AssetsTab) -> Unit
-    val onCollectionToggle: (String) -> Unit
+    val onTabClick: (AssetsTab) -> Unit
+    val onCollectionClick: (String) -> Unit
     val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit
     val onStakesRequest: () -> Unit
 
@@ -137,8 +136,8 @@ sealed interface AssetsViewAction {
         val onLSUClick: (LiquidStakeUnit) -> Unit,
         val onPoolUnitClick: (PoolUnit) -> Unit,
         val onClaimClick: (List<StakeClaim>) -> Unit,
-        override val onTabSelected: (AssetsTab) -> Unit,
-        override val onCollectionToggle: (String) -> Unit,
+        override val onTabClick: (AssetsTab) -> Unit,
+        override val onCollectionClick: (String) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
         override val onStakesRequest: () -> Unit,
     ) : AssetsViewAction
@@ -147,29 +146,13 @@ sealed interface AssetsViewAction {
         val selectedResources: List<String>,
         val onFungibleCheckChanged: (Resource.FungibleResource, Boolean) -> Unit,
         val onNFTCheckChanged: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
-        override val onTabSelected: (AssetsTab) -> Unit,
-        override val onCollectionToggle: (String) -> Unit,
+        override val onTabClick: (AssetsTab) -> Unit,
+        override val onCollectionClick: (String) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
         override val onStakesRequest: () -> Unit,
     ) : AssetsViewAction {
 
         fun isSelected(resourceAddress: String) = selectedResources.contains(resourceAddress)
-    }
-}
-
-@Composable
-fun rememberAssetsViewState(assets: Assets?): SnapshotStateMap<String, Boolean> {
-    val collections = remember(assets) {
-        assets?.nonFungibles?.map {
-            it.resourceAddress
-        }.orEmpty() + assets?.validatorsWithStakes?.map {
-            it.validatorDetail.address
-        }.orEmpty()
-    }
-    return remember(collections) {
-        SnapshotStateMap<String, Boolean>().apply {
-            putAll(collections.associateWith { true })
-        }
     }
 }
 
@@ -190,8 +173,8 @@ fun AssetsViewWithLoadingAssets() {
                     onNextNFtsPageRequest = {},
                     onClaimClick = {},
                     onStakesRequest = {},
-                    onCollectionToggle = {},
-                    onTabSelected = {}
+                    onCollectionClick = {},
+                    onTabClick = {}
                 )
             )
         }
@@ -215,8 +198,8 @@ fun AssetsViewWithEmptyAssets() {
                     onNextNFtsPageRequest = {},
                     onClaimClick = {},
                     onStakesRequest = {},
-                    onCollectionToggle = {},
-                    onTabSelected = {}
+                    onCollectionClick = {},
+                    onTabClick = {}
                 )
             )
         }
@@ -399,10 +382,10 @@ fun AssetsViewWithAssets() {
                     onNextNFtsPageRequest = {},
                     onClaimClick = {},
                     onStakesRequest = {},
-                    onTabSelected = {
+                    onTabClick = {
                         state = state.copy(selectedTab = it)
                     },
-                    onCollectionToggle = {
+                    onCollectionClick = {
                         state = state.onCollectionToggle(it)
                     }
                 )

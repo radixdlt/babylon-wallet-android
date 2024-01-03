@@ -34,8 +34,8 @@ import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
 fun ChooseAssetsSheet(
     modifier: Modifier = Modifier,
     state: ChooseAssets,
-    onTabSelected: (AssetsTab) -> Unit,
-    onCollectionToggle: (String) -> Unit,
+    onTabClick: (AssetsTab) -> Unit,
+    onCollectionClick: (String) -> Unit,
     onCloseClick: () -> Unit,
     onAssetSelectionChanged: (SpendingAsset, Boolean) -> Unit,
     onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
@@ -111,8 +111,8 @@ fun ChooseAssetsSheet(
                     },
                     onNextNFtsPageRequest = onNextNFtsPageRequest,
                     onStakesRequest = onStakesRequest,
-                    onTabSelected = onTabSelected,
-                    onCollectionToggle = onCollectionToggle,
+                    onTabClick = onTabClick,
+                    onCollectionClick = onCollectionClick,
                 )
             )
         }
@@ -127,8 +127,8 @@ fun ChooseAssetsSheetPreview() {
             state = ChooseAssets.init(
                 forTargetAccount = TargetAccount.Skeleton()
             ),
-            onTabSelected = {},
-            onCollectionToggle = {},
+            onTabClick = {},
+            onCollectionClick = {},
             onCloseClick = {},
             onAssetSelectionChanged = { _, _ -> },
             onNextNFtsPageRequest = {},

@@ -287,7 +287,7 @@ fun ValidatorDetails(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        action.onCollectionToggle(validatorWithStakes.validatorDetail.address)
+                        action.onCollectionClick(validatorWithStakes.validatorDetail.address)
                     }
                     .padding(RadixTheme.dimensions.paddingLarge),
                 validator = validatorWithStakes.validatorDetail,

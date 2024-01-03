@@ -126,8 +126,8 @@ fun AccountScreen(
         onNextNFTsPageRequest = viewModel::onNextNftPageRequest,
         onStakesRequest = viewModel::onStakesRequest,
         onClaimClick = viewModel::onClaimClick,
-        onTabSelected = viewModel::onTabSelected,
-        onCollectionToggle = viewModel::onCollectionToggle
+        onTabClick = viewModel::onTabSelected,
+        onCollectionClick = viewModel::onCollectionToggle
     )
 }
 
@@ -141,8 +141,8 @@ private fun AccountScreenContent(
     onRefresh: () -> Unit,
     onTransferClick: (String) -> Unit,
     onMessageShown: () -> Unit,
-    onTabSelected: (AssetsTab) -> Unit,
-    onCollectionToggle: (String) -> Unit,
+    onTabClick: (AssetsTab) -> Unit,
+    onCollectionClick: (String) -> Unit,
     onFungibleItemClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
@@ -242,8 +242,8 @@ private fun AccountScreenContent(
                 onNextNFTsPageRequest = onNextNFTsPageRequest,
                 onStakesRequest = onStakesRequest,
                 onClaimClick = onClaimClick,
-                onTabSelected = onTabSelected,
-                onCollectionToggle = onCollectionToggle,
+                onTabClick = onTabClick,
+                onCollectionClick = onCollectionClick,
             )
         }
 
@@ -262,8 +262,8 @@ fun AssetsContent(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState,
     state: AccountUiState,
-    onTabSelected: (AssetsTab) -> Unit,
-    onCollectionToggle: (String) -> Unit,
+    onTabClick: (AssetsTab) -> Unit,
+    onCollectionClick: (String) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
@@ -373,8 +373,8 @@ fun AssetsContent(
                     onNextNFtsPageRequest = onNextNFTsPageRequest,
                     onStakesRequest = onStakesRequest,
                     onClaimClick = onClaimClick,
-                    onCollectionToggle = onCollectionToggle,
-                    onTabSelected = onTabSelected
+                    onCollectionClick = onCollectionClick,
+                    onTabClick = onTabClick
                 )
             )
         }
@@ -466,8 +466,8 @@ fun AccountContentPreview() {
                 onNextNFTsPageRequest = {},
                 onStakesRequest = {},
                 onClaimClick = {},
-                onTabSelected = {},
-                onCollectionToggle = {}
+                onTabClick = {},
+                onCollectionClick = {}
             )
         }
     }
