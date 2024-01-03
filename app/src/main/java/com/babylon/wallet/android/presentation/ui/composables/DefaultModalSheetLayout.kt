@@ -1,11 +1,14 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -14,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 
@@ -26,6 +30,8 @@ fun DefaultModalSheetLayout(
     enableImePadding: Boolean = false,
     wrapContent: Boolean = false,
     sheetContent: @Composable () -> Unit,
+    showDragHandle: Boolean = false,
+    containerColor: Color = RadixTheme.colors.defaultBackground,
     onDismissRequest: () -> Unit
 ) {
     val windowInsets = WindowInsets(0)
@@ -34,9 +40,13 @@ fun DefaultModalSheetLayout(
         val sheetHeight = maxHeight * heightFraction
         ModalBottomSheet(
             sheetState = sheetState,
-            containerColor = RadixTheme.colors.defaultBackground,
+            containerColor = containerColor,
             scrimColor = Color.Black.copy(alpha = 0.3f),
-            dragHandle = {},
+            dragHandle = {
+                if (showDragHandle) {
+                    DefaultModalSheetDragHandle()
+                }
+            },
             windowInsets = windowInsets,
             shape = RadixTheme.shapes.roundedRectTopDefault,
             content = {
@@ -54,4 +64,16 @@ fun DefaultModalSheetLayout(
             onDismissRequest = onDismissRequest
         )
     }
+}
+
+@Composable
+private fun DefaultModalSheetDragHandle(
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .padding(top = RadixTheme.dimensions.paddingDefault)
+            .size(38.dp, 4.dp)
+            .background(color = RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
+    )
 }

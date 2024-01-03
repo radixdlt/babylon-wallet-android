@@ -358,6 +358,7 @@ private fun TransactionPreviewContent(
                     onViewAdvancedModeClick = onViewAdvancedModeClick
                 )
             },
+            showDragHandle = true,
             onDismissRequest = onBackClick
         )
     }

@@ -45,7 +45,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
+import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -174,6 +174,7 @@ fun AccountSettingsScreen(
                     AccountPreferenceUiState.BottomSheetContent.None -> {}
                 }
             },
+            showDragHandle = state.bottomSheetContent == AccountPreferenceUiState.BottomSheetContent.AddressQRCode,
             onDismissRequest = {
                 scope.launch {
                     bottomSheetState.hide()
@@ -364,14 +365,13 @@ private fun AddressQRCodeSheet(
     dismissAddressQRCodeSheet: () -> Unit
 ) {
     Column(modifier = Modifier.navigationBarsPadding()) {
-        BottomDialogDragHandle(
+        BottomDialogHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
                     color = RadixTheme.colors.defaultBackground,
                     shape = RadixTheme.shapes.roundedRectTopDefault
-                )
-                .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                ),
             onDismissRequest = {
                 dismissAddressQRCodeSheet()
             }

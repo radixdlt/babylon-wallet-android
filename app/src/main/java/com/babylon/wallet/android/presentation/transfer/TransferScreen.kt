@@ -376,6 +376,12 @@ fun TransferContent(
                     is State.Sheet.None -> {}
                 }
             },
+            showDragHandle = true,
+            containerColor = if (state.sheet is State.Sheet.ChooseAccounts) {
+                RadixTheme.colors.defaultBackground
+            } else {
+                RadixTheme.colors.gray5
+            },
             onDismissRequest = onSheetClosed
         )
     }

@@ -32,6 +32,7 @@ import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.personaOnCurrentNetwork
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class DappDetailViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,

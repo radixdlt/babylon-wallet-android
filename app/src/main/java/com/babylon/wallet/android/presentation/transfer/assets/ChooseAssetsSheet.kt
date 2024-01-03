@@ -13,6 +13,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
@@ -23,12 +24,12 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAssets
+import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.assets.rememberAssetsViewState
-import com.babylon.wallet.android.presentation.ui.composables.sheets.SheetHeader
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -54,9 +55,15 @@ fun ChooseAssetsSheet(
     Scaffold(
         modifier = modifier.navigationBarsPadding(),
         topBar = {
-            SheetHeader(
+            BottomDialogHeader(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = Color.Transparent,
+                        shape = RadixTheme.shapes.roundedRectTopDefault
+                    ),
                 title = stringResource(id = R.string.assetTransfer_addAssets_navigationTitle),
-                onLeadingActionClicked = onCloseClick
+                onDismissRequest = onCloseClick
             )
         },
         bottomBar = {

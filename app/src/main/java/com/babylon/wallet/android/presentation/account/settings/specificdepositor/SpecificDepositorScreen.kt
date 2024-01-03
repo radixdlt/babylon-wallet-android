@@ -54,7 +54,7 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
+import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -163,6 +163,7 @@ fun SpecificDepositorScreen(
                     }
                 )
             },
+            showDragHandle = true,
             wrapContent = true,
             sheetState = sheetState,
             onDismissRequest = {
@@ -189,7 +190,7 @@ fun AddDepositorSheet(
             .imePadding(),
         verticalArrangement = Arrangement.Center,
     ) {
-        BottomDialogDragHandle(
+        BottomDialogHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
