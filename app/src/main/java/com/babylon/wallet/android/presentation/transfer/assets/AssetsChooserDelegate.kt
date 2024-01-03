@@ -56,8 +56,12 @@ class AssetsChooserDelegate @Inject constructor(
             }
     }
 
-    fun onTabSelected(tab: Sheet.ChooseAssets.Tab) {
-        updateSheetState { it.copy(selectedTab = tab) }
+    fun onTabSelected(tab: AssetsTab) {
+        updateSheetState { it.copy(assetsViewState = it.assetsViewState.copy(selectedTab = tab)) }
+    }
+
+    fun onCollectionToggle(collectionId: String) {
+        updateSheetState { it.copy(assetsViewState = it.assetsViewState.onCollectionToggle(collectionId)) }
     }
 
     fun onAssetSelectionChanged(asset: SpendingAsset, isChecked: Boolean) {

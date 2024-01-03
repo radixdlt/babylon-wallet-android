@@ -12,7 +12,6 @@ import androidx.compose.material.Text
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -22,32 +21,23 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
-import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 
 fun LazyListScope.poolUnitsTab(
     assets: Assets,
-    epoch: Long?,
-    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
     action: AssetsViewAction
 ) {
-    if (assets.ownedValidatorsWithStakes.isEmpty() && assets.ownedPoolUnits.isEmpty()) {
+    if (assets.ownedPoolUnits.isEmpty()) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
-                tab = ResourceTab.PoolUnits
+                tab = AssetsTab.PoolUnits
             )
         }
     }
-
-    liquidStakeUnitsTab(
-        assets = assets,
-        epoch = epoch,
-        collapsibleAssetsState = collapsibleAssetsState,
-        action = action
-    )
 
     if (assets.ownedPoolUnits.isNotEmpty()) {
         items(
@@ -78,6 +68,7 @@ private fun PoolUnitItem(
                     is AssetsViewAction.Click -> {
                         action.onPoolUnitClick(resource)
                     }
+
                     is AssetsViewAction.Selection -> {
                         action.onFungibleCheckChanged(resource.stake, !action.isSelected(resource.resourceAddress))
                     }
@@ -95,7 +86,7 @@ private fun PoolUnitItem(
             )
             Text(
                 modifier = Modifier.weight(1f),
-                text = poolName(resource.stake.displayTitle),
+                text = resource.name(),
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1,
                 maxLines = 2
@@ -162,8 +153,6 @@ fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun poolName(name: String?): String {
-    return name?.ifEmpty {
-        stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
-    } ?: stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
+fun PoolUnit.name() = displayTitle.ifEmpty {
+    stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
 }

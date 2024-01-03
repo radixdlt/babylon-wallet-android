@@ -18,4 +18,8 @@ data class StakeClaim(
 
     val iconUrl: Uri?
         get() = nonFungibleResource.iconUrl
+
+    fun unstakingNFTs(epoch: Long) = nonFungibleResource.items.filter { !it.isReadyToClaim(epoch) }
+
+    fun readyToClaimNFTs(epoch: Long) = nonFungibleResource.items.filter { it.isReadyToClaim(epoch) }
 }
