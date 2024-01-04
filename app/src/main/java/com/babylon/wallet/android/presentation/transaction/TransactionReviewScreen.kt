@@ -27,7 +27,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -52,8 +51,9 @@ import com.babylon.wallet.android.presentation.transaction.composables.Guarantee
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
 import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
+import com.babylon.wallet.android.presentation.transaction.composables.StakeTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
-import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewTypeContent
+import com.babylon.wallet.android.presentation.transaction.composables.TransferTypeContent
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -210,18 +210,16 @@ private fun TransactionPreviewContent(
             }
         }
     )
-
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollState = rememberScrollState()
     Scaffold(
         modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+            .fillMaxSize(),
         topBar = {
             TransactionPreviewHeader(
                 onBackClick = onBackClick,
                 state = state,
                 onRawManifestClick = onRawManifestToggle,
-                scrollBehavior = scrollBehavior
+                scrollState = scrollState
             )
         },
         snackbarHost = {
@@ -288,7 +286,7 @@ private fun TransactionPreviewContent(
 
                             is PreviewType.NonConforming -> {}
                             is PreviewType.Transfer -> {
-                                TransactionPreviewTypeContent(
+                                TransferTypeContent(
                                     modifier = Modifier.background(RadixTheme.colors.gray5),
                                     state = state,
                                     preview = preview,
@@ -310,6 +308,20 @@ private fun TransactionPreviewContent(
                                 )
                                 ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                             }
+                            PreviewType.ClaimStake -> {}
+                            is PreviewType.Stake -> {
+                                StakeTypeContent(
+                                    modifier = Modifier.background(RadixTheme.colors.gray5),
+                                    state = state,
+                                    preview = preview,
+                                    onPromptForGuarantees = promptForGuarantees,
+                                    onValidatorClick = {},
+                                    onFungibleResourceClick = onFungibleResourceClick,
+                                    onNonFungibleResourceClick = onNonFungibleResourceClick
+                                )
+                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
+                            }
+                            is PreviewType.Unstake -> {}
                         }
                         NetworkFeeContent(
                             fees = state.transactionFees,

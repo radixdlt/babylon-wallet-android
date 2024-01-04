@@ -3,7 +3,9 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.currentNetwork
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -29,6 +32,7 @@ import javax.inject.Inject
 class TransactionAnalysisDelegate @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getResourcesUseCase: GetResourcesUseCase,
+    private val getValidatorsUseCase: GetValidatorsUseCase,
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val resolveDAppsUseCase: ResolveDAppsUseCase,
@@ -131,7 +135,9 @@ class TransactionAnalysisDelegate @Inject constructor(
     }
 
     private suspend fun processConformingManifest(transactionType: TransactionType): PreviewType {
-        val resources = getResourcesUseCase(addresses = transactionType.involvedResourceAddresses).getOrThrow()
+        val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
+        val xrdAddress = XrdResource.address(networkId)
+        val resources = getResourcesUseCase(addresses = transactionType.involvedResourceAddresses + xrdAddress).getOrThrow()
 
         return when (transactionType) {
             is TransactionType.GeneralTransaction -> transactionType.resolve(
@@ -155,6 +161,21 @@ class TransactionAnalysisDelegate @Inject constructor(
                 getProfileUseCase = getProfileUseCase,
                 allResources = resources
             )
+
+            is TransactionType.StakeTransaction -> {
+                val validators = getValidatorsUseCase(transactionType.involvedValidatorAddresses).getOrThrow()
+                transactionType.resolve(getProfileUseCase, resources, validators)
+            }
+
+            is TransactionType.UnstakeTransaction -> {
+                val validators = getValidatorsUseCase(transactionType.involvedValidatorAddresses).getOrThrow()
+                transactionType.resolve(getProfileUseCase, resources, validators)
+            }
+
+            is TransactionType.ClaimStakeTransaction -> {
+                val validators = getValidatorsUseCase(transactionType.involvedValidatorAddresses).getOrThrow()
+                transactionType.resolve(getProfileUseCase, resources, validators)
+            }
 
             else -> PreviewType.NonConforming
         }

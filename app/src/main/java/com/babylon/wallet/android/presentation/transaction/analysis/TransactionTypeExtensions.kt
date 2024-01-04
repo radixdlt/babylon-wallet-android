@@ -14,6 +14,7 @@ import com.radixdlt.ret.Address
 import com.radixdlt.ret.AuthorizedDepositorsChanges
 import com.radixdlt.ret.DecimalSource
 import com.radixdlt.ret.MetadataValue
+import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.NonFungibleLocalIdVecSource
 import com.radixdlt.ret.PublicKey
@@ -80,10 +81,33 @@ val TransactionType.involvedResourceAddresses: Set<String>
                 .map { it.value.resourceAddresses }
                 .flatten()
 
-        // TODO currently unavailable preview
-        is TransactionType.ClaimStakeTransaction -> emptySet()
-        is TransactionType.UnstakeTransaction -> emptySet()
-        is TransactionType.StakeTransaction -> emptySet()
+        is TransactionType.ClaimStakeTransaction ->
+            claims.map { claim ->
+                claim.claimNftLocalIds.map { id ->
+                    NonFungibleGlobalId.fromParts(claim.claimNftResource, id).resourceAddress().addressString()
+                }
+            }.flatten().toSet()
+
+        is TransactionType.UnstakeTransaction ->
+            unstakes.map {
+                it.stakeUnitAddress.addressString()
+            }.toSet() union unstakes.map {
+                NonFungibleGlobalId.fromParts(it.claimNftResource, it.claimNftLocalId).resourceAddress().addressString()
+            }.toSet()
+
+        is TransactionType.StakeTransaction -> stakes.map { it.stakeUnitResource.addressString() }.toSet()
+    }
+
+val TransactionType.involvedValidatorAddresses: Set<String>
+    get() = when (this) {
+        is TransactionType.ClaimStakeTransaction ->
+            claims.map { it.validatorAddress.addressString() }.toSet()
+
+        is TransactionType.UnstakeTransaction ->
+            unstakes.map { it.validatorAddress.addressString() }.toSet()
+
+        is TransactionType.StakeTransaction -> stakes.map { it.validatorAddress.addressString() }.toSet()
+        else -> emptySet()
     }
 
 fun RETResources.toTransferableResource(resourceAddress: String, resources: List<Resource>): TransferableResource {

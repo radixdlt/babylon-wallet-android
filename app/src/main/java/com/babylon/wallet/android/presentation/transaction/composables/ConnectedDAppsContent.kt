@@ -46,7 +46,6 @@ import kotlinx.collections.immutable.persistentListOf
 fun ConnectedDAppsContent(
     connectedDApps: ImmutableList<DAppWithResources>,
     onDAppClick: (DAppWithResources) -> Unit,
-    showStrokeLine: Boolean,
     modifier: Modifier = Modifier
 ) {
     if (connectedDApps.isEmpty()) return
@@ -113,10 +112,6 @@ fun ConnectedDAppsContent(
             }
         }
     }
-
-    if (showStrokeLine) {
-        StrokeLine(height = 20.dp)
-    }
 }
 
 @Composable
@@ -179,7 +174,6 @@ fun ConnectedDAppsContentPreview() {
                 verified = true
             )
         ),
-        onDAppClick = {},
-        showStrokeLine = true
+        onDAppClick = {}
     )
 }

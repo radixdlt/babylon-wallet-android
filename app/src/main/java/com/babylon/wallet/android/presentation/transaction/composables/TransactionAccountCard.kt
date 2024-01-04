@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,16 +12,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Text
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -35,10 +41,13 @@ import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.babylon.wallet.android.domain.model.resources.asLsu
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
@@ -65,6 +74,10 @@ fun TransactionAccountCard(
 
         val nftTransferables = remember(account.resources) {
             account.resources.filter { it.transferable is TransferableResource.NFTs }
+        }
+
+        val lsuTransferables = remember(account.resources) {
+            account.resources.filter { it.transferable is TransferableResource.LsuAmount }
         }
 
         // Fungibles
@@ -94,6 +107,23 @@ fun TransactionAccountCard(
                     shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
                     nftItem = item
                 )
+            }
+        }
+
+        lsuTransferables.forEachIndexed { index, transferable ->
+            val lastItem = index == lsuTransferables.lastIndex
+            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+            val transferableLsu = transferable.transferable as TransferableResource.LsuAmount
+
+            TransferableLsuItemContent(
+                modifier = Modifier.clickable {
+                    onFungibleResourceClick(transferableLsu.resource, transferableLsu.isNewlyCreated)
+                },
+                transferable = transferableLsu,
+                shape = shape,
+            )
+            if (lastItem.not()) {
+                HorizontalDivider(color = RadixTheme.colors.gray4)
             }
         }
     }
@@ -198,12 +228,15 @@ private fun TransferableItemContent(
                     shape = RadixTheme.shapes.roundedRectSmall
                 )
             }
+
+            is TransferableResource.LsuAmount -> {}
         }
         Text(
             modifier = Modifier.weight(1f),
             text = when (val resource = transferable.transferable) {
                 is TransferableResource.Amount -> resource.resource.displayTitle
                 is TransferableResource.NFTs -> resource.resource.name
+                is TransferableResource.LsuAmount -> "LSU: implement"
             }.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
@@ -246,7 +279,7 @@ private fun TransferableItemContent(
                 Row {
                     Text(
                         modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                        text = stringResource(id = com.babylon.wallet.android.R.string.transactionReview_guaranteed),
+                        text = stringResource(id = R.string.transactionReview_guaranteed),
                         style = RadixTheme.typography.body2Regular,
                         color = RadixTheme.colors.gray2,
                         maxLines = 1,
@@ -264,6 +297,98 @@ private fun TransferableItemContent(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TransferableLsuItemContent(
+    modifier: Modifier = Modifier,
+    transferable: TransferableResource.LsuAmount,
+    shape: Shape
+) {
+    val lsu = remember(transferable) {
+        transferable.resource.asLsu()
+    }
+    Column(
+        modifier = modifier
+            .height(IntrinsicSize.Min)
+            .background(
+                color = RadixTheme.colors.gray5,
+                shape = shape
+            )
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingMedium
+            )
+    ) {
+        Row(
+            verticalAlignment = CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            Thumbnail.LSU(
+                modifier = Modifier.size(44.dp),
+                liquidStakeUnit = lsu,
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = lsu.fungibleResource.displayTitle.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = transferable.validatorDetail?.name.orEmpty(),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
+        }
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = RadixTheme.dimensions.paddingSmall),
+            text = "Worth".uppercase(),
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray2,
+            maxLines = 1
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
+                .padding(RadixTheme.dimensions.paddingDefault),
+            verticalAlignment = CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RadixTheme.shapes.circle),
+                tint = Color.Unspecified
+            )
+            Text(
+                text = XrdResource.SYMBOL,
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray1,
+                maxLines = 2
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = transferable.xrdWorth.displayableQuantity(),
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.End,
+                maxLines = 2
+            )
         }
     }
 }

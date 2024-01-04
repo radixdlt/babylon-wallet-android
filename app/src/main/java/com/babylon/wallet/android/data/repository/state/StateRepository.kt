@@ -54,6 +54,8 @@ interface StateRepository {
 
     suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail>
 
+    suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>>
+
     suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
 
     suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>>
@@ -313,20 +315,24 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail> = withContext(dispatcher) {
+    override suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail> = getValidators(setOf(validatorAddress)).map {
+        it.first()
+    }
+
+    override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> = withContext(dispatcher) {
         runCatching {
             val stateVersion = stateDao.getLatestStateVersion() ?: error("No cached state version found")
-            val validator = stateDao.getValidators(addresses = setOf(validatorAddress), atStateVersion = stateVersion).firstOrNull()
-            if (validator == null) {
+            val validators = stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion)
+            if (validators.size != validatorAddresses.size) {
                 val details = stateApi.fetchValidators(
-                    validatorsAddresses = setOf(validatorAddress),
+                    validatorsAddresses = validatorAddresses.toSet(),
                     stateVersion = stateVersion
-                ).asValidators().first()
+                ).asValidators()
 
-                stateDao.insertValidators(listOf(details.asValidatorEntity(SyncInfo(InstantGenerator(), stateVersion))))
+                stateDao.insertValidators(details.map { it.asValidatorEntity(SyncInfo(InstantGenerator(), stateVersion)) })
                 details
             } else {
-                validator.asValidatorDetail()
+                validators.map { it.asValidatorDetail() }
             }
         }
     }

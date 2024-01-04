@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -18,7 +19,7 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
-fun TransactionPreviewTypeContent(
+fun TransferTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
     preview: PreviewType.Transfer,
@@ -43,8 +44,6 @@ fun TransactionPreviewTypeContent(
             WithdrawAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 from = preview.from.toPersistentList(),
-                showStrokeLine = preview.from.toPersistentList().isNotEmpty() ||
-                    preview.dApps.toPersistentList().isNotEmpty(),
                 onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
                     onFungibleResourceClick(fungibleResource, isNewlyCreated)
                 },
@@ -52,12 +51,13 @@ fun TransactionPreviewTypeContent(
                     onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
                 }
             )
-
+            if (preview.dApps.toPersistentList().isNotEmpty()) {
+                StrokeLine(height = 40.dp)
+            }
             ConnectedDAppsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 connectedDApps = preview.dApps.toPersistentList(),
-                onDAppClick = onDappClick,
-                showStrokeLine = preview.dApps.toPersistentList().isNotEmpty()
+                onDAppClick = onDappClick
             )
 
             DepositAccountContent(
@@ -68,7 +68,7 @@ fun TransactionPreviewTypeContent(
                 ),
                 to = preview.to.toPersistentList(),
                 promptForGuarantees = onPromptForGuarantees,
-                showStrokeLine = false,
+                showStrokeLine = true,
                 onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
                     onFungibleResourceClick(fungibleResource, isNewlyCreated)
                 },
@@ -86,7 +86,7 @@ fun TransactionPreviewTypeContent(
 @Composable
 fun TransactionPreviewTypePreview() {
     RadixWalletTheme {
-        TransactionPreviewTypeContent(
+        TransferTypeContent(
             state = TransactionReviewViewModel.State(
                 request = SampleDataProvider().transactionRequest,
                 isLoading = false,

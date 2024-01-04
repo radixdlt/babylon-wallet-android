@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import androidx.annotation.FloatRange
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
 
@@ -29,6 +30,8 @@ sealed interface Transferable {
                         is TransferableResource.NFTs -> GuaranteeAssertion.ForNFT(
                             instructionIndex = predicted.instructionIndex
                         )
+
+                        is TransferableResource.LsuAmount -> null // TODO implement if necessary
                     }
                 }
                 is Withdrawing -> null
@@ -98,6 +101,14 @@ sealed interface TransferableResource {
         val amount: BigDecimal,
         override val resource: Resource.FungibleResource,
         override val isNewlyCreated: Boolean
+    ) : TransferableResource
+
+    data class LsuAmount(
+        val amount: BigDecimal,
+        override val resource: Resource.FungibleResource,
+        val validatorDetail: ValidatorDetail?,
+        val xrdWorth: BigDecimal,
+        override val isNewlyCreated: Boolean = false
     ) : TransferableResource
 
     data class NFTs(
