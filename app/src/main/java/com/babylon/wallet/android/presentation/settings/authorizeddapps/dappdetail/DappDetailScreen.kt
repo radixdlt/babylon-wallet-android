@@ -59,7 +59,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -738,30 +737,27 @@ fun DappDetailContentPreview() {
             onBackClick = {},
             state = DappDetailUiState(
                 loading = false,
-                dappWithMetadata = DAppWithResources(
-                    dApp = DApp(
-                        dAppAddress = "account_tdx_abc",
-                        metadata = listOf(
-                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Dapp", MetadataType.String),
-                            Metadata.Primitive(ExplicitMetadataKey.DESCRIPTION.key, "Description", MetadataType.String),
-                            Metadata.Collection(
-                                ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                                listOf(
-                                    Metadata.Primitive(
-                                        ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                                        "https://hammunet-dashboard.rdx-works-main.extratools.works",
-                                        MetadataType.Url
-                                    ),
-                                    Metadata.Primitive(
-                                        ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                                        "https://ansharnet-dashboard.rdx-works-main.extratools.works",
-                                        MetadataType.Url
-                                    ),
-                                )
-                            ),
-                        )
-                    ),
-                    resources = DAppResources(emptyList(), emptyList()),
+                dApp = DApp(
+                    dAppAddress = "account_tdx_abc",
+                    metadata = listOf(
+                        Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Dapp", MetadataType.String),
+                        Metadata.Primitive(ExplicitMetadataKey.DESCRIPTION.key, "Description", MetadataType.String),
+                        Metadata.Collection(
+                            ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                            listOf(
+                                Metadata.Primitive(
+                                    ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                    "https://hammunet-dashboard.rdx-works-main.extratools.works",
+                                    MetadataType.Url
+                                ),
+                                Metadata.Primitive(
+                                    ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                    "https://ansharnet-dashboard.rdx-works-main.extratools.works",
+                                    MetadataType.Url
+                                ),
+                            )
+                        ),
+                    )
                 ),
                 personas = persistentListOf(SampleDataProvider().samplePersona()),
                 sharedPersonaAccounts = persistentListOf(

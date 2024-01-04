@@ -8,14 +8,12 @@ import com.babylon.wallet.android.data.gateway.generated.models.CoreApiTransacti
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.NotarizedTransactionResult
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
@@ -26,7 +24,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
-import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
@@ -97,14 +95,13 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val getTransactionBadgesUseCase = mockk<GetTransactionBadgesUseCase>()
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
-    private val resolveDAppsUseCase = mockk<ResolveDAppsUseCase>()
+    private val resolveDappsInTransactionUseCase = mockk<ResolveDAppInTransactionUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()
     private val deviceCapabilityHelper = mockk<DeviceCapabilityHelper>()
     private val getValidatorsUseCase = mockk<GetValidatorsUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
-    private val dAppRepository = mockk<DAppRepository>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val sampleTxId = "txId1"
     private val sampleRequestId = "requestId1"
@@ -158,7 +155,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     @Before
     override fun setUp() = runTest {
         super.setUp()
-        coEvery { dAppRepository.getDAppMetadata(any(), any(), any()) } returns Result.success(DApp("dApp_address"))
         coEvery { getValidatorsUseCase(any()) } returns Result.success(listOf(ValidatorDetail("addr", BigDecimal(100000))))
         every { exceptionMessageProvider.throwableMessage(any()) } returns ""
         every { deviceCapabilityHelper.isDeviceSecure() } returns true
@@ -240,7 +236,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 getResourcesUseCase = getResourcesUseCase,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-                resolveDAppsUseCase = resolveDAppsUseCase,
+                resolveDAppInTransactionUseCase = resolveDappsInTransactionUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
                 getValidatorsUseCase = getValidatorsUseCase
             ),
@@ -260,7 +256,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             ),
             incomingRequestRepository = incomingRequestRepository,
             savedStateHandle = savedStateHandle,
-            dAppRepository = dAppRepository
         )
     }
 

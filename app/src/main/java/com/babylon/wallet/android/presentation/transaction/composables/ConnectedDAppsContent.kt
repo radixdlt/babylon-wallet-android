@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
@@ -166,10 +165,6 @@ fun ConnectedDAppsContentPreview() {
             DAppWithResources(
                 dApp = DApp(
                     dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
-                ),
-                resources = DAppResources(
-                    emptyList(),
-                    emptyList()
                 ),
                 verified = true
             )

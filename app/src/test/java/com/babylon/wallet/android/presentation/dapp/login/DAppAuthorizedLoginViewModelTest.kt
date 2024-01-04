@@ -5,11 +5,21 @@ package com.babylon.wallet.android.presentation.dapp.login
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import com.babylon.wallet.android.domain.model.resources.Pool
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import com.babylon.wallet.android.domain.model.resources.metadata.PublicKeyHash
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
-import com.babylon.wallet.android.fakes.DAppRepositoryFake
 import com.babylon.wallet.android.fakes.DappMessengerFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -24,6 +34,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -33,15 +44,17 @@ import org.junit.Test
 import org.mockito.kotlin.any
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import java.math.BigDecimal
 
 class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginViewModel>() {
 
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val appEventBus = mockk<AppEventBus>()
-    private val dappMetadataRepository = DAppRepositoryFake()
+    private val stateRepository = StateRepositoryFake()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
@@ -180,7 +193,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             dAppConnectionRepository,
             getProfileUseCase,
             getCurrentGatewayUseCase,
-            dappMetadataRepository,
+            stateRepository,
             incomingRequestRepository,
             buildAuthorizedDappResponseUseCase
         )
@@ -276,6 +289,76 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             val item = expectMostRecentItem()
             assert(item.initialAuthorizedLoginRoute is InitialAuthorizedLoginRoute.ChooseAccount)
         }
+    }
+
+    private class StateRepositoryFake: StateRepository {
+        override fun observeAccountsOnLedger(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>> {
+            error("Not needed")
+        }
+
+        override suspend fun getNextNFTsPage(
+            account: Network.Account,
+            resource: Resource.NonFungibleResource
+        ): Result<Resource.NonFungibleResource> {
+            error("Not needed")
+        }
+
+        override suspend fun updateLSUsInfo(
+            account: Network.Account,
+            validatorsWithStakes: List<ValidatorWithStakes>
+        ): Result<List<ValidatorWithStakes>> {
+            error("Not needed")
+        }
+
+        override suspend fun getResources(
+            addresses: Set<String>,
+            underAccountAddress: String?,
+            withDetails: Boolean
+        ): Result<List<Resource>> {
+            return Result.success(emptyList())
+        }
+
+        override suspend fun getPool(poolAddress: String): Result<Pool> {
+            error("Not needed")
+        }
+
+        override suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail> {
+            error("Not needed")
+        }
+
+        override suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> {
+            error("Not needed")
+        }
+
+        override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> {
+            error("Not needed")
+        }
+
+        override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>> {
+            error("Not needed")
+        }
+
+        override suspend fun getDAppsDetails(definitionAddresses: List<String>, skipCache: Boolean): Result<List<DApp>> {
+            return Result.success(
+                listOf(
+                    DApp(
+                        dAppAddress = "dapp_address",
+                        metadata = listOf(
+                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "dApp", MetadataType.String)
+                        )
+                    )
+                )
+            )
+        }
+
+        override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit> {
+            error("Not needed")
+        }
+
+        override suspend fun clearCachedState(): Result<Unit> {
+            error("Not needed")
+        }
+
     }
 
 }

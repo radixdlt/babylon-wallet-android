@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import app.cash.turbine.test
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import io.mockk.coEvery
@@ -19,7 +19,7 @@ import org.junit.Test
 internal class AuthorizedDappsViewModelTest : StateViewModelTest<AuthorizedDappsViewModel>() {
 
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
-    private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithMetadataAndAssociatedResourcesUseCase>()
+    private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithResourcesUseCase>()
 
     override fun initVM(): AuthorizedDappsViewModel {
         return AuthorizedDappsViewModel(getDAppWithAssociatedResourcesUseCase, dAppConnectionRepository)

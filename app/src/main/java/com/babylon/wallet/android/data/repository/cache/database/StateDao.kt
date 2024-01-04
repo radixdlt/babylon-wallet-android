@@ -9,7 +9,6 @@ import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.metadata.accountType
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
@@ -252,18 +251,17 @@ interface StateDao {
         )
     }
 
-    @Query("""
+    @Query(
+        """
         SELECT * FROM DAppEntity 
         WHERE definition_address in (:definitionAddresses)
         AND synced >= :minValidity
-    """)
+    """
+    )
     fun getDApps(definitionAddresses: List<String>, minValidity: Long): List<DAppEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertDApps(dApps: List<DAppEntity>)
-
-    @Query("SELECT * FROM DAppResourceJoin WHERE dapp_definition_address in (:definitionAddresses)")
-    fun getDAppResourceJoin(definitionAddresses: List<String>): List<DAppResourceJoin>
 
     companion object {
         val deleteDuration = 1.toDuration(DurationUnit.SECONDS)

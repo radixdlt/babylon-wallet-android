@@ -19,5 +19,4 @@ data class DAppEntity(
         dAppAddress = definitionAddress,
         metadata = metadata?.metadata.orEmpty()
     )
-
 }
