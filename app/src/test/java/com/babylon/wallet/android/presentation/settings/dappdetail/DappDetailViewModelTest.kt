@@ -5,6 +5,7 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetValidatedDAppWebsiteUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -38,6 +39,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithResourcesUseCase>()
+    private val getValidatedDAppWebsiteUseCase = mockk<GetValidatedDAppWebsiteUseCase>()
     private val samplePersonas = identifiedArrayListOf(
         sampleDataProvider.samplePersona("address1"),
         sampleDataProvider.samplePersona(sampleDataProvider.randomAddress())
@@ -47,6 +49,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
         return DappDetailViewModel(
             dAppConnectionRepository,
             getDAppWithAssociatedResourcesUseCase,
+            getValidatedDAppWebsiteUseCase,
             getProfileUseCase,
             incomingRequestRepository,
             savedStateHandle
@@ -91,7 +94,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.dappWithMetadata != null)
+            assert(item.dAppWithResources != null)
             assert(item.dapp != null)
             assert(item.personas.size == 1)
         }

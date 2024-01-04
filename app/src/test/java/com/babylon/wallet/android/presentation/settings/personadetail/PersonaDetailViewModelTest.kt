@@ -5,6 +5,8 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.domain.usecases.GetDAppUseCase
 import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
@@ -35,7 +37,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
-    private val getDAppWithAssociatedResourcesUseCase = mockk<GetDAppWithResourcesUseCase>()
+    private val getDAppUseCase = mockk<GetDAppUseCase>()
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
     private val addAuthSigningFactorInstanceUseCase = mockk<AddAuthSigningFactorInstanceUseCase>()
@@ -50,7 +52,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
             addAuthSigningFactorInstanceUseCase,
             rolaClient,
             incomingRequestRepository,
-            getDAppWithAssociatedResourcesUseCase,
+            getDAppUseCase,
             savedStateHandle,
             changeEntityVisibilityUseCase
         )
@@ -67,12 +69,8 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
                 )
             )
         )
-        coEvery { getDAppWithAssociatedResourcesUseCase("address1", false) } returns
-            Result.success(SampleDataProvider().sampleDAppWithResources()
-        )
-        coEvery { getDAppWithAssociatedResourcesUseCase("address2", false) } returns
-            Result.success(SampleDataProvider().sampleDAppWithResources()
-        )
+        coEvery { getDAppUseCase("address1", false) } returns Result.success(DApp("address1"))
+        coEvery { getDAppUseCase("address2", false) } returns Result.success(DApp("address2"))
     }
 
     @Test

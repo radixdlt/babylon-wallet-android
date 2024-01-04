@@ -5,13 +5,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.toPrettyString
-import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
@@ -204,12 +202,6 @@ class TransactionReviewViewModel @Inject constructor(
                     )
                 )
             )
-        }
-    }
-
-    fun onDAppClick(dApp: DAppWithResources) {
-        _state.update {
-            it.copy(sheetState = State.Sheet.Dapp(dApp))
         }
     }
 
@@ -421,10 +413,6 @@ class TransactionReviewViewModel @Inject constructor(
                     Default, Advanced
                 }
             }
-
-            data class Dapp(
-                val dApp: DAppWithResources
-            ) : Sheet
         }
     }
 }
@@ -444,7 +432,7 @@ sealed interface PreviewType {
         val from: List<AccountWithTransferableResources>,
         val to: List<AccountWithTransferableResources>,
         val badges: List<Badge> = emptyList(),
-        val dApps: List<DAppWithResources> = emptyList()
+        val dApps: List<Pair<DApp, Boolean>> = emptyList()
     ) : PreviewType {
 
         fun getNewlyCreatedResources() = (from + to).map { allTransfers ->

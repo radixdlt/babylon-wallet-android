@@ -9,23 +9,19 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,11 +37,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataFieldRow
 import com.babylon.wallet.android.presentation.ui.composables.PersonaDataStringField
@@ -57,7 +51,6 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -65,7 +58,8 @@ fun PersonaDetailScreen(
     viewModel: PersonaDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onEditPersona: (String) -> Unit
+    onEditPersona: (String) -> Unit,
+    onDAppClick: (DApp) -> Unit
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -100,7 +94,7 @@ fun PersonaDetailScreen(
         state = state,
         onBackClick = onBackClick,
         onEditPersona = onEditPersona,
-        onDAppClick = viewModel::onDAppClick,
+        onDAppClick = onDAppClick,
         onCreateAndUploadAuthKey = {
             context.biometricAuthenticate {
                 if (it) {
@@ -108,32 +102,24 @@ fun PersonaDetailScreen(
                 }
             }
         },
-        loading = state.loading,
         onHidePersona = {
             showHidePersonaPrompt = true
-        },
-        setDAppDetailSheetHidden = viewModel::setDAppDetailSheetHidden
+        }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PersonaDetailContent(
     modifier: Modifier = Modifier,
     state: PersonaDetailUiState,
     onBackClick: () -> Unit,
     onEditPersona: (String) -> Unit,
-    onDAppClick: (DAppWithResources) -> Unit,
+    onDAppClick: (DApp) -> Unit,
     onCreateAndUploadAuthKey: () -> Unit,
-    loading: Boolean,
-    onHidePersona: () -> Unit,
-    setDAppDetailSheetHidden: () -> Unit
+    onHidePersona: () -> Unit
 ) {
-    val bottomSheetState =
-        rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
-
     Scaffold(
+        modifier = modifier,
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
@@ -154,48 +140,16 @@ private fun PersonaDetailContent(
                     .padding(padding),
                 persona = state.persona,
                 authorizedDapps = state.authorizedDapps,
-                onDAppClick = {
-                    onDAppClick(it)
-                    scope.launch {
-                        bottomSheetState.show()
-                    }
-                },
+                onDAppClick = onDAppClick,
                 onEditPersona = onEditPersona,
                 hasAuthKey = state.hasAuthKey,
                 onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
-                loading = loading,
+                loading = state.loading,
                 onHidePersona = onHidePersona
             )
         } else {
             FullscreenCircularProgressContent()
         }
-    }
-
-    if (state.isDAppDetailSheetVisible) {
-        DefaultModalSheetLayout(
-            modifier = modifier,
-            sheetState = bottomSheetState,
-            sheetContent = {
-                state.selectedDApp?.let {
-                    DAppDetailsSheetContent(
-                        modifier = Modifier.navigationBarsPadding(),
-                        onBackClick = {
-                            setDAppDetailSheetHidden()
-                            scope.launch {
-                                bottomSheetState.hide()
-                            }
-                        },
-                        dApp = it
-                    )
-                }
-            },
-            onDismissRequest = {
-                setDAppDetailSheetHidden()
-                scope.launch {
-                    bottomSheetState.hide()
-                }
-            }
-        )
     }
 }
 
@@ -203,8 +157,8 @@ private fun PersonaDetailContent(
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
     persona: Network.Persona,
-    authorizedDapps: ImmutableList<DAppWithResources>,
-    onDAppClick: (DAppWithResources) -> Unit,
+    authorizedDapps: ImmutableList<DApp>,
+    onDAppClick: (DApp) -> Unit,
     onEditPersona: (String) -> Unit,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
@@ -298,7 +252,7 @@ private fun PersonaDetailList(
                         modifier = Modifier.throttleClickable {
                             onDAppClick(dApp)
                         },
-                        dApp = dApp.dApp
+                        dApp = dApp
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingLarge))
                 }
@@ -325,16 +279,14 @@ fun PersonaDetailContentPreview() {
             state = PersonaDetailUiState(
                 authorizedDapps = persistentListOf(),
                 persona = SampleDataProvider().samplePersona(),
-                hasAuthKey = false,
-                selectedDApp = null
+                loading = false,
+                hasAuthKey = false
             ),
             onBackClick = {},
             onEditPersona = {},
             onDAppClick = {},
             onCreateAndUploadAuthKey = {},
-            loading = false,
-            onHidePersona = {},
-            setDAppDetailSheetHidden = {}
+            onHidePersona = {}
         )
     }
 }

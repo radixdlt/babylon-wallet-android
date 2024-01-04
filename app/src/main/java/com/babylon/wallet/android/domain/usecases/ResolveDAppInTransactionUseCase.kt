@@ -2,13 +2,12 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.domain.model.DApp
 import rdx.works.core.then
 import javax.inject.Inject
 
 class ResolveDAppInTransactionUseCase @Inject constructor(
-    private val stateRepository: StateRepository,
-    private val getDAppWithResourcesUseCase: GetDAppWithResourcesUseCase
+    private val stateRepository: StateRepository
 ) {
 
     /**
@@ -20,17 +19,18 @@ class ResolveDAppInTransactionUseCase @Inject constructor(
      */
     suspend operator fun invoke(
         componentAddress: String
-    ): Result<DAppWithResources> = stateRepository.getDAppsDetails(
+    ): Result<Pair<DApp, Boolean>> = stateRepository.getDAppsDetails(
         definitionAddresses = listOf(componentAddress),
         skipCache = true
     ).then { components ->
         val dAppDefinitionAddress = components.firstOrNull()?.definitionAddresses?.firstOrNull()
         if (dAppDefinitionAddress != null) {
-            getDAppWithResourcesUseCase(
-                definitionAddress = dAppDefinitionAddress,
-                needMostRecentData = true
-            ).map {
-                it.copy(verified = it.dApp.claimedEntities.contains(componentAddress))
+            stateRepository.getDAppsDetails(
+                definitionAddresses = listOf(dAppDefinitionAddress),
+                skipCache = true
+            ).mapCatching { dApps ->
+                val dApp = dApps.first()
+                dApp to dApp.claimedEntities.contains(componentAddress)
             }
         } else {
             Result.failure(RadixWalletException.DappVerificationException.WrongAccountType)

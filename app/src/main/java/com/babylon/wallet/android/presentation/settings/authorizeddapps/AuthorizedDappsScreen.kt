@@ -23,8 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -50,7 +49,7 @@ fun AuthorizedDAppsScreen(
 @Composable
 private fun AuthorizedDAppsContent(
     onBackClick: () -> Unit,
-    dApps: ImmutableList<DAppWithResources>,
+    dApps: ImmutableList<DApp>,
     onDAppClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -90,9 +89,9 @@ private fun AuthorizedDAppsContent(
                 items(dApps) { dApp ->
                     DappCard(
                         modifier = Modifier.throttleClickable {
-                            onDAppClick(dApp.dApp.dAppAddress)
+                            onDAppClick(dApp.dAppAddress)
                         },
-                        dApp = dApp.dApp
+                        dApp = dApp
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                 }
@@ -107,7 +106,7 @@ fun AuthorizedDAppsContentPreview() {
     RadixWalletTheme {
         AuthorizedDAppsContent(
             onBackClick = {},
-            dApps = listOf(SampleDataProvider().sampleDAppWithResources()).toImmutableList(),
+            dApps = listOf(DApp(dAppAddress = "dapp_address")).toImmutableList(),
             onDAppClick = {}
         )
     }

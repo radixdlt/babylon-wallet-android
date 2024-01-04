@@ -35,13 +35,12 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
@@ -72,7 +71,8 @@ fun TransactionReviewScreen(
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
     onFungibleClick: (Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean, Boolean) -> Unit
+    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean, Boolean) -> Unit,
+    onDAppClick: (DApp) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -104,7 +104,7 @@ fun TransactionReviewScreen(
         onGuaranteeValueChanged = viewModel::onGuaranteeValueChange,
         onGuaranteeValueIncreased = viewModel::onGuaranteeValueIncreased,
         onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
-        onDAppClick = viewModel::onDAppClick,
+        onDAppClick = onDAppClick,
         onFungibleResourceClick = viewModel::onFungibleResourceClick,
         onNonFungibleResourceClick = viewModel::onNonFungibleResourceClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
@@ -161,7 +161,7 @@ private fun TransactionPreviewContent(
     onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
-    onDAppClick: (DAppWithResources) -> Unit,
+    onDAppClick: (DApp) -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
     onChangeFeePayerClick: () -> Unit,
@@ -382,7 +382,6 @@ private fun BottomSheetContent(
     onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
-    onCloseDAppSheet: () -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onPayerSelected: (Network.Account) -> Unit,
@@ -418,14 +417,6 @@ private fun BottomSheetContent(
                 onTipPercentageChanged = onTipPercentageChanged,
                 onViewDefaultModeClick = onViewDefaultModeClick,
                 onViewAdvancedModeClick = onViewAdvancedModeClick
-            )
-        }
-
-        is State.Sheet.Dapp -> {
-            DAppDetailsSheetContent(
-                modifier = modifier,
-                onBackClick = onCloseDAppSheet,
-                dApp = sheetState.dApp
             )
         }
 

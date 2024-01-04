@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.model.DAppWithResources
-import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
+import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.domain.usecases.GetDAppUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,7 +17,7 @@ import javax.inject.Inject
 @Suppress("MagicNumber")
 @HiltViewModel
 class AuthorizedDappsViewModel @Inject constructor(
-    private val dAppWithAssociatedResourcesUseCase: GetDAppWithResourcesUseCase,
+    private val getDAppUseCase: GetDAppUseCase,
     private val dAppConnectionRepository: DAppConnectionRepository
 ) : StateViewModel<AuthorizedDappsUiState>() {
 
@@ -27,7 +27,7 @@ class AuthorizedDappsViewModel @Inject constructor(
         viewModelScope.launch {
             dAppConnectionRepository.getAuthorizedDapps().collect {
                 val dApps = it.mapNotNull { dApp ->
-                    val metadataResult = dAppWithAssociatedResourcesUseCase.invoke(
+                    val metadataResult = getDAppUseCase(
                         definitionAddress = dApp.dAppDefinitionAddress,
                         needMostRecentData = false
                     )
@@ -44,5 +44,5 @@ class AuthorizedDappsViewModel @Inject constructor(
 }
 
 data class AuthorizedDappsUiState(
-    val dApps: ImmutableList<DAppWithResources> = persistentListOf()
+    val dApps: ImmutableList<DApp> = persistentListOf()
 ) : UiState

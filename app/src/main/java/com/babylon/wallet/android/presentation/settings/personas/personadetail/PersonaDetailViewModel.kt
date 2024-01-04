@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.transaction.ROLAClient
-import com.babylon.wallet.android.domain.model.DAppWithResources
-import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
+import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.domain.usecases.GetDAppUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -43,7 +43,7 @@ class PersonaDetailViewModel @Inject constructor(
     private val addAuthSigningFactorInstanceUseCase: AddAuthSigningFactorInstanceUseCase,
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val dAppWithAssociatedResourcesUseCase: GetDAppWithResourcesUseCase,
+    private val getDAppUseCase: GetDAppUseCase,
     savedStateHandle: SavedStateHandle,
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase
 ) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
@@ -61,7 +61,7 @@ class PersonaDetailViewModel @Inject constructor(
                 persona to dApps
             }.collect { personaToDApps ->
                 val metadataResults = personaToDApps.second.map { authorizedDApp ->
-                    dAppWithAssociatedResourcesUseCase.invoke(
+                    getDAppUseCase.invoke(
                         definitionAddress = authorizedDApp.dAppDefinitionAddress,
                         needMostRecentData = false
                     ).getOrNull()
@@ -101,15 +101,6 @@ class PersonaDetailViewModel @Inject constructor(
         }
     }
 
-    fun onDAppClick(dApp: DAppWithResources) {
-        _state.update { state ->
-            state.copy(
-                selectedDApp = dApp,
-                isDAppDetailSheetVisible = true
-            )
-        }
-    }
-
     fun onHidePersona() {
         viewModelScope.launch {
             state.value.persona?.address?.let { changeEntityVisibilityUseCase.hidePersona(it) }
@@ -144,10 +135,6 @@ class PersonaDetailViewModel @Inject constructor(
             }
         }
     }
-
-    fun setDAppDetailSheetHidden() {
-        _state.update { it.copy(isDAppDetailSheetVisible = false) }
-    }
 }
 
 sealed interface Event : OneOffEvent {
@@ -156,9 +143,7 @@ sealed interface Event : OneOffEvent {
 
 data class PersonaDetailUiState(
     val loading: Boolean = true,
-    val authorizedDapps: ImmutableList<DAppWithResources> = persistentListOf(),
+    val authorizedDapps: ImmutableList<DApp> = persistentListOf(),
     val persona: Network.Persona? = null,
-    val hasAuthKey: Boolean = false,
-    val selectedDApp: DAppWithResources? = null,
-    val isDAppDetailSheetVisible: Boolean = false
+    val hasAuthKey: Boolean = false
 ) : UiState

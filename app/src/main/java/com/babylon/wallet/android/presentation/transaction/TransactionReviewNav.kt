@@ -8,6 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
@@ -29,7 +30,8 @@ fun NavController.transactionReview(requestId: String) {
 fun NavGraphBuilder.transactionReviewScreen(
     onBackClick: () -> Unit,
     onFungibleClick: (Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean, Boolean) -> Unit
+    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean, Boolean) -> Unit,
+    onDAppClick: (DApp) -> Unit
 ) {
     markAsHighPriority(ROUTE_TRANSACTION_REVIEW)
     composable(
@@ -42,7 +44,8 @@ fun NavGraphBuilder.transactionReviewScreen(
             viewModel = hiltViewModel(),
             onDismiss = onBackClick,
             onFungibleClick = onFungibleClick,
-            onNonFungibleClick = onNonFungibleClick
+            onNonFungibleClick = onNonFungibleClick,
+            onDAppClick = onDAppClick
         )
     }
 }
