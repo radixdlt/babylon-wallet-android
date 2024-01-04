@@ -24,7 +24,6 @@
   <string name="account_tokens">Tokens</string>
   <string name="account_nfts">NFTs</string>
   <string name="account_staking">Staking</string>
-  <string name="account_poolUnits">Pool Units</string>
   <string name="account_staking_lsuResourceHeader">Radix Network XRD Stake Summary</string>
   <string name="account_staking_stakedValidators">STAKED VALIDATORS (%d)</string>
   <string name="account_staking_unstaking">Unstaking</string>
@@ -35,6 +34,8 @@
   <string name="account_staking_stakeClaimNFTs">Stake Claim NFTs</string>
   <string name="account_staking_worth">WORTH</string>
   <string name="account_staking_claim">Claim</string>
+  <string name="account_poolUnits">Pool Units</string>
+  <string name="account_poolUnits_stakeClaimNFTs">STAKE CLAIM NFTS</string>
   <string name="account_poolUnits_numberOfStakes">%d Stakes</string>
   <string name="account_poolUnits_unknownValidatorName">Unknown</string>
   <string name="account_poolUnits_unknownSymbolName">Unknown</string>
@@ -48,10 +49,10 @@
   <string name="assetDetails_currentSupply">Current Supply</string>
   <string name="assetDetails_supplyUnkown">Unknown</string>
   <string name="assetDetails_behavior">Behavior</string>
-  <string name="assetDetails_tags">Tags</string>
-  <string name="assetDetails_tags_officialRadix">Official Radix</string>
   <string name="assetDetails_staking_readyToClaim">Ready to Claim %s XRD</string>
   <string name="assetDetails_staking_unstaking">Ready to Claim %s XRD in approx. less than %d minutes</string>
+  <string name="assetDetails_tags">Tags</string>
+  <string name="assetDetails_tags_officialRadix">Official Radix</string>
   <string name="assetDetails_associatedDapps">Associated dApps</string>
   <string name="assetDetails_tokenDetails_noTokens">You have no Tokens</string>
   <string name="assetDetails_tokenDetails_whatAreTokens">What are Tokens?</string>
@@ -491,6 +492,8 @@
   <string name="common_optional">Optional</string>
   <string name="common_showMore">Show More</string>
   <string name="common_showLess">Show Less</string>
+  <string name="common_component">Component</string>
+  <string name="common_unauthorized">Unauthorized</string>
   <string name="error_dappRequest_invalidPersonaId">Invalid Persona specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to import Radix Wallet backup: %s</string>
