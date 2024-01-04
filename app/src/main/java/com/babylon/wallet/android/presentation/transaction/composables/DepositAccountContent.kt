@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -75,7 +76,7 @@ fun DepositAccountContent(
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     if (showStrokeLine) {
-                        StrokeLine(height = 60.dp)
+                        StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 60.dp)
                     }
                 }
             }
@@ -130,16 +131,12 @@ fun StrokeLine(
     val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
     val lineHeight = with(LocalDensity.current) { height.toPx() }
     val pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeInterval, strokeInterval), 0f)
-    Canvas(
-        modifier
-            .fillMaxWidth()
-            .height(height)
-    ) {
+    Canvas(modifier.width(1.dp).height(height)) {
         val width = size.width
         drawLine(
             color = strokeColor,
-            start = Offset(width - 150f, 0f),
-            end = Offset(width - 150f, lineHeight),
+            start = Offset(width, 0f),
+            end = Offset(width, lineHeight),
             strokeWidth = strokeWidth,
             pathEffect = pathEffect
         )

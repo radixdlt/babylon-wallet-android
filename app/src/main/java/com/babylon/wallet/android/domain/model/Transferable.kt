@@ -31,9 +31,11 @@ sealed interface Transferable {
                             instructionIndex = predicted.instructionIndex
                         )
 
-                        is TransferableResource.LsuAmount -> null // TODO implement if necessary
+                        is TransferableResource.LsuAmount -> null
+                        is TransferableResource.StakeClaimNft -> null
                     }
                 }
+
                 is Withdrawing -> null
             }
         }
@@ -106,7 +108,7 @@ sealed interface TransferableResource {
     data class LsuAmount(
         val amount: BigDecimal,
         override val resource: Resource.FungibleResource,
-        val validatorDetail: ValidatorDetail?,
+        val validatorDetail: ValidatorDetail,
         val xrdWorth: BigDecimal,
         override val isNewlyCreated: Boolean = false
     ) : TransferableResource
@@ -114,5 +116,12 @@ sealed interface TransferableResource {
     data class NFTs(
         override val resource: Resource.NonFungibleResource,
         override val isNewlyCreated: Boolean
+    ) : TransferableResource
+
+    data class StakeClaimNft(
+        override val resource: Resource.NonFungibleResource,
+        val xrdWorth: BigDecimal,
+        val validatorDetail: ValidatorDetail,
+        override val isNewlyCreated: Boolean = false
     ) : TransferableResource
 }

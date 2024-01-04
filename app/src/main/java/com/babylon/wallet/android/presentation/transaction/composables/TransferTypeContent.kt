@@ -52,7 +52,7 @@ fun TransferTypeContent(
                 }
             )
             if (preview.dApps.toPersistentList().isNotEmpty()) {
-                StrokeLine(height = 40.dp)
+                StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 60.dp)
             }
             ConnectedDAppsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),

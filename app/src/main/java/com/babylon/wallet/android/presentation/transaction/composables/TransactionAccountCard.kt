@@ -80,6 +80,10 @@ fun TransactionAccountCard(
             account.resources.filter { it.transferable is TransferableResource.LsuAmount }
         }
 
+        val stakeClaimNftTransferables = remember(account.resources) {
+            account.resources.filter { it.transferable is TransferableResource.StakeClaimNft }
+        }
+
         // Fungibles
         amountTransferables.forEachIndexed { index, amountTransferable ->
             val lastItem = if (nftTransferables.isEmpty()) index == amountTransferables.lastIndex else false
@@ -120,6 +124,20 @@ fun TransactionAccountCard(
                     onFungibleResourceClick(transferableLsu.resource, transferableLsu.isNewlyCreated)
                 },
                 transferable = transferableLsu,
+                shape = shape,
+            )
+            if (lastItem.not()) {
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+            }
+        }
+        stakeClaimNftTransferables.forEachIndexed { index, transferable ->
+            val lastItem = index == stakeClaimNftTransferables.lastIndex
+            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+            val transferableStakeClaim = transferable.transferable as TransferableResource.StakeClaimNft
+
+            TransferableStakeClaimNftItemContent(
+                modifier = Modifier, // TODO verify if this should be clickable or not
+                transferable = transferableStakeClaim,
                 shape = shape,
             )
             if (lastItem.not()) {
@@ -229,14 +247,17 @@ private fun TransferableItemContent(
                 )
             }
 
-            is TransferableResource.LsuAmount -> {}
+            is TransferableResource.StakeClaimNft,
+            is TransferableResource.LsuAmount -> {
+            }
         }
         Text(
             modifier = Modifier.weight(1f),
             text = when (val resource = transferable.transferable) {
                 is TransferableResource.Amount -> resource.resource.displayTitle
                 is TransferableResource.NFTs -> resource.resource.name
-                is TransferableResource.LsuAmount -> "LSU: implement"
+                is TransferableResource.LsuAmount,
+                is TransferableResource.StakeClaimNft -> ""
             }.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
@@ -341,7 +362,7 @@ private fun TransferableLsuItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferable.validatorDetail?.name.orEmpty(),
+                    text = transferable.validatorDetail.name,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
@@ -354,7 +375,96 @@ private fun TransferableLsuItemContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
-            text = "Worth".uppercase(),
+            text = "Worth".uppercase(), // TODO crowdin
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray2,
+            maxLines = 1
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
+                .padding(RadixTheme.dimensions.paddingDefault),
+            verticalAlignment = CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(RadixTheme.shapes.circle),
+                tint = Color.Unspecified
+            )
+            Text(
+                text = XrdResource.SYMBOL,
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray1,
+                maxLines = 2
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = transferable.xrdWorth.displayableQuantity(),
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.End,
+                maxLines = 2
+            )
+        }
+    }
+}
+
+@Composable
+private fun TransferableStakeClaimNftItemContent(
+    modifier: Modifier = Modifier,
+    transferable: TransferableResource.StakeClaimNft,
+    shape: Shape
+) {
+    Column(
+        modifier = modifier
+            .height(IntrinsicSize.Min)
+            .background(
+                color = RadixTheme.colors.gray5,
+                shape = shape
+            )
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingMedium
+            )
+    ) {
+        Row(
+            verticalAlignment = CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            Thumbnail.NonFungible(
+                modifier = Modifier.size(44.dp),
+                collection = transferable.resource
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = transferable.resource.name.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = transferable.validatorDetail.name,
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
+        }
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = RadixTheme.dimensions.paddingSmall),
+            text = "To be claimed".uppercase(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray2,
             maxLines = 1

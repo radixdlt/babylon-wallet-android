@@ -463,6 +463,7 @@ sealed interface PreviewType {
     data class Unstake(
         val from: List<AccountWithTransferableResources>,
         val to: List<AccountWithTransferableResources>,
+        val validators: List<ValidatorDetail>
     ) : PreviewType
 
     data object ClaimStake : PreviewType

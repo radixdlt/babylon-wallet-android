@@ -376,8 +376,12 @@ object XrdResource {
 val Resource.FungibleResource.isXrd: Boolean
     get() = addressesPerNetwork.containsValue(resourceAddress)
 
-fun Resource.FungibleResource.asLsu(): LiquidStakeUnit {
-    return LiquidStakeUnit(this)
+fun Resource.FungibleResource.asLsu(ownedAmount: BigDecimal? = null): LiquidStakeUnit {
+    return if (ownedAmount != null) {
+        LiquidStakeUnit(this.copy(ownedAmount = ownedAmount))
+    } else {
+        LiquidStakeUnit(this)
+    }
 }
 
 fun List<Resource>.findFungible(address: String) = find { it.resourceAddress == address } as? Resource.FungibleResource

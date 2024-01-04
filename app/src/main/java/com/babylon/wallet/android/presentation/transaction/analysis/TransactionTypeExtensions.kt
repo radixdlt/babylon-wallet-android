@@ -14,7 +14,6 @@ import com.radixdlt.ret.Address
 import com.radixdlt.ret.AuthorizedDepositorsChanges
 import com.radixdlt.ret.DecimalSource
 import com.radixdlt.ret.MetadataValue
-import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.NonFungibleLocalIdVecSource
 import com.radixdlt.ret.PublicKey
@@ -83,16 +82,14 @@ val TransactionType.involvedResourceAddresses: Set<String>
 
         is TransactionType.ClaimStakeTransaction ->
             claims.map { claim ->
-                claim.claimNftLocalIds.map { id ->
-                    NonFungibleGlobalId.fromParts(claim.claimNftResource, id).resourceAddress().addressString()
-                }
-            }.flatten().toSet()
+                claim.claimNftResource.addressString()
+            }.toSet()
 
         is TransactionType.UnstakeTransaction ->
             unstakes.map {
                 it.stakeUnitAddress.addressString()
             }.toSet() union unstakes.map {
-                NonFungibleGlobalId.fromParts(it.claimNftResource, it.claimNftLocalId).resourceAddress().addressString()
+                it.claimNftResource.addressString()
             }.toSet()
 
         is TransactionType.StakeTransaction -> stakes.map { it.stakeUnitResource.addressString() }.toSet()

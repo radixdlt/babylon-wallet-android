@@ -51,7 +51,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.Guarantee
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
 import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
-import com.babylon.wallet.android.presentation.transaction.composables.StakeTypeContent
+import com.babylon.wallet.android.presentation.transaction.composables.StakeUnstakeTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransferTypeContent
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
@@ -301,78 +301,63 @@ private fun TransactionPreviewContent(
                                 )
                             }
 
-                            is PreviewType.AccountsDepositSettings -> {
-                                AccountDepositSettingsTypeContent(
-                                    modifier = Modifier.background(RadixTheme.colors.gray5),
-                                    preview = preview
-                                )
-                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
+                                is PreviewType.AccountsDepositSettings -> {
+                                    AccountDepositSettingsTypeContent(
+                                        modifier = Modifier.background(RadixTheme.colors.gray5),
+                                        preview = preview
+                                    )
+                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
+                                }
+
+                                PreviewType.ClaimStake -> {}
+                                is PreviewType.Stake -> {
+                                    StakeUnstakeTypeContent(
+                                        modifier = Modifier.background(RadixTheme.colors.gray5),
+                                        state = state,
+                                        onFungibleResourceClick = onFungibleResourceClick,
+                                        onNonFungibleResourceClick = onNonFungibleResourceClick,
+                                        toAccounts = preview.to.toPersistentList(),
+                                        fromAccounts = preview.from.toPersistentList(),
+                                        validators = preview.validators.toPersistentList(),
+                                        validatorSectionTitleText = "Staking to Validators".uppercase() // TODO crowdin
+                                    )
+                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
+                                }
+                                is PreviewType.Unstake -> {
+                                    StakeUnstakeTypeContent(
+                                        modifier = Modifier.background(RadixTheme.colors.gray5),
+                                        state = state,
+                                        onFungibleResourceClick = onFungibleResourceClick,
+                                        onNonFungibleResourceClick = onNonFungibleResourceClick,
+                                        toAccounts = preview.to.toPersistentList(),
+                                        fromAccounts = preview.from.toPersistentList(),
+                                        validators = preview.validators.toPersistentList(),
+                                        validatorSectionTitleText = "Requesting unstake from validators".uppercase() // TODO crowdin
+                                    )
+                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
+                                }
                             }
-                            PreviewType.ClaimStake -> {}
-                            is PreviewType.Stake -> {
-                                StakeTypeContent(
-                                    modifier = Modifier.background(RadixTheme.colors.gray5),
-                                    state = state,
-                                    preview = preview,
-                                    onPromptForGuarantees = promptForGuarantees,
-                                    onValidatorClick = {},
-                                    onFungibleResourceClick = onFungibleResourceClick,
-                                    onNonFungibleResourceClick = onNonFungibleResourceClick
-                                )
-                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
-                            }
-                            is PreviewType.Unstake -> {}
+                            NetworkFeeContent(
+                                fees = state.transactionFees,
+                                noFeePayerSelected = state.noFeePayerSelected,
+                                insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
+                                isNetworkFeeLoading = state.isNetworkFeeLoading,
+                                onCustomizeClick = onCustomizeClick
+                            )
+                            SlideToSignButton(
+                                modifier = Modifier.padding(
+                                    horizontal = RadixTheme.dimensions.paddingXLarge,
+                                    vertical = RadixTheme.dimensions.paddingDefault
+                                ),
+                                enabled = state.isSubmitEnabled,
+                                isSubmitting = state.isSubmitting,
+                                onSwipeComplete = onApproveTransaction
+                            )
                         }
-                        NetworkFeeContent(
-                            fees = state.transactionFees,
-                            noFeePayerSelected = state.noFeePayerSelected,
-                            insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
-                            isNetworkFeeLoading = state.isNetworkFeeLoading,
-                            onCustomizeClick = onCustomizeClick
-                        )
-                        SlideToSignButton(
-                            modifier = Modifier.padding(
-                                horizontal = RadixTheme.dimensions.paddingXLarge,
-                                vertical = RadixTheme.dimensions.paddingDefault
-                            ),
-                            enabled = state.isSubmitEnabled,
-                            isSubmitting = state.isSubmitting,
-                            onSwipeComplete = onApproveTransaction
-                        )
                     }
                 }
             }
         }
-    }
-
-    if (state.isSheetVisible) {
-        DefaultModalSheetLayout(
-            modifier = modifier.fillMaxSize(),
-            sheetState = modalBottomSheetState,
-            sheetContent = {
-                BottomSheetContent(
-                    modifier = Modifier.navigationBarsPadding(),
-                    sheetState = state.sheetState,
-                    transactionFees = state.transactionFees,
-                    insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
-                    onGuaranteesCloseClick = onGuaranteesCloseClick,
-                    onGuaranteesApplyClick = onGuaranteesApplyClick,
-                    onGuaranteeValueChanged = onGuaranteeValueChanged,
-                    onGuaranteeValueIncreased = onGuaranteeValueIncreased,
-                    onGuaranteeValueDecreased = onGuaranteeValueDecreased,
-                    onCloseDAppSheet = onBackClick,
-                    onChangeFeePayerClick = onChangeFeePayerClick,
-                    onSelectFeePayerClick = onSelectFeePayerClick,
-                    onPayerSelected = onPayerSelected,
-                    onFeePaddingAmountChanged = onFeePaddingAmountChanged,
-                    onTipPercentageChanged = onTipPercentageChanged,
-                    onViewDefaultModeClick = onViewDefaultModeClick,
-                    onViewAdvancedModeClick = onViewAdvancedModeClick
-                )
-            },
-            showDragHandle = true,
-            onDismissRequest = onBackClick
-        )
     }
 }
 

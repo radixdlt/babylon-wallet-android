@@ -107,7 +107,7 @@ object Thumbnail {
     fun NonFungible(
         modifier: Modifier = Modifier,
         collection: Resource.NonFungibleResource?,
-        shape: Shape
+        shape: Shape = RadixTheme.shapes.roundedRectSmall
     ) {
         var viewSize: IntSize? by remember { mutableStateOf(null) }
         val imageType = remember(collection, viewSize) {
