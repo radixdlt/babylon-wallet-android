@@ -136,7 +136,13 @@ fun TransactionAccountCard(
             val transferableStakeClaim = transferable.transferable as TransferableResource.StakeClaimNft
 
             TransferableStakeClaimNftItemContent(
-                modifier = Modifier, // TODO verify if this should be clickable or not
+                modifier = Modifier.clickable {
+                    onNonFungibleResourceClick(
+                        transferableStakeClaim.resource,
+                        transferableStakeClaim.resource.items.first(),
+                        transferableStakeClaim.isNewlyCreated
+                    )
+                },
                 transferable = transferableStakeClaim,
                 shape = shape,
             )
@@ -469,36 +475,38 @@ private fun TransferableStakeClaimNftItemContent(
             color = RadixTheme.colors.gray2,
             maxLines = 1
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
-                .padding(RadixTheme.dimensions.paddingDefault),
-            verticalAlignment = CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-        ) {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
-                contentDescription = null,
+        transferable.resource.items.forEach { item ->
+            Row(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(RadixTheme.shapes.circle),
-                tint = Color.Unspecified
-            )
-            Text(
-                text = XrdResource.SYMBOL,
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
-                maxLines = 2
-            )
-            Text(
-                modifier = Modifier.weight(1f),
-                text = transferable.xrdWorth.displayableQuantity(),
-                style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.End,
-                maxLines = 2
-            )
+                    .fillMaxWidth()
+                    .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
+                    .padding(RadixTheme.dimensions.paddingDefault),
+                verticalAlignment = CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+            ) {
+                Icon(
+                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RadixTheme.shapes.circle),
+                    tint = Color.Unspecified
+                )
+                Text(
+                    text = XrdResource.SYMBOL,
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 2
+                )
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = transferable.xrdWorthPerNftItem[item.localId.displayable]?.displayableQuantity().orEmpty(),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End,
+                    maxLines = 2
+                )
+            }
         }
     }
 }

@@ -120,7 +120,7 @@ sealed interface TransferableResource {
 
     data class StakeClaimNft(
         override val resource: Resource.NonFungibleResource,
-        val xrdWorth: BigDecimal,
+        val xrdWorthPerNftItem: Map<String, BigDecimal>,
         val validatorDetail: ValidatorDetail,
         override val isNewlyCreated: Boolean = false
     ) : TransferableResource
