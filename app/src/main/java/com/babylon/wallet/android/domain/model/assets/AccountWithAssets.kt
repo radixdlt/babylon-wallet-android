@@ -120,9 +120,6 @@ data class ValidatorDetail(
 
     val description: String?
         get() = metadata.description()
-
-    val isDetailsAvailable: Boolean
-        get() = totalXrdStake != null
 }
 
 data class ValidatorWithStakes(

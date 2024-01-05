@@ -323,9 +323,10 @@ class StateRepositoryImpl @Inject constructor(
         runCatching {
             val stateVersion = stateDao.getLatestStateVersion() ?: error("No cached state version found")
             val validators = stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion)
-            if (validators.size != validatorAddresses.size) {
+            val unknownAddresses = validatorAddresses - validators.map { it.address }.toSet()
+            if (unknownAddresses.isNotEmpty()) {
                 val details = stateApi.fetchValidators(
-                    validatorsAddresses = validatorAddresses.toSet(),
+                    validatorsAddresses = unknownAddresses.toSet(),
                     stateVersion = stateVersion
                 ).asValidators()
 
