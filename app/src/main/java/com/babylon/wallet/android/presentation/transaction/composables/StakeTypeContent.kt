@@ -25,10 +25,10 @@ fun StakeTypeContent(
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
     previewType: PreviewType.Staking
 ) {
-    val validatorSectionText = when (previewType) {
-        is PreviewType.Staking.ClaimStake -> "Claim from validators".uppercase() // TODO crowdin
-        is PreviewType.Staking.Stake -> "Staking to Validators".uppercase() // TODO crowdin
-        is PreviewType.Staking.Unstake -> "Requesting unstake from validators".uppercase() // TODO crowdin
+    val validatorSectionText = when (previewType.actionType) {
+        PreviewType.Staking.ActionType.Stake -> "Staking to Validators".uppercase() // TODO crowdin
+        PreviewType.Staking.ActionType.Unstake -> "Requesting unstake from validators".uppercase() // TODO crowdin
+        PreviewType.Staking.ActionType.ClaimStake -> "Claim from validators".uppercase()
     }
     Column(
         modifier = modifier.fillMaxSize()
@@ -95,10 +95,11 @@ fun StakeUnstakeTypePreview() {
             ),
             onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> },
-            previewType = PreviewType.Staking.Stake(
+            previewType = PreviewType.Staking(
                 to = persistentListOf(),
                 from = listOf(SampleDataProvider().accountWithTransferableResourceLsu).toPersistentList(),
-                validators = persistentListOf()
+                validators = persistentListOf(),
+                actionType = PreviewType.Staking.ActionType.Stake
             ),
         )
     }

@@ -25,7 +25,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircle
+import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
@@ -47,7 +47,7 @@ fun WithdrawAccountContent(
             Icon(
                 modifier = Modifier
                     .size(24.dp)
-                    .dashedCircle(24.dp),
+                    .dashedCircleBorder(RadixTheme.colors.gray3),
                 painter = painterResource(id = DSR.ic_arrow_sent_upwards),
                 contentDescription = null,
                 tint = RadixTheme.colors.gray2

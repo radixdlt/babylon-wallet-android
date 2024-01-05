@@ -452,28 +452,15 @@ sealed interface PreviewType {
         }.flatten()
     }
 
-    sealed interface Staking : PreviewType {
-        val from: List<AccountWithTransferableResources>
-        val to: List<AccountWithTransferableResources>
-        val validators: List<ValidatorDetail>
-
-        data class Stake(
-            override val from: List<AccountWithTransferableResources>,
-            override val to: List<AccountWithTransferableResources>,
-            override val validators: List<ValidatorDetail>
-        ) : Staking
-
-        data class Unstake(
-            override val from: List<AccountWithTransferableResources>,
-            override val to: List<AccountWithTransferableResources>,
-            override val validators: List<ValidatorDetail>
-        ) : Staking
-
-        data class ClaimStake(
-            override val from: List<AccountWithTransferableResources>,
-            override val to: List<AccountWithTransferableResources>,
-            override val validators: List<ValidatorDetail>
-        ) : Staking
+    data class Staking(
+        val from: List<AccountWithTransferableResources>,
+        val to: List<AccountWithTransferableResources>,
+        val validators: List<ValidatorDetail>,
+        val actionType: ActionType
+    ) : PreviewType {
+        enum class ActionType {
+            Stake, Unstake, ClaimStake
+        }
     }
 }
 

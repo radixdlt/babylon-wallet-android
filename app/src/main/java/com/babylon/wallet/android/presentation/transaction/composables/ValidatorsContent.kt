@@ -34,7 +34,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircle
+import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.babylon.wallet.android.presentation.ui.composables.resources.ValidatorDetailsItem
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -60,7 +60,7 @@ fun ValidatorsContent(
             Image(
                 modifier = Modifier
                     .size(24.dp)
-                    .dashedCircle(24.dp),
+                    .dashedCircleBorder(RadixTheme.colors.gray3),
                 painter = painterResource(id = DSR.ic_validator),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(RadixTheme.colors.gray2),

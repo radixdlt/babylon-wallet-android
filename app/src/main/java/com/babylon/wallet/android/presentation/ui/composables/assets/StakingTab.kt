@@ -20,11 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -40,6 +36,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -226,22 +223,12 @@ fun ValidatorsSize(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
     ) {
-        val borderColor = RadixTheme.colors.gray3
-        val borderStroke = Stroke(
-            width = with(LocalDensity.current) { 1.dp.toPx() },
-            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-        )
         Icon(
             modifier = Modifier
                 .size(24.dp)
-                .drawBehind {
-                    drawCircle(
-                        color = borderColor,
-                        style = borderStroke
-                    )
-                }
+                .dashedCircleBorder(RadixTheme.colors.gray3)
                 .padding(RadixTheme.dimensions.paddingXSmall),
-            painter = painterResource(id = R.drawable.ic_validator),
+            painter = painterResource(id = DSR.ic_validator),
             tint = RadixTheme.colors.gray2,
             contentDescription = null
         )

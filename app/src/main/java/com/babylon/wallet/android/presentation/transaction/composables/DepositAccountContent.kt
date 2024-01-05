@@ -37,7 +37,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.hasCustomizableGuarantees
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircle
+import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
@@ -63,7 +63,7 @@ fun DepositAccountContent(
                     Icon(
                         modifier = Modifier
                             .size(24.dp)
-                            .dashedCircle(24.dp),
+                            .dashedCircleBorder(RadixTheme.colors.gray3),
                         painter = painterResource(id = DSR.ic_arrow_received_downward),
                         contentDescription = null,
                         tint = RadixTheme.colors.gray2

@@ -11,6 +11,7 @@ import com.radixdlt.ret.TransactionType
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
+
 @Suppress("LongMethod")
 suspend fun TransactionType.ClaimStakeTransaction.resolve(
     getProfileUseCase: GetProfileUseCase,
@@ -78,5 +79,10 @@ suspend fun TransactionType.ClaimStakeTransaction.resolve(
             )
         }
     }
-    return PreviewType.Staking.ClaimStake(validators = finalValidators, from = fromAccounts, to = toAccounts)
+    return PreviewType.Staking(
+        validators = finalValidators,
+        from = fromAccounts,
+        to = toAccounts,
+        actionType = PreviewType.Staking.ActionType.ClaimStake
+    )
 }

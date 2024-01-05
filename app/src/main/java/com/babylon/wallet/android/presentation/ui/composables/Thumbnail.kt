@@ -295,7 +295,7 @@ object Thumbnail {
         Custom(
             modifier = modifier,
             imageType = validator.url?.let { ImageType.External(it, ThumbnailRequestSize.MEDIUM) },
-            emptyDrawable = com.babylon.wallet.android.R.drawable.ic_validator,
+            emptyDrawable = DSR.ic_validator,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectSmall,
             contentDescription = validator.name
