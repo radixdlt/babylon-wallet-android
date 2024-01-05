@@ -11,26 +11,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
-import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
-fun StakeUnstakeTypeContent(
+fun StakeTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
-    toAccounts: PersistentList<AccountWithTransferableResources>,
-    fromAccounts: PersistentList<AccountWithTransferableResources>,
-    validators: PersistentList<ValidatorDetail>,
-    validatorSectionTitleText: String
+    previewType: PreviewType.Staking
 ) {
+    val validatorSectionText = when (previewType) {
+        is PreviewType.Staking.ClaimStake -> "Claim from validators".uppercase() // TODO crowdin
+        is PreviewType.Staking.Stake -> "Staking to Validators".uppercase() // TODO crowdin
+        is PreviewType.Staking.Unstake -> "Requesting unstake from validators".uppercase() // TODO crowdin
+    }
     Column(
         modifier = modifier.fillMaxSize()
     ) {
@@ -46,7 +45,7 @@ fun StakeUnstakeTypeContent(
 
             WithdrawAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                from = fromAccounts,
+                from = previewType.from.toPersistentList(),
                 onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
                     onFungibleResourceClick(fungibleResource, isNewlyCreated)
                 },
@@ -57,8 +56,8 @@ fun StakeUnstakeTypeContent(
 
             ValidatorsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                validators = validators,
-                text = validatorSectionTitleText,
+                validators = previewType.validators.toPersistentList(),
+                text = validatorSectionText,
             )
 
             DepositAccountContent(
@@ -67,7 +66,7 @@ fun StakeUnstakeTypeContent(
                     end = RadixTheme.dimensions.paddingDefault,
                     bottom = RadixTheme.dimensions.paddingLarge
                 ),
-                to = toAccounts,
+                to = previewType.to.toPersistentList(),
                 promptForGuarantees = {},
                 showStrokeLine = true,
                 onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
@@ -87,7 +86,7 @@ fun StakeUnstakeTypeContent(
 @Composable
 fun StakeUnstakeTypePreview() {
     RadixWalletTheme {
-        StakeUnstakeTypeContent(
+        StakeTypeContent(
             state = TransactionReviewViewModel.State(
                 request = SampleDataProvider().transactionRequest,
                 isLoading = false,
@@ -96,10 +95,11 @@ fun StakeUnstakeTypePreview() {
             ),
             onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> },
-            toAccounts = persistentListOf(),
-            fromAccounts = listOf(SampleDataProvider().accountWithTransferableResourceLsu).toPersistentList(),
-            validators = persistentListOf(),
-            validatorSectionTitleText = "Staking to Validators".uppercase()
+            previewType = PreviewType.Staking.Stake(
+                to = persistentListOf(),
+                from = listOf(SampleDataProvider().accountWithTransferableResourceLsu).toPersistentList(),
+                validators = persistentListOf()
+            ),
         )
     }
 }

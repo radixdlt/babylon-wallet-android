@@ -136,15 +136,9 @@ fun TransactionAccountCard(
             val transferableStakeClaim = transferable.transferable as TransferableResource.StakeClaimNft
 
             TransferableStakeClaimNftItemContent(
-                modifier = Modifier.clickable {
-                    onNonFungibleResourceClick(
-                        transferableStakeClaim.resource,
-                        transferableStakeClaim.resource.items.first(),
-                        transferableStakeClaim.isNewlyCreated
-                    )
-                },
                 transferable = transferableStakeClaim,
                 shape = shape,
+                onNonFungibleResourceClick = onNonFungibleResourceClick
             )
             if (lastItem.not()) {
                 HorizontalDivider(color = RadixTheme.colors.gray4)
@@ -424,7 +418,8 @@ private fun TransferableLsuItemContent(
 private fun TransferableStakeClaimNftItemContent(
     modifier: Modifier = Modifier,
     transferable: TransferableResource.StakeClaimNft,
-    shape: Shape
+    shape: Shape,
+    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -475,9 +470,18 @@ private fun TransferableStakeClaimNftItemContent(
             color = RadixTheme.colors.gray2,
             maxLines = 1
         )
-        transferable.resource.items.forEach { item ->
+        transferable.resource.items.forEachIndexed { index, item ->
+            val addSpacer = index != transferable.resource.items.lastIndex
             Row(
                 modifier = Modifier
+                    .clip(RadixTheme.shapes.roundedRectSmall)
+                    .clickable {
+                        onNonFungibleResourceClick(
+                            transferable.resource,
+                            item,
+                            transferable.isNewlyCreated
+                        )
+                    }
                     .fillMaxWidth()
                     .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
                     .padding(RadixTheme.dimensions.paddingDefault),
@@ -506,6 +510,9 @@ private fun TransferableStakeClaimNftItemContent(
                     textAlign = TextAlign.End,
                     maxLines = 2
                 )
+            }
+            if (addSpacer) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
         }
     }

@@ -29,7 +29,7 @@ fun NavController.transactionReview(requestId: String) {
 fun NavGraphBuilder.transactionReviewScreen(
     onBackClick: () -> Unit,
     onFungibleClick: (Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
+    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean, Boolean) -> Unit
 ) {
     markAsHighPriority(ROUTE_TRANSACTION_REVIEW)
     composable(

@@ -64,5 +64,5 @@ suspend fun TransactionType.StakeTransaction.resolve(
             )
         )
     }
-    return PreviewType.Stake(from = fromAccounts, to = toAccounts, validators = finalValidators)
+    return PreviewType.Staking.Stake(from = fromAccounts, to = toAccounts, validators = finalValidators)
 }

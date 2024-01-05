@@ -65,10 +65,12 @@ suspend fun TransactionType.UnstakeTransaction.resolve(
                     transferable = TransferableResource.StakeClaimNft(
                         nftResource.copy(items = stakeClaimNftItems),
                         unstakesPerNftResource.value.associate {
-                            it.claimNftLocalId.toString() to it.claimNftData.claimAmount.asStr().toBigDecimal()
+                            Resource.NonFungibleResource.Item.ID.from(
+                                it.claimNftLocalId
+                            ).displayable to it.claimNftData.claimAmount.asStr().toBigDecimal()
                         },
                         validator,
-                        false
+                        true
                     )
                 )
             }
@@ -80,5 +82,5 @@ suspend fun TransactionType.UnstakeTransaction.resolve(
             )
         }
     }
-    return PreviewType.Unstake(from = fromAccounts, to = toAccounts, validators = finalValidators)
+    return PreviewType.Staking.Unstake(from = fromAccounts, to = toAccounts, validators = finalValidators)
 }

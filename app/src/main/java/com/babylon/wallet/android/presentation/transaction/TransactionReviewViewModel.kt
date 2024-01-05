@@ -381,9 +381,7 @@ class TransactionReviewViewModel @Inject constructor(
                     is PreviewType.NonConforming -> BigDecimal.ZERO
                     is PreviewType.None -> BigDecimal.ZERO
                     is PreviewType.UnacceptableManifest -> BigDecimal.ZERO
-                    PreviewType.ClaimStake -> BigDecimal.ZERO
-                    is PreviewType.Stake -> BigDecimal.ZERO
-                    is PreviewType.Unstake -> BigDecimal.ZERO
+                    is PreviewType.Staking -> BigDecimal.ZERO
                 }
 
                 return xrdInCandidateAccount - xrdUsed < transactionFees.transactionFeeToLock
@@ -454,19 +452,29 @@ sealed interface PreviewType {
         }.flatten()
     }
 
-    data class Stake(
-        val from: List<AccountWithTransferableResources>,
-        val to: List<AccountWithTransferableResources>,
+    sealed interface Staking : PreviewType {
+        val from: List<AccountWithTransferableResources>
+        val to: List<AccountWithTransferableResources>
         val validators: List<ValidatorDetail>
-    ) : PreviewType
 
-    data class Unstake(
-        val from: List<AccountWithTransferableResources>,
-        val to: List<AccountWithTransferableResources>,
-        val validators: List<ValidatorDetail>
-    ) : PreviewType
+        data class Stake(
+            override val from: List<AccountWithTransferableResources>,
+            override val to: List<AccountWithTransferableResources>,
+            override val validators: List<ValidatorDetail>
+        ) : Staking
 
-    data object ClaimStake : PreviewType
+        data class Unstake(
+            override val from: List<AccountWithTransferableResources>,
+            override val to: List<AccountWithTransferableResources>,
+            override val validators: List<ValidatorDetail>
+        ) : Staking
+
+        data class ClaimStake(
+            override val from: List<AccountWithTransferableResources>,
+            override val to: List<AccountWithTransferableResources>,
+            override val validators: List<ValidatorDetail>
+        ) : Staking
+    }
 }
 
 data class AccountWithDepositSettingsChanges(

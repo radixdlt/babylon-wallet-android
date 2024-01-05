@@ -51,7 +51,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.Guarantee
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
 import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
-import com.babylon.wallet.android.presentation.transaction.composables.StakeUnstakeTypeContent
+import com.babylon.wallet.android.presentation.transaction.composables.StakeTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
 import com.babylon.wallet.android.presentation.transaction.composables.TransferTypeContent
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
@@ -73,7 +73,7 @@ fun TransactionReviewScreen(
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
     onFungibleClick: (Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
+    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean, Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -82,7 +82,7 @@ fun TransactionReviewScreen(
         viewModel.oneOffEvent.collect {
             when (it) {
                 is TransactionReviewViewModel.Event.OnFungibleClick -> onFungibleClick(it.resource, it.isNewlyCreated)
-                is TransactionReviewViewModel.Event.OnNonFungibleClick -> onNonFungibleClick(it.resource, it.item, it.isNewlyCreated)
+                is TransactionReviewViewModel.Event.OnNonFungibleClick -> onNonFungibleClick(it.resource, it.item, it.isNewlyCreated, false)
             }
         }
     }
@@ -309,30 +309,13 @@ private fun TransactionPreviewContent(
                                     ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                                 }
 
-                                PreviewType.ClaimStake -> {}
-                                is PreviewType.Stake -> {
-                                    StakeUnstakeTypeContent(
+                                is PreviewType.Staking -> {
+                                    StakeTypeContent(
                                         modifier = Modifier.background(RadixTheme.colors.gray5),
                                         state = state,
                                         onFungibleResourceClick = onFungibleResourceClick,
                                         onNonFungibleResourceClick = onNonFungibleResourceClick,
-                                        toAccounts = preview.to.toPersistentList(),
-                                        fromAccounts = preview.from.toPersistentList(),
-                                        validators = preview.validators.toPersistentList(),
-                                        validatorSectionTitleText = "Staking to Validators".uppercase() // TODO crowdin
-                                    )
-                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
-                                }
-                                is PreviewType.Unstake -> {
-                                    StakeUnstakeTypeContent(
-                                        modifier = Modifier.background(RadixTheme.colors.gray5),
-                                        state = state,
-                                        onFungibleResourceClick = onFungibleResourceClick,
-                                        onNonFungibleResourceClick = onNonFungibleResourceClick,
-                                        toAccounts = preview.to.toPersistentList(),
-                                        fromAccounts = preview.from.toPersistentList(),
-                                        validators = preview.validators.toPersistentList(),
-                                        validatorSectionTitleText = "Requesting unstake from validators".uppercase() // TODO crowdin
+                                        previewType = preview
                                     )
                                     ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                                 }
