@@ -331,7 +331,7 @@ class StateRepositoryImpl @Inject constructor(
                 ).asValidators()
 
                 stateDao.insertValidators(details.map { it.asValidatorEntity(SyncInfo(InstantGenerator(), stateVersion)) })
-                details
+                details + validators.map { it.asValidatorDetail() }
             } else {
                 validators.map { it.asValidatorDetail() }
             }
