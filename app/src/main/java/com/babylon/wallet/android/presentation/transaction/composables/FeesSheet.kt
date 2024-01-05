@@ -61,8 +61,7 @@ fun FeesSheet(
             BottomDialogHeader(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
-                    .padding(top = RadixTheme.dimensions.paddingDefault),
+                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
                 onDismissRequest = onClose
             )
         }

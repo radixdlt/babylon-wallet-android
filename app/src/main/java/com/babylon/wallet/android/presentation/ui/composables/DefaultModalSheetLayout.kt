@@ -72,7 +72,7 @@ private fun DefaultModalSheetDragHandle(
 ) {
     Box(
         modifier = modifier
-            .padding(top = RadixTheme.dimensions.paddingDefault)
+            .padding(top = RadixTheme.dimensions.paddingSmall)
             .size(38.dp, 4.dp)
             .background(color = RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
     )
