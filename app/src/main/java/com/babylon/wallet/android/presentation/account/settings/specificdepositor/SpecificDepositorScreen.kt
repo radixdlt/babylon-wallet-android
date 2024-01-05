@@ -155,7 +155,6 @@ fun SpecificDepositorScreen(
                     modifier = Modifier
                         .navigationBarsPadding()
                         .fillMaxWidth()
-                        .background(RadixTheme.colors.gray4)
                         .clip(RadixTheme.shapes.roundedRectTopDefault),
                     depositor = state.depositorToAdd,
                     onDismiss = {
@@ -183,7 +182,6 @@ fun AddDepositorSheet(
 ) {
     Column(
         modifier = modifier
-            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
             .verticalScroll(
                 rememberScrollState()
             )
@@ -193,7 +191,6 @@ fun AddDepositorSheet(
         BottomDialogHeader(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
             onDismissRequest = onDismiss
         )

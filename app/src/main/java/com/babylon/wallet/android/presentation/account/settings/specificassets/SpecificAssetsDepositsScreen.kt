@@ -190,7 +190,6 @@ fun SpecificAssetsDepositsScreen(
                     modifier = Modifier
                         .navigationBarsPadding()
                         .fillMaxWidth()
-                        .background(RadixTheme.colors.gray4)
                         .clip(RadixTheme.shapes.roundedRectTopDefault),
                     onAssetExceptionRuleChanged = sharedViewModel::onAssetExceptionRuleChanged,
                     onDismiss = {
@@ -218,7 +217,6 @@ fun AddAssetSheet(
 ) {
     Column(
         modifier = modifier
-            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
             .verticalScroll(
                 rememberScrollState()
             )
@@ -228,7 +226,6 @@ fun AddAssetSheet(
         BottomDialogHeader(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
             onDismissRequest = onDismiss
         )
