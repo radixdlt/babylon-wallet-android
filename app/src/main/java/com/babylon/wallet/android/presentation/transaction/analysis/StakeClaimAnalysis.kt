@@ -54,6 +54,8 @@ suspend fun TransactionType.ClaimStakeTransaction.resolve(
                         ?: error("No resource found")
                 val stakeClaimNftItems = claimsPerResource.value.map { claim ->
                     claim.claimNftLocalIds.map {
+                        // for a claim that has multiple claimNftLocalIds, we don't have a way now to determine its XRD worth
+                        // this will need to be changed once RET provide xrd worth of each claim
                         Resource.NonFungibleResource.Item(
                             collectionAddress = claim.claimNftResource.addressString(),
                             localId = Resource.NonFungibleResource.Item.ID.from(claim.claimNftLocalIds.first())
