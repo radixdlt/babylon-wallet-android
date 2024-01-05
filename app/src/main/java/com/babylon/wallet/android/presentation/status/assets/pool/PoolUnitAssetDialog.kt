@@ -73,7 +73,7 @@ private fun FungibleAssetDialogContent(
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier,
-        title = state.poolUnit?.name.orEmpty(),
+        title = state.poolUnit?.displayTitle.orEmpty(),
         onDismiss = onDismiss
     ) {
         Box(modifier = Modifier.fillMaxHeight(fraction = 0.9f)) {

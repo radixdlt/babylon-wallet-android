@@ -47,6 +47,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
 import com.babylon.wallet.android.presentation.transfer.accounts.ChooseAccountSheet
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.assets.ChooseAssetsSheet
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
@@ -80,7 +81,8 @@ fun TransferScreen(
         onAddressDecoded = viewModel::onQRAddressDecoded,
         onQrCodeIconClick = viewModel::onQrCodeIconClick,
         cancelQrScan = viewModel::cancelQrScan,
-        onChooseAssetTabSelected = viewModel::onChooseAssetTabSelected,
+        onChooseAssetTabClick = viewModel::onChooseAssetTabSelected,
+        onChooseAssetCollectionClick = viewModel::onChooseAssetCollectionToggle,
         onSheetClosed = viewModel::onSheetClose,
         onAddAssetsClick = viewModel::onAddAssetsClick,
         onRemoveAssetClick = viewModel::onRemoveAsset,
@@ -114,7 +116,8 @@ fun TransferContent(
     onAddressDecoded: (String) -> Unit,
     onQrCodeIconClick: () -> Unit,
     cancelQrScan: () -> Unit,
-    onChooseAssetTabSelected: (State.Sheet.ChooseAssets.Tab) -> Unit,
+    onChooseAssetTabClick: (AssetsTab) -> Unit,
+    onChooseAssetCollectionClick: (String) -> Unit,
     onSheetClosed: () -> Unit,
     onAddAssetsClick: (TargetAccount) -> Unit,
     onRemoveAssetClick: (TargetAccount, SpendingAsset) -> Unit,
@@ -363,7 +366,8 @@ fun TransferContent(
                     is State.Sheet.ChooseAssets -> {
                         ChooseAssetsSheet(
                             state = sheetState,
-                            onTabSelected = { onChooseAssetTabSelected(it) },
+                            onTabClick = onChooseAssetTabClick,
+                            onCollectionClick = onChooseAssetCollectionClick,
                             onCloseClick = onSheetClosed,
                             onAssetSelectionChanged = onAssetSelectionChanged,
                             onNextNFtsPageRequest = onNextNFTsPageRequest,
@@ -440,7 +444,8 @@ fun TransferContentPreview() {
             onAddressDecoded = {},
             onQrCodeIconClick = {},
             cancelQrScan = {},
-            onChooseAssetTabSelected = {},
+            onChooseAssetTabClick = {},
+            onChooseAssetCollectionClick = {},
             onSheetClosed = {},
             onAddAssetsClick = {},
             onRemoveAssetClick = { _, _ -> },

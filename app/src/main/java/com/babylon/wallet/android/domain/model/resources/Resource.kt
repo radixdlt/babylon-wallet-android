@@ -220,6 +220,10 @@ sealed class Resource {
                 metadata.claimAmount()
             }
 
+            val claimEpoch: Long? by lazy {
+                metadata.claimEpoch()
+            }
+
             val nonStandardMetadata: List<Metadata> by lazy {
                 metadata.filterNot { metadataItem ->
                     metadataItem.key in setOf(
@@ -233,8 +237,7 @@ sealed class Resource {
             }
 
             fun isReadyToClaim(currentEpoch: Long): Boolean {
-                val claimEpoch = metadata.claimEpoch()
-                return claimEpoch != null && claimEpoch <= currentEpoch
+                return claimEpoch?.let { it <= currentEpoch } ?: false
             }
 
             override fun compareTo(other: Item): Int = when (localId) {

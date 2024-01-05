@@ -58,8 +58,7 @@ data class Assets(
 
     val ownedValidatorsWithStakes: List<ValidatorWithStakes> by lazy {
         validatorsWithStakes.filterNot {
-            (it.liquidStakeUnit == null || it.liquidStakeUnit.fungibleResource.ownedAmount == BigDecimal.ZERO) &&
-                (it.stakeClaimNft == null || it.stakeClaimNft.nonFungibleResource.amount == 0L)
+            !it.hasLSU && !it.hasClaims
         }
     }
 
@@ -87,7 +86,23 @@ data class Assets(
 
     fun nonFungiblesSize(): Int = ownedNonFungibles.size
 
-    fun poolUnitsSize(): Int = ownedPoolUnits.size + ownedValidatorsWithStakes.size
+    fun validatorsWithStakesSize() = ownedValidatorsWithStakes.size
+
+    fun poolUnitsSize(): Int = ownedPoolUnits.size
+
+    fun stakeSummary(epoch: Long?): StakeSummary? {
+        if (epoch == null || ownedValidatorsWithStakes.any { !it.isDetailsAvailable }) return null
+
+        return StakeSummary(
+            staked = ownedValidatorsWithStakes.sumOf { it.stakeValue() ?: BigDecimal.ZERO },
+            unstaking = ownedValidatorsWithStakes.sumOf { validator ->
+                validator.stakeClaimNft?.unstakingNFTs(epoch)?.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO } ?: BigDecimal.ZERO
+            },
+            readyToClaim = ownedValidatorsWithStakes.sumOf { validator ->
+                validator.stakeClaimNft?.readyToClaimNFTs(epoch)?.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO } ?: BigDecimal.ZERO
+            }
+        )
+    }
 }
 
 data class ValidatorDetail(
@@ -117,8 +132,26 @@ data class ValidatorWithStakes(
         get() = validatorDetail.totalXrdStake != null && liquidStakeUnit != null && liquidStakeUnit.fungibleResource.isDetailsAvailable &&
             (stakeClaimNft == null || stakeClaimNft.nonFungibleResource.amount.toInt() == stakeClaimNft.nonFungibleResource.items.size)
 
+    val hasLSU: Boolean
+        get() = liquidStakeUnit != null && (liquidStakeUnit.fungibleResource.ownedAmount ?: BigDecimal.ZERO) > BigDecimal.ZERO
+
+    val hasClaims: Boolean
+        get() = stakeClaimNft != null && stakeClaimNft.nonFungibleResource.amount > 0L
+
     fun stakeValue(): BigDecimal? {
         if (validatorDetail.totalXrdStake == null) return null
         return liquidStakeUnit?.stakeValueInXRD(validatorDetail.totalXrdStake)
     }
+}
+
+data class StakeSummary(
+    val staked: BigDecimal,
+    val unstaking: BigDecimal,
+    val readyToClaim: BigDecimal
+) {
+    val hasStakedValue: Boolean
+        get() = staked > BigDecimal.ZERO
+
+    val hasReadyToClaimValue: Boolean
+        get() = readyToClaim > BigDecimal.ZERO
 }

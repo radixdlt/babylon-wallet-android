@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.profile.data.model.SeedPhraseLength
 import java.time.Instant
 
 @Serializable
@@ -34,6 +35,15 @@ data class DeviceFactorSource(
 
     val supportsOlympia: Boolean
         get() = common.cryptoParameters.supportsOlympia
+
+    val hasOlympiaSeedPhraseLength: Boolean
+        get() = hint.mnemonicWordCount != SeedPhraseLength.TWENTY_FOUR.words
+
+    val hasBabylonSeedPhraseLength: Boolean
+        get() = hint.mnemonicWordCount == SeedPhraseLength.TWENTY_FOUR.words
+
+    val isBabylonDeviceFactorSource: Boolean
+        get() = supportsBabylon && hasBabylonSeedPhraseLength
 
     companion object {
 

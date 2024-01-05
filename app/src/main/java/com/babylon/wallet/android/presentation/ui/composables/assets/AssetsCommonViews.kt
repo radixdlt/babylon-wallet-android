@@ -51,19 +51,17 @@ fun Modifier.assetPlaceholder(
 @Composable
 fun AssetCard(
     modifier: Modifier = Modifier,
-    itemIndex: Int = 0,
-    allItemsSize: Int = 1,
     backgroundColor: Color = RadixTheme.colors.defaultBackground,
     elevation: Dp = 4.dp,
     roundTopCorners: Boolean = true,
     roundBottomCorners: Boolean = true,
+    removeTopShadow: Boolean = false,
     cornerSizeRadius: Dp = 12.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val isLast = itemIndex == allItemsSize - 1
-    val topCorners = if (itemIndex == 0 && roundTopCorners) cornerSizeRadius else 0.dp
+    val topCorners = if (roundTopCorners) cornerSizeRadius else 0.dp
     val bottomCorners by animateDpAsState(
-        targetValue = if (isLast && roundBottomCorners) cornerSizeRadius else 0.dp,
+        targetValue = if (roundBottomCorners) cornerSizeRadius else 0.dp,
         label = "bottomCorners"
     )
     val shadowPadding = RadixTheme.dimensions.paddingDefault
@@ -71,7 +69,7 @@ fun AssetCard(
         modifier = modifier
             .drawWithContent {
                 // Needed to remove shadow casted above of previous elements in the top side
-                if (itemIndex != 0 && allItemsSize != 1) {
+                if (removeTopShadow) {
                     val shadowPaddingPx = shadowPadding.toPx()
                     clipRect(
                         top = 0f,
@@ -93,6 +91,30 @@ fun AssetCard(
         ),
         colors = CardDefaults.cardColors(containerColor = backgroundColor),
         elevation = CardDefaults.cardElevation(defaultElevation = elevation),
+        content = content
+    )
+}
+
+@Composable
+fun AssetCard(
+    modifier: Modifier = Modifier,
+    itemIndex: Int = 0,
+    allItemsSize: Int = 1,
+    backgroundColor: Color = RadixTheme.colors.defaultBackground,
+    elevation: Dp = 4.dp,
+    roundTopCorners: Boolean = true,
+    roundBottomCorners: Boolean = true,
+    cornerSizeRadius: Dp = 12.dp,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    AssetCard(
+        modifier = modifier,
+        backgroundColor = backgroundColor,
+        elevation = elevation,
+        roundTopCorners = itemIndex == 0 && roundTopCorners,
+        roundBottomCorners = itemIndex == allItemsSize - 1 && roundBottomCorners,
+        cornerSizeRadius = cornerSizeRadius,
+        removeTopShadow = itemIndex != 0 && allItemsSize != 1,
         content = content
     )
 }

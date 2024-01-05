@@ -356,7 +356,6 @@ fun EntityMetadataItem.toMetadata(): Metadata? = when (val typed = value.typed) 
                     value = value.hashHex,
                     valueType = MetadataType.PublicKeyHashEddsaEd25519
                 )
-                else -> error("Not supported MetadataPublicKeyHashArrayValue type for $value")
             }
         }
     )

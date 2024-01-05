@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.CircularProgressIndicator
@@ -13,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -33,47 +31,48 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
-import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
 import java.math.BigDecimal
 
 @Suppress("LongParameterList", "MagicNumber")
 fun LazyListScope.assetsView(
     assets: Assets?,
     epoch: Long?,
-    selectedTab: ResourceTab,
-    onTabSelected: (ResourceTab) -> Unit,
-    collapsibleAssetsState: SnapshotStateMap<String, Boolean>,
+    state: AssetsViewState,
     action: AssetsViewAction
 ) {
     item {
         AssetsTabs(
-            modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-            selectedTab = selectedTab,
-            onTabSelected = onTabSelected
+            selectedTab = state.selectedTab,
+            onTabSelected = action.onTabClick
         )
     }
 
     if (assets == null) {
         loadingAssets()
     } else {
-        when (selectedTab) {
-            ResourceTab.Tokens -> tokensTab(
+        when (state.selectedTab) {
+            AssetsTab.Tokens -> tokensTab(
                 assets = assets,
                 action = action
             )
 
-            ResourceTab.Nfts -> nftsTab(
+            AssetsTab.Nfts -> nftsTab(
                 assets = assets,
-                collapsibleAssetsState = collapsibleAssetsState,
+                state = state,
                 action = action
             )
 
-            ResourceTab.PoolUnits -> poolUnitsTab(
+            AssetsTab.Staking -> stakingTab(
                 assets = assets,
                 epoch = epoch,
-                collapsibleAssetsState = collapsibleAssetsState,
+                state = state,
+                action = action
+            )
+
+            AssetsTab.PoolUnits -> poolUnitsTab(
+                assets = assets,
                 action = action
             )
         }
@@ -95,8 +94,39 @@ private fun LazyListScope.loadingAssets() {
     }
 }
 
+data class AssetsViewState(
+    val selectedTab: AssetsTab,
+    val collapsedCollections: Map<String, Boolean>
+) {
+    fun isCollapsed(collectionId: String) = collapsedCollections.getOrDefault(collectionId, true)
+    fun onCollectionToggle(collectionId: String): AssetsViewState {
+        val isCollapsed = isCollapsed(collectionId)
+        val collapsedCollections = collapsedCollections.toMutableMap().apply {
+            this[collectionId] = !isCollapsed
+        }
+
+        return copy(collapsedCollections = collapsedCollections)
+    }
+    companion object {
+        fun from(selectedTab: AssetsTab = AssetsTab.Tokens, assets: Assets?): AssetsViewState {
+            val collectionAddresses = assets?.nonFungibles?.map {
+                it.resourceAddress
+            }.orEmpty() + assets?.validatorsWithStakes?.map {
+                it.validatorDetail.address
+            }.orEmpty()
+
+            return AssetsViewState(
+                selectedTab = selectedTab,
+                collapsedCollections = collectionAddresses.associateWith { true }
+            )
+        }
+    }
+}
+
 sealed interface AssetsViewAction {
 
+    val onTabClick: (AssetsTab) -> Unit
+    val onCollectionClick: (String) -> Unit
     val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit
     val onStakesRequest: () -> Unit
 
@@ -105,53 +135,46 @@ sealed interface AssetsViewAction {
         val onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
         val onLSUClick: (LiquidStakeUnit) -> Unit,
         val onPoolUnitClick: (PoolUnit) -> Unit,
+        val onClaimClick: (List<StakeClaim>) -> Unit,
+        override val onTabClick: (AssetsTab) -> Unit,
+        override val onCollectionClick: (String) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
-        override val onStakesRequest: () -> Unit
+        override val onStakesRequest: () -> Unit,
     ) : AssetsViewAction
 
     data class Selection(
         val selectedResources: List<String>,
         val onFungibleCheckChanged: (Resource.FungibleResource, Boolean) -> Unit,
         val onNFTCheckChanged: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
+        override val onTabClick: (AssetsTab) -> Unit,
+        override val onCollectionClick: (String) -> Unit,
         override val onNextNFtsPageRequest: (Resource.NonFungibleResource) -> Unit,
-        override val onStakesRequest: () -> Unit
+        override val onStakesRequest: () -> Unit,
     ) : AssetsViewAction {
 
         fun isSelected(resourceAddress: String) = selectedResources.contains(resourceAddress)
     }
 }
 
-@Composable
-fun rememberAssetsViewState(assets: Assets?): SnapshotStateMap<String, Boolean> {
-    val collections = remember(assets) {
-        assets?.nonFungibles?.map { it.resourceAddress }.orEmpty() + listOf(STAKE_COLLECTION_ID)
-    }
-    return remember(collections) {
-        SnapshotStateMap<String, Boolean>().apply {
-            putAll(collections.associateWith { true })
-        }
-    }
-}
-
 @Preview
 @Composable
 fun AssetsViewWithLoadingAssets() {
-    val tabs by remember { mutableStateOf(ResourceTab.Tokens) }
     RadixWalletTheme {
         LazyColumn {
             assetsView(
                 assets = null,
                 epoch = null,
-                selectedTab = tabs,
-                onTabSelected = {},
-                collapsibleAssetsState = SnapshotStateMap(),
+                state = AssetsViewState.from(assets = null),
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
                     onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
-                    onStakesRequest = {}
+                    onClaimClick = {},
+                    onStakesRequest = {},
+                    onCollectionClick = {},
+                    onTabClick = {}
                 )
             )
         }
@@ -161,22 +184,22 @@ fun AssetsViewWithLoadingAssets() {
 @Preview
 @Composable
 fun AssetsViewWithEmptyAssets() {
-    val tabs by remember { mutableStateOf(ResourceTab.Tokens) }
     RadixWalletTheme {
         LazyColumn {
             assetsView(
                 assets = null,
                 epoch = null,
-                selectedTab = tabs,
-                onTabSelected = {},
-                collapsibleAssetsState = SnapshotStateMap(),
+                state = AssetsViewState.from(assets = null),
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
                     onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
-                    onStakesRequest = {}
+                    onClaimClick = {},
+                    onStakesRequest = {},
+                    onCollectionClick = {},
+                    onTabClick = {}
                 )
             )
         }
@@ -186,7 +209,6 @@ fun AssetsViewWithEmptyAssets() {
 @Preview
 @Composable
 fun AssetsViewWithAssets() {
-    var selectedTab by remember { mutableStateOf(ResourceTab.Nfts) }
     val assets by remember {
         mutableStateOf(
             Assets(
@@ -342,26 +364,30 @@ fun AssetsViewWithAssets() {
             )
         )
     }
-
-    val collapsibleAssetsState = rememberAssetsViewState(assets = assets)
+    var state by remember(assets) {
+        mutableStateOf(AssetsViewState.from(assets = assets))
+    }
 
     RadixWalletTheme {
         LazyColumn(modifier = Modifier.background(RadixTheme.colors.gray5)) {
             assetsView(
                 assets = assets,
                 epoch = null,
-                selectedTab = selectedTab,
-                onTabSelected = {
-                    selectedTab = it
-                },
-                collapsibleAssetsState = collapsibleAssetsState,
+                state = state,
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
                     onLSUClick = {},
                     onPoolUnitClick = {},
                     onNextNFtsPageRequest = {},
-                    onStakesRequest = {}
+                    onClaimClick = {},
+                    onStakesRequest = {},
+                    onTabClick = {
+                        state = state.copy(selectedTab = it)
+                    },
+                    onCollectionClick = {
+                        state = state.onCollectionToggle(it)
+                    }
                 )
             )
         }

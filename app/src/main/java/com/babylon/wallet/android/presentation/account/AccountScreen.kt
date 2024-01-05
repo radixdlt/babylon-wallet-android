@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -20,20 +21,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.Surface
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -57,9 +56,10 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.presentation.transfer.assets.ResourceTab
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
@@ -69,7 +69,6 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
-import com.babylon.wallet.android.presentation.ui.composables.assets.rememberAssetsViewState
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
@@ -86,7 +85,7 @@ fun AccountScreen(
     onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
     onNavigateToMnemonicRestore: () -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Network.Account) -> Unit,
-    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
+    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Network.Account) -> Unit,
     onPoolUnitClick: (PoolUnit, Network.Account) -> Unit,
     onLSUClick: (LiquidStakeUnit, Network.Account) -> Unit,
     onTransferClick: (String) -> Unit
@@ -98,7 +97,7 @@ fun AccountScreen(
                 is AccountEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                 is AccountEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore()
                 is AccountEvent.OnFungibleClick -> onFungibleResourceClick(it.resource, it.account)
-                is AccountEvent.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item)
+                is AccountEvent.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item, it.account)
                 is AccountEvent.OnPoolUnitClick -> onPoolUnitClick(it.poolUnit, it.account)
                 is AccountEvent.OnLSUClick -> onLSUClick(it.liquidStakeUnit, it.account)
             }
@@ -127,6 +126,9 @@ fun AccountScreen(
         onLSUUnitClicked = viewModel::onLSUUnitClicked,
         onNextNFTsPageRequest = viewModel::onNextNftPageRequest,
         onStakesRequest = viewModel::onStakesRequest,
+        onClaimClick = viewModel::onClaimClick,
+        onTabClick = viewModel::onTabSelected,
+        onCollectionClick = viewModel::onCollectionToggle
     )
 }
 
@@ -140,13 +142,16 @@ private fun AccountScreenContent(
     onRefresh: () -> Unit,
     onTransferClick: (String) -> Unit,
     onMessageShown: () -> Unit,
+    onTabClick: (AssetsTab) -> Unit,
+    onCollectionClick: (String) -> Unit,
     onFungibleItemClicked: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClicked: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
-    onStakesRequest: () -> Unit
+    onStakesRequest: () -> Unit,
+    onClaimClick: (List<StakeClaim>) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -171,6 +176,7 @@ private fun AccountScreenContent(
     Box(
         modifier = modifier
             .pullRefresh(pullToRefreshState)
+            .navigationBarsPadding()
             .background(Brush.horizontalGradient(gradient))
             .statusBarsPadding()
     ) {
@@ -236,7 +242,10 @@ private fun AccountScreenContent(
                     onLSUUnitClicked(lsu)
                 },
                 onNextNFTsPageRequest = onNextNFTsPageRequest,
-                onStakesRequest = onStakesRequest
+                onStakesRequest = onStakesRequest,
+                onClaimClick = onClaimClick,
+                onTabClick = onTabClick,
+                onCollectionClick = onCollectionClick,
             )
         }
 
@@ -255,6 +264,8 @@ fun AssetsContent(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState,
     state: AccountUiState,
+    onTabClick: (AssetsTab) -> Unit,
+    onCollectionClick: (String) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
@@ -264,7 +275,8 @@ fun AssetsContent(
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
-    onStakesRequest: () -> Unit
+    onStakesRequest: () -> Unit,
+    onClaimClick: (List<StakeClaim>) -> Unit
 ) {
     Surface(
         modifier = modifier,
@@ -273,9 +285,6 @@ fun AssetsContent(
         val accountAddress = remember(state.accountWithAssets) {
             state.accountWithAssets?.account?.address.orEmpty()
         }
-
-        var selectedTab by remember { mutableStateOf(ResourceTab.Tokens) }
-        val collapsibleAssetsState = rememberAssetsViewState(assets = state.accountWithAssets?.assets)
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -357,16 +366,17 @@ fun AssetsContent(
             assetsView(
                 assets = state.accountWithAssets?.assets,
                 epoch = state.epoch,
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it },
-                collapsibleAssetsState = collapsibleAssetsState,
+                state = state.assetsViewState,
                 action = AssetsViewAction.Click(
                     onFungibleClick = onFungibleTokenClick,
                     onNonFungibleItemClick = onNonFungibleItemClick,
                     onLSUClick = onLSUUnitClicked,
                     onPoolUnitClick = onPoolUnitClick,
                     onNextNFtsPageRequest = onNextNFTsPageRequest,
-                    onStakesRequest = onStakesRequest
+                    onStakesRequest = onStakesRequest,
+                    onClaimClick = onClaimClick,
+                    onCollectionClick = onCollectionClick,
+                    onTabClick = onTabClick
                 )
             )
         }
@@ -456,7 +466,10 @@ fun AccountContentPreview() {
                 onPoolUnitClick = {},
                 onLSUUnitClicked = {},
                 onNextNFTsPageRequest = {},
-                onStakesRequest = {}
+                onStakesRequest = {},
+                onClaimClick = {},
+                onTabClick = {},
+                onCollectionClick = {}
             )
         }
     }

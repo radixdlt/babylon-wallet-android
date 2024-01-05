@@ -30,14 +30,16 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
                     val babylonPersonas = allPersonasOnNetwork.filter {
                         it.factorSourceId == deviceFactorSource.id && it.usesCurve25519
                     }
-                    result.add(
-                        DeviceFactorSourceData(
-                            deviceFactorSource = deviceFactorSource,
-                            accounts = babylonAccounts,
-                            isBabylon = true,
-                            personas = babylonPersonas
+                    if (deviceFactorSource.hasBabylonSeedPhraseLength) {
+                        result.add(
+                            DeviceFactorSourceData(
+                                deviceFactorSource = deviceFactorSource,
+                                accounts = babylonAccounts,
+                                isBabylon = true,
+                                personas = babylonPersonas
+                            )
                         )
-                    )
+                    }
                     result.add(
                         DeviceFactorSourceData(
                             deviceFactorSource = deviceFactorSource,

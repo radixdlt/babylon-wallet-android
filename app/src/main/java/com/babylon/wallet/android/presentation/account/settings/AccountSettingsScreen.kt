@@ -223,7 +223,7 @@ private fun AccountSettingsContent(
                     ),
                     textStyle = RadixTheme.typography.body2Regular,
                     textColor = RadixTheme.colors.gray2,
-                    shouldTruncateAddressForDisplay = false
+                    truncateAddress = false
                 )
                 RadixSecondaryButton(
                     modifier = Modifier
