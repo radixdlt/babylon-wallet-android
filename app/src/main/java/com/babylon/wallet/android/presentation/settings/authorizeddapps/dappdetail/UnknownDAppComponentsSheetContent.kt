@@ -39,11 +39,7 @@ fun UnknownDAppComponentsSheetContent(
     unknownDAppComponents: ImmutableList<String>
 ) {
     Column(modifier = modifier) {
-        val title = if (unknownDAppComponents.size == 1) { // TODO Crowdin
-            "1 Unknown component"
-        } else {
-            "${unknownDAppComponents.size} unknown components"
-        }
+        val title = stringResource(id = R.string.transactionReview_unknownComponents, unknownDAppComponents.size)
         RadixCenteredTopAppBar(
             title = title,
             onBackClick = onBackClick,
