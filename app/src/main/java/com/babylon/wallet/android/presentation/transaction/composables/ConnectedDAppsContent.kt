@@ -3,6 +3,8 @@ package com.babylon.wallet.android.presentation.transaction.composables
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,11 +23,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.graphics.PathEffect
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -36,86 +35,101 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircle
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun ConnectedDAppsContent(
     connectedDApps: ImmutableList<DAppWithResources>,
     onDAppClick: (DAppWithResources) -> Unit,
-    showStrokeLine: Boolean,
+    onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (connectedDApps.isEmpty()) return
 
     var expanded by rememberSaveable { mutableStateOf(true) }
 
-    Box(
-        modifier = modifier
-            .padding(
-                bottom = RadixTheme.dimensions.paddingMedium
-            )
-            .fillMaxWidth(),
-        contentAlignment = Alignment.CenterEnd
+    Column(
+        modifier = Modifier
+            .padding(bottom = RadixTheme.dimensions.paddingLarge)
     ) {
-        Row(
-            modifier = Modifier
-                .clickable { expanded = !expanded }
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(bottom = RadixTheme.dimensions.paddingMedium)
         ) {
-            Text(
-                text = stringResource(id = R.string.transactionReview_usingDappsHeading),
-                style = RadixTheme.typography.body1Link,
-                color = RadixTheme.colors.gray2,
-                overflow = TextOverflow.Ellipsis,
-            )
-            val iconRes = if (expanded) {
-                com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_up
-            } else {
-                com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_down
-            }
-            Icon(
-                painter = painterResource(id = iconRes),
-                tint = RadixTheme.colors.gray2,
-                contentDescription = "arrow"
-            )
-        }
-    }
-
-    AnimatedVisibility(
-        visible = expanded,
-        enter = fadeIn(),
-        exit = fadeOut()
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.End
-        ) {
-            val unverifiedDappsCount = connectedDApps.count { it.verified.not() }
-            val verifiedDapps = connectedDApps.filter { it.verified }
-            if (unverifiedDappsCount > 0) {
-                ConnectedDappRow(
-                    dApp = null,
-                    name = stringResource(id = R.string.transactionReview_unknownComponents, unverifiedDappsCount)
+            Row(
+                modifier = Modifier
+                    .clickable { expanded = !expanded }
+            ) {
+                Image(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .dashedCircle(24.dp),
+                    painter = painterResource(id = DSR.ic_using_dapps),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(RadixTheme.colors.gray2),
+                    contentScale = ContentScale.Inside
                 )
-            }
-            verifiedDapps.forEach { connectedDApp ->
-                ConnectedDappRow(
-                    dApp = connectedDApp.dApp,
-                    modifier = Modifier.throttleClickable {
-                        onDAppClick(connectedDApp)
-                    }
+                Text(
+                    modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
+                    text = stringResource(id = R.string.transactionReview_usingDappsHeading).uppercase(),
+                    style = RadixTheme.typography.body1Link,
+                    color = RadixTheme.colors.gray2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                val iconRes = if (expanded) {
+                    com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_up
+                } else {
+                    com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_down
+                }
+                Icon(
+                    painter = painterResource(id = iconRes),
+                    tint = RadixTheme.colors.gray2,
+                    contentDescription = "arrow"
                 )
             }
         }
-    }
 
-    if (showStrokeLine) {
-        StrokeLine(height = 20.dp)
+        AnimatedVisibility(
+            visible = expanded,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                    .fillMaxWidth()
+                    .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium),
+                horizontalAlignment = Alignment.End
+            ) {
+                val unverifiedDappsCount = connectedDApps.count { it.verified.not() }
+                val verifiedDapps = connectedDApps.filter { it.verified }
+                if (unverifiedDappsCount > 0) {
+                    ConnectedDappRow(
+                        modifier = Modifier.throttleClickable {
+                            onUnknownDAppsClick(connectedDApps.map { it.componentAddresses }.flatten().toPersistentList())
+                        },
+                        dApp = null,
+                        name = stringResource(id = R.string.transactionReview_unknownComponents, unverifiedDappsCount)
+                    )
+                }
+                verifiedDapps.forEach { connectedDApp ->
+                    ConnectedDappRow(
+                        dApp = connectedDApp.dApp,
+                        modifier = Modifier.throttleClickable {
+                            onDAppClick(connectedDApp)
+                        }
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -125,27 +139,10 @@ private fun ConnectedDappRow(
     name: String = dApp.displayName(),
     modifier: Modifier = Modifier
 ) {
-    val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
-    val cornerRadius = with(LocalDensity.current) { 8.dp.toPx() }
-    val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
-    val strokeColor = RadixTheme.colors.gray3
     Row(
         modifier = modifier
-            .drawBehind {
-                drawRoundRect(
-                    color = strokeColor,
-                    style = Stroke(
-                        width = strokeWidth,
-                        pathEffect = PathEffect
-                            .dashPathEffect(
-                                floatArrayOf(strokeInterval, strokeInterval),
-                                0f
-                            )
-                    ),
-                    cornerRadius = CornerRadius(cornerRadius, cornerRadius)
-                )
-            }
-            .padding(8.dp),
+            .fillMaxWidth()
+            .padding(RadixTheme.dimensions.paddingDefault),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Thumbnail.DApp(
@@ -180,6 +177,6 @@ fun ConnectedDAppsContentPreview() {
             )
         ),
         onDAppClick = {},
-        showStrokeLine = true
+        onUnknownDAppsClick = {}
     )
 }

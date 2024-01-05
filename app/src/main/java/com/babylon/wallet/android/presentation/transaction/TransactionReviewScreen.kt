@@ -46,6 +46,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
+import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.UnknownDAppComponentsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
@@ -64,6 +65,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
 import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -108,6 +110,7 @@ fun TransactionReviewScreen(
         onGuaranteeValueIncreased = viewModel::onGuaranteeValueIncreased,
         onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
         onDAppClick = viewModel::onDAppClick,
+        onUnknownDAppsClick = viewModel::onUnknownDAppsClick,
         onFungibleResourceClick = viewModel::onFungibleResourceClick,
         onNonFungibleResourceClick = viewModel::onNonFungibleResourceClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
@@ -165,6 +168,7 @@ private fun TransactionPreviewContent(
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onDAppClick: (DAppWithResources) -> Unit,
+    onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
     onChangeFeePayerClick: () -> Unit,
@@ -322,6 +326,7 @@ private fun TransactionPreviewContent(
                                         preview = preview,
                                         onPromptForGuarantees = promptForGuarantees,
                                         onDappClick = onDAppClick,
+                                        onUnknownDAppsClick = onUnknownDAppsClick,
                                         onFungibleResourceClick = onFungibleResourceClick,
                                         onNonFungibleResourceClick = onNonFungibleResourceClick
                                     )
@@ -421,6 +426,14 @@ private fun BottomSheetContent(
             )
         }
 
+        is State.Sheet.UnknownDAppComponents -> {
+            UnknownDAppComponentsSheetContent(
+                modifier = modifier,
+                onBackClick = onCloseDAppSheet,
+                unknownDAppComponents = sheetState.unknownComponentAddresses
+            )
+        }
+
         is State.Sheet.None -> {}
     }
 }
@@ -479,6 +492,7 @@ fun TransactionPreviewContentPreview() {
             promptForGuarantees = {},
             onCustomizeClick = {},
             onDAppClick = {},
+            onUnknownDAppsClick = {},
             onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> },
             onGuaranteeValueChanged = { _, _ -> },

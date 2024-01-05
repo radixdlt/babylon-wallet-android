@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.transaction.guarantees.Transactio
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.radixdlt.ret.AccountDefaultDepositRule
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
@@ -201,6 +202,12 @@ class TransactionReviewViewModel @Inject constructor(
     fun onDAppClick(dApp: DAppWithResources) {
         _state.update {
             it.copy(sheetState = State.Sheet.Dapp(dApp))
+        }
+    }
+
+    fun onUnknownDAppsClick(unknownComponentAddresses: ImmutableList<String>) {
+        _state.update {
+            it.copy(sheetState = State.Sheet.UnknownDAppComponents(unknownComponentAddresses))
         }
     }
 
@@ -413,6 +420,10 @@ class TransactionReviewViewModel @Inject constructor(
 
             data class Dapp(
                 val dApp: DAppWithResources
+            ) : Sheet
+
+            data class UnknownDAppComponents(
+                val unknownComponentAddresses: ImmutableList<String>
             ) : Sheet
         }
     }

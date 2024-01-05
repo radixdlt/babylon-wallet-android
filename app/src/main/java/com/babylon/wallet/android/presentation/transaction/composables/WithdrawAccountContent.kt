@@ -23,7 +23,6 @@ import kotlinx.collections.immutable.ImmutableList
 fun WithdrawAccountContent(
     modifier: Modifier = Modifier,
     from: ImmutableList<AccountWithTransferableResources>,
-    showStrokeLine: Boolean,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
@@ -63,10 +62,7 @@ fun WithdrawAccountContent(
                 }
             }
         }
-        if (showStrokeLine) {
-            StrokeLine(height = 40.dp)
-        } else {
-            Spacer(modifier = Modifier.height(40.dp))
-        }
+
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }

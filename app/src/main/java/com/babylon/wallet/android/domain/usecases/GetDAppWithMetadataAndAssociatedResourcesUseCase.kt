@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import com.babylon.wallet.android.presentation.model.ActionableAddress
 import rdx.works.core.mapWhen
 import javax.inject.Inject
 
@@ -54,12 +55,17 @@ class GetDAppWithMetadataAndAssociatedResourcesUseCase @Inject constructor(
             ClaimedEntityValidation.None -> true
         }
 
+        val componentAddresses = dAppMetadata.claimedEntities.filter {
+            ActionableAddress.Type.from(it) == ActionableAddress.Type.Global.COMPONENT
+        }
+
         dAppRepository.getDAppResources(dAppMetadata = updatedDAppMetadata, needMostRecentData)
             .map { resources ->
                 DAppWithResources(
                     dApp = updatedDAppMetadata,
                     resources = resources,
-                    verified = verified
+                    verified = verified,
+                    componentAddresses = if (verified) emptyList() else componentAddresses
                 )
             }.getOrThrow()
     }

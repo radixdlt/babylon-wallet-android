@@ -5,7 +5,8 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 data class DAppWithResources(
     val dApp: DApp,
     val resources: DAppResources,
-    val verified: Boolean = true
+    val verified: Boolean = true,
+    val componentAddresses: List<String> = emptyList()
 ) {
 
     val fungibleResources: List<Resource.FungibleResource>

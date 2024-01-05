@@ -15,6 +15,7 @@ import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
@@ -24,6 +25,7 @@ fun TransactionPreviewTypeContent(
     preview: PreviewType.Transfer,
     onPromptForGuarantees: () -> Unit,
     onDappClick: (DAppWithResources) -> Unit,
+    onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
@@ -43,8 +45,6 @@ fun TransactionPreviewTypeContent(
             WithdrawAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 from = preview.from.toPersistentList(),
-                showStrokeLine = preview.from.toPersistentList().isNotEmpty() ||
-                    preview.dApps.toPersistentList().isNotEmpty(),
                 onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
                     onFungibleResourceClick(fungibleResource, isNewlyCreated)
                 },
@@ -54,10 +54,11 @@ fun TransactionPreviewTypeContent(
             )
 
             ConnectedDAppsContent(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                modifier = Modifier
+                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 connectedDApps = preview.dApps.toPersistentList(),
                 onDAppClick = onDappClick,
-                showStrokeLine = preview.dApps.toPersistentList().isNotEmpty()
+                onUnknownDAppsClick = onUnknownDAppsClick
             )
 
             DepositAccountContent(
@@ -99,6 +100,7 @@ fun TransactionPreviewTypePreview() {
             ),
             onPromptForGuarantees = {},
             onDappClick = { _ -> },
+            onUnknownDAppsClick = {},
             onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> }
         )
