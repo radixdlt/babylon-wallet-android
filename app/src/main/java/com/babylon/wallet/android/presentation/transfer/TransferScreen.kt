@@ -254,28 +254,32 @@ fun TransferContent(
                 }
             }
 
-                item {
+            item {
+                Row {
+                    Spacer(modifier = Modifier.weight(1f))
                     StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 50.dp)
                 }
+            }
 
-                item {
-                    Row {
-                        Text(
-                            modifier = Modifier
-                                .padding(
-                                    horizontal = RadixTheme.dimensions.paddingMedium,
-                                    vertical = RadixTheme.dimensions.paddingXSmall
-                                ),
-                            text = stringResource(
-                                id = R.string.assetTransfer_accountList_toLabel
-                            ).uppercase(),
-                            style = RadixTheme.typography.body1Link,
-                            color = RadixTheme.colors.gray2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 30.dp)
-                    }
+            item {
+                Row {
+                    Text(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(
+                                horizontal = RadixTheme.dimensions.paddingMedium,
+                                vertical = RadixTheme.dimensions.paddingXSmall
+                            ),
+                        text = stringResource(
+                            id = R.string.assetTransfer_accountList_toLabel
+                        ).uppercase(),
+                        style = RadixTheme.typography.body1Link,
+                        color = RadixTheme.colors.gray2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 30.dp)
                 }
+            }
 
             items(state.targetAccounts.size) { index ->
                 val targetAccount = state.targetAccounts[index]

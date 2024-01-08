@@ -19,7 +19,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -301,46 +300,74 @@ private fun TransactionPreviewContent(
                                 )
                             }
 
-                                is PreviewType.AccountsDepositSettings -> {
-                                    AccountDepositSettingsTypeContent(
-                                        modifier = Modifier.background(RadixTheme.colors.gray5),
-                                        preview = preview
-                                    )
-                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
-                                }
-
-                                is PreviewType.Staking -> {
-                                    StakeTypeContent(
-                                        modifier = Modifier.background(RadixTheme.colors.gray5),
-                                        state = state,
-                                        onFungibleResourceClick = onFungibleResourceClick,
-                                        onNonFungibleResourceClick = onNonFungibleResourceClick,
-                                        previewType = preview
-                                    )
-                                    ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
-                                }
+                            is PreviewType.AccountsDepositSettings -> {
+                                AccountDepositSettingsTypeContent(
+                                    modifier = Modifier.background(RadixTheme.colors.gray5),
+                                    preview = preview
+                                )
+                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                             }
-                            NetworkFeeContent(
-                                fees = state.transactionFees,
-                                noFeePayerSelected = state.noFeePayerSelected,
-                                insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
-                                isNetworkFeeLoading = state.isNetworkFeeLoading,
-                                onCustomizeClick = onCustomizeClick
-                            )
-                            SlideToSignButton(
-                                modifier = Modifier.padding(
-                                    horizontal = RadixTheme.dimensions.paddingXLarge,
-                                    vertical = RadixTheme.dimensions.paddingDefault
-                                ),
-                                enabled = state.isSubmitEnabled,
-                                isSubmitting = state.isSubmitting,
-                                onSwipeComplete = onApproveTransaction
-                            )
+
+                            is PreviewType.Staking -> {
+                                StakeTypeContent(
+                                    modifier = Modifier.background(RadixTheme.colors.gray5),
+                                    state = state,
+                                    onFungibleResourceClick = onFungibleResourceClick,
+                                    onNonFungibleResourceClick = onNonFungibleResourceClick,
+                                    previewType = preview
+                                )
+                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
+                            }
                         }
+                        NetworkFeeContent(
+                            fees = state.transactionFees,
+                            noFeePayerSelected = state.noFeePayerSelected,
+                            insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
+                            isNetworkFeeLoading = state.isNetworkFeeLoading,
+                            onCustomizeClick = onCustomizeClick
+                        )
+                        SlideToSignButton(
+                            modifier = Modifier.padding(
+                                horizontal = RadixTheme.dimensions.paddingXLarge,
+                                vertical = RadixTheme.dimensions.paddingDefault
+                            ),
+                            enabled = state.isSubmitEnabled,
+                            isSubmitting = state.isSubmitting,
+                            onSwipeComplete = onApproveTransaction
+                        )
                     }
                 }
             }
         }
+    }
+    if (state.isSheetVisible) {
+        DefaultModalSheetLayout(
+            modifier = modifier.fillMaxSize(),
+            sheetState = modalBottomSheetState,
+            sheetContent = {
+                BottomSheetContent(
+                    modifier = Modifier.navigationBarsPadding(),
+                    sheetState = state.sheetState,
+                    transactionFees = state.transactionFees,
+                    insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
+                    onGuaranteesCloseClick = onGuaranteesCloseClick,
+                    onGuaranteesApplyClick = onGuaranteesApplyClick,
+                    onGuaranteeValueChanged = onGuaranteeValueChanged,
+                    onGuaranteeValueIncreased = onGuaranteeValueIncreased,
+                    onGuaranteeValueDecreased = onGuaranteeValueDecreased,
+                    onCloseDAppSheet = onBackClick,
+                    onChangeFeePayerClick = onChangeFeePayerClick,
+                    onSelectFeePayerClick = onSelectFeePayerClick,
+                    onPayerSelected = onPayerSelected,
+                    onFeePaddingAmountChanged = onFeePaddingAmountChanged,
+                    onTipPercentageChanged = onTipPercentageChanged,
+                    onViewDefaultModeClick = onViewDefaultModeClick,
+                    onViewAdvancedModeClick = onViewAdvancedModeClick
+                )
+            },
+            showDragHandle = true,
+            onDismissRequest = onBackClick
+        )
     }
 }
 
