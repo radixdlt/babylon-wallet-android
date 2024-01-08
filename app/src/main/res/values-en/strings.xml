@@ -390,6 +390,8 @@
   <string name="transactionReview_unknown">Unknown</string>
   <string name="transactionReview_unnamedDapp">Unnamed dApp</string>
   <string name="transactionReview_usingDappsHeading">Using dApps</string>
+  <string name="transactionReview_thirdPartyDepositSettingHeading">Third-party deposit setting</string>
+  <string name="transactionReview_thirdPartyDepositExceptionsHeading">Third-party deposit exceptions</string>
   <string name="transactionReview_unknownComponents">%d Unknown Components</string>
   <string name="transactionReview_withdrawalsHeading">Withdrawing From</string>
   <string name="transactionReview_slideToSign">Slide to Sign</string>
