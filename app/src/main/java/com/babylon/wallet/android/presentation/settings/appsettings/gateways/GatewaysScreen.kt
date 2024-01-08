@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterialApi::class)
-
 package com.babylon.wallet.android.presentation.settings.appsettings.gateways
 
 import androidx.activity.compose.BackHandler
@@ -20,14 +18,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.Scaffold
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,7 +51,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -71,41 +67,37 @@ fun GatewaysScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     GatewaysContent(
         modifier = modifier,
+        state = state,
         onBackClick = onBackClick,
         onAddGatewayClick = viewModel::onAddGateway,
-        newUrl = state.newUrl,
         onNewUrlChanged = viewModel::onNewUrlChanged,
-        newUrlValid = state.newUrlValid,
-        gatewayList = state.gatewayList,
         onDeleteGateway = viewModel::onDeleteGateway,
-        addingGateway = state.addingGateway,
-        gatewayAddFailure = state.gatewayAddFailure,
         onGatewayClick = viewModel::onGatewayClick,
         oneOffEvent = viewModel.oneOffEvent,
-        onCreateProfile = onCreateProfile
+        onCreateProfile = onCreateProfile,
+        addGatewaySheetVisible = viewModel::setAddGatewaySheetVisible
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GatewaysContent(
     modifier: Modifier = Modifier,
+    state: SettingsUiState,
     onBackClick: () -> Unit,
     onAddGatewayClick: () -> Unit,
-    newUrl: String,
     onNewUrlChanged: (String) -> Unit,
-    newUrlValid: Boolean,
-    gatewayList: PersistentList<GatewayWrapper>,
     onDeleteGateway: (GatewayWrapper) -> Unit,
-    addingGateway: Boolean,
-    gatewayAddFailure: GatewayAddFailure?,
     onGatewayClick: (Radix.Gateway) -> Unit,
+    oneOffEvent: Flow<SettingsEditGatewayEvent>,
     onCreateProfile: (String, Int) -> Unit,
-    oneOffEvent: Flow<SettingsEditGatewayEvent>
+    addGatewaySheetVisible: (Boolean) -> Unit
 ) {
     val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+        rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     BackHandler(enabled = bottomSheetState.isVisible) {
+        addGatewaySheetVisible(false)
         scope.launch {
             bottomSheetState.hide()
         }
@@ -117,6 +109,7 @@ private fun GatewaysContent(
                     onCreateProfile(it.newUrl, it.networkId)
                 }
                 else -> {
+                    addGatewaySheetVisible(false)
                     scope.launch {
                         bottomSheetState.hide()
                     }
@@ -125,100 +118,110 @@ private fun GatewaysContent(
         }
     }
 
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        sheetState = bottomSheetState,
-        wrapContent = true,
-        enableImePadding = true,
-        sheetContent = {
-            AddGatewaySheet(
-                onAddGatewayClick = onAddGatewayClick,
-                newUrl = newUrl,
-                onNewUrlChanged = onNewUrlChanged,
-                onClose = {
-                    scope.launch {
-                        bottomSheetState.hide()
-                    }
-                },
-                newUrlValid = newUrlValid,
-                addingGateway = addingGateway,
-                modifier = Modifier.navigationBarsPadding(),
-                gatewayAddFailure = gatewayAddFailure
+    Scaffold(
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(R.string.gateways_title),
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBars
             )
         }
-    ) {
-        Scaffold(
-            topBar = {
-                RadixCenteredTopAppBar(
-                    title = stringResource(R.string.gateways_title),
-                    onBackClick = onBackClick,
-                    windowInsets = WindowInsets.statusBars
-                )
-            }
-        ) { padding ->
-            Column(
-                modifier = Modifier.padding(padding).fillMaxSize(),
-                horizontalAlignment = Alignment.Start
+    ) { padding ->
+        Column(
+            modifier = Modifier.padding(padding).fillMaxSize(),
+            horizontalAlignment = Alignment.Start
+        ) {
+            HorizontalDivider(color = RadixTheme.colors.gray5)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                HorizontalDivider(color = RadixTheme.colors.gray5)
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    item {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                        Text(
-                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                            text = stringResource(id = R.string.gateways_subtitle),
-                            style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray2
-                        )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                item {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    Text(
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(id = R.string.gateways_subtitle),
+                        style = RadixTheme.typography.body1HighImportance,
+                        color = RadixTheme.colors.gray2
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 //                    InfoLink( // TODO enable it when we have a link
 //                        stringResource(R.string.gateways_whatIsAGateway),
 //                        modifier = Modifier
 //                            .fillMaxWidth()
 //                            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
 //                    )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                        HorizontalDivider(
-                            color = RadixTheme.colors.gray5,
-                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        )
-                    }
-                    items(gatewayList) { gateway ->
-                        GatewayCard(
-                            gateway = gateway,
-                            onDeleteGateway = onDeleteGateway,
-                            modifier = Modifier
-                                .throttleClickable {
-                                    onGatewayClick(gateway.gateway)
-                                }
-                                .fillMaxWidth()
-                                .padding(RadixTheme.dimensions.paddingDefault)
-                        )
-                        HorizontalDivider(
-                            color = RadixTheme.colors.gray5,
-                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                        )
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-                        RadixSecondaryButton(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                            text = stringResource(id = R.string.gateways_addNewGatewayButtonTitle),
-                            onClick = {
-                                scope.launch {
-                                    bottomSheetState.show()
-                                }
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    HorizontalDivider(
+                        color = RadixTheme.colors.gray5,
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                    )
+                }
+                items(state.gatewayList) { gateway ->
+                    GatewayCard(
+                        gateway = gateway,
+                        onDeleteGateway = onDeleteGateway,
+                        modifier = Modifier
+                            .throttleClickable {
+                                onGatewayClick(gateway.gateway)
                             }
-                        )
-                    }
+                            .fillMaxWidth()
+                            .padding(RadixTheme.dimensions.paddingDefault)
+                    )
+                    HorizontalDivider(
+                        color = RadixTheme.colors.gray5,
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                    RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        text = stringResource(id = R.string.gateways_addNewGatewayButtonTitle),
+                        onClick = {
+                            addGatewaySheetVisible(true)
+                            scope.launch {
+                                bottomSheetState.show()
+                            }
+                        }
+                    )
                 }
             }
         }
+    }
+
+    if (state.isAddGatewaySheetVisible) {
+        DefaultModalSheetLayout(
+            modifier = modifier,
+            sheetState = bottomSheetState,
+            wrapContent = true,
+            enableImePadding = true,
+            sheetContent = {
+                AddGatewaySheet(
+                    onAddGatewayClick = onAddGatewayClick,
+                    newUrl = state.newUrl,
+                    onNewUrlChanged = onNewUrlChanged,
+                    onClose = {
+                        addGatewaySheetVisible(false)
+                        scope.launch {
+                            bottomSheetState.hide()
+                        }
+                    },
+                    newUrlValid = state.newUrlValid,
+                    addingGateway = state.addingGateway,
+                    modifier = Modifier.navigationBarsPadding(),
+                    gatewayAddFailure = state.gatewayAddFailure
+                )
+            },
+            onDismissRequest = {
+                addGatewaySheetVisible(false)
+                scope.launch {
+                    bottomSheetState.hide()
+                }
+            }
+        )
     }
 }
 
@@ -388,33 +391,40 @@ private fun Radix.Gateway.displayName(): String = when (network.id) {
 fun GatewaysScreenPreview() {
     RadixWalletTheme {
         GatewaysContent(
+            state = SettingsUiState(
+                currentGateway = Radix.Gateway(
+                    url = "https://babylon-stokenet-gateway.radixdlt.com/",
+                    Radix.Network.stokenet
+                ),
+                gatewayList = persistentListOf(
+                    GatewayWrapper(
+                        gateway = Radix.Gateway(
+                            url = "https://babylon-stokenet-gateway.radixdlt.com/",
+                            Radix.Network.stokenet
+                        ),
+                        selected = true
+                    ),
+                    GatewayWrapper(
+                        gateway = Radix.Gateway(
+                            url = "https://mainnet.radixdlt.com/",
+                            Radix.Network.mainnet
+                        ),
+                        selected = false
+                    )
+                ),
+                newUrl = "",
+                newUrlValid = false,
+                addingGateway = true,
+                gatewayAddFailure = null
+            ),
             onBackClick = {},
             onAddGatewayClick = {},
-            newUrl = "",
             onNewUrlChanged = {},
-            newUrlValid = false,
-            gatewayList = persistentListOf(
-                GatewayWrapper(
-                    gateway = Radix.Gateway(
-                        url = "https://babylon-stokenet-gateway.radixdlt.com/",
-                        Radix.Network.stokenet
-                    ),
-                    selected = true
-                ),
-                GatewayWrapper(
-                    gateway = Radix.Gateway(
-                        url = "https://mainnet.radixdlt.com/",
-                        Radix.Network.mainnet
-                    ),
-                    selected = false
-                )
-            ),
             onDeleteGateway = {},
-            addingGateway = true,
-            gatewayAddFailure = null,
             onGatewayClick = {},
             oneOffEvent = flow { },
-            onCreateProfile = { _, _ -> }
+            onCreateProfile = { _, _ -> },
+            addGatewaySheetVisible = {}
         )
     }
 }

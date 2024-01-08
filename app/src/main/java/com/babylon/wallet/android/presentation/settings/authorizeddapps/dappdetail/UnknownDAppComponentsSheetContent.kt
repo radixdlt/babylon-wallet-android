@@ -1,14 +1,15 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,7 +26,9 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
-import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -38,10 +41,9 @@ fun UnknownDAppComponentsSheetContent(
 ) {
     Column(modifier = modifier) {
         val title = stringResource(id = R.string.transactionReview_unknownComponents, unknownDAppComponents.size)
-        BottomDialogDragHandle(
+        BottomDialogHeader(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
             title = title,
             onDismissRequest = onBackClick

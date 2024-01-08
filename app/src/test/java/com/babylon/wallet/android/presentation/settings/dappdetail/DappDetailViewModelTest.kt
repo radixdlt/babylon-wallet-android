@@ -132,7 +132,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert((item.selectedSheetState as SelectedSheetState.SelectedPersona).persona == null)
+            assert(item.selectedSheetState == null)
             assert(item.sharedPersonaAccounts.size == 0)
         }
     }

@@ -386,6 +386,14 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     fun onMessageShown() {
         _state.update { it.copy(error = null) }
     }
+
+    fun setAddAssetSheetVisible(isVisible: Boolean) {
+        _state.update { it.copy(selectedSheetState = if (isVisible) SelectedDepositsSheetState.AddAsset else null) }
+    }
+
+    fun setAddDepositorSheetVisible(isVisible: Boolean) {
+        _state.update { it.copy(selectedSheetState = if (isVisible) SelectedDepositsSheetState.AddDepositor else null) }
+    }
 }
 
 sealed class AssetType {
@@ -421,8 +429,16 @@ data class AccountThirdPartyDepositsUiState(
     ),
     val depositorToAdd: AssetType.Depositor = AssetType.Depositor(),
     val assetExceptionsUiModels: ImmutableList<AssetType.AssetException>? = persistentListOf(),
-    val allowedDepositorsUiModels: ImmutableList<AssetType.Depositor>? = persistentListOf()
+    val allowedDepositorsUiModels: ImmutableList<AssetType.Depositor>? = persistentListOf(),
+    val selectedSheetState: SelectedDepositsSheetState? = null
 ) : UiState {
+
+    val isAddAssetSheetVisible: Boolean
+        get() = selectedSheetState is SelectedDepositsSheetState.AddAsset
+
+    val isAddDepositorSheetVisible: Boolean
+        get() = selectedSheetState is SelectedDepositsSheetState.AddDepositor
+
     val allowedAssets: PersistentList<AssetType.AssetException>?
         get() = assetExceptionsUiModels?.filter {
             it.assetException.exceptionRule == ThirdPartyDeposits.DepositAddressExceptionRule.Allow
@@ -432,6 +448,11 @@ data class AccountThirdPartyDepositsUiState(
         get() = assetExceptionsUiModels?.filter {
             it.assetException.exceptionRule == ThirdPartyDeposits.DepositAddressExceptionRule.Deny
         }?.toPersistentList()
+}
+
+sealed interface SelectedDepositsSheetState {
+    data object AddAsset : SelectedDepositsSheetState
+    data object AddDepositor : SelectedDepositsSheetState
 }
 
 fun ThirdPartyDeposits.DepositorAddress.toRETManifestBuilderValue(): ManifestBuilderValue {

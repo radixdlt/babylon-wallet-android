@@ -16,18 +16,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -74,21 +72,18 @@ fun CreatePersonaScreen(
         FullscreenCircularProgressContent()
     } else {
         CreatePersonaContent(
+            state = state,
             onPersonaNameChange = viewModel::onDisplayNameChanged,
             onPersonaCreateClick = viewModel::onPersonaCreateClick,
-            personaName = state.personaDisplayName,
-            continueButtonEnabled = state.continueButtonEnabled,
             onBackClick = onBackClick,
             modifier = modifier,
-            fieldsToAdd = state.fieldsToAdd,
-            currentFields = state.currentFields,
-            anyFieldSelected = state.anyFieldSelected,
             onSelectionChanged = viewModel::onSelectionChanged,
             onAddFields = viewModel::onAddFields,
             onDeleteField = viewModel::onDeleteField,
             onValueChanged = viewModel::onFieldValueChanged,
             onFieldFocusChanged = viewModel::onFieldFocusChanged,
-            onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged
+            onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
+            onAddFieldSheetVisible = viewModel::setAddFieldSheetVisible
         )
     }
 
@@ -103,110 +98,120 @@ fun CreatePersonaScreen(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePersonaContent(
+    state: CreatePersonaViewModel.CreatePersonaUiState,
     onPersonaNameChange: (String) -> Unit,
     onPersonaCreateClick: () -> Unit,
-    personaName: PersonaDisplayNameFieldWrapper,
-    continueButtonEnabled: Boolean,
     onBackClick: () -> Unit,
     modifier: Modifier,
-    fieldsToAdd: ImmutableList<PersonaFieldWrapper>,
-    currentFields: ImmutableList<PersonaFieldWrapper>,
-    anyFieldSelected: Boolean,
     onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onAddFields: () -> Unit,
     onDeleteField: (PersonaDataEntryID) -> Unit,
     onValueChanged: (PersonaDataEntryID, PersonaData.PersonaDataField) -> Unit,
     onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
-    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit
+    onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
+    onAddFieldSheetVisible: (Boolean) -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+        rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     BackHandler(enabled = bottomSheetState.isVisible) {
+        onAddFieldSheetVisible(false)
         scope.launch {
             bottomSheetState.hide()
             keyboardController?.hide()
         }
     }
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        sheetState = bottomSheetState,
-        sheetContent = {
-            AddFieldSheet(
-                onBackClick = {
-                    scope.launch {
-                        bottomSheetState.hide()
-                    }
-                },
-                fieldsToAdd = fieldsToAdd,
-                onAddFields = {
-                    scope.launch { bottomSheetState.hide() }
-                    onAddFields()
-                },
-                onSelectionChanged = onSelectionChanged,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .navigationBarsPadding(),
-                anyFieldSelected = anyFieldSelected
-            )
-        }
-    ) {
-        Scaffold(
-            topBar = {
-                RadixCenteredTopAppBar(
-                    title = stringResource(id = R.string.empty),
-                    onBackClick = onBackClick,
-                    windowInsets = WindowInsets.statusBars
-                )
-            },
-            bottomBar = {
-                Column {
-                    val context = LocalContext.current
 
-                    HorizontalDivider(color = RadixTheme.colors.gray5)
-                    RadixPrimaryButton(
-                        text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
-                        onClick = {
-                            context.findFragmentActivity()?.let { activity ->
-                                activity.biometricAuthenticate { authenticatedSuccessfully ->
-                                    if (authenticatedSuccessfully) {
-                                        onPersonaCreateClick()
-                                    }
+    Scaffold(
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.empty),
+                onBackClick = onBackClick,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        bottomBar = {
+            Column {
+                val context = LocalContext.current
+
+                HorizontalDivider(color = RadixTheme.colors.gray5)
+                RadixPrimaryButton(
+                    text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
+                    onClick = {
+                        context.findFragmentActivity()?.let { activity ->
+                            activity.biometricAuthenticate { authenticatedSuccessfully ->
+                                if (authenticatedSuccessfully) {
+                                    onPersonaCreateClick()
                                 }
                             }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(dimensions.paddingDefault)
-                            .navigationBarsPadding()
-                            .imePadding(),
-                        enabled = continueButtonEnabled
-                    )
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(dimensions.paddingDefault)
+                        .navigationBarsPadding()
+                        .imePadding(),
+                    enabled = state.continueButtonEnabled
+                )
+            }
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        CreatePersonaContentList(
+            onPersonaNameChange = onPersonaNameChange,
+            personaName = state.personaDisplayName,
+            currentFields = state.currentFields,
+            onValueChanged = onValueChanged,
+            onDeleteField = onDeleteField,
+            addButtonEnabled = state.fieldsToAdd.isNotEmpty(),
+            modifier = Modifier.padding(padding),
+            onAddFieldClick = {
+                onAddFieldSheetVisible(true)
+                scope.launch {
+                    bottomSheetState.show()
                 }
             },
-            containerColor = RadixTheme.colors.defaultBackground
-        ) { padding ->
-            CreatePersonaContentList(
-                onPersonaNameChange = onPersonaNameChange,
-                personaName = personaName,
-                currentFields = currentFields,
-                onValueChanged = onValueChanged,
-                onDeleteField = onDeleteField,
-                addButtonEnabled = fieldsToAdd.isNotEmpty(),
-                modifier = Modifier.padding(padding),
-                onAddFieldClick = {
-                    scope.launch {
-                        bottomSheetState.show()
-                    }
-                },
-                onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
-                onFieldFocusChanged = onFieldFocusChanged
-            )
-        }
+            onPersonaDisplayNameFocusChanged = onPersonaDisplayNameFocusChanged,
+            onFieldFocusChanged = onFieldFocusChanged
+        )
+    }
+
+    if (state.isAddFieldBottomSheetVisible) {
+        DefaultModalSheetLayout(
+            modifier = modifier,
+            sheetState = bottomSheetState,
+            sheetContent = {
+                AddFieldSheet(
+                    onBackClick = {
+                        onAddFieldSheetVisible(false)
+                        scope.launch {
+                            bottomSheetState.hide()
+                        }
+                    },
+                    fieldsToAdd = state.fieldsToAdd,
+                    onAddFields = {
+                        onAddFieldSheetVisible(false)
+                        scope.launch { bottomSheetState.hide() }
+                        onAddFields()
+                    },
+                    onSelectionChanged = onSelectionChanged,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .navigationBarsPadding(),
+                    anyFieldSelected = state.anyFieldSelected
+                )
+            },
+            onDismissRequest = {
+                onAddFieldSheetVisible(false)
+                scope.launch {
+                    bottomSheetState.hide()
+                }
+            }
+        )
     }
 }
 
@@ -331,21 +336,25 @@ private fun CreatePersonaContentList(
 fun CreateAccountContentPreview() {
     RadixWalletTheme {
         CreatePersonaContent(
+            state = CreatePersonaViewModel.CreatePersonaUiState(
+                currentFields = persistentListOf(),
+                fieldsToAdd = persistentListOf(),
+                personaDisplayName = PersonaDisplayNameFieldWrapper("Name"),
+                continueButtonEnabled = false,
+                anyFieldSelected = false,
+                isAddFieldBottomSheetVisible = false
+            ),
             onPersonaNameChange = {},
             onPersonaCreateClick = {},
-            personaName = PersonaDisplayNameFieldWrapper("Name"),
-            continueButtonEnabled = false,
             onBackClick = {},
             modifier = Modifier,
-            fieldsToAdd = persistentListOf(),
-            currentFields = persistentListOf(),
-            anyFieldSelected = false,
             onSelectionChanged = { _, _ -> },
             onAddFields = {},
             onDeleteField = {},
-            { _, _ -> },
+            onValueChanged = { _, _ -> },
             onFieldFocusChanged = { _, _ -> },
-            onPersonaDisplayNameFocusChanged = {}
+            onPersonaDisplayNameFocusChanged = {},
+            onAddFieldSheetVisible = {}
         )
     }
 }

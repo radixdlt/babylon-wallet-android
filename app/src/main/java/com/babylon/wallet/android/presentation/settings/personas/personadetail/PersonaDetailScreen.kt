@@ -15,12 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -98,13 +97,10 @@ fun PersonaDetailScreen(
     }
     PersonaDetailContent(
         modifier = modifier,
+        state = state,
         onBackClick = onBackClick,
-        persona = state.persona,
         onEditPersona = onEditPersona,
-        authorizedDapps = state.authorizedDapps,
-        selectedDApp = state.selectedDApp,
         onDAppClick = viewModel::onDAppClick,
-        hasAuthKey = state.hasAuthKey,
         onCreateAndUploadAuthKey = {
             context.biometricAuthenticate {
                 if (it) {
@@ -115,83 +111,91 @@ fun PersonaDetailScreen(
         loading = state.loading,
         onHidePersona = {
             showHidePersonaPrompt = true
-        }
+        },
+        setDAppDetailSheetHidden = viewModel::setDAppDetailSheetHidden
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PersonaDetailContent(
     modifier: Modifier = Modifier,
+    state: PersonaDetailUiState,
     onBackClick: () -> Unit,
-    persona: Network.Persona?,
     onEditPersona: (String) -> Unit,
-    authorizedDapps: ImmutableList<DAppWithResources>,
-    selectedDApp: DAppWithResources?,
     onDAppClick: (DAppWithResources) -> Unit,
-    hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
     loading: Boolean,
-    onHidePersona: () -> Unit
+    onHidePersona: () -> Unit,
+    setDAppDetailSheetHidden: () -> Unit
 ) {
     val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+        rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        sheetState = bottomSheetState,
-        sheetContent = {
-            selectedDApp?.let {
-                DAppDetailsSheetContent(
-                    modifier = Modifier.navigationBarsPadding(),
-                    onBackClick = {
-                        scope.launch {
-                            bottomSheetState.hide()
-                        }
-                    },
-                    dApp = it
+    Scaffold(
+        topBar = {
+            Column {
+                RadixCenteredTopAppBar(
+                    title = state.persona?.displayName.orEmpty(),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBars
                 )
-            }
-        }
-    ) {
-        Scaffold(
-            topBar = {
-                Column {
-                    RadixCenteredTopAppBar(
-                        title = persona?.displayName.orEmpty(),
-                        onBackClick = onBackClick,
-                        windowInsets = WindowInsets.statusBars
-                    )
 
-                    HorizontalDivider(color = RadixTheme.colors.gray5)
+                HorizontalDivider(color = RadixTheme.colors.gray5)
+            }
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        if (state.persona != null) {
+            PersonaDetailList(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(padding),
+                persona = state.persona,
+                authorizedDapps = state.authorizedDapps,
+                onDAppClick = {
+                    onDAppClick(it)
+                    scope.launch {
+                        bottomSheetState.show()
+                    }
+                },
+                onEditPersona = onEditPersona,
+                hasAuthKey = state.hasAuthKey,
+                onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
+                loading = loading,
+                onHidePersona = onHidePersona
+            )
+        } else {
+            FullscreenCircularProgressContent()
+        }
+    }
+
+    if (state.isDAppDetailSheetVisible) {
+        DefaultModalSheetLayout(
+            modifier = modifier,
+            sheetState = bottomSheetState,
+            sheetContent = {
+                state.selectedDApp?.let {
+                    DAppDetailsSheetContent(
+                        modifier = Modifier.navigationBarsPadding(),
+                        onBackClick = {
+                            setDAppDetailSheetHidden()
+                            scope.launch {
+                                bottomSheetState.hide()
+                            }
+                        },
+                        dApp = it
+                    )
                 }
             },
-            containerColor = RadixTheme.colors.defaultBackground
-        ) { padding ->
-            if (persona != null) {
-                PersonaDetailList(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(padding),
-                    persona = persona,
-                    authorizedDapps = authorizedDapps,
-                    onDAppClick = {
-                        onDAppClick(it)
-                        scope.launch {
-                            bottomSheetState.show()
-                        }
-                    },
-                    onEditPersona = onEditPersona,
-                    hasAuthKey = hasAuthKey,
-                    onCreateAndUploadAuthKey = onCreateAndUploadAuthKey,
-                    loading = loading,
-                    onHidePersona = onHidePersona
-                )
-            } else {
-                FullscreenCircularProgressContent()
+            onDismissRequest = {
+                setDAppDetailSheetHidden()
+                scope.launch {
+                    bottomSheetState.hide()
+                }
             }
-        }
+        )
     }
 }
 
@@ -318,16 +322,19 @@ fun PersonaDetailContentPreview() {
     RadixWalletTheme {
         PersonaDetailContent(
             modifier = Modifier.fillMaxSize(),
+            state = PersonaDetailUiState(
+                authorizedDapps = persistentListOf(),
+                persona = SampleDataProvider().samplePersona(),
+                hasAuthKey = false,
+                selectedDApp = null
+            ),
             onBackClick = {},
-            persona = SampleDataProvider().samplePersona(),
             onEditPersona = {},
-            authorizedDapps = persistentListOf(),
-            selectedDApp = null,
             onDAppClick = {},
-            hasAuthKey = false,
             onCreateAndUploadAuthKey = {},
             loading = false,
-            onHidePersona = {}
+            onHidePersona = {},
+            setDAppDetailSheetHidden = {}
         )
     }
 }

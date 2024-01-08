@@ -103,7 +103,10 @@ class PersonaDetailViewModel @Inject constructor(
 
     fun onDAppClick(dApp: DAppWithResources) {
         _state.update { state ->
-            state.copy(selectedDApp = dApp)
+            state.copy(
+                selectedDApp = dApp,
+                isDAppDetailSheetVisible = true
+            )
         }
     }
 
@@ -141,6 +144,10 @@ class PersonaDetailViewModel @Inject constructor(
             }
         }
     }
+
+    fun setDAppDetailSheetHidden() {
+        _state.update { it.copy(isDAppDetailSheetVisible = false) }
+    }
 }
 
 sealed interface Event : OneOffEvent {
@@ -152,5 +159,6 @@ data class PersonaDetailUiState(
     val authorizedDapps: ImmutableList<DAppWithResources> = persistentListOf(),
     val persona: Network.Persona? = null,
     val hasAuthKey: Boolean = false,
-    val selectedDApp: DAppWithResources? = null
+    val selectedDApp: DAppWithResources? = null,
+    val isDAppDetailSheetVisible: Boolean = false
 ) : UiState

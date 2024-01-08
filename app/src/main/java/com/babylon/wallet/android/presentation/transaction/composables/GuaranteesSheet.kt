@@ -20,7 +20,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
-import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
+import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 
 @Composable
@@ -36,7 +36,7 @@ fun GuaranteesSheet(
     Column(
         modifier = modifier.imePadding()
     ) {
-        BottomDialogDragHandle(
+        BottomDialogHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
