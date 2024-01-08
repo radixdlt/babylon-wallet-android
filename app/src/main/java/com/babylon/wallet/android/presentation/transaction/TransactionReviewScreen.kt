@@ -355,7 +355,6 @@ private fun TransactionPreviewContent(
                     onGuaranteeValueChanged = onGuaranteeValueChanged,
                     onGuaranteeValueIncreased = onGuaranteeValueIncreased,
                     onGuaranteeValueDecreased = onGuaranteeValueDecreased,
-                    onCloseDAppSheet = onBackClick,
                     onChangeFeePayerClick = onChangeFeePayerClick,
                     onSelectFeePayerClick = onSelectFeePayerClick,
                     onPayerSelected = onPayerSelected,

@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.usecases.GetDAppUseCase
+import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -43,7 +43,7 @@ class PersonaDetailViewModel @Inject constructor(
     private val addAuthSigningFactorInstanceUseCase: AddAuthSigningFactorInstanceUseCase,
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val getDAppUseCase: GetDAppUseCase,
+    private val getDAppsUseCase: GetDAppsUseCase,
     savedStateHandle: SavedStateHandle,
     private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase
 ) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
@@ -61,7 +61,7 @@ class PersonaDetailViewModel @Inject constructor(
                 persona to dApps
             }.collect { personaToDApps ->
                 val metadataResults = personaToDApps.second.map { authorizedDApp ->
-                    getDAppUseCase.invoke(
+                    getDAppsUseCase.invoke(
                         definitionAddress = authorizedDApp.dAppDefinitionAddress,
                         needMostRecentData = false
                     ).getOrNull()

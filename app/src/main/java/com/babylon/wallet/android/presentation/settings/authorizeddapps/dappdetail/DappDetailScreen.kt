@@ -194,7 +194,7 @@ private fun DappDetailContent(
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = state.dappWithMetadata?.dApp?.name.orEmpty(),
+                    title = state.dAppWithResources?.dApp?.name.orEmpty(),
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBars
                 )
@@ -205,7 +205,7 @@ private fun DappDetailContent(
         Box(modifier = Modifier.padding(padding)) {
             DappDetails(
                 modifier = Modifier.fillMaxSize(),
-                dAppWithResources = state.dappWithMetadata,
+                dAppWithResources = state.dAppWithResources,
                 isValidatingWebsite = state.isValidatingWebsite,
                 validatedWebsite = state.validatedWebsite,
                 personaList = state.personas,
@@ -257,7 +257,7 @@ private fun DappDetailContent(
                                         shape = RadixTheme.shapes.roundedRectTopMedium
                                     )
                                     .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
-                                dappName = state.dappWithMetadata?.dApp?.name.orEmpty(),
+                                dappName = state.dAppWithResources?.dApp?.name.orEmpty(),
                                 onDisconnectPersona = { persona ->
                                     hidePersonaBottomSheet()
                                     scope.launch {
