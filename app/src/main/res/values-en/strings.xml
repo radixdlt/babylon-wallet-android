@@ -429,6 +429,11 @@
   <string name="transactionReview_unacceptableManifest_rejected">A proposed transaction was rejected because it contains one or more reserved instructions.</string>
   <string name="transactionReview_noMnemonicError_title">Could Not Complete</string>
   <string name="transactionReview_noMnemonicError_text">The required seed phrase is missing. Please return to the account and begin the recovery process.</string>
+  <string name="transactionReview_worth">WORTH</string>
+  <string name="transactionReview_toBeClaimed">TO BE CLAIMED</string>
+  <string name="transactionReview_validators_stake">Staking to Validators</string>
+  <string name="transactionReview_validators_unstake">Requesting unstake from validators</string>
+  <string name="transactionReview_validators_claim">Claim from validators</string>
   <string name="transactionStatus_completing_text">Completing Transaction…</string>
   <string name="transactionStatus_transactionID_text">Transaction ID: </string>
   <string name="transactionStatus_success_title">Transaction Success</string>
@@ -494,6 +499,7 @@
   <string name="common_showLess">Show Less</string>
   <string name="common_component">Component</string>
   <string name="common_unauthorized">Unauthorized</string>
+  <string name="common_rateLimitReached">Too many requests. Blocked due to rate limiting.</string>
   <string name="error_dappRequest_invalidPersonaId">Invalid Persona specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to import Radix Wallet backup: %s</string>
