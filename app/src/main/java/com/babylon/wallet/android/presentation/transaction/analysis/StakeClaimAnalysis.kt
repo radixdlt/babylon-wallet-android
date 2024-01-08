@@ -40,12 +40,10 @@ suspend fun TransactionType.ClaimStakeTransaction.resolve(
                 )
             )
         )
-        claimsPerAddress.value.forEach { it.claimedXrd }
-
-        claimsPerAddress.value.groupBy { it.validatorAddress.addressString() }.map { claimsPerValidator ->
+        val withdrawingNftsForAddress = claimsPerAddress.value.groupBy { it.validatorAddress.addressString() }.map { claimsPerValidator ->
             val validator = validators.find { it.address == claimsPerValidator.key } ?: error("No validator found")
             finalValidators = (finalValidators + validator).distinctBy { it.address }
-            val withdrawingNfts = claimsPerValidator.value.groupBy { it.claimNftResource.addressString() }.map { claimsPerResource ->
+            claimsPerValidator.value.groupBy { it.claimNftResource.addressString() }.map { claimsPerResource ->
                 // here we group claims per ntf resource address, because depending on how manifest is constructed, sometimes multiple
                 // NFT token claims are grouped under one "claim" object,
                 // and sometimes there are multiple claim objects, each with one NFT token claim
@@ -54,11 +52,11 @@ suspend fun TransactionType.ClaimStakeTransaction.resolve(
                         ?: error("No resource found")
                 val stakeClaimNftItems = claimsPerResource.value.map { claim ->
                     claim.claimNftLocalIds.map {
-                        // for a claim that has multiple claimNftLocalIds, we don't have a way now to determine its XRD worth
+                        // TODO for a claim that has multiple claimNftLocalIds, we don't have a way now to determine its XRD worth
                         // this will need to be changed once RET provide xrd worth of each claim
                         Resource.NonFungibleResource.Item(
                             collectionAddress = claim.claimNftResource.addressString(),
-                            localId = Resource.NonFungibleResource.Item.ID.from(claim.claimNftLocalIds.first())
+                            localId = Resource.NonFungibleResource.Item.ID.from(it)
                         ) to claim.claimedXrd.asStr().toBigDecimal()
                     }
                 }.flatten().distinctBy { it.first.localId.displayable }
@@ -73,13 +71,13 @@ suspend fun TransactionType.ClaimStakeTransaction.resolve(
                     )
                 )
             }
-            fromAccounts.add(
-                AccountWithTransferableResources.Owned(
-                    account = ownedAccount,
-                    resources = withdrawingNfts
-                )
+        }.flatten()
+        fromAccounts.add(
+            AccountWithTransferableResources.Owned(
+                account = ownedAccount,
+                resources = withdrawingNftsForAddress
             )
-        }
+        )
     }
     return PreviewType.Staking(
         validators = finalValidators,
