@@ -164,18 +164,7 @@ class StateRepositoryImpl @Inject constructor(
                     .filter { it.liquidStakeUnit != null && it.liquidStakeUnit.fungibleResource.isDetailsAvailable.not() }
                     .map { it.liquidStakeUnit!!.resourceAddress }
                     .toSet(),
-                metadataKeys = setOf(
-                    ExplicitMetadataKey.NAME,
-                    ExplicitMetadataKey.SYMBOL,
-                    ExplicitMetadataKey.DESCRIPTION,
-                    ExplicitMetadataKey.RELATED_WEBSITES,
-                    ExplicitMetadataKey.ICON_URL,
-                    ExplicitMetadataKey.INFO_URL,
-                    ExplicitMetadataKey.VALIDATOR,
-                    ExplicitMetadataKey.POOL,
-                    ExplicitMetadataKey.TAGS,
-                    ExplicitMetadataKey.DAPP_DEFINITIONS
-                ),
+                metadataKeys = ExplicitMetadataKey.forAssets,
                 onPage = { response ->
                     val synced = InstantGenerator()
                     val newLSUs = response.items.map { it.asEntity(synced) }.associateBy { it.address }
@@ -277,18 +266,7 @@ class StateRepositoryImpl @Inject constructor(
             if (resourcesToFetch.isNotEmpty()) {
                 stateApi.paginateDetails(
                     addresses = resourcesToFetch.toSet(),
-                    metadataKeys = setOf(
-                        ExplicitMetadataKey.NAME,
-                        ExplicitMetadataKey.SYMBOL,
-                        ExplicitMetadataKey.DESCRIPTION,
-                        ExplicitMetadataKey.RELATED_WEBSITES,
-                        ExplicitMetadataKey.ICON_URL,
-                        ExplicitMetadataKey.INFO_URL,
-                        ExplicitMetadataKey.VALIDATOR,
-                        ExplicitMetadataKey.POOL,
-                        ExplicitMetadataKey.TAGS,
-                        ExplicitMetadataKey.DAPP_DEFINITIONS
-                    ),
+                    metadataKeys = ExplicitMetadataKey.forAssets,
                     onPage = { page ->
                         page.items.forEach { item ->
                             val amount = underAccountAddress?.let { accountAddress ->
@@ -404,16 +382,7 @@ class StateRepositoryImpl @Inject constructor(
             if (remainingAddresses.isNotEmpty()) {
                 stateApi.paginateDetails(
                     addresses = definitionAddresses.toSet(),
-                    metadataKeys = setOf(
-                        ExplicitMetadataKey.NAME,
-                        ExplicitMetadataKey.DESCRIPTION,
-                        ExplicitMetadataKey.ACCOUNT_TYPE,
-                        ExplicitMetadataKey.DAPP_DEFINITION,
-                        ExplicitMetadataKey.DAPP_DEFINITIONS,
-                        ExplicitMetadataKey.CLAIMED_WEBSITES,
-                        ExplicitMetadataKey.CLAIMED_ENTITIES,
-                        ExplicitMetadataKey.ICON_URL
-                    )
+                    metadataKeys = ExplicitMetadataKey.forDApps
                 ) { page ->
                     val syncedAt = InstantGenerator()
                     val entities = page.items.map { item ->
