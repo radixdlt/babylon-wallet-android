@@ -68,8 +68,9 @@ fun TransactionPreviewHeader(
                 context.resources.openRawResource(
                     R.raw.transaction_review_top_bar_scene
                 ).readBytes().decodeToString()
-            }
+            },
         ),
+        transitionName = if (state.request?.isInternal == true) "noSubtitle" else "default",
         progress = progress
     ) {
         CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 1f)) {
@@ -81,16 +82,18 @@ fun TransactionPreviewHeader(
                 maxLines = 2,
                 style = RadixTheme.typography.title.copy(fontSize = lerp(RadixTheme.typography.title.fontSize, 20.sp, progress))
             )
-            val dAppName = state.dApp?.name.orEmpty().ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
-            Text(
-                modifier = Modifier.layoutId("subtitle"),
-                text = "Proposed by $dAppName", // TODO crowdin
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Start,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            if (state.request?.isInternal != true) {
+                val dAppName = state.dApp?.name.orEmpty().ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
+                Text(
+                    modifier = Modifier.layoutId("subtitle"),
+                    text = stringResource(id = R.string.transactionReview_proposingDappSubtitle, dAppName),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.Start,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
         state.dApp?.iconUrl?.let {
             Thumbnail.DApp(
