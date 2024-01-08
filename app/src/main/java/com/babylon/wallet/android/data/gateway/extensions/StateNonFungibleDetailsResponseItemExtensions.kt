@@ -24,10 +24,17 @@ import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScry
 import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScryptoSborValueU64
 import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScryptoSborValueU8
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.utils.isValidUrl
 import com.babylon.wallet.android.utils.toAddressOrNull
+
+// https://docs.radixdlt.com/v1/docs/metadata-for-wallet-display#nonfungibles
+private val NFTExplicitMetadataKeys = listOf(
+    ExplicitMetadataKey.NAME.key,
+    ExplicitMetadataKey.DESCRIPTION.key
+)
 
 fun StateNonFungibleDetailsResponseItem.toMetadata(): List<Metadata> {
     val fields = (data?.programmaticJson as? ProgrammaticScryptoSborValueTuple)?.fields ?: return emptyList()
@@ -40,12 +47,18 @@ private fun ProgrammaticScryptoSborValue.toMetadata(): Metadata? = fieldName?.le
         is ProgrammaticScryptoSborValueString -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
-            valueType = if (sborValue.value.isValidUrl()) {
-                MetadataType.Url
-            } else if (sborValue.value.toAddressOrNull() != null) {
-                MetadataType.Address
-            } else {
+            valueType = if (key in NFTExplicitMetadataKeys) {
+                // Keep the type as string even if the content resembles another type,
+                // when the key is in the list of explicitly handled NFT data
                 MetadataType.String
+            } else {
+                if (sborValue.value.isValidUrl()) {
+                    MetadataType.Url
+                } else if (sborValue.value.toAddressOrNull() != null) {
+                    MetadataType.Address
+                } else {
+                    MetadataType.String
+                }
             }
         )
 
