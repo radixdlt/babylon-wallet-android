@@ -42,12 +42,12 @@ fun StateNonFungibleDetailsResponseItem.toMetadata(): List<Metadata> {
 }
 
 @Suppress("CyclomaticComplexMethod", "LongMethod")
-private fun ProgrammaticScryptoSborValue.toMetadata(): Metadata? = fieldName?.let { key ->
+private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = false): Metadata? = fieldName?.let { key ->
     when (val sborValue = this) {
         is ProgrammaticScryptoSborValueString -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
-            valueType = if (key in NFTExplicitMetadataKeys) {
+            valueType = if (!isCollection && key in NFTExplicitMetadataKeys) {
                 // Keep the type as string even if the content resembles another type,
                 // when the key is in the list of explicitly handled NFT data
                 MetadataType.String
@@ -154,21 +154,21 @@ private fun ProgrammaticScryptoSborValue.toMetadata(): Metadata? = fieldName?.le
 
         is ProgrammaticScryptoSborValueArray -> Metadata.Collection(
             key = key,
-            values = sborValue.elements.mapNotNull { it.toMetadata() }
+            values = sborValue.elements.mapNotNull { it.toMetadata(isCollection = true) }
         )
 
         is ProgrammaticScryptoSborValueMap -> Metadata.Map(
             key = key,
             values = sborValue.propertyEntries.mapNotNull { entry ->
-                val entryKey = entry.key.toMetadata() ?: return@mapNotNull null
-                val entryValue = entry.value.toMetadata() ?: return@mapNotNull null
+                val entryKey = entry.key.toMetadata(isCollection = true) ?: return@mapNotNull null
+                val entryValue = entry.value.toMetadata(isCollection = true) ?: return@mapNotNull null
                 entryKey to entryValue
             }.toMap()
         )
 
         is ProgrammaticScryptoSborValueTuple -> Metadata.Collection(
             key = key,
-            values = sborValue.fields.mapNotNull { it.toMetadata() }
+            values = sborValue.fields.mapNotNull { it.toMetadata(isCollection = true) }
         )
 
         is ProgrammaticScryptoSborValueReference -> if (sborValue.value.toAddressOrNull() != null) {
