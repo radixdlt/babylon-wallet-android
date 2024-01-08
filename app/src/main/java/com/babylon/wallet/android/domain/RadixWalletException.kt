@@ -11,18 +11,17 @@ import rdx.works.profile.domain.ProfileException
 
 sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = cause) {
 
-    sealed class GatewayException(cause: Throwable? = null): RadixWalletException(cause) {
+    sealed class GatewayException(cause: Throwable? = null) : RadixWalletException(cause) {
 
-        data class ClientError(override val cause: Throwable? = null): GatewayException(cause)
+        data class ClientError(override val cause: Throwable? = null) : GatewayException(cause)
         data class ServiceError(
             val code: Int?,
             override val message: String
-        ): GatewayException(null) {
+        ) : GatewayException(null) {
 
             companion object {
                 const val RATE_LIMIT_REACHED = 429
             }
-
         }
     }
 
@@ -278,6 +277,14 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
     }
 }
 
+fun RadixWalletException.GatewayException.toUserFriendlyMessage(context: Context): String = when (this) {
+    is RadixWalletException.GatewayException.ClientError -> cause?.message.orEmpty()
+    is RadixWalletException.GatewayException.ServiceError -> when (code) {
+        RadixWalletException.GatewayException.ServiceError.RATE_LIMIT_REACHED -> context.getString(R.string.common_rateLimitReached)
+        else -> message
+    }
+}
+
 fun RadixWalletException.TransactionSubmitException.toUserFriendlyMessage(context: Context): String {
     return when (this) {
         is RadixWalletException.TransactionSubmitException.FailedToPollTXStatus -> {
@@ -361,11 +368,7 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         is RadixWalletException.LedgerCommunicationException -> toUserFriendlyMessage(context)
         is RadixWalletException.PrepareTransactionException -> toUserFriendlyMessage(context)
         is RadixWalletException.TransactionSubmitException -> toUserFriendlyMessage(context)
-        is RadixWalletException.GatewayException.ClientError -> cause?.message.orEmpty()
-        is RadixWalletException.GatewayException.ServiceError -> when (code) {
-            RadixWalletException.GatewayException.ServiceError.RATE_LIMIT_REACHED -> context.getString(R.string.common_rateLimitReached)
-            else -> message
-        }
+        is RadixWalletException.GatewayException -> toUserFriendlyMessage(context)
     }
 }
 
