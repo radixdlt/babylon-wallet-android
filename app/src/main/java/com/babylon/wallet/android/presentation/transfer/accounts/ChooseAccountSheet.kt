@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.transfer.accounts
 import android.Manifest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,13 +12,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -53,6 +51,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSe
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
+import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
@@ -78,55 +77,31 @@ fun ChooseAccountSheet(
     Scaffold(
         modifier = modifier.navigationBarsPadding(),
         topBar = {
-            Box(
+            BottomDialogHeader(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = RadixTheme.colors.white)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .align(alignment = Alignment.TopCenter)
-                        .padding(RadixTheme.dimensions.paddingDefault)
-                        .size(38.dp, 4.dp)
-                        .background(color = RadixTheme.colors.gray4, shape = RadixTheme.shapes.circle)
-                )
-                IconButton(
-                    modifier = Modifier
-                        .padding(
-                            vertical = RadixTheme.dimensions.paddingLarge
-                        )
-                        .align(Alignment.CenterStart),
-                    onClick = {
-                        if (state.mode == ChooseAccounts.Mode.QRScanner) {
-                            cancelQrScan()
-                        } else {
-                            onCloseClick()
-                        }
-                    }
-                ) {
-                    Icon(
-                        imageVector = if (state.mode == ChooseAccounts.Mode.QRScanner) {
-                            Icons.Filled.ArrowBack
-                        } else {
-                            Icons.Filled.Clear
-                        },
-                        tint = RadixTheme.colors.gray1,
-                        contentDescription = "clear"
-                    )
-                }
-                Text(
-                    modifier = Modifier
-                        .align(alignment = Alignment.Center)
-                        .padding(RadixTheme.dimensions.paddingLarge),
-                    text = if (state.mode == ChooseAccounts.Mode.Chooser) {
-                        stringResource(id = R.string.assetTransfer_chooseReceivingAccount_navigationTitle)
+                    .background(
+                        color = RadixTheme.colors.defaultBackground,
+                        shape = RadixTheme.shapes.roundedRectTopDefault
+                    ),
+                title = if (state.mode == ChooseAccounts.Mode.Chooser) {
+                    stringResource(id = R.string.assetTransfer_chooseReceivingAccount_navigationTitle)
+                } else {
+                    stringResource(id = R.string.assetTransfer_chooseReceivingAccount_scanQRNavigationTitle)
+                },
+                backIcon = if (state.mode == ChooseAccounts.Mode.QRScanner) {
+                    Icons.AutoMirrored.Filled.ArrowBack
+                } else {
+                    Icons.Filled.Clear
+                },
+                onDismissRequest = {
+                    if (state.mode == ChooseAccounts.Mode.QRScanner) {
+                        cancelQrScan()
                     } else {
-                        stringResource(id = R.string.assetTransfer_chooseReceivingAccount_scanQRNavigationTitle)
-                    },
-                    style = RadixTheme.typography.body1StandaloneLink,
-                    color = RadixTheme.colors.gray1
-                )
-            }
+                        onCloseClick()
+                    }
+                }
+            )
         },
         bottomBar = {
             if (state.mode == ChooseAccounts.Mode.Chooser) {
@@ -183,6 +158,7 @@ private fun ChooseAccountContent(
 ) {
     LazyColumn(
         modifier = modifier
+            .fillMaxSize()
             .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

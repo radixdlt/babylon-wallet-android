@@ -31,7 +31,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
-import com.babylon.wallet.android.presentation.ui.composables.BottomDialogDragHandle
+import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
@@ -58,11 +58,10 @@ fun FeesSheet(
             .imePadding()
     ) {
         stickyHeader {
-            BottomDialogDragHandle(
+            BottomDialogHeader(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
-                    .padding(top = RadixTheme.dimensions.paddingDefault),
+                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
                 onDismissRequest = onClose
             )
         }

@@ -22,15 +22,14 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -119,44 +118,38 @@ fun DappDetailScreen(
     DappDetailContent(
         onBackClick = onBackClick,
         modifier = modifier,
-        personaList = state.personas,
-        dAppWithResources = state.dappWithMetadata,
+        state = state,
         onPersonaClick = viewModel::onPersonaClick,
         onFungibleTokenClick = viewModel::onFungibleTokenClick,
         onNftClick = viewModel::onNftClick,
-        selectedSheetState = state.selectedSheetState,
-        selectedPersonaSharedAccounts = state.sharedPersonaAccounts,
         onDisconnectPersona = viewModel::onDisconnectPersona,
         personaDetailsClosed = viewModel::onPersonaDetailsClosed,
         onDeleteDapp = viewModel::onDeleteDapp,
         onEditPersona = viewModel::onEditPersona,
         onEditAccountSharing = viewModel::onEditAccountSharing,
-        loading = state.loading
+        hidePersonaBottomSheet = viewModel::hidePersonaBottomSheet
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DappDetailContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    personaList: ImmutableList<Network.Persona>,
-    dAppWithResources: DAppWithResources?,
+    state: DappDetailUiState,
     onPersonaClick: (Network.Persona) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNftClick: (Resource.NonFungibleResource) -> Unit,
-    selectedSheetState: SelectedSheetState?,
-    selectedPersonaSharedAccounts: ImmutableList<AccountItemUiModel>,
     onDisconnectPersona: (Network.Persona) -> Unit,
     personaDetailsClosed: () -> Unit,
     onDeleteDapp: () -> Unit,
     onEditPersona: () -> Unit,
     onEditAccountSharing: () -> Unit,
-    loading: Boolean
+    hidePersonaBottomSheet: () -> Unit
 ) {
     var showDeleteDappPrompt by remember { mutableStateOf(false) }
     val bottomSheetState =
-        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden, skipHalfExpanded = true)
+        rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     LaunchedEffect(bottomSheetState) {
         snapshotFlow {
@@ -166,6 +159,7 @@ private fun DappDetailContent(
         }
     }
     BackHandler(enabled = bottomSheetState.isVisible) {
+        hidePersonaBottomSheet()
         scope.launch {
             bottomSheetState.hide()
         }
@@ -197,87 +191,96 @@ private fun DappDetailContent(
         )
     }
 
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        sheetState = bottomSheetState,
-        sheetContent = {
-            when (selectedSheetState) {
-                is SelectedSheetState.SelectedPersona -> {
-                    selectedSheetState.persona?.let {
-                        PersonaDetailsSheet(
-                            persona = it,
-                            sharedPersonaAccounts = selectedPersonaSharedAccounts,
-                            onCloseClick = {
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .navigationBarsPadding()
-                                .background(
-                                    RadixTheme.colors.defaultBackground,
-                                    shape = RadixTheme.shapes.roundedRectTopMedium
-                                )
-                                .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
-                            dappName = dAppWithResources?.dApp?.name.orEmpty(),
-                            onDisconnectPersona = { persona ->
-                                scope.launch {
-                                    bottomSheetState.hide()
-                                }
-                                onDisconnectPersona(persona)
-                            },
-                            onEditPersona = onEditPersona,
-                            onEditAccountSharing = onEditAccountSharing
-                        )
-                    }
-                }
-
-                else -> {}
-            }
-        },
-        content = {
-            Scaffold(
-                topBar = {
-                    Column {
-                        RadixCenteredTopAppBar(
-                            title = dAppWithResources?.dApp?.name.orEmpty(),
-                            onBackClick = onBackClick,
-                            windowInsets = WindowInsets.statusBars
-                        )
-                        HorizontalDivider(color = RadixTheme.colors.gray5)
-                    }
-                }
-            ) { padding ->
-                Box(modifier = Modifier.padding(padding)) {
-                    DappDetails(
-                        modifier = Modifier.fillMaxSize(),
-                        dAppWithResources = dAppWithResources,
-                        personaList = personaList,
-                        onPersonaClick = { persona ->
-                            onPersonaClick(persona)
-                            scope.launch {
-                                bottomSheetState.show()
-                            }
-                        },
-                        onFungibleTokenClick = { fungibleResource ->
-                            onFungibleTokenClick(fungibleResource)
-                        },
-                        onNonFungibleClick = { nftItem ->
-                            onNftClick(nftItem)
-                        },
-                        onDeleteDapp = {
-                            showDeleteDappPrompt = true
-                        }
-                    )
-
-                    if (loading) {
-                        FullscreenCircularProgressContent()
-                    }
-                }
+    Scaffold(
+        topBar = {
+            Column {
+                RadixCenteredTopAppBar(
+                    title = state.dappWithMetadata?.dApp?.name.orEmpty(),
+                    onBackClick = onBackClick,
+                    windowInsets = WindowInsets.statusBars
+                )
+                HorizontalDivider(color = RadixTheme.colors.gray5)
             }
         }
-    )
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding)) {
+            DappDetails(
+                modifier = Modifier.fillMaxSize(),
+                dAppWithResources = state.dappWithMetadata,
+                personaList = state.personas,
+                onPersonaClick = { persona ->
+                    onPersonaClick(persona)
+                    scope.launch {
+                        bottomSheetState.show()
+                    }
+                },
+                onFungibleTokenClick = { fungibleResource ->
+                    onFungibleTokenClick(fungibleResource)
+                },
+                onNonFungibleClick = { nftItem ->
+                    onNftClick(nftItem)
+                },
+                onDeleteDapp = {
+                    showDeleteDappPrompt = true
+                }
+            )
+
+            if (state.loading) {
+                FullscreenCircularProgressContent()
+            }
+        }
+    }
+
+    if (state.isBottomSheetVisible) {
+        DefaultModalSheetLayout(
+            modifier = modifier,
+            sheetState = bottomSheetState,
+            sheetContent = {
+                when (state.selectedSheetState) {
+                    is SelectedSheetState.SelectedPersona -> {
+                        state.selectedSheetState.persona?.let {
+                            PersonaDetailsSheet(
+                                persona = it,
+                                sharedPersonaAccounts = state.sharedPersonaAccounts,
+                                onCloseClick = {
+                                    hidePersonaBottomSheet()
+                                    scope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .navigationBarsPadding()
+                                    .background(
+                                        RadixTheme.colors.defaultBackground,
+                                        shape = RadixTheme.shapes.roundedRectTopMedium
+                                    )
+                                    .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
+                                dappName = state.dappWithMetadata?.dApp?.name.orEmpty(),
+                                onDisconnectPersona = { persona ->
+                                    hidePersonaBottomSheet()
+                                    scope.launch {
+                                        bottomSheetState.hide()
+                                    }
+                                    onDisconnectPersona(persona)
+                                },
+                                onEditPersona = onEditPersona,
+                                onEditAccountSharing = onEditAccountSharing
+                            )
+                        }
+                    }
+
+                    else -> {}
+                }
+            },
+            onDismissRequest = {
+                hidePersonaBottomSheet()
+                scope.launch {
+                    bottomSheetState.hide()
+                }
+            }
+        )
+    }
 }
 
 @Composable
@@ -733,45 +736,48 @@ fun DappDetailContentPreview() {
     RadixWalletTheme {
         DappDetailContent(
             onBackClick = {},
-            personaList = persistentListOf(SampleDataProvider().samplePersona()),
-            dAppWithResources = DAppWithResources(
-                dApp = DApp(
-                    dAppAddress = "account_tdx_abc",
-                    metadata = listOf(
-                        Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Dapp", MetadataType.String),
-                        Metadata.Primitive(ExplicitMetadataKey.DESCRIPTION.key, "Description", MetadataType.String),
-                        Metadata.Collection(
-                            ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                            listOf(
-                                Metadata.Primitive(
-                                    ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                                    "https://hammunet-dashboard.rdx-works-main.extratools.works",
-                                    MetadataType.Url
-                                ),
-                                Metadata.Primitive(
-                                    ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                                    "https://ansharnet-dashboard.rdx-works-main.extratools.works",
-                                    MetadataType.Url
-                                ),
-                            )
-                        ),
-                    )
+            state = DappDetailUiState(
+                loading = false,
+                dappWithMetadata = DAppWithResources(
+                    dApp = DApp(
+                        dAppAddress = "account_tdx_abc",
+                        metadata = listOf(
+                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Dapp", MetadataType.String),
+                            Metadata.Primitive(ExplicitMetadataKey.DESCRIPTION.key, "Description", MetadataType.String),
+                            Metadata.Collection(
+                                ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                listOf(
+                                    Metadata.Primitive(
+                                        ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                        "https://hammunet-dashboard.rdx-works-main.extratools.works",
+                                        MetadataType.Url
+                                    ),
+                                    Metadata.Primitive(
+                                        ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                        "https://ansharnet-dashboard.rdx-works-main.extratools.works",
+                                        MetadataType.Url
+                                    ),
+                                )
+                            ),
+                        )
+                    ),
+                    resources = DAppResources(emptyList(), emptyList()),
                 ),
-                resources = DAppResources(emptyList(), emptyList()),
+                personas = persistentListOf(SampleDataProvider().samplePersona()),
+                sharedPersonaAccounts = persistentListOf(
+                    AccountItemUiModel("account_tdx_efgh", "Account1", 0)
+                ),
+                selectedSheetState = null
             ),
             onPersonaClick = {},
             onFungibleTokenClick = {},
             onNftClick = {},
-            selectedSheetState = null,
-            selectedPersonaSharedAccounts = persistentListOf(
-                AccountItemUiModel("account_tdx_efgh", "Account1", 0)
-            ),
             onDisconnectPersona = {},
             personaDetailsClosed = {},
             onDeleteDapp = {},
             onEditPersona = {},
             onEditAccountSharing = {},
-            loading = false
+            hidePersonaBottomSheet = {}
         )
     }
 }

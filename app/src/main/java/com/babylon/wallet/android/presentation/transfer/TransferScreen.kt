@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterialApi::class, ExperimentalMaterialApi::class, ExperimentalMaterialApi::class)
-
 package com.babylon.wallet.android.presentation.transfer
 
 import androidx.activity.compose.BackHandler
@@ -16,13 +14,12 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -102,10 +99,10 @@ fun TransferScreen(
     )
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransferContent(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     state: State,
     onMessageStateChanged: (Boolean) -> Unit,
@@ -138,12 +135,11 @@ fun TransferContent(
     val focusManager = LocalFocusManager.current
 
     val bottomSheetState = rememberModalBottomSheetState(
-        initialValue = ModalBottomSheetValue.Hidden,
-        skipHalfExpanded = true
+        skipPartiallyExpanded = true
     )
 
     SyncSheetState(
-        bottomSheetState = bottomSheetState,
+        sheetState = bottomSheetState,
         isSheetVisible = state.isSheetVisible,
         onSheetClosed = onSheetClosed
     )
@@ -175,220 +171,230 @@ fun TransferContent(
         }
     }
 
-    DefaultModalSheetLayout(
-        modifier = modifier,
-        sheetState = bottomSheetState,
-        sheetContent = {
-            when (val sheetState = state.sheet) {
-                is State.Sheet.ChooseAccounts -> {
-                    ChooseAccountSheet(
-                        onCloseClick = onSheetClosed,
-                        state = sheetState,
-                        onOwnedAccountSelected = onOwnedAccountSelected,
-                        onChooseAccountSubmitted = onChooseAccountSubmitted,
-                        onAddressDecoded = onAddressDecoded,
-                        onQrCodeIconClick = onQrCodeIconClick,
-                        cancelQrScan = cancelQrScan,
-                        onAddressChanged = onAddressTyped
-                    )
-                }
-
-                is State.Sheet.ChooseAssets -> {
-                    ChooseAssetsSheet(
-                        state = sheetState,
-                        onTabClick = onChooseAssetTabClick,
-                        onCollectionClick = onChooseAssetCollectionClick,
-                        onCloseClick = onSheetClosed,
-                        onAssetSelectionChanged = onAssetSelectionChanged,
-                        onNextNFtsPageRequest = onNextNFTsPageRequest,
-                        onStakesRequest = onStakesRequest,
-                        onUiMessageShown = onUiMessageShown,
-                        onChooseAssetsSubmitted = onChooseAssetsSubmitted
-                    )
-                }
-
-                is State.Sheet.None -> {}
-            }
-        }
-    ) {
-        Scaffold(
-            modifier = Modifier.imePadding(),
-            topBar = {
-                RadixCenteredTopAppBar(
-                    title = stringResource(id = R.string.empty),
-                    onBackClick = onBackClick,
-                    backIconType = BackIconType.Close,
-                    windowInsets = WindowInsets.statusBars
-                )
-            },
-            containerColor = RadixTheme.colors.defaultBackground
-        ) { padding ->
-            LazyColumn(
-                modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
-                contentPadding = padding + PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
-            ) {
-                item {
-                    Row(
+    Scaffold(
+        modifier = modifier.imePadding(),
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.empty),
+                onBackClick = onBackClick,
+                backIconType = BackIconType.Close,
+                windowInsets = WindowInsets.statusBars
+            )
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier.pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) },
+            contentPadding = padding + PaddingValues(horizontal = RadixTheme.dimensions.paddingDefault),
+        ) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
                         modifier = Modifier
-                            .padding(bottom = RadixTheme.dimensions.paddingDefault),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            modifier = Modifier
-                                .padding(
-                                    start = RadixTheme.dimensions.paddingSmall
-                                ),
-                            text = stringResource(id = R.string.assetTransfer_header_transfer),
-                            style = RadixTheme.typography.title,
-                            color = RadixTheme.colors.gray1,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                        if (state.messageState is State.Message.None) {
-                            RadixTextButton(
-                                text = stringResource(id = R.string.assetTransfer_header_addMessageButton),
-                                onClick = { onMessageStateChanged(true) },
-                                leadingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_add_message),
-                                        contentDescription = ""
-                                    )
-                                }
-                            )
-                        }
-                    }
-                }
-
-                if (state.messageState is State.Message.Added) {
-                    item {
-                        TransferMessage(
-                            message = state.messageState.message,
-                            onMessageChanged = onMessageChanged,
-                            onMessageClose = { onMessageStateChanged(false) }
-                        )
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                    }
-                }
-
-                state.fromAccount?.let { account ->
-                    item {
-                        Text(
-                            modifier = Modifier
-                                .padding(
-                                    horizontal = RadixTheme.dimensions.paddingMedium,
-                                    vertical = RadixTheme.dimensions.paddingXSmall
-                                ),
-                            text = stringResource(
-                                id = R.string.assetTransfer_accountList_fromLabel
-                            ).uppercase(),
-                            style = RadixTheme.typography.body1Link,
-                            color = RadixTheme.colors.gray2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-
-                        SimpleAccountCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            account = account
-                        )
-                    }
-                }
-
-                item {
-                    StrokeLine(height = 50.dp)
-                }
-
-                item {
-                    Row {
-                        Text(
-                            modifier = Modifier
-                                .padding(
-                                    horizontal = RadixTheme.dimensions.paddingMedium,
-                                    vertical = RadixTheme.dimensions.paddingXSmall
-                                ),
-                            text = stringResource(
-                                id = R.string.assetTransfer_accountList_toLabel
-                            ).uppercase(),
-                            style = RadixTheme.typography.body1Link,
-                            color = RadixTheme.colors.gray2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        StrokeLine(height = 30.dp)
-                    }
-                }
-
-                items(state.targetAccounts.size) { index ->
-                    val targetAccount = state.targetAccounts[index]
-                    TargetAccountCard(
-                        onChooseAccountClick = {
-                            focusManager.clearFocus()
-                            onChooseAccountForSkeleton(targetAccount)
-                        },
-                        onAddAssetsClick = {
-                            focusManager.clearFocus()
-                            onAddAssetsClick(targetAccount)
-                        },
-                        onRemoveAssetClicked = { spendingAsset ->
-                            onRemoveAssetClick(targetAccount, spendingAsset)
-                        },
-                        onAmountTyped = { spendingAsset, amount ->
-                            onAmountTyped(targetAccount, spendingAsset, amount)
-                        },
-                        onMaxAmountClicked = { spendingAsset ->
-                            focusManager.clearFocus()
-                            onMaxAmountClicked(targetAccount, spendingAsset)
-                        },
-                        onDeleteClick = {
-                            deleteAccountClick(targetAccount)
-                        },
-                        isDeletable = !(targetAccount is TargetAccount.Skeleton && index == 0),
-                        targetAccount = targetAccount
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                }
-
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = RadixTheme.dimensions.paddingDefault),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        RadixTextButton(
-                            text = stringResource(
-                                id = R.string.assetTransfer_accountList_addAccountButton
+                            .padding(
+                                start = RadixTheme.dimensions.paddingSmall
                             ),
-                            onClick = addAccountClick,
+                        text = stringResource(id = R.string.assetTransfer_header_transfer),
+                        style = RadixTheme.typography.title,
+                        color = RadixTheme.colors.gray1,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    if (state.messageState is State.Message.None) {
+                        RadixTextButton(
+                            text = stringResource(id = R.string.assetTransfer_header_addMessageButton),
+                            onClick = { onMessageStateChanged(true) },
                             leadingIcon = {
                                 Icon(
-                                    painter = painterResource(
-                                        id = R.drawable.ic_add_account
-                                    ),
+                                    painter = painterResource(id = R.drawable.ic_add_message),
                                     contentDescription = ""
                                 )
                             }
                         )
                     }
+                }
+            }
 
-                    val isEnabled = remember(state) { state.isSubmitEnabled }
+            if (state.messageState is State.Message.Added) {
+                item {
+                    TransferMessage(
+                        message = state.messageState.message,
+                        onMessageChanged = onMessageChanged,
+                        onMessageClose = { onMessageStateChanged(false) }
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
+            }
 
-                    RadixPrimaryButton(
-                        text = stringResource(id = R.string.assetTransfer_sendTransferButton),
-                        onClick = onTransferSubmit,
+            state.fromAccount?.let { account ->
+                item {
+                    Text(
                         modifier = Modifier
-                            .padding(vertical = RadixTheme.dimensions.paddingDefault)
-                            .fillMaxWidth(),
-                        enabled = isEnabled
+                            .padding(
+                                horizontal = RadixTheme.dimensions.paddingMedium,
+                                vertical = RadixTheme.dimensions.paddingXSmall
+                            ),
+                        text = stringResource(
+                            id = R.string.assetTransfer_accountList_fromLabel
+                        ).uppercase(),
+                        style = RadixTheme.typography.body1Link,
+                        color = RadixTheme.colors.gray2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+
+                    SimpleAccountCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        account = account
                     )
                 }
             }
+
+            item {
+                StrokeLine(height = 50.dp)
+            }
+
+            item {
+                Row {
+                    Text(
+                        modifier = Modifier
+                            .padding(
+                                horizontal = RadixTheme.dimensions.paddingMedium,
+                                vertical = RadixTheme.dimensions.paddingXSmall
+                            ),
+                        text = stringResource(
+                            id = R.string.assetTransfer_accountList_toLabel
+                        ).uppercase(),
+                        style = RadixTheme.typography.body1Link,
+                        color = RadixTheme.colors.gray2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    StrokeLine(height = 30.dp)
+                }
+            }
+
+            items(state.targetAccounts.size) { index ->
+                val targetAccount = state.targetAccounts[index]
+                TargetAccountCard(
+                    onChooseAccountClick = {
+                        focusManager.clearFocus()
+                        onChooseAccountForSkeleton(targetAccount)
+                    },
+                    onAddAssetsClick = {
+                        focusManager.clearFocus()
+                        onAddAssetsClick(targetAccount)
+                    },
+                    onRemoveAssetClicked = { spendingAsset ->
+                        onRemoveAssetClick(targetAccount, spendingAsset)
+                    },
+                    onAmountTyped = { spendingAsset, amount ->
+                        onAmountTyped(targetAccount, spendingAsset, amount)
+                    },
+                    onMaxAmountClicked = { spendingAsset ->
+                        focusManager.clearFocus()
+                        onMaxAmountClicked(targetAccount, spendingAsset)
+                    },
+                    onDeleteClick = {
+                        deleteAccountClick(targetAccount)
+                    },
+                    isDeletable = !(targetAccount is TargetAccount.Skeleton && index == 0),
+                    targetAccount = targetAccount
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            }
+
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = RadixTheme.dimensions.paddingDefault),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    RadixTextButton(
+                        text = stringResource(
+                            id = R.string.assetTransfer_accountList_addAccountButton
+                        ),
+                        onClick = addAccountClick,
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(
+                                    id = R.drawable.ic_add_account
+                                ),
+                                contentDescription = ""
+                            )
+                        }
+                    )
+                }
+
+                val isEnabled = remember(state) { state.isSubmitEnabled }
+
+                RadixPrimaryButton(
+                    text = stringResource(id = R.string.assetTransfer_sendTransferButton),
+                    onClick = onTransferSubmit,
+                    modifier = Modifier
+                        .padding(vertical = RadixTheme.dimensions.paddingDefault)
+                        .fillMaxWidth(),
+                    enabled = isEnabled
+                )
+            }
         }
+    }
+
+    if (state.isSheetVisible) {
+        DefaultModalSheetLayout(
+            modifier = Modifier.imePadding(),
+            sheetState = bottomSheetState,
+            sheetContent = {
+                when (val sheetState = state.sheet) {
+                    is State.Sheet.ChooseAccounts -> {
+                        ChooseAccountSheet(
+                            onCloseClick = onSheetClosed,
+                            state = sheetState,
+                            onOwnedAccountSelected = onOwnedAccountSelected,
+                            onChooseAccountSubmitted = onChooseAccountSubmitted,
+                            onAddressDecoded = onAddressDecoded,
+                            onQrCodeIconClick = onQrCodeIconClick,
+                            cancelQrScan = cancelQrScan,
+                            onAddressChanged = onAddressTyped
+                        )
+                    }
+
+                    is State.Sheet.ChooseAssets -> {
+                        ChooseAssetsSheet(
+                            state = sheetState,
+                            onTabClick = onChooseAssetTabClick,
+                            onCollectionClick = onChooseAssetCollectionClick,
+                            onCloseClick = onSheetClosed,
+                            onAssetSelectionChanged = onAssetSelectionChanged,
+                            onNextNFtsPageRequest = onNextNFTsPageRequest,
+                            onStakesRequest = onStakesRequest,
+                            onUiMessageShown = onUiMessageShown,
+                            onChooseAssetsSubmitted = onChooseAssetsSubmitted
+                        )
+                    }
+
+                    is State.Sheet.None -> {}
+                }
+            },
+            showDragHandle = true,
+            containerColor = if (state.sheet is State.Sheet.ChooseAccounts) {
+                RadixTheme.colors.defaultBackground
+            } else {
+                RadixTheme.colors.gray5
+            },
+            onDismissRequest = onSheetClosed
+        )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SyncSheetState(
-    bottomSheetState: ModalBottomSheetState,
+    sheetState: SheetState,
     isSheetVisible: Boolean,
     onSheetClosed: () -> Unit,
 ) {
@@ -399,14 +405,14 @@ private fun SyncSheetState(
 
     LaunchedEffect(isSheetVisible) {
         if (isSheetVisible) {
-            scope.launch { bottomSheetState.show() }
+            scope.launch { sheetState.show() }
         } else {
-            scope.launch { bottomSheetState.hide() }
+            scope.launch { sheetState.hide() }
         }
     }
 
-    LaunchedEffect(bottomSheetState.isVisible) {
-        if (!bottomSheetState.isVisible) {
+    LaunchedEffect(sheetState.isVisible) {
+        if (!sheetState.isVisible) {
             onSheetClosed()
         }
     }
