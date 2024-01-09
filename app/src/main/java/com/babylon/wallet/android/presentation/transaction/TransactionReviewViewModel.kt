@@ -383,6 +383,11 @@ class TransactionReviewViewModel @Inject constructor(
                 return xrdInCandidateAccount - xrdUsed < transactionFees.transactionFeeToLock
             }
 
+        val showDottedLine: Boolean
+            get() = (previewType as? PreviewType.Transfer)?.let { type ->
+                type.from.isNotEmpty() && type.to.isNotEmpty()
+            } == true
+
         sealed interface Sheet {
 
             data object None : Sheet

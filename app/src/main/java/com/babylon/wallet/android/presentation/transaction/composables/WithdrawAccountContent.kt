@@ -62,7 +62,5 @@ fun WithdrawAccountContent(
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(40.dp))
     }
 }

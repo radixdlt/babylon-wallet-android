@@ -38,7 +38,6 @@ fun DepositAccountContent(
     modifier: Modifier = Modifier,
     to: ImmutableList<AccountWithTransferableResources>,
     promptForGuarantees: () -> Unit,
-    showStrokeLine: Boolean,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
@@ -53,9 +52,6 @@ fun DepositAccountContent(
                 color = RadixTheme.colors.gray2,
                 overflow = TextOverflow.Ellipsis,
             )
-            if (showStrokeLine) {
-                StrokeLine()
-            }
         }
 
         Column(
@@ -130,7 +126,6 @@ fun DepositAccountPreview() {
         DepositAccountContent(
             to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned).toPersistentList(),
             promptForGuarantees = {},
-            showStrokeLine = true,
             onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> }
         )

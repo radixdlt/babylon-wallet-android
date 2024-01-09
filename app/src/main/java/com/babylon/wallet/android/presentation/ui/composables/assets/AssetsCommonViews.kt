@@ -73,6 +73,27 @@ fun Modifier.dashedCircle(size: Dp) = composed {
     )
 }
 
+@Suppress("MagicNumber")
+fun Modifier.strokeLine() = composed {
+    val strokeColor = RadixTheme.colors.gray3
+    val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
+    val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
+    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeInterval, strokeInterval), 0f)
+    then(
+        Modifier.drawWithCache {
+            onDrawBehind {
+                drawLine(
+                    color = strokeColor,
+                    start = Offset(size.width - 150f, 0f),
+                    end = Offset(size.width - 150f, size.height),
+                    strokeWidth = strokeWidth,
+                    pathEffect = pathEffect
+                )
+            }
+        }
+    )
+}
+
 @Composable
 fun AssetCard(
     modifier: Modifier = Modifier,
