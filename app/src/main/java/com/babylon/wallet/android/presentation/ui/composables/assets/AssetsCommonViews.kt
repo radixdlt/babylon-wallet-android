@@ -19,10 +19,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -45,6 +49,22 @@ fun Modifier.assetPlaceholder(
             shape = RoundedCornerShape(cornerSizeRadius),
             highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White)
         )
+    )
+}
+
+fun Modifier.dashedCircleBorder(color: Color) = composed {
+    val strokeWidth = with(LocalDensity.current) { 1.dp.toPx() }
+    val strokeInterval = with(LocalDensity.current) { 3.dp.toPx() }
+    then(
+        Modifier.drawWithCache {
+            onDrawBehind {
+                val pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeInterval, strokeInterval), 0f)
+                drawCircle(
+                    color = color,
+                    style = Stroke(strokeWidth, pathEffect = pathEffect)
+                )
+            }
+        }
     )
 }
 

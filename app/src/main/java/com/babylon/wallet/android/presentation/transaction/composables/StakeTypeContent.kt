@@ -11,22 +11,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
-fun TransactionPreviewTypeContent(
+fun StakeTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    preview: PreviewType.Transfer,
-    onPromptForGuarantees: () -> Unit,
-    onDappClick: (DAppWithResources) -> Unit,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
+    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
+    previewType: PreviewType.Staking
 ) {
+    val validatorSectionText = when (previewType.actionType) {
+        PreviewType.Staking.ActionType.Stake -> "Staking to Validators".uppercase() // TODO crowdin
+        PreviewType.Staking.ActionType.Unstake -> "Requesting unstake from validators".uppercase() // TODO crowdin
+        PreviewType.Staking.ActionType.ClaimStake -> "Claim from validators".uppercase()
+    }
     Column(
         modifier = modifier.fillMaxSize()
     ) {
@@ -42,9 +45,7 @@ fun TransactionPreviewTypeContent(
 
             WithdrawAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                from = preview.from.toPersistentList(),
-                showStrokeLine = preview.from.toPersistentList().isNotEmpty() ||
-                    preview.dApps.toPersistentList().isNotEmpty(),
+                from = previewType.from.toPersistentList(),
                 onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
                     onFungibleResourceClick(fungibleResource, isNewlyCreated)
                 },
@@ -53,11 +54,10 @@ fun TransactionPreviewTypeContent(
                 }
             )
 
-            ConnectedDAppsContent(
+            ValidatorsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                connectedDApps = preview.dApps.toPersistentList(),
-                onDAppClick = onDappClick,
-                showStrokeLine = preview.dApps.toPersistentList().isNotEmpty()
+                validators = previewType.validators.toPersistentList(),
+                text = validatorSectionText,
             )
 
             DepositAccountContent(
@@ -66,9 +66,9 @@ fun TransactionPreviewTypeContent(
                     end = RadixTheme.dimensions.paddingDefault,
                     bottom = RadixTheme.dimensions.paddingLarge
                 ),
-                to = preview.to.toPersistentList(),
-                promptForGuarantees = onPromptForGuarantees,
-                showStrokeLine = false,
+                to = previewType.to.toPersistentList(),
+                promptForGuarantees = {},
+                showStrokeLine = true,
                 onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
                     onFungibleResourceClick(fungibleResource, isNewlyCreated)
                 },
@@ -84,23 +84,23 @@ fun TransactionPreviewTypeContent(
 
 @Preview(showBackground = true)
 @Composable
-fun TransactionPreviewTypePreview() {
+fun StakeUnstakeTypePreview() {
     RadixWalletTheme {
-        TransactionPreviewTypeContent(
+        StakeTypeContent(
             state = TransactionReviewViewModel.State(
                 request = SampleDataProvider().transactionRequest,
                 isLoading = false,
                 isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
-            preview = PreviewType.Transfer(
-                from = emptyList(),
-                to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned)
-            ),
-            onPromptForGuarantees = {},
-            onDappClick = { _ -> },
             onFungibleResourceClick = { _, _ -> },
-            onNonFungibleResourceClick = { _, _, _ -> }
+            onNonFungibleResourceClick = { _, _, _ -> },
+            previewType = PreviewType.Staking(
+                to = persistentListOf(),
+                from = listOf(SampleDataProvider().accountWithTransferableResourceLsu).toPersistentList(),
+                validators = persistentListOf(),
+                actionType = PreviewType.Staking.ActionType.Stake
+            ),
         )
     }
 }

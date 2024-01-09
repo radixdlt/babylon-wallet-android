@@ -52,6 +52,10 @@ val GetProfileUseCase.entitiesOnCurrentNetwork: Flow<List<Entity>>
         it.currentNetwork?.accounts?.notHiddenAccounts().orEmpty() + it.currentNetwork?.personas?.notHiddenPersonas().orEmpty()
     }
 
+suspend fun GetProfileUseCase.currentNetwork(): Network? {
+    return invoke().firstOrNull()?.currentNetwork
+}
+
 val GetProfileUseCase.activeAccountsOnCurrentNetwork
     get() = invoke().map { it.currentNetwork?.accounts?.notHiddenAccounts().orEmpty() }
 

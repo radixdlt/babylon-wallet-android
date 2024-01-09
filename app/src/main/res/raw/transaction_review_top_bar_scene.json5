@@ -1,0 +1,116 @@
+{
+  Transitions: {
+    default: {
+      from: 'start',
+      to: 'end'
+    },
+    noSubtitle: {
+        from: 'startNoSubtitle',
+        to: 'endNoSubtitle'
+    }
+  },
+  ConstraintSets: {
+    start: {
+      backButton: {
+        start: ['parent', 'start', 16],
+        top: ['parent', 'top', 16],
+      },
+      rawManifestButton: {
+        end: ['parent', 'end', 16],
+        top: ['parent', 'top', 16],
+      },
+      dAppIcon: {
+        end: ['parent', 'end', 16],
+        top: ['title', 'top']
+      },
+      title: {
+        width: 'spread',
+        start: ['parent', 'start', 16],
+        end: ['dAppIcon', 'start', 16],
+        top: ['backButton', 'bottom', 16],
+        bottom: ['subtitle', 'top', 12]
+      },
+      subtitle: {
+        width: 'spread',
+        start: ['parent', 'start', 16],
+        bottom: ['parent', 'bottom', 16]
+      }
+    },
+    end: {
+      backButton: {
+        start: ['parent', 'start', 16],
+        top: ['parent', 'top', 16],
+      },
+      rawManifestButton: {
+        end: ['parent', 'end', 16],
+        top: ['parent', 'top', 16],
+      },
+      dAppIcon: {
+        end: ['parent', 'end', 16],
+        top: ['title', 'top'],
+        visibility: 'invisible',
+      },
+      title: {
+        width: 'preferWrap',
+        start: ['parent', 'start', 70],
+        end: ['parent', 'end', 70],
+        top: ['parent', 'top', 8],
+        bottom: ['subtitle', 'top'],
+      },
+      subtitle: {
+        width: 'preferWrap',
+        start: ['title', 'start'],
+        end: ['title', 'end'],
+        top: ['title', 'bottom'],
+        bottom: ['parent', 'bottom', 8],
+      }
+    },
+    startNoSubtitle: {
+      backButton: {
+        start: ['parent', 'start', 16],
+        top: ['parent', 'top', 16],
+      },
+      rawManifestButton: {
+        end: ['parent', 'end', 16],
+        top: ['parent', 'top', 16],
+      },
+      dAppIcon: {
+        visibility: 'invisible',
+      },
+      title: {
+        width: 'spread',
+        start: ['parent', 'start', 32],
+        end: ['parent', 'end', 32],
+        top: ['backButton', 'bottom', 16],
+        bottom: ['parent', 'bottom', 12]
+      },
+      subtitle: {
+        visibility: 'invisible'
+      }
+    },
+    endNoSubtitle: {
+      backButton: {
+        start: ['parent', 'start', 16],
+        top: ['parent', 'top', 16],
+        bottom: ['parent', 'bottom', 16],
+      },
+      rawManifestButton: {
+        end: ['parent', 'end', 16],
+        top: ['parent', 'top', 16],
+      },
+      dAppIcon: {
+        visibility: 'invisible',
+      },
+      title: {
+        width: 'preferWrap',
+        start: ['parent', 'start', 70],
+        end: ['parent', 'end', 70],
+        top: ['parent', 'top', 8],
+        bottom: ['parent', 'bottom', 8]
+      },
+      subtitle: {
+        visibility: 'invisible'
+      }
+    }
+  }
+}

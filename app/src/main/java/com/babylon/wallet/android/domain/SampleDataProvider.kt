@@ -13,6 +13,7 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
@@ -107,7 +108,69 @@ class SampleDataProvider {
         )
     )
 
+    val transferableDepositingLsu = Transferable.Depositing(
+        transferable = TransferableResource.LsuAmount(
+            amount = BigDecimal(69),
+            resource = Resource.FungibleResource(
+                resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
+                ownedAmount = null,
+                currentSupply = BigDecimal("69696969696969.666999666999666999"),
+                metadata = listOf(
+                    Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
+                    Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.DESCRIPTION.key,
+                        value = "a very xxx token",
+                        valueType = MetadataType.String
+                    )
+                )
+            ),
+            validatorDetail = ValidatorDetail(
+                "validator_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
+                totalXrdStake = BigDecimal(1000000)
+            ),
+            xrdWorth = BigDecimal(1000)
+        )
+    )
+
     val accountWithTransferableResourcesOwned = AccountWithTransferableResources.Owned(
+        account = Network.Account(
+            address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",
+            appearanceID = 0,
+            displayName = "666",
+            networkID = 14,
+            securityState = SecurityState.Unsecured(
+                unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                    transactionSigning = FactorInstance(
+                        badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                            derivationPath = DerivationPath.forAccount(
+                                networkId = Radix.Gateway.default.network.networkId(),
+                                accountIndex = 0,
+                                keyType = KeyType.TRANSACTION_SIGNING
+                            ),
+                            publicKey = FactorInstance.PublicKey.curve25519PublicKey(
+                                "c294ecdd8752e2197ad0027fe4557d464362df12b587537234f0b106237462f5"
+                            )
+                        ),
+                        factorSourceId = FactorSource.FactorSourceID.FromHash(
+                            kind = FactorSourceKind.DEVICE,
+                            body = HexCoded32Bytes("ba6a7bd3e91b2a83e21f05c22eaddecd12e75ab01c492e9d4e62d6445600c142")
+                        )
+                    )
+                )
+            ),
+            onLedgerSettings = Network.Account.OnLedgerSettings(
+                thirdPartyDeposits = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
+                    depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll,
+                    assetsExceptionList = emptyList(),
+                    depositorsAllowList = emptyList()
+                )
+            )
+        ),
+        resources = listOf(transferableDepositing)
+    )
+
+    val accountWithTransferableResourceLsu = AccountWithTransferableResources.Owned(
         account = Network.Account(
             address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",
             appearanceID = 0,

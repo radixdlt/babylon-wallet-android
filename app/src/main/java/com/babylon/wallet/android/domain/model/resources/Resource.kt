@@ -4,6 +4,7 @@ import android.net.Uri
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPerNetwork
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.claimAmount
@@ -374,6 +375,14 @@ object XrdResource {
 
 val Resource.FungibleResource.isXrd: Boolean
     get() = addressesPerNetwork.containsValue(resourceAddress)
+
+fun Resource.FungibleResource.asLsu(ownedAmount: BigDecimal? = null): LiquidStakeUnit {
+    return if (ownedAmount != null) {
+        LiquidStakeUnit(this.copy(ownedAmount = ownedAmount))
+    } else {
+        LiquidStakeUnit(this)
+    }
+}
 
 fun List<Resource>.findFungible(address: String) = find { it.resourceAddress == address } as? Resource.FungibleResource
 fun List<Resource>.findNonFungible(address: String) = find { it.resourceAddress == address } as? Resource.NonFungibleResource

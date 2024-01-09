@@ -80,10 +80,31 @@ val TransactionType.involvedResourceAddresses: Set<String>
                 .map { it.value.resourceAddresses }
                 .flatten()
 
-        // TODO currently unavailable preview
-        is TransactionType.ClaimStakeTransaction -> emptySet()
-        is TransactionType.UnstakeTransaction -> emptySet()
-        is TransactionType.StakeTransaction -> emptySet()
+        is TransactionType.ClaimStakeTransaction ->
+            claims.map { claim ->
+                claim.claimNftResource.addressString()
+            }.toSet()
+
+        is TransactionType.UnstakeTransaction ->
+            unstakes.map {
+                it.stakeUnitAddress.addressString()
+            }.toSet() union unstakes.map {
+                it.claimNftResource.addressString()
+            }.toSet()
+
+        is TransactionType.StakeTransaction -> stakes.map { it.stakeUnitResource.addressString() }.toSet()
+    }
+
+val TransactionType.involvedValidatorAddresses: Set<String>
+    get() = when (this) {
+        is TransactionType.ClaimStakeTransaction ->
+            claims.map { it.validatorAddress.addressString() }.toSet()
+
+        is TransactionType.UnstakeTransaction ->
+            unstakes.map { it.validatorAddress.addressString() }.toSet()
+
+        is TransactionType.StakeTransaction -> stakes.map { it.validatorAddress.addressString() }.toSet()
+        else -> emptySet()
     }
 
 fun RETResources.toTransferableResource(resourceAddress: String, resources: List<Resource>): TransferableResource {

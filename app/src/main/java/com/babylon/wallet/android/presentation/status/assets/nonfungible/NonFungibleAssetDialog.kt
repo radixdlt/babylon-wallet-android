@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@file:OptIn(ExperimentalLayoutApi::class)
 
 package com.babylon.wallet.android.presentation.status.assets.nonfungible
 
@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -155,7 +154,7 @@ private fun NonFungibleAssetDialogContent(
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
                     }
 
-                    if (state.item?.claimEpoch != null && state.item.claimAmountXrd != null) {
+                    if (state.showStakeClaimButton && state.item?.claimEpoch != null && state.item.claimAmountXrd != null) {
                         val claimState = remember(state.epoch) { state.claimState }
 
                         RadixPrimaryButton(
