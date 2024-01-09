@@ -23,6 +23,7 @@ import rdx.works.core.then
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.domain.currentNetwork
 import rdx.works.profile.domain.personasOnCurrentNetwork
 import timber.log.Timber
 import java.math.BigDecimal
@@ -179,8 +180,10 @@ class TransactionClient @Inject constructor(
     }
 
     suspend fun getSigningEntities(manifest: TransactionManifest): List<Entity> {
-        val manifestAccountsRequiringAuth = manifest.accountsRequiringAuth().map { it.addressString() }
-        val manifestIdentitiesRequiringAuth = manifest.identitiesRequiringAuth().map { it.addressString() }
+        val networkId = getProfileUseCase.currentNetwork()?.networkID ?: error("No network found")
+        val summary = manifest.summary(networkId.toUByte())
+        val manifestAccountsRequiringAuth = summary.accountsRequiringAuth.map { it.addressString() }
+        val manifestIdentitiesRequiringAuth = summary.identitiesRequiringAuth.map { it.addressString() }
 
         return getProfileUseCase.accountsOnCurrentNetwork().filter { account ->
             manifestAccountsRequiringAuth.contains(account.address)

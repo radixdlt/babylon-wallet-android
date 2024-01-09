@@ -5,9 +5,9 @@ import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCas
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.EntityType
-import com.radixdlt.ret.ResourceTracker
-import com.radixdlt.ret.TransactionType
+import com.radixdlt.ret.DetailedManifestClass
+import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.ret.ResourceIndicator
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -17,7 +17,8 @@ import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.defaultDepositGuarantee
 
 // Generic transaction resolver
-suspend fun TransactionType.GeneralTransaction.resolve(
+suspend fun DetailedManifestClass.General.resolve(
+    executionSummary: ExecutionSummary,
     resources: List<Resource>,
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     getProfileUseCase: GetProfileUseCase,
@@ -29,23 +30,23 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     }
 
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
-        it.address in accountWithdraws.keys || it.address in accountDeposits.keys
+        it.address in executionSummary.accountWithdraws.keys || it.address in executionSummary.accountDeposits.keys
     }
 
     val defaultDepositGuarantee = getProfileUseCase.defaultDepositGuarantee()
 
     return PreviewType.Transfer(
-        from = resolveFromAccounts(resources, allAccounts),
-        to = resolveToAccounts(resources, allAccounts, defaultDepositGuarantee),
+        from = executionSummary.resolveFromAccounts(resources, allAccounts),
+        to = executionSummary.resolveToAccounts(resources, allAccounts, defaultDepositGuarantee),
         badges = badges,
         dApps = dApps
     )
 }
 
-private suspend fun TransactionType.GeneralTransaction.resolveDApps(
+private suspend fun ExecutionSummary.resolveDApps(
     resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
 ) = coroutineScope {
-    addressesInManifest[EntityType.GLOBAL_GENERIC_COMPONENT].orEmpty()
+    encounteredEntities.filter { it.isGlobalComponent() }
         .map { address ->
             async {
                 resolveDAppInTransactionUseCase.invoke(address.addressString())
@@ -55,15 +56,15 @@ private suspend fun TransactionType.GeneralTransaction.resolveDApps(
         .mapNotNull { it.getOrNull() }
 }
 
-private fun TransactionType.GeneralTransaction.resolveFromAccounts(
+private fun ExecutionSummary.resolveFromAccounts(
     allResources: List<Resource>,
     allAccounts: List<Network.Account>
 ) = accountWithdraws.map { withdrawEntry ->
     val transferables = withdrawEntry.value.map {
         it.toWithdrawingTransferableResource(
             resources = allResources,
-            newlyCreatedMetadata = metadataOfNewlyCreatedEntities,
-            newlyCreatedEntities = addressesOfNewlyCreatedEntities
+            newlyCreatedMetadata = newEntities.metadata,
+            newlyCreatedEntities = newEntities.resourceAddresses
         )
     }
 
@@ -86,7 +87,7 @@ private fun TransactionType.GeneralTransaction.resolveFromAccounts(
  * This method sorts accounts in the same order they are appearing in the dashboard.
  * TODO revisit if this can be done using Comparator.comparing { item -> allAccounts.map { it.address }.indexOf(item) }
  */
-fun Map<String, List<ResourceTracker>>.sort(allAccounts: List<Network.Account>): Map<String, List<ResourceTracker>> {
+fun Map<String, List<ResourceIndicator>>.sort(allAccounts: List<Network.Account>): Map<String, List<ResourceIndicator>> {
     val allAccountsAddresses = allAccounts.map { it.address }
 
     // Only account deposits that we own
@@ -105,7 +106,7 @@ fun Map<String, List<ResourceTracker>>.sort(allAccounts: List<Network.Account>):
     return ownedAccountDepositsSorted.plus(thirdPartyAccountDeposits)
 }
 
-private fun TransactionType.GeneralTransaction.resolveToAccounts(
+private fun ExecutionSummary.resolveToAccounts(
     allResources: List<Resource>,
     allAccounts: List<Network.Account>,
     defaultDepositGuarantees: Double
@@ -114,8 +115,8 @@ private fun TransactionType.GeneralTransaction.resolveToAccounts(
         val transferables = depositEntry.value.map {
             it.toDepositingTransferableResource(
                 resources = allResources,
-                newlyCreatedMetadata = metadataOfNewlyCreatedEntities,
-                newlyCreatedEntities = addressesOfNewlyCreatedEntities,
+                newlyCreatedMetadata = newEntities.metadata,
+                newlyCreatedEntities = newEntities.resourceAddresses,
                 defaultDepositGuarantees = defaultDepositGuarantees
             )
         }

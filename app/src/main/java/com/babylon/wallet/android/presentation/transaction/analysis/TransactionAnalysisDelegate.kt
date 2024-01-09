@@ -16,12 +16,15 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.guaranteesCount
-import com.radixdlt.ret.ExecutionAnalysis
+import com.radixdlt.ret.DetailedManifestClass
+import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.TransactionManifest
-import com.radixdlt.ret.TransactionType
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
 import rdx.works.core.then
+import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.currentNetwork
 import timber.log.Timber
@@ -55,6 +58,7 @@ class TransactionAnalysisDelegate @Inject constructor(
         manifest: TransactionManifest,
         transactionClient: TransactionClient
     ): Result<Unit> {
+        val networkId = getProfileUseCase().first().currentNetwork?.knownNetworkId ?: error("No network found")
         val notaryAndSigners = transactionClient.getNotaryAndSigners(
             manifest = manifest,
             ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey
@@ -64,7 +68,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             notaryAndSigners = notaryAndSigners
         ).mapCatching { preview ->
             manifest
-                .analyzeExecution(transactionReceipt = preview.encodedReceipt.decodeHex())
+                .executionSummary(networkId = networkId.value.toUByte(), encodedReceipt = preview.encodedReceipt.decodeHex())
                 .resolvePreview(notaryAndSigners)
                 .resolveFees(notaryAndSigners)
         }.mapCatching { transactionFees ->
@@ -83,7 +87,7 @@ class TransactionAnalysisDelegate @Inject constructor(
         }
     }
 
-    private suspend fun ExecutionAnalysis.resolvePreview(notaryAndSigners: NotaryAndSigners) = apply {
+    private suspend fun ExecutionSummary.resolvePreview(notaryAndSigners: NotaryAndSigners) = apply {
         val previewType = if (_state.value.requestNonNull.isInternal.not() && reservedInstructions.isNotEmpty()) {
             // wallet unacceptable manifest
             _state.update {
@@ -92,10 +96,10 @@ class TransactionAnalysisDelegate @Inject constructor(
                 )
             }
             PreviewType.UnacceptableManifest
-        } else if (transactionTypes.isEmpty()) {
+        } else if (detailedClassification.isEmpty()) {
             PreviewType.NonConforming
         } else {
-            processConformingManifest(transactionTypes[0])
+            processConformingManifest()
         }
 
         if (previewType is PreviewType.Transfer) {
@@ -115,7 +119,7 @@ class TransactionAnalysisDelegate @Inject constructor(
         }
     }
 
-    private fun ExecutionAnalysis.resolveFees(notaryAndSigners: NotaryAndSigners) = TransactionFees(
+    private fun ExecutionSummary.resolveFees(notaryAndSigners: NotaryAndSigners) = TransactionFees(
         nonContingentFeeLock = feeLocks.lock.asStr().toBigDecimal(),
         networkExecution = feeSummary.executionCost.asStr().toBigDecimal(),
         networkFinalization = feeSummary.finalizationCost.asStr().toBigDecimal(),
@@ -134,47 +138,65 @@ class TransactionAnalysisDelegate @Inject constructor(
         }
     }
 
-    private suspend fun processConformingManifest(transactionType: TransactionType): PreviewType {
+    private suspend fun ExecutionSummary.processConformingManifest(): PreviewType {
         val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
         val xrdAddress = XrdResource.address(networkId)
-        val resources = getResourcesUseCase(addresses = transactionType.involvedResourceAddresses + xrdAddress).getOrThrow()
+        val transactionType = detailedClassification.first()
+        val involvedResourceAddresses = accountDeposits.values.map { resourceIndicator ->
+            resourceIndicator.map { it.resourceAddress }
+        }.flatten().toSet() union accountWithdraws.values.map { resourceIndicator ->
+            resourceIndicator.map {
+                when (it) {
+                    is ResourceIndicator.Fungible -> it.resourceAddress.addressString()
+                    is ResourceIndicator.NonFungible -> it.resourceAddress.addressString()
+                }
+            }
+        }.flatten().toSet()
+        val resources = getResourcesUseCase(addresses = involvedResourceAddresses + xrdAddress).getOrThrow()
 
         return when (transactionType) {
-            is TransactionType.GeneralTransaction -> transactionType.resolve(
+            is DetailedManifestClass.General -> transactionType.resolve(
                 resources = resources,
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 getProfileUseCase = getProfileUseCase,
-                resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
+                resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase,
+                executionSummary = this
             )
 
-            is TransactionType.SimpleTransfer -> transactionType.resolve(
-                getProfileUseCase = getProfileUseCase,
-                resources = resources
-            )
-
-            is TransactionType.Transfer -> transactionType.resolve(
-                getProfileUseCase = getProfileUseCase,
-                resources = resources
-            )
-
-            is TransactionType.AccountDepositSettings -> transactionType.resolve(
+            is DetailedManifestClass.AccountDepositSettingsUpdate -> transactionType.resolve(
                 getProfileUseCase = getProfileUseCase,
                 allResources = resources
             )
 
-            is TransactionType.StakeTransaction -> {
+            is DetailedManifestClass.Transfer -> resolveTransfer(getProfileUseCase, resources)
+            is DetailedManifestClass.ValidatorClaim -> {
                 val validators = getValidatorsUseCase(transactionType.involvedValidatorAddresses).getOrThrow()
-                transactionType.resolve(getProfileUseCase, resources, validators)
+                transactionType.resolve(
+                    executionSummary = this,
+                    getProfileUseCase = getProfileUseCase,
+                    resources = resources,
+                    involvedValidators = validators
+                )
             }
 
-            is TransactionType.UnstakeTransaction -> {
+            is DetailedManifestClass.ValidatorStake -> {
                 val validators = getValidatorsUseCase(transactionType.involvedValidatorAddresses).getOrThrow()
-                transactionType.resolve(getProfileUseCase, resources, validators)
+                transactionType.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    resources = resources,
+                    involvedValidators = validators,
+                    executionSummary = this
+                )
             }
 
-            is TransactionType.ClaimStakeTransaction -> {
+            is DetailedManifestClass.ValidatorUnstake -> {
                 val validators = getValidatorsUseCase(transactionType.involvedValidatorAddresses).getOrThrow()
-                transactionType.resolve(getProfileUseCase, resources, validators)
+                transactionType.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    resources = resources,
+                    involvedValidators = validators,
+                    executionSummary = this
+                )
             }
 
             else -> PreviewType.NonConforming

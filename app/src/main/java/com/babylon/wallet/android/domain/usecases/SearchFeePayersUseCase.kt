@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.domain.currentNetwork
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -22,8 +23,9 @@ class SearchFeePayersUseCase @Inject constructor(
                     xrdAmount = entry.value
                 )
             }
-
-            val addresses = manifest.accountsWithdrawnFrom() + manifest.accountsDepositedInto() + manifest.accountsRequiringAuth()
+            val networkId = profileUseCase.currentNetwork()?.networkID ?: error("No network found")
+            val summary = manifest.summary(networkId.toUByte())
+            val addresses = summary.accountsWithdrawnFrom + summary.accountsDepositedInto + summary.accountsRequiringAuth
             val candidateAddress = addresses.map { it.addressString() }.firstOrNull { address ->
                 candidates.any { it.account.address == address && it.xrdAmount >= lockFee }
             }

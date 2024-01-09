@@ -182,12 +182,12 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
-
         val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData
             ?.toTransactionManifest()
             ?.getOrNull()
             ?.let { manifest ->
-                manifest.accountsWithdrawnFrom() + manifest.accountsDepositedInto() + manifest.accountsRequiringAuth()
+                val summary = manifest.summary(selectedFeePayer.networkID.toUByte())
+                summary.accountsWithdrawnFrom + summary.accountsDepositedInto + summary.accountsRequiringAuth
             }.orEmpty().any { accountAddress ->
                 accountAddress.addressString() == selectedFeePayer.address
             }

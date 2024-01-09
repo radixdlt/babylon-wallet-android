@@ -11,29 +11,40 @@ import com.babylon.wallet.android.domain.model.resources.findNonFungible
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.radixdlt.ret.Address
-import com.radixdlt.ret.AuthorizedDepositorsChanges
-import com.radixdlt.ret.DecimalSource
+import com.radixdlt.ret.DetailedManifestClass
+import com.radixdlt.ret.FungibleResourceIndicator
 import com.radixdlt.ret.MetadataValue
 import com.radixdlt.ret.NonFungibleLocalId
-import com.radixdlt.ret.NonFungibleLocalIdVecSource
+import com.radixdlt.ret.NonFungibleResourceIndicator
 import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.PublicKeyHash
+import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
-import com.radixdlt.ret.ResourceTracker
-import com.radixdlt.ret.TransactionType
 import rdx.works.core.ret.asStr
 import rdx.works.core.toHexString
 import java.math.BigDecimal
 
-typealias RETResources = com.radixdlt.ret.Resources
-typealias RETResourcesAmount = com.radixdlt.ret.Resources.Amount
-typealias RETResourcesIds = com.radixdlt.ret.Resources.Ids
-
-val ResourceTracker.resourceAddress: String
+val ResourceIndicator.resourceAddress: String
     get() = when (this) {
-        is ResourceTracker.Fungible -> resourceAddress.addressString()
-        is ResourceTracker.NonFungible -> resourceAddress.addressString()
+        is ResourceIndicator.Fungible -> resourceAddress.addressString()
+        is ResourceIndicator.NonFungible -> resourceAddress.addressString()
+    }
+
+val ResourceIndicator.amount: BigDecimal
+    get() = when (this) {
+        is ResourceIndicator.Fungible -> {
+            when (val specificIndicator = indicator) {
+                is FungibleResourceIndicator.Guaranteed -> {
+                    specificIndicator.amount.asStr().toBigDecimal()
+                }
+                is FungibleResourceIndicator.Predicted -> specificIndicator.predictedAmount.value.asStr().toBigDecimal()
+            }
+        }
+
+        is ResourceIndicator.NonFungible -> {
+            BigDecimal(indicator.nonFungibleLocalIds.size)
+        }
     }
 
 val ResourceSpecifier.resourceAddress: String
@@ -48,81 +59,40 @@ val ResourceOrNonFungible.resourceAddress: String
         is ResourceOrNonFungible.Resource -> value.addressString()
     }
 
-val AuthorizedDepositorsChanges.resourceAddresses: Set<String>
-    get() = added.map { it.resourceAddress }.toSet() union removed.map { it.resourceAddress }.toSet()
+val DetailedManifestClass.AccountDepositSettingsUpdate.resourceAddresses: Set<String>
+    get() = authorizedDepositorsAdded.values.map { depositors ->
+        depositors.map { it.resourceAddress }
+    }.flatten().toSet() union authorizedDepositorsRemoved.values.map { depositors ->
+        depositors.map { it.resourceAddress }
+    }.flatten().toSet()
 
-val TransactionType.involvedResourceAddresses: Set<String>
+val DetailedManifestClass.involvedValidatorAddresses: Set<String>
     get() = when (this) {
-        is TransactionType.GeneralTransaction ->
-            accountWithdraws
-                .values
-                .flatten()
-                .map { it.resourceAddress }
-                .toSet() union accountDeposits
-                .values
-                .flatten()
-                .map { it.resourceAddress }
-                .toSet()
+        is DetailedManifestClass.ValidatorClaim -> validatorAddresses.map { it.addressString() }.toSet()
 
-        is TransactionType.SimpleTransfer -> setOf(transferred.resourceAddress)
-        is TransactionType.Transfer ->
-            transfers
-                .map { it.value.keys }
-                .flatten()
-                .toSet()
+        is DetailedManifestClass.ValidatorUnstake -> validatorAddresses.map { it.addressString() }.toSet()
 
-        is TransactionType.AccountDepositSettings ->
-            resourcePreferenceChanges
-                .values
-                .map { it.keys }
-                .flatten()
-                .toSet() union authorizedDepositorsChanges
-                .map { it.value.resourceAddresses }
-                .flatten()
-
-        is TransactionType.ClaimStakeTransaction ->
-            claims.map { claim ->
-                claim.claimNftResource.addressString()
-            }.toSet()
-
-        is TransactionType.UnstakeTransaction ->
-            unstakes.map {
-                it.stakeUnitAddress.addressString()
-            }.toSet() union unstakes.map {
-                it.claimNftResource.addressString()
-            }.toSet()
-
-        is TransactionType.StakeTransaction -> stakes.map { it.stakeUnitResource.addressString() }.toSet()
-    }
-
-val TransactionType.involvedValidatorAddresses: Set<String>
-    get() = when (this) {
-        is TransactionType.ClaimStakeTransaction ->
-            claims.map { it.validatorAddress.addressString() }.toSet()
-
-        is TransactionType.UnstakeTransaction ->
-            unstakes.map { it.validatorAddress.addressString() }.toSet()
-
-        is TransactionType.StakeTransaction -> stakes.map { it.validatorAddress.addressString() }.toSet()
+        is DetailedManifestClass.ValidatorStake -> validatorAddresses.map { it.addressString() }.toSet()
         else -> emptySet()
     }
 
-fun RETResources.toTransferableResource(resourceAddress: String, resources: List<Resource>): TransferableResource {
+fun ResourceIndicator.toTransferableResource(resources: List<Resource>): TransferableResource {
+    val resourceAddress = this.resourceAddress
     return when (this) {
-        is RETResourcesAmount -> {
+        is ResourceIndicator.Fungible -> {
             val resource = resources.findFungible(resourceAddress) ?: Resource.FungibleResource(
                 resourceAddress = resourceAddress,
                 ownedAmount = BigDecimal.ZERO
             )
             TransferableResource.Amount(
-                amount = amount.asStr().toBigDecimal(),
+                amount = amount,
                 resource = resource,
                 isNewlyCreated = false
             )
         }
 
-        is RETResourcesIds -> {
-            val items = ids.map { id ->
+        is ResourceIndicator.NonFungible -> {
+            val items = indicator.nonFungibleLocalIds.map { id ->
                 Resource.NonFungibleResource.Item(
                     collectionAddress = resourceAddress,
                     localId = Resource.NonFungibleResource.Item.ID.from(id)
@@ -131,7 +101,7 @@ fun RETResources.toTransferableResource(resourceAddress: String, resources: List
 
             val collection = resources.findNonFungible(resourceAddress)?.copy(items = items) ?: Resource.NonFungibleResource(
                 resourceAddress = resourceAddress,
-                amount = ids.size.toLong(),
+                amount = items.size.toLong(),
                 items = items
             )
 
@@ -143,42 +113,60 @@ fun RETResources.toTransferableResource(resourceAddress: String, resources: List
     }
 }
 
-fun ResourceTracker.toDepositingTransferableResource(
+fun ResourceIndicator.toDepositingTransferableResource(
     resources: List<Resource>,
     newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>,
     defaultDepositGuarantees: Double
 ): Transferable.Depositing {
     return when (this) {
-        is ResourceTracker.Fungible -> Transferable.Depositing(
-            transferable = toTransferableResource(
-                resources = resources,
-                newlyCreatedMetadata = newlyCreatedMetadata,
-                newlyCreatedEntities = newlyCreatedEntities
-            ),
-            guaranteeType = amount.toGuaranteeType(defaultDepositGuarantees)
-        )
+        is ResourceIndicator.Fungible -> {
+            Transferable.Depositing(
+                transferable = toTransferableResource(
+                    resources = resources,
+                    newlyCreatedMetadata = newlyCreatedMetadata,
+                    newlyCreatedEntities = newlyCreatedEntities
+                ),
+                guaranteeType = indicator.toGuaranteeType(defaultDepositGuarantees)
+            )
+        }
 
-        is ResourceTracker.NonFungible -> {
+        is ResourceIndicator.NonFungible -> {
             Transferable.Depositing(
                 transferable = toTransferableResource(
                     resources = resources,
                     newlyCreated = newlyCreatedMetadata,
                     newlyCreatedEntities = newlyCreatedEntities
                 ),
-                guaranteeType = ids.toGuaranteeType(defaultDepositGuarantees)
+                guaranteeType = indicator.toGuaranteeType(defaultDepositGuarantees)
             )
         }
     }
 }
 
-fun ResourceTracker.toWithdrawingTransferableResource(
+fun NonFungibleResourceIndicator.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType {
+    return when (this) {
+        is NonFungibleResourceIndicator.ByAll -> GuaranteeType.Predicted(
+            instructionIndex = predictedIds.instructionIndex.toLong(),
+            guaranteeOffset = defaultDepositGuarantees
+        )
+
+        is NonFungibleResourceIndicator.ByAmount -> GuaranteeType.Predicted(
+            instructionIndex = predictedIds.instructionIndex.toLong(),
+            guaranteeOffset = defaultDepositGuarantees
+        )
+
+        is NonFungibleResourceIndicator.ByIds -> GuaranteeType.Guaranteed
+    }
+}
+
+fun ResourceIndicator.toWithdrawingTransferableResource(
     resources: List<Resource>,
     newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>> = emptyMap(),
     newlyCreatedEntities: List<Address>
 ): Transferable.Withdrawing {
     return when (this) {
-        is ResourceTracker.Fungible -> Transferable.Withdrawing(
+        is ResourceIndicator.Fungible -> Transferable.Withdrawing(
             transferable = toTransferableResource(
                 resources = resources,
                 newlyCreatedMetadata = newlyCreatedMetadata,
@@ -186,7 +174,7 @@ fun ResourceTracker.toWithdrawingTransferableResource(
             )
         )
 
-        is ResourceTracker.NonFungible -> Transferable.Withdrawing(
+        is ResourceIndicator.NonFungible -> Transferable.Withdrawing(
             transferable = toTransferableResource(
                 resources = resources,
                 newlyCreated = newlyCreatedMetadata,
@@ -196,7 +184,23 @@ fun ResourceTracker.toWithdrawingTransferableResource(
     }
 }
 
-private fun ResourceTracker.Fungible.toTransferableResource(
+private fun FungibleResourceIndicator.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType {
+    return when (this) {
+        is FungibleResourceIndicator.Guaranteed -> GuaranteeType.Guaranteed
+        is FungibleResourceIndicator.Predicted -> GuaranteeType.Predicted(
+            instructionIndex = predictedAmount.instructionIndex.toLong(),
+            guaranteeOffset = defaultDepositGuarantees
+        )
+    }
+}
+
+private val ResourceIndicator.Fungible.amount: BigDecimal
+    get() = when (val specificIndicator = indicator) {
+        is FungibleResourceIndicator.Guaranteed -> specificIndicator.amount.asStr().toBigDecimal()
+        is FungibleResourceIndicator.Predicted -> specificIndicator.predictedAmount.value.asStr().toBigDecimal()
+    }
+
+private fun ResourceIndicator.Fungible.toTransferableResource(
     resources: List<Resource>,
     newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>
@@ -204,12 +208,11 @@ private fun ResourceTracker.Fungible.toTransferableResource(
     val resource = resources.findFungible(
         resourceAddress.addressString()
     ) ?: Resource.FungibleResource.from(
-        resourceAddress = resourceAddress,
-        metadata = newlyCreatedMetadata[resourceAddress.addressString()].orEmpty()
+        resourceAddress = resourceAddress, metadata = newlyCreatedMetadata[resourceAddress.addressString()].orEmpty()
     )
 
     return TransferableResource.Amount(
-        amount = amount.valueDecimal,
+        amount = amount,
         resource = resource,
         isNewlyCreated = resourceAddress.addressString() in newlyCreatedEntities.map { it.addressString() }
     )
@@ -224,12 +227,12 @@ private fun Resource.FungibleResource.Companion.from(
     metadata = metadata.toMetadata()
 )
 
-private fun ResourceTracker.NonFungible.toTransferableResource(
+private fun ResourceIndicator.NonFungible.toTransferableResource(
     resources: List<Resource>,
     newlyCreated: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>
 ): TransferableResource.NFTs {
-    val items = ids.valueList.map { id ->
+    val items = indicator.nonFungibleLocalIds.map { id ->
         Resource.NonFungibleResource.Item(
             collectionAddress = this.resourceAddress.addressString(),
             localId = Resource.NonFungibleResource.Item.ID.from(id)
@@ -260,33 +263,29 @@ private fun Resource.NonFungibleResource.Companion.from(
     items = items,
 )
 
-private val DecimalSource.valueDecimal: BigDecimal
+private val NonFungibleResourceIndicator.nonFungibleLocalIds: List<NonFungibleLocalId>
     get() = when (this) {
-        is DecimalSource.Guaranteed -> value.asStr().toBigDecimal()
-        is DecimalSource.Predicted -> value.asStr().toBigDecimal()
+        is NonFungibleResourceIndicator.ByAll -> predictedIds.value
+        is NonFungibleResourceIndicator.ByAmount -> predictedIds.value
+        is NonFungibleResourceIndicator.ByIds -> ids
     }
 
-private fun DecimalSource.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType = when (this) {
-    is DecimalSource.Guaranteed -> GuaranteeType.Guaranteed
-    is DecimalSource.Predicted -> GuaranteeType.Predicted(
-        instructionIndex = instructionIndex.toLong(),
-        guaranteeOffset = defaultDepositGuarantees
-    )
-}
-
-private val NonFungibleLocalIdVecSource.valueList: List<NonFungibleLocalId>
-    get() = when (this) {
-        is NonFungibleLocalIdVecSource.Guaranteed -> value
-        is NonFungibleLocalIdVecSource.Predicted -> value
-    }
-
-private fun NonFungibleLocalIdVecSource.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType = when (this) {
-    is NonFungibleLocalIdVecSource.Guaranteed -> GuaranteeType.Guaranteed
-    is NonFungibleLocalIdVecSource.Predicted -> GuaranteeType.Predicted(
-        instructionIndex = instructionIndex.toLong(),
-        guaranteeOffset = defaultDepositGuarantees
-    )
-}
+//
+// private fun DecimalSource.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType = when (this) {
+//    is DecimalSource.Guaranteed -> GuaranteeType.Guaranteed
+//    is DecimalSource.Predicted -> GuaranteeType.Predicted(
+//        instructionIndex = instructionIndex.toLong(),
+//        guaranteeOffset = defaultDepositGuarantees
+//    )
+// }
+//
+// private fun NonFungibleLocalIdVecSource.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType = when (this) {
+//    is NonFungibleLocalIdVecSource.Guaranteed -> GuaranteeType.Guaranteed
+//    is NonFungibleLocalIdVecSource.Predicted -> GuaranteeType.Predicted(
+//        instructionIndex = instructionIndex.toLong(),
+//        guaranteeOffset = defaultDepositGuarantees
+//    )
+// }
 
 private fun Map<String, MetadataValue?>.toMetadata(): List<Metadata> = mapNotNull { it.toMetadata() }
 
