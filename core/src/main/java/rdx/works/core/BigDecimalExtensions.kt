@@ -14,6 +14,8 @@ private const val MILLION_DIGITS_LENGTH = 6
 private const val BILLION_DIGITS_LENGTH = 9
 private const val TRILLION_DIGITS_LENGTH = 12
 
+private const val SCIENTIFIC_NOTATION_THRESHOLD = 20
+
 /**
  * Algorithm that implements the rules of token amount display:
  *
@@ -33,7 +35,13 @@ fun BigDecimal.displayableQuantity(): String {
     }
     val decimalFormat = DecimalFormat.getInstance(Locale.getDefault())
 
-    return if (integralPartLength > TRILLION_DIGITS_LENGTH) {
+    return if (integralPartLength > SCIENTIFIC_NOTATION_THRESHOLD) {
+        // scientific notation
+        val exponentNumber = integralPartLength - 1
+        val wholeNumbers = this.divide(BigDecimal(10).pow(exponentNumber))
+        decimalFormat.maximumFractionDigits = 3
+        decimalFormat.format(wholeNumbers).plus("e$exponentNumber")
+    } else if (integralPartLength > TRILLION_DIGITS_LENGTH) {
         // trillion
         val wholeNumbers = this.divide(BigDecimal(10).pow(TRILLION_DIGITS_LENGTH))
         val wholeDecimalPlaces = wholeNumbers.toBigInteger().toString().length
