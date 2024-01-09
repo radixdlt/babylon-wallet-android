@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
+import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -63,10 +64,12 @@ class TransactionAnalysisDelegate @Inject constructor(
             manifest = manifest,
             ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey
         )
+        manifest.toPrettyString().let { logger.d(it) }
         return transactionClient.getTransactionPreview(
             manifest = manifest,
             notaryAndSigners = notaryAndSigners
         ).mapCatching { preview ->
+            Timber.tag("receipt").d(preview.encodedReceipt)
             manifest
                 .executionSummary(networkId = networkId.value.toUByte(), encodedReceipt = preview.encodedReceipt.decodeHex())
                 .resolvePreview(notaryAndSigners)
