@@ -255,13 +255,17 @@ fun TransferContent(
             }
 
             item {
-                StrokeLine(height = 50.dp)
+                Row {
+                    Spacer(modifier = Modifier.weight(1f))
+                    StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 50.dp)
+                }
             }
 
             item {
                 Row {
                     Text(
                         modifier = Modifier
+                            .weight(1f)
                             .padding(
                                 horizontal = RadixTheme.dimensions.paddingMedium,
                                 vertical = RadixTheme.dimensions.paddingXSmall
@@ -273,7 +277,7 @@ fun TransferContent(
                         color = RadixTheme.colors.gray2,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    StrokeLine(height = 30.dp)
+                    StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 30.dp)
                 }
             }
 

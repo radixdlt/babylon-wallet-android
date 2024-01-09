@@ -316,11 +316,12 @@ fun NavigationHost(
                     isNewlyCreated = isNewlyCreated
                 )
             },
-            onNonFungibleClick = { resource, item, isNewlyCreated ->
+            onNonFungibleClick = { resource, item, isNewlyCreated, showStakeClaimButton ->
                 navController.nonFungibleAssetDialog(
                     resourceAddress = resource.resourceAddress,
                     localId = item.localId.code,
-                    isNewlyCreated = isNewlyCreated
+                    isNewlyCreated = isNewlyCreated,
+                    showStakeClaimButton = showStakeClaimButton
                 )
             }
         )

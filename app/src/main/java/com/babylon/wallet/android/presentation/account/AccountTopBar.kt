@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMotionApi::class)
-
 package com.babylon.wallet.android.presentation.account
 
 import androidx.compose.animation.AnimatedVisibility
@@ -24,7 +22,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.constraintlayout.compose.MotionScene
 import com.babylon.wallet.android.R

@@ -107,7 +107,7 @@ object Thumbnail {
     fun NonFungible(
         modifier: Modifier = Modifier,
         collection: Resource.NonFungibleResource?,
-        shape: Shape
+        shape: Shape = RadixTheme.shapes.roundedRectSmall
     ) {
         var viewSize: IntSize? by remember { mutableStateOf(null) }
         val imageType = remember(collection, viewSize) {
@@ -295,7 +295,7 @@ object Thumbnail {
         Custom(
             modifier = modifier,
             imageType = validator.url?.let { ImageType.External(it, ThumbnailRequestSize.MEDIUM) },
-            emptyDrawable = com.babylon.wallet.android.R.drawable.ic_validator,
+            emptyDrawable = DSR.ic_validator,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectSmall,
             contentDescription = validator.name

@@ -37,7 +37,7 @@ import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircle
+import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
@@ -57,7 +57,7 @@ fun ConnectedDAppsContent(
 
     Column(
         modifier = Modifier
-            .padding(bottom = RadixTheme.dimensions.paddingLarge)
+            .padding(bottom = RadixTheme.dimensions.paddingXLarge)
     ) {
         Box(
             modifier = modifier
@@ -71,7 +71,7 @@ fun ConnectedDAppsContent(
                 Image(
                     modifier = Modifier
                         .size(24.dp)
-                        .dashedCircle(24.dp),
+                        .dashedCircleBorder(RadixTheme.colors.gray3),
                     painter = painterResource(id = DSR.ic_using_dapps),
                     contentDescription = null,
                     colorFilter = ColorFilter.tint(RadixTheme.colors.gray2),

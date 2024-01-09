@@ -39,7 +39,8 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
     override fun initialState(): State = State(
         resourceAddress = args.resourceAddress,
         localId = args.localId,
-        isNewlyCreated = args.isNewlyCreated
+        isNewlyCreated = args.isNewlyCreated,
+        showStakeClaimButton = args.showStakeClaimButton
     )
 
     init {
@@ -115,7 +116,8 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
         val accountContext: Network.Account? = null,
         val epoch: Long? = null,
         val isNewlyCreated: Boolean,
-        val uiMessage: UiMessage? = null
+        val uiMessage: UiMessage? = null,
+        val showStakeClaimButton: Boolean = true
     ) : UiState {
 
         val claimState: ClaimState?

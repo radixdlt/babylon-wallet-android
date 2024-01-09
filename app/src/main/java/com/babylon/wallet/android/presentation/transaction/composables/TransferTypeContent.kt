@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +21,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
-fun TransactionPreviewTypeContent(
+fun TransferTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
     preview: PreviewType.Transfer,
@@ -56,37 +55,34 @@ fun TransactionPreviewTypeContent(
                 }
             )
 
-            Box(
+            Column(
                 modifier = Modifier
                     .padding(bottom = RadixTheme.dimensions.paddingLarge)
                     .applyIf(condition = state.showDottedLine, modifier = Modifier.strokeLine())
+                    .padding(top = RadixTheme.dimensions.paddingXXLarge)
             ) {
-                Column(
-                    modifier = Modifier.padding(top = RadixTheme.dimensions.paddingXXLarge)
-                ) {
-                    ConnectedDAppsContent(
-                        modifier = Modifier
-                            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                        connectedDApps = preview.dApps.toPersistentList(),
-                        onDAppClick = onDappClick,
-                        onUnknownDAppsClick = onUnknownDAppsClick
-                    )
+                ConnectedDAppsContent(
+                    modifier = Modifier
+                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    connectedDApps = preview.dApps.toPersistentList(),
+                    onDAppClick = onDappClick,
+                    onUnknownDAppsClick = onUnknownDAppsClick
+                )
 
-                    DepositAccountContent(
-                        modifier = Modifier.padding(
-                            start = RadixTheme.dimensions.paddingDefault,
-                            end = RadixTheme.dimensions.paddingDefault
-                        ),
-                        to = preview.to.toPersistentList(),
-                        promptForGuarantees = onPromptForGuarantees,
-                        onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
-                            onFungibleResourceClick(fungibleResource, isNewlyCreated)
-                        },
-                        onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
-                            onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
-                        }
-                    )
-                }
+                DepositAccountContent(
+                    modifier = Modifier.padding(
+                        start = RadixTheme.dimensions.paddingDefault,
+                        end = RadixTheme.dimensions.paddingDefault
+                    ),
+                    to = preview.to.toPersistentList(),
+                    promptForGuarantees = onPromptForGuarantees,
+                    onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
+                        onFungibleResourceClick(fungibleResource, isNewlyCreated)
+                    },
+                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
+                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
+                    }
+                )
             }
 
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -98,7 +94,7 @@ fun TransactionPreviewTypeContent(
 @Composable
 fun TransactionPreviewTypePreview() {
     RadixWalletTheme {
-        TransactionPreviewTypeContent(
+        TransferTypeContent(
             state = TransactionReviewViewModel.State(
                 request = SampleDataProvider().transactionRequest,
                 isLoading = false,

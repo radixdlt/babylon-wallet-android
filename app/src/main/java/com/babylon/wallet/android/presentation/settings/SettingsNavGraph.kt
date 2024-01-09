@@ -49,7 +49,9 @@ fun NavGraphBuilder.settingsNavGraph(
                 navController.fungibleAssetDialog(resourceAddress = resource.resourceAddress)
             },
             onNonFungibleClick = { resource ->
-                navController.nonFungibleAssetDialog(resourceAddress = resource.resourceAddress)
+                navController.nonFungibleAssetDialog(
+                    resourceAddress = resource.resourceAddress
+                )
             }
         )
         accountSecurityNavGraph(navController)

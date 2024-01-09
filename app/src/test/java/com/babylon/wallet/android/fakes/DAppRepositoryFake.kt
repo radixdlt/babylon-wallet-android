@@ -15,8 +15,8 @@ class DAppRepositoryFake : DAppRepository {
 
     override suspend fun getDAppMetadata(
         definitionAddress: String,
-        explicitMetadata: Set<ExplicitMetadataKey>,
-        needMostRecentData: Boolean
+        needMostRecentData: Boolean,
+        explicitMetadata: Set<ExplicitMetadataKey>
     ): Result<DApp> {
         return Result.success(
             DApp(

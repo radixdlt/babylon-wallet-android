@@ -19,7 +19,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,7 +26,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -53,8 +51,9 @@ import com.babylon.wallet.android.presentation.transaction.composables.Guarantee
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
 import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
+import com.babylon.wallet.android.presentation.transaction.composables.StakeTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewHeader
-import com.babylon.wallet.android.presentation.transaction.composables.TransactionPreviewTypeContent
+import com.babylon.wallet.android.presentation.transaction.composables.TransferTypeContent
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -75,7 +74,7 @@ fun TransactionReviewScreen(
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
     onFungibleClick: (Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
+    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean, Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -84,7 +83,7 @@ fun TransactionReviewScreen(
         viewModel.oneOffEvent.collect {
             when (it) {
                 is TransactionReviewViewModel.Event.OnFungibleClick -> onFungibleClick(it.resource, it.isNewlyCreated)
-                is TransactionReviewViewModel.Event.OnNonFungibleClick -> onNonFungibleClick(it.resource, it.item, it.isNewlyCreated)
+                is TransactionReviewViewModel.Event.OnNonFungibleClick -> onNonFungibleClick(it.resource, it.item, it.isNewlyCreated, false)
             }
         }
     }
@@ -214,18 +213,16 @@ private fun TransactionPreviewContent(
             }
         }
     )
-
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val scrollState = rememberScrollState()
     Scaffold(
         modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(scrollBehavior.nestedScrollConnection),
+            .fillMaxSize(),
         topBar = {
             TransactionPreviewHeader(
                 onBackClick = onBackClick,
                 state = state,
                 onRawManifestClick = onRawManifestToggle,
-                scrollBehavior = scrollBehavior
+                scrollState = scrollState
             )
         },
         snackbarHost = {
@@ -292,7 +289,7 @@ private fun TransactionPreviewContent(
 
                             is PreviewType.NonConforming -> {}
                             is PreviewType.Transfer -> {
-                                TransactionPreviewTypeContent(
+                                TransferTypeContent(
                                     modifier = Modifier.background(RadixTheme.colors.gray5),
                                     state = state,
                                     preview = preview,
@@ -312,6 +309,17 @@ private fun TransactionPreviewContent(
                                 AccountDepositSettingsTypeContent(
                                     modifier = Modifier.background(RadixTheme.colors.gray5),
                                     preview = preview
+                                )
+                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
+                            }
+
+                            is PreviewType.Staking -> {
+                                StakeTypeContent(
+                                    modifier = Modifier.background(RadixTheme.colors.gray5),
+                                    state = state,
+                                    onFungibleResourceClick = onFungibleResourceClick,
+                                    onNonFungibleResourceClick = onNonFungibleResourceClick,
+                                    previewType = preview
                                 )
                                 ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                             }
@@ -337,7 +345,6 @@ private fun TransactionPreviewContent(
             }
         }
     }
-
     if (state.isSheetVisible) {
         DefaultModalSheetLayout(
             modifier = modifier.fillMaxSize(),

@@ -152,6 +152,10 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
+            override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> {
+                error("Not needed")
+            }
+
             override suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> {
                 error("Not needed")
             }
