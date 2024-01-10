@@ -47,6 +47,8 @@ import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.FeeLocks
 import com.radixdlt.ret.FeeSummary
 import com.radixdlt.ret.Instructions
+import com.radixdlt.ret.ManifestClass
+import com.radixdlt.ret.ManifestSummary
 import com.radixdlt.ret.NewEntities
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
@@ -241,6 +243,16 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         incomingRequestRepository.add(sampleRequest)
         every { sampleTransactionManifestData.toTransactionManifest() } returns Result.success(manifest)
         every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary
+        every { manifest.summary(any()) } returns ManifestSummary(
+            accountsDepositedInto = emptyList(),
+            accountsRequiringAuth = emptyList(),
+            accountsWithdrawnFrom = emptyList(),
+            presentedProofs = emptyList(),
+            identitiesRequiringAuth = emptyList(),
+            encounteredEntities = emptyList(),
+            classification = listOf(ManifestClass.GENERAL),
+            reservedInstructions = emptyList(),
+        )
         every { getProfileUseCase() } returns flowOf(profile(accounts = (identifiedArrayListOf(fromAccount) + otherAccounts).toIdentifiedArrayList()))
         coEvery { getResourcesUseCase(any()) } returns Result.success(listOf())
     }

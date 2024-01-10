@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
-import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -61,11 +60,11 @@ class TransactionAnalysisDelegate @Inject constructor(
         transactionClient: TransactionClient
     ): Result<Unit> {
         val networkId = getProfileUseCase().first().currentNetwork?.knownNetworkId ?: error("No network found")
+        val manifestSummary = manifest.summary(networkId.value.toUByte())
         val notaryAndSigners = transactionClient.getNotaryAndSigners(
-            manifest = manifest,
+            manifestSummary = manifestSummary,
             ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey
         )
-        manifest.toPrettyString().let { logger.d(it) }
         return transactionClient.getTransactionPreview(
             manifest = manifest,
             notaryAndSigners = notaryAndSigners
@@ -77,7 +76,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 .resolveFees(notaryAndSigners)
         }.mapCatching { transactionFees ->
             val feePayerResult = searchFeePayersUseCase(
-                manifest = manifest,
+                manifestSummary = manifestSummary,
                 lockFee = transactionFees.defaultTransactionFee
             ).getOrThrow()
 

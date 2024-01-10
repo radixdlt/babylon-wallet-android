@@ -14,6 +14,7 @@ import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSign
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.Intent
+import com.radixdlt.ret.ManifestSummary
 import com.radixdlt.ret.NotarizedTransaction
 import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
@@ -23,7 +24,6 @@ import rdx.works.core.then
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
-import rdx.works.profile.domain.currentNetwork
 import rdx.works.profile.domain.personasOnCurrentNetwork
 import timber.log.Timber
 import java.math.BigDecimal
@@ -60,7 +60,7 @@ class TransactionClient @Inject constructor(
         }
 
         val notaryAndSigners = getNotaryAndSigners(
-            manifest = manifestWithTransactionFee,
+            manifestSummary = manifestWithTransactionFee.summary(request.networkId.value.toUByte()),
             ephemeralNotaryPrivateKey = request.ephemeralNotaryPrivateKey
         )
         return buildTransactionHeader(
@@ -179,11 +179,9 @@ class TransactionClient @Inject constructor(
         } ?: Result.failure(RadixWalletException.DappRequestException.GetEpoch)
     }
 
-    suspend fun getSigningEntities(manifest: TransactionManifest): List<Entity> {
-        val networkId = getProfileUseCase.currentNetwork()?.networkID ?: error("No network found")
-        val summary = manifest.summary(networkId.toUByte())
-        val manifestAccountsRequiringAuth = summary.accountsRequiringAuth.map { it.addressString() }
-        val manifestIdentitiesRequiringAuth = summary.identitiesRequiringAuth.map { it.addressString() }
+    suspend fun getSigningEntities(manifestSummary: ManifestSummary): List<Entity> {
+        val manifestAccountsRequiringAuth = manifestSummary.accountsRequiringAuth.map { it.addressString() }
+        val manifestIdentitiesRequiringAuth = manifestSummary.identitiesRequiringAuth.map { it.addressString() }
 
         return getProfileUseCase.accountsOnCurrentNetwork().filter { account ->
             manifestAccountsRequiringAuth.contains(account.address)
@@ -193,11 +191,11 @@ class TransactionClient @Inject constructor(
     }
 
     suspend fun getNotaryAndSigners(
-        manifest: TransactionManifest,
+        manifestSummary: ManifestSummary,
         ephemeralNotaryPrivateKey: PrivateKey
     ): NotaryAndSigners {
         return NotaryAndSigners(
-            signers = getSigningEntities(manifest),
+            signers = getSigningEntities(manifestSummary),
             ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey
         )
     }
