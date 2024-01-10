@@ -250,30 +250,48 @@ tasks.withType(Test.class).configureEach {
     }
 }
 /**
- * Copies the english translation file to the default location.
- * This is needed since Crowdin cannot create pull requests
- * in a path that does not declare the language code.
+ * First reformats all translated files (received from Crowdin), to use new lines
+ * instead of line breaks
  *
- * So assuming that the english language defined in the values-es is the default,
- * this will be the file that gets copied.
+ * As a last step it copies the english translation to the default /values/strings.xml file.
+ *
+ * Both steps are needed, because Crowdin replaces new lines with line breaks.
+ * Strings with line breaks have no effect in XML. Also Crowdin does not create a PR for the
+ * default language.
  */
-task buildDefaultLanguage {
-    copy {
-        from('src/main/res/values-en/strings.xml') {
-            filter {
-                line -> if (line.isEmpty()) {
-                    '\\n\\n'
-                } else {
-                    line
-                }
+tasks.register('reformatLocalizationFiles') {
+    def resDir = new File(projectDir.absolutePath, "/src/main/res/")
+    def inputFiles = resDir.listFiles().findAll {
+        it.name != "values" && it.name.startsWith("values") && (new File(it, "strings.xml")).exists()
+    }.collect { it.absolutePath + "/strings.xml" }
+
+    it.inputs.files(inputFiles)
+    it.outputs.files(inputFiles + (projectDir.absolutePath + "/src/main/res/values/strings.xml"))
+    it.doFirst {
+        inputFiles.forEach { filePath ->
+            def stringsFile = new File(filePath)
+            def stringsNode = new groovy.xml.XmlParser().parse(stringsFile)
+            stringsNode.children().forEach {
+                def node = it as Node
+                def value = node.text()
+                node.setValue(value.replace("\n", "\\n"))
             }
+
+            Writer sw = new FileWriter(stringsFile);
+            PrintWriter pw = new PrintWriter(sw);
+            sw.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+            def nodePrinter = new groovy.xml.XmlNodePrinter(pw);
+            nodePrinter.setPreserveWhitespace(true);
+            nodePrinter.print(stringsNode);
+            sw.close()
+            pw.close()
         }
-        into 'src/main/res/values/'
     }
-    // Move content from values/strings.xml to values-en/strings.xml
-    copy {
-        from('src/main/res/values/strings.xml')
-        into 'src/main/res/values-en/'
+    it.doLast {
+        copy {
+            from('src/main/res/values-en/strings.xml')
+            into('src/main/res/values/')
+        }
     }
 }
-preBuild.dependsOn buildDefaultLanguage
+preBuild.dependsOn reformatLocalizationFiles
