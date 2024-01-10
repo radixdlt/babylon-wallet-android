@@ -361,21 +361,22 @@ class StateRepositoryImpl @Inject constructor(
         entitiesWithOwnerKeys
     }
 
-    override suspend fun getDAppsDetails(definitionAddresses: List<String>, skipCache: Boolean): Result<List<DApp>> = withContext(
-        dispatcher
-    ) {
+    override suspend fun getDAppsDetails(
+        definitionAddresses: List<String>,
+        skipCache: Boolean
+    ): Result<List<DApp>> = withContext(dispatcher) {
         runCatching {
             if (definitionAddresses.isEmpty()) return@runCatching listOf()
 
-            val cachedDApps = if (!skipCache) {
+            val cachedDApps = if (skipCache) {
+                mutableListOf()
+            } else {
                 stateDao.getDApps(
                     definitionAddresses = definitionAddresses,
                     minValidity = dAppsCacheValidity()
                 ).map {
                     it.toDApp()
                 }.toMutableList()
-            } else {
-                mutableListOf()
             }
 
             val remainingAddresses = definitionAddresses.toSet() subtract cachedDApps.map { it.dAppAddress }.toSet()
