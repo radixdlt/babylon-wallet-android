@@ -14,7 +14,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
     sealed class GatewayException(cause: Throwable? = null) : RadixWalletException(cause) {
 
         data class ClientError(override val cause: Throwable? = null) : GatewayException(cause)
-        data class ServiceError(
+        data class HttpError(
             val code: Int?,
             override val message: String
         ) : GatewayException(null) {
@@ -279,8 +279,8 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
 
 fun RadixWalletException.GatewayException.toUserFriendlyMessage(context: Context): String = when (this) {
     is RadixWalletException.GatewayException.ClientError -> cause?.message.orEmpty()
-    is RadixWalletException.GatewayException.ServiceError -> when (code) {
-        RadixWalletException.GatewayException.ServiceError.RATE_LIMIT_REACHED -> context.getString(R.string.common_rateLimitReached)
+    is RadixWalletException.GatewayException.HttpError -> when (code) {
+        RadixWalletException.GatewayException.HttpError.RATE_LIMIT_REACHED -> context.getString(R.string.common_rateLimitReached)
         else -> message
     }
 }

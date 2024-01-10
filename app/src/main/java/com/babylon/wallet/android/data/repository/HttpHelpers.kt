@@ -17,7 +17,7 @@ suspend inline fun <T> Call<T>.toResult(): Result<T> {
         } else {
             try {
                 val error = Serializer.kotlinxSerializationJson.decodeFromString<ErrorResponse>(response.errorBody()?.string().orEmpty())
-                Result.failure(RadixWalletException.GatewayException.ServiceError(code = error.code, message = error.message))
+                Result.failure(RadixWalletException.GatewayException.HttpError(code = error.code, message = error.message))
             } catch (e: Exception) {
                 Result.failure(RadixWalletException.GatewayException.ClientError(cause = e))
             }
