@@ -8,8 +8,8 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.LedgerMessengerImpl
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
-import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
-import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepositoryImpl
+import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
+import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepositoryImpl
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepositoryImpl
 import com.babylon.wallet.android.data.repository.state.StateRepository
@@ -32,6 +32,11 @@ interface DataModule {
     ): StateRepository
 
     @Binds
+    fun bindWellKnownDAppDefinitionRepository(
+        wellKnownDAppDefinitionRepository: WellKnownDAppDefinitionRepositoryImpl
+    ): WellKnownDAppDefinitionRepository
+
+    @Binds
     fun bindTransactionRepository(
         transactionRepository: TransactionRepositoryImpl
     ): TransactionRepository
@@ -40,11 +45,6 @@ interface DataModule {
     fun bindNetworkInfoRepository(
         networkInfoRepository: NetworkInfoRepositoryImpl
     ): NetworkInfoRepository
-
-    @Binds
-    fun bindDappMetadataRepository(
-        dappMetadataRepository: DAppRepositoryImpl
-    ): DAppRepository
 
     @Binds
     fun bindDAppMessenger(

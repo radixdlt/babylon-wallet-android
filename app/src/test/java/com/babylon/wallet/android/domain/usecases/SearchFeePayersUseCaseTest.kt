@@ -173,7 +173,7 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>> {
+            override suspend fun getDAppsDetails(definitionAddresses: List<String>, skipCache: Boolean): Result<List<DApp>> {
                 error("Not needed")
             }
 

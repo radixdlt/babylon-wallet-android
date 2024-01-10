@@ -34,8 +34,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.DAppResources
-import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -44,8 +42,8 @@ import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun ConnectedDAppsContent(
-    connectedDApps: ImmutableList<DAppWithResources>,
-    onDAppClick: (DAppWithResources) -> Unit,
+    connectedDApps: ImmutableList<Pair<DApp, Boolean>>,
+    onDAppClick: (DApp) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (connectedDApps.isEmpty()) return
@@ -94,8 +92,8 @@ fun ConnectedDAppsContent(
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.End
         ) {
-            val unverifiedDappsCount = connectedDApps.count { it.verified.not() }
-            val verifiedDapps = connectedDApps.filter { it.verified }
+            val unverifiedDappsCount = connectedDApps.count { it.second.not() }
+            val verifiedDapps = connectedDApps.filter { it.second }
             if (unverifiedDappsCount > 0) {
                 ConnectedDappRow(
                     dApp = null,
@@ -104,9 +102,9 @@ fun ConnectedDAppsContent(
             }
             verifiedDapps.forEach { connectedDApp ->
                 ConnectedDappRow(
-                    dApp = connectedDApp.dApp,
+                    dApp = connectedDApp.first,
                     modifier = Modifier.throttleClickable {
-                        onDAppClick(connectedDApp)
+                        onDAppClick(connectedDApp.first)
                     }
                 )
             }
@@ -163,16 +161,9 @@ private fun ConnectedDappRow(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            DAppWithResources(
-                dApp = DApp(
-                    dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
-                ),
-                resources = DAppResources(
-                    emptyList(),
-                    emptyList()
-                ),
-                verified = true
-            )
+            DApp(
+                dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
+            ) to true
         ),
         onDAppClick = {}
     )

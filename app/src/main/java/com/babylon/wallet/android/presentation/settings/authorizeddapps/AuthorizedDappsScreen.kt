@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -10,11 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -23,12 +27,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
@@ -40,20 +44,29 @@ fun AuthorizedDAppsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     AuthorizedDAppsContent(
+        modifier = modifier,
         onBackClick = onBackClick,
-        dApps = state.dApps,
+        state = state,
         onDAppClick = onDAppClick,
-        modifier = modifier
+        onMessageShown = viewModel::onMessageShown
     )
 }
 
 @Composable
 private fun AuthorizedDAppsContent(
     onBackClick: () -> Unit,
-    dApps: ImmutableList<DAppWithResources>,
-    onDAppClick: (String) -> Unit,
     modifier: Modifier = Modifier,
+    state: AuthorizedDappsUiState,
+    onDAppClick: (String) -> Unit,
+    onMessageShown: () -> Unit
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = state.uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -63,39 +76,54 @@ private fun AuthorizedDAppsContent(
                 windowInsets = WindowInsets.statusBars
             )
         },
+        snackbarHost = {
+            RadixSnackbarHost(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                hostState = snackBarHostState
+            )
+        },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-        Column(modifier = Modifier.padding(padding)) {
-            HorizontalDivider(color = RadixTheme.colors.gray5)
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-            Text(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                text = stringResource(R.string.authorizedDapps_subtitle),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray2
-            )
-            LazyColumn(
-                contentPadding = PaddingValues(
-                    horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingXLarge
-                ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                item {
-                    // TODO enable it when we have the link
+        Box(modifier = Modifier.padding(padding)) {
+            Column {
+                HorizontalDivider(color = RadixTheme.colors.gray5)
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                Text(
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                    text = stringResource(R.string.authorizedDapps_subtitle),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray2
+                )
+                LazyColumn(
+                    contentPadding = PaddingValues(
+                        horizontal = RadixTheme.dimensions.paddingDefault,
+                        vertical = RadixTheme.dimensions.paddingXLarge
+                    ),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    item {
+                        // TODO enable it when we have the link
 //                InfoLink(stringResource(R.string.authorizedDapps_whatIsDapp), modifier = Modifier.fillMaxWidth())
 //                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    }
+                    items(state.dApps) { dApp ->
+                        DappCard(
+                            modifier = Modifier.throttleClickable {
+                                onDAppClick(dApp.dAppAddress)
+                            },
+                            dApp = dApp
+                        )
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                    }
                 }
-                items(dApps) { dApp ->
-                    DappCard(
-                        modifier = Modifier.throttleClickable {
-                            onDAppClick(dApp.dApp.dAppAddress)
-                        },
-                        dApp = dApp.dApp
-                    )
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                }
+            }
+
+            if (state.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = RadixTheme.colors.gray1
+                )
             }
         }
     }
@@ -107,8 +135,11 @@ fun AuthorizedDAppsContentPreview() {
     RadixWalletTheme {
         AuthorizedDAppsContent(
             onBackClick = {},
-            dApps = listOf(SampleDataProvider().sampleDAppWithResources()).toImmutableList(),
-            onDAppClick = {}
+            state = AuthorizedDappsUiState(
+                dApps = listOf(DApp(dAppAddress = "dapp_address")).toImmutableList()
+            ),
+            onDAppClick = {},
+            onMessageShown = {}
         )
     }
 }

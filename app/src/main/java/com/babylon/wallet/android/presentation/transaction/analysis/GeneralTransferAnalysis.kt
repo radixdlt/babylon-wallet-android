@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -21,11 +21,11 @@ suspend fun TransactionType.GeneralTransaction.resolve(
     resources: List<Resource>,
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     getProfileUseCase: GetProfileUseCase,
-    resolveDAppsUseCase: ResolveDAppsUseCase
+    resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
 ): PreviewType {
     val badges = getTransactionBadgesUseCase(accountProofs = accountProofs)
-    val dApps = resolveDApps(resolveDAppsUseCase).distinctBy {
-        it.dApp.definitionAddresses
+    val dApps = resolveDApps(resolveDAppInTransactionUseCase).distinctBy {
+        it.first.definitionAddresses
     }
 
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
@@ -43,12 +43,12 @@ suspend fun TransactionType.GeneralTransaction.resolve(
 }
 
 private suspend fun TransactionType.GeneralTransaction.resolveDApps(
-    resolveDAppsUseCase: ResolveDAppsUseCase
+    resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
 ) = coroutineScope {
     addressesInManifest[EntityType.GLOBAL_GENERIC_COMPONENT].orEmpty()
         .map { address ->
             async {
-                resolveDAppsUseCase.invoke(address.addressString())
+                resolveDAppInTransactionUseCase.invoke(address.addressString())
             }
         }
         .awaitAll()

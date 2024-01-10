@@ -63,6 +63,7 @@ import com.babylon.wallet.android.presentation.status.assets.fungible.fungibleAs
 import com.babylon.wallet.android.presentation.status.assets.lsu.lsuAssetDialog
 import com.babylon.wallet.android.presentation.status.assets.nonfungible.nonFungibleAssetDialog
 import com.babylon.wallet.android.presentation.status.assets.pool.poolUnitAssetDialog
+import com.babylon.wallet.android.presentation.status.dapp.dAppDetailsDialog
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
@@ -301,6 +302,9 @@ fun NavigationHost(
             },
             onPersonaEdit = {
                 navController.personaEditScreen(it)
+            },
+            onDAppClick = {
+                navController.dAppDetailsDialog(dAppDefinitionAddress = it.dAppAddress)
             }
         )
         personaEditScreen(onBackClick = {
@@ -323,6 +327,9 @@ fun NavigationHost(
                     isNewlyCreated = isNewlyCreated,
                     showStakeClaimButton = showStakeClaimButton
                 )
+            },
+            onDAppClick = { dApp ->
+                navController.dAppDetailsDialog(dAppDefinitionAddress = dApp.dAppAddress)
             }
         )
         transferScreen(
@@ -437,6 +444,11 @@ fun NavigationHost(
             }
         )
         lsuAssetDialog(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        dAppDetailsDialog(
             onDismiss = {
                 navController.popBackStack()
             }

@@ -37,20 +37,7 @@ suspend fun StateApi.fetchAccountGatewayDetails(
     val items = mutableListOf<Pair<StateEntityDetailsResponseItem, LedgerState>>()
     paginateDetails(
         addresses = accountsToRequest,
-        metadataKeys = setOf(
-            ExplicitMetadataKey.ACCOUNT_TYPE,
-
-            ExplicitMetadataKey.NAME,
-            ExplicitMetadataKey.SYMBOL,
-            ExplicitMetadataKey.DESCRIPTION,
-            ExplicitMetadataKey.RELATED_WEBSITES,
-            ExplicitMetadataKey.ICON_URL,
-            ExplicitMetadataKey.INFO_URL,
-            ExplicitMetadataKey.VALIDATOR,
-            ExplicitMetadataKey.POOL,
-            ExplicitMetadataKey.TAGS,
-            ExplicitMetadataKey.DAPP_DEFINITIONS
-        ),
+        metadataKeys = ExplicitMetadataKey.forAssets + ExplicitMetadataKey.ACCOUNT_TYPE,
         stateVersion = onStateVersion
     ) { chunkedAccounts ->
         val page = chunkedAccounts.items.map { accountOnLedger ->
@@ -107,11 +94,7 @@ suspend fun StateApi.fetchPools(
 
     paginateDetails(
         addresses = poolAddresses,
-        metadataKeys = setOf(
-            ExplicitMetadataKey.NAME,
-            ExplicitMetadataKey.ICON_URL,
-            ExplicitMetadataKey.POOL_UNIT
-        ),
+        metadataKeys = ExplicitMetadataKey.forPools,
         stateVersion = stateVersion,
     ) { poolComponents ->
         poolComponents.items.forEach { pool ->
@@ -125,18 +108,7 @@ suspend fun StateApi.fetchPools(
     val result = mutableMapOf<StateEntityDetailsResponseItem, List<FungibleResourcesCollectionItem>>()
     paginateDetails(
         addresses = resourceToPoolComponentAssociation.keys, // Request details for resources
-        metadataKeys = setOf(
-            ExplicitMetadataKey.NAME,
-            ExplicitMetadataKey.SYMBOL,
-            ExplicitMetadataKey.DESCRIPTION,
-            ExplicitMetadataKey.RELATED_WEBSITES,
-            ExplicitMetadataKey.ICON_URL,
-            ExplicitMetadataKey.INFO_URL,
-            ExplicitMetadataKey.VALIDATOR,
-            ExplicitMetadataKey.POOL,
-            ExplicitMetadataKey.TAGS,
-            ExplicitMetadataKey.DAPP_DEFINITIONS
-        ),
+        metadataKeys = ExplicitMetadataKey.forAssets,
         stateVersion = stateVersion
     ) { resourcesDetails ->
         resourcesDetails.items.forEach { resourceDetails ->
@@ -157,12 +129,7 @@ suspend fun StateApi.fetchValidators(
     val validators = mutableListOf<StateEntityDetailsResponseItem>()
     paginateDetails(
         addresses = validatorsAddresses,
-        metadataKeys = setOf(
-            ExplicitMetadataKey.NAME,
-            ExplicitMetadataKey.ICON_URL,
-            ExplicitMetadataKey.DESCRIPTION,
-            ExplicitMetadataKey.CLAIM_NFT,
-        ),
+        metadataKeys = ExplicitMetadataKey.forValidators,
         stateVersion = stateVersion,
     ) { poolsChunked ->
         validators.addAll(poolsChunked.items)
@@ -268,18 +235,7 @@ suspend fun StateApi.paginateFungibles(
                 aggregationLevel = ResourceAggregationLevel.vault,
                 atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion),
                 optIns = StateEntityFungiblesPageRequestOptIns(
-                    explicitMetadata = listOf(
-                        ExplicitMetadataKey.NAME,
-                        ExplicitMetadataKey.SYMBOL,
-                        ExplicitMetadataKey.DESCRIPTION,
-                        ExplicitMetadataKey.RELATED_WEBSITES,
-                        ExplicitMetadataKey.ICON_URL,
-                        ExplicitMetadataKey.INFO_URL,
-                        ExplicitMetadataKey.VALIDATOR,
-                        ExplicitMetadataKey.POOL,
-                        ExplicitMetadataKey.TAGS,
-                        ExplicitMetadataKey.DAPP_DEFINITIONS
-                    ).map { it.key }
+                    explicitMetadata = ExplicitMetadataKey.forAssets.map { it.key }
                 )
             )
         ).toResult().getOrThrow()
@@ -303,18 +259,7 @@ suspend fun StateApi.paginateNonFungibles(
                 aggregationLevel = ResourceAggregationLevel.vault,
                 atLedgerState = LedgerStateSelector(stateVersion = ledgerState.stateVersion),
                 optIns = StateEntityNonFungiblesPageRequestOptIns(
-                    explicitMetadata = listOf(
-                        ExplicitMetadataKey.NAME,
-                        ExplicitMetadataKey.SYMBOL,
-                        ExplicitMetadataKey.DESCRIPTION,
-                        ExplicitMetadataKey.RELATED_WEBSITES,
-                        ExplicitMetadataKey.ICON_URL,
-                        ExplicitMetadataKey.INFO_URL,
-                        ExplicitMetadataKey.VALIDATOR,
-                        ExplicitMetadataKey.POOL,
-                        ExplicitMetadataKey.TAGS,
-                        ExplicitMetadataKey.DAPP_DEFINITIONS
-                    ).map { it.key }
+                    explicitMetadata = ExplicitMetadataKey.forAssets.map { it.key }
                 )
             )
         ).toResult().getOrThrow()

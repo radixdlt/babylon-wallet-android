@@ -251,13 +251,28 @@ interface StateDao {
         )
     }
 
+    @Query(
+        """
+        SELECT * FROM DAppEntity 
+        WHERE definition_address in (:definitionAddresses)
+        AND synced >= :minValidity
+    """
+    )
+    fun getDApps(definitionAddresses: List<String>, minValidity: Long): List<DAppEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertDApps(dApps: List<DAppEntity>)
+
     companion object {
         val deleteDuration = 1.toDuration(DurationUnit.SECONDS)
         private val accountsCacheDuration = 2.toDuration(DurationUnit.HOURS)
+        private val dAppsCacheDuration = 2.toDuration(DurationUnit.HOURS)
         private val resourcesCacheDuration = 48.toDuration(DurationUnit.HOURS)
 
         fun accountCacheValidity() = InstantGenerator().toEpochMilli() - accountsCacheDuration.inWholeMilliseconds
         fun resourcesCacheValidity(isRefreshing: Boolean = false) =
             InstantGenerator().toEpochMilli() - if (isRefreshing) 0 else resourcesCacheDuration.inWholeMilliseconds
+
+        fun dAppsCacheValidity() = InstantGenerator().toEpochMilli() - dAppsCacheDuration.inWholeMilliseconds
     }
 }

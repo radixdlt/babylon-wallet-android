@@ -10,6 +10,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.ROUTE_DAPP_DETAIL
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.ROUTE_EDIT_PERSONA
 
@@ -30,7 +31,8 @@ fun NavController.personaDetailScreen(personaAddress: String) {
 
 fun NavGraphBuilder.personaDetailScreen(
     onBackClick: () -> Unit,
-    onPersonaEdit: (String) -> Unit
+    onPersonaEdit: (String) -> Unit,
+    onDAppClick: (DApp) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONA_DETAIL,
@@ -58,7 +60,8 @@ fun NavGraphBuilder.personaDetailScreen(
         PersonaDetailScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onEditPersona = onPersonaEdit
+            onEditPersona = onPersonaEdit,
+            onDAppClick = onDAppClick
         )
     }
 }

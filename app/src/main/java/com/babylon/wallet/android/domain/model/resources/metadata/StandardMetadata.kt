@@ -104,17 +104,19 @@ fun List<Metadata>.tags(): List<String>? = findCollection(
     type = MetadataType.String
 )?.map { it.value }
 
-fun List<Metadata>.dAppDefinitions(): List<String>? = findCollection(
-    key = ExplicitMetadataKey.DAPP_DEFINITIONS,
-    type = MetadataType.Address
-)?.map { it.value }?.let { dAppDefinitions ->
-    val value = findPrimitive(
+fun List<Metadata>.dAppDefinitions(): List<String>? {
+    val dAppDefinitions = findCollection(
+        key = ExplicitMetadataKey.DAPP_DEFINITIONS,
+        type = MetadataType.Address
+    )?.map { it.value }.orEmpty()
+
+    val single = findPrimitive(
         key = ExplicitMetadataKey.DAPP_DEFINITION,
         type = MetadataType.Address
     )?.value
 
-    if (value != null) {
-        dAppDefinitions + value
+    return if (single != null) {
+        dAppDefinitions + single
     } else {
         dAppDefinitions
     }

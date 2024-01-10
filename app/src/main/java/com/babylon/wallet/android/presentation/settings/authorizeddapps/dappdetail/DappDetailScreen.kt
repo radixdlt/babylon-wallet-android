@@ -59,7 +59,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -80,11 +79,11 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.card.NonFungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
+import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
@@ -195,7 +194,7 @@ private fun DappDetailContent(
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = state.dappWithMetadata?.dApp?.name.orEmpty(),
+                    title = state.dAppWithResources?.dApp?.name.orEmpty(),
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBars
                 )
@@ -206,7 +205,9 @@ private fun DappDetailContent(
         Box(modifier = Modifier.padding(padding)) {
             DappDetails(
                 modifier = Modifier.fillMaxSize(),
-                dAppWithResources = state.dappWithMetadata,
+                dAppWithResources = state.dAppWithResources,
+                isValidatingWebsite = state.isValidatingWebsite,
+                validatedWebsite = state.validatedWebsite,
                 personaList = state.personas,
                 onPersonaClick = { persona ->
                     onPersonaClick(persona)
@@ -256,7 +257,7 @@ private fun DappDetailContent(
                                         shape = RadixTheme.shapes.roundedRectTopMedium
                                     )
                                     .clip(shape = RadixTheme.shapes.roundedRectTopMedium),
-                                dappName = state.dappWithMetadata?.dApp?.name.orEmpty(),
+                                dappName = state.dAppWithResources?.dApp?.name.orEmpty(),
                                 onDisconnectPersona = { persona ->
                                     hidePersonaBottomSheet()
                                     scope.launch {
@@ -287,6 +288,8 @@ private fun DappDetailContent(
 private fun DappDetails(
     modifier: Modifier,
     dAppWithResources: DAppWithResources?,
+    isValidatingWebsite: Boolean,
+    validatedWebsite: String?,
     personaList: ImmutableList<Network.Persona>,
     onPersonaClick: (Network.Persona) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
@@ -337,17 +340,15 @@ private fun DappDetails(
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
-            dAppWithResources?.dApp?.claimedWebsites?.let { websites ->
-                if (websites.isNotEmpty()) {
-                    item {
-                        DAppWebsiteAddressRow(
-                            websiteAddresses = websites.toPersistentList(),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = dimensions.paddingDefault)
-                        )
-                        Spacer(modifier = Modifier.height(dimensions.paddingDefault))
-                    }
+            if (isValidatingWebsite || validatedWebsite != null) {
+                item {
+                    DAppWebsiteAddressRow(
+                        website = validatedWebsite,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = dimensions.paddingDefault)
+                    )
+                    Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
             }
             if (dAppWithResources?.fungibleResources?.isNotEmpty() == true) {
@@ -479,8 +480,8 @@ fun DappDefinitionAddressRow(
 
 @Composable
 fun DAppWebsiteAddressRow(
-    websiteAddresses: ImmutableList<String>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    website: String?,
 ) {
     val context = LocalContext.current
     Column(
@@ -494,28 +495,28 @@ fun DAppWebsiteAddressRow(
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray2
         )
-        websiteAddresses.forEach { address ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        context.openUrl(address)
-                    },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
-            ) {
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = address,
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.blue1
-                )
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_link_out),
-                    tint = RadixTheme.colors.gray3,
-                    contentDescription = null
-                )
-            }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(enabled = website != null) {
+                    if (website != null) {
+                        context.openUrl(website)
+                    }
+                },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
+        ) {
+            Text(
+                modifier = Modifier.weight(1f).radixPlaceholder(visible = website == null),
+                text = website.orEmpty(),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.blue1
+            )
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_link_out),
+                tint = RadixTheme.colors.gray3,
+                contentDescription = null
+            )
         }
     }
 }
@@ -738,7 +739,8 @@ fun DappDetailContentPreview() {
             onBackClick = {},
             state = DappDetailUiState(
                 loading = false,
-                dappWithMetadata = DAppWithResources(
+                personas = persistentListOf(SampleDataProvider().samplePersona()),
+                dAppWithResources = DAppWithResources(
                     dApp = DApp(
                         dAppAddress = "account_tdx_abc",
                         metadata = listOf(
@@ -760,10 +762,8 @@ fun DappDetailContentPreview() {
                                 )
                             ),
                         )
-                    ),
-                    resources = DAppResources(emptyList(), emptyList()),
+                    )
                 ),
-                personas = persistentListOf(SampleDataProvider().samplePersona()),
                 sharedPersonaAccounts = persistentListOf(
                     AccountItemUiModel("account_tdx_efgh", "Account1", 0)
                 ),

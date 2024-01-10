@@ -6,7 +6,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
-import com.babylon.wallet.android.domain.usecases.ResolveDAppsUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
@@ -35,7 +35,7 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val getValidatorsUseCase: GetValidatorsUseCase,
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
-    private val resolveDAppsUseCase: ResolveDAppsUseCase,
+    private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
@@ -144,7 +144,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 resources = resources,
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 getProfileUseCase = getProfileUseCase,
-                resolveDAppsUseCase = resolveDAppsUseCase
+                resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
             )
 
             is TransactionType.SimpleTransfer -> transactionType.resolve(
