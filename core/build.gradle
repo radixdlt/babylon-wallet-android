@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
     id 'kotlinx-serialization'
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -39,6 +40,7 @@ dependencies {
     implementation libs.ktorCore
     implementation libs.zxing
     implementation libs.kotlinxSerialization
+    implementation libs.firebaseCrashlytics
 
     // Datastore
     implementation libs.datastorePreferences

@@ -32,13 +32,13 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toU
 import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.logNonFatalException
 import com.babylon.wallet.android.utils.toISO8601String
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import rdx.works.core.logNonFatalException
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple
 import rdx.works.profile.data.model.pernetwork.PersonaData

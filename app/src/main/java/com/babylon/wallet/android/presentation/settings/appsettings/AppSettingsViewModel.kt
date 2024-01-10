@@ -5,8 +5,6 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem
-import com.google.firebase.crashlytics.ktx.crashlytics
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
@@ -15,6 +13,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.deleteCrashlyticsUnsentReports
+import rdx.works.core.enableCrashlytics
 import rdx.works.core.mapWhen
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
@@ -55,9 +55,9 @@ class AppSettingsViewModel @Inject constructor(
             viewModelScope.launch {
                 preferencesManager.isCrashReportingEnabled.collect { enabled ->
                     if (enabled) {
-                        Firebase.crashlytics.deleteUnsentReports()
+                        deleteCrashlyticsUnsentReports()
                     }
-                    Firebase.crashlytics.setCrashlyticsCollectionEnabled(enabled)
+                    enableCrashlytics(enabled)
                     _state.updateSetting<SettingsItem.AppSettingsItem.CrashReporting> {
                         SettingsItem.AppSettingsItem.CrashReporting(enabled)
                     }

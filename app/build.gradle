@@ -8,7 +8,6 @@ plugins {
     id 'kotlinx-serialization'
     id 'kotlin-parcelize'
     id 'com.google.gms.google-services'
-    id 'com.google.firebase.crashlytics'
 }
 
 apply from: "$rootDir/config/jacoco.gradle"
@@ -208,7 +207,6 @@ dependencies {
     //Timber
     implementation libs.timber
 
-    implementation libs.firebaseCrashlytics
     // ML Kit
     implementation libs.barcode
 

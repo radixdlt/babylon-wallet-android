@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.retryWhen
 import rdx.works.core.KeySpec
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
+import rdx.works.core.logNonFatalException
 import rdx.works.profile.di.ProfileDataStore
 import rdx.works.profile.di.coroutines.IoDispatcher
 import rdx.works.profile.domain.ProfileException
@@ -137,6 +138,7 @@ class EncryptedPreferencesManager @Inject constructor(
 
     private fun Flow<Preferences>.catchIOException() = catch { exception ->
         if (exception is IOException) {
+            logNonFatalException(exception)
             emit(emptyPreferences())
         } else {
             throw exception
