@@ -239,7 +239,7 @@ private fun TransactionPreviewContent(
                     exit = fadeOut()
                 ) {
                     Column(
-                        modifier = Modifier.verticalScroll(rememberScrollState())
+                        modifier = Modifier.verticalScroll(scrollState)
                     ) {
                         ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5, topEdge = true)
                         RawManifestView(
@@ -274,7 +274,7 @@ private fun TransactionPreviewContent(
                     exit = fadeOut()
                 ) {
                     Column(
-                        modifier = Modifier.verticalScroll(rememberScrollState())
+                        modifier = Modifier.verticalScroll(scrollState)
                     ) {
                         ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5, topEdge = true)
                         when (val preview = state.previewType) {

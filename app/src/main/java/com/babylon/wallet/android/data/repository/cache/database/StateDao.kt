@@ -227,6 +227,14 @@ interface StateDao {
     )
     fun getNFTDetails(resourceAddress: String, localId: String, minValidity: Long): NFTEntity?
 
+    @Query(
+        """
+        SELECT * FROM NFTEntity
+        WHERE address = :resourceAddress AND local_id in (:localIds) and synced >= :minValidity
+    """
+    )
+    fun getNFTDetails(resourceAddress: String, localIds: Set<String>, minValidity: Long): List<NFTEntity>?
+
     @Transaction
     fun storeStakeDetails(
         accountAddress: String,

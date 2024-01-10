@@ -12,6 +12,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.DetailedManifestClass
+import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.FungibleResourceIndicator
 import com.radixdlt.ret.MetadataValue
 import com.radixdlt.ret.NonFungibleLocalId
@@ -21,6 +22,7 @@ import com.radixdlt.ret.PublicKeyHash
 import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
+import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import rdx.works.core.ret.asStr
 import rdx.works.core.toHexString
 import java.math.BigDecimal
@@ -38,6 +40,7 @@ val ResourceIndicator.amount: BigDecimal
                 is FungibleResourceIndicator.Guaranteed -> {
                     specificIndicator.amount.asStr().toBigDecimal()
                 }
+
                 is FungibleResourceIndicator.Predicted -> specificIndicator.predictedAmount.value.asStr().toBigDecimal()
             }
         }
@@ -75,6 +78,40 @@ val DetailedManifestClass.involvedValidatorAddresses: Set<String>
         is DetailedManifestClass.ValidatorStake -> validatorAddresses.map { it.addressString() }.toSet()
         else -> emptySet()
     }
+
+data class StakeClaimAddressData(
+    val resourceAddress: String,
+    val localId: Set<String>
+)
+
+val ExecutionSummary.involvedStakeClaims: Set<StakeClaimAddressData>
+    get() {
+        if (detailedClassification.isEmpty()) return emptySet()
+        return when (detailedClassification.first()) {
+            is DetailedManifestClass.ValidatorClaim -> {
+                accountWithdraws.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>().map { nonFungibleIndicator ->
+                    StakeClaimAddressData(
+                        resourceAddress = nonFungibleIndicator.resourceAddress.addressString(),
+                        localId = nonFungibleIndicator.indicator.nonFungibleLocalIds.map { nonFungibleLocalIdAsStr(it) }.toSet()
+                    )
+                }.toSet()
+            }
+
+            else -> emptySet()
+        }
+    }
+
+val ExecutionSummary.involvedResourceAddresses: Set<String>
+    get() = accountDeposits.values.map { resourceIndicator ->
+        resourceIndicator.map { it.resourceAddress }
+    }.flatten().toSet() union accountWithdraws.values.map { resourceIndicator ->
+        resourceIndicator.map {
+            when (it) {
+                is ResourceIndicator.Fungible -> it.resourceAddress.addressString()
+                is ResourceIndicator.NonFungible -> it.resourceAddress.addressString()
+            }
+        }
+    }.flatten().toSet()
 
 fun ResourceIndicator.toTransferableResource(resources: List<Resource>): TransferableResource {
     val resourceAddress = this.resourceAddress

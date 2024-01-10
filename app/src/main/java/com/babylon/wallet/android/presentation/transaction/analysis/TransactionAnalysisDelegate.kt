@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
@@ -19,7 +20,6 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.guaranteesCount
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -39,6 +39,7 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val getValidatorsUseCase: GetValidatorsUseCase,
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
+    private val getNFTDetailsUseCase: GetNFTDetailsUseCase,
     private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
@@ -145,16 +146,6 @@ class TransactionAnalysisDelegate @Inject constructor(
         val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
         val xrdAddress = XrdResource.address(networkId)
         val transactionType = detailedClassification.first()
-        val involvedResourceAddresses = accountDeposits.values.map { resourceIndicator ->
-            resourceIndicator.map { it.resourceAddress }
-        }.flatten().toSet() union accountWithdraws.values.map { resourceIndicator ->
-            resourceIndicator.map {
-                when (it) {
-                    is ResourceIndicator.Fungible -> it.resourceAddress.addressString()
-                    is ResourceIndicator.NonFungible -> it.resourceAddress.addressString()
-                }
-            }
-        }.flatten().toSet()
         val resources = getResourcesUseCase(addresses = involvedResourceAddresses + xrdAddress).getOrThrow()
 
         return when (transactionType) {
@@ -174,11 +165,16 @@ class TransactionAnalysisDelegate @Inject constructor(
             is DetailedManifestClass.Transfer -> resolveTransfer(getProfileUseCase, resources)
             is DetailedManifestClass.ValidatorClaim -> {
                 val validators = getValidatorsUseCase(transactionType.involvedValidatorAddresses).getOrThrow()
+                val involvedStakeClaims = involvedStakeClaims
+                val stakeClaimsNfts = involvedStakeClaims.map {
+                    getNFTDetailsUseCase(it.resourceAddress, it.localId).getOrDefault(emptyList())
+                }.flatten()
                 transactionType.resolve(
                     executionSummary = this,
                     getProfileUseCase = getProfileUseCase,
                     resources = resources,
-                    involvedValidators = validators
+                    involvedValidators = validators,
+                    stakeClaimsNfts = stakeClaimsNfts
                 )
             }
 

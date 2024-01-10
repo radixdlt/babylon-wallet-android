@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.generated.models.CoreApiTransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.NotarizedTransactionResult
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
@@ -29,6 +28,7 @@ import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
@@ -101,6 +101,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveDappsInTransactionUseCase = mockk<ResolveDAppInTransactionUseCase>()
+    private val getNFTDetailsUseCase = mockk<GetNFTDetailsUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()
@@ -131,7 +132,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { instructions() } returns mockk<Instructions>().apply { every { asStr() } returns "" }
         every { blobs() } returns listOf()
     }
-    private val sampleProfile = profile(accounts = identifiedArrayListOf(account(address = "adr_1", name = "primary")))
     private val fromAccount = account(
         address = "account_tdx_19jd32jd3928jd3892jd329",
         name = "From Account"
@@ -150,14 +150,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             name = "To account 3"
         )
     )
-    private val sampleXrdResource = Resource.FungibleResource(
-        resourceAddress = XrdResource.address(),
-        ownedAmount = BigDecimal.TEN,
-        metadata = listOf(
-            Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = XrdResource.SYMBOL, valueType = MetadataType.String)
-        )
-    )
-    
+
     private val emptyExecutionSummary = ExecutionSummary(
         feeLocks = FeeLocks(
             lock = Decimal.zero(),
@@ -199,6 +192,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(
             SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, 50u)
         )
+        coEvery { getNFTDetailsUseCase(any(), any()) } returns Result.success(emptyList())
         coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
             Badge(address = "")
         )
@@ -261,7 +255,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 resolveDAppInTransactionUseCase = resolveDappsInTransactionUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
-                getValidatorsUseCase = getValidatorsUseCase
+                getValidatorsUseCase = getValidatorsUseCase,
+                getNFTDetailsUseCase = getNFTDetailsUseCase
             ),
             guarantees = TransactionGuaranteesDelegate(),
             fees = TransactionFeesDelegate(
