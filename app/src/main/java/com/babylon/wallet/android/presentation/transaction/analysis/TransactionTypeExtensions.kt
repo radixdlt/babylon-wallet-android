@@ -307,23 +307,6 @@ private val NonFungibleResourceIndicator.nonFungibleLocalIds: List<NonFungibleLo
         is NonFungibleResourceIndicator.ByIds -> ids
     }
 
-//
-// private fun DecimalSource.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType = when (this) {
-//    is DecimalSource.Guaranteed -> GuaranteeType.Guaranteed
-//    is DecimalSource.Predicted -> GuaranteeType.Predicted(
-//        instructionIndex = instructionIndex.toLong(),
-//        guaranteeOffset = defaultDepositGuarantees
-//    )
-// }
-//
-// private fun NonFungibleLocalIdVecSource.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType = when (this) {
-//    is NonFungibleLocalIdVecSource.Guaranteed -> GuaranteeType.Guaranteed
-//    is NonFungibleLocalIdVecSource.Predicted -> GuaranteeType.Predicted(
-//        instructionIndex = instructionIndex.toLong(),
-//        guaranteeOffset = defaultDepositGuarantees
-//    )
-// }
-
 private fun Map<String, MetadataValue?>.toMetadata(): List<Metadata> = mapNotNull { it.toMetadata() }
 
 @Suppress("CyclomaticComplexMethod", "LongMethod")

@@ -165,7 +165,6 @@ class TransactionAnalysisDelegate @Inject constructor(
             is DetailedManifestClass.Transfer -> resolveTransfer(getProfileUseCase, resources)
             is DetailedManifestClass.ValidatorClaim -> {
                 val validators = getValidatorsUseCase(transactionType.involvedValidatorAddresses).getOrThrow()
-                val involvedStakeClaims = involvedStakeClaims
                 val stakeClaimsNfts = involvedStakeClaims.map {
                     getNFTDetailsUseCase(it.resourceAddress, it.localId).getOrDefault(emptyList())
                 }.flatten()

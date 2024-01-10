@@ -39,7 +39,6 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.profile.data.model.apppreferences.Radix
-import timber.log.Timber
 
 @Composable
 fun TransactionPreviewHeader(
@@ -57,7 +56,6 @@ fun TransactionPreviewHeader(
     val animationRangePx = with(LocalDensity.current) { 40.dp.toPx() }
     val progress by remember {
         derivedStateOf {
-            Timber.d("Scroll progress: ${(scrollState.value / animationRangePx).coerceIn(0f, 1f)}")
             (scrollState.value / animationRangePx).coerceIn(0f, 1f)
         }
     }
