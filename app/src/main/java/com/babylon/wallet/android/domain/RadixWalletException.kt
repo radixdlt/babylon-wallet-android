@@ -10,6 +10,21 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.ProfileException
 
 sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = cause) {
+
+    sealed class GatewayException(cause: Throwable? = null) : RadixWalletException(cause) {
+
+        data class ClientError(override val cause: Throwable? = null) : GatewayException(cause)
+        data class HttpError(
+            val code: Int?,
+            override val message: String
+        ) : GatewayException(null) {
+
+            companion object {
+                const val RATE_LIMIT_REACHED = 429
+            }
+        }
+    }
+
     data object DappMetadataEmpty : RadixWalletException()
     data object SignatureCancelled : RadixWalletException()
     data object FailedToCollectLedgerSignature : RadixWalletException()
@@ -262,6 +277,14 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
     }
 }
 
+fun RadixWalletException.GatewayException.toUserFriendlyMessage(context: Context): String = when (this) {
+    is RadixWalletException.GatewayException.ClientError -> cause?.message.orEmpty()
+    is RadixWalletException.GatewayException.HttpError -> when (code) {
+        RadixWalletException.GatewayException.HttpError.RATE_LIMIT_REACHED -> context.getString(R.string.common_rateLimitReached)
+        else -> message
+    }
+}
+
 fun RadixWalletException.TransactionSubmitException.toUserFriendlyMessage(context: Context): String {
     return when (this) {
         is RadixWalletException.TransactionSubmitException.FailedToPollTXStatus -> {
@@ -345,6 +368,7 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         is RadixWalletException.LedgerCommunicationException -> toUserFriendlyMessage(context)
         is RadixWalletException.PrepareTransactionException -> toUserFriendlyMessage(context)
         is RadixWalletException.TransactionSubmitException -> toUserFriendlyMessage(context)
+        is RadixWalletException.GatewayException -> toUserFriendlyMessage(context)
     }
 }
 
