@@ -148,12 +148,11 @@ class TransactionAnalysisDelegate @Inject constructor(
         val resources = getResourcesUseCase(addresses = involvedResourceAddresses + xrdAddress).getOrThrow()
 
         return when (transactionType) {
-            is DetailedManifestClass.General -> transactionType.resolve(
+            is DetailedManifestClass.General -> resolveGeneralTransfer(
                 resources = resources,
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 getProfileUseCase = getProfileUseCase,
-                resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase,
-                executionSummary = this
+                resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
             )
 
             is DetailedManifestClass.AccountDepositSettingsUpdate -> transactionType.resolve(

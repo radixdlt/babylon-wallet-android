@@ -5,7 +5,6 @@ import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCas
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
 import kotlinx.coroutines.async
@@ -17,27 +16,26 @@ import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.defaultDepositGuarantee
 
 // Generic transaction resolver
-suspend fun DetailedManifestClass.General.resolve(
-    executionSummary: ExecutionSummary,
+suspend fun ExecutionSummary.resolveGeneralTransfer(
     resources: List<Resource>,
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     getProfileUseCase: GetProfileUseCase,
     resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
 ): PreviewType {
-    val badges = getTransactionBadgesUseCase(accountProofs = accountProofs)
+    val badges = getTransactionBadgesUseCase(accountProofs = presentedProofs)
     val dApps = resolveDApps(resolveDAppInTransactionUseCase).distinctBy {
         it.first.definitionAddresses
     }
 
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
-        it.address in executionSummary.accountWithdraws.keys || it.address in executionSummary.accountDeposits.keys
+        it.address in accountWithdraws.keys || it.address in accountDeposits.keys
     }
 
     val defaultDepositGuarantee = getProfileUseCase.defaultDepositGuarantee()
 
     return PreviewType.Transfer(
-        from = executionSummary.resolveFromAccounts(resources, allAccounts),
-        to = executionSummary.resolveToAccounts(resources, allAccounts, defaultDepositGuarantee),
+        from = resolveFromAccounts(resources, allAccounts),
+        to = resolveToAccounts(resources, allAccounts, defaultDepositGuarantee),
         badges = badges,
         dApps = dApps
     )
