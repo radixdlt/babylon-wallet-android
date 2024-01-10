@@ -83,7 +83,11 @@ fun TransactionPreviewHeader(
                 style = RadixTheme.typography.title.copy(fontSize = lerp(RadixTheme.typography.title.fontSize, 20.sp, progress))
             )
             if (state.request?.isInternal != true) {
-                val dAppName = state.dApp?.name.orEmpty().ifEmpty { stringResource(id = R.string.dAppRequest_metadata_unknownName) }
+                val dAppName = state.proposingDApp?.name.orEmpty().ifEmpty {
+                    stringResource(
+                        id = R.string.dAppRequest_metadata_unknownName
+                    )
+                }
                 Text(
                     modifier = Modifier.layoutId("subtitle"),
                     text = stringResource(id = R.string.transactionReview_proposingDappSubtitle, dAppName),
@@ -95,12 +99,12 @@ fun TransactionPreviewHeader(
                 )
             }
         }
-        state.dApp?.iconUrl?.let {
+        state.proposingDApp?.iconUrl?.let {
             Thumbnail.DApp(
                 modifier = Modifier
                     .layoutId("dAppIcon")
                     .size(64.dp),
-                dapp = state.dApp,
+                dapp = state.proposingDApp,
                 shape = RadixTheme.shapes.roundedRectSmall
             )
         }

@@ -20,6 +20,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.Resource.FungibleResource
 import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource
 import com.babylon.wallet.android.domain.model.resources.isXrd
+import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -52,7 +53,7 @@ class TransactionReviewViewModel @Inject constructor(
     private val guarantees: TransactionGuaranteesDelegate,
     private val fees: TransactionFeesDelegate,
     private val submit: TransactionSubmitDelegate,
-    private val dAppRepository: DAppRepository,
+    private val getDAppsUseCase: GetDAppsUseCase,
     incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
@@ -90,9 +91,12 @@ class TransactionReviewViewModel @Inject constructor(
             viewModelScope.launch {
                 analysis.analyse(transactionClient = transactionClient)
             }
-            viewModelScope.launch {
-                dAppRepository.getDAppMetadata(request.requestMetadata.dAppDefinitionAddress, false).onSuccess { dApp ->
-                    _state.update { it.copy(dApp = dApp) }
+
+            if (!request.isInternal) {
+                viewModelScope.launch {
+                    getDAppsUseCase(request.requestMetadata.dAppDefinitionAddress, false).onSuccess { dApp ->
+                        _state.update { it.copy(proposingDApp = dApp) }
+                    }
                 }
             }
         }
@@ -240,6 +244,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     data class State(
         val request: MessageFromDataChannel.IncomingRequest.TransactionRequest? = null,
+        val proposingDApp: DApp? = null,
         val endEpoch: ULong? = null,
         val isLoading: Boolean,
         val isNetworkFeeLoading: Boolean,
@@ -254,8 +259,7 @@ class TransactionReviewViewModel @Inject constructor(
         val error: UiMessage.TransactionErrorMessage? = null,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val interactionState: InteractionState? = null,
-        val isTransactionDismissed: Boolean = false,
-        val dApp: DApp? = null
+        val isTransactionDismissed: Boolean = false
     ) : UiState {
 
         val requestNonNull: MessageFromDataChannel.IncomingRequest.TransactionRequest

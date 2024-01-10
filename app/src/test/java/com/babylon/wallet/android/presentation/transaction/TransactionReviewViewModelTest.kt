@@ -14,6 +14,7 @@ import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
@@ -22,6 +23,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
@@ -70,6 +72,7 @@ import org.junit.Test
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import org.mockito.kotlin.mock
 import rdx.works.core.displayableQuantity
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.ret.crypto.PrivateKey
@@ -103,6 +106,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val getValidatorsUseCase = mockk<GetValidatorsUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
+    private val getDAppsUseCase = mockk<GetDAppsUseCase>()
     private val sampleTxId = "txId1"
     private val sampleRequestId = "requestId1"
     private val sampleRequest = mockk<MessageFromDataChannel.IncomingRequest.TransactionRequest>().apply {
@@ -155,6 +159,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     @Before
     override fun setUp() = runTest {
         super.setUp()
+        coEvery {
+            getDAppsUseCase("account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa", false)
+        } returns Result.success(DApp("account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa"))
         coEvery { getValidatorsUseCase(any()) } returns Result.success(listOf(ValidatorDetail("addr", BigDecimal(100000))))
         every { exceptionMessageProvider.throwableMessage(any()) } returns ""
         every { deviceCapabilityHelper.isDeviceSecure() } returns true
@@ -256,6 +263,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             ),
             incomingRequestRepository = incomingRequestRepository,
             savedStateHandle = savedStateHandle,
+            getDAppsUseCase = getDAppsUseCase
         )
     }
 
