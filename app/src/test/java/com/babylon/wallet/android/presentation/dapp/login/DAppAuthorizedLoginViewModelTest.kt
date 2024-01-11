@@ -330,7 +330,10 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             error("Not needed")
         }
 
-        override suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> {
+        override suspend fun getNFTDetails(
+            resourceAddress: String,
+            localIds: Set<String>
+        ): Result<List<Resource.NonFungibleResource.Item>> {
             error("Not needed")
         }
 
