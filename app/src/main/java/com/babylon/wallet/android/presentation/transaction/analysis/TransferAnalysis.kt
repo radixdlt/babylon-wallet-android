@@ -18,7 +18,7 @@ suspend fun ExecutionSummary.resolveTransfer(
         allInvolvedAddresses.contains(it.address)
     }
 
-    val to = extractWithdrawals(allOwnedAccounts, resources)
+    val to = extractDeposits(allOwnedAccounts, resources)
     val from = extractWithdraws(allOwnedAccounts, resources)
 
     return PreviewType.Transfer(
@@ -27,7 +27,7 @@ suspend fun ExecutionSummary.resolveTransfer(
     )
 }
 
-private fun ExecutionSummary.extractWithdrawals(
+private fun ExecutionSummary.extractDeposits(
     allOwnedAccounts: List<Network.Account>,
     resources: List<Resource>
 ) = accountDeposits.entries.map { transferEntry ->
