@@ -779,7 +779,7 @@ private fun VerifyWithYourSeedPhrasePage(
                 }
                 showOlympiaSeedPhrasePrompt = false
             },
-            text = {
+            message = {
                 Text(
                     text = stringResource(id = R.string.importOlympiaAccounts_verifySeedPhrase_keepSeedPhrasePrompt),
                     style = RadixTheme.typography.body2Regular,

@@ -215,15 +215,13 @@ fun BasicPromptAlertDialog(
     modifier: Modifier = Modifier,
     finish: (accepted: Boolean) -> Unit,
     title: (@Composable () -> Unit)? = null,
-    text: (@Composable () -> Unit)? = null,
+    message: (@Composable () -> Unit)? = null,
     confirmText: String = stringResource(id = R.string.common_confirm),
     dismissText: String? = stringResource(id = R.string.common_cancel),
     confirmTextColor: Color = RadixTheme.colors.blue2
 ) {
     AlertDialog(
-        modifier = modifier
-            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
-            .clip(RadixTheme.shapes.roundedRectSmall),
+        modifier = modifier,
         onDismissRequest = { finish(false) },
         confirmButton = {
             RadixTextButton(text = confirmText, onClick = { finish(true) }, contentColor = confirmTextColor)
@@ -234,7 +232,9 @@ fun BasicPromptAlertDialog(
             }
         },
         title = title,
-        text = text
+        text = message,
+        shape = RadixTheme.shapes.roundedRectSmall,
+        containerColor = RadixTheme.colors.defaultBackground
     )
 }
 
@@ -242,43 +242,36 @@ fun BasicPromptAlertDialog(
 fun BasicPromptAlertDialog(
     modifier: Modifier = Modifier,
     finish: (accepted: Boolean) -> Unit,
-    title: String? = null,
-    text: String? = null,
+    titleText: String? = null,
+    messageText: String? = null,
     confirmText: String = stringResource(id = R.string.common_confirm),
     dismissText: String? = stringResource(id = R.string.common_cancel),
     confirmTextColor: Color = RadixTheme.colors.blue2
 ) {
-    AlertDialog(
-        modifier = modifier
-            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectSmall)
-            .clip(RadixTheme.shapes.roundedRectSmall),
-        onDismissRequest = { finish(false) },
-        confirmButton = {
-            RadixTextButton(text = confirmText, onClick = { finish(true) }, contentColor = confirmTextColor)
-        },
-        dismissButton = dismissText?.let {
-            {
-                RadixTextButton(text = it, onClick = { finish(false) })
-            }
-        },
-        title = title?.let {
+    BasicPromptAlertDialog(
+        modifier = modifier,
+        finish = finish,
+        title = titleText?.let {
             {
                 Text(
-                    text = title,
+                    text = it,
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1
                 )
             }
         },
-        text = text?.let {
+        message = messageText?.let {
             {
                 Text(
-                    text = text,
+                    text = it,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
                 )
             }
-        }
+        },
+        confirmText = confirmText,
+        dismissText = dismissText,
+        confirmTextColor = confirmTextColor
     )
 }
 
@@ -297,7 +290,7 @@ fun NotSecureAlertDialog(
                 color = RadixTheme.colors.gray1
             )
         },
-        text = {
+        message = {
             Text(
                 text = stringResource(id = R.string.biometrics_deviceNotSecureAlert_message),
                 style = RadixTheme.typography.body2Regular,

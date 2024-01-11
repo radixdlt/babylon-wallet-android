@@ -74,7 +74,7 @@ private fun HiddenEntitiesContent(
                 }
                 showUnhideAllPrompt = false
             },
-            text = {
+            message = {
                 Text(
                     text = stringResource(id = R.string.appSettings_entityHiding_unhideAllConfirmation),
                     style = RadixTheme.typography.body2Regular,

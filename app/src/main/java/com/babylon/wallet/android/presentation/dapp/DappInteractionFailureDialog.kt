@@ -30,7 +30,7 @@ fun DappInteractionFailureDialog(
                         color = RadixTheme.colors.gray1
                     )
                 },
-                text = {
+                message = {
                     Text(
                         text = dialogState.dappRequestException.userFriendlyMessage(),
                         style = RadixTheme.typography.body2Regular,

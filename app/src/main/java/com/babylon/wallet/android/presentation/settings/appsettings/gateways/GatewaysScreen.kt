@@ -368,7 +368,7 @@ private fun GatewayCard(
                     color = RadixTheme.colors.gray1
                 )
             },
-            text = {
+            message = {
                 Text(
                     text = stringResource(id = R.string.gateways_removeGatewayAlert_message),
                     style = RadixTheme.typography.body2Regular,

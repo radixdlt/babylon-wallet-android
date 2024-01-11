@@ -79,7 +79,7 @@ fun PersonaDetailScreen(
                 }
                 showHidePersonaPrompt = false
             },
-            text = {
+            message = {
                 Text(
                     text = stringResource(id = R.string.authorizedDapps_personaDetails_hidePersonaConfirmation),
                     style = RadixTheme.typography.body2Regular,
