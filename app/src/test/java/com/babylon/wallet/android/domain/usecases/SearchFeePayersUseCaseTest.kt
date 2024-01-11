@@ -43,7 +43,9 @@ class SearchFeePayersUseCaseTest {
     @Test
     fun `when account with enough xrd exists, returns the selected fee payer`() =
         runTest {
-            val manifest = manifestWithAddress(account1)
+            val manifest = manifestWithAddress(account1).summary(
+                networkId = Radix.Gateway.default.network.id.toUByte()
+            )
 
             val result = useCase(manifest, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()).getOrThrow()
 
@@ -62,7 +64,9 @@ class SearchFeePayersUseCaseTest {
     @Test
     fun `when account with xrd does not exist, returns the null fee payer`() =
         runTest {
-            val manifest = manifestWithAddress(account1)
+            val manifest = manifestWithAddress(account1).summary(
+                networkId = Radix.Gateway.default.network.id.toUByte()
+            )
 
             val result = useCase(manifest, BigDecimal(200)).getOrThrow()
 
@@ -156,7 +160,10 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> {
+            override suspend fun getNFTDetails(
+                resourceAddress: String,
+                localIds: Set<String>
+            ): Result<List<Resource.NonFungibleResource.Item>> {
                 error("Not needed")
             }
 

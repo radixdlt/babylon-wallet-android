@@ -58,7 +58,7 @@ interface StateRepository {
 
     suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>>
 
-    suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
+    suspend fun getNFTDetails(resourceAddress: String, localIds: Set<String>): Result<List<Resource.NonFungibleResource.Item>>
 
     suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>>
 
@@ -320,24 +320,25 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getNFTDetails(
         resourceAddress: String,
-        localId: String
-    ): Result<Resource.NonFungibleResource.Item> = withContext(dispatcher) {
-        val cachedItem = stateDao.getNFTDetails(resourceAddress, localId, resourcesCacheValidity())
+        localIds: Set<String>
+    ): Result<List<Resource.NonFungibleResource.Item>> = withContext(dispatcher) {
+        val cachedItems = stateDao.getNFTDetails(resourceAddress, localIds, resourcesCacheValidity())
 
-        if (cachedItem != null) {
-            return@withContext Result.success(cachedItem.toItem())
+        if (cachedItems != null && cachedItems.size == localIds.size) {
+            return@withContext Result.success(cachedItems.map { it.toItem() })
         }
+        val unknownIds = localIds - cachedItems?.map { it.localId }.orEmpty().toSet()
 
         stateApi.nonFungibleData(
             StateNonFungibleDataRequest(
                 resourceAddress = resourceAddress,
-                nonFungibleIds = listOf(localId)
+                nonFungibleIds = unknownIds.toList()
             )
         ).toResult().mapCatching { response ->
-            val item = response.nonFungibleIds.first()
-            val entity = item.asEntity(resourceAddress, InstantGenerator())
-            stateDao.insertNFTs(listOf(entity))
-            entity.toItem()
+            val item = response.nonFungibleIds
+            val entities = item.map { it.asEntity(resourceAddress, InstantGenerator()) }
+            stateDao.insertNFTs(entities)
+            cachedItems.orEmpty().map { it.toItem() } + entities.map { it.toItem() }
         }
     }
 

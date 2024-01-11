@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -26,9 +28,9 @@ fun StakeTypeContent(
     previewType: PreviewType.Staking
 ) {
     val validatorSectionText = when (previewType.actionType) {
-        PreviewType.Staking.ActionType.Stake -> "Staking to Validators".uppercase() // TODO crowdin
-        PreviewType.Staking.ActionType.Unstake -> "Requesting unstake from validators".uppercase() // TODO crowdin
-        PreviewType.Staking.ActionType.ClaimStake -> "Claim from validators".uppercase()
+        PreviewType.Staking.ActionType.Stake -> stringResource(id = R.string.transactionReview_validators_stake).uppercase()
+        PreviewType.Staking.ActionType.Unstake -> stringResource(id = R.string.transactionReview_validators_unstake).uppercase()
+        PreviewType.Staking.ActionType.ClaimStake -> stringResource(id = R.string.transactionReview_validators_claim).uppercase()
     }
     Column(
         modifier = modifier.fillMaxSize()

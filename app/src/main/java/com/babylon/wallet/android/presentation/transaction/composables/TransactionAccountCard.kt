@@ -375,7 +375,7 @@ private fun TransferableLsuItemContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
-            text = "Worth".uppercase(), // TODO crowdin
+            text = stringResource(id = R.string.transactionReview_worth).uppercase(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray2,
             maxLines = 1

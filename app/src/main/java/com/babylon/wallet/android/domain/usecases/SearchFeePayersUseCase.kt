@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
-import com.radixdlt.ret.TransactionManifest
+import com.radixdlt.ret.ManifestSummary
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import java.math.BigDecimal
@@ -13,7 +13,7 @@ class SearchFeePayersUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
-    suspend operator fun invoke(manifest: TransactionManifest, lockFee: BigDecimal): Result<FeePayerSearchResult> {
+    suspend operator fun invoke(manifestSummary: ManifestSummary, lockFee: BigDecimal): Result<FeePayerSearchResult> {
         val allAccounts = profileUseCase.accountsOnCurrentNetwork()
         return stateRepository.getOwnedXRD(accounts = allAccounts).map { accountsWithXRD ->
             val candidates = accountsWithXRD.map { entry ->
@@ -22,8 +22,8 @@ class SearchFeePayersUseCase @Inject constructor(
                     xrdAmount = entry.value
                 )
             }
-
-            val addresses = manifest.accountsWithdrawnFrom() + manifest.accountsDepositedInto() + manifest.accountsRequiringAuth()
+            val addresses =
+                manifestSummary.accountsWithdrawnFrom + manifestSummary.accountsDepositedInto + manifestSummary.accountsRequiringAuth
             val candidateAddress = addresses.map { it.addressString() }.firstOrNull { address ->
                 candidates.any { it.account.address == address && it.xrdAmount >= lockFee }
             }

@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.generated.models.CoreApiTransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.NotarizedTransactionResult
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
@@ -29,6 +28,7 @@ import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
@@ -42,12 +42,16 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.ret.Decimal
-import com.radixdlt.ret.ExecutionAnalysis
+import com.radixdlt.ret.DetailedManifestClass
+import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.FeeLocks
+import com.radixdlt.ret.FeeSummary
 import com.radixdlt.ret.Instructions
+import com.radixdlt.ret.ManifestClass
+import com.radixdlt.ret.ManifestSummary
+import com.radixdlt.ret.NewEntities
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
-import com.radixdlt.ret.TransactionType
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -99,6 +103,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveDappsInTransactionUseCase = mockk<ResolveDAppInTransactionUseCase>()
+    private val getNFTDetailsUseCase = mockk<GetNFTDetailsUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()
@@ -129,7 +134,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { instructions() } returns mockk<Instructions>().apply { every { asStr() } returns "" }
         every { blobs() } returns listOf()
     }
-    private val sampleProfile = profile(accounts = identifiedArrayListOf(account(address = "adr_1", name = "primary")))
     private val fromAccount = account(
         address = "account_tdx_19jd32jd3928jd3892jd329",
         name = "From Account"
@@ -148,12 +152,32 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             name = "To account 3"
         )
     )
-    private val sampleXrdResource = Resource.FungibleResource(
-        resourceAddress = XrdResource.address(),
-        ownedAmount = BigDecimal.TEN,
-        metadata = listOf(
-            Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = XrdResource.SYMBOL, valueType = MetadataType.String)
-        )
+
+    private val emptyExecutionSummary = ExecutionSummary(
+        feeLocks = FeeLocks(
+            lock = Decimal.zero(),
+            contingentLock = Decimal.zero()
+        ),
+        feeSummary = FeeSummary(
+            executionCost = Decimal.zero(),
+            finalizationCost = Decimal.zero(),
+            storageExpansionCost = Decimal.zero(),
+            royaltyCost = Decimal.zero()
+        ),
+        detailedClassification = listOf(),
+        reservedInstructions = listOf(),
+        accountDeposits = mapOf(),
+        accountsRequiringAuth = listOf(),
+        accountWithdraws = mapOf(),
+        encounteredEntities = listOf(),
+        identitiesRequiringAuth = listOf(),
+        newEntities = NewEntities(
+            componentAddresses = listOf(),
+            resourceAddresses = listOf(),
+            packageAddresses = listOf(),
+            metadata = mapOf()
+        ),
+        presentedProofs = listOf()
     )
 
     @Before
@@ -170,6 +194,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(
             SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, 50u)
         )
+        coEvery { getNFTDetailsUseCase(any(), any()) } returns Result.success(emptyList())
         coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
             Badge(address = "")
         )
@@ -217,19 +242,16 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { sampleRequest.transactionManifestData } returns sampleTransactionManifestData
         incomingRequestRepository.add(sampleRequest)
         every { sampleTransactionManifestData.toTransactionManifest() } returns Result.success(manifest)
-        every { manifest.analyzeExecution(any()) } returns ExecutionAnalysis(
-            feeLocks = FeeLocks(
-                lock = Decimal.zero(),
-                contingentLock = Decimal.zero()
-            ),
-            feeSummary = com.radixdlt.ret.FeeSummary(
-                executionCost = Decimal.zero(),
-                finalizationCost = Decimal.zero(),
-                storageExpansionCost = Decimal.zero(),
-                royaltyCost = Decimal.zero()
-            ),
-            transactionTypes = listOf(),
-            reservedInstructions = listOf()
+        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary
+        every { manifest.summary(any()) } returns ManifestSummary(
+            accountsDepositedInto = emptyList(),
+            accountsRequiringAuth = emptyList(),
+            accountsWithdrawnFrom = emptyList(),
+            presentedProofs = emptyList(),
+            identitiesRequiringAuth = emptyList(),
+            encounteredEntities = emptyList(),
+            classification = listOf(ManifestClass.GENERAL),
+            reservedInstructions = emptyList(),
         )
         every { getProfileUseCase() } returns flowOf(profile(accounts = (identifiedArrayListOf(fromAccount) + otherAccounts).toIdentifiedArrayList()))
         coEvery { getResourcesUseCase(any()) } returns Result.success(listOf())
@@ -245,7 +267,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 getTransactionBadgesUseCase = getTransactionBadgesUseCase,
                 resolveDAppInTransactionUseCase = resolveDappsInTransactionUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
-                getValidatorsUseCase = getValidatorsUseCase
+                getValidatorsUseCase = getValidatorsUseCase,
+                getNFTDetailsUseCase = getNFTDetailsUseCase
             ),
             guarantees = TransactionGuaranteesDelegate(),
             fees = TransactionFeesDelegate(
@@ -327,27 +350,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `given all fees are zero, network royalty and total fee are 0 (none due)`() = runTest {
-        every { manifest.analyzeExecution(any()) } returns ExecutionAnalysis(
-            feeLocks = FeeLocks(
-                lock = Decimal.zero(),
-                contingentLock = Decimal.zero()
-            ),
-            feeSummary = com.radixdlt.ret.FeeSummary(
-                executionCost = Decimal.zero(),
-                finalizationCost = Decimal.zero(),
-                storageExpansionCost = Decimal.zero(),
-                royaltyCost = Decimal.zero()
-            ),
-            transactionTypes = listOf(
-                TransactionType.GeneralTransaction(
-                    accountProofs = listOf(),
-                    accountWithdraws = mapOf(),
-                    accountDeposits = mapOf(),
-                    addressesInManifest = mapOf(),
-                    metadataOfNewlyCreatedEntities = mapOf(),
-                    dataOfNewlyMintedNonFungibles = mapOf(),
-                    addressesOfNewlyCreatedEntities = listOf()
-                )
+        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
+            detailedClassification = listOf(
+                DetailedManifestClass.General
             ),
             reservedInstructions = emptyList()
         )
@@ -360,27 +365,19 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `verify network fee royalty and total fee is displayed correctly on default screen 1`() = runTest {
-        every { manifest.analyzeExecution(any()) } returns ExecutionAnalysis(
+        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
                 lock = Decimal("0.9"),
                 contingentLock = Decimal.zero()
             ),
-            feeSummary = com.radixdlt.ret.FeeSummary(
+            feeSummary = FeeSummary(
                 executionCost = Decimal("0.3"),
                 finalizationCost = Decimal("0.3"),
                 storageExpansionCost = Decimal("0.2"),
                 royaltyCost = Decimal("0.2")
             ),
-            transactionTypes = listOf(
-                TransactionType.GeneralTransaction(
-                    accountProofs = listOf(),
-                    accountWithdraws = mapOf(),
-                    accountDeposits = mapOf(),
-                    addressesInManifest = mapOf(),
-                    metadataOfNewlyCreatedEntities = mapOf(),
-                    dataOfNewlyMintedNonFungibles = mapOf(),
-                    addressesOfNewlyCreatedEntities = listOf()
-                )
+            detailedClassification = listOf(
+                DetailedManifestClass.General
             ),
             reservedInstructions = emptyList()
         )
@@ -393,27 +390,19 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `verify network fee royalty and total fee is displayed correctly on default screen 2`() = runTest {
-        every { manifest.analyzeExecution(any()) } returns ExecutionAnalysis(
+        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
                 lock = Decimal("0.5"),
                 contingentLock = Decimal.zero()
             ),
-            feeSummary = com.radixdlt.ret.FeeSummary(
+            feeSummary = FeeSummary(
                 executionCost = Decimal("0.3"),
                 finalizationCost = Decimal("0.3"),
                 storageExpansionCost = Decimal("0.2"),
                 royaltyCost = Decimal("0.2")
             ),
-            transactionTypes = listOf(
-                TransactionType.GeneralTransaction(
-                    accountProofs = listOf(),
-                    accountWithdraws = mapOf(),
-                    accountDeposits = mapOf(),
-                    addressesInManifest = mapOf(),
-                    metadataOfNewlyCreatedEntities = mapOf(),
-                    dataOfNewlyMintedNonFungibles = mapOf(),
-                    addressesOfNewlyCreatedEntities = listOf()
-                )
+            detailedClassification = listOf(
+                DetailedManifestClass.General
             ),
             reservedInstructions = emptyList()
         )
@@ -426,27 +415,19 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `verify network fee royalty and total fee is displayed correctly on default screen 3`() = runTest {
-        every { manifest.analyzeExecution(any()) } returns ExecutionAnalysis(
+        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
                 lock = Decimal("1.0"),
                 contingentLock = Decimal.zero()
             ),
-            feeSummary = com.radixdlt.ret.FeeSummary(
+            feeSummary = FeeSummary(
                 executionCost = Decimal("0.3"),
                 finalizationCost = Decimal("0.3"),
                 storageExpansionCost = Decimal("0.2"),
                 royaltyCost = Decimal("0.2")
             ),
-            transactionTypes = listOf(
-                TransactionType.GeneralTransaction(
-                    accountProofs = listOf(),
-                    accountWithdraws = mapOf(),
-                    accountDeposits = mapOf(),
-                    addressesInManifest = mapOf(),
-                    metadataOfNewlyCreatedEntities = mapOf(),
-                    dataOfNewlyMintedNonFungibles = mapOf(),
-                    addressesOfNewlyCreatedEntities = listOf()
-                )
+            detailedClassification = listOf(
+                DetailedManifestClass.General
             ),
             reservedInstructions = emptyList()
         )
@@ -459,27 +440,19 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `verify network fee royalty and total fee is displayed correctly on default screen 4`() = runTest {
-        every { manifest.analyzeExecution(any()) } returns ExecutionAnalysis(
+        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
                 lock = Decimal("1.5"),
                 contingentLock = Decimal.zero()
             ),
-            feeSummary = com.radixdlt.ret.FeeSummary(
+            feeSummary = FeeSummary(
                 executionCost = Decimal("0.3"),
                 finalizationCost = Decimal("0.3"),
                 storageExpansionCost = Decimal("0.2"),
                 royaltyCost = Decimal("0.2")
             ),
-            transactionTypes = listOf(
-                TransactionType.GeneralTransaction(
-                    accountProofs = listOf(),
-                    accountWithdraws = mapOf(),
-                    accountDeposits = mapOf(),
-                    addressesInManifest = mapOf(),
-                    metadataOfNewlyCreatedEntities = mapOf(),
-                    dataOfNewlyMintedNonFungibles = mapOf(),
-                    addressesOfNewlyCreatedEntities = listOf()
-                )
+            detailedClassification = listOf(
+                DetailedManifestClass.General
             ),
             reservedInstructions = emptyList()
         )
@@ -492,27 +465,19 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `verify network fee royalty and total fee is displayed correctly on default screen 4 with one signer account`() = runTest {
-        every { manifest.analyzeExecution(any()) } returns ExecutionAnalysis(
+        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
                 lock = Decimal.zero(),
                 contingentLock = Decimal.zero()
             ),
-            feeSummary = com.radixdlt.ret.FeeSummary(
+            feeSummary = FeeSummary(
                 executionCost = Decimal("0.3"),
                 finalizationCost = Decimal("0.3"),
                 storageExpansionCost = Decimal("0.2"),
                 royaltyCost = Decimal("0.2")
             ),
-            transactionTypes = listOf(
-                TransactionType.GeneralTransaction(
-                    accountProofs = listOf(),
-                    accountWithdraws = mapOf(),
-                    accountDeposits = mapOf(),
-                    addressesInManifest = mapOf(),
-                    metadataOfNewlyCreatedEntities = mapOf(),
-                    dataOfNewlyMintedNonFungibles = mapOf(),
-                    addressesOfNewlyCreatedEntities = listOf()
-                )
+            detailedClassification = listOf(
+                DetailedManifestClass.General
             ),
             reservedInstructions = emptyList()
         )
@@ -540,27 +505,19 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
         // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = "1.10842739440"
-        every { manifest.analyzeExecution(any()) } returns ExecutionAnalysis(
+        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
                 lock = Decimal("1.5"),
                 contingentLock = Decimal.zero()
             ),
-            feeSummary = com.radixdlt.ret.FeeSummary(
+            feeSummary = FeeSummary(
                 executionCost = Decimal("0.3"),
                 finalizationCost = Decimal("0.3"),
                 storageExpansionCost = Decimal("0.2"),
                 royaltyCost = Decimal("0.2")
             ),
-            transactionTypes = listOf(
-                TransactionType.GeneralTransaction(
-                    accountProofs = listOf(),
-                    accountWithdraws = mapOf(),
-                    accountDeposits = mapOf(),
-                    addressesInManifest = mapOf(),
-                    metadataOfNewlyCreatedEntities = mapOf(),
-                    dataOfNewlyMintedNonFungibles = mapOf(),
-                    addressesOfNewlyCreatedEntities = listOf()
-                )
+            detailedClassification = listOf(
+                DetailedManifestClass.General
             ),
             reservedInstructions = emptyList()
         )
@@ -578,27 +535,19 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = "0.9019403"
 
-        every { manifest.analyzeExecution(any()) } returns ExecutionAnalysis(
+        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
                 lock = Decimal("0.5"),
                 contingentLock = Decimal.zero()
             ),
-            feeSummary = com.radixdlt.ret.FeeSummary(
+            feeSummary = FeeSummary(
                 executionCost = Decimal("0.3"),
                 finalizationCost = Decimal("0.3"),
                 storageExpansionCost = Decimal("0.2"),
                 royaltyCost = Decimal("0.2")
             ),
-            transactionTypes = listOf(
-                TransactionType.GeneralTransaction(
-                    accountProofs = listOf(),
-                    accountWithdraws = mapOf(),
-                    accountDeposits = mapOf(),
-                    addressesInManifest = mapOf(),
-                    metadataOfNewlyCreatedEntities = mapOf(),
-                    dataOfNewlyMintedNonFungibles = mapOf(),
-                    addressesOfNewlyCreatedEntities = listOf()
-                )
+            detailedClassification = listOf(
+                DetailedManifestClass.General
             ),
             reservedInstructions = emptyList()
         )
@@ -617,27 +566,19 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = "2.3678038"
 
-        every { manifest.analyzeExecution(any()) } returns ExecutionAnalysis(
+        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
                 lock = Decimal("0.5"),
                 contingentLock = Decimal.zero()
             ),
-            feeSummary = com.radixdlt.ret.FeeSummary(
+            feeSummary = FeeSummary(
                 executionCost = Decimal("0.3"),
                 finalizationCost = Decimal("0.3"),
                 storageExpansionCost = Decimal("0.2"),
                 royaltyCost = Decimal("0.2")
             ),
-            transactionTypes = listOf(
-                TransactionType.GeneralTransaction(
-                    accountProofs = listOf(),
-                    accountWithdraws = mapOf(),
-                    accountDeposits = mapOf(),
-                    addressesInManifest = mapOf(),
-                    metadataOfNewlyCreatedEntities = mapOf(),
-                    dataOfNewlyMintedNonFungibles = mapOf(),
-                    addressesOfNewlyCreatedEntities = listOf()
-                )
+            detailedClassification = listOf(
+                DetailedManifestClass.General
             ),
             reservedInstructions = emptyList()
         )
