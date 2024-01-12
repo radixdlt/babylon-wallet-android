@@ -318,7 +318,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             return Result.success(emptyList())
         }
 
-        override suspend fun getPool(poolAddress: String): Result<Pool> {
+        override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> {
             error("Not needed")
         }
 

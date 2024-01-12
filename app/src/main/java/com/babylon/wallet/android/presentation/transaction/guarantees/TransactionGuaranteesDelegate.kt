@@ -116,7 +116,7 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
 
     fun onApply() {
         val sheet = (_state.value.sheetState as? Sheet.CustomizeGuarantees) ?: return
-        val preview = (_state.value.previewType as? PreviewType.Transfer) ?: return
+        val preview = (_state.value.previewType as? PreviewType.Transfer.GeneralTransfer) ?: return
 
         _state.update {
             it.copy(

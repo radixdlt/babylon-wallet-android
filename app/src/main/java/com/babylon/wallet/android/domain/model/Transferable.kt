@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import androidx.annotation.FloatRange
+import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
@@ -33,6 +34,7 @@ sealed interface Transferable {
 
                         is TransferableResource.LsuAmount -> null
                         is TransferableResource.StakeClaimNft -> null
+                        is TransferableResource.Pool -> null
                     }
                 }
 
@@ -124,4 +126,13 @@ sealed interface TransferableResource {
         val validatorDetail: ValidatorDetail,
         override val isNewlyCreated: Boolean = false
     ) : TransferableResource
+
+    data class Pool(
+        val pool: PoolUnit,
+        val contributionPerResource: Map<String, BigDecimal>,
+        override val isNewlyCreated: Boolean = false,
+    ) : TransferableResource {
+        override val resource: Resource
+            get() = pool.stake
+    }
 }

@@ -29,11 +29,11 @@ suspend fun DetailedManifestClass.ValidatorClaim.resolve(
         involvedValidators = involvedValidators,
         stakeClaimsNfts = stakeClaimsNfts
     )
-    return PreviewType.Staking(
+    return PreviewType.Transfer.Staking(
         validators = involvedValidators,
         from = fromAccounts,
         to = toAccounts,
-        actionType = PreviewType.Staking.ActionType.ClaimStake
+        actionType = PreviewType.Transfer.Staking.ActionType.ClaimStake
     )
 }
 

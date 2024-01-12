@@ -47,6 +47,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.AccountDe
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
+import com.babylon.wallet.android.presentation.transaction.composables.PoolTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
 import com.babylon.wallet.android.presentation.transaction.composables.StakeTypeContent
@@ -284,7 +285,7 @@ private fun TransactionPreviewContent(
                             }
 
                             is PreviewType.NonConforming -> {}
-                            is PreviewType.Transfer -> {
+                            is PreviewType.Transfer.GeneralTransfer -> {
                                 TransferTypeContent(
                                     modifier = Modifier.background(RadixTheme.colors.gray5),
                                     state = state,
@@ -308,12 +309,22 @@ private fun TransactionPreviewContent(
                                 ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                             }
 
-                            is PreviewType.Staking -> {
+                            is PreviewType.Transfer.Staking -> {
                                 StakeTypeContent(
                                     modifier = Modifier.background(RadixTheme.colors.gray5),
                                     state = state,
                                     onFungibleResourceClick = onFungibleResourceClick,
                                     onNonFungibleResourceClick = onNonFungibleResourceClick,
+                                    previewType = preview
+                                )
+                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
+                            }
+
+                            is PreviewType.Transfer.Pool -> {
+                                PoolTypeContent(
+                                    modifier = Modifier.background(RadixTheme.colors.gray5),
+                                    state = state,
+                                    onFungibleResourceClick = onFungibleResourceClick,
                                     previewType = preview
                                 )
                                 ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)

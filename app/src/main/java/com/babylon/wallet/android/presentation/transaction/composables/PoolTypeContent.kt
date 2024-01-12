@@ -5,41 +5,38 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
-fun TransferTypeContent(
+fun PoolTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    preview: PreviewType.Transfer.GeneralTransfer,
-    onPromptForGuarantees: () -> Unit,
-    onDappClick: (DApp) -> Unit,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
+    previewType: PreviewType.Transfer.Pool
 ) {
+    val poolSectionLabel = when (previewType.actionType) {
+        PreviewType.Transfer.Pool.ActionType.Contribution -> "Contributing to pools"
+        PreviewType.Transfer.Pool.ActionType.Redemption -> "Redeeming from pools"
+    }
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),
         state = state,
         onFungibleResourceClick = onFungibleResourceClick,
-        onNonFungibleResourceClick = onNonFungibleResourceClick,
-        previewType = preview,
-        onPromptForGuarantees = onPromptForGuarantees,
+        onNonFungibleResourceClick = { _, _, _ -> },
+        previewType = previewType,
+        onPromptForGuarantees = {},
         middleSection = {
-            if (preview.dApps.toPersistentList().isNotEmpty()) {
-                StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 60.dp)
-            }
-            ConnectedDAppsContent(
+            PoolsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                connectedDApps = preview.dApps.toPersistentList(),
-                onDAppClick = onDappClick
+                pools = previewType.pools.toPersistentList(),
+                text = poolSectionLabel,
             )
         }
     )
@@ -47,23 +44,22 @@ fun TransferTypeContent(
 
 @Preview(showBackground = true)
 @Composable
-fun TransactionPreviewTypePreview() {
+fun PoolTypePreview() {
     RadixWalletTheme {
-        TransferTypeContent(
+        PoolTypeContent(
             state = TransactionReviewViewModel.State(
                 request = SampleDataProvider().transactionRequest,
                 isLoading = false,
                 isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
-            preview = PreviewType.Transfer.GeneralTransfer(
-                from = emptyList(),
-                to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned)
-            ),
-            onPromptForGuarantees = {},
-            onDappClick = { _ -> },
             onFungibleResourceClick = { _, _ -> },
-            onNonFungibleResourceClick = { _, _, _ -> }
+            previewType = PreviewType.Transfer.Pool(
+                to = persistentListOf(),
+                from = listOf(SampleDataProvider().accountWithTransferablePool).toPersistentList(),
+                pools = persistentListOf(),
+                actionType = PreviewType.Transfer.Pool.ActionType.Contribution
+            ),
         )
     }
 }

@@ -326,7 +326,7 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         val isRawManifestToggleVisible: Boolean
-            get() = previewType is PreviewType.Transfer
+            get() = true // previewType is PreviewType.Transfer
 
         val rawManifest: String = request
             ?.transactionManifestData
@@ -365,7 +365,7 @@ class TransactionReviewViewModel @Inject constructor(
                 // In cases were it is not a transfer type, then it means the user
                 // will not spend any other XRD rather than the ones spent for the fees
                 val xrdUsed = when (previewType) {
-                    is PreviewType.Transfer -> {
+                    is PreviewType.Transfer.GeneralTransfer -> {
                         val candidateAddressWithdrawn = previewType.from.find { it.address == candidateAddress }
                         if (candidateAddressWithdrawn != null) {
                             val xrdResourceWithdrawn = candidateAddressWithdrawn.resources.map {
@@ -382,7 +382,8 @@ class TransactionReviewViewModel @Inject constructor(
                     is PreviewType.NonConforming -> BigDecimal.ZERO
                     is PreviewType.None -> BigDecimal.ZERO
                     is PreviewType.UnacceptableManifest -> BigDecimal.ZERO
-                    is PreviewType.Staking -> BigDecimal.ZERO
+                    is PreviewType.Transfer.Pool -> BigDecimal.ZERO
+                    is PreviewType.Transfer.Staking -> BigDecimal.ZERO
                 }
 
                 return xrdInCandidateAccount - xrdUsed < transactionFees.transactionFeeToLock
@@ -463,26 +464,42 @@ sealed interface PreviewType {
         val accountsWithDepositSettingsChanges: List<AccountWithDepositSettingsChanges> = emptyList()
     ) : PreviewType
 
-    data class Transfer(
-        val from: List<AccountWithTransferableResources>,
-        val to: List<AccountWithTransferableResources>,
-        val badges: List<Badge> = emptyList(),
-        val dApps: List<Pair<DApp, Boolean>> = emptyList()
-    ) : PreviewType {
+    sealed interface Transfer : PreviewType {
+        val from: List<AccountWithTransferableResources>
+        val to: List<AccountWithTransferableResources>
 
-        fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
-            allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
-        }.flatten()
-    }
+        data class Staking(
+            override val from: List<AccountWithTransferableResources>,
+            override val to: List<AccountWithTransferableResources>,
+            val validators: List<ValidatorDetail>,
+            val actionType: ActionType
+        ) : Transfer {
+            enum class ActionType {
+                Stake, Unstake, ClaimStake
+            }
+        }
 
-    data class Staking(
-        val from: List<AccountWithTransferableResources>,
-        val to: List<AccountWithTransferableResources>,
-        val validators: List<ValidatorDetail>,
-        val actionType: ActionType
-    ) : PreviewType {
-        enum class ActionType {
-            Stake, Unstake, ClaimStake
+        data class Pool(
+            override val from: List<AccountWithTransferableResources>,
+            override val to: List<AccountWithTransferableResources>,
+            val pools: List<com.babylon.wallet.android.domain.model.resources.Pool>,
+            val actionType: ActionType
+        ) : Transfer {
+            enum class ActionType {
+                Contribution, Redemption
+            }
+        }
+
+        data class GeneralTransfer(
+            override val from: List<AccountWithTransferableResources>,
+            override val to: List<AccountWithTransferableResources>,
+            val badges: List<Badge> = emptyList(),
+            val dApps: List<Pair<DApp, Boolean>> = emptyList()
+        ) : Transfer {
+
+            fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
+                allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
+            }.flatten()
         }
     }
 }

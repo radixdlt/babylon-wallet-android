@@ -23,10 +23,10 @@ class GetPoolUnitDetailsUseCase @Inject constructor(
         val poolAddress = poolResource.poolAddress ?: return@then runCatching {
             error("Resource $resourceAddress is not associated with a pool")
         }
-        stateRepository.getPool(poolAddress).map {
+        stateRepository.getPools(setOf(poolAddress)).map {
             PoolUnit(
                 stake = poolResource,
-                pool = it
+                pool = it.first()
             )
         }
     }

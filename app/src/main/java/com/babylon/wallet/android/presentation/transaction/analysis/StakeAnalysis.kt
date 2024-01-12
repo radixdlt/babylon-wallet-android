@@ -26,11 +26,11 @@ suspend fun DetailedManifestClass.ValidatorStake.resolve(
         resources = resources,
         involvedValidators = involvedValidators
     )
-    return PreviewType.Staking(
+    return PreviewType.Transfer.Staking(
         from = fromAccounts,
         to = toAccounts,
         validators = involvedValidators,
-        actionType = PreviewType.Staking.ActionType.Stake
+        actionType = PreviewType.Transfer.Staking.ActionType.Stake
     )
 }
 

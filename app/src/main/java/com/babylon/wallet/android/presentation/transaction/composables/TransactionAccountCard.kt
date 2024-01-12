@@ -43,6 +43,7 @@ import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.asLsu
+import com.babylon.wallet.android.domain.model.resources.metadata.name
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
@@ -82,6 +83,10 @@ fun TransactionAccountCard(
 
         val stakeClaimNftTransferables = remember(account.resources) {
             account.resources.filter { it.transferable is TransferableResource.StakeClaimNft }
+        }
+
+        val poolUnitTransferables = remember(account.resources) {
+            account.resources.filter { it.transferable is TransferableResource.Pool }
         }
 
         // Fungibles
@@ -139,6 +144,21 @@ fun TransactionAccountCard(
                 transferable = transferableStakeClaim,
                 shape = shape,
                 onNonFungibleResourceClick = onNonFungibleResourceClick
+            )
+            if (lastItem.not()) {
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+            }
+        }
+
+        poolUnitTransferables.forEachIndexed { index, transferable ->
+            val lastItem = index == poolUnitTransferables.lastIndex
+            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
+            val transferablePoolUnit = transferable.transferable as TransferableResource.Pool
+
+            TransferablePoolUnitItemContent(
+                transferable = transferablePoolUnit,
+                shape = shape,
+                onFungibleResourceClick = onFungibleResourceClick
             )
             if (lastItem.not()) {
                 HorizontalDivider(color = RadixTheme.colors.gray4)
@@ -247,17 +267,14 @@ private fun TransferableItemContent(
                 )
             }
 
-            is TransferableResource.StakeClaimNft,
-            is TransferableResource.LsuAmount -> {
-            }
+            else -> {}
         }
         Text(
             modifier = Modifier.weight(1f),
             text = when (val resource = transferable.transferable) {
                 is TransferableResource.Amount -> resource.resource.displayTitle
                 is TransferableResource.NFTs -> resource.resource.name
-                is TransferableResource.LsuAmount,
-                is TransferableResource.StakeClaimNft -> ""
+                else -> ""
             }.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,
@@ -513,6 +530,107 @@ private fun TransferableStakeClaimNftItemContent(
             }
             if (addSpacer) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+            }
+        }
+    }
+}
+
+@Composable
+private fun TransferablePoolUnitItemContent(
+    modifier: Modifier = Modifier,
+    transferable: TransferableResource.Pool,
+    shape: Shape,
+    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit
+) {
+    Column(
+        modifier = modifier
+            .height(IntrinsicSize.Min)
+            .background(
+                color = RadixTheme.colors.gray5,
+                shape = shape
+            )
+            .padding(
+                horizontal = RadixTheme.dimensions.paddingDefault,
+                vertical = RadixTheme.dimensions.paddingMedium
+            )
+    ) {
+        Row(
+            verticalAlignment = CenterVertically,
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            Thumbnail.PoolUnit(
+                modifier = Modifier.size(44.dp),
+                poolUnit = transferable.pool
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = transferable.pool.stake.displayTitle.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = transferable.pool.pool?.metadata?.name().orEmpty().ifEmpty { "Unknown pool" }, // TODO crowdin
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
+        }
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = RadixTheme.dimensions.paddingSmall),
+            text = stringResource(id = R.string.transactionReview_worth).uppercase(),
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray2,
+            maxLines = 1
+        )
+        val poolResources = transferable.pool.pool?.resources.orEmpty()
+        Column(modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)) {
+            poolResources.forEachIndexed { index, item ->
+                val addDivider = index != poolResources.lastIndex
+                Row(
+                    modifier = Modifier
+                        .clip(RadixTheme.shapes.roundedRectSmall)
+                        .clickable {
+                            onFungibleResourceClick(
+                                item,
+                                transferable.isNewlyCreated
+                            )
+                        }
+                        .fillMaxWidth()
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    verticalAlignment = CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                ) {
+                    Thumbnail.Fungible(
+                        modifier = Modifier.size(44.dp),
+                        token = item,
+                    )
+                    Text(
+                        text = item.displayTitle,
+                        style = RadixTheme.typography.body2HighImportance,
+                        color = RadixTheme.colors.gray1,
+                        maxLines = 2
+                    )
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = transferable.contributionPerResource[item.resourceAddress]?.displayableQuantity().orEmpty(),
+                        style = RadixTheme.typography.secondaryHeader,
+                        color = RadixTheme.colors.gray1,
+                        textAlign = TextAlign.End,
+                        maxLines = 2
+                    )
+                }
+                if (addDivider) {
+                    HorizontalDivider(color = RadixTheme.colors.gray3)
+                }
             }
         }
     }

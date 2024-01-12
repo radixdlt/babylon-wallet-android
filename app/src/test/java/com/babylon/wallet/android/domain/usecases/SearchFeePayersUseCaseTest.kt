@@ -148,7 +148,7 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getPool(poolAddress: String): Result<Pool> {
+            override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> {
                 error("Not needed")
             }
 

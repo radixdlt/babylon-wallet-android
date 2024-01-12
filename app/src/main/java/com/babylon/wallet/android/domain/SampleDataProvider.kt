@@ -12,7 +12,9 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
@@ -132,6 +134,73 @@ class SampleDataProvider {
         )
     )
 
+    val transferableDepositingPool = Transferable.Depositing(
+        transferable = TransferableResource.Pool(
+            pool = PoolUnit(
+                Resource.FungibleResource(
+                    resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
+                    ownedAmount = null,
+                    currentSupply = BigDecimal("69696969696969.666999666999666999"),
+                    metadata = listOf(
+                        Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
+                        Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.DESCRIPTION.key,
+                            value = "a very xxx token",
+                            valueType = MetadataType.String
+                        )
+                    )
+                ),
+                pool = Pool(
+                    address = "pool_tdx_19jd32jd3928jd3892jd329",
+                    metadata = listOf(
+                        Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool", valueType = MetadataType.String),
+                        Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.POOL_UNIT.key,
+                            value = "resource_tdx_19jd32jd3928jd3892jd329",
+                            valueType = MetadataType.Address
+                        )
+                    ),
+                    resources = listOf(
+                        Resource.FungibleResource(
+                            resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt12",
+                            ownedAmount = null,
+                            currentSupply = BigDecimal("69696969696969.666999666999666999"),
+                            metadata = listOf(
+                                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
+                                Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
+                                Metadata.Primitive(
+                                    key = ExplicitMetadataKey.DESCRIPTION.key,
+                                    value = "pool 1 token",
+                                    valueType = MetadataType.String
+                                )
+                            )
+                        ),
+                        Resource.FungibleResource(
+                            resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt21",
+                            ownedAmount = null,
+                            currentSupply = BigDecimal("69696969696969.666999666999666999"),
+                            metadata = listOf(
+                                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
+                                Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
+                                Metadata.Primitive(
+                                    key = ExplicitMetadataKey.DESCRIPTION.key,
+                                    value = "pool 2 token",
+                                    valueType = MetadataType.String
+                                )
+                            )
+                        )
+                    )
+                ),
+            ),
+            contributionPerResource = mapOf(
+                "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt12" to BigDecimal(100),
+                "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt21" to BigDecimal(200)
+            )
+        )
+    )
+
     val accountWithTransferableResourcesOwned = AccountWithTransferableResources.Owned(
         account = Network.Account(
             address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",
@@ -170,6 +239,43 @@ class SampleDataProvider {
     )
 
     val accountWithTransferableResourceLsu = AccountWithTransferableResources.Owned(
+        account = Network.Account(
+            address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",
+            appearanceID = 0,
+            displayName = "666",
+            networkID = 14,
+            securityState = SecurityState.Unsecured(
+                unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                    transactionSigning = FactorInstance(
+                        badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                            derivationPath = DerivationPath.forAccount(
+                                networkId = Radix.Gateway.default.network.networkId(),
+                                accountIndex = 0,
+                                keyType = KeyType.TRANSACTION_SIGNING
+                            ),
+                            publicKey = FactorInstance.PublicKey.curve25519PublicKey(
+                                "c294ecdd8752e2197ad0027fe4557d464362df12b587537234f0b106237462f5"
+                            )
+                        ),
+                        factorSourceId = FactorSource.FactorSourceID.FromHash(
+                            kind = FactorSourceKind.DEVICE,
+                            body = HexCoded32Bytes("ba6a7bd3e91b2a83e21f05c22eaddecd12e75ab01c492e9d4e62d6445600c142")
+                        )
+                    )
+                )
+            ),
+            onLedgerSettings = Network.Account.OnLedgerSettings(
+                thirdPartyDeposits = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
+                    depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll,
+                    assetsExceptionList = emptyList(),
+                    depositorsAllowList = emptyList()
+                )
+            )
+        ),
+        resources = listOf(transferableDepositingLsu)
+    )
+
+    val accountWithTransferablePool = AccountWithTransferableResources.Owned(
         account = Network.Account(
             address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",
             appearanceID = 0,

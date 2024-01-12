@@ -18,7 +18,7 @@ import androidx.room.TypeConverters
         PoolResourceJoin::class,
         DAppEntity::class
     ],
-    version = StateDatabase.VERSION_3
+    version = StateDatabase.VERSION_4
 )
 @TypeConverters(StateDatabaseConverters::class)
 abstract class StateDatabase : RoomDatabase() {
@@ -32,8 +32,11 @@ abstract class StateDatabase : RoomDatabase() {
         @Deprecated("Updated metadata schema")
         const val VERSION_2 = 2
 
-        // Add DAppEntity to schema
+        @Deprecated("Add DAppEntity to schema")
         const val VERSION_3 = 3
+
+        // Add PoolEntity.metadata to schema
+        const val VERSION_4 = 4
 
         private const val NAME = "STATE_DATABASE"
 
