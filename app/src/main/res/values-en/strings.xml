@@ -569,7 +569,7 @@
   <string name="onboarding_eula_headerTitle">User Terms</string>
   <string name="onboarding_eula_headerSubtitle">To proceed, you must accept the user terms below.</string>
   <string name="onboarding_eula_accept">Accept</string>
-  <string name="splash_tapAnywhereToUnlock">Tap anywhere to unlock?</string>
+  <string name="splash_tapAnywhereToUnlock">Tap to unlock</string>
   <string name="splash_passcodeNotSetTitle">Passcode not set up</string>
   <string name="splash_passcodeNotSetMessage">This app requires your phone to have a passcode set up</string>
   <string name="splash_incompatibleProfileVersionAlert_delete">Delete Wallet Data</string>
