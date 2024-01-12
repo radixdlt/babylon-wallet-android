@@ -122,7 +122,7 @@ fun TransactionReviewScreen(
             is InteractionState.Ledger.Error -> {
                 BasicPromptAlertDialog(
                     finish = { viewModel.onCancelSigningClick() },
-                    text = {
+                    message = {
                         Text(text = it.failure.userFriendlyMessage())
                     },
                     confirmText = stringResource(id = R.string.common_ok),
@@ -184,8 +184,8 @@ private fun TransactionPreviewContent(
                 finish = {
                     dismissTransactionErrorDialog()
                 },
-                title = transactionError.getTitle(),
-                text = transactionError.getMessage(),
+                titleText = transactionError.getTitle(),
+                messageText = transactionError.getMessage(),
                 confirmText = stringResource(id = R.string.common_ok),
                 dismissText = null
             )

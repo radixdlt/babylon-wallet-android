@@ -77,7 +77,7 @@ fun AccountSettingsScreen(
                 }
                 showHideAccountPrompt = false
             },
-            text = {
+            message = {
                 Text(
                     text = stringResource(id = R.string.accountSettings_hideAccountConfirmation),
                     style = RadixTheme.typography.body2Regular,

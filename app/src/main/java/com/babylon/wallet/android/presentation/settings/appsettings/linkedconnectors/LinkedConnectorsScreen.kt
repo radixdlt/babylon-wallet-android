@@ -141,7 +141,7 @@ private fun LinkedConnectorsContent(
                                 color = RadixTheme.colors.gray1
                             )
                         },
-                        text = {
+                        message = {
                             Text(
                                 text = stringResource(id = R.string.linkedConnectors_removeConnectionAlert_message),
                                 style = RadixTheme.typography.body2Regular,

@@ -73,8 +73,8 @@ class VerifyDAppUseCase @Inject constructor(
     }
 
     private suspend fun DApp.verify(origin: String) = when {
-        !isDappDefinition -> throw RadixWalletException.DappVerificationException.WrongAccountType
-        !isRelatedWith(origin) -> throw RadixWalletException.DappVerificationException.UnknownWebsite
+        !isDappDefinition -> Result.failure(RadixWalletException.DappVerificationException.WrongAccountType)
+        !isRelatedWith(origin) -> Result.failure(RadixWalletException.DappVerificationException.UnknownWebsite)
         else ->
             wellKnownDAppDefinitionRepository
                 .getWellKnownDAppDefinitions(origin)

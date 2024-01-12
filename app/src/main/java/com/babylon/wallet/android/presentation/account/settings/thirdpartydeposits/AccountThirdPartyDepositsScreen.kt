@@ -76,7 +76,7 @@ fun AccountThirdPartyDepositsScreen(
                 }
                 showCancelPrompt = false
             },
-            text = {
+            message = {
                 androidx.compose.material3.Text(
                     text = stringResource(
                         R.string.accountSettings_thirdPartyDeposits_discardMessage
