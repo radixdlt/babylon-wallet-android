@@ -5,41 +5,28 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.data.transaction.InteractionState
-import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.domain.usecases.BuildUnauthorizedDappResponseUseCase
-import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
-import com.babylon.wallet.android.presentation.common.UiMessage
-import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.dapp.FailureDialogState
+import com.babylon.wallet.android.presentation.dapp.DAppLoginDelegate
+import com.babylon.wallet.android.presentation.dapp.DAppLoginEvent
+import com.babylon.wallet.android.presentation.dapp.DAppLoginUiState
 import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
-import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
 import com.babylon.wallet.android.presentation.model.toPersonaData
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.accountOnCurrentNetwork
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.personaOnCurrentNetwork
 import javax.inject.Inject
 
@@ -50,72 +37,36 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     private val dAppMessenger: DappMessenger,
     private val appEventBus: AppEventBus,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
-    private val stateRepository: StateRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
-    private val buildUnauthorizedDappResponseUseCase: BuildUnauthorizedDappResponseUseCase
-) : StateViewModel<DAppUnauthorizedLoginUiState>(),
-    OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
+    private val buildUnauthorizedDappResponseUseCase: BuildUnauthorizedDappResponseUseCase,
+    private val dAppLoginDelegate: DAppLoginDelegate
+) : StateViewModel<DAppLoginUiState>(),
+    OneOffEventHandler<DAppLoginEvent> by OneOffEventHandlerImpl() {
 
     private val args = DAppUnauthorizedLoginArgs(savedStateHandle)
 
     private lateinit var request: MessageFromDataChannel.IncomingRequest.UnauthorizedRequest
 
     init {
-        observeSigningState()
+        dAppLoginDelegate(scope = viewModelScope, state = _state)
+
+        dAppLoginDelegate.observeSigningState(isAuthorizedRequest = false)
+
         viewModelScope.launch {
-            val requestToHandle = incomingRequestRepository.getUnauthorizedRequest(args.requestId)
-            if (requestToHandle == null) {
-                sendEvent(Event.CloseLoginFlow)
-                return@launch
-            } else {
-                request = requestToHandle
-            }
-            val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
-            if (currentNetworkId != request.requestMetadata.networkId) {
-                handleRequestError(
-                    RadixWalletException.DappRequestException.WrongNetwork(
-                        currentNetworkId,
-                        request.requestMetadata.networkId
-                    )
-                )
-                return@launch
-            }
-            if (!request.isValidRequest()) {
-                handleRequestError(RadixWalletException.DappRequestException.InvalidRequest)
-                return@launch
-            }
-            stateRepository.getDAppsDetails(
-                definitionAddresses = listOf(request.metadata.dAppDefinitionAddress),
-                skipCache = false
-            ).onSuccess { dApps ->
-                dApps.firstOrNull()?.let { dApp ->
-                    _state.update { it.copy(dapp = dApp) }
-                }
-            }.onFailure { error ->
-                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
-            }
+            dAppLoginDelegate.processLoginRequest(
+                requestId = args.requestId,
+                sendEvent = {
+                    viewModelScope.launch { sendEvent(DAppLoginEvent.CloseLoginFlow) }
+                },
+                isAuthorizedRequest = true
+            )
             setInitialDappLoginRoute()
         }
     }
 
-    private fun observeSigningState() {
-        viewModelScope.launch {
-            buildUnauthorizedDappResponseUseCase.signingState.collect { signingState ->
-                _state.update { state ->
-                    state.copy(interactionState = signingState)
-                }
-            }
-        }
-    }
+    fun onDismissSigningStatusDialog() = dAppLoginDelegate.onDismissSigningStatusDialog()
 
-    fun onDismissSigningStatusDialog() {
-        _state.update { it.copy(interactionState = null) }
-    }
-
-    fun dismissNoMnemonicError() {
-        _state.update { it.copy(isNoMnemonicErrorVisible = false) }
-    }
+    fun dismissNoMnemonicError() = dAppLoginDelegate.dismissNoMnemonicError()
 
     private fun setInitialDappLoginRoute() {
         val request = request
@@ -146,41 +97,15 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleRequestError(exception: Throwable) {
-        if (exception is RadixWalletException.DappRequestException) {
-            if (exception is RadixWalletException.LedgerCommunicationException.FailedToSignAuthChallenge) {
-                return
+    fun onAcknowledgeFailureDialog() {
+        dAppLoginDelegate.onAcknowledgeFailureDialog(
+            sendEvent = {
+                viewModelScope.launch { sendEvent(DAppLoginEvent.CloseLoginFlow) }
             }
-            if (exception.cause is RadixWalletException.SignatureCancelled) {
-                return
-            }
-            if (exception.cause is ProfileException.NoMnemonic) {
-                _state.update { it.copy(isNoMnemonicErrorVisible = true) }
-                return
-            }
-            dAppMessenger.sendWalletInteractionResponseFailure(
-                remoteConnectorId = request.remoteConnectorId,
-                requestId = args.requestId,
-                error = exception.ceError,
-                message = exception.getDappMessage()
-            )
-            _state.update { it.copy(failureDialogState = FailureDialogState.Open(exception)) }
-        } else {
-            if (exception is ProfileException.NoMnemonic) {
-                _state.update { it.copy(isNoMnemonicErrorVisible = true) }
-            }
-        }
+        )
     }
 
-    fun onAcknowledgeFailureDialog() = viewModelScope.launch {
-        _state.update { it.copy(failureDialogState = FailureDialogState.Closed) }
-        sendEvent(Event.CloseLoginFlow)
-        incomingRequestRepository.requestHandled(requestId = args.requestId)
-    }
-
-    fun onMessageShown() {
-        _state.update { it.copy(uiMessage = null) }
-    }
+    fun onMessageShown() = dAppLoginDelegate.onMessageShown()
 
     fun onGrantedPersonaDataOnetime() {
         val selectedPersona = checkNotNull(state.value.selectedPersona)
@@ -196,10 +121,10 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         selectedPersona = updatedPersona.toUiModel(),
-                        selectedPersonaData = dataFields.map { it.value }.toPersonaData()
+                        selectedOneTimePersonaData = dataFields.map { it.value }.toPersonaData()
                     )
                 }
-                sendEvent(Event.RequestCompletionBiometricPrompt(request.needSignatures()))
+                sendEvent(DAppLoginEvent.RequestCompletionBiometricPrompt(request.needSignatures()))
             }
         }
     }
@@ -211,13 +136,13 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 requestId = args.requestId,
                 error = WalletErrorType.RejectedByUser
             )
-            sendEvent(Event.CloseLoginFlow)
+            sendEvent(DAppLoginEvent.CloseLoginFlow)
             incomingRequestRepository.requestHandled(requestId = args.requestId)
         }
     }
 
     fun onSelectPersona(persona: Network.Persona) {
-        _state.update { it.copy(selectedPersona = persona.toUiModel()) }
+        dAppLoginDelegate.onSelectPersona(persona)
     }
 
     fun onAccountsSelected(onetimeAccounts: List<AccountItemUiModel>) {
@@ -226,12 +151,12 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             val request = request
             if (request.oneTimePersonaDataRequestItem != null) {
                 sendEvent(
-                    Event.PersonaDataOnetime(
+                    DAppLoginEvent.PersonaDataOnetime(
                         request.oneTimePersonaDataRequestItem.toRequiredFields()
                     )
                 )
             } else {
-                sendEvent(Event.RequestCompletionBiometricPrompt(request.needSignatures()))
+                sendEvent(DAppLoginEvent.RequestCompletionBiometricPrompt(request.needSignatures()))
             }
         }
     }
@@ -243,14 +168,14 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull {
                     getProfileUseCase.accountOnCurrentNetwork(it.address)
                 },
-                onetimeSharedPersonaData = state.value.selectedPersonaData,
+                onetimeSharedPersonaData = state.value.selectedOneTimePersonaData,
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             ).onSuccess {
                 dAppMessenger.sendWalletInteractionSuccessResponse(
                     remoteConnectorId = request.remoteConnectorId,
                     response = it
                 )
-                sendEvent(Event.LoginFlowCompleted)
+                sendEvent(DAppLoginEvent.LoginFlowCompleted)
                 appEventBus.sendEvent(
                     AppEvent.Status.DappInteraction(
                         requestId = request.id,
@@ -258,34 +183,15 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                     )
                 )
             }.onFailure { exception ->
-                handleRequestError(exception)
+                dAppLoginDelegate.handleRequestError(
+                    exception = exception,
+                    isAuthorizedRequest = false
+                )
             }
         }
     }
 
-    override fun initialState(): DAppUnauthorizedLoginUiState {
-        return DAppUnauthorizedLoginUiState()
+    override fun initialState(): DAppLoginUiState {
+        return DAppLoginUiState()
     }
 }
-
-sealed interface Event : OneOffEvent {
-
-    data class RequestCompletionBiometricPrompt(val requestDuringSigning: Boolean) : Event
-    data object CloseLoginFlow : Event
-
-    data object LoginFlowCompleted : Event
-
-    data class PersonaDataOnetime(val requiredPersonaFields: RequiredPersonaFields) : Event
-}
-
-data class DAppUnauthorizedLoginUiState(
-    val dapp: DApp? = null,
-    val uiMessage: UiMessage? = null,
-    val failureDialogState: FailureDialogState = FailureDialogState.Closed,
-    val initialUnauthorizedLoginRoute: InitialUnauthorizedLoginRoute? = null,
-    val selectedPersonaData: PersonaData? = null,
-    val selectedAccountsOneTime: ImmutableList<AccountItemUiModel> = persistentListOf(),
-    val selectedPersona: PersonaUiModel? = null,
-    val interactionState: InteractionState? = null,
-    val isNoMnemonicErrorVisible: Boolean = false
-) : UiState
