@@ -1,8 +1,11 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.annotation.FloatRange
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.InteractionState
@@ -41,6 +44,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.ProfileException
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -225,8 +229,9 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    fun dismissTransactionErrorDialog() {
+    fun dismissTerminalErrorDialog() {
         _state.update { it.copy(error = null) }
+        onBackClick()
     }
 
     sealed interface Event : OneOffEvent {
@@ -256,7 +261,7 @@ class TransactionReviewViewModel @Inject constructor(
         val defaultSignersCount: Int = 0,
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
-        val error: UiMessage.TransactionErrorMessage? = null,
+        val error: TransactionErrorMessage? = null,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val interactionState: InteractionState? = null,
         val isTransactionDismissed: Boolean = false
@@ -417,6 +422,32 @@ class TransactionReviewViewModel @Inject constructor(
                     Default, Advanced
                 }
             }
+        }
+    }
+}
+
+data class TransactionErrorMessage(
+    private val error: Throwable?
+) {
+
+    private val isNoMnemonicErrorVisible = error?.cause is ProfileException.NoMnemonic
+
+    /**
+     * True when this error will end up abandoning the transaction. Displayed as a dialog.
+     */
+    val isTerminalError: Boolean
+        get() = isNoMnemonicErrorVisible ||
+            error is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ||
+            error is RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities
+
+    val uiMessage: UiMessage = UiMessage.ErrorMessage(error)
+
+    @Composable
+    fun getTitle(): String {
+        return if (isNoMnemonicErrorVisible) {
+            stringResource(id = R.string.transactionReview_noMnemonicError_title)
+        } else {
+            stringResource(id = R.string.common_errorAlertTitle)
         }
     }
 }
