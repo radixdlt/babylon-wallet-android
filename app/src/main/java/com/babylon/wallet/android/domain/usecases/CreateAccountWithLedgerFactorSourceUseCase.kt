@@ -5,7 +5,6 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -39,7 +38,7 @@ class CreateAccountWithLedgerFactorSourceUseCase @Inject constructor(
                     it.id == ledgerFactorSourceID
                 } as LedgerHardwareWalletFactorSource
             // Construct new account
-            val networkId = networkID ?: profile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
+            val networkId = networkID ?: profile.currentNetwork.knownNetworkId
             val totalAccountsOnNetwork = profile.networks.find { it.networkID == networkId.value }?.accounts?.size ?: 0
             val newAccount = Network.Account.initAccountWithLedgerFactorSource(
                 entityIndex = profile.nextAccountIndex(derivationPath.scheme, networkId, ledgerFactorSourceID),

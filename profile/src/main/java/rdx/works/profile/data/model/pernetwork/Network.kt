@@ -25,6 +25,7 @@ import rdx.works.core.toHexString
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.extensions.derivationPathEntityIndex
@@ -65,8 +66,8 @@ data class Network(
     @SerialName("authorizedDapps") val authorizedDapps: List<AuthorizedDapp>
 ) {
 
-    val knownNetworkId: NetworkId?
-        get() = NetworkId.values().find { it.value == networkID }
+    val knownNetworkId: NetworkId
+        get() = NetworkId.entries.find { it.value == networkID } ?: Radix.Gateway.default.network.networkId()
 
     @Serializable
     data class Account(

@@ -49,7 +49,7 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
  */
 val GetProfileUseCase.entitiesOnCurrentNetwork: Flow<List<Entity>>
     get() = invoke().map {
-        it.currentNetwork?.accounts?.notHiddenAccounts().orEmpty() + it.currentNetwork?.personas?.notHiddenPersonas().orEmpty()
+        it.currentNetwork.accounts.notHiddenAccounts() + it.currentNetwork.personas.notHiddenPersonas()
     }
 
 suspend fun GetProfileUseCase.currentNetwork(): Network? {
@@ -57,11 +57,11 @@ suspend fun GetProfileUseCase.currentNetwork(): Network? {
 }
 
 val GetProfileUseCase.activeAccountsOnCurrentNetwork
-    get() = invoke().map { it.currentNetwork?.accounts?.notHiddenAccounts().orEmpty() }
+    get() = invoke().map { it.currentNetwork.accounts.notHiddenAccounts() }
 
 val GetProfileUseCase.hiddenAccountsOnCurrentNetwork
     get() = invoke().map {
-        it.currentNetwork?.accounts?.filter { account -> account.flags.contains(EntityFlag.DeletedByUser) }.orEmpty()
+        it.currentNetwork.accounts.filter { account -> account.flags.contains(EntityFlag.DeletedByUser) }
     }
 
 val GetProfileUseCase.factorSources
@@ -73,7 +73,7 @@ val GetProfileUseCase.deviceFactorSources
 private val GetProfileUseCase.deviceFactorSourcesWithAccounts
     get() = invoke().map { profile ->
         val deviceFactorSources = profile.factorSources.filterIsInstance<DeviceFactorSource>()
-        val allAccountsOnNetwork = profile.currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
+        val allAccountsOnNetwork = profile.currentNetwork.accounts.notHiddenAccounts()
         deviceFactorSources.associateWith { deviceFactorSource ->
             allAccountsOnNetwork.filter { it.factorSourceId == deviceFactorSource.id }
         }
@@ -163,11 +163,11 @@ suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
  * Personas on network
  */
 val GetProfileUseCase.personasOnCurrentNetwork
-    get() = invoke().map { it.currentNetwork?.personas?.notHiddenPersonas().orEmpty() }
+    get() = invoke().map { it.currentNetwork.personas.notHiddenPersonas() }
 
 val GetProfileUseCase.hiddenPersonasOnCurrentNetwork
     get() = invoke().map {
-        it.currentNetwork?.personas?.filter { persona -> persona.flags.contains(EntityFlag.DeletedByUser) }.orEmpty()
+        it.currentNetwork.personas.filter { persona -> persona.flags.contains(EntityFlag.DeletedByUser) }
     }
 
 suspend fun GetProfileUseCase.personasOnCurrentNetwork() = personasOnCurrentNetwork.first()
