@@ -17,8 +17,8 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
         return getProfileUseCase.invoke().map { profile ->
             val result = mutableListOf<DeviceFactorSourceData>()
             val deviceFactorSources = profile.factorSources.filterIsInstance<DeviceFactorSource>()
-            val allAccountsOnNetwork = profile.currentNetwork?.accounts?.notHiddenAccounts().orEmpty()
-            val allPersonasOnNetwork = profile.currentNetwork?.personas?.notHiddenPersonas().orEmpty()
+            val allAccountsOnNetwork = profile.currentNetwork.accounts.notHiddenAccounts()
+            val allPersonasOnNetwork = profile.currentNetwork.personas.notHiddenPersonas()
             deviceFactorSources.forEach { deviceFactorSource ->
                 if (deviceFactorSource.supportsOlympia && deviceFactorSource.supportsBabylon) {
                     val olympiaAccounts = allAccountsOnNetwork.filter {
