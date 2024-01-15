@@ -98,7 +98,7 @@ private suspend fun extractDeposits(
         account = ownedAccount,
         resources = listOf(
             element = Transferable.Depositing(
-                transferable = TransferableResource.Amount(
+                transferable = TransferableResource.FungibleAmount(
                     entry.value.sumOf { it.amount },
                     xrdResource,
                     false

@@ -19,7 +19,8 @@ fun PoolTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
-    previewType: PreviewType.Transfer.Pool
+    previewType: PreviewType.Transfer.Pool,
+    onPromptForGuarantees: () -> Unit
 ) {
     val poolSectionLabel = when (previewType.actionType) {
         PreviewType.Transfer.Pool.ActionType.Contribution -> "Contributing to pools"
@@ -31,7 +32,7 @@ fun PoolTypeContent(
         onFungibleResourceClick = onFungibleResourceClick,
         onNonFungibleResourceClick = { _, _, _ -> },
         previewType = previewType,
-        onPromptForGuarantees = {},
+        onPromptForGuarantees = onPromptForGuarantees,
         middleSection = {
             PoolsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -60,6 +61,7 @@ fun PoolTypePreview() {
                 pools = persistentListOf(),
                 actionType = PreviewType.Transfer.Pool.ActionType.Contribution
             ),
+            onPromptForGuarantees = {},
         )
     }
 }

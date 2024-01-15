@@ -89,7 +89,7 @@ class SampleDataProvider {
     )
 
     val transferableDepositing = Transferable.Depositing(
-        transferable = TransferableResource.Amount(
+        transferable = TransferableResource.FungibleAmount(
             amount = BigDecimal(69),
             resource = Resource.FungibleResource(
                 resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
@@ -136,7 +136,7 @@ class SampleDataProvider {
 
     val transferableDepositingPool = Transferable.Depositing(
         transferable = TransferableResource.PoolUnitAmount(
-            pool = PoolUnit(
+            poolUnit = PoolUnit(
                 Resource.FungibleResource(
                     resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
                     ownedAmount = null,

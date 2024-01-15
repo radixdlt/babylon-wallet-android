@@ -77,7 +77,7 @@ private suspend fun extractWithdrawals(
         account = ownedAccount,
         resources = listOf(
             element = Transferable.Withdrawing(
-                transferable = TransferableResource.Amount(
+                transferable = TransferableResource.FungibleAmount(
                     entry.value.sumOf { it.amount },
                     xrdResource,
                     false

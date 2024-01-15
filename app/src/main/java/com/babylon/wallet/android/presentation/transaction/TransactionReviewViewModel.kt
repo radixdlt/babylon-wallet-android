@@ -17,6 +17,7 @@ import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableWithGuarantees
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Badge
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -370,7 +371,7 @@ class TransactionReviewViewModel @Inject constructor(
                         if (candidateAddressWithdrawn != null) {
                             val xrdResourceWithdrawn = candidateAddressWithdrawn.resources.map {
                                 it.transferable
-                            }.filterIsInstance<TransferableResource.Amount>().find { it.resource.isXrd }
+                            }.filterIsInstance<TransferableResource.FungibleAmount>().find { it.resource.isXrd }
 
                             xrdResourceWithdrawn?.amount ?: BigDecimal.ZERO
                         } else {
@@ -534,9 +535,8 @@ data class AccountWithDepositSettingsChanges(
 
 @Suppress("MagicNumber")
 sealed interface AccountWithPredictedGuarantee {
-
     val address: String
-    val transferableAmount: TransferableResource.Amount
+    val transferable: TransferableWithGuarantees
     val instructionIndex: Long
     val guaranteeAmountString: String
 
@@ -545,7 +545,7 @@ sealed interface AccountWithPredictedGuarantee {
         get() = (guaranteeAmountString.toDoubleOrNull() ?: 0.0).div(100.0)
 
     val guaranteedAmount: BigDecimal
-        get() = transferableAmount.amount * guaranteeOffsetDecimal.toBigDecimal()
+        get() = transferable.amount * guaranteeOffsetDecimal.toBigDecimal()
 
     fun increase(): AccountWithPredictedGuarantee {
         val newOffset = (guaranteeOffsetDecimal.toBigDecimal().plus(BigDecimal(0.001)))
@@ -580,11 +580,11 @@ sealed interface AccountWithPredictedGuarantee {
     }
 
     fun isTheSameGuaranteeItem(with: AccountWithPredictedGuarantee): Boolean = address == with.address &&
-        transferableAmount.resourceAddress == with.transferableAmount.resourceAddress
+        transferable.fungibleResource.resourceAddress == with.transferable.fungibleResource.resourceAddress
 
     data class Owned(
         val account: Network.Account,
-        override val transferableAmount: TransferableResource.Amount,
+        override val transferable: TransferableWithGuarantees,
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
     ) : AccountWithPredictedGuarantee {
@@ -594,7 +594,7 @@ sealed interface AccountWithPredictedGuarantee {
 
     data class Other(
         override val address: String,
-        override val transferableAmount: TransferableResource.Amount,
+        override val transferable: TransferableWithGuarantees,
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
     ) : AccountWithPredictedGuarantee
@@ -628,12 +628,12 @@ sealed interface AccountWithTransferableResources {
         val resources = resources.mapWhen(
             predicate = { depositing ->
                 resourcesWithGuaranteesForAccount.any {
-                    it.address == address && it.transferableAmount.resourceAddress == depositing.transferable.resourceAddress
+                    it.address == address && it.transferable.fungibleResource.resourceAddress == depositing.transferable.resourceAddress
                 }
             },
             mutation = { depositing ->
                 val accountWithGuarantee = resourcesWithGuaranteesForAccount.find {
-                    it.transferableAmount.resourceAddress == depositing.transferable.resourceAddress
+                    it.transferable.fungibleResource.resourceAddress == depositing.transferable.resourceAddress
                 }
 
                 if (accountWithGuarantee != null) {

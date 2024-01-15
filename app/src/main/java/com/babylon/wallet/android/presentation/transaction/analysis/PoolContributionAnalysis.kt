@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
+import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
@@ -10,11 +11,12 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.ret.ResourceIndicator
+import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
-import timber.log.Timber
 
 suspend fun DetailedManifestClass.PoolContribution.resolve(
     executionSummary: ExecutionSummary,
@@ -22,6 +24,7 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
     resources: List<Resource>,
     involvedPools: List<Pool>
 ): PreviewType {
+    val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
     val accountsWithdrawnFrom = executionSummary.accountWithdraws.keys
     val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {
         accountsWithdrawnFrom.contains(it.address)
@@ -29,9 +32,6 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
     val from = executionSummary.extractWithdraws(ownedAccountsWithdrawnFrom, resources)
     val to = executionSummary.accountDeposits.map { depositsPerAddress ->
         val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(depositsPerAddress.key) ?: error("No account found")
-        depositsPerAddress.value.forEach {
-            Timber.d("depositing: ${it.resourceAddress}")
-        }
         val deposits = depositsPerAddress.value.mapNotNull { deposit ->
             val resourceAddress = deposit.resourceAddress
             val contributions = poolContributions.filter { it.poolUnitsResourceAddress.addressString() == resourceAddress }
@@ -43,6 +43,8 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
                 val poolResource = resources.find { it.resourceAddress == pool.metadata.poolUnit() } as? Resource.FungibleResource
                     ?: error("No pool resource found")
                 val contributedResourceAddresses = contributions.first().contributedResources.keys
+                val guaranteeType = (deposit as? ResourceIndicator.Fungible)?.indicator?.toGuaranteeType(defaultDepositGuarantees)
+                    ?: GuaranteeType.Guaranteed
                 Transferable.Depositing(
                     transferable = TransferableResource.PoolUnitAmount(
                         amount = contributions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
@@ -54,7 +56,8 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
                             contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
                                 .sumOf { it }
                         },
-                    )
+                    ),
+                    guaranteeType = guaranteeType,
                 )
             }
         }

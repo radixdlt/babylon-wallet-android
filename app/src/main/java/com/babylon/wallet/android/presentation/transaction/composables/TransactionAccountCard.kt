@@ -40,6 +40,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableWithGuarantees
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.asLsu
@@ -69,8 +70,8 @@ fun TransactionAccountCard(
             shape = RadixTheme.shapes.roundedRectTopMedium
         )
 
-        val amountTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableResource.Amount }
+        val fungibleAmountTransferables = remember(account.resources) {
+            account.resources.filter { it.transferable is TransferableResource.FungibleAmount }
         }
 
         val nftTransferables = remember(account.resources) {
@@ -90,14 +91,14 @@ fun TransactionAccountCard(
         }
 
         // Fungibles
-        amountTransferables.forEachIndexed { index, amountTransferable ->
-            val lastItem = if (nftTransferables.isEmpty()) index == amountTransferables.lastIndex else false
+        fungibleAmountTransferables.forEachIndexed { index, amountTransferable ->
+            val lastItem = if (nftTransferables.isEmpty()) index == fungibleAmountTransferables.lastIndex else false
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableAmount = amountTransferable.transferable as TransferableResource.Amount
+            val transferableFungibleAmount = amountTransferable.transferable as TransferableResource.FungibleAmount
 
             TransferableItemContent(
                 modifier = Modifier.clickable {
-                    onFungibleResourceClick(transferableAmount.resource, transferableAmount.isNewlyCreated)
+                    onFungibleResourceClick(transferableFungibleAmount.resource, transferableFungibleAmount.isNewlyCreated)
                 },
                 transferable = amountTransferable,
                 shape = shape,
@@ -128,7 +129,7 @@ fun TransactionAccountCard(
                 modifier = Modifier.clickable {
                     onFungibleResourceClick(transferableLsu.resource, transferableLsu.isNewlyCreated)
                 },
-                transferable = transferableLsu,
+                transferable = transferable,
                 shape = shape,
             )
             if (lastItem.not()) {
@@ -153,10 +154,9 @@ fun TransactionAccountCard(
         poolUnitTransferables.forEachIndexed { index, transferable ->
             val lastItem = index == poolUnitTransferables.lastIndex
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferablePoolUnit = transferable.transferable as TransferableResource.PoolUnitAmount
 
             TransferablePoolUnitItemContent(
-                transferable = transferablePoolUnit,
+                transferable = transferable,
                 shape = shape,
                 onFungibleResourceClick = onFungibleResourceClick
             )
@@ -252,7 +252,7 @@ private fun TransferableItemContent(
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
         when (val resource = transferable.transferable) {
-            is TransferableResource.Amount -> {
+            is TransferableResource.FungibleAmount -> {
                 Thumbnail.Fungible(
                     modifier = Modifier.size(44.dp),
                     token = resource.resource,
@@ -272,7 +272,7 @@ private fun TransferableItemContent(
         Text(
             modifier = Modifier.weight(1f),
             text = when (val resource = transferable.transferable) {
-                is TransferableResource.Amount -> resource.resource.displayTitle
+                is TransferableResource.FungibleAmount -> resource.resource.displayTitle
                 is TransferableResource.NFTs -> resource.resource.name
                 else -> ""
             }.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
@@ -281,59 +281,67 @@ private fun TransferableItemContent(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        Column(
-            horizontalAlignment = Alignment.End
-        ) {
-            val guaranteedQuantity = transferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount
-            Row(
-                modifier = Modifier,
-                verticalAlignment = CenterVertically
-            ) {
-                if (guaranteedQuantity != null) {
-                    Text(
-                        modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                        text = stringResource(id = R.string.transactionReview_estimated),
-                        style = RadixTheme.typography.body2Link,
-                        color = RadixTheme.colors.gray1,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.End
-                    )
-                }
+        if (transferable.hasEditableGuarantees) {
+            GuaranteedQuantitySection(transferable)
+        }
+    }
+}
 
-                (transferable.transferable as? TransferableResource.Amount)?.let {
-                    Text(
-                        modifier = Modifier,
-                        text = it.amount.displayableQuantity(),
-                        style = RadixTheme.typography.secondaryHeader,
-                        color = RadixTheme.colors.gray1,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.End
-                    )
-                }
+@Composable
+private fun GuaranteedQuantitySection(transferable: Transferable, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.End
+    ) {
+        val guaranteedQuantity = transferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount
+        Row(
+            modifier = Modifier,
+            verticalAlignment = CenterVertically
+        ) {
+            if (guaranteedQuantity != null) {
+                Text(
+                    modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
+                    text = stringResource(id = R.string.transactionReview_estimated),
+                    style = RadixTheme.typography.body2Link,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.End
+                )
             }
-            guaranteedQuantity?.let { quantity ->
-                Row {
-                    Text(
-                        modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
-                        text = stringResource(id = R.string.transactionReview_guaranteed),
-                        style = RadixTheme.typography.body2Regular,
-                        color = RadixTheme.colors.gray2,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.End
-                    )
-                    Text(
-                        modifier = Modifier,
-                        text = quantity.amount.displayableQuantity(),
-                        style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray2,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.End
-                    )
-                }
+
+            (transferable.transferable as? TransferableWithGuarantees)?.let {
+                Text(
+                    modifier = Modifier,
+                    text = it.amount.displayableQuantity(),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.End
+                )
+            }
+        }
+        guaranteedQuantity?.let { quantity ->
+            Row {
+                Text(
+                    modifier = Modifier.padding(end = RadixTheme.dimensions.paddingSmall),
+                    text = stringResource(id = R.string.transactionReview_guaranteed),
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.End
+                )
+                Text(
+                    modifier = Modifier,
+                    text = quantity.amount.displayableQuantity(),
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray2,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.End
+                )
             }
         }
     }
@@ -342,11 +350,12 @@ private fun TransferableItemContent(
 @Composable
 private fun TransferableLsuItemContent(
     modifier: Modifier = Modifier,
-    transferable: TransferableResource.LsuAmount,
+    transferable: Transferable,
     shape: Shape
 ) {
-    val lsu = remember(transferable) {
-        transferable.resource.asLsu()
+    val transferableLsu = transferable.transferable as TransferableResource.LsuAmount
+    val lsu = remember(transferableLsu) {
+        transferableLsu.resource.asLsu()
     }
     Column(
         modifier = modifier
@@ -379,7 +388,7 @@ private fun TransferableLsuItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferable.validatorDetail.name,
+                    text = transferableLsu.validatorDetail.name,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
@@ -421,11 +430,19 @@ private fun TransferableLsuItemContent(
             )
             Text(
                 modifier = Modifier.weight(1f),
-                text = transferable.xrdWorth.displayableQuantity(),
+                text = transferableLsu.xrdWorth.displayableQuantity(),
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.End,
                 maxLines = 2
+            )
+        }
+        if (transferable.hasEditableGuarantees) {
+            GuaranteedQuantitySection(
+                transferable,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = RadixTheme.dimensions.paddingMedium)
             )
         }
     }
@@ -538,10 +555,11 @@ private fun TransferableStakeClaimNftItemContent(
 @Composable
 private fun TransferablePoolUnitItemContent(
     modifier: Modifier = Modifier,
-    transferable: TransferableResource.PoolUnitAmount,
+    transferable: Transferable,
     shape: Shape,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit
 ) {
+    val transferablePoolUnit = transferable.transferable as TransferableResource.PoolUnitAmount
     Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
@@ -561,19 +579,23 @@ private fun TransferablePoolUnitItemContent(
         ) {
             Thumbnail.PoolUnit(
                 modifier = Modifier.size(44.dp),
-                poolUnit = transferable.pool
+                poolUnit = transferablePoolUnit.poolUnit
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = transferable.pool.stake.displayTitle.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
+                    text = transferablePoolUnit.poolUnit.stake.displayTitle.ifEmpty {
+                        stringResource(
+                            id = R.string.transactionReview_unknown
+                        )
+                    },
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferable.pool.pool?.metadata?.name().orEmpty().ifEmpty { "Unknown pool" }, // TODO crowdin
+                    text = transferablePoolUnit.poolUnit.pool?.metadata?.name().orEmpty().ifEmpty { "Unknown pool" }, // TODO crowdin
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
@@ -591,7 +613,7 @@ private fun TransferablePoolUnitItemContent(
             color = RadixTheme.colors.gray2,
             maxLines = 1
         )
-        val poolResources = transferable.pool.pool?.resources.orEmpty()
+        val poolResources = transferablePoolUnit.poolUnit.pool?.resources.orEmpty()
         Column(modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)) {
             poolResources.forEachIndexed { index, item ->
                 val addDivider = index != poolResources.lastIndex
@@ -601,7 +623,7 @@ private fun TransferablePoolUnitItemContent(
                         .clickable {
                             onFungibleResourceClick(
                                 item,
-                                transferable.isNewlyCreated
+                                transferablePoolUnit.isNewlyCreated
                             )
                         }
                         .fillMaxWidth()
@@ -621,7 +643,7 @@ private fun TransferablePoolUnitItemContent(
                     )
                     Text(
                         modifier = Modifier.weight(1f),
-                        text = transferable.contributionPerResource[item.resourceAddress]?.displayableQuantity().orEmpty(),
+                        text = transferablePoolUnit.contributionPerResource[item.resourceAddress]?.displayableQuantity().orEmpty(),
                         style = RadixTheme.typography.secondaryHeader,
                         color = RadixTheme.colors.gray1,
                         textAlign = TextAlign.End,
@@ -632,6 +654,14 @@ private fun TransferablePoolUnitItemContent(
                     HorizontalDivider(color = RadixTheme.colors.gray3)
                 }
             }
+        }
+        if (transferable.hasEditableGuarantees) {
+            GuaranteedQuantitySection(
+                transferable,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = RadixTheme.dimensions.paddingMedium)
+            )
         }
     }
 }
@@ -694,7 +724,7 @@ fun TransactionAccountCardPreview() {
                 account = SampleDataProvider().sampleAccount(),
                 resources = SampleDataProvider().sampleFungibleResources().map {
                     Transferable.Withdrawing(
-                        transferable = TransferableResource.Amount(
+                        transferable = TransferableResource.FungibleAmount(
                             amount = "689.203".toBigDecimal(),
                             resource = it,
                             isNewlyCreated = false

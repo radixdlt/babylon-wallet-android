@@ -22,7 +22,8 @@ fun StakeTypeContent(
     state: TransactionReviewViewModel.State,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
-    previewType: PreviewType.Transfer.Staking
+    previewType: PreviewType.Transfer.Staking,
+    onPromptForGuarantees: () -> Unit
 ) {
     val validatorSectionText = when (previewType.actionType) {
         PreviewType.Transfer.Staking.ActionType.Stake -> stringResource(id = R.string.transactionReview_validators_stake).uppercase()
@@ -35,7 +36,7 @@ fun StakeTypeContent(
         onFungibleResourceClick = onFungibleResourceClick,
         onNonFungibleResourceClick = onNonFungibleResourceClick,
         previewType = previewType,
-        onPromptForGuarantees = {},
+        onPromptForGuarantees = onPromptForGuarantees,
         middleSection = {
             ValidatorsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -65,6 +66,7 @@ fun StakeUnstakeTypePreview() {
                 validators = persistentListOf(),
                 actionType = PreviewType.Transfer.Staking.ActionType.Stake
             ),
+            onPromptForGuarantees = {},
         )
     }
 }

@@ -315,6 +315,7 @@ private fun TransactionPreviewContent(
                                     state = state,
                                     onFungibleResourceClick = onFungibleResourceClick,
                                     onNonFungibleResourceClick = onNonFungibleResourceClick,
+                                    onPromptForGuarantees = promptForGuarantees,
                                     previewType = preview
                                 )
                                 ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
@@ -325,6 +326,7 @@ private fun TransactionPreviewContent(
                                     modifier = Modifier.background(RadixTheme.colors.gray5),
                                     state = state,
                                     onFungibleResourceClick = onFungibleResourceClick,
+                                    onPromptForGuarantees = promptForGuarantees,
                                     previewType = preview
                                 )
                                 ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
