@@ -115,7 +115,7 @@ fun OneTimeChooseAccountsScreen(
         )
     }
     DappInteractionFailureDialog(
-        dialogState = sharedState.failureDialogState,
+        dialogState = sharedState.failureDialog,
         onAcknowledgeFailureDialog = sharedViewModel::onAcknowledgeFailureDialog
     )
 }
