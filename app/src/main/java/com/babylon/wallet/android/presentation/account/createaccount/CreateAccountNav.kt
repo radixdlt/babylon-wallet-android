@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.account.createaccount
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -70,7 +69,6 @@ fun NavController.createAccountScreen(
     )
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.createAccountScreen(
     onBackClick: () -> Unit,
     onContinueClick: (accountId: String, requestSource: CreateAccountRequestSource?) -> Unit,
