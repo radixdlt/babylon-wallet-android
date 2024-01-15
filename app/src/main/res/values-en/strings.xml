@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="homePage_securityPromptBackup">Please write down this Account\'s seed phrase</string>
+  <string name="homePage_securityPromptBackup">Please write down seed phrase to ensure Account control</string>
   <string name="homePage_securityPromptRecover">Seed phrase required - begin entry</string>
   <string name="homePage_backedUpMnemonicHeading">I have written down this seed phrase</string>
   <string name="homePage_createNewAccount">Create a New Account</string>
@@ -499,7 +499,7 @@
   <string name="common_showLess">Show Less</string>
   <string name="common_component">Component</string>
   <string name="common_unauthorized">Unauthorized</string>
-  <string name="common_rateLimitReached">Too many requests. Blocked due to rate limiting.</string>
+  <string name="common_rateLimitReached">Gateway access blocked due to exceeding rate limit. Please wait a few minutes to retry.</string>
   <string name="error_dappRequest_invalidPersonaId">Invalid Persona specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to import Radix Wallet backup: %s</string>
@@ -569,7 +569,7 @@
   <string name="onboarding_eula_headerTitle">User Terms</string>
   <string name="onboarding_eula_headerSubtitle">To proceed, you must accept the user terms below.</string>
   <string name="onboarding_eula_accept">Accept</string>
-  <string name="splash_tapAnywhereToUnlock">Tap anywhere to unlock?</string>
+  <string name="splash_tapAnywhereToUnlock">Tap to unlock</string>
   <string name="splash_passcodeNotSetTitle">Passcode not set up</string>
   <string name="splash_passcodeNotSetMessage">This app requires your phone to have a passcode set up</string>
   <string name="splash_incompatibleProfileVersionAlert_delete">Delete Wallet Data</string>
@@ -607,7 +607,7 @@ Or you can clear this wallet from this phone and start fresh.</string>
   <string name="importMnemonic_regularModeButton">Regular Mode</string>
   <string name="importMnemonic_importSeedPhrase">Import</string>
   <string name="importMnemonic_seedPhraseImported">Imported Seed Phrase</string>
-  <string name="importMnemonic_backedUpAlert_title">Confirm Backup</string>
+  <string name="importMnemonic_backedUpAlert_title">Confirm Seed Phrase Saved</string>
   <string name="importMnemonic_backedUpAlert_message">Are you sure you have securely written down this seed phrase? You will need it to recover access if you lose your phone.</string>
   <string name="importMnemonic_backedUpAlert_confirmAction">Yes, I have backed it up</string>
   <string name="importMnemonic_backedUpAlert_noAction">No, not yet</string>
@@ -622,7 +622,7 @@ Or you can clear this wallet from this phone and start fresh.</string>
   <string name="importMnemonic_offDevice_saveWithDescription">Save with description</string>
   <string name="importMnemonic_offDevice_saveWithoutDescription">Save without description</string>
   <string name="importMnemonic_shieldPrompt_enterSeedPhrase">Enter this Account\'s seed phrase</string>
-  <string name="importMnemonic_shieldPrompt_backupSeedPhrase">Please write down this Account\'s seed phrase</string>
+  <string name="importMnemonic_shieldPrompt_backupSeedPhrase">Please write down seed phrase to ensure Account control</string>
   <string name="importMnemonic_tempAndroid_changeSeedPhrase">Change seed phrase length</string>
   <string name="importMnemonic_tempAndroid_seedLength">%d word seed phrase</string>
   <string name="importMnemonic_tempAndroid_heading">Recover Mnemonic</string>
