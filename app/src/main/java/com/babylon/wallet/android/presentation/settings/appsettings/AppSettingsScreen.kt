@@ -65,8 +65,8 @@ private fun AppSettingsContent(
                 }
                 crashReportingPromptVisible = false
             },
-            title = stringResource(id = R.string.appSettings_crashReporting_title),
-            text = stringResource(id = R.string.appSettings_crashReporting_subtitle)
+            titleText = stringResource(id = R.string.appSettings_crashReporting_title),
+            messageText = stringResource(id = R.string.appSettings_crashReporting_subtitle)
         )
     }
     Scaffold(
