@@ -87,6 +87,10 @@ class MainViewModel @Inject constructor(
         .events
         .filterIsInstance<AppEvent.Status>()
 
+    val accessFactorSourceEvents = appEventBus
+        .events
+        .filterIsInstance<AppEvent.AccessFactorSource.ToCreateAccount>()
+
     val isDevBannerVisible = getProfileStateUseCase().map { profileState ->
         when (profileState) {
             is ProfileState.Restored -> {

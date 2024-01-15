@@ -34,6 +34,10 @@ sealed interface AppEvent {
         val derivedPublicKeyHex: String
     ) : AppEvent
 
+    sealed interface AccessFactorSource : AppEvent {
+        data object ToCreateAccount : AccessFactorSource
+    }
+
     sealed class Status : AppEvent {
         abstract val requestId: String
 
