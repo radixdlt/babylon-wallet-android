@@ -221,6 +221,23 @@ fun ResourceIndicator.toWithdrawingTransferableResource(
     }
 }
 
+fun DetailedManifestClass.isConformingManifestType(): Boolean {
+    return when (this) {
+        is DetailedManifestClass.AccountDepositSettingsUpdate -> {
+            true
+        }
+
+        DetailedManifestClass.General -> true
+        is DetailedManifestClass.PoolContribution -> true
+        is DetailedManifestClass.PoolRedemption -> true
+        is DetailedManifestClass.Transfer -> true
+        is DetailedManifestClass.ValidatorClaim -> true
+        is DetailedManifestClass.ValidatorStake -> true
+        is DetailedManifestClass.ValidatorUnstake -> true
+        else -> false
+    }
+}
+
 private fun FungibleResourceIndicator.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType {
     return when (this) {
         is FungibleResourceIndicator.Guaranteed -> GuaranteeType.Guaranteed

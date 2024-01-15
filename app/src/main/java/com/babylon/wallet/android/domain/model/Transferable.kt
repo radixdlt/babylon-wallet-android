@@ -32,9 +32,15 @@ sealed interface Transferable {
                             instructionIndex = predicted.instructionIndex
                         )
 
-                        is TransferableResource.LsuAmount -> null
+                        is TransferableResource.LsuAmount -> GuaranteeAssertion.ForAmount(
+                            amount = transferable.amount * predicted.guaranteeOffset.toBigDecimal(),
+                            instructionIndex = predicted.instructionIndex
+                        )
                         is TransferableResource.StakeClaimNft -> null
-                        is TransferableResource.Pool -> null
+                        is TransferableResource.PoolUnitAmount -> GuaranteeAssertion.ForAmount(
+                            amount = transferable.amount * predicted.guaranteeOffset.toBigDecimal(),
+                            instructionIndex = predicted.instructionIndex
+                        )
                     }
                 }
 
@@ -127,7 +133,8 @@ sealed interface TransferableResource {
         override val isNewlyCreated: Boolean = false
     ) : TransferableResource
 
-    data class Pool(
+    data class PoolUnitAmount(
+        val amount: BigDecimal,
         val pool: PoolUnit,
         val contributionPerResource: Map<String, BigDecimal>,
         override val isNewlyCreated: Boolean = false,

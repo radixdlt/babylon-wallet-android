@@ -157,7 +157,9 @@ class TransactionAnalysisDelegate @Inject constructor(
     private suspend fun ExecutionSummary.processConformingManifest(): PreviewType {
         val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
         val xrdAddress = XrdResource.address(networkId)
-        val transactionType = detailedClassification.first()
+        val transactionType = detailedClassification.firstOrNull {
+            it.isConformingManifestType()
+        } ?: return PreviewType.NonConforming
         val resources = getResourcesUseCase(addresses = involvedResourceAddresses + xrdAddress).getOrThrow()
 
         return when (transactionType) {
@@ -219,6 +221,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                     executionSummary = this
                 )
             }
+
             is DetailedManifestClass.PoolRedemption -> {
                 val pools = getPoolDetailsUseCase(transactionType.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()
                 transactionType.resolve(

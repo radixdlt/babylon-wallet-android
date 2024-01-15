@@ -14,6 +14,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
+import timber.log.Timber
 
 suspend fun DetailedManifestClass.PoolContribution.resolve(
     executionSummary: ExecutionSummary,
@@ -28,28 +29,34 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
     val from = executionSummary.extractWithdraws(ownedAccountsWithdrawnFrom, resources)
     val to = executionSummary.accountDeposits.map { depositsPerAddress ->
         val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(depositsPerAddress.key) ?: error("No account found")
-        val deposits = depositsPerAddress.value.map { deposit ->
+        depositsPerAddress.value.forEach {
+            Timber.d("depositing: ${it.resourceAddress}")
+        }
+        val deposits = depositsPerAddress.value.mapNotNull { deposit ->
             val resourceAddress = deposit.resourceAddress
-            val contribution = poolContributions.find { it.poolUnitsResourceAddress.addressString() == resourceAddress }
-                ?: error("No contribution found")
-            val pool = involvedPools.find { it.address == contribution.poolAddress.addressString() }
-                ?: error("No pool found")
-            val poolResource = resources.find { it.resourceAddress == pool.metadata.poolUnit() } as? Resource.FungibleResource
-                ?: error("No pool resource found")
-            val contributedResourceAddresses = contribution.contributedResources.keys
-            Transferable.Depositing(
-                transferable = TransferableResource.Pool(
-                    PoolUnit(
-                        stake = poolResource,
-                        pool = pool
-                    ),
-                    contributedResourceAddresses.associateWith { contributedResourceAddress ->
-                        val contributionValue = contribution.contributedResources[contributedResourceAddress]
-                            ?: error("No contribution value found")
-                        contributionValue.asStr().toBigDecimal()
-                    },
+            val contributions = poolContributions.filter { it.poolUnitsResourceAddress.addressString() == resourceAddress }
+            if (contributions.isEmpty()) {
+                null
+            } else {
+                val pool = involvedPools.find { it.address == contributions.first().poolAddress.addressString() }
+                    ?: error("No pool found")
+                val poolResource = resources.find { it.resourceAddress == pool.metadata.poolUnit() } as? Resource.FungibleResource
+                    ?: error("No pool resource found")
+                val contributedResourceAddresses = contributions.first().contributedResources.keys
+                Transferable.Depositing(
+                    transferable = TransferableResource.PoolUnitAmount(
+                        amount = contributions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
+                        PoolUnit(
+                            stake = poolResource,
+                            pool = pool
+                        ),
+                        contributedResourceAddresses.associateWith { contributedResourceAddress ->
+                            contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
+                                .sumOf { it }
+                        },
+                    )
                 )
-            )
+            }
         }
         AccountWithTransferableResources.Owned(
             account = ownedAccount,

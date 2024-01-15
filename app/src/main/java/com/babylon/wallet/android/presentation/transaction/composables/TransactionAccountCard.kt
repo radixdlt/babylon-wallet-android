@@ -86,7 +86,7 @@ fun TransactionAccountCard(
         }
 
         val poolUnitTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableResource.Pool }
+            account.resources.filter { it.transferable is TransferableResource.PoolUnitAmount }
         }
 
         // Fungibles
@@ -153,7 +153,7 @@ fun TransactionAccountCard(
         poolUnitTransferables.forEachIndexed { index, transferable ->
             val lastItem = index == poolUnitTransferables.lastIndex
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferablePoolUnit = transferable.transferable as TransferableResource.Pool
+            val transferablePoolUnit = transferable.transferable as TransferableResource.PoolUnitAmount
 
             TransferablePoolUnitItemContent(
                 transferable = transferablePoolUnit,
@@ -538,7 +538,7 @@ private fun TransferableStakeClaimNftItemContent(
 @Composable
 private fun TransferablePoolUnitItemContent(
     modifier: Modifier = Modifier,
-    transferable: TransferableResource.Pool,
+    transferable: TransferableResource.PoolUnitAmount,
     shape: Shape,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit
 ) {

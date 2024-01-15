@@ -30,22 +30,24 @@ suspend fun DetailedManifestClass.PoolRedemption.resolve(
         val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(withdrawsPerAddress.key) ?: error("No account found")
         val deposits = withdrawsPerAddress.value.map { withdraw ->
             val resourceAddress = withdraw.resourceAddress
-            val redemption = poolRedemptions.find { it.poolUnitsResourceAddress.addressString() == resourceAddress }
-                ?: error("No redemption found")
-            val pool = involvedPools.find { it.address == redemption.poolAddress.addressString() }
+            val redemptions = poolRedemptions.filter {
+                it.poolUnitsResourceAddress.addressString() == resourceAddress
+            }
+            val pool = involvedPools.find { it.address == redemptions.first().poolAddress.addressString() }
                 ?: error("No pool found")
             val poolResource = resources.find { it.resourceAddress == pool.metadata.poolUnit() } as? Resource.FungibleResource
                 ?: error("No pool resource found")
-            val redemptionResourceAddresses = redemption.redeemedResources.keys
+            val redemptionResourceAddresses = redemptions.first().redeemedResources.keys
             Transferable.Withdrawing(
-                transferable = TransferableResource.Pool(
+                transferable = TransferableResource.PoolUnitAmount(
+                    amount = redemptions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
                     PoolUnit(
                         stake = poolResource,
                         pool = pool
                     ),
                     redemptionResourceAddresses.associateWith { contributedResourceAddress ->
-                        val redemptionValue = redemption.redeemedResources[contributedResourceAddress] ?: error("No redemption value found")
-                        redemptionValue.asStr().toBigDecimal()
+                        redemptions.mapNotNull { it.redeemedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
+                            .sumOf { it }
                     },
                 )
             )
