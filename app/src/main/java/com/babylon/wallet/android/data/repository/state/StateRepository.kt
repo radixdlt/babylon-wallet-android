@@ -5,13 +5,15 @@ import com.babylon.wallet.android.data.gateway.extensions.fetchValidators
 import com.babylon.wallet.android.data.gateway.extensions.getNextNftItems
 import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import com.babylon.wallet.android.data.repository.cache.database.DAppEntity
+import com.babylon.wallet.android.data.repository.cache.database.MetadataColumn
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
+import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.dAppsCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.SyncInfo
 import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity.Companion.asValidatorEntity
@@ -56,13 +58,13 @@ interface StateRepository {
 
     suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>>
 
-    suspend fun getNFTDetails(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item>
+    suspend fun getNFTDetails(resourceAddress: String, localIds: Set<String>): Result<List<Resource.NonFungibleResource.Item>>
 
     suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>>
 
     suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>>
 
-    suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>>
+    suspend fun getDAppsDetails(definitionAddresses: List<String>, skipCache: Boolean): Result<List<DApp>>
 
     suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit>
 
@@ -162,18 +164,7 @@ class StateRepositoryImpl @Inject constructor(
                     .filter { it.liquidStakeUnit != null && it.liquidStakeUnit.fungibleResource.isDetailsAvailable.not() }
                     .map { it.liquidStakeUnit!!.resourceAddress }
                     .toSet(),
-                metadataKeys = setOf(
-                    ExplicitMetadataKey.NAME,
-                    ExplicitMetadataKey.SYMBOL,
-                    ExplicitMetadataKey.DESCRIPTION,
-                    ExplicitMetadataKey.RELATED_WEBSITES,
-                    ExplicitMetadataKey.ICON_URL,
-                    ExplicitMetadataKey.INFO_URL,
-                    ExplicitMetadataKey.VALIDATOR,
-                    ExplicitMetadataKey.POOL,
-                    ExplicitMetadataKey.TAGS,
-                    ExplicitMetadataKey.DAPP_DEFINITIONS
-                ),
+                metadataKeys = ExplicitMetadataKey.forAssets,
                 onPage = { response ->
                     val synced = InstantGenerator()
                     val newLSUs = response.items.map { it.asEntity(synced) }.associateBy { it.address }
@@ -275,18 +266,7 @@ class StateRepositoryImpl @Inject constructor(
             if (resourcesToFetch.isNotEmpty()) {
                 stateApi.paginateDetails(
                     addresses = resourcesToFetch.toSet(),
-                    metadataKeys = setOf(
-                        ExplicitMetadataKey.NAME,
-                        ExplicitMetadataKey.SYMBOL,
-                        ExplicitMetadataKey.DESCRIPTION,
-                        ExplicitMetadataKey.RELATED_WEBSITES,
-                        ExplicitMetadataKey.ICON_URL,
-                        ExplicitMetadataKey.INFO_URL,
-                        ExplicitMetadataKey.VALIDATOR,
-                        ExplicitMetadataKey.POOL,
-                        ExplicitMetadataKey.TAGS,
-                        ExplicitMetadataKey.DAPP_DEFINITIONS
-                    ),
+                    metadataKeys = ExplicitMetadataKey.forAssets,
                     onPage = { page ->
                         page.items.forEach { item ->
                             val amount = underAccountAddress?.let { accountAddress ->
@@ -340,24 +320,25 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getNFTDetails(
         resourceAddress: String,
-        localId: String
-    ): Result<Resource.NonFungibleResource.Item> = withContext(dispatcher) {
-        val cachedItem = stateDao.getNFTDetails(resourceAddress, localId, resourcesCacheValidity())
+        localIds: Set<String>
+    ): Result<List<Resource.NonFungibleResource.Item>> = withContext(dispatcher) {
+        val cachedItems = stateDao.getNFTDetails(resourceAddress, localIds, resourcesCacheValidity())
 
-        if (cachedItem != null) {
-            return@withContext Result.success(cachedItem.toItem())
+        if (cachedItems != null && cachedItems.size == localIds.size) {
+            return@withContext Result.success(cachedItems.map { it.toItem() })
         }
+        val unknownIds = localIds - cachedItems?.map { it.localId }.orEmpty().toSet()
 
         stateApi.nonFungibleData(
             StateNonFungibleDataRequest(
                 resourceAddress = resourceAddress,
-                nonFungibleIds = listOf(localId)
+                nonFungibleIds = unknownIds.toList()
             )
         ).toResult().mapCatching { response ->
-            val item = response.nonFungibleIds.first()
-            val entity = item.asEntity(resourceAddress, InstantGenerator())
-            stateDao.insertNFTs(listOf(entity))
-            entity.toItem()
+            val item = response.nonFungibleIds
+            val entities = item.map { it.asEntity(resourceAddress, InstantGenerator()) }
+            stateDao.insertNFTs(entities)
+            cachedItems.orEmpty().map { it.toItem() } + entities.map { it.toItem() }
         }
     }
 
@@ -381,28 +362,45 @@ class StateRepositoryImpl @Inject constructor(
         entitiesWithOwnerKeys
     }
 
-    override suspend fun getDAppsDetails(definitionAddresses: List<String>): Result<List<DApp>> = runCatching {
-        if (definitionAddresses.isEmpty()) return@runCatching listOf()
+    override suspend fun getDAppsDetails(
+        definitionAddresses: List<String>,
+        skipCache: Boolean
+    ): Result<List<DApp>> = withContext(dispatcher) {
+        runCatching {
+            if (definitionAddresses.isEmpty()) return@runCatching listOf()
 
-        val items = mutableListOf<StateEntityDetailsResponseItem>()
-        stateApi.paginateDetails(
-            addresses = definitionAddresses.toSet(),
-            metadataKeys = setOf(
-                ExplicitMetadataKey.NAME,
-                ExplicitMetadataKey.DESCRIPTION,
-                ExplicitMetadataKey.ACCOUNT_TYPE,
-                ExplicitMetadataKey.DAPP_DEFINITION,
-                ExplicitMetadataKey.DAPP_DEFINITIONS,
-                ExplicitMetadataKey.CLAIMED_WEBSITES,
-                ExplicitMetadataKey.CLAIMED_ENTITIES,
-                ExplicitMetadataKey.ICON_URL
-            )
-        ) { page ->
-            items.addAll(page.items)
-        }
+            val cachedDApps = if (skipCache) {
+                mutableListOf()
+            } else {
+                stateDao.getDApps(
+                    definitionAddresses = definitionAddresses,
+                    minValidity = dAppsCacheValidity()
+                ).map {
+                    it.toDApp()
+                }.toMutableList()
+            }
 
-        items.map { item ->
-            DApp(dAppAddress = item.address, metadata = item.explicitMetadata?.toMetadata().orEmpty())
+            val remainingAddresses = definitionAddresses.toSet() subtract cachedDApps.map { it.dAppAddress }.toSet()
+            if (remainingAddresses.isNotEmpty()) {
+                stateApi.paginateDetails(
+                    addresses = definitionAddresses.toSet(),
+                    metadataKeys = ExplicitMetadataKey.forDApps
+                ) { page ->
+                    val syncedAt = InstantGenerator()
+                    val entities = page.items.map { item ->
+                        DAppEntity(
+                            definitionAddress = item.address,
+                            metadata = item.explicitMetadata?.toMetadata()?.let { MetadataColumn(it) },
+                            synced = syncedAt
+                        )
+                    }
+                    stateDao.insertDApps(entities)
+
+                    cachedDApps.addAll(entities.map { entity -> entity.toDApp() })
+                }
+            }
+
+            cachedDApps
         }
     }
 

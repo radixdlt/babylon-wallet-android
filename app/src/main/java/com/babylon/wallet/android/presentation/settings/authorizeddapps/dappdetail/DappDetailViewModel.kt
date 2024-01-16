@@ -8,7 +8,8 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.usecases.GetDAppWithMetadataAndAssociatedResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.GetValidatedDAppWebsiteUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -25,6 +26,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.then
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.GetProfileUseCase
@@ -36,7 +38,8 @@ import javax.inject.Inject
 @HiltViewModel
 class DappDetailViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
-    private val dAppWithAssociatedResourcesUseCase: GetDAppWithMetadataAndAssociatedResourcesUseCase,
+    private val dAppWithAssociatedResourcesUseCase: GetDAppWithResourcesUseCase,
+    private val getValidatedDAppWebsiteUseCase: GetValidatedDAppWebsiteUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle
@@ -55,13 +58,22 @@ class DappDetailViewModel @Inject constructor(
             ).onSuccess { dAppWithAssociatedResources ->
                 _state.update { state ->
                     state.copy(
-                        dappWithMetadata = dAppWithAssociatedResources,
-                        loading = false
+                        dAppWithResources = dAppWithAssociatedResources,
+                        loading = false,
                     )
+                }
+            }.then { dAppWithResources ->
+                if (dAppWithResources.dApp.claimedWebsites.isNotEmpty()) {
+                    _state.update { it.copy(isValidatingWebsite = true) }
+                    getValidatedDAppWebsiteUseCase(dAppWithResources.dApp).onSuccess { website ->
+                        _state.update { it.copy(isValidatingWebsite = false, validatedWebsite = website) }
+                    }
+                } else {
+                    Result.success(dAppWithResources)
                 }
             }.onFailure {
                 _state.update { state ->
-                    state.copy(loading = false)
+                    state.copy(loading = false, isValidatingWebsite = false)
                 }
             }
         }
@@ -237,7 +249,9 @@ sealed interface DappDetailEvent : OneOffEvent {
 data class DappDetailUiState(
     val loading: Boolean = true,
     val dapp: Network.AuthorizedDapp? = null,
-    val dappWithMetadata: DAppWithResources? = null,
+    val dAppWithResources: DAppWithResources? = null,
+    val isValidatingWebsite: Boolean = false,
+    val validatedWebsite: String? = null,
     val personas: ImmutableList<Network.Persona> = persistentListOf(),
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedSheetState: SelectedSheetState? = null

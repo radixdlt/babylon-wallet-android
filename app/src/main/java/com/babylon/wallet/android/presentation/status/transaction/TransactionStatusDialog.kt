@@ -113,7 +113,7 @@ fun TransactionStatusDialog(
                             viewModel.onDismissCanceled()
                         }
                     },
-                    text = {
+                    message = {
                         Text(text = stringResource(id = R.string.transactionStatus_dismissDialog_message))
                     },
                     confirmText = stringResource(id = R.string.common_ok),

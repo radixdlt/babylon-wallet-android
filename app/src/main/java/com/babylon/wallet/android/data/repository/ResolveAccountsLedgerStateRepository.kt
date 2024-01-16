@@ -49,9 +49,7 @@ class ResolveAccountsLedgerStateRepository @Inject constructor(
             accounts.map { account ->
                 val defaultDepositRule = defaultDepositRules[account.address]?.toProfileDepositRule()
                 val updatedThirdPartyDeposits = account.onLedgerSettings.thirdPartyDeposits.copy(
-                    depositRule = defaultDepositRule ?: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll,
-                    depositorsAllowList = null,
-                    assetsExceptionList = null
+                    depositRule = defaultDepositRule ?: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll
                 )
                 AccountWithOnLedgerStatus(
                     account = account.copy(

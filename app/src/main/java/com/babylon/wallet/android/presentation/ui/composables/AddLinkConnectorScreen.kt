@@ -78,7 +78,7 @@ fun AddLinkConnectorScreen(
                     color = RadixTheme.colors.gray1
                 )
             },
-            text = {
+            message = {
                 Text(
                     text = stringResource(id = R.string.linkedConnectors_incorrectQrMessage),
                     style = RadixTheme.typography.body2Regular,

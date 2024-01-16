@@ -180,11 +180,17 @@ data class Network(
                     @SerialName("address") val address: String,
                     @SerialName("exceptionRule") val exceptionRule: DepositAddressExceptionRule,
                 )
+
+                companion object {
+                    fun init(): ThirdPartyDeposits {
+                        return ThirdPartyDeposits(assetsExceptionList = emptyList(), depositorsAllowList = emptyList())
+                    }
+                }
             }
 
             companion object {
                 fun init(): OnLedgerSettings {
-                    return OnLedgerSettings(thirdPartyDeposits = ThirdPartyDeposits())
+                    return OnLedgerSettings(thirdPartyDeposits = ThirdPartyDeposits.init())
                 }
             }
         }

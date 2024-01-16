@@ -1,61 +1,41 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.TransactionType
+import com.radixdlt.ret.ExecutionSummary
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 
-suspend fun TransactionType.Transfer.resolve(
+suspend fun ExecutionSummary.resolveTransfer(
     getProfileUseCase: GetProfileUseCase,
-    resources: List<Resource>
+    resources: List<Resource>,
 ): PreviewType {
-    val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
-        it.address == from.addressString() || it.address in transfers.keys
+    val allInvolvedAddresses = accountDeposits.keys + accountWithdraws.keys
+    val allOwnedAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
+        allInvolvedAddresses.contains(it.address)
     }
 
-    val to = extractDeposits(allAccounts, resources)
-
-    // Taking the accumulated values of fungibles and non fungibles and add them to one from account
-    val fromAccount = allAccounts.find { it.address == from.addressString() }
-    val allTransferringResources = to.map { depositing ->
-        depositing.resources.map { it.transferable }
-    }.flatten().groupBy { it.resourceAddress }
-
-    val withdrawingResources = extractWithdraws(allTransferringResources)
-
-    val from = if (fromAccount == null) {
-        AccountWithTransferableResources.Other(
-            address = from.addressString(),
-            resources = withdrawingResources
-        )
-    } else {
-        AccountWithTransferableResources.Owned(
-            account = fromAccount,
-            resources = withdrawingResources
-        )
-    }
+    val to = extractDeposits(allOwnedAccounts, resources)
+    val from = extractWithdraws(allOwnedAccounts, resources)
 
     return PreviewType.Transfer(
-        from = listOf(from),
+        from = from,
         to = to
     )
 }
 
-private fun TransactionType.Transfer.extractDeposits(
-    allAccounts: List<Network.Account>,
+private fun ExecutionSummary.extractDeposits(
+    allOwnedAccounts: List<Network.Account>,
     resources: List<Resource>
-) = transfers.entries.map { transferEntry ->
-    val accountOnNetwork = allAccounts.find { it.address == transferEntry.key }
+) = accountDeposits.entries.map { transferEntry ->
+    val accountOnNetwork = allOwnedAccounts.find { it.address == transferEntry.key }
 
-    val depositing = transferEntry.value.map { entry ->
-        Transferable.Depositing(entry.value.toTransferableResource(entry.key, resources))
+    val depositing = transferEntry.value.map { resourceIndicator ->
+        Transferable.Depositing(resourceIndicator.toTransferableResource(resources))
     }
-
     accountOnNetwork?.let { account ->
         AccountWithTransferableResources.Owned(
             account = account,
@@ -67,27 +47,20 @@ private fun TransactionType.Transfer.extractDeposits(
     )
 }
 
-private fun extractWithdraws(allTransferringResources: Map<String, List<TransferableResource>>) =
-    allTransferringResources.mapNotNull { entry ->
-        val fungibleTransferrables = entry.value.filterIsInstance<TransferableResource.Amount>()
-        val nonFungibleTransferrables = entry.value.filterIsInstance<TransferableResource.NFTs>()
+private fun ExecutionSummary.extractWithdraws(allOwnedAccounts: List<Network.Account>, resources: List<Resource>) =
+    accountWithdraws.entries.map { transferEntry ->
+        val accountOnNetwork = allOwnedAccounts.find { it.address == transferEntry.key }
 
-        if (fungibleTransferrables.isNotEmpty()) {
-            val transferrable = fungibleTransferrables.reduce { transferable, value ->
-                transferable.copy(amount = transferable.amount + value.amount)
-            }
-            Transferable.Withdrawing(transferrable)
-        } else if (nonFungibleTransferrables.isNotEmpty()) {
-            val nonFungibleTransferrable = nonFungibleTransferrables.reduce { nonFungibleTransferrable, value ->
-                nonFungibleTransferrable.copy(
-                    resource = nonFungibleTransferrable.resource.copy(
-                        amount = nonFungibleTransferrable.resource.amount + value.resource.amount,
-                        items = nonFungibleTransferrable.resource.items + value.resource.items
-                    )
-                )
-            }
-            Transferable.Withdrawing(nonFungibleTransferrable)
-        } else {
-            null
+        val withdrawing = transferEntry.value.map { resourceIndicator ->
+            Transferable.Withdrawing(resourceIndicator.toTransferableResource(resources))
         }
+        accountOnNetwork?.let { account ->
+            AccountWithTransferableResources.Owned(
+                account = account,
+                resources = withdrawing
+            )
+        } ?: AccountWithTransferableResources.Other(
+            address = transferEntry.key,
+            resources = withdrawing
+        )
     }

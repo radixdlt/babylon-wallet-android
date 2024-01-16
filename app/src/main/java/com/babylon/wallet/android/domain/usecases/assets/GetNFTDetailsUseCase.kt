@@ -11,6 +11,6 @@ class GetNFTDetailsUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
-    suspend operator fun invoke(resourceAddress: String, localId: String): Result<Resource.NonFungibleResource.Item> =
-        stateRepository.getNFTDetails(resourceAddress, localId)
+    suspend operator fun invoke(resourceAddress: String, localIds: Set<String>): Result<List<Resource.NonFungibleResource.Item>> =
+        stateRepository.getNFTDetails(resourceAddress, localIds)
 }

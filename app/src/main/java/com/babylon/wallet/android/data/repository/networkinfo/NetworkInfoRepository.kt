@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.data.repository.networkinfo
 
 import com.babylon.wallet.android.data.gateway.apis.StatusApi
-import com.babylon.wallet.android.data.repository.execute
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.SimpleHttpClient
@@ -14,7 +13,6 @@ import javax.inject.Inject
 
 interface NetworkInfoRepository {
     suspend fun getNetworkInfo(networkUrl: String): Result<NetworkInfo>
-    suspend fun getFaucetComponentAddress(networkUrl: String): Result<String>
 }
 
 class NetworkInfoRepositoryImpl @Inject constructor(
@@ -30,18 +28,6 @@ class NetworkInfoRepositoryImpl @Inject constructor(
         NetworkInfo(
             network = Radix.Network.fromName(it.ledgerState.network),
             epoch = it.ledgerState.epoch
-        )
-    }
-
-    override suspend fun getFaucetComponentAddress(networkUrl: String): Result<String> {
-        return buildApi<StatusApi>(
-            baseUrl = networkUrl,
-            okHttpClient = okHttpClient,
-            jsonConverterFactory = jsonConverterFactory
-        ).networkConfiguration().execute(
-            map = {
-                it.wellKnownAddresses.faucet
-            }
         )
     }
 }

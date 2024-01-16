@@ -77,8 +77,8 @@ fun RevealSeedPhraseScreen(
                     onBackClick()
                 }
             },
-            title = stringResource(id = R.string.revealSeedPhrase_warningDialog_title),
-            text = stringResource(id = R.string.revealSeedPhrase_warningDialog_subtitle),
+            titleText = stringResource(id = R.string.revealSeedPhrase_warningDialog_title),
+            messageText = stringResource(id = R.string.revealSeedPhrase_warningDialog_subtitle),
             confirmText = stringResource(id = R.string.revealSeedPhrase_warningDialog_confirmButton)
         )
     }

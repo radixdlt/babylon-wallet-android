@@ -11,8 +11,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.usecases.DAppInTransaction
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.ui.composables.assets.strokeLine
@@ -26,7 +27,7 @@ fun TransferTypeContent(
     state: TransactionReviewViewModel.State,
     preview: PreviewType.Transfer,
     onPromptForGuarantees: () -> Unit,
-    onDappClick: (DAppWithResources) -> Unit,
+    onDAppClick: (DApp) -> Unit,
     onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
@@ -65,7 +66,7 @@ fun TransferTypeContent(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                     connectedDApps = preview.dApps.toPersistentList(),
-                    onDAppClick = onDappClick,
+                    onDAppClick = onDAppClick,
                     onUnknownDAppsClick = onUnknownDAppsClick
                 )
 
@@ -106,7 +107,7 @@ fun TransactionPreviewTypePreview() {
                 to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned)
             ),
             onPromptForGuarantees = {},
-            onDappClick = { _ -> },
+            onDAppClick = { _ -> },
             onUnknownDAppsClick = {},
             onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> }

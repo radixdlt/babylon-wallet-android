@@ -126,7 +126,7 @@ fun SpecificAssetsDepositsScreen(
                     color = RadixTheme.colors.gray1
                 )
             },
-            text = {
+            message = {
                 Text(
                     text = when (dialogState.assetException.exceptionRule) {
                         ThirdPartyDeposits.DepositAddressExceptionRule.Allow -> {

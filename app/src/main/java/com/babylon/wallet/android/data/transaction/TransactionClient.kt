@@ -14,6 +14,7 @@ import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSign
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.Intent
+import com.radixdlt.ret.ManifestSummary
 import com.radixdlt.ret.NotarizedTransaction
 import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
@@ -59,7 +60,7 @@ class TransactionClient @Inject constructor(
         }
 
         val notaryAndSigners = getNotaryAndSigners(
-            manifest = manifestWithTransactionFee,
+            manifestSummary = manifestWithTransactionFee.summary(request.networkId.value.toUByte()),
             ephemeralNotaryPrivateKey = request.ephemeralNotaryPrivateKey
         )
         return buildTransactionHeader(
@@ -178,9 +179,9 @@ class TransactionClient @Inject constructor(
         } ?: Result.failure(RadixWalletException.DappRequestException.GetEpoch)
     }
 
-    suspend fun getSigningEntities(manifest: TransactionManifest): List<Entity> {
-        val manifestAccountsRequiringAuth = manifest.accountsRequiringAuth().map { it.addressString() }
-        val manifestIdentitiesRequiringAuth = manifest.identitiesRequiringAuth().map { it.addressString() }
+    suspend fun getSigningEntities(manifestSummary: ManifestSummary): List<Entity> {
+        val manifestAccountsRequiringAuth = manifestSummary.accountsRequiringAuth.map { it.addressString() }
+        val manifestIdentitiesRequiringAuth = manifestSummary.identitiesRequiringAuth.map { it.addressString() }
 
         return getProfileUseCase.accountsOnCurrentNetwork().filter { account ->
             manifestAccountsRequiringAuth.contains(account.address)
@@ -190,11 +191,11 @@ class TransactionClient @Inject constructor(
     }
 
     suspend fun getNotaryAndSigners(
-        manifest: TransactionManifest,
+        manifestSummary: ManifestSummary,
         ephemeralNotaryPrivateKey: PrivateKey
     ): NotaryAndSigners {
         return NotaryAndSigners(
-            signers = getSigningEntities(manifest),
+            signers = getSigningEntities(manifestSummary),
             ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey
         )
     }

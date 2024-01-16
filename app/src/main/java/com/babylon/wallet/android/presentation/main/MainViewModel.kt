@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
-import com.babylon.wallet.android.domain.usecases.VerifyDappUseCase
+import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -52,7 +52,7 @@ class MainViewModel @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val authorizeSpecifiedPersonaUseCase: AuthorizeSpecifiedPersonaUseCase,
-    private val verifyDappUseCase: VerifyDappUseCase,
+    private val verifyDappUseCase: VerifyDAppUseCase,
     private val appEventBus: AppEventBus,
     getProfileStateUseCase: GetProfileStateUseCase,
     private val deviceCapabilityHelper: DeviceCapabilityHelper,

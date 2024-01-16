@@ -54,7 +54,9 @@ internal class TransactionClientTest {
     fun `when address exists, finds address involved & signing for set metadata manifest`() =
         runTest {
             val manifest = manifestWithAddress(account1)
-                .addLockFeeInstructionToManifest(account1.address, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal())
+                .addLockFeeInstructionToManifest(account1.address, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()).summary(
+                    networkId = Radix.Gateway.default.network.id.toUByte()
+                )
 
             val signingEntities = transactionClient.getSigningEntities(manifest)
 

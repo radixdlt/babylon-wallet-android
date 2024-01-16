@@ -136,7 +136,7 @@ private fun PersonaEditContent(
                 }
                 showCancelPrompt = false
             },
-            text = {
+            message = {
                 Text(
                     text = stringResource(
                         R.string.editPersona_closeConfirmationDialog_message

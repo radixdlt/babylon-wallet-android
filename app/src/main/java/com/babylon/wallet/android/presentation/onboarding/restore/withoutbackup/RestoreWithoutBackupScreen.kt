@@ -57,8 +57,8 @@ fun RestoreWithoutBackupScreen(
                     viewModel.onDismissPrompt()
                 }
             },
-            title = stringResource(id = R.string.recoverWalletWithoutProfile_start_useNewWalletAlertTitle),
-            text = when (state.dialogPrompt) {
+            titleText = stringResource(id = R.string.recoverWalletWithoutProfile_start_useNewWalletAlertTitle),
+            messageText = when (state.dialogPrompt) {
                 RestoreWithoutBackupViewModel.State.PromptState.Olympia -> {
                     stringResource(id = R.string.recoverWalletWithoutProfile_start_useNewWalletAlertMessageOlympia)
                 }

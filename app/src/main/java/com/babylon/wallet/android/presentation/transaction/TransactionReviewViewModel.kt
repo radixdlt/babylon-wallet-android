@@ -5,13 +5,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.toPrettyString
-import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
@@ -22,6 +20,8 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.Resource.FungibleResource
 import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource
 import com.babylon.wallet.android.domain.model.resources.isXrd
+import com.babylon.wallet.android.domain.usecases.DAppInTransaction
+import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -55,7 +55,7 @@ class TransactionReviewViewModel @Inject constructor(
     private val guarantees: TransactionGuaranteesDelegate,
     private val fees: TransactionFeesDelegate,
     private val submit: TransactionSubmitDelegate,
-    private val dAppRepository: DAppRepository,
+    private val getDAppsUseCase: GetDAppsUseCase,
     incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
@@ -93,9 +93,12 @@ class TransactionReviewViewModel @Inject constructor(
             viewModelScope.launch {
                 analysis.analyse(transactionClient = transactionClient)
             }
-            viewModelScope.launch {
-                dAppRepository.getDAppMetadata(request.requestMetadata.dAppDefinitionAddress, false).onSuccess { dApp ->
-                    _state.update { it.copy(dApp = dApp) }
+
+            if (!request.isInternal) {
+                viewModelScope.launch {
+                    getDAppsUseCase(request.requestMetadata.dAppDefinitionAddress, false).onSuccess { dApp ->
+                        _state.update { it.copy(proposingDApp = dApp) }
+                    }
                 }
             }
         }
@@ -142,7 +145,9 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun onGuaranteesApplyClick() = guarantees.onApply()
 
-    fun onGuaranteesCloseClick() = guarantees.onClose()
+    fun onCloseBottomSheetClick() {
+        _state.update { it.copy(sheetState = State.Sheet.None) }
+    }
 
     fun onCustomizeClick() {
         viewModelScope.launch {
@@ -181,12 +186,12 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
-
         val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData
             ?.toTransactionManifest()
             ?.getOrNull()
             ?.let { manifest ->
-                manifest.accountsWithdrawnFrom() + manifest.accountsDepositedInto() + manifest.accountsRequiringAuth()
+                val summary = manifest.summary(selectedFeePayer.networkID.toUByte())
+                summary.accountsWithdrawnFrom + summary.accountsDepositedInto + summary.accountsRequiringAuth
             }.orEmpty().any { accountAddress ->
                 accountAddress.addressString() == selectedFeePayer.address
             }
@@ -205,12 +210,6 @@ class TransactionReviewViewModel @Inject constructor(
                     )
                 )
             )
-        }
-    }
-
-    fun onDAppClick(dApp: DAppWithResources) {
-        _state.update {
-            it.copy(sheetState = State.Sheet.Dapp(dApp))
         }
     }
 
@@ -255,6 +254,7 @@ class TransactionReviewViewModel @Inject constructor(
 
     data class State(
         val request: MessageFromDataChannel.IncomingRequest.TransactionRequest? = null,
+        val proposingDApp: DApp? = null,
         val endEpoch: ULong? = null,
         val isLoading: Boolean,
         val isNetworkFeeLoading: Boolean,
@@ -269,8 +269,7 @@ class TransactionReviewViewModel @Inject constructor(
         val error: UiMessage.TransactionErrorMessage? = null,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val interactionState: InteractionState? = null,
-        val isTransactionDismissed: Boolean = false,
-        val dApp: DApp? = null
+        val isTransactionDismissed: Boolean = false
     ) : UiState {
 
         val requestNonNull: MessageFromDataChannel.IncomingRequest.TransactionRequest
@@ -440,10 +439,6 @@ class TransactionReviewViewModel @Inject constructor(
                 }
             }
 
-            data class Dapp(
-                val dApp: DAppWithResources
-            ) : Sheet
-
             data class UnknownDAppComponents(
                 val unknownComponentAddresses: ImmutableList<String>
             ) : Sheet
@@ -466,7 +461,7 @@ sealed interface PreviewType {
         val from: List<AccountWithTransferableResources>,
         val to: List<AccountWithTransferableResources>,
         val badges: List<Badge> = emptyList(),
-        val dApps: List<DAppWithResources> = emptyList()
+        val dApps: List<DAppInTransaction> = emptyList()
     ) : PreviewType {
 
         fun getNewlyCreatedResources() = (from + to).map { allTransfers ->

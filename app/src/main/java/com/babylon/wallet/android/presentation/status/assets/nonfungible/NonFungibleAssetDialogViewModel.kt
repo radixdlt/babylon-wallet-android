@@ -48,8 +48,9 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
             viewModelScope.launch {
                 getNFTDetailsUseCase(
                     resourceAddress = _state.value.resourceAddress,
-                    localId = args.localId
-                ).onSuccess { item ->
+                    localIds = setOf(args.localId)
+                ).onSuccess { items ->
+                    val item = items.first()
                     _state.update { it.copy(item = item) }
 
                     if (item.claimAmountXrd != null) {

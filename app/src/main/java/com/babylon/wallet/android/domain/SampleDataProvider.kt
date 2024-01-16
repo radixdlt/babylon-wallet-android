@@ -5,7 +5,6 @@ package com.babylon.wallet.android.domain
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.DAppResources
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
@@ -422,10 +421,8 @@ class SampleDataProvider {
             dApp = DApp(
                 dAppAddress = "account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u"
             ),
-            resources = DAppResources(
-                fungibleResources = emptyList(),
-                nonFungibleResources = emptyList()
-            )
+            fungibleResources = emptyList(),
+            nonFungibleResources = emptyList()
         )
     }
 

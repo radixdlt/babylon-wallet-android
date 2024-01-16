@@ -82,8 +82,8 @@ fun SelectPersonaScreen(
             finish = {
                 sharedViewModel.dismissNoMnemonicError()
             },
-            title = stringResource(id = R.string.transactionReview_noMnemonicError_title),
-            text = stringResource(id = R.string.transactionReview_noMnemonicError_text),
+            titleText = stringResource(id = R.string.transactionReview_noMnemonicError_title),
+            messageText = stringResource(id = R.string.transactionReview_noMnemonicError_text),
             dismissText = null
         )
     }

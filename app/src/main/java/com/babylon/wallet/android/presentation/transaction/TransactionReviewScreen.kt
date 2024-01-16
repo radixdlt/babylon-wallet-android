@@ -35,13 +35,12 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppDetailsSheetContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.UnknownDAppComponentsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
@@ -74,7 +73,8 @@ fun TransactionReviewScreen(
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
     onFungibleClick: (Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean, Boolean) -> Unit
+    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean, Boolean) -> Unit,
+    onDAppClick: (DApp) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -102,11 +102,11 @@ fun TransactionReviewScreen(
         promptForGuarantees = viewModel::promptForGuaranteesClick,
         onCustomizeClick = viewModel::onCustomizeClick,
         onGuaranteesApplyClick = viewModel::onGuaranteesApplyClick,
-        onGuaranteesCloseClick = viewModel::onGuaranteesCloseClick,
+        onCloseBottomSheetClick = viewModel::onCloseBottomSheetClick,
         onGuaranteeValueChanged = viewModel::onGuaranteeValueChange,
         onGuaranteeValueIncreased = viewModel::onGuaranteeValueIncreased,
         onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
-        onDAppClick = viewModel::onDAppClick,
+        onDAppClick = onDAppClick,
         onUnknownDAppsClick = viewModel::onUnknownDAppsClick,
         onFungibleResourceClick = viewModel::onFungibleResourceClick,
         onNonFungibleResourceClick = viewModel::onNonFungibleResourceClick,
@@ -125,7 +125,7 @@ fun TransactionReviewScreen(
             is InteractionState.Ledger.Error -> {
                 BasicPromptAlertDialog(
                     finish = { viewModel.onCancelSigningClick() },
-                    text = {
+                    message = {
                         Text(text = it.failure.userFriendlyMessage())
                     },
                     confirmText = stringResource(id = R.string.common_ok),
@@ -160,11 +160,11 @@ private fun TransactionPreviewContent(
     promptForGuarantees: () -> Unit,
     onCustomizeClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
-    onGuaranteesCloseClick: () -> Unit,
+    onCloseBottomSheetClick: () -> Unit,
     onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
-    onDAppClick: (DAppWithResources) -> Unit,
+    onDAppClick: (DApp) -> Unit,
     onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
@@ -188,8 +188,8 @@ private fun TransactionPreviewContent(
                 finish = {
                     dismissTransactionErrorDialog()
                 },
-                title = transactionError.getTitle(),
-                text = transactionError.getMessage(),
+                titleText = transactionError.getTitle(),
+                messageText = transactionError.getMessage(),
                 confirmText = stringResource(id = R.string.common_ok),
                 dismissText = null
             )
@@ -243,7 +243,7 @@ private fun TransactionPreviewContent(
                     exit = fadeOut()
                 ) {
                     Column(
-                        modifier = Modifier.verticalScroll(rememberScrollState())
+                        modifier = Modifier.verticalScroll(scrollState)
                     ) {
                         ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5, topEdge = true)
                         RawManifestView(
@@ -278,7 +278,7 @@ private fun TransactionPreviewContent(
                     exit = fadeOut()
                 ) {
                     Column(
-                        modifier = Modifier.verticalScroll(rememberScrollState())
+                        modifier = Modifier.verticalScroll(scrollState)
                     ) {
                         ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5, topEdge = true)
                         when (val preview = state.previewType) {
@@ -294,7 +294,7 @@ private fun TransactionPreviewContent(
                                     state = state,
                                     preview = preview,
                                     onPromptForGuarantees = promptForGuarantees,
-                                    onDappClick = onDAppClick,
+                                    onDAppClick = onDAppClick,
                                     onUnknownDAppsClick = onUnknownDAppsClick,
                                     onFungibleResourceClick = onFungibleResourceClick,
                                     onNonFungibleResourceClick = onNonFungibleResourceClick
@@ -355,12 +355,11 @@ private fun TransactionPreviewContent(
                     sheetState = state.sheetState,
                     transactionFees = state.transactionFees,
                     insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
-                    onGuaranteesCloseClick = onGuaranteesCloseClick,
+                    onCloseBottomSheetClick = onCloseBottomSheetClick,
                     onGuaranteesApplyClick = onGuaranteesApplyClick,
                     onGuaranteeValueChanged = onGuaranteeValueChanged,
                     onGuaranteeValueIncreased = onGuaranteeValueIncreased,
                     onGuaranteeValueDecreased = onGuaranteeValueDecreased,
-                    onCloseDAppSheet = onBackClick,
                     onChangeFeePayerClick = onChangeFeePayerClick,
                     onSelectFeePayerClick = onSelectFeePayerClick,
                     onPayerSelected = onPayerSelected,
@@ -382,12 +381,11 @@ private fun BottomSheetContent(
     sheetState: State.Sheet,
     transactionFees: TransactionFees,
     insufficientBalanceToPayTheFee: Boolean,
-    onGuaranteesCloseClick: () -> Unit,
+    onCloseBottomSheetClick: () -> Unit,
     onGuaranteesApplyClick: () -> Unit,
     onGuaranteeValueChanged: (AccountWithPredictedGuarantee, String) -> Unit,
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
-    onCloseDAppSheet: () -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onPayerSelected: (Network.Account) -> Unit,
@@ -401,7 +399,7 @@ private fun BottomSheetContent(
             GuaranteesSheet(
                 modifier = modifier,
                 state = sheetState,
-                onClose = onGuaranteesCloseClick,
+                onClose = onCloseBottomSheetClick,
                 onApplyClick = onGuaranteesApplyClick,
                 onGuaranteeValueChanged = onGuaranteeValueChanged,
                 onGuaranteeValueIncreased = onGuaranteeValueIncreased,
@@ -415,7 +413,7 @@ private fun BottomSheetContent(
                 state = sheetState,
                 transactionFees = transactionFees,
                 insufficientBalanceToPayTheFee = insufficientBalanceToPayTheFee,
-                onClose = onGuaranteesCloseClick,
+                onClose = onCloseBottomSheetClick,
                 onChangeFeePayerClick = onChangeFeePayerClick,
                 onSelectFeePayerClick = onSelectFeePayerClick,
                 onPayerSelected = onPayerSelected,
@@ -426,18 +424,10 @@ private fun BottomSheetContent(
             )
         }
 
-        is State.Sheet.Dapp -> {
-            DAppDetailsSheetContent(
-                modifier = modifier,
-                onBackClick = onCloseDAppSheet,
-                dApp = sheetState.dApp
-            )
-        }
-
         is State.Sheet.UnknownDAppComponents -> {
             UnknownDAppComponentsSheetContent(
                 modifier = modifier,
-                onBackClick = onCloseDAppSheet,
+                onBackClick = onCloseBottomSheetClick,
                 unknownDAppComponents = sheetState.unknownComponentAddresses
             )
         }
@@ -496,7 +486,7 @@ fun TransactionPreviewContentPreview() {
             onRawManifestToggle = {},
             onMessageShown = {},
             onGuaranteesApplyClick = {},
-            onGuaranteesCloseClick = {},
+            onCloseBottomSheetClick = {},
             promptForGuarantees = {},
             onCustomizeClick = {},
             onDAppClick = {},

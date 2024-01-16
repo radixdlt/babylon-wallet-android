@@ -15,9 +15,10 @@ import androidx.room.TypeConverters
         NFTEntity::class,
         PoolEntity::class,
         ValidatorEntity::class,
-        PoolResourceJoin::class
+        PoolResourceJoin::class,
+        DAppEntity::class
     ],
-    version = StateDatabase.VERSION_2
+    version = StateDatabase.VERSION_3
 )
 @TypeConverters(StateDatabaseConverters::class)
 abstract class StateDatabase : RoomDatabase() {
@@ -25,11 +26,14 @@ abstract class StateDatabase : RoomDatabase() {
     abstract fun stateDao(): StateDao
 
     companion object {
-        // Initial schema version
+        @Deprecated("Initial schema version")
         const val VERSION_1 = 1
 
-        // Update to metadata schema
+        @Deprecated("Updated metadata schema")
         const val VERSION_2 = 2
+
+        // Add DAppEntity to schema
+        const val VERSION_3 = 3
 
         private const val NAME = "STATE_DATABASE"
 

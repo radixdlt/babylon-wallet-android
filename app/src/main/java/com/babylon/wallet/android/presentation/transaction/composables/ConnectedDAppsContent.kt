@@ -33,8 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.DAppResources
-import com.babylon.wallet.android.domain.model.DAppWithResources
+import com.babylon.wallet.android.domain.usecases.DAppInTransaction
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
@@ -46,8 +45,8 @@ import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun ConnectedDAppsContent(
-    connectedDApps: ImmutableList<DAppWithResources>,
-    onDAppClick: (DAppWithResources) -> Unit,
+    connectedDApps: ImmutableList<DAppInTransaction>,
+    onDAppClick: (DApp) -> Unit,
     onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -109,8 +108,8 @@ fun ConnectedDAppsContent(
                     .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium),
                 horizontalAlignment = Alignment.End
             ) {
-                val unverifiedDappsCount = connectedDApps.count { it.verified.not() }
-                val verifiedDapps = connectedDApps.filter { it.verified }
+                val unverifiedDappsCount = connectedDApps.count { it.isVerified.not() }
+                val verifiedDapps = connectedDApps.filter { it.isVerified }
                 if (unverifiedDappsCount > 0) {
                     ConnectedDappRow(
                         modifier = Modifier.throttleClickable {
@@ -124,7 +123,7 @@ fun ConnectedDAppsContent(
                     ConnectedDappRow(
                         dApp = connectedDApp.dApp,
                         modifier = Modifier.throttleClickable {
-                            onDAppClick(connectedDApp)
+                            onDAppClick(connectedDApp.dApp)
                         }
                     )
                 }
@@ -165,15 +164,12 @@ private fun ConnectedDappRow(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            DAppWithResources(
-                dApp = DApp(
+            DAppInTransaction(
+                DApp(
                     dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
                 ),
-                resources = DAppResources(
-                    emptyList(),
-                    emptyList()
-                ),
-                verified = true
+                isVerified = true,
+                componentAddresses = listOf()
             )
         ),
         onDAppClick = {},

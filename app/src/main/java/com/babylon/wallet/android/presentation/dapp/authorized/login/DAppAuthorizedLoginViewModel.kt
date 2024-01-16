@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
-import com.babylon.wallet.android.data.repository.dappmetadata.DAppRepository
+import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
@@ -65,7 +65,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
-    private val dAppRepository: DAppRepository,
+    private val stateRepository: StateRepository,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val buildAuthorizedDappResponseUseCase: BuildAuthorizedDappResponseUseCase
 ) : StateViewModel<DAppLoginUiState>(),
@@ -110,12 +110,12 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 request.requestMetadata.dAppDefinitionAddress
             )
             editedDapp = authorizedDapp
-            dAppRepository.getDAppMetadata(
-                definitionAddress = request.metadata.dAppDefinitionAddress,
-                needMostRecentData = false
-            ).onSuccess { dappWithMetadata ->
-                _state.update {
-                    it.copy(dapp = dappWithMetadata)
+            stateRepository.getDAppsDetails(
+                definitionAddresses = listOf(request.metadata.dAppDefinitionAddress),
+                skipCache = false
+            ).onSuccess { dApps ->
+                dApps.firstOrNull()?.let { dApp ->
+                    _state.update { it.copy(dapp = dApp) }
                 }
             }.onFailure { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }

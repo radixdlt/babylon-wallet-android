@@ -30,33 +30,41 @@ enum class ExplicitMetadataKey(val key: String) {
     OWNER_BADGE("owner_badge");
 
     companion object {
+        val forAssets: Set<ExplicitMetadataKey> = setOf(
+            NAME,
+            SYMBOL,
+            DESCRIPTION,
+            RELATED_WEBSITES,
+            ICON_URL,
+            INFO_URL,
+            VALIDATOR,
+            POOL,
+            TAGS,
+            DAPP_DEFINITIONS
+        )
 
-        val forAssets: Set<ExplicitMetadataKey>
-            get() = setOf(
-                NAME,
-                SYMBOL,
-                DESCRIPTION,
-                KEY_IMAGE_URL,
-                ACCOUNT_TYPE,
-                RELATED_WEBSITES,
-                ICON_URL,
-                INFO_URL,
-                TAGS,
-                DAPP_DEFINITIONS
-            )
+        val forPools: Set<ExplicitMetadataKey> = setOf(
+            NAME,
+            ICON_URL,
+            POOL_UNIT
+        )
 
-        val forDapp: Set<ExplicitMetadataKey>
-            get() = setOf(
-                NAME,
-                DESCRIPTION,
-                ACCOUNT_TYPE,
-                DAPP_DEFINITION,
-                DAPP_DEFINITIONS,
-                CLAIMED_WEBSITES,
-                CLAIMED_ENTITIES,
-                ICON_URL
-            )
+        val forValidators: Set<ExplicitMetadataKey> = setOf(
+            NAME,
+            ICON_URL,
+            DESCRIPTION,
+            CLAIM_NFT,
+        )
 
-        fun from(key: String) = ExplicitMetadataKey.values().find { it.key == key }
+        val forDApps: Set<ExplicitMetadataKey> = setOf(
+            NAME,
+            DESCRIPTION,
+            ACCOUNT_TYPE,
+            DAPP_DEFINITION,
+            DAPP_DEFINITIONS,
+            CLAIMED_WEBSITES,
+            CLAIMED_ENTITIES,
+            ICON_URL
+        )
     }
 }

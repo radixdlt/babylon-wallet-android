@@ -79,7 +79,7 @@ fun ChooseLedgerScreen(
                     color = RadixTheme.colors.gray1
                 )
             },
-            text = {
+            message = {
                 Text(
                     text = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_message),
                     style = RadixTheme.typography.body2Regular,

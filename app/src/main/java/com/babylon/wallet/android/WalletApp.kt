@@ -138,8 +138,8 @@ fun WalletApp(
                     mainViewModel.clearOlympiaError()
                 }
             },
-            title = stringResource(id = R.string.homePage_profileOlympiaError_title),
-            text = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
+            titleText = stringResource(id = R.string.homePage_profileOlympiaError_title),
+            messageText = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
             confirmText = confirmText,
             dismissText = null
         )
@@ -149,8 +149,8 @@ fun WalletApp(
             finish = {
                 mainViewModel.onInvalidRequestMessageShown()
             },
-            title = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
-            text = it.userFriendlyMessage(),
+            titleText = stringResource(id = R.string.dAppRequest_validationOutcome_invalidRequestTitle),
+            messageText = it.userFriendlyMessage(),
             confirmText = stringResource(
                 id = R.string.common_ok
             ),
