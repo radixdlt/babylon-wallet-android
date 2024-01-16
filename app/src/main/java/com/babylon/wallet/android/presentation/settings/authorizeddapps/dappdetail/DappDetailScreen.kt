@@ -762,7 +762,7 @@ fun DappDetailContentPreview() {
                                 )
                             ),
                         )
-                    ),
+                    )
                 ),
                 sharedPersonaAccounts = persistentListOf(
                     AccountItemUiModel("account_tdx_efgh", "Account1", 0)

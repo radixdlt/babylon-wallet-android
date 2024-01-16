@@ -50,6 +50,7 @@ turbine = "1.0.0"
 zxing = "3.5.2"
 apacheCommonsValidator = "1.7"
 jsonAssert = "1.5.1"
+firebaseCrashlytics = "18.5.1"
 
 [libraries]
 androidxCore = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -127,3 +128,4 @@ turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
 apacheCommonsValidator = { module = "commons-validator:commons-validator", version.ref = "apacheCommonsValidator" }
 jsonAssert = { module = "org.skyscreamer:jsonassert", version.ref = "jsonAssert" }
+firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics", version.ref = "firebaseCrashlytics" }

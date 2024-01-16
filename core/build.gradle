@@ -39,6 +39,7 @@ dependencies {
     implementation libs.ktorCore
     implementation libs.zxing
     implementation libs.kotlinxSerialization
+    implementation libs.firebaseCrashlytics
 
     // Datastore
     implementation libs.datastorePreferences

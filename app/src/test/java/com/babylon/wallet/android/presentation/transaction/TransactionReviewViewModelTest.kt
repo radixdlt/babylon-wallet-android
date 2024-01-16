@@ -58,6 +58,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.mockkStatic
 import io.mockk.slot
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.emptyFlow
@@ -79,6 +80,7 @@ import org.junit.runners.model.Statement
 import org.mockito.kotlin.mock
 import rdx.works.core.displayableQuantity
 import rdx.works.core.identifiedArrayListOf
+import rdx.works.core.logNonFatalException
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -189,6 +191,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { getValidatorsUseCase(any()) } returns Result.success(listOf(ValidatorDetail("addr", BigDecimal(100000))))
         every { exceptionMessageProvider.throwableMessage(any()) } returns ""
         every { deviceCapabilityHelper.isDeviceSecure() } returns true
+        mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
+        every { logNonFatalException(any()) } just Runs
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
         coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(

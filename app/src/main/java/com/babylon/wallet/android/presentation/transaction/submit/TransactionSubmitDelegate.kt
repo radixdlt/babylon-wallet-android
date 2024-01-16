@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.logNonFatalException
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
@@ -202,6 +203,7 @@ class TransactionSubmitDelegate @Inject constructor(
                 when (radixWalletException) {
                     is RadixWalletException.SignatureCancelled,
                     is RadixWalletException.LedgerCommunicationException -> {
+                        logNonFatalException(radixWalletException)
                         _state.update {
                             it.copy(isSubmitting = false)
                         }
@@ -251,6 +253,7 @@ class TransactionSubmitDelegate @Inject constructor(
     }
 
     private suspend fun reportFailure(error: Throwable) {
+        logNonFatalException(error)
         logger.w(error)
         _state.update {
             it.copy(isSubmitting = false, error = UiMessage.TransactionErrorMessage(error))
