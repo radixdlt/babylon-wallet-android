@@ -11,6 +11,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -20,6 +23,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SwitchSettingsItem
@@ -39,6 +43,7 @@ fun AppSettingsScreen(
         onAppSettingItemClick = onAppSettingItemClick,
         onDeveloperModeToggled = viewModel::onDeveloperModeToggled,
         onBackClick = onBackClick,
+        onCrashReportingToggled = viewModel::onCrashReportingToggled
     )
 }
 
@@ -49,7 +54,21 @@ private fun AppSettingsContent(
     onAppSettingItemClick: (SettingsItem.AppSettingsItem) -> Unit,
     onDeveloperModeToggled: (Boolean) -> Unit,
     onBackClick: () -> Unit,
+    onCrashReportingToggled: (Boolean) -> Unit,
 ) {
+    var crashReportingPromptVisible by remember { mutableStateOf(false) }
+    if (crashReportingPromptVisible) {
+        BasicPromptAlertDialog(
+            finish = { accepted ->
+                if (accepted) {
+                    onCrashReportingToggled(true)
+                }
+                crashReportingPromptVisible = false
+            },
+            titleText = stringResource(id = R.string.appSettings_crashReporting_title),
+            messageText = stringResource(id = R.string.appSettings_crashReporting_subtitle)
+        )
+    }
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -91,6 +110,24 @@ private fun AppSettingsContent(
                                 )
                             }
 
+                            is SettingsItem.AppSettingsItem.CrashReporting -> {
+                                SwitchSettingsItem(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(all = RadixTheme.dimensions.paddingDefault),
+                                    titleRes = appSettingsItem.descriptionRes(),
+                                    iconResource = appSettingsItem.getIcon(),
+                                    checked = appSettingsItem.enabled,
+                                    onCheckedChange = { selected ->
+                                        if (selected) {
+                                            crashReportingPromptVisible = true
+                                        } else {
+                                            onCrashReportingToggled(false)
+                                        }
+                                    }
+                                )
+                            }
+
                             SettingsItem.AppSettingsItem.EntityHiding -> {
                                 DefaultSettingsItem(
                                     title = stringResource(id = appSettingsItem.descriptionRes()),
@@ -129,7 +166,8 @@ fun AppSettingsScreenPreview() {
             appSettings = AppSettingsUiState.default.settings,
             onAppSettingItemClick = {},
             onDeveloperModeToggled = {},
-            onBackClick = {}
+            onBackClick = {},
+            onCrashReportingToggled = {}
         )
     }
 }

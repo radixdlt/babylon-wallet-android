@@ -38,6 +38,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import rdx.works.core.logNonFatalException
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple
 import rdx.works.profile.data.model.pernetwork.PersonaData
@@ -257,6 +258,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun handleRequestError(exception: Throwable) {
         if (exception is RadixWalletException.DappRequestException) {
+            logNonFatalException(exception)
             if (exception.cause is RadixWalletException.LedgerCommunicationException) {
                 return
             }

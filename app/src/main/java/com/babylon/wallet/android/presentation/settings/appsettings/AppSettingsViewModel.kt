@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.appsettings
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem
@@ -12,7 +13,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.deleteCrashlyticsUnsentReports
+import rdx.works.core.enableCrashlytics
 import rdx.works.core.mapWhen
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.security
 import rdx.works.profile.domain.security.UpdateDeveloperModeUseCase
@@ -21,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AppSettingsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
+    private val preferencesManager: PreferencesManager,
     private val updateDeveloperModeUseCase: UpdateDeveloperModeUseCase
 ) : StateViewModel<AppSettingsUiState>() {
 
@@ -41,10 +46,32 @@ class AppSettingsViewModel @Inject constructor(
                     }
                 }
         }
+        if (BuildConfig.CRASH_REPORTING_AVAILABLE) {
+            _state.update { settingsUiState ->
+                settingsUiState.copy(
+                    settings = (settingsUiState.settings + SettingsItem.AppSettingsItem.CrashReporting(false)).toPersistentSet()
+                )
+            }
+            viewModelScope.launch {
+                preferencesManager.isCrashReportingEnabled.collect { enabled ->
+                    if (enabled) {
+                        deleteCrashlyticsUnsentReports()
+                    }
+                    enableCrashlytics(enabled)
+                    _state.updateSetting<SettingsItem.AppSettingsItem.CrashReporting> {
+                        SettingsItem.AppSettingsItem.CrashReporting(enabled)
+                    }
+                }
+            }
+        }
     }
 
     fun onDeveloperModeToggled(enabled: Boolean) = viewModelScope.launch {
         updateDeveloperModeUseCase(isEnabled = enabled)
+    }
+
+    fun onCrashReportingToggled(enabled: Boolean) = viewModelScope.launch {
+        preferencesManager.enableCrashReporting(enabled)
     }
 
     private inline fun <reified S : SettingsItem.AppSettingsItem> MutableStateFlow<AppSettingsUiState>.updateSetting(
