@@ -434,6 +434,9 @@
   <string name="transactionReview_validators_stake">Staking to Validators</string>
   <string name="transactionReview_validators_unstake">Requesting unstake from validators</string>
   <string name="transactionReview_validators_claim">Claim from validators</string>
+  <string name="transactionReview_poolContributionHeading">Contributing to pools</string>
+  <string name="transactionReview_poolRedemptionHeading">Redeeming from pools</string>
+  <string name="transactionReview_poolName_unknown">Unknown pool</string>
   <string name="transactionStatus_completing_text">Completing Transaction…</string>
   <string name="transactionStatus_transactionID_text">Transaction ID: </string>
   <string name="transactionStatus_success_title">Transaction Success</string>
