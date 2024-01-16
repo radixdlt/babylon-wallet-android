@@ -20,7 +20,7 @@ suspend fun DetailedManifestClass.ValidatorClaim.resolve(
     resources: List<Resource>,
     involvedValidators: List<ValidatorDetail>,
     stakeClaimsNfts: List<Resource.NonFungibleResource.Item>
-): PreviewType {
+): PreviewType.Transfer.Staking {
     val toAccounts = extractDeposits(executionSummary, getProfileUseCase, resources)
     val fromAccounts = extractWithdrawals(
         executionSummary = executionSummary,

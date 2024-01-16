@@ -16,7 +16,7 @@ suspend fun DetailedManifestClass.ValidatorUnstake.resolve(
     getProfileUseCase: GetProfileUseCase,
     resources: List<Resource>,
     involvedValidators: List<ValidatorDetail>
-): PreviewType {
+): PreviewType.Transfer.Staking {
     val fromAccounts = extractWithdrawals(executionSummary, getProfileUseCase, resources, involvedValidators)
     val toAccounts = extractDeposits(executionSummary, getProfileUseCase, resources, involvedValidators)
     val validatorAddressesSet = validatorAddresses.map { it.addressString() }.toSet()

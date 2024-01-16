@@ -23,7 +23,7 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
     getProfileUseCase: GetProfileUseCase,
     resources: List<Resource>,
     involvedPools: List<Pool>
-): PreviewType {
+): PreviewType.Transfer.Pool {
     val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
     val accountsWithdrawnFrom = executionSummary.accountWithdraws.keys
     val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {

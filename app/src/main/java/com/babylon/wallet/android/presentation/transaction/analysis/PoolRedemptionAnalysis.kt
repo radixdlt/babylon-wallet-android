@@ -20,7 +20,7 @@ suspend fun DetailedManifestClass.PoolRedemption.resolve(
     getProfileUseCase: GetProfileUseCase,
     resources: List<Resource>,
     involvedPools: List<Pool>
-): PreviewType {
+): PreviewType.Transfer.Pool {
     val accountsWithdrawnFrom = executionSummary.accountDeposits.keys
     val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {
         accountsWithdrawnFrom.contains(it.address)

@@ -86,7 +86,7 @@ suspend fun StateApi.fetchAccountGatewayDetails(
 suspend fun StateApi.fetchPools(
     poolAddresses: Set<String>,
     stateVersion: Long
-): List<FetchPoolsResult> {
+): List<PoolsResponse> {
     if (poolAddresses.isEmpty()) return emptyList()
 
     val poolDetails = mutableMapOf<String, StateEntityDetailsResponseItem>()
@@ -107,7 +107,7 @@ suspend fun StateApi.fetchPools(
         }
     }
 
-    val result = mutableListOf<FetchPoolsResult>()
+    val result = mutableListOf<PoolsResponse>()
     paginateDetails(
         addresses = resourceToPoolComponentAssociation.keys, // Request details for resources
         metadataKeys = ExplicitMetadataKey.forAssets,
@@ -116,7 +116,7 @@ suspend fun StateApi.fetchPools(
         resourcesDetails.items.forEach { resourceDetails ->
             val poolAddress = resourceToPoolComponentAssociation[resourceDetails.address]
             poolDetails[poolAddress]?.let { poolDetails ->
-                result.add(FetchPoolsResult(poolDetails, resourceDetails, poolWithResources[poolAddress].orEmpty()))
+                result.add(PoolsResponse(poolDetails, resourceDetails, poolWithResources[poolAddress].orEmpty()))
             }
         }
     }
@@ -124,7 +124,7 @@ suspend fun StateApi.fetchPools(
     return result
 }
 
-data class FetchPoolsResult(
+data class PoolsResponse(
     val poolDetails: StateEntityDetailsResponseItem,
     val poolUnitDetails: StateEntityDetailsResponseItem,
     val poolResourcesDetails: List<FungibleResourcesCollectionItem>

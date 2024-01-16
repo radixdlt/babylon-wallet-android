@@ -37,7 +37,10 @@ sealed interface Transferable {
                             instructionIndex = predicted.instructionIndex
                         )
 
-                        is TransferableResource.StakeClaimNft -> null
+                        is TransferableResource.StakeClaimNft -> GuaranteeAssertion.ForNFT(
+                            instructionIndex = predicted.instructionIndex
+                        )
+
                         is TransferableResource.PoolUnitAmount -> GuaranteeAssertion.ForAmount(
                             amount = transferable.amount * predicted.guaranteeOffset.toBigDecimal(),
                             instructionIndex = predicted.instructionIndex

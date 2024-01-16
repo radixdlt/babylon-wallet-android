@@ -18,7 +18,7 @@ suspend fun DetailedManifestClass.ValidatorStake.resolve(
     getProfileUseCase: GetProfileUseCase,
     resources: List<Resource>,
     involvedValidators: List<ValidatorDetail>
-): PreviewType {
+): PreviewType.Transfer.Staking {
     val fromAccounts = extractWithdrawals(executionSummary, getProfileUseCase, resources)
     val toAccounts = extractDeposits(
         executionSummary = executionSummary,

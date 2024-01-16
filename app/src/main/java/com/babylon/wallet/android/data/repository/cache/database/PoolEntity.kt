@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.babylon.wallet.android.data.gateway.extensions.FetchPoolsResult
+import com.babylon.wallet.android.data.gateway.extensions.PoolsResponse
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoin.Companion.asPoolResourceJoin
@@ -34,7 +34,7 @@ data class PoolEntity(
 
     companion object {
         @Suppress("UnsafeCallOnNullableType")
-        fun List<FetchPoolsResult>.asPoolsResourcesJoin(
+        fun List<PoolsResponse>.asPoolsResourcesJoin(
             syncInfo: SyncInfo
         ): List<PoolWithResourcesJoinResult> =
             mapNotNull { fetchedPoolDetails ->
