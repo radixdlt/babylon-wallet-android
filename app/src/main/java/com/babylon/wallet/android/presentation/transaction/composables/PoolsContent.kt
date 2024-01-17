@@ -30,19 +30,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.resources.Pool
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
+import com.babylon.wallet.android.presentation.ui.composables.PoolDetailsItem
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import java.math.BigDecimal
 
 @Composable
-fun ValidatorsContent(
-    validators: ImmutableList<ValidatorDetail>,
+fun PoolsContent(
+    pools: ImmutableList<Pool>,
     modifier: Modifier = Modifier,
     text: String
 ) {
@@ -61,7 +63,7 @@ fun ValidatorsContent(
                 modifier = Modifier
                     .size(24.dp)
                     .dashedCircleBorder(RadixTheme.colors.gray3),
-                painter = painterResource(id = DSR.ic_validator),
+                painter = painterResource(id = DSR.ic_pools_contribution),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(RadixTheme.colors.gray2),
                 contentScale = ContentScale.Inside
@@ -108,10 +110,10 @@ fun ValidatorsContent(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .fillMaxWidth()
         ) {
-            validators.forEach { validator ->
-                ValidatorDetailsItem(
+            pools.forEach { pool ->
+                PoolDetailsItem(
                     iconSize = 44.dp,
-                    validator = validator,
+                    pool = pool,
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
@@ -125,15 +127,39 @@ fun ValidatorsContent(
 
 @Preview(showBackground = true)
 @Composable
-fun StakingToValidatorsContentPreview() {
+fun PoolsContentPreview() {
     RadixWalletTheme {
         Column {
-            ValidatorsContent(
-                persistentListOf(
-                    ValidatorDetail("validator_tdx_19jd32jd3928jd3892jd329", BigDecimal(1000)),
-                    ValidatorDetail("validator_tdx_19jd32jd3928jd3892jd329", BigDecimal(1000000))
+            PoolsContent(
+                pools = persistentListOf(
+                    Pool(
+                        "pool_tdx_19jd32jd3928jd3892jd329",
+                        listOf(
+                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool", valueType = MetadataType.String),
+                            Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
+                            Metadata.Primitive(
+                                key = ExplicitMetadataKey.POOL_UNIT.key,
+                                value = "resource_tdx_19jd32jd3928jd3892jd329",
+                                valueType = MetadataType.Address
+                            )
+                        ),
+                        emptyList()
+                    ),
+                    Pool(
+                        "pool_tdx_19jd32jd3928jd3892jd328",
+                        listOf(
+                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool2", valueType = MetadataType.String),
+                            Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
+                            Metadata.Primitive(
+                                key = ExplicitMetadataKey.POOL_UNIT.key,
+                                value = "resource_tdx_19jd32jd3928jd3892jd329",
+                                valueType = MetadataType.Address
+                            )
+                        ),
+                        emptyList()
+                    )
                 ),
-                text = "Staking to Validators Staking to Validators Staking to Validators Staking to Validators".uppercase()
+                text = "Contributing to pools".uppercase()
             )
         }
     }

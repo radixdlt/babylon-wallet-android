@@ -53,18 +53,14 @@ interface StateDao {
 
     @Suppress("UnsafeCallOnNullableType")
     @Transaction
-    fun updatePools(pools: Map<ResourceEntity, List<Pair<PoolResourceJoin, ResourceEntity>>>) {
-        val poolEntities = pools.keys.map {
-            PoolEntity(
-                address = it.poolAddress!!,
-                resourceAddress = it.address
-            )
-        }
-        insertPoolDetails(poolEntities)
+    fun updatePools(pools: List<PoolWithResourcesJoinResult>) {
+        insertPoolDetails(pools.map { it.pool })
 
-        val resourcesInvolved = pools.map { entry -> listOf(entry.key) + entry.value.map { it.second } }.flatten()
+        val resourcesInvolved = pools.map { pool ->
+            listOf(pool.poolUnitResource) + pool.resources.map { it.second }
+        }.flatten()
         insertOrReplaceResources(resourcesInvolved)
-        val join = pools.values.map { poolResource -> poolResource.map { it.first } }.flatten()
+        val join = pools.map { poolResource -> poolResource.resources.map { it.first } }.flatten()
         insertPoolResources(join)
     }
 
@@ -128,7 +124,8 @@ interface StateDao {
         """
         SELECT 
             PoolEntity.address AS pool_entity_address, 
-            PoolEntity.resource_address AS pool_unit_address, 
+            PoolEntity.resource_address AS pool_unit_address,
+            PoolEntity.metadata AS pool_metadata,
             PoolResourceJoin.state_version AS account_state_version, 
             PoolResourceJoin.amount AS amount,
             ResourceEntity.*

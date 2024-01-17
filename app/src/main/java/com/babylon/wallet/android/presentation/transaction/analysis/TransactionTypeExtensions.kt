@@ -121,7 +121,7 @@ fun ResourceIndicator.toTransferableResource(resources: List<Resource>): Transfe
                 resourceAddress = resourceAddress,
                 ownedAmount = BigDecimal.ZERO
             )
-            TransferableResource.Amount(
+            TransferableResource.FungibleAmount(
                 amount = amount,
                 resource = resource,
                 isNewlyCreated = false
@@ -221,7 +221,24 @@ fun ResourceIndicator.toWithdrawingTransferableResource(
     }
 }
 
-private fun FungibleResourceIndicator.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType {
+fun DetailedManifestClass.isConformingManifestType(): Boolean {
+    return when (this) {
+        is DetailedManifestClass.AccountDepositSettingsUpdate -> {
+            true
+        }
+
+        DetailedManifestClass.General -> true
+        is DetailedManifestClass.PoolContribution -> true
+        is DetailedManifestClass.PoolRedemption -> true
+        is DetailedManifestClass.Transfer -> true
+        is DetailedManifestClass.ValidatorClaim -> true
+        is DetailedManifestClass.ValidatorStake -> true
+        is DetailedManifestClass.ValidatorUnstake -> true
+        else -> false
+    }
+}
+
+fun FungibleResourceIndicator.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType {
     return when (this) {
         is FungibleResourceIndicator.Guaranteed -> GuaranteeType.Guaranteed
         is FungibleResourceIndicator.Predicted -> GuaranteeType.Predicted(
@@ -241,14 +258,14 @@ private fun ResourceIndicator.Fungible.toTransferableResource(
     resources: List<Resource>,
     newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>
-): TransferableResource.Amount {
+): TransferableResource.FungibleAmount {
     val resource = resources.findFungible(
         resourceAddress.addressString()
     ) ?: Resource.FungibleResource.from(
         resourceAddress = resourceAddress, metadata = newlyCreatedMetadata[resourceAddress.addressString()].orEmpty()
     )
 
-    return TransferableResource.Amount(
+    return TransferableResource.FungibleAmount(
         amount = amount,
         resource = resource,
         isNewlyCreated = resourceAddress.addressString() in newlyCreatedEntities.map { it.addressString() }

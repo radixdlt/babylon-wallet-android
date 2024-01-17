@@ -11,6 +11,7 @@ import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetPoolDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -21,11 +22,9 @@ import com.babylon.wallet.android.presentation.transaction.guaranteesCount
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.TransactionManifest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
 import rdx.works.core.then
-import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.currentNetwork
 import timber.log.Timber
@@ -41,6 +40,7 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val getNFTDetailsUseCase: GetNFTDetailsUseCase,
     private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase,
+    private val getPoolDetailsUseCase: GetPoolDetailsUseCase,
     private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
@@ -113,7 +113,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             processConformingManifest()
         }
 
-        if (previewType is PreviewType.Transfer) {
+        if (previewType is PreviewType.Transfer.GeneralTransfer) {
             val newlyCreated = previewType.getNewlyCreatedResources()
             if (newlyCreated.isNotEmpty()) {
                 cacheNewlyCreatedEntitiesUseCase(newlyCreated.map { it.resource })
@@ -149,19 +149,24 @@ class TransactionAnalysisDelegate @Inject constructor(
         }
     }
 
+    @Suppress("LongMethod")
     private suspend fun ExecutionSummary.processConformingManifest(): PreviewType {
         val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
         val xrdAddress = XrdResource.address(networkId)
-        val transactionType = detailedClassification.first()
+        val transactionType = detailedClassification.firstOrNull {
+            it.isConformingManifestType()
+        } ?: return PreviewType.NonConforming
         val resources = getResourcesUseCase(addresses = involvedResourceAddresses + xrdAddress).getOrThrow()
 
         return when (transactionType) {
-            is DetailedManifestClass.General -> resolveGeneralTransfer(
-                resources = resources,
-                getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-                getProfileUseCase = getProfileUseCase,
-                resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
-            )
+            is DetailedManifestClass.General -> {
+                resolveGeneralTransaction(
+                    resources = resources,
+                    getTransactionBadgesUseCase = getTransactionBadgesUseCase,
+                    getProfileUseCase = getProfileUseCase,
+                    resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
+                )
+            }
 
             is DetailedManifestClass.AccountDepositSettingsUpdate -> transactionType.resolve(
                 getProfileUseCase = getProfileUseCase,
@@ -199,6 +204,26 @@ class TransactionAnalysisDelegate @Inject constructor(
                     getProfileUseCase = getProfileUseCase,
                     resources = resources,
                     involvedValidators = validators,
+                    executionSummary = this
+                )
+            }
+
+            is DetailedManifestClass.PoolContribution -> {
+                val pools = getPoolDetailsUseCase(transactionType.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()
+                transactionType.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    resources = resources,
+                    involvedPools = pools,
+                    executionSummary = this
+                )
+            }
+
+            is DetailedManifestClass.PoolRedemption -> {
+                val pools = getPoolDetailsUseCase(transactionType.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()
+                transactionType.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    resources = resources,
+                    involvedPools = pools,
                     executionSummary = this
                 )
             }

@@ -1,9 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,63 +22,29 @@ fun StakeTypeContent(
     state: TransactionReviewViewModel.State,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
-    previewType: PreviewType.Staking
+    previewType: PreviewType.Transfer.Staking,
+    onPromptForGuarantees: () -> Unit
 ) {
     val validatorSectionText = when (previewType.actionType) {
-        PreviewType.Staking.ActionType.Stake -> stringResource(id = R.string.transactionReview_validators_stake).uppercase()
-        PreviewType.Staking.ActionType.Unstake -> stringResource(id = R.string.transactionReview_validators_unstake).uppercase()
-        PreviewType.Staking.ActionType.ClaimStake -> stringResource(id = R.string.transactionReview_validators_claim).uppercase()
+        PreviewType.Transfer.Staking.ActionType.Stake -> stringResource(id = R.string.transactionReview_validators_stake).uppercase()
+        PreviewType.Transfer.Staking.ActionType.Unstake -> stringResource(id = R.string.transactionReview_validators_unstake).uppercase()
+        PreviewType.Transfer.Staking.ActionType.ClaimStake -> stringResource(id = R.string.transactionReview_validators_claim).uppercase()
     }
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        Column {
-            state.message?.let {
-                TransactionMessageContent(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    transactionMessage = it
-                )
-
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            }
-
-            WithdrawAccountContent(
-                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                from = previewType.from.toPersistentList(),
-                onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
-                    onFungibleResourceClick(fungibleResource, isNewlyCreated)
-                },
-                onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
-                    onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
-                }
-            )
-
+    CommonTransferContent(
+        modifier = modifier.fillMaxSize(),
+        state = state,
+        onFungibleResourceClick = onFungibleResourceClick,
+        onNonFungibleResourceClick = onNonFungibleResourceClick,
+        previewType = previewType,
+        onPromptForGuarantees = onPromptForGuarantees,
+        middleSection = {
             ValidatorsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 validators = previewType.validators.toPersistentList(),
                 text = validatorSectionText,
             )
-
-            DepositAccountContent(
-                modifier = Modifier.padding(
-                    start = RadixTheme.dimensions.paddingDefault,
-                    end = RadixTheme.dimensions.paddingDefault,
-                    bottom = RadixTheme.dimensions.paddingLarge
-                ),
-                to = previewType.to.toPersistentList(),
-                promptForGuarantees = {},
-                showStrokeLine = true,
-                onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
-                    onFungibleResourceClick(fungibleResource, isNewlyCreated)
-                },
-                onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
-                    onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
-                }
-            )
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
-    }
+    )
 }
 
 @Preview(showBackground = true)
@@ -97,12 +60,13 @@ fun StakeUnstakeTypePreview() {
             ),
             onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> },
-            previewType = PreviewType.Staking(
+            previewType = PreviewType.Transfer.Staking(
                 to = persistentListOf(),
                 from = listOf(SampleDataProvider().accountWithTransferableResourceLsu).toPersistentList(),
                 validators = persistentListOf(),
-                actionType = PreviewType.Staking.ActionType.Stake
+                actionType = PreviewType.Transfer.Staking.ActionType.Stake
             ),
+            onPromptForGuarantees = {},
         )
     }
 }

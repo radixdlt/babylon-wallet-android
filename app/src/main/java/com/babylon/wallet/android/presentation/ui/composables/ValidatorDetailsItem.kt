@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables.resources
+package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 
 @Composable
 fun ValidatorDetailsItem(validator: ValidatorDetail, modifier: Modifier = Modifier, iconSize: Dp = 24.dp) {

@@ -280,7 +280,15 @@ fun AssetsViewWithAssets() {
                         ),
                         pool = Pool(
                             address = "pool_abc",
-                            poolUnitAddress = "resource_abcd",
+                            metadata = listOf(
+                                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool", valueType = MetadataType.String),
+                                Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
+                                Metadata.Primitive(
+                                    key = ExplicitMetadataKey.POOL_UNIT.key,
+                                    value = "resource_tdx_19jd32jd3928jd3892jd329",
+                                    valueType = MetadataType.Address
+                                )
+                            ),
                             resources = listOf(
                                 Resource.FungibleResource(
                                     resourceAddress = XrdResource.address(),

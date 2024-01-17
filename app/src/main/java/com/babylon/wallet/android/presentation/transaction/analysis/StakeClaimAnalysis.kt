@@ -20,7 +20,7 @@ suspend fun DetailedManifestClass.ValidatorClaim.resolve(
     resources: List<Resource>,
     involvedValidators: List<ValidatorDetail>,
     stakeClaimsNfts: List<Resource.NonFungibleResource.Item>
-): PreviewType {
+): PreviewType.Transfer.Staking {
     val toAccounts = extractDeposits(executionSummary, getProfileUseCase, resources)
     val fromAccounts = extractWithdrawals(
         executionSummary = executionSummary,
@@ -29,11 +29,11 @@ suspend fun DetailedManifestClass.ValidatorClaim.resolve(
         involvedValidators = involvedValidators,
         stakeClaimsNfts = stakeClaimsNfts
     )
-    return PreviewType.Staking(
+    return PreviewType.Transfer.Staking(
         validators = involvedValidators,
         from = fromAccounts,
         to = toAccounts,
-        actionType = PreviewType.Staking.ActionType.ClaimStake
+        actionType = PreviewType.Transfer.Staking.ActionType.ClaimStake
     )
 }
 
@@ -98,7 +98,7 @@ private suspend fun extractDeposits(
         account = ownedAccount,
         resources = listOf(
             element = Transferable.Depositing(
-                transferable = TransferableResource.Amount(
+                transferable = TransferableResource.FungibleAmount(
                     entry.value.sumOf { it.amount },
                     xrdResource,
                     false
