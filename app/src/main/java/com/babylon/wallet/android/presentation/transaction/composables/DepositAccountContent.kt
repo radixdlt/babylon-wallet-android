@@ -128,7 +128,8 @@ fun StrokeLine(
     Canvas(
         modifier
             .width(1.dp)
-            .height(height)) {
+            .height(height)
+    ) {
         val width = size.width
         drawLine(
             color = strokeColor,

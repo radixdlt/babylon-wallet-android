@@ -62,7 +62,6 @@ fun StakeTypeContent(
                 modifier = Modifier
                     .applyIf(condition = state.showDottedLine, modifier = Modifier.strokeLine())
             ) {
-
                 ValidatorsContent(
                     modifier = Modifier
                         .padding(horizontal = RadixTheme.dimensions.paddingDefault),

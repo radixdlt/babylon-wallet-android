@@ -33,8 +33,7 @@ class ResolveDAppInTransactionUseCase @Inject constructor(
                 dApp to dApp.claimedEntities.contains(componentAddress)
                 DAppInTransaction(
                     dApp = dApp,
-                    isVerified = dApp.claimedEntities.contains(componentAddress),
-                    componentAddresses = dApp.claimedEntities.filter { it.startsWith("component_") }
+                    isVerified = dApp.claimedEntities.contains(componentAddress)
                 )
             }
         } else {
@@ -45,6 +44,8 @@ class ResolveDAppInTransactionUseCase @Inject constructor(
 
 data class DAppInTransaction(
     val dApp: DApp,
-    val isVerified: Boolean,
+    val isVerified: Boolean
+) {
     val componentAddresses: List<String>
-)
+        get() = dApp.claimedEntities.filter { it.startsWith("component_") }
+}

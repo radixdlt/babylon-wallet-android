@@ -168,8 +168,7 @@ fun ConnectedDAppsContentPreview() {
                 DApp(
                     dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
                 ),
-                isVerified = true,
-                componentAddresses = listOf()
+                isVerified = true
             )
         ),
         onDAppClick = {},
