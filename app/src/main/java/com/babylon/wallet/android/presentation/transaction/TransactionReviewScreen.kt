@@ -114,7 +114,8 @@ fun TransactionReviewScreen(
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
         onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
-        dismissTransactionErrorDialog = viewModel::dismissTransactionErrorDialog
+        dismissTransactionErrorDialog = viewModel::dismissTransactionErrorDialog,
+        onAcknowledgeRawTransactionWarning = viewModel::onAcknowledgeRawTransactionWarning
     )
 
     state.interactionState?.let {
@@ -171,7 +172,8 @@ private fun TransactionPreviewContent(
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
     onViewAdvancedModeClick: () -> Unit,
-    dismissTransactionErrorDialog: () -> Unit
+    dismissTransactionErrorDialog: () -> Unit,
+    onAcknowledgeRawTransactionWarning: () -> Unit
 ) {
     val modalBottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -266,6 +268,22 @@ private fun TransactionPreviewContent(
                             onSwipeComplete = onApproveTransaction
                         )
                     }
+                }
+
+                if (state.showRawTransactionWarning) {
+                    BasicPromptAlertDialog(
+                        finish = { acknowledged ->
+                            if (acknowledged) {
+                                onAcknowledgeRawTransactionWarning()
+                            }
+                        },
+                        titleText = "This is a complex transaction that cannot be summarized - the raw transaction " +
+                            "manifest will be shown. Do not submit unless you understand the contents.", // Crowdin
+                        confirmText = stringResource(
+                            id = R.string.common_continue
+                        ),
+                        dismissText = null
+                    )
                 }
 
                 AnimatedVisibility(
@@ -489,7 +507,8 @@ fun TransactionPreviewContentPreview() {
             onTipPercentageChanged = {},
             onViewDefaultModeClick = {},
             onViewAdvancedModeClick = {},
-            dismissTransactionErrorDialog = {}
+            dismissTransactionErrorDialog = {},
+            onAcknowledgeRawTransactionWarning = {}
         )
     }
 }
