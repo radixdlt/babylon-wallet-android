@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
-import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -23,11 +22,9 @@ import com.babylon.wallet.android.presentation.transaction.guaranteesCount
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.TransactionManifest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
 import rdx.works.core.then
-import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.currentNetwork
 import timber.log.Timber
@@ -43,8 +40,7 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val getNFTDetailsUseCase: GetNFTDetailsUseCase,
     private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase,
-    private val searchFeePayersUseCase: SearchFeePayersUseCase,
-    private val getPoolDetailsUseCase: GetPoolDetailsUseCase
+    private val getPoolDetailsUseCase: GetPoolDetailsUseCase,
     private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
