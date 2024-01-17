@@ -114,7 +114,7 @@ fun TransactionReviewScreen(
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
         onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
-        dismissTransactionErrorDialog = viewModel::dismissTransactionErrorDialog
+        dismissTransactionErrorDialog = viewModel::dismissTerminalErrorDialog
     )
 
     state.interactionState?.let {
@@ -179,19 +179,19 @@ private fun TransactionPreviewContent(
     val snackBarHostState = remember { SnackbarHostState() }
 
     state.error?.let { transactionError ->
-        if (transactionError.isPreviewedInDialog) {
+        if (transactionError.isTerminalError) {
             BasicPromptAlertDialog(
                 finish = {
                     dismissTransactionErrorDialog()
                 },
                 titleText = transactionError.getTitle(),
-                messageText = transactionError.getMessage(),
+                messageText = transactionError.uiMessage.getMessage(),
                 confirmText = stringResource(id = R.string.common_ok),
                 dismissText = null
             )
         } else {
             SnackbarUIMessage(
-                message = transactionError,
+                message = transactionError.uiMessage,
                 snackbarHostState = snackBarHostState,
                 onMessageShown = onMessageShown
             )

@@ -7,13 +7,14 @@ import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.babylon.wallet.android.presentation.transaction.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.guaranteesCount
@@ -40,6 +41,7 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val getNFTDetailsUseCase: GetNFTDetailsUseCase,
     private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase,
+    private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
@@ -58,34 +60,40 @@ class TransactionAnalysisDelegate @Inject constructor(
     private suspend fun startAnalysis(
         manifest: TransactionManifest,
         transactionClient: TransactionClient
-    ): Result<Unit> {
-        val networkId = getProfileUseCase().first().currentNetwork?.knownNetworkId ?: error("No network found")
-        val manifestSummary = manifest.summary(networkId.value.toUByte())
-        val notaryAndSigners = transactionClient.getNotaryAndSigners(
-            manifestSummary = manifestSummary,
-            ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey
-        )
-        return transactionClient.getTransactionPreview(
-            manifest = manifest,
-            notaryAndSigners = notaryAndSigners
-        ).mapCatching { preview ->
-            Timber.tag("receipt").d(preview.encodedReceipt)
-            manifest
-                .executionSummary(networkId = networkId.value.toUByte(), encodedReceipt = preview.encodedReceipt.decodeHex())
-                .resolvePreview(notaryAndSigners)
-                .resolveFees(notaryAndSigners)
-        }.mapCatching { transactionFees ->
-            val feePayerResult = searchFeePayersUseCase(
-                manifestSummary = manifestSummary,
-                lockFee = transactionFees.defaultTransactionFee
-            ).getOrThrow()
+    ): Result<Unit> = runCatching {
+        getProfileUseCase.currentNetwork()?.networkID ?: error("No network found")
+    }.then { networkId ->
+        val summary = manifest.summary(networkId.toUByte())
 
-            _state.update {
-                it.copy(
-                    isNetworkFeeLoading = false,
-                    transactionFees = transactionFees,
-                    feePayerSearchResult = feePayerResult
-                )
+        resolveNotaryAndSignersUseCase(
+            summary = summary,
+            notary = _state.value.ephemeralNotaryPrivateKey
+        ).then { notaryAndSigners ->
+            transactionClient.getTransactionPreview(
+                manifest = manifest,
+                notaryAndSigners = notaryAndSigners
+            ).mapCatching { preview ->
+                logger.d(preview.encodedReceipt)
+                manifest
+                    .executionSummary(
+                        networkId = networkId.toUByte(),
+                        encodedReceipt = preview.encodedReceipt.decodeHex()
+                    )
+                    .resolvePreview(notaryAndSigners)
+                    .resolveFees(notaryAndSigners)
+            }.mapCatching { transactionFees ->
+                val feePayerResult = searchFeePayersUseCase(
+                    manifestSummary = summary,
+                    lockFee = transactionFees.defaultTransactionFee
+                ).getOrThrow()
+
+                _state.update {
+                    it.copy(
+                        isNetworkFeeLoading = false,
+                        transactionFees = transactionFees,
+                        feePayerSearchResult = feePayerResult
+                    )
+                }
             }
         }
     }
@@ -95,7 +103,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             // wallet unacceptable manifest
             _state.update {
                 it.copy(
-                    error = UiMessage.TransactionErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest)
+                    error = TransactionErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest)
                 )
             }
             PreviewType.UnacceptableManifest
@@ -207,7 +215,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 isLoading = false,
                 isNetworkFeeLoading = false,
                 previewType = PreviewType.None,
-                error = UiMessage.TransactionErrorMessage(error)
+                error = TransactionErrorMessage(error)
             )
         }
     }
