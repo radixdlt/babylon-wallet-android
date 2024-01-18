@@ -28,7 +28,7 @@ class GetLSUDetailsUseCase @Inject constructor(
             stateRepository.getValidator(validatorAddress = validatorAddress).map { validator ->
                 ValidatorWithStakes(
                     validatorDetail = validator,
-                    liquidStakeUnit = LiquidStakeUnit(stake)
+                    liquidStakeUnit = LiquidStakeUnit(stake, validator)
                 )
             }
         }

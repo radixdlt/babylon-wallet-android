@@ -96,7 +96,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
             Transferable.Withdrawing(
                 transferable = TransferableAsset.Fungible.LSUAsset(
                     unstakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() },
-                    LiquidStakeUnit(lsuResource),
+                    LiquidStakeUnit(lsuResource, validator),
                     validator,
                     unstakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() },
                 )

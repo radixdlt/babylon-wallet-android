@@ -23,10 +23,11 @@ data class AccountWithAssets(
 }
 
 data class Assets(
-    val fungibles: List<Resource.FungibleResource> = emptyList(),
-    val nonFungibles: List<Resource.NonFungibleResource> = emptyList(),
+    val tokens: List<Token> = emptyList(),
+    val nonFungibles: List<NonFungibleCollection> = emptyList(),
     val poolUnits: List<PoolUnit> = emptyList(),
-    val validatorsWithStakes: List<ValidatorWithStakes> = emptyList()
+    val liquidStakeUnits: List<LiquidStakeUnit> = emptyList(),
+    val stakeClaims: List<StakeClaim> = emptyList()
 ) {
 
     // Owned assets are assets that appear in the lists, but the user owns 0 amounts.
@@ -38,18 +39,18 @@ data class Assets(
     // so we can apply the correct deposit rule warnings in transfer screen when the rule
     // is "Only accept known"
 
-    val ownedXrd: Resource.FungibleResource? by lazy {
-        fungibles.find { it.isXrd && it.ownedAmount != BigDecimal.ZERO }
+    val ownedXrd: Token? by lazy {
+        tokens.find { it.resource.isXrd && it.resource.ownedAmount != BigDecimal.ZERO }
     }
-    val ownedNonXrdFungibles: List<Resource.FungibleResource> by lazy {
-        fungibles.filterNot { it.isXrd || it.ownedAmount == BigDecimal.ZERO }
+    val ownedNonXrdTokens: List<Token> by lazy {
+        tokens.filterNot { it.resource.isXrd || it.resource.ownedAmount == BigDecimal.ZERO }
     }
-    val ownedFungibles: List<Resource.FungibleResource> by lazy {
-        ownedXrd?.let { listOf(it) + ownedNonXrdFungibles } ?: ownedNonXrdFungibles
+    val ownedFungibles: List<Token> by lazy {
+        ownedXrd?.let { listOf(it) + ownedNonXrdTokens } ?: ownedNonXrdTokens
     }
 
-    val ownedNonFungibles: List<Resource.NonFungibleResource> by lazy {
-        nonFungibles.filterNot { it.amount == 0L }
+    val ownedNonFungibles: List<NonFungibleCollection> by lazy {
+        nonFungibles.filterNot { it.collection.amount == 0L }
     }
 
     val ownedPoolUnits: List<PoolUnit> by lazy {
@@ -57,8 +58,15 @@ data class Assets(
     }
 
     val ownedValidatorsWithStakes: List<ValidatorWithStakes> by lazy {
-        validatorsWithStakes.filterNot {
-            !it.hasLSU && !it.hasClaims
+        // TODO sort
+        val validators = (liquidStakeUnits.map { it.validator } + stakeClaims.map { it.validator }).toSet()
+
+        validators.map { validator ->
+            ValidatorWithStakes(
+                validatorDetail = validator,
+                liquidStakeUnit = liquidStakeUnits.find { it.validator == validator },
+                stakeClaimNft = stakeClaims.find { it.validator == validator }
+            )
         }
     }
 
@@ -66,18 +74,15 @@ data class Assets(
     // it contains a resource with an amount greater than 0
     // or it had a resource in the past but the amount is 0 now
     val knownResources: List<Resource> by lazy {
-        fungibles + nonFungibles +
+        tokens.map { it.resource } +
+            nonFungibles.map { it.collection } +
             poolUnits.map { it.stake } +
-            validatorsWithStakes
-                .mapNotNull { it.liquidStakeUnit }
-                .map { it.fungibleResource } +
-            validatorsWithStakes
-                .mapNotNull { it.stakeClaimNft }
-                .map { it.nonFungibleResource }
+            liquidStakeUnits.map { it.fungibleResource } +
+            stakeClaims.map { it.nonFungibleResource }
     }
 
     fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = ownedXrd?.let {
-        it.ownedAmount?.let { amount ->
+        it.resource.ownedAmount?.let { amount ->
             amount >= minimumBalance
         }
     } == true

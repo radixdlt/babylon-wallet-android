@@ -48,24 +48,24 @@ fun LazyListScope.nftsTab(
         }
     }
 
-    assets.ownedNonFungibles.forEach { collection ->
+    assets.ownedNonFungibles.forEach { nonFungible ->
         item(
-            key = collection.resourceAddress,
+            key = nonFungible.collection.resourceAddress,
             contentType = { "collection" }
         ) {
             NFTHeader(
-                collection = collection,
+                collection = nonFungible.collection,
                 state = state,
                 action = action
             )
         }
 
         items(
-            count = if (!state.isCollapsed(collection.resourceAddress)) collection.amount.toInt() else 0,
-            key = { index -> "${collection.resourceAddress}$index" },
+            count = if (!state.isCollapsed(nonFungible.collection.resourceAddress)) nonFungible.collection.amount.toInt() else 0,
+            key = { index -> "${nonFungible.collection.resourceAddress}$index" },
             contentType = { "nft" }
         ) { index ->
-            NFTItem(index, collection, action)
+            NFTItem(index, nonFungible.collection, action)
         }
     }
 }

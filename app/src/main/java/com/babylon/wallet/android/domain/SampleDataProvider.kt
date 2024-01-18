@@ -14,6 +14,7 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -127,6 +128,10 @@ class SampleDataProvider {
                             valueType = MetadataType.String
                         )
                     )
+                ),
+                ValidatorDetail(
+                    "validator_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
+                    totalXrdStake = BigDecimal(1000000)
                 )
             ),
             validator = ValidatorDetail(
@@ -440,10 +445,11 @@ class SampleDataProvider {
         return AccountWithAssets(
             account = sampleAccount(address = address),
             assets = Assets(
-                fungibles = withFungibleTokens,
+                tokens = withFungibleTokens.map { Token(it) },
                 nonFungibles = emptyList(),
                 poolUnits = emptyList(),
-                validatorsWithStakes = emptyList()
+                liquidStakeUnits = emptyList(),
+                stakeClaims = emptyList()
             )
         )
     }

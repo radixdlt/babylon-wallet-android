@@ -184,7 +184,7 @@ class StateRepositoryImpl @Inject constructor(
                             ) as? Resource.FungibleResource
 
                             if (newLsu != null) {
-                                LiquidStakeUnit(newLsu)
+                                LiquidStakeUnit(newLsu, item.validatorDetail)
                             } else {
                                 item.liquidStakeUnit
                             }

@@ -46,9 +46,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
@@ -109,7 +110,7 @@ private fun AssetsContent(
             all.take(visibleFungiblesCount) to (all.size - visibleFungiblesCount).coerceAtLeast(minimumValue = 0)
         }
         val nftsCount = remember(assets.nonFungibles) { assets.nonFungiblesSize() }
-        val lsusCount = remember(assets.validatorsWithStakes) {
+        val lsusCount = remember(assets.ownedValidatorsWithStakes) {
             assets.validatorsWithStakesSize()
         }
         val poolUnitCount = remember(assets.poolUnits) {
@@ -144,7 +145,7 @@ private fun AssetsContent(
                         shape = CircleShape
                     )
                     .padding(bordersSize),
-                token = fungible
+                token = fungible.resource
             )
         }
 
@@ -385,8 +386,8 @@ fun AssetsContentRowPreview() {
 
             AccountAssetsRow(
                 assets = Assets(
-                    fungibles = allFungibles,
-                    nonFungibles = nonFungibles,
+                    tokens = allFungibles.map { Token(it) },
+                    nonFungibles = nonFungibles.map { NonFungibleCollection(it) },
                     poolUnits = List(120) {
                         PoolUnit(
                             stake = Resource.FungibleResource(
@@ -396,17 +397,15 @@ fun AssetsContentRowPreview() {
                             pool = null
                         )
                     },
-                    validatorsWithStakes = List(100) {
-                        ValidatorWithStakes(
-                            validatorDetail = ValidatorDetail(
+                    liquidStakeUnits = List(100) {
+                        LiquidStakeUnit(
+                            Resource.FungibleResource(
+                                resourceAddress = "resource_address$it",
+                                ownedAmount = BigDecimal.valueOf(237659)
+                            ),
+                            ValidatorDetail(
                                 address = "validator_$it",
                                 totalXrdStake = BigDecimal.TEN
-                            ),
-                            liquidStakeUnit = LiquidStakeUnit(
-                                Resource.FungibleResource(
-                                    resourceAddress = "resource_address$it",
-                                    ownedAmount = BigDecimal.valueOf(237659)
-                                )
                             )
                         )
                     }

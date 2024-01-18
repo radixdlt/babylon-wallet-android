@@ -5,7 +5,8 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
 
 data class LiquidStakeUnit(
-    val fungibleResource: Resource.FungibleResource
+    val fungibleResource: Resource.FungibleResource,
+    val validator: ValidatorDetail
 ) {
 
     val validatorAddress: String

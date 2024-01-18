@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transfer
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.isXrd
@@ -413,9 +414,10 @@ class TransferViewModel @Inject constructor(
                         assets = assets.copy(
                             nonFungibles = assets.nonFungibles.mapWhen(
                                 predicate = {
-                                    it.resourceAddress == forResource.resourceAddress && it.items.size < forResource.items.size
+                                    it.collection.resourceAddress == forResource.resourceAddress &&
+                                        it.collection.items.size < forResource.items.size
                                 },
-                                mutation = { forResource }
+                                mutation = { NonFungibleCollection(forResource) }
                             )
                         ),
                         nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress
@@ -431,7 +433,10 @@ class TransferViewModel @Inject constructor(
                 }
 
                 fun onValidatorsReceived(validatorsWithStakes: List<ValidatorWithStakes>): ChooseAssets = copy(
-                    assets = assets?.copy(validatorsWithStakes = validatorsWithStakes),
+                    assets = assets?.copy(
+                        liquidStakeUnits = validatorsWithStakes.mapNotNull { it.liquidStakeUnit },
+                        stakeClaims = validatorsWithStakes.mapNotNull { it.stakeClaimNft }
+                    ),
                     pendingStakeUnits = false
                 )
 

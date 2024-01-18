@@ -27,6 +27,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
@@ -197,27 +198,30 @@ fun AccountCardPreview() {
                 accountWithAssets = AccountWithAssets(
                     account = SampleDataProvider().sampleAccount(),
                     assets = Assets(
-                        fungibles = listOf(
-                            Resource.FungibleResource(
-                                resourceAddress = "resource_address",
-                                ownedAmount = BigDecimal.valueOf(237659),
-                                metadata = listOf(
-                                    Metadata.Primitive(
-                                        key = ExplicitMetadataKey.NAME.key,
-                                        value = "Radix",
-                                        valueType = MetadataType.String
-                                    ),
-                                    Metadata.Primitive(
-                                        key = ExplicitMetadataKey.SYMBOL.key,
-                                        value = XrdResource.SYMBOL,
-                                        valueType = MetadataType.String
+                        tokens = listOf(
+                            Token(
+                                Resource.FungibleResource(
+                                    resourceAddress = "resource_address",
+                                    ownedAmount = BigDecimal.valueOf(237659),
+                                    metadata = listOf(
+                                        Metadata.Primitive(
+                                            key = ExplicitMetadataKey.NAME.key,
+                                            value = "Radix",
+                                            valueType = MetadataType.String
+                                        ),
+                                        Metadata.Primitive(
+                                            key = ExplicitMetadataKey.SYMBOL.key,
+                                            value = XrdResource.SYMBOL,
+                                            valueType = MetadataType.String
+                                        )
                                     )
                                 )
                             )
                         ),
                         nonFungibles = listOf(),
                         poolUnits = emptyList(),
-                        validatorsWithStakes = emptyList()
+                        liquidStakeUnits = emptyList(),
+                        stakeClaims = emptyList()
                     )
                 ),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
