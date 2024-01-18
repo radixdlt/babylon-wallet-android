@@ -1,7 +1,8 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
@@ -50,9 +51,9 @@ private suspend fun DetailedManifestClass.ValidatorStake.extractDeposits(
         val validator =
             involvedValidators.find { it.address == stakes.first().validatorAddress.addressString() } ?: error("No validator found")
         Transferable.Depositing(
-            transferable = TransferableResource.LsuAmount(
+            transferable = TransferableAsset.Fungible.LSUAsset(
                 stakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() },
-                lsuResource,
+                LiquidStakeUnit(lsuResource),
                 validator,
                 stakes.sumOf { it.xrdAmount.asStr().toBigDecimal() },
             )
@@ -77,7 +78,7 @@ private suspend fun extractWithdrawals(
         account = ownedAccount,
         resources = listOf(
             element = Transferable.Withdrawing(
-                transferable = TransferableResource.FungibleAmount(
+                transferable = TransferableAsset.Fungible.Token(
                     entry.value.sumOf { it.amount },
                     xrdResource,
                     false

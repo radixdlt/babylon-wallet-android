@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -42,7 +42,7 @@ suspend fun DetailedManifestClass.PoolRedemption.resolve(
                 ?: error("No pool resource found")
             val redemptionResourceAddresses = redemptions.first().redeemedResources.keys
             Transferable.Withdrawing(
-                transferable = TransferableResource.PoolUnitAmount(
+                transferable = TransferableAsset.Fungible.PoolUnitAsset(
                     amount = redemptions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
                     PoolUnit(
                         stake = poolResource,

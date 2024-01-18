@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -52,7 +52,7 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
                 val guaranteeType = (deposit as? ResourceIndicator.Fungible)?.indicator?.toGuaranteeType(defaultDepositGuarantees)
                     ?: GuaranteeType.Guaranteed
                 Transferable.Depositing(
-                    transferable = TransferableResource.PoolUnitAmount(
+                    transferable = TransferableAsset.Fungible.PoolUnitAsset(
                         amount = contributions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
                         PoolUnit(
                             stake = poolResource,

@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
@@ -68,13 +68,12 @@ private suspend fun DetailedManifestClass.ValidatorClaim.extractWithdrawals(
                 }
             }.flatten()
             Transferable.Withdrawing(
-                transferable = TransferableResource.StakeClaimNft(
+                transferable = TransferableAsset.NonFungible.StakeClaimAssets(
                     nftResource.copy(items = items.map { it.first }),
+                    validator,
                     items.associate {
                         it.first.localId.displayable to it.second
-                    },
-                    validator,
-                    false
+                    }
                 )
             )
         }
@@ -98,7 +97,7 @@ private suspend fun extractDeposits(
         account = ownedAccount,
         resources = listOf(
             element = Transferable.Depositing(
-                transferable = TransferableResource.FungibleAmount(
+                transferable = TransferableAsset.Fungible.Token(
                     entry.value.sumOf { it.amount },
                     xrdResource,
                     false

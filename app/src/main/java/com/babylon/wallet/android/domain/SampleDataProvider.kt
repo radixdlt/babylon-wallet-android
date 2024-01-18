@@ -9,9 +9,10 @@ import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Pool
@@ -89,7 +90,7 @@ class SampleDataProvider {
     )
 
     val transferableDepositing = Transferable.Depositing(
-        transferable = TransferableResource.FungibleAmount(
+        transferable = TransferableAsset.Fungible.Token(
             amount = BigDecimal(69),
             resource = Resource.FungibleResource(
                 resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
@@ -110,23 +111,25 @@ class SampleDataProvider {
     )
 
     val transferableDepositingLsu = Transferable.Depositing(
-        transferable = TransferableResource.LsuAmount(
+        transferable = TransferableAsset.Fungible.LSUAsset(
             amount = BigDecimal(69),
-            resource = Resource.FungibleResource(
-                resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
-                ownedAmount = null,
-                currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                metadata = listOf(
-                    Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                    Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                    Metadata.Primitive(
-                        key = ExplicitMetadataKey.DESCRIPTION.key,
-                        value = "a very xxx token",
-                        valueType = MetadataType.String
+            lsu = LiquidStakeUnit(
+                Resource.FungibleResource(
+                    resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
+                    ownedAmount = null,
+                    currentSupply = BigDecimal("69696969696969.666999666999666999"),
+                    metadata = listOf(
+                        Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
+                        Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.DESCRIPTION.key,
+                            value = "a very xxx token",
+                            valueType = MetadataType.String
+                        )
                     )
                 )
             ),
-            validatorDetail = ValidatorDetail(
+            validator = ValidatorDetail(
                 "validator_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
                 totalXrdStake = BigDecimal(1000000)
             ),
@@ -135,8 +138,9 @@ class SampleDataProvider {
     )
 
     val transferableDepositingPool = Transferable.Depositing(
-        transferable = TransferableResource.PoolUnitAmount(
-            poolUnit = PoolUnit(
+        transferable = TransferableAsset.Fungible.PoolUnitAsset(
+            amount = BigDecimal(300),
+            unit = PoolUnit(
                 Resource.FungibleResource(
                     resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
                     ownedAmount = null,
@@ -198,7 +202,6 @@ class SampleDataProvider {
                 "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt12" to BigDecimal(100),
                 "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt21" to BigDecimal(200)
             ),
-            amount = BigDecimal(300),
             associatedDapp = null
         )
     )

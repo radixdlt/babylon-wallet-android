@@ -1,7 +1,8 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
@@ -57,13 +58,12 @@ private suspend fun DetailedManifestClass.ValidatorUnstake.extractDeposits(
             ) to xrdWorth
         }
         Transferable.Depositing(
-            transferable = TransferableResource.StakeClaimNft(
+            transferable = TransferableAsset.NonFungible.StakeClaimAssets(
                 nftResource.copy(items = stakeClaimNftItems.map { it.first }),
+                validator,
                 stakeClaimNftItems.associate {
                     it.first.localId.displayable to it.second
-                },
-                validator,
-                true
+                }
             )
         )
     }
@@ -92,9 +92,9 @@ private suspend fun DetailedManifestClass.ValidatorUnstake.extractWithdrawals(
         val xrdWorth =
             totalLSU.divide(lsuResource.currentSupply, lsuResource.mathContext).multiply(validator.totalXrdStake, lsuResource.mathContext)
         Transferable.Withdrawing(
-            transferable = TransferableResource.LsuAmount(
+            transferable = TransferableAsset.Fungible.LSUAsset(
                 totalLSU,
-                lsuResource,
+                LiquidStakeUnit(lsuResource),
                 validator,
                 xrdWorth,
             )
