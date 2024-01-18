@@ -393,7 +393,9 @@
   <string name="transactionReview_thirdPartyDepositSettingHeading">Third-party deposit setting</string>
   <string name="transactionReview_thirdPartyDepositExceptionsHeading">Third-party deposit exceptions</string>
   <string name="transactionReview_unknownComponents">%d Unknown Components</string>
+  <string name="transactionReview_unknownPools">%d Pool Components</string>
   <string name="transactionReview_withdrawalsHeading">Withdrawing From</string>
+  <string name="transactionReview_poolUnits">Pool Units</string>
   <string name="transactionReview_slideToSign">Slide to Sign</string>
   <string name="transactionReview_xrdAmount">%s XRD</string>
   <string name="transactionReview_insufficientBalance">Insufficient Balance</string>
@@ -487,6 +489,7 @@
   <string name="common_done">Done</string>
   <string name="common_persona">Persona</string>
   <string name="common_history">History</string>
+  <string name="common_pool">Pool</string>
   <string name="common_retry">Retry</string>
   <string name="common_remove">Remove</string>
   <string name="common_somethingWentWrong">Something went wrong</string>
