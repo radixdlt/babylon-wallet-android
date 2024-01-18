@@ -24,29 +24,33 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import com.babylon.wallet.android.domain.model.resources.metadata.name
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.presentation.ui.composables.PoolDetailsItem
+import com.babylon.wallet.android.presentation.ui.composables.InvolvedComponentDetails
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
 
 @Composable
 fun PoolsContent(
-    pools: ImmutableList<Pool>,
     modifier: Modifier = Modifier,
-    text: String
+    text: String,
+    poolsWithAssociatedDapps: ImmutableMap<Pool, DApp?>,
+    unknownPoolCount: Int,
+    onDAppClick: (DApp) -> Unit
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     Box(
@@ -110,16 +114,30 @@ fun PoolsContent(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .fillMaxWidth()
         ) {
-            pools.forEach { pool ->
-                PoolDetailsItem(
+            poolsWithAssociatedDapps.filterValues { it != null }.forEach { (_, dApp) ->
+                InvolvedComponentDetails(
                     iconSize = 44.dp,
-                    pool = pool,
+                    dApp = dApp,
+                    text = dApp?.metadata?.name().orEmpty().ifEmpty { "" },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RadixTheme.shapes.roundedRectMedium)
+                        .clickable { dApp?.let(onDAppClick) }
+                        .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
+                        .padding(RadixTheme.dimensions.paddingDefault)
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+            }
+            if (unknownPoolCount > 0) {
+                InvolvedComponentDetails(
+                    iconSize = 44.dp,
+                    dApp = null,
+                    text = stringResource(id = R.string.transactionReview_unknownPools, unknownPoolCount),
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
                         .padding(RadixTheme.dimensions.paddingDefault)
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
         }
     }
@@ -131,35 +149,10 @@ fun PoolsContentPreview() {
     RadixWalletTheme {
         Column {
             PoolsContent(
-                pools = persistentListOf(
-                    Pool(
-                        "pool_tdx_19jd32jd3928jd3892jd329",
-                        listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool", valueType = MetadataType.String),
-                            Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
-                            Metadata.Primitive(
-                                key = ExplicitMetadataKey.POOL_UNIT.key,
-                                value = "resource_tdx_19jd32jd3928jd3892jd329",
-                                valueType = MetadataType.Address
-                            )
-                        ),
-                        emptyList()
-                    ),
-                    Pool(
-                        "pool_tdx_19jd32jd3928jd3892jd328",
-                        listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool2", valueType = MetadataType.String),
-                            Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
-                            Metadata.Primitive(
-                                key = ExplicitMetadataKey.POOL_UNIT.key,
-                                value = "resource_tdx_19jd32jd3928jd3892jd329",
-                                valueType = MetadataType.Address
-                            )
-                        ),
-                        emptyList()
-                    )
-                ),
-                text = "Contributing to pools".uppercase()
+                text = "Contributing to pools".uppercase(),
+                poolsWithAssociatedDapps = persistentMapOf(),
+                unknownPoolCount = 0,
+                onDAppClick = {}
             )
         }
     }

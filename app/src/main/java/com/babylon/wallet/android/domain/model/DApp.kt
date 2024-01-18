@@ -29,7 +29,7 @@ data class DApp(
         get() = metadata.accountType() == AccountType.DAPP_DEFINITION
 
     val definitionAddresses: List<String>
-        get() = metadata.dAppDefinitions().orEmpty()
+        get() = metadata.dAppDefinitions()
 
     val claimedWebsites: List<String>
         get() = metadata.claimedWebsites().orEmpty()

@@ -48,7 +48,7 @@ fun WithdrawAccountContent(
                 modifier = Modifier
                     .size(24.dp)
                     .dashedCircleBorder(RadixTheme.colors.gray3),
-                painter = painterResource(id = DSR.ic_arrow_sent_upwards),
+                painter = painterResource(id = DSR.ic_arrow_up_right),
                 contentDescription = null,
                 tint = RadixTheme.colors.gray2
             )
