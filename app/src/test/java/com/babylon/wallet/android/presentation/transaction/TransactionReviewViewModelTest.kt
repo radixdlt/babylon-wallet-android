@@ -33,6 +33,15 @@ import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.AccountDepositSettingsProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.GeneralTransferProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolContributionProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.PoolRedemptionProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.TransferProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorClaimProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorStakeProcessor
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.ValidatorUnstakeProcessor
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
@@ -92,6 +101,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     @get:Rule
     val defaultLocaleTestRule = DefaultLocaleRule()
 
+
     private val transactionClient = mockk<TransactionClient>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getResourcesUseCase = mockk<GetResourcesUseCase>()
@@ -101,7 +111,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val getTransactionBadgesUseCase = mockk<GetTransactionBadgesUseCase>()
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
-    private val resolveDappsInTransactionUseCase = mockk<ResolveDAppInTransactionUseCase>()
     private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
     private val getNFTDetailsUseCase = mockk<GetNFTDetailsUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
@@ -113,6 +122,49 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val getDAppsUseCase = mockk<GetDAppsUseCase>()
+    private val resolveDAppInTransactionUseCase = mockk<ResolveDAppInTransactionUseCase>()
+    private val previewTypeAnalyzer = PreviewTypeAnalyzer(
+        generalTransferProcessor = GeneralTransferProcessor(
+            getResourcesUseCase = getResourcesUseCase,
+            getTransactionBadgesUseCase = getTransactionBadgesUseCase,
+            getProfileUseCase = getProfileUseCase,
+            resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
+        ),
+        transferProcessor = TransferProcessor(
+            getProfileUseCase = getProfileUseCase,
+            getResourcesUseCase = getResourcesUseCase
+        ),
+        poolContributionProcessor = PoolContributionProcessor(
+            getResourcesUseCase = getResourcesUseCase,
+            getPoolDetailsUseCase = getPoolDetailsUseCase,
+            getProfileUseCase = getProfileUseCase
+        ),
+        accountDepositSettingsProcessor = AccountDepositSettingsProcessor(
+            getProfileUseCase = getProfileUseCase,
+            getResourcesUseCase = getResourcesUseCase
+        ),
+        poolRedemptionProcessor = PoolRedemptionProcessor(
+            getProfileUseCase = getProfileUseCase,
+            getResourcesUseCase = getResourcesUseCase,
+            getPoolDetailsUseCase = getPoolDetailsUseCase
+        ),
+        validatorStakeProcessor = ValidatorStakeProcessor(
+            getProfileUseCase = getProfileUseCase,
+            getResourcesUseCase = getResourcesUseCase,
+            getValidatorsUseCase = getValidatorsUseCase
+        ),
+        validatorUnstakeProcessor = ValidatorUnstakeProcessor(
+            getProfileUseCase = getProfileUseCase,
+            getResourcesUseCase = getResourcesUseCase,
+            getValidatorsUseCase = getValidatorsUseCase
+        ),
+        validatorClaimProcessor = ValidatorClaimProcessor(
+            getProfileUseCase = getProfileUseCase,
+            getResourcesUseCase = getResourcesUseCase,
+            getValidatorsUseCase = getValidatorsUseCase,
+            getNFTDetailsUseCase = getNFTDetailsUseCase
+        )
+    )
     private val sampleTxId = "txId1"
     private val sampleRequestId = "requestId1"
     private val sampleRequest = mockk<MessageFromDataChannel.IncomingRequest.TransactionRequest>().apply {
@@ -267,16 +319,11 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         return TransactionReviewViewModel(
             transactionClient = transactionClient,
             analysis = TransactionAnalysisDelegate(
+                previewTypeAnalyzer = previewTypeAnalyzer,
                 getProfileUseCase = getProfileUseCase,
-                getResourcesUseCase = getResourcesUseCase,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
-                getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-                resolveDAppInTransactionUseCase = resolveDappsInTransactionUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
-                getValidatorsUseCase = getValidatorsUseCase,
-                getNFTDetailsUseCase = getNFTDetailsUseCase,
                 resolveNotaryAndSignersUseCase = resolveNotaryAndSignersUseCase,
-                getPoolDetailsUseCase = getPoolDetailsUseCase
             ),
             guarantees = TransactionGuaranteesDelegate(),
             fees = TransactionFeesDelegate(
