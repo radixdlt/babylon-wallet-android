@@ -1,12 +1,16 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.metadata.dAppDefinition
 import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetPoolDetailsUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -23,11 +27,13 @@ import javax.inject.Inject
 class PoolContributionProcessor @Inject constructor(
     private val getResourcesUseCase: GetResourcesUseCase,
     private val getPoolDetailsUseCase: GetPoolDetailsUseCase,
-    private val getProfileUseCase: GetProfileUseCase
+    private val getProfileUseCase: GetProfileUseCase,
+    private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.PoolContribution> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.PoolContribution): PreviewType {
         val resources = getResourcesUseCase(addresses = summary.involvedResourceAddresses).getOrThrow()
         val involvedPools = getPoolDetailsUseCase(classification.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()
+        val poolsToDapps = involvedPools.resolveDApps(resolveDAppInTransactionUseCase)
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         val accountsWithdrawnFrom = summary.accountWithdraws.keys
         val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {
@@ -62,6 +68,7 @@ class PoolContributionProcessor @Inject constructor(
                                 contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
                                     .sumOf { it }
                             },
+                            associatedDapp = poolsToDapps[pool]
                         ),
                         guaranteeType = guaranteeType,
                     )
@@ -75,7 +82,7 @@ class PoolContributionProcessor @Inject constructor(
         return PreviewType.Transfer.Pool(
             from = from,
             to = to,
-            pools = involvedPools,
+            poolsWithAssociatedDapps = poolsToDapps,
             actionType = PreviewType.Transfer.Pool.ActionType.Contribution
         )
     }
@@ -98,3 +105,16 @@ class PoolContributionProcessor @Inject constructor(
             )
         }
 }
+
+suspend fun List<Pool>.resolveDApps(
+    resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
+): Map<Pool, DApp?> = mapNotNull { pool ->
+    val dapp = pool.metadata.dAppDefinition()?.let { address ->
+        resolveDAppInTransactionUseCase(address)
+    }?.getOrNull()
+    if (dapp == null || !dapp.second) {
+        pool to null
+    } else {
+        pool to dapp.first
+    }
+}.toMap()
