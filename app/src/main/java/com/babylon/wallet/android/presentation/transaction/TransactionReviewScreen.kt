@@ -332,7 +332,8 @@ private fun TransactionPreviewContent(
                                     state = state,
                                     onFungibleResourceClick = onFungibleResourceClick,
                                     onPromptForGuarantees = promptForGuarantees,
-                                    previewType = preview
+                                    previewType = preview,
+                                    onDAppClick = onDAppClick
                                 )
                                 ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                             }

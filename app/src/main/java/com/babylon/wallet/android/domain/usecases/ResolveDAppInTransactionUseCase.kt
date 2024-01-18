@@ -19,7 +19,7 @@ class ResolveDAppInTransactionUseCase @Inject constructor(
      */
     suspend operator fun invoke(
         componentAddress: String
-    ): Result<DAppInTransaction> = stateRepository.getDAppsDetails(
+    ): Result<Pair<DApp, Boolean>> = stateRepository.getDAppsDetails(
         definitionAddresses = listOf(componentAddress),
         skipCache = true
     ).then { components ->
@@ -31,21 +31,9 @@ class ResolveDAppInTransactionUseCase @Inject constructor(
             ).mapCatching { dApps ->
                 val dApp = dApps.first()
                 dApp to dApp.claimedEntities.contains(componentAddress)
-                DAppInTransaction(
-                    dApp = dApp,
-                    isVerified = dApp.claimedEntities.contains(componentAddress)
-                )
             }
         } else {
             Result.failure(RadixWalletException.DappVerificationException.WrongAccountType)
         }
     }
-}
-
-data class DAppInTransaction(
-    val dApp: DApp,
-    val isVerified: Boolean
-) {
-    val componentAddresses: List<String>
-        get() = dApp.claimedEntities.filter { it.startsWith("component_") }
 }

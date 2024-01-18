@@ -74,8 +74,8 @@ private suspend fun DetailedManifestClass.ValidatorUnstake.extractWithdrawals(
     involvedValidators: List<ValidatorDetail>
 ) = executionSummary.accountWithdraws.map { withdrawalsPerAccount ->
     val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(withdrawalsPerAccount.key) ?: error("No account found")
-    val withdrawingLsu = withdrawalsPerAccount.value.map { depositedResource ->
-        val resourceAddress = depositedResource.resourceAddress
+    val withdrawingLsu = withdrawalsPerAccount.value.groupBy { it.resourceAddress }.map { depositedResource ->
+        val resourceAddress = depositedResource.key
         val lsuResource = resources.find {
             it.resourceAddress == resourceAddress
         } as? Resource.FungibleResource ?: error("No resource found")

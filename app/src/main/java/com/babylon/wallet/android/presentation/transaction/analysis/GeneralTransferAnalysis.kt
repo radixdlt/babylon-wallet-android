@@ -7,9 +7,6 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -24,7 +21,7 @@ suspend fun ExecutionSummary.resolveGeneralTransaction(
 ): PreviewType {
     val badges = getTransactionBadgesUseCase(accountProofs = presentedProofs)
     val dApps = resolveDApps(resolveDAppInTransactionUseCase).distinctBy {
-        it.dApp.definitionAddresses
+        it.first.definitionAddresses
     }
     val involvedAccountAddresses = accountWithdraws.keys + accountDeposits.keys
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
@@ -39,19 +36,6 @@ suspend fun ExecutionSummary.resolveGeneralTransaction(
         badges = badges,
         dApps = dApps
     )
-}
-
-private suspend fun ExecutionSummary.resolveDApps(
-    resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
-) = coroutineScope {
-    encounteredEntities.filter { it.isGlobalComponent() }
-        .map { address ->
-            async {
-                resolveDAppInTransactionUseCase.invoke(address.addressString())
-            }
-        }
-        .awaitAll()
-        .mapNotNull { it.getOrNull() }
 }
 
 private fun ExecutionSummary.resolveFromAccounts(

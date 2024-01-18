@@ -121,6 +121,13 @@ fun List<Metadata>.dAppDefinitions(): List<String> {
     }
 }
 
+fun List<Metadata>.dAppDefinition(): String? {
+    return findPrimitive(
+        key = ExplicitMetadataKey.DAPP_DEFINITION,
+        type = MetadataType.Address
+    )?.value
+}
+
 fun List<Metadata>.relatedWebsites(): List<String>? = findCollection(
     key = ExplicitMetadataKey.RELATED_WEBSITES,
     type = MetadataType.Url

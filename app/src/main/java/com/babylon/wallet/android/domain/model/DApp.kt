@@ -37,6 +37,9 @@ data class DApp(
     val claimedEntities: List<String>
         get() = metadata.claimedEntities().orEmpty()
 
+    val componentAddresses: List<String>
+        get() = claimedEntities.filter { it.startsWith("component_") }
+
     @Suppress("SwallowedException")
     fun isRelatedWith(origin: String): Boolean {
         return claimedWebsites.any {

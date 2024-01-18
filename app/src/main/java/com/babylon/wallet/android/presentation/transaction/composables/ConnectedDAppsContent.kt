@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.usecases.DAppInTransaction
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
@@ -45,7 +44,7 @@ import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun ConnectedDAppsContent(
-    connectedDApps: ImmutableList<DAppInTransaction>,
+    connectedDApps: ImmutableList<Pair<DApp, Boolean>>,
     onDAppClick: (DApp) -> Unit,
     onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
     modifier: Modifier = Modifier
@@ -108,12 +107,12 @@ fun ConnectedDAppsContent(
                     .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium),
                 horizontalAlignment = Alignment.End
             ) {
-                val unverifiedDappsCount = connectedDApps.count { it.isVerified.not() }
-                val verifiedDapps = connectedDApps.filter { it.isVerified }
+                val unverifiedDappsCount = connectedDApps.count { it.second.not() }
+                val verifiedDapps = connectedDApps.filter { it.second }
                 if (unverifiedDappsCount > 0) {
                     ConnectedDappRow(
                         modifier = Modifier.throttleClickable {
-                            onUnknownDAppsClick(connectedDApps.map { it.componentAddresses }.flatten().toPersistentList())
+                            onUnknownDAppsClick(connectedDApps.map { it.first.componentAddresses }.flatten().toPersistentList())
                         },
                         dApp = null,
                         name = stringResource(id = R.string.transactionReview_unknownComponents, unverifiedDappsCount)
@@ -121,9 +120,9 @@ fun ConnectedDAppsContent(
                 }
                 verifiedDapps.forEach { connectedDApp ->
                     ConnectedDappRow(
-                        dApp = connectedDApp.dApp,
+                        dApp = connectedDApp.first,
                         modifier = Modifier.throttleClickable {
-                            onDAppClick(connectedDApp.dApp)
+                            onDAppClick(connectedDApp.first)
                         }
                     )
                 }
@@ -164,12 +163,9 @@ private fun ConnectedDappRow(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            DAppInTransaction(
-                DApp(
-                    dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
-                ),
-                isVerified = true
-            )
+            DApp(
+                dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
+            ) to true
         ),
         onDAppClick = {},
         onUnknownDAppsClick = {}
