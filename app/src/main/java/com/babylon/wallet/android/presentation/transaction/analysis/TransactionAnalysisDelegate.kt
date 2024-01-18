@@ -214,7 +214,8 @@ class TransactionAnalysisDelegate @Inject constructor(
                     getProfileUseCase = getProfileUseCase,
                     resources = resources,
                     involvedPools = pools,
-                    executionSummary = this
+                    executionSummary = this,
+                    resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
                 )
             }
 
@@ -224,7 +225,8 @@ class TransactionAnalysisDelegate @Inject constructor(
                     getProfileUseCase = getProfileUseCase,
                     resources = resources,
                     involvedPools = pools,
-                    executionSummary = this
+                    executionSummary = this,
+                    resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
                 )
             }
 

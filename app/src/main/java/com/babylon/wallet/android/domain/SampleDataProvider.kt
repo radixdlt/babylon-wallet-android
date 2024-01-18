@@ -198,7 +198,8 @@ class SampleDataProvider {
                 "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt12" to BigDecimal(100),
                 "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt21" to BigDecimal(200)
             ),
-            amount = BigDecimal(300)
+            amount = BigDecimal(300),
+            associatedDapp = null
         )
     )
 

@@ -155,6 +155,7 @@ sealed interface TransferableResource {
         override val amount: BigDecimal,
         val poolUnit: PoolUnit,
         val contributionPerResource: Map<String, BigDecimal>,
+        val associatedDapp: DApp?,
         override val isNewlyCreated: Boolean = false,
     ) : TransferableResource, TransferableWithGuarantees {
         override val resource: Resource

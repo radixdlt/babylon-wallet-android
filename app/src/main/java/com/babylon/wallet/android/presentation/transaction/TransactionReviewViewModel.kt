@@ -268,6 +268,9 @@ class TransactionReviewViewModel @Inject constructor(
         val isTransactionDismissed: Boolean = false
     ) : UiState {
 
+        val showRawTransactionWarning
+            get() = previewType == PreviewType.NonConforming
+
         val requestNonNull: MessageFromDataChannel.IncomingRequest.TransactionRequest
             get() = requireNotNull(request)
 
@@ -327,7 +330,7 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         val isRawManifestToggleVisible: Boolean
-            get() = true // previewType is PreviewType.Transfer
+            get() = previewType is PreviewType.Transfer
 
         val rawManifest: String = request
             ?.transactionManifestData
@@ -484,11 +487,15 @@ sealed interface PreviewType {
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
             val pools: List<com.babylon.wallet.android.domain.model.resources.Pool>,
+            val poolsWithAssociatedDapps: Map<String, DApp>,
             val actionType: ActionType
         ) : Transfer {
             enum class ActionType {
                 Contribution, Redemption
             }
+
+            val unknwonPoolComponents: Int
+                get() = pools.size - poolsWithAssociatedDapps.size
         }
 
         data class GeneralTransfer(

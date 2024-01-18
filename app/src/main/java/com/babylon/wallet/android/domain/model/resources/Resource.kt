@@ -73,7 +73,7 @@ sealed class Resource {
         }
 
         val dappDefinitions: List<String> by lazy {
-            metadata.dAppDefinitions().orEmpty()
+            metadata.dAppDefinitions()
         }
 
         val tags: List<Tag> by lazy {
@@ -180,7 +180,7 @@ sealed class Resource {
         }
 
         val dappDefinitions: List<String> by lazy {
-            metadata.dAppDefinitions().orEmpty()
+            metadata.dAppDefinitions()
         }
 
         val behaviours: AssetBehaviours? = assetBehaviours

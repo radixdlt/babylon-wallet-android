@@ -8,11 +8,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentMap
 
 @Composable
 fun PoolTypeContent(
@@ -20,7 +22,8 @@ fun PoolTypeContent(
     state: TransactionReviewViewModel.State,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     previewType: PreviewType.Transfer.Pool,
-    onPromptForGuarantees: () -> Unit
+    onPromptForGuarantees: () -> Unit,
+    onDAppClick: (DApp) -> Unit
 ) {
     val poolSectionLabel = when (previewType.actionType) {
         PreviewType.Transfer.Pool.ActionType.Contribution -> "Contributing to pools"
@@ -37,7 +40,10 @@ fun PoolTypeContent(
             PoolsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 pools = previewType.pools.toPersistentList(),
+                poolsWithAssociatedDapps = previewType.poolsWithAssociatedDapps.toPersistentMap(),
                 text = poolSectionLabel,
+                unknownPoolCount = previewType.unknwonPoolComponents,
+                onDAppClick = onDAppClick
             )
         }
     )
@@ -59,9 +65,11 @@ fun PoolTypePreview() {
                 to = persistentListOf(),
                 from = listOf(SampleDataProvider().accountWithTransferablePool).toPersistentList(),
                 pools = persistentListOf(),
-                actionType = PreviewType.Transfer.Pool.ActionType.Contribution
+                actionType = PreviewType.Transfer.Pool.ActionType.Contribution,
+                poolsWithAssociatedDapps = emptyMap()
             ),
             onPromptForGuarantees = {},
+            onDAppClick = {},
         )
     }
 }

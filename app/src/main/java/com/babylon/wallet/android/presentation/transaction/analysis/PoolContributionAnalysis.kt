@@ -1,17 +1,21 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.metadata.dAppDefinition
 import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
+import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -22,8 +26,10 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
     executionSummary: ExecutionSummary,
     getProfileUseCase: GetProfileUseCase,
     resources: List<Resource>,
-    involvedPools: List<Pool>
+    involvedPools: List<Pool>,
+    resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
 ): PreviewType.Transfer.Pool {
+    val poolsToDapps = involvedPools.resolveDApps(resolveDAppInTransactionUseCase)
     val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
     val accountsWithdrawnFrom = executionSummary.accountWithdraws.keys
     val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {
@@ -56,6 +62,7 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
                             contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
                                 .sumOf { it }
                         },
+                        associatedDapp = poolsToDapps[pool.address]
                     ),
                     guaranteeType = guaranteeType,
                 )
@@ -70,8 +77,24 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
         from = from,
         to = to,
         pools = involvedPools,
+        poolsWithAssociatedDapps = poolsToDapps,
         actionType = PreviewType.Transfer.Pool.ActionType.Contribution
     )
+}
+
+suspend fun List<Pool>.resolveDApps(
+    resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
+): Map<String, DApp> = coroutineScope {
+    mapNotNull { pool ->
+        val dapp = pool.metadata.dAppDefinition()?.let { address ->
+            resolveDAppInTransactionUseCase.invoke(address)
+        }?.getOrNull()
+        if (dapp == null || !dapp.second) {
+            null
+        } else {
+            pool.address to dapp.first
+        }
+    }.toMap()
 }
 
 private fun ExecutionSummary.extractWithdraws(allOwnedAccounts: List<Network.Account>, resources: List<Resource>) =

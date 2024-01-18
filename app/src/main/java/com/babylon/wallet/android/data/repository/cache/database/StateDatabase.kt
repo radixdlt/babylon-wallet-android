@@ -36,7 +36,7 @@ abstract class StateDatabase : RoomDatabase() {
         const val VERSION_3 = 3
 
         // Add PoolEntity.metadata to schema
-        const val VERSION_4 = 4
+        const val VERSION_4 = 8
 
         private const val NAME = "STATE_DATABASE"
 
