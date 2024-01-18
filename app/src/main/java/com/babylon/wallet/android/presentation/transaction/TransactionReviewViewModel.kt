@@ -1,8 +1,11 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.annotation.FloatRange
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.InteractionState
@@ -14,6 +17,7 @@ import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableWithGuarantees
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Badge
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -43,6 +47,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.ProfileException
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -235,8 +240,9 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    fun dismissTransactionErrorDialog() {
+    fun dismissTerminalErrorDialog() {
         _state.update { it.copy(error = null) }
+        onBackClick()
     }
 
     sealed interface Event : OneOffEvent {
@@ -266,7 +272,7 @@ class TransactionReviewViewModel @Inject constructor(
         val defaultSignersCount: Int = 0,
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
-        val error: UiMessage.TransactionErrorMessage? = null,
+        val error: TransactionErrorMessage? = null,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
         val interactionState: InteractionState? = null,
         val isTransactionDismissed: Boolean = false
@@ -331,7 +337,7 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         val isRawManifestToggleVisible: Boolean
-            get() = previewType is PreviewType.Transfer
+            get() = true // previewType is PreviewType.Transfer
 
         val rawManifest: String = request
             ?.transactionManifestData
@@ -370,12 +376,12 @@ class TransactionReviewViewModel @Inject constructor(
                 // In cases were it is not a transfer type, then it means the user
                 // will not spend any other XRD rather than the ones spent for the fees
                 val xrdUsed = when (previewType) {
-                    is PreviewType.Transfer -> {
+                    is PreviewType.Transfer.GeneralTransfer -> {
                         val candidateAddressWithdrawn = previewType.from.find { it.address == candidateAddress }
                         if (candidateAddressWithdrawn != null) {
                             val xrdResourceWithdrawn = candidateAddressWithdrawn.resources.map {
                                 it.transferable
-                            }.filterIsInstance<TransferableResource.Amount>().find { it.resource.isXrd }
+                            }.filterIsInstance<TransferableResource.FungibleAmount>().find { it.resource.isXrd }
 
                             xrdResourceWithdrawn?.amount ?: BigDecimal.ZERO
                         } else {
@@ -387,7 +393,8 @@ class TransactionReviewViewModel @Inject constructor(
                     is PreviewType.NonConforming -> BigDecimal.ZERO
                     is PreviewType.None -> BigDecimal.ZERO
                     is PreviewType.UnacceptableManifest -> BigDecimal.ZERO
-                    is PreviewType.Staking -> BigDecimal.ZERO
+                    is PreviewType.Transfer.Pool -> BigDecimal.ZERO
+                    is PreviewType.Transfer.Staking -> BigDecimal.ZERO
                 }
 
                 return xrdInCandidateAccount - xrdUsed < transactionFees.transactionFeeToLock
@@ -396,9 +403,6 @@ class TransactionReviewViewModel @Inject constructor(
         val showDottedLine: Boolean
             get() = when (previewType) {
                 is PreviewType.Transfer -> {
-                    previewType.from.isNotEmpty() && previewType.to.isNotEmpty()
-                }
-                is PreviewType.Staking -> {
                     previewType.from.isNotEmpty() && previewType.to.isNotEmpty()
                 }
                 else -> false
@@ -446,6 +450,32 @@ class TransactionReviewViewModel @Inject constructor(
     }
 }
 
+data class TransactionErrorMessage(
+    private val error: Throwable?
+) {
+
+    private val isNoMnemonicErrorVisible = error?.cause is ProfileException.NoMnemonic
+
+    /**
+     * True when this error will end up abandoning the transaction. Displayed as a dialog.
+     */
+    val isTerminalError: Boolean
+        get() = isNoMnemonicErrorVisible ||
+            error is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ||
+            error is RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities
+
+    val uiMessage: UiMessage = UiMessage.ErrorMessage(error)
+
+    @Composable
+    fun getTitle(): String {
+        return if (isNoMnemonicErrorVisible) {
+            stringResource(id = R.string.transactionReview_noMnemonicError_title)
+        } else {
+            stringResource(id = R.string.common_errorAlertTitle)
+        }
+    }
+}
+
 sealed interface PreviewType {
     data object None : PreviewType
 
@@ -457,26 +487,42 @@ sealed interface PreviewType {
         val accountsWithDepositSettingsChanges: List<AccountWithDepositSettingsChanges> = emptyList()
     ) : PreviewType
 
-    data class Transfer(
-        val from: List<AccountWithTransferableResources>,
-        val to: List<AccountWithTransferableResources>,
-        val badges: List<Badge> = emptyList(),
-        val dApps: List<DAppInTransaction> = emptyList()
-    ) : PreviewType {
+    sealed interface Transfer : PreviewType {
+        val from: List<AccountWithTransferableResources>
+        val to: List<AccountWithTransferableResources>
 
-        fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
-            allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
-        }.flatten()
-    }
+        data class Staking(
+            override val from: List<AccountWithTransferableResources>,
+            override val to: List<AccountWithTransferableResources>,
+            val validators: List<ValidatorDetail>,
+            val actionType: ActionType
+        ) : Transfer {
+            enum class ActionType {
+                Stake, Unstake, ClaimStake
+            }
+        }
 
-    data class Staking(
-        val from: List<AccountWithTransferableResources>,
-        val to: List<AccountWithTransferableResources>,
-        val validators: List<ValidatorDetail>,
-        val actionType: ActionType
-    ) : PreviewType {
-        enum class ActionType {
-            Stake, Unstake, ClaimStake
+        data class Pool(
+            override val from: List<AccountWithTransferableResources>,
+            override val to: List<AccountWithTransferableResources>,
+            val pools: List<com.babylon.wallet.android.domain.model.resources.Pool>,
+            val actionType: ActionType
+        ) : Transfer {
+            enum class ActionType {
+                Contribution, Redemption
+            }
+        }
+
+        data class GeneralTransfer(
+            override val from: List<AccountWithTransferableResources>,
+            override val to: List<AccountWithTransferableResources>,
+            val badges: List<Badge> = emptyList(),
+            val dApps: List<DAppInTransaction> = emptyList()
+        ) : Transfer {
+
+            fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
+                allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
+            }.flatten()
         }
     }
 }
@@ -511,9 +557,8 @@ data class AccountWithDepositSettingsChanges(
 
 @Suppress("MagicNumber")
 sealed interface AccountWithPredictedGuarantee {
-
     val address: String
-    val transferableAmount: TransferableResource.Amount
+    val transferable: TransferableWithGuarantees
     val instructionIndex: Long
     val guaranteeAmountString: String
 
@@ -522,7 +567,7 @@ sealed interface AccountWithPredictedGuarantee {
         get() = (guaranteeAmountString.toDoubleOrNull() ?: 0.0).div(100.0)
 
     val guaranteedAmount: BigDecimal
-        get() = transferableAmount.amount * guaranteeOffsetDecimal.toBigDecimal()
+        get() = transferable.amount * guaranteeOffsetDecimal.toBigDecimal()
 
     fun increase(): AccountWithPredictedGuarantee {
         val newOffset = (guaranteeOffsetDecimal.toBigDecimal().plus(BigDecimal(0.001)))
@@ -557,11 +602,11 @@ sealed interface AccountWithPredictedGuarantee {
     }
 
     fun isTheSameGuaranteeItem(with: AccountWithPredictedGuarantee): Boolean = address == with.address &&
-        transferableAmount.resourceAddress == with.transferableAmount.resourceAddress
+        transferable.fungibleResource.resourceAddress == with.transferable.fungibleResource.resourceAddress
 
     data class Owned(
         val account: Network.Account,
-        override val transferableAmount: TransferableResource.Amount,
+        override val transferable: TransferableWithGuarantees,
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
     ) : AccountWithPredictedGuarantee {
@@ -571,7 +616,7 @@ sealed interface AccountWithPredictedGuarantee {
 
     data class Other(
         override val address: String,
-        override val transferableAmount: TransferableResource.Amount,
+        override val transferable: TransferableWithGuarantees,
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
     ) : AccountWithPredictedGuarantee
@@ -605,12 +650,12 @@ sealed interface AccountWithTransferableResources {
         val resources = resources.mapWhen(
             predicate = { depositing ->
                 resourcesWithGuaranteesForAccount.any {
-                    it.address == address && it.transferableAmount.resourceAddress == depositing.transferable.resourceAddress
+                    it.address == address && it.transferable.fungibleResource.resourceAddress == depositing.transferable.resourceAddress
                 }
             },
             mutation = { depositing ->
                 val accountWithGuarantee = resourcesWithGuaranteesForAccount.find {
-                    it.transferableAmount.resourceAddress == depositing.transferable.resourceAddress
+                    it.transferable.fungibleResource.resourceAddress == depositing.transferable.resourceAddress
                 }
 
                 if (accountWithGuarantee != null) {

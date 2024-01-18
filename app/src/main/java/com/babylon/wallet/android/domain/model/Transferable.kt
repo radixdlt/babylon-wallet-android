@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model
 
 import androidx.annotation.FloatRange
+import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
@@ -22,7 +23,7 @@ sealed interface Transferable {
                     val predicted = guaranteeType as? GuaranteeType.Predicted ?: return null
 
                     when (val transferable = transferable) {
-                        is TransferableResource.Amount -> GuaranteeAssertion.ForAmount(
+                        is TransferableResource.FungibleAmount -> GuaranteeAssertion.ForAmount(
                             amount = transferable.amount * predicted.guaranteeOffset.toBigDecimal(),
                             instructionIndex = predicted.instructionIndex
                         )
@@ -31,12 +32,31 @@ sealed interface Transferable {
                             instructionIndex = predicted.instructionIndex
                         )
 
-                        is TransferableResource.LsuAmount -> null
-                        is TransferableResource.StakeClaimNft -> null
+                        is TransferableResource.LsuAmount -> GuaranteeAssertion.ForAmount(
+                            amount = transferable.amount * predicted.guaranteeOffset.toBigDecimal(),
+                            instructionIndex = predicted.instructionIndex
+                        )
+
+                        is TransferableResource.StakeClaimNft -> GuaranteeAssertion.ForNFT(
+                            instructionIndex = predicted.instructionIndex
+                        )
+
+                        is TransferableResource.PoolUnitAmount -> GuaranteeAssertion.ForAmount(
+                            amount = transferable.amount * predicted.guaranteeOffset.toBigDecimal(),
+                            instructionIndex = predicted.instructionIndex
+                        )
                     }
                 }
 
                 is Withdrawing -> null
+            }
+        }
+
+    val hasEditableGuarantees: Boolean
+        get() {
+            return when (this) {
+                is Depositing -> guaranteeType is GuaranteeType.Predicted && !transferable.isNewlyCreated
+                is Withdrawing -> false
             }
         }
 
@@ -99,19 +119,25 @@ sealed interface TransferableResource {
         get() = resource.resourceAddress
     val isNewlyCreated: Boolean
 
-    data class Amount(
-        val amount: BigDecimal,
+    data class FungibleAmount(
+        override val amount: BigDecimal,
         override val resource: Resource.FungibleResource,
         override val isNewlyCreated: Boolean
-    ) : TransferableResource
+    ) : TransferableResource, TransferableWithGuarantees {
+        override val fungibleResource: Resource.FungibleResource
+            get() = resource
+    }
 
     data class LsuAmount(
-        val amount: BigDecimal,
+        override val amount: BigDecimal,
         override val resource: Resource.FungibleResource,
         val validatorDetail: ValidatorDetail,
         val xrdWorth: BigDecimal,
         override val isNewlyCreated: Boolean = false
-    ) : TransferableResource
+    ) : TransferableResource, TransferableWithGuarantees {
+        override val fungibleResource: Resource.FungibleResource
+            get() = resource
+    }
 
     data class NFTs(
         override val resource: Resource.NonFungibleResource,
@@ -124,4 +150,21 @@ sealed interface TransferableResource {
         val validatorDetail: ValidatorDetail,
         override val isNewlyCreated: Boolean = false
     ) : TransferableResource
+
+    data class PoolUnitAmount(
+        override val amount: BigDecimal,
+        val poolUnit: PoolUnit,
+        val contributionPerResource: Map<String, BigDecimal>,
+        override val isNewlyCreated: Boolean = false,
+    ) : TransferableResource, TransferableWithGuarantees {
+        override val resource: Resource
+            get() = poolUnit.stake
+        override val fungibleResource: Resource.FungibleResource
+            get() = poolUnit.stake
+    }
+}
+
+interface TransferableWithGuarantees {
+    val fungibleResource: Resource.FungibleResource
+    val amount: BigDecimal
 }

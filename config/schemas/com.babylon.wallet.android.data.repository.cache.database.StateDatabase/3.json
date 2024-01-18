@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "80e716879ba057b4aa197abd4a6793bb",
+    "identityHash": "e1ee43c6d523aa086e568a6f306a1d4d",
     "entities": [
       {
         "tableName": "AccountResourceJoin",
@@ -300,13 +300,19 @@
       },
       {
         "tableName": "PoolEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `resource_address` TEXT NOT NULL, PRIMARY KEY(`address`), FOREIGN KEY(`resource_address`) REFERENCES `ResourceEntity`(`address`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address` TEXT NOT NULL, `name` TEXT, `resource_address` TEXT NOT NULL, PRIMARY KEY(`address`), FOREIGN KEY(`resource_address`) REFERENCES `ResourceEntity`(`address`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
         "fields": [
           {
             "fieldPath": "address",
             "columnName": "address",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "resourceAddress",
@@ -504,7 +510,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '80e716879ba057b4aa197abd4a6793bb')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e1ee43c6d523aa086e568a6f306a1d4d')"
     ]
   }
 }

@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.repository.state
 
 import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.extensions.fetchPools
 import com.babylon.wallet.android.data.gateway.extensions.fetchValidators
 import com.babylon.wallet.android.data.gateway.extensions.getNextNftItems
 import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
@@ -10,6 +11,7 @@ import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.database.DAppEntity
 import com.babylon.wallet.android.data.repository.cache.database.MetadataColumn
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
+import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsResourcesJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
@@ -52,7 +54,7 @@ interface StateRepository {
 
     suspend fun getResources(addresses: Set<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>>
 
-    suspend fun getPool(poolAddress: String): Result<Pool>
+    suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>>
 
     suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail>
 
@@ -285,13 +287,26 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getPool(poolAddress: String): Result<Pool> = withContext(dispatcher) {
+    override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> = withContext(dispatcher) {
         runCatching {
             val stateVersion = stateDao.getLatestStateVersion() ?: error("No cached state version found")
-            stateDao.getCachedPools(
-                poolAddresses = setOf(poolAddress),
+            var cachedPools = stateDao.getCachedPools(
+                poolAddresses = poolAddresses,
                 atStateVersion = stateVersion
-            )[poolAddress] ?: error("Pool $poolAddress does not exist")
+            ).values.toList()
+            val unknownPools = poolAddresses - cachedPools.map { it.address }.toSet()
+            if (unknownPools.isNotEmpty()) {
+                val newPools = stateApi.fetchPools(unknownPools, stateVersion)
+                if (newPools.isNotEmpty()) {
+                    val join = newPools.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
+                    stateDao.updatePools(pools = join)
+                    cachedPools = stateDao.getCachedPools(
+                        poolAddresses = poolAddresses,
+                        atStateVersion = stateVersion
+                    ).values.toList()
+                }
+            }
+            cachedPools
         }
     }
 

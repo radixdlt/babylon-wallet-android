@@ -1,9 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,8 +12,6 @@ import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
-import com.babylon.wallet.android.presentation.ui.composables.assets.strokeLine
-import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
@@ -24,70 +19,29 @@ import kotlinx.collections.immutable.toPersistentList
 fun TransferTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    preview: PreviewType.Transfer,
+    preview: PreviewType.Transfer.GeneralTransfer,
     onPromptForGuarantees: () -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
-    Column(
-        modifier = modifier.fillMaxSize()
-    ) {
-        Column {
-            state.message?.let {
-                TransactionMessageContent(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    transactionMessage = it
-                )
-
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            }
-
-            WithdrawAccountContent(
+    CommonTransferContent(
+        modifier = modifier.fillMaxSize(),
+        state = state,
+        onFungibleResourceClick = onFungibleResourceClick,
+        onNonFungibleResourceClick = onNonFungibleResourceClick,
+        previewType = preview,
+        onPromptForGuarantees = onPromptForGuarantees,
+        middleSection = {
+            ConnectedDAppsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                from = preview.from.toPersistentList(),
-                onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
-                    onFungibleResourceClick(fungibleResource, isNewlyCreated)
-                },
-                onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
-                    onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
-                }
+                connectedDApps = preview.dApps.toPersistentList(),
+                onDAppClick = onDAppClick,
+                onUnknownDAppsClick = onUnknownDAppsClick
             )
-
-            Column(
-                modifier = Modifier
-                    .padding(bottom = RadixTheme.dimensions.paddingLarge)
-                    .applyIf(condition = state.showDottedLine, modifier = Modifier.strokeLine())
-                    .padding(top = RadixTheme.dimensions.paddingXXLarge)
-            ) {
-                ConnectedDAppsContent(
-                    modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                    connectedDApps = preview.dApps.toPersistentList(),
-                    onDAppClick = onDAppClick,
-                    onUnknownDAppsClick = onUnknownDAppsClick
-                )
-
-                DepositAccountContent(
-                    modifier = Modifier.padding(
-                        start = RadixTheme.dimensions.paddingDefault,
-                        end = RadixTheme.dimensions.paddingDefault
-                    ),
-                    to = preview.to.toPersistentList(),
-                    promptForGuarantees = onPromptForGuarantees,
-                    onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
-                        onFungibleResourceClick(fungibleResource, isNewlyCreated)
-                    },
-                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
-                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
-    }
+    )
 }
 
 @Preview(showBackground = true)
@@ -101,7 +55,7 @@ fun TransactionPreviewTypePreview() {
                 isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
-            preview = PreviewType.Transfer(
+            preview = PreviewType.Transfer.GeneralTransfer(
                 from = emptyList(),
                 to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned)
             ),

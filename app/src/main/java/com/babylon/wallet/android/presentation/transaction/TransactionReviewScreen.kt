@@ -48,6 +48,7 @@ import com.babylon.wallet.android.presentation.transaction.composables.AccountDe
 import com.babylon.wallet.android.presentation.transaction.composables.FeesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.GuaranteesSheet
 import com.babylon.wallet.android.presentation.transaction.composables.NetworkFeeContent
+import com.babylon.wallet.android.presentation.transaction.composables.PoolTypeContent
 import com.babylon.wallet.android.presentation.transaction.composables.PresentingProofsContent
 import com.babylon.wallet.android.presentation.transaction.composables.RawManifestView
 import com.babylon.wallet.android.presentation.transaction.composables.StakeTypeContent
@@ -117,7 +118,7 @@ fun TransactionReviewScreen(
         onTipPercentageChanged = viewModel::onTipPercentageChanged,
         onViewDefaultModeClick = viewModel::onViewDefaultModeClick,
         onViewAdvancedModeClick = viewModel::onViewAdvancedModeClick,
-        dismissTransactionErrorDialog = viewModel::dismissTransactionErrorDialog
+        dismissTransactionErrorDialog = viewModel::dismissTerminalErrorDialog
     )
 
     state.interactionState?.let {
@@ -183,19 +184,19 @@ private fun TransactionPreviewContent(
     val snackBarHostState = remember { SnackbarHostState() }
 
     state.error?.let { transactionError ->
-        if (transactionError.isPreviewedInDialog) {
+        if (transactionError.isTerminalError) {
             BasicPromptAlertDialog(
                 finish = {
                     dismissTransactionErrorDialog()
                 },
                 titleText = transactionError.getTitle(),
-                messageText = transactionError.getMessage(),
+                messageText = transactionError.uiMessage.getMessage(),
                 confirmText = stringResource(id = R.string.common_ok),
                 dismissText = null
             )
         } else {
             SnackbarUIMessage(
-                message = transactionError,
+                message = transactionError.uiMessage,
                 snackbarHostState = snackBarHostState,
                 onMessageShown = onMessageShown
             )
@@ -288,7 +289,7 @@ private fun TransactionPreviewContent(
                             }
 
                             is PreviewType.NonConforming -> {}
-                            is PreviewType.Transfer -> {
+                            is PreviewType.Transfer.GeneralTransfer -> {
                                 TransferTypeContent(
                                     modifier = Modifier.background(RadixTheme.colors.gray5),
                                     state = state,
@@ -313,12 +314,24 @@ private fun TransactionPreviewContent(
                                 ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                             }
 
-                            is PreviewType.Staking -> {
+                            is PreviewType.Transfer.Staking -> {
                                 StakeTypeContent(
                                     modifier = Modifier.background(RadixTheme.colors.gray5),
                                     state = state,
                                     onFungibleResourceClick = onFungibleResourceClick,
                                     onNonFungibleResourceClick = onNonFungibleResourceClick,
+                                    onPromptForGuarantees = promptForGuarantees,
+                                    previewType = preview
+                                )
+                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
+                            }
+
+                            is PreviewType.Transfer.Pool -> {
+                                PoolTypeContent(
+                                    modifier = Modifier.background(RadixTheme.colors.gray5),
+                                    state = state,
+                                    onFungibleResourceClick = onFungibleResourceClick,
+                                    onPromptForGuarantees = promptForGuarantees,
                                     previewType = preview
                                 )
                                 ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)

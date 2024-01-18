@@ -29,6 +29,7 @@ import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
+import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
 import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -328,7 +329,7 @@ class AccountsStateCache @Inject constructor(
                 val pool = pools[fungible.poolAddress]?.takeIf { pool ->
                     // The fungible claims that it is part of the poolAddress.
                     // We need to check if pool points back to this resource
-                    pool.poolUnitAddress == fungible.resourceAddress
+                    pool.metadata.poolUnit() == fungible.resourceAddress
                 }
                 if (pool != null) {
                     resultingPoolUnits.add(

@@ -4,9 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -17,31 +15,29 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
-fun StakeTypeContent(
+fun PoolTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
-    previewType: PreviewType.Transfer.Staking,
+    previewType: PreviewType.Transfer.Pool,
     onPromptForGuarantees: () -> Unit
 ) {
-    val validatorSectionText = when (previewType.actionType) {
-        PreviewType.Transfer.Staking.ActionType.Stake -> stringResource(id = R.string.transactionReview_validators_stake).uppercase()
-        PreviewType.Transfer.Staking.ActionType.Unstake -> stringResource(id = R.string.transactionReview_validators_unstake).uppercase()
-        PreviewType.Transfer.Staking.ActionType.ClaimStake -> stringResource(id = R.string.transactionReview_validators_claim).uppercase()
+    val poolSectionLabel = when (previewType.actionType) {
+        PreviewType.Transfer.Pool.ActionType.Contribution -> "Contributing to pools"
+        PreviewType.Transfer.Pool.ActionType.Redemption -> "Redeeming from pools"
     }
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),
         state = state,
         onFungibleResourceClick = onFungibleResourceClick,
-        onNonFungibleResourceClick = onNonFungibleResourceClick,
+        onNonFungibleResourceClick = { _, _, _ -> },
         previewType = previewType,
         onPromptForGuarantees = onPromptForGuarantees,
         middleSection = {
-            ValidatorsContent(
+            PoolsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                validators = previewType.validators.toPersistentList(),
-                text = validatorSectionText,
+                pools = previewType.pools.toPersistentList(),
+                text = poolSectionLabel,
             )
         }
     )
@@ -49,9 +45,9 @@ fun StakeTypeContent(
 
 @Preview(showBackground = true)
 @Composable
-fun StakeUnstakeTypePreview() {
+fun PoolTypePreview() {
     RadixWalletTheme {
-        StakeTypeContent(
+        PoolTypeContent(
             state = TransactionReviewViewModel.State(
                 request = SampleDataProvider().transactionRequest,
                 isLoading = false,
@@ -59,12 +55,11 @@ fun StakeUnstakeTypePreview() {
                 previewType = PreviewType.NonConforming
             ),
             onFungibleResourceClick = { _, _ -> },
-            onNonFungibleResourceClick = { _, _, _ -> },
-            previewType = PreviewType.Transfer.Staking(
+            previewType = PreviewType.Transfer.Pool(
                 to = persistentListOf(),
-                from = listOf(SampleDataProvider().accountWithTransferableResourceLsu).toPersistentList(),
-                validators = persistentListOf(),
-                actionType = PreviewType.Transfer.Staking.ActionType.Stake
+                from = listOf(SampleDataProvider().accountWithTransferablePool).toPersistentList(),
+                pools = persistentListOf(),
+                actionType = PreviewType.Transfer.Pool.ActionType.Contribution
             ),
             onPromptForGuarantees = {},
         )

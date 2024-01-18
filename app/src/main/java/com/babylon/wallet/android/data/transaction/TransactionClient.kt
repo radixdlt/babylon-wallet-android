@@ -10,21 +10,16 @@ import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.Intent
-import com.radixdlt.ret.ManifestSummary
 import com.radixdlt.ret.NotarizedTransaction
 import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
-import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.core.then
-import rdx.works.profile.data.model.pernetwork.Entity
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
-import rdx.works.profile.domain.personasOnCurrentNetwork
 import timber.log.Timber
 import java.math.BigDecimal
 import java.security.SecureRandom
@@ -33,7 +28,7 @@ import javax.inject.Inject
 @Suppress("LongParameterList")
 class TransactionClient @Inject constructor(
     private val transactionRepository: TransactionRepository,
-    private val getProfileUseCase: GetProfileUseCase,
+    private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase
 ) {
     val signingState = collectSignersSignaturesUseCase.interactionState
@@ -58,16 +53,18 @@ class TransactionClient @Inject constructor(
                 fee = lockFee
             )
         }
-
-        val notaryAndSigners = getNotaryAndSigners(
-            manifestSummary = manifestWithTransactionFee.summary(request.networkId.value.toUByte()),
-            ephemeralNotaryPrivateKey = request.ephemeralNotaryPrivateKey
-        )
-        return buildTransactionHeader(
-            networkId = request.networkId.value,
-            notaryAndSigners = notaryAndSigners,
-            tipPercentage = tipPercentage
-        ).then { header ->
+        return resolveNotaryAndSignersUseCase(
+            summary = manifestWithTransactionFee.summary(request.networkId.value.toUByte()),
+            notary = request.ephemeralNotaryPrivateKey
+        ).then { notaryAndSigners ->
+            buildTransactionHeader(
+                networkId = request.networkId.value,
+                notaryAndSigners = notaryAndSigners,
+                tipPercentage = tipPercentage
+            ).map { header -> notaryAndSigners to header }
+        }.then { signersAndHeader ->
+            val notaryAndSigners = signersAndHeader.first
+            val header = signersAndHeader.second
             val transactionIntent = kotlin.runCatching {
                 Intent(
                     header = header,
@@ -177,27 +174,6 @@ class TransactionClient @Inject constructor(
                 Result.failure(RadixWalletException.PrepareTransactionException.BuildTransactionHeader(cause = e))
             }
         } ?: Result.failure(RadixWalletException.DappRequestException.GetEpoch)
-    }
-
-    suspend fun getSigningEntities(manifestSummary: ManifestSummary): List<Entity> {
-        val manifestAccountsRequiringAuth = manifestSummary.accountsRequiringAuth.map { it.addressString() }
-        val manifestIdentitiesRequiringAuth = manifestSummary.identitiesRequiringAuth.map { it.addressString() }
-
-        return getProfileUseCase.accountsOnCurrentNetwork().filter { account ->
-            manifestAccountsRequiringAuth.contains(account.address)
-        } + getProfileUseCase.personasOnCurrentNetwork().filter { account ->
-            manifestIdentitiesRequiringAuth.contains(account.address)
-        }
-    }
-
-    suspend fun getNotaryAndSigners(
-        manifestSummary: ManifestSummary,
-        ephemeralNotaryPrivateKey: PrivateKey
-    ): NotaryAndSigners {
-        return NotaryAndSigners(
-            signers = getSigningEntities(manifestSummary),
-            ephemeralNotaryPrivateKey = ephemeralNotaryPrivateKey
-        )
     }
 
     suspend fun getTransactionPreview(

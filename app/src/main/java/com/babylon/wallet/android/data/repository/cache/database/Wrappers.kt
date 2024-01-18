@@ -69,6 +69,8 @@ data class PoolWithResourceResponse(
     val poolUnitAddress: String,
     @ColumnInfo("account_state_version")
     val accountStateVersion: Long?,
+    @ColumnInfo("pool_metadata")
+    val poolMetadata: MetadataColumn?,
     val amount: BigDecimal?,
 
     // From ResourceEntity (@Embed does not work here since making ResourceEntity nullable does not work)
