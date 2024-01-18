@@ -39,7 +39,6 @@ fun PoolTypeContent(
         middleSection = {
             PoolsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                pools = previewType.pools.toPersistentList(),
                 poolsWithAssociatedDapps = previewType.poolsWithAssociatedDapps.toPersistentMap(),
                 text = poolSectionLabel,
                 unknownPoolCount = previewType.unknwonPoolComponents,

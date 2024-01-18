@@ -31,25 +31,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.model.resources.metadata.name
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InvolvedComponentDetails
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 
 @Composable
 fun PoolsContent(
-    pools: ImmutableList<Pool>,
     modifier: Modifier = Modifier,
     text: String,
     poolsWithAssociatedDapps: ImmutableMap<String, DApp>,
@@ -133,10 +126,15 @@ fun PoolsContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
             if (unknownPoolCount > 0) {
+                val componentCount = if (unknownPoolCount == 1) {
+                    "1 pool component" // TODO crowdin
+                } else {
+                    "$unknownPoolCount pool components"
+                }
                 InvolvedComponentDetails(
                     iconSize = 44.dp,
                     dApp = null,
-                    text = "$unknownPoolCount pool components",
+                    text = componentCount,
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
@@ -153,34 +151,6 @@ fun PoolsContentPreview() {
     RadixWalletTheme {
         Column {
             PoolsContent(
-                pools = persistentListOf(
-                    Pool(
-                        "pool_tdx_19jd32jd3928jd3892jd329",
-                        listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool", valueType = MetadataType.String),
-                            Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
-                            Metadata.Primitive(
-                                key = ExplicitMetadataKey.POOL_UNIT.key,
-                                value = "resource_tdx_19jd32jd3928jd3892jd329",
-                                valueType = MetadataType.Address
-                            )
-                        ),
-                        emptyList()
-                    ),
-                    Pool(
-                        "pool_tdx_19jd32jd3928jd3892jd328",
-                        listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool2", valueType = MetadataType.String),
-                            Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
-                            Metadata.Primitive(
-                                key = ExplicitMetadataKey.POOL_UNIT.key,
-                                value = "resource_tdx_19jd32jd3928jd3892jd329",
-                                valueType = MetadataType.Address
-                            )
-                        ),
-                        emptyList()
-                    )
-                ),
                 text = "Contributing to pools".uppercase(),
                 poolsWithAssociatedDapps = persistentMapOf(),
                 unknownPoolCount = 0,
