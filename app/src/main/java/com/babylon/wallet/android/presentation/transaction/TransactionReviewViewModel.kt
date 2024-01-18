@@ -500,9 +500,10 @@ sealed interface PreviewType {
         val from: List<AccountWithTransferableResources>
         val to: List<AccountWithTransferableResources>
 
-        fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
-            allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
-        }.flatten()
+        val newlyCreatedResources: List<Resource>
+            get() = (from + to).map { allTransfers ->
+                allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable.resource }
+            }.flatten()
 
         data class Staking(
             override val from: List<AccountWithTransferableResources>,

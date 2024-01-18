@@ -114,9 +114,9 @@ class TransactionAnalysisDelegate @Inject constructor(
         }
 
         if (previewType is PreviewType.Transfer) {
-            val newlyCreated = previewType.getNewlyCreatedResources()
+            val newlyCreated = previewType.newlyCreatedResources
             if (newlyCreated.isNotEmpty()) {
-                cacheNewlyCreatedEntitiesUseCase(newlyCreated.map { it.resource })
+                cacheNewlyCreatedEntitiesUseCase(newlyCreated)
             }
         }
 

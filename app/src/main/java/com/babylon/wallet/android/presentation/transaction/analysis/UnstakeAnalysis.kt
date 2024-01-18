@@ -63,7 +63,8 @@ private suspend fun DetailedManifestClass.ValidatorUnstake.extractDeposits(
                 validator,
                 stakeClaimNftItems.associate {
                     it.first.localId.displayable to it.second
-                }
+                },
+                true
             )
         )
     }

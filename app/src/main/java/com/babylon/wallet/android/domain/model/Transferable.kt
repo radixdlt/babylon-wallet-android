@@ -128,12 +128,11 @@ sealed interface TransferableAsset {
             override val amount: BigDecimal,
             val lsu: LiquidStakeUnit,
             val validator: ValidatorDetail,
-            val xrdWorth: BigDecimal
+            val xrdWorth: BigDecimal,
+            override val isNewlyCreated: Boolean = false
         ): Fungible() {
             override val resource: Resource.FungibleResource
                 get() = lsu.fungibleResource
-
-            override val isNewlyCreated: Boolean = false
         }
 
         data class PoolUnitAsset(
@@ -141,11 +140,10 @@ sealed interface TransferableAsset {
             val unit: PoolUnit,
             val contributionPerResource: Map<String, BigDecimal>,
             val associatedDapp: DApp?,
+            override val isNewlyCreated: Boolean = false
         ): Fungible() {
             override val resource: Resource.FungibleResource
                 get() = unit.stake
-            override val isNewlyCreated: Boolean = false
-
         }
     }
 
@@ -158,9 +156,8 @@ sealed interface TransferableAsset {
         data class StakeClaimAssets(
             override val resource: Resource.NonFungibleResource,
             val validator: ValidatorDetail,
-            val xrdWorthPerNftItem: Map<String, BigDecimal>
-        ): NonFungible() {
+            val xrdWorthPerNftItem: Map<String, BigDecimal>,
             override val isNewlyCreated: Boolean = false
-        }
+        ): NonFungible()
     }
 }
