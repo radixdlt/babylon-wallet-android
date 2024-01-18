@@ -472,6 +472,10 @@ sealed interface PreviewType {
         val from: List<AccountWithTransferableResources>
         val to: List<AccountWithTransferableResources>
 
+        fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
+            allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
+        }.flatten()
+
         data class Staking(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
@@ -503,12 +507,7 @@ sealed interface PreviewType {
             override val to: List<AccountWithTransferableResources>,
             val badges: List<Badge> = emptyList(),
             val dApps: List<Pair<DApp, Boolean>> = emptyList()
-        ) : Transfer {
-
-            fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
-                allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
-            }.flatten()
-        }
+        ) : Transfer
     }
 }
 

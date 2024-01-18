@@ -28,9 +28,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DApp
@@ -126,15 +128,10 @@ fun PoolsContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
             if (unknownPoolCount > 0) {
-                val componentCount = if (unknownPoolCount == 1) {
-                    "1 pool component" // TODO crowdin
-                } else {
-                    "$unknownPoolCount pool components"
-                }
                 InvolvedComponentDetails(
                     iconSize = 44.dp,
                     dApp = null,
-                    text = componentCount,
+                    text = stringResource(id = R.string.transactionReview_unknownPools, unknownPoolCount),
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)

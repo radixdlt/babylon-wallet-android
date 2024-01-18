@@ -584,14 +584,16 @@ private fun TransferablePoolUnitItemContent(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = "Pool Units", // crowdin
+                    text = stringResource(id = R.string.transactionReview_poolUnits),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferablePoolUnit.associatedDapp?.metadata?.name().orEmpty().ifEmpty { "Unknown pool" }, // TODO crowdin
+                    text = transferablePoolUnit.associatedDapp?.metadata?.name().orEmpty().ifEmpty {
+                        stringResource(id = R.string.transactionReview_poolName_unknown)
+                    },
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
