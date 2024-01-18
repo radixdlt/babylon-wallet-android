@@ -22,6 +22,10 @@ data class AccountWithAssets(
         get() = details?.accountType == AccountType.DAPP_DEFINITION
 }
 
+interface Asset {
+    val resource: Resource
+}
+
 data class Assets(
     val tokens: List<Token> = emptyList(),
     val nonFungibles: List<NonFungibleCollection> = emptyList(),
