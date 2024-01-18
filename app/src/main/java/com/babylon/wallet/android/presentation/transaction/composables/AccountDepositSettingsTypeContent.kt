@@ -56,7 +56,7 @@ fun AccountDepositSettingsTypeContent(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Icon(
-                modifier = Modifier.dashedCircleBorder(RadixTheme.colors.gray3),
+                modifier = Modifier.size(24.dp).dashedCircleBorder(RadixTheme.colors.gray3).padding(RadixTheme.dimensions.paddingXSmall),
                 painter = painterResource(
                     id = DSR.ic_deposit_changes_heading
                 ),
