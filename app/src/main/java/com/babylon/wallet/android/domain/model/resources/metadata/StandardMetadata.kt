@@ -114,7 +114,6 @@ fun List<Metadata>.dAppDefinitions(): List<String> {
         key = ExplicitMetadataKey.DAPP_DEFINITION,
         type = MetadataType.Address
     )?.value
-
     return if (single != null) {
         dAppDefinitions + single
     } else {

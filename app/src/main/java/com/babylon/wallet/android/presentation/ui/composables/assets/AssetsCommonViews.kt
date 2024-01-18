@@ -22,6 +22,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -62,6 +63,27 @@ fun Modifier.dashedCircleBorder(color: Color) = composed {
                 drawCircle(
                     color = color,
                     style = Stroke(strokeWidth, pathEffect = pathEffect)
+                )
+            }
+        }
+    )
+}
+
+@Suppress("MagicNumber")
+fun Modifier.strokeLine() = composed {
+    val strokeColor = RadixTheme.colors.gray3
+    val strokeWidth = with(LocalDensity.current) { 2.dp.toPx() }
+    val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
+    val pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeInterval, strokeInterval), 0f)
+    then(
+        Modifier.drawWithCache {
+            onDrawBehind {
+                drawLine(
+                    color = strokeColor,
+                    start = Offset(size.width - 150f, 0f),
+                    end = Offset(size.width - 150f, size.height),
+                    strokeWidth = strokeWidth,
+                    pathEffect = pathEffect
                 )
             }
         }

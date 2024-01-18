@@ -48,7 +48,9 @@ fun ValidatorsContent(
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     Box(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = RadixTheme.dimensions.paddingSmall),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(
@@ -90,11 +92,6 @@ fun ValidatorsContent(
                     contentDescription = "arrow"
                 )
             }
-            if (expanded) {
-                StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 60.dp)
-            } else {
-                Spacer(modifier = Modifier.height(60.dp))
-            }
         }
     }
 
@@ -103,10 +100,14 @@ fun ValidatorsContent(
         enter = fadeIn(),
         exit = fadeOut()
     ) {
+        val lastItem = validators.last()
+
         Column(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                .padding(bottom = RadixTheme.dimensions.paddingXLarge)
                 .fillMaxWidth()
+                .background(RadixTheme.colors.gray5)
         ) {
             validators.forEach { validator ->
                 ValidatorDetailsItem(
@@ -117,7 +118,9 @@ fun ValidatorsContent(
                         .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
                         .padding(RadixTheme.dimensions.paddingDefault)
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                if (lastItem != validator) {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                }
             }
         }
     }

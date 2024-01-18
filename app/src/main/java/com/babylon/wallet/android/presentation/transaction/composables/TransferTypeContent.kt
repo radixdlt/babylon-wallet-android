@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -13,6 +12,7 @@ import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
@@ -21,7 +21,8 @@ fun TransferTypeContent(
     state: TransactionReviewViewModel.State,
     preview: PreviewType.Transfer.GeneralTransfer,
     onPromptForGuarantees: () -> Unit,
-    onDappClick: (DApp) -> Unit,
+    onDAppClick: (DApp) -> Unit,
+    onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
@@ -33,13 +34,11 @@ fun TransferTypeContent(
         previewType = preview,
         onPromptForGuarantees = onPromptForGuarantees,
         middleSection = {
-            if (preview.dApps.toPersistentList().isNotEmpty()) {
-                StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 60.dp)
-            }
             ConnectedDAppsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 connectedDApps = preview.dApps.toPersistentList(),
-                onDAppClick = onDappClick
+                onDAppClick = onDAppClick,
+                onUnknownDAppsClick = onUnknownDAppsClick
             )
         }
     )
@@ -61,7 +60,8 @@ fun TransactionPreviewTypePreview() {
                 to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned)
             ),
             onPromptForGuarantees = {},
-            onDappClick = { _ -> },
+            onDAppClick = { _ -> },
+            onUnknownDAppsClick = {},
             onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> }
         )

@@ -11,6 +11,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.babylon.wallet.android.presentation.ui.composables.assets.strokeLine
+import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
@@ -47,25 +49,28 @@ fun CommonTransferContent(
                 }
             )
 
-            middleSection()
+            Column(
+                modifier = Modifier
+                    .applyIf(condition = state.showDottedLine, modifier = Modifier.strokeLine())
+                    .padding(top = RadixTheme.dimensions.paddingXLarge)
+            ) {
+                middleSection()
 
-            DepositAccountContent(
-                modifier = Modifier.padding(
-                    start = RadixTheme.dimensions.paddingDefault,
-                    end = RadixTheme.dimensions.paddingDefault,
-                    bottom = RadixTheme.dimensions.paddingLarge
-                ),
-                to = previewType.to.toPersistentList(),
-                promptForGuarantees = onPromptForGuarantees,
-                showStrokeLine = true,
-                onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
-                    onFungibleResourceClick(fungibleResource, isNewlyCreated)
-                },
-                onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
-                    onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
-                }
-            )
-
+                DepositAccountContent(
+                    modifier = Modifier.padding(
+                        start = RadixTheme.dimensions.paddingDefault,
+                        end = RadixTheme.dimensions.paddingDefault
+                    ),
+                    to = previewType.to.toPersistentList(),
+                    promptForGuarantees = onPromptForGuarantees,
+                    onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
+                        onFungibleResourceClick(fungibleResource, isNewlyCreated)
+                    },
+                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
+                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
+                    }
+                )
+            }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         }
     }
