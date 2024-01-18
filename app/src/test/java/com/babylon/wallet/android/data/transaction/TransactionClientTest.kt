@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
+import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
@@ -22,6 +23,7 @@ import org.junit.Rule
 import org.junit.Test
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.ret.BabylonManifestBuilder
+import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -37,6 +39,7 @@ internal class TransactionClientTest {
     private val transactionRepository = mockk<TransactionRepository>()
     private val getProfileUseCase = GetProfileUseCase(ProfileRepositoryFake)
     private val collectSignersSignaturesUseCase = mockk<CollectSignersSignaturesUseCase>()
+    private val resolveNotaryAndSignersUseCase = ResolveNotaryAndSignersUseCase(getProfileUseCase)
 
     private lateinit var transactionClient: TransactionClient
 
@@ -45,7 +48,7 @@ internal class TransactionClientTest {
         coEvery { collectSignersSignaturesUseCase.interactionState } returns emptyFlow()
         transactionClient = TransactionClient(
             transactionRepository,
-            getProfileUseCase,
+            resolveNotaryAndSignersUseCase,
             collectSignersSignaturesUseCase
         )
     }
@@ -58,9 +61,10 @@ internal class TransactionClientTest {
                     networkId = Radix.Gateway.default.network.id.toUByte()
                 )
 
-            val signingEntities = transactionClient.getSigningEntities(manifest)
+            val notaryKey = PrivateKey.EddsaEd25519.newRandom()
+            val notaryAndSigners = resolveNotaryAndSignersUseCase(manifest, notaryKey)
 
-            Assert.assertEquals(listOf(account1), signingEntities)
+            Assert.assertEquals(listOf(account1), notaryAndSigners.getOrNull()?.signers)
         }
 
     companion object {

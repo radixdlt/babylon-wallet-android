@@ -7,24 +7,24 @@ import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetPoolDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.babylon.wallet.android.presentation.transaction.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.guaranteesCount
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.TransactionManifest
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
 import rdx.works.core.then
-import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.currentNetwork
 import timber.log.Timber
@@ -40,6 +40,8 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val getNFTDetailsUseCase: GetNFTDetailsUseCase,
     private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase,
+    private val getPoolDetailsUseCase: GetPoolDetailsUseCase,
+    private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
@@ -58,34 +60,40 @@ class TransactionAnalysisDelegate @Inject constructor(
     private suspend fun startAnalysis(
         manifest: TransactionManifest,
         transactionClient: TransactionClient
-    ): Result<Unit> {
-        val networkId = getProfileUseCase().first().currentNetwork?.knownNetworkId ?: error("No network found")
-        val manifestSummary = manifest.summary(networkId.value.toUByte())
-        val notaryAndSigners = transactionClient.getNotaryAndSigners(
-            manifestSummary = manifestSummary,
-            ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey
-        )
-        return transactionClient.getTransactionPreview(
-            manifest = manifest,
-            notaryAndSigners = notaryAndSigners
-        ).mapCatching { preview ->
-            Timber.tag("receipt").d(preview.encodedReceipt)
-            manifest
-                .executionSummary(networkId = networkId.value.toUByte(), encodedReceipt = preview.encodedReceipt.decodeHex())
-                .resolvePreview(notaryAndSigners)
-                .resolveFees(notaryAndSigners)
-        }.mapCatching { transactionFees ->
-            val feePayerResult = searchFeePayersUseCase(
-                manifestSummary = manifestSummary,
-                lockFee = transactionFees.defaultTransactionFee
-            ).getOrThrow()
+    ): Result<Unit> = runCatching {
+        getProfileUseCase.currentNetwork()?.networkID ?: error("No network found")
+    }.then { networkId ->
+        val summary = manifest.summary(networkId.toUByte())
 
-            _state.update {
-                it.copy(
-                    isNetworkFeeLoading = false,
-                    transactionFees = transactionFees,
-                    feePayerSearchResult = feePayerResult
-                )
+        resolveNotaryAndSignersUseCase(
+            summary = summary,
+            notary = _state.value.ephemeralNotaryPrivateKey
+        ).then { notaryAndSigners ->
+            transactionClient.getTransactionPreview(
+                manifest = manifest,
+                notaryAndSigners = notaryAndSigners
+            ).mapCatching { preview ->
+                logger.d(preview.encodedReceipt)
+                manifest
+                    .executionSummary(
+                        networkId = networkId.toUByte(),
+                        encodedReceipt = preview.encodedReceipt.decodeHex()
+                    )
+                    .resolvePreview(notaryAndSigners)
+                    .resolveFees(notaryAndSigners)
+            }.mapCatching { transactionFees ->
+                val feePayerResult = searchFeePayersUseCase(
+                    manifestSummary = summary,
+                    lockFee = transactionFees.defaultTransactionFee
+                ).getOrThrow()
+
+                _state.update {
+                    it.copy(
+                        isNetworkFeeLoading = false,
+                        transactionFees = transactionFees,
+                        feePayerSearchResult = feePayerResult
+                    )
+                }
             }
         }
     }
@@ -95,7 +103,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             // wallet unacceptable manifest
             _state.update {
                 it.copy(
-                    error = UiMessage.TransactionErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest)
+                    error = TransactionErrorMessage(RadixWalletException.DappRequestException.UnacceptableManifest)
                 )
             }
             PreviewType.UnacceptableManifest
@@ -142,19 +150,24 @@ class TransactionAnalysisDelegate @Inject constructor(
         }
     }
 
+    @Suppress("LongMethod")
     private suspend fun ExecutionSummary.processConformingManifest(): PreviewType {
         val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
         val xrdAddress = XrdResource.address(networkId)
-        val transactionType = detailedClassification.first()
+        val transactionType = detailedClassification.firstOrNull {
+            it.isConformingManifestType()
+        } ?: return PreviewType.NonConforming
         val resources = getResourcesUseCase(addresses = involvedResourceAddresses + xrdAddress).getOrThrow()
 
         return when (transactionType) {
-            is DetailedManifestClass.General -> resolveGeneralTransfer(
-                resources = resources,
-                getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-                getProfileUseCase = getProfileUseCase,
-                resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
-            )
+            is DetailedManifestClass.General -> {
+                resolveGeneralTransaction(
+                    resources = resources,
+                    getTransactionBadgesUseCase = getTransactionBadgesUseCase,
+                    getProfileUseCase = getProfileUseCase,
+                    resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
+                )
+            }
 
             is DetailedManifestClass.AccountDepositSettingsUpdate -> transactionType.resolve(
                 getProfileUseCase = getProfileUseCase,
@@ -196,6 +209,28 @@ class TransactionAnalysisDelegate @Inject constructor(
                 )
             }
 
+            is DetailedManifestClass.PoolContribution -> {
+                val pools = getPoolDetailsUseCase(transactionType.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()
+                transactionType.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    resources = resources,
+                    involvedPools = pools,
+                    executionSummary = this,
+                    resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
+                )
+            }
+
+            is DetailedManifestClass.PoolRedemption -> {
+                val pools = getPoolDetailsUseCase(transactionType.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()
+                transactionType.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    resources = resources,
+                    involvedPools = pools,
+                    executionSummary = this,
+                    resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
+                )
+            }
+
             else -> PreviewType.NonConforming
         }
     }
@@ -208,7 +243,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 isLoading = false,
                 isNetworkFeeLoading = false,
                 previewType = PreviewType.None,
-                error = UiMessage.TransactionErrorMessage(error)
+                error = TransactionErrorMessage(error)
             )
         }
     }

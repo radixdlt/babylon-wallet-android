@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.guarantees
 
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableWithGuarantees
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
@@ -21,11 +21,11 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
         val accountsWithPredictedGuarantee = mutableListOf<AccountWithPredictedGuarantee>()
         transaction.to.forEach { depositing ->
             val resourcesWithGuarantees = depositing.resources.filterIsInstance<Transferable.Depositing>().filter {
-                it.guaranteeType is GuaranteeType.Predicted && it.transferable is TransferableResource.Amount
+                it.guaranteeType is GuaranteeType.Predicted && it.transferable is TransferableWithGuarantees
             }
 
             val predictedAmounts = resourcesWithGuarantees.associate {
-                it.transferable as TransferableResource.Amount to it.guaranteeType as GuaranteeType.Predicted
+                it.transferable as TransferableWithGuarantees to it.guaranteeType as GuaranteeType.Predicted
             }
             when (depositing) {
                 is AccountWithTransferableResources.Other -> {
@@ -33,7 +33,7 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
                         accountsWithPredictedGuarantee.add(
                             AccountWithPredictedGuarantee.Other(
                                 address = depositing.address,
-                                transferableAmount = amount.key,
+                                transferable = amount.key,
                                 instructionIndex = amount.value.instructionIndex,
                                 guaranteeAmountString = amount.value.guaranteePercent.toString()
                             )
@@ -46,7 +46,7 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
                         accountsWithPredictedGuarantee.add(
                             AccountWithPredictedGuarantee.Owned(
                                 account = depositing.account,
-                                transferableAmount = amount.key,
+                                transferable = amount.key,
                                 instructionIndex = amount.value.instructionIndex,
                                 guaranteeAmountString = amount.value.guaranteePercent.toString()
                             )
@@ -110,28 +110,63 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
         }
     }
 
-    fun onClose() {
-        _state.update { it.copy(sheetState = Sheet.None) }
-    }
-
     fun onApply() {
         val sheet = (_state.value.sheetState as? Sheet.CustomizeGuarantees) ?: return
         val preview = (_state.value.previewType as? PreviewType.Transfer) ?: return
-
-        _state.update {
-            it.copy(
-                previewType = preview.copy(
-                    to = preview.to.mapWhen(
-                        predicate = { depositing ->
-                            sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
-                        },
-                        mutation = { depositing ->
-                            depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
-                        }
+        when (preview) {
+            is PreviewType.Transfer.GeneralTransfer -> {
+                _state.update {
+                    it.copy(
+                        previewType = preview.copy(
+                            to = preview.to.mapWhen(
+                                predicate = { depositing ->
+                                    sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
+                                },
+                                mutation = { depositing ->
+                                    depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
+                                }
+                            )
+                        ),
+                        sheetState = Sheet.None
                     )
-                ),
-                sheetState = Sheet.None
-            )
+                }
+            }
+
+            is PreviewType.Transfer.Pool -> {
+                _state.update {
+                    it.copy(
+                        previewType = preview.copy(
+                            to = preview.to.mapWhen(
+                                predicate = { depositing ->
+                                    sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
+                                },
+                                mutation = { depositing ->
+                                    depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
+                                }
+                            )
+                        ),
+                        sheetState = Sheet.None
+                    )
+                }
+            }
+
+            is PreviewType.Transfer.Staking -> {
+                _state.update {
+                    it.copy(
+                        previewType = preview.copy(
+                            to = preview.to.mapWhen(
+                                predicate = { depositing ->
+                                    sheet.accountsWithPredictedGuarantees.any { it.address == depositing.address }
+                                },
+                                mutation = { depositing ->
+                                    depositing.updateFromGuarantees(sheet.accountsWithPredictedGuarantees)
+                                }
+                            )
+                        ),
+                        sheetState = Sheet.None
+                    )
+                }
+            }
         }
     }
 }

@@ -109,14 +109,14 @@ fun TransactionAccountWithGuaranteesCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
-                val transferrable = accountWithGuarantee.transferableAmount
+                val transferable = accountWithGuarantee.transferable
                 Thumbnail.Fungible(
                     modifier = Modifier.size(44.dp),
-                    token = transferrable.resource
+                    token = transferable.fungibleResource
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = transferrable.resource.displayTitle,
+                    text = transferable.fungibleResource.displayTitle,
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
@@ -140,7 +140,7 @@ fun TransactionAccountWithGuaranteesCard(
                         )
                         Text(
                             modifier = Modifier,
-                            text = accountWithGuarantee.transferableAmount.amount.displayableQuantity(),
+                            text = accountWithGuarantee.transferable.amount.displayableQuantity(),
                             style = RadixTheme.typography.secondaryHeader,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
@@ -245,7 +245,7 @@ fun TransactionAccountWithGuaranteesCardPreview() {
             mutableStateOf(
                 Owned(
                     account = SampleDataProvider().sampleAccount(),
-                    transferableAmount = TransferableResource.Amount(
+                    transferable = TransferableResource.FungibleAmount(
                         amount = BigDecimal.TEN,
                         resource = SampleDataProvider().sampleFungibleResources()[0],
                         isNewlyCreated = false

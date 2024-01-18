@@ -56,10 +56,13 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Badge
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import com.babylon.wallet.android.domain.model.resources.metadata.iconUrl
+import com.babylon.wallet.android.domain.model.resources.metadata.name
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import rdx.works.core.toEncodedString
 import rdx.works.profile.data.model.pernetwork.Network
@@ -284,6 +287,21 @@ object Thumbnail {
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
             shape = RadixTheme.shapes.roundedRectMedium,
             contentDescription = poolUnit.stake.displayTitle
+        )
+    }
+
+    @Composable
+    fun Pool(
+        modifier: Modifier = Modifier,
+        pool: Pool
+    ) {
+        Custom(
+            modifier = modifier,
+            imageType = pool.metadata.iconUrl()?.let { ImageType.External(it, ThumbnailRequestSize.MEDIUM) },
+            emptyDrawable = R.drawable.ic_pool_units, // TODO change with proper icon
+            emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
+            shape = RadixTheme.shapes.roundedRectMedium,
+            contentDescription = pool.metadata.name().orEmpty()
         )
     }
 

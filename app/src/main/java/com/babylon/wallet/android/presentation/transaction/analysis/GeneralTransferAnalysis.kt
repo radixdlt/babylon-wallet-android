@@ -7,16 +7,13 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.defaultDepositGuarantee
 
 // Generic transaction resolver
-suspend fun ExecutionSummary.resolveGeneralTransfer(
+suspend fun ExecutionSummary.resolveGeneralTransaction(
     resources: List<Resource>,
     getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     getProfileUseCase: GetProfileUseCase,
@@ -26,32 +23,19 @@ suspend fun ExecutionSummary.resolveGeneralTransfer(
     val dApps = resolveDApps(resolveDAppInTransactionUseCase).distinctBy {
         it.first.definitionAddresses
     }
-
+    val involvedAccountAddresses = accountWithdraws.keys + accountDeposits.keys
     val allAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
-        it.address in accountWithdraws.keys || it.address in accountDeposits.keys
+        it.address in involvedAccountAddresses
     }
 
     val defaultDepositGuarantee = getProfileUseCase.defaultDepositGuarantee()
 
-    return PreviewType.Transfer(
+    return PreviewType.Transfer.GeneralTransfer(
         from = resolveFromAccounts(resources, allAccounts),
         to = resolveToAccounts(resources, allAccounts, defaultDepositGuarantee),
         badges = badges,
         dApps = dApps
     )
-}
-
-private suspend fun ExecutionSummary.resolveDApps(
-    resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
-) = coroutineScope {
-    encounteredEntities.filter { it.isGlobalComponent() }
-        .map { address ->
-            async {
-                resolveDAppInTransactionUseCase.invoke(address.addressString())
-            }
-        }
-        .awaitAll()
-        .mapNotNull { it.getOrNull() }
 }
 
 private fun ExecutionSummary.resolveFromAccounts(

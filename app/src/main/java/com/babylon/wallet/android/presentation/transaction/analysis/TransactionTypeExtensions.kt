@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.model.resources.findFungible
 import com.babylon.wallet.android.domain.model.resources.findNonFungible
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
@@ -23,6 +24,9 @@ import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import rdx.works.core.ret.asStr
 import rdx.works.core.toHexString
 import java.math.BigDecimal
@@ -121,7 +125,7 @@ fun ResourceIndicator.toTransferableResource(resources: List<Resource>): Transfe
                 resourceAddress = resourceAddress,
                 ownedAmount = BigDecimal.ZERO
             )
-            TransferableResource.Amount(
+            TransferableResource.FungibleAmount(
                 amount = amount,
                 resource = resource,
                 isNewlyCreated = false
@@ -221,7 +225,24 @@ fun ResourceIndicator.toWithdrawingTransferableResource(
     }
 }
 
-private fun FungibleResourceIndicator.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType {
+fun DetailedManifestClass.isConformingManifestType(): Boolean {
+    return when (this) {
+        is DetailedManifestClass.AccountDepositSettingsUpdate -> {
+            true
+        }
+
+        DetailedManifestClass.General -> true
+        is DetailedManifestClass.PoolContribution -> true
+        is DetailedManifestClass.PoolRedemption -> true
+        is DetailedManifestClass.Transfer -> true
+        is DetailedManifestClass.ValidatorClaim -> true
+        is DetailedManifestClass.ValidatorStake -> true
+        is DetailedManifestClass.ValidatorUnstake -> true
+        else -> false
+    }
+}
+
+fun FungibleResourceIndicator.toGuaranteeType(defaultDepositGuarantees: Double): GuaranteeType {
     return when (this) {
         is FungibleResourceIndicator.Guaranteed -> GuaranteeType.Guaranteed
         is FungibleResourceIndicator.Predicted -> GuaranteeType.Predicted(
@@ -229,6 +250,19 @@ private fun FungibleResourceIndicator.toGuaranteeType(defaultDepositGuarantees: 
             guaranteeOffset = defaultDepositGuarantees
         )
     }
+}
+
+suspend fun ExecutionSummary.resolveDApps(
+    resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
+) = coroutineScope {
+    encounteredEntities.filter { it.isGlobalComponent() }
+        .map { address ->
+            async {
+                resolveDAppInTransactionUseCase.invoke(address.addressString())
+            }
+        }
+        .awaitAll()
+        .mapNotNull { it.getOrNull() }
 }
 
 private val ResourceIndicator.Fungible.amount: BigDecimal
@@ -241,14 +275,14 @@ private fun ResourceIndicator.Fungible.toTransferableResource(
     resources: List<Resource>,
     newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>
-): TransferableResource.Amount {
+): TransferableResource.FungibleAmount {
     val resource = resources.findFungible(
         resourceAddress.addressString()
     ) ?: Resource.FungibleResource.from(
         resourceAddress = resourceAddress, metadata = newlyCreatedMetadata[resourceAddress.addressString()].orEmpty()
     )
 
-    return TransferableResource.Amount(
+    return TransferableResource.FungibleAmount(
         amount = amount,
         resource = resource,
         isNewlyCreated = resourceAddress.addressString() in newlyCreatedEntities.map { it.addressString() }

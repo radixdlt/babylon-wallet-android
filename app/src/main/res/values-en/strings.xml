@@ -393,7 +393,9 @@
   <string name="transactionReview_thirdPartyDepositSettingHeading">Third-party deposit setting</string>
   <string name="transactionReview_thirdPartyDepositExceptionsHeading">Third-party deposit exceptions</string>
   <string name="transactionReview_unknownComponents">%d Unknown Components</string>
+  <string name="transactionReview_unknownPools">%d Pool Components</string>
   <string name="transactionReview_withdrawalsHeading">Withdrawing From</string>
+  <string name="transactionReview_poolUnits">Pool Units</string>
   <string name="transactionReview_slideToSign">Slide to Sign</string>
   <string name="transactionReview_xrdAmount">%s XRD</string>
   <string name="transactionReview_insufficientBalance">Insufficient Balance</string>
@@ -434,6 +436,9 @@
   <string name="transactionReview_validators_stake">Staking to Validators</string>
   <string name="transactionReview_validators_unstake">Requesting unstake from validators</string>
   <string name="transactionReview_validators_claim">Claim from validators</string>
+  <string name="transactionReview_poolContributionHeading">Contributing to pools</string>
+  <string name="transactionReview_poolRedemptionHeading">Redeeming from pools</string>
+  <string name="transactionReview_poolName_unknown">Unknown pool</string>
   <string name="transactionStatus_completing_text">Completing Transaction…</string>
   <string name="transactionStatus_transactionID_text">Transaction ID: </string>
   <string name="transactionStatus_success_title">Transaction Success</string>
@@ -484,6 +489,7 @@
   <string name="common_done">Done</string>
   <string name="common_persona">Persona</string>
   <string name="common_history">History</string>
+  <string name="common_pool">Pool</string>
   <string name="common_retry">Retry</string>
   <string name="common_remove">Remove</string>
   <string name="common_somethingWentWrong">Something went wrong</string>
@@ -509,6 +515,7 @@
   <string name="error_transactionFailure_epoch">Failed to get epoch</string>
   <string name="error_transactionFailure_header">Failed to build transaction header</string>
   <string name="error_transactionFailure_manifest">Failed to convert transaction manifest</string>
+  <string name="error_transactionFailure_missingSigners">You don\'t have access to some accounts or personas required to authorise this transaction</string>
   <string name="error_transactionFailure_network">Wrong network</string>
   <string name="error_transactionFailure_noFundsToApproveTransaction">No funds to approve transaction</string>
   <string name="error_transactionFailure_pollStatus">Failed to poll transaction status</string>

@@ -18,7 +18,7 @@ suspend fun DetailedManifestClass.ValidatorStake.resolve(
     getProfileUseCase: GetProfileUseCase,
     resources: List<Resource>,
     involvedValidators: List<ValidatorDetail>
-): PreviewType {
+): PreviewType.Transfer.Staking {
     val fromAccounts = extractWithdrawals(executionSummary, getProfileUseCase, resources)
     val toAccounts = extractDeposits(
         executionSummary = executionSummary,
@@ -26,11 +26,11 @@ suspend fun DetailedManifestClass.ValidatorStake.resolve(
         resources = resources,
         involvedValidators = involvedValidators
     )
-    return PreviewType.Staking(
+    return PreviewType.Transfer.Staking(
         from = fromAccounts,
         to = toAccounts,
         validators = involvedValidators,
-        actionType = PreviewType.Staking.ActionType.Stake
+        actionType = PreviewType.Transfer.Staking.ActionType.Stake
     )
 }
 
@@ -77,7 +77,7 @@ private suspend fun extractWithdrawals(
         account = ownedAccount,
         resources = listOf(
             element = Transferable.Withdrawing(
-                transferable = TransferableResource.Amount(
+                transferable = TransferableResource.FungibleAmount(
                     entry.value.sumOf { it.amount },
                     xrdResource,
                     false

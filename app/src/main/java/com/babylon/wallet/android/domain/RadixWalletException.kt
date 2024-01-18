@@ -84,6 +84,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         data object ConvertManifest : PrepareTransactionException()
         data class BuildTransactionHeader(override val cause: Throwable) : PrepareTransactionException(cause)
         data object FailedToFindAccountWithEnoughFundsToLockFee : PrepareTransactionException()
+        data object FailedToFindSigningEntities : PrepareTransactionException()
         data object CompileTransactionIntent : PrepareTransactionException()
         data class SignCompiledTransactionIntent(override val cause: Throwable? = null) :
             PrepareTransactionException(cause)
@@ -97,16 +98,17 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
         override val ceError: ConnectorExtensionError
             get() = when (this) {
                 is BuildTransactionHeader -> WalletErrorType.FailedToPrepareTransaction
-                ConvertManifest -> WalletErrorType.FailedToPrepareTransaction
+                is FailedToFindSigningEntities -> WalletErrorType.FailedToPrepareTransaction
+                is ConvertManifest -> WalletErrorType.FailedToPrepareTransaction
                 is PrepareNotarizedTransaction -> WalletErrorType.FailedToSignTransaction
                 is SubmitNotarizedTransaction -> WalletErrorType.FailedToSubmitTransaction
-                FailedToFindAccountWithEnoughFundsToLockFee -> {
+                is FailedToFindAccountWithEnoughFundsToLockFee -> {
                     WalletErrorType.FailedToFindAccountWithEnoughFundsToLockFee
                 }
 
-                CompileTransactionIntent -> WalletErrorType.FailedToCompileTransaction
+                is CompileTransactionIntent -> WalletErrorType.FailedToCompileTransaction
                 is SignCompiledTransactionIntent -> WalletErrorType.FailedToSignTransaction
-                ReceivingAccountDoesNotAllowDeposits -> WalletErrorType.FailedToPrepareTransaction
+                is ReceivingAccountDoesNotAllowDeposits -> WalletErrorType.FailedToPrepareTransaction
             }
     }
 
@@ -329,13 +331,15 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
     return context.getString(
         when (this) {
             is RadixWalletException.PrepareTransactionException.BuildTransactionHeader -> R.string.error_transactionFailure_header
-            RadixWalletException.PrepareTransactionException.ConvertManifest -> R.string.error_transactionFailure_manifest
+            is RadixWalletException.PrepareTransactionException.ConvertManifest -> R.string.error_transactionFailure_manifest
+            is RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities ->
+                R.string.error_transactionFailure_missingSigners
             is RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction -> R.string.error_transactionFailure_prepare
             is RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction -> R.string.error_transactionFailure_submit
-            RadixWalletException.PrepareTransactionException.FailedToFindAccountWithEnoughFundsToLockFee ->
+            is RadixWalletException.PrepareTransactionException.FailedToFindAccountWithEnoughFundsToLockFee ->
                 R.string.error_transactionFailure_noFundsToApproveTransaction
 
-            RadixWalletException.PrepareTransactionException.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
+            is RadixWalletException.PrepareTransactionException.CompileTransactionIntent -> R.string.error_transactionFailure_prepare
             is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent ->
                 if (this.cause is ProfileException.NoMnemonic) {
                     R.string.transactionReview_noMnemonicError_text

@@ -16,15 +16,15 @@ suspend fun DetailedManifestClass.ValidatorUnstake.resolve(
     getProfileUseCase: GetProfileUseCase,
     resources: List<Resource>,
     involvedValidators: List<ValidatorDetail>
-): PreviewType {
+): PreviewType.Transfer.Staking {
     val fromAccounts = extractWithdrawals(executionSummary, getProfileUseCase, resources, involvedValidators)
     val toAccounts = extractDeposits(executionSummary, getProfileUseCase, resources, involvedValidators)
     val validatorAddressesSet = validatorAddresses.map { it.addressString() }.toSet()
-    return PreviewType.Staking(
+    return PreviewType.Transfer.Staking(
         from = fromAccounts,
         to = toAccounts,
         validators = involvedValidators.filter { it.address in validatorAddressesSet },
-        actionType = PreviewType.Staking.ActionType.Unstake
+        actionType = PreviewType.Transfer.Staking.ActionType.Unstake
     )
 }
 
@@ -45,8 +45,6 @@ private suspend fun DetailedManifestClass.ValidatorUnstake.extractDeposits(
         val validator =
             involvedValidators.find { validatorUnstake.validatorAddress.addressString() == it.address } ?: error("No validator found")
         val stakeClaimNftItems = validatorUnstake.claimNftIds.map { localId ->
-            // TODO for a claim that has multiple claimNftLocalIds, we don't have a way now to determine its XRD worth
-            // this will need to be changed once RET provide xrd worth of each claim
             Resource.NonFungibleResource.Item(
                 collectionAddress = resourceAddress,
                 localId = Resource.NonFungibleResource.Item.ID.from(localId)
@@ -76,8 +74,8 @@ private suspend fun DetailedManifestClass.ValidatorUnstake.extractWithdrawals(
     involvedValidators: List<ValidatorDetail>
 ) = executionSummary.accountWithdraws.map { withdrawalsPerAccount ->
     val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(withdrawalsPerAccount.key) ?: error("No account found")
-    val withdrawingLsu = withdrawalsPerAccount.value.map { depositedResource ->
-        val resourceAddress = depositedResource.resourceAddress
+    val withdrawingLsu = withdrawalsPerAccount.value.groupBy { it.resourceAddress }.map { depositedResource ->
+        val resourceAddress = depositedResource.key
         val lsuResource = resources.find {
             it.resourceAddress == resourceAddress
         } as? Resource.FungibleResource ?: error("No resource found")

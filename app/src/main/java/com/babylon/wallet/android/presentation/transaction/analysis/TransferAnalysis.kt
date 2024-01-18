@@ -21,7 +21,7 @@ suspend fun ExecutionSummary.resolveTransfer(
     val to = extractDeposits(allOwnedAccounts, resources)
     val from = extractWithdraws(allOwnedAccounts, resources)
 
-    return PreviewType.Transfer(
+    return PreviewType.Transfer.GeneralTransfer(
         from = from,
         to = to
     )

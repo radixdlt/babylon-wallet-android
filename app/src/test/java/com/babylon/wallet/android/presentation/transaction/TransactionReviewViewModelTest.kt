@@ -18,17 +18,15 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Badge
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetPoolDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
@@ -104,12 +102,14 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveDappsInTransactionUseCase = mockk<ResolveDAppInTransactionUseCase>()
+    private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
     private val getNFTDetailsUseCase = mockk<GetNFTDetailsUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()
     private val deviceCapabilityHelper = mockk<DeviceCapabilityHelper>()
     private val getValidatorsUseCase = mockk<GetValidatorsUseCase>()
+    private val getPoolDetailsUseCase = mockk<GetPoolDetailsUseCase>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val getDAppsUseCase = mockk<GetDAppsUseCase>()
@@ -201,6 +201,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
             Badge(address = "")
         )
+        coEvery { getPoolDetailsUseCase(any()) } returns Result.success(emptyList())
         coEvery { transactionClient.signTransaction(any(), any(), any(), any()) } returns Result.success(
             NotarizedTransactionResult(
                 "sampleTxId", "", TransactionHeader(
@@ -214,9 +215,11 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 )
             )
         )
-        coEvery { transactionClient.getNotaryAndSigners(any(), any()) } returns NotaryAndSigners(
-            emptyList(),
-            PrivateKey.EddsaEd25519.newRandom()
+        coEvery { resolveNotaryAndSignersUseCase(any(), any()) } returns Result.success(
+            NotaryAndSigners(
+                emptyList(),
+                PrivateKey.EddsaEd25519.newRandom()
+            )
         )
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { transactionClient.signingState } returns emptyFlow()
@@ -271,7 +274,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 resolveDAppInTransactionUseCase = resolveDappsInTransactionUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
                 getValidatorsUseCase = getValidatorsUseCase,
-                getNFTDetailsUseCase = getNFTDetailsUseCase
+                getNFTDetailsUseCase = getNFTDetailsUseCase,
+                resolveNotaryAndSignersUseCase = resolveNotaryAndSignersUseCase,
+                getPoolDetailsUseCase = getPoolDetailsUseCase
             ),
             guarantees = TransactionGuaranteesDelegate(),
             fees = TransactionFeesDelegate(
@@ -485,14 +490,16 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             reservedInstructions = emptyList()
         )
 
-        coEvery { transactionClient.getNotaryAndSigners(any(), any()) } returns NotaryAndSigners(
-            listOf(
-                SampleDataProvider().sampleAccount(
-                    address = "rdx_t_12382918379821",
-                    name = "Savings account"
-                )
-            ),
-            PrivateKey.EddsaEd25519.newRandom()
+        coEvery { resolveNotaryAndSignersUseCase(any(), any()) } returns Result.success(
+            NotaryAndSigners(
+                listOf(
+                    SampleDataProvider().sampleAccount(
+                        address = "rdx_t_12382918379821",
+                        name = "Savings account"
+                    )
+                ),
+                PrivateKey.EddsaEd25519.newRandom()
+            )
         )
 
         val vm = vm.value

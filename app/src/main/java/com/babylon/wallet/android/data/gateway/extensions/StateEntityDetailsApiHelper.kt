@@ -86,9 +86,10 @@ suspend fun StateApi.fetchAccountGatewayDetails(
 suspend fun StateApi.fetchPools(
     poolAddresses: Set<String>,
     stateVersion: Long
-): Map<StateEntityDetailsResponseItem, List<FungibleResourcesCollectionItem>> {
-    if (poolAddresses.isEmpty()) return emptyMap()
+): List<PoolsResponse> {
+    if (poolAddresses.isEmpty()) return emptyList()
 
+    val poolDetails = mutableMapOf<String, StateEntityDetailsResponseItem>()
     val poolWithResources = mutableMapOf<String, List<FungibleResourcesCollectionItem>>()
     val resourceToPoolComponentAssociation = mutableMapOf<String, String>()
 
@@ -98,6 +99,7 @@ suspend fun StateApi.fetchPools(
         stateVersion = stateVersion,
     ) { poolComponents ->
         poolComponents.items.forEach { pool ->
+            poolDetails[pool.address] = pool
             val metadata = pool.explicitMetadata?.toMetadata().orEmpty()
             val associatedResource = metadata.poolUnit().orEmpty()
             resourceToPoolComponentAssociation[associatedResource] = pool.address
@@ -105,7 +107,7 @@ suspend fun StateApi.fetchPools(
         }
     }
 
-    val result = mutableMapOf<StateEntityDetailsResponseItem, List<FungibleResourcesCollectionItem>>()
+    val result = mutableListOf<PoolsResponse>()
     paginateDetails(
         addresses = resourceToPoolComponentAssociation.keys, // Request details for resources
         metadataKeys = ExplicitMetadataKey.forAssets,
@@ -113,12 +115,20 @@ suspend fun StateApi.fetchPools(
     ) { resourcesDetails ->
         resourcesDetails.items.forEach { resourceDetails ->
             val poolAddress = resourceToPoolComponentAssociation[resourceDetails.address]
-            result[resourceDetails] = poolWithResources[poolAddress].orEmpty()
+            poolDetails[poolAddress]?.let { poolDetails ->
+                result.add(PoolsResponse(poolDetails, resourceDetails, poolWithResources[poolAddress].orEmpty()))
+            }
         }
     }
 
     return result
 }
+
+data class PoolsResponse(
+    val poolDetails: StateEntityDetailsResponseItem,
+    val poolUnitDetails: StateEntityDetailsResponseItem,
+    val poolResourcesDetails: List<FungibleResourcesCollectionItem>
+)
 
 suspend fun StateApi.fetchValidators(
     validatorsAddresses: Set<String>,

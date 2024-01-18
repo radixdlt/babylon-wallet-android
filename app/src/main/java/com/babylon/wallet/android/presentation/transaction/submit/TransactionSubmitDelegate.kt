@@ -14,9 +14,9 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.babylon.wallet.android.presentation.transaction.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -214,7 +214,7 @@ class TransactionSubmitDelegate @Inject constructor(
                         _state.update {
                             it.copy(
                                 isSubmitting = false,
-                                error = UiMessage.TransactionErrorMessage(radixWalletException)
+                                error = TransactionErrorMessage(radixWalletException)
                             )
                         }
                         approvalJob = null
@@ -256,7 +256,7 @@ class TransactionSubmitDelegate @Inject constructor(
         logNonFatalException(error)
         logger.w(error)
         _state.update {
-            it.copy(isSubmitting = false, error = UiMessage.TransactionErrorMessage(error))
+            it.copy(isSubmitting = false, error = TransactionErrorMessage(error))
         }
 
         val currentState = _state.value
