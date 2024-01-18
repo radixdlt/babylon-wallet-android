@@ -118,8 +118,7 @@ fun PoolsContent(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .fillMaxWidth()
         ) {
-            poolsWithAssociatedDapps.forEach { (address, dApp) ->
-                pools.first { it.address == address }
+            poolsWithAssociatedDapps.forEach { (_, dApp) ->
                 InvolvedComponentDetails(
                     iconSize = 44.dp,
                     dApp = dApp,
