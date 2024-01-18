@@ -25,9 +25,9 @@ class AccountDepositSettingsProcessor @Inject constructor(
         val allResources = getResourcesUseCase(addresses = summary.involvedResourceAddresses).getOrThrow()
 
         val involvedAccountAddresses = classification.depositModeUpdates.keys +
-                classification.resourcePreferencesUpdates.keys +
-                classification.authorizedDepositorsAdded.keys +
-                classification.authorizedDepositorsRemoved.keys
+            classification.resourcePreferencesUpdates.keys +
+            classification.authorizedDepositorsAdded.keys +
+            classification.authorizedDepositorsRemoved.keys
         val involvedAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter { involvedAccountAddresses.contains(it.address) }
         val result = involvedAccounts.map { involvedAccount ->
             val defaultDepositRule = classification.depositModeUpdates[involvedAccount.address]

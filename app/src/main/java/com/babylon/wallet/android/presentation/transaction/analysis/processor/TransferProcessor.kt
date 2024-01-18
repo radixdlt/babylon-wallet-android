@@ -15,7 +15,7 @@ import javax.inject.Inject
 class TransferProcessor @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getResourcesUseCase: GetResourcesUseCase
-): PreviewTypeProcessor<DetailedManifestClass.Transfer> {
+) : PreviewTypeProcessor<DetailedManifestClass.Transfer> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.Transfer): PreviewType {
         val resources = getResourcesUseCase(addresses = summary.involvedResourceAddresses).getOrThrow()
 

@@ -5,6 +5,7 @@ import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 class PreviewTypeAnalyzer @Inject constructor(
     private val generalTransferProcessor: GeneralTransferProcessor,
     private val transferProcessor: TransferProcessor,
@@ -30,10 +31,9 @@ class PreviewTypeAnalyzer @Inject constructor(
             is DetailedManifestClass.ValidatorUnstake -> validatorUnstakeProcessor.process(summary, manifestClass)
         }
     }
-
 }
 
-interface PreviewTypeProcessor<C: DetailedManifestClass> {
+interface PreviewTypeProcessor<C : DetailedManifestClass> {
 
     suspend fun process(summary: ExecutionSummary, classification: C): PreviewType
 }

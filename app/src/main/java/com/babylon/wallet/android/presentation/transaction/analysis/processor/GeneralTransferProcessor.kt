@@ -23,7 +23,7 @@ class GeneralTransferProcessor @Inject constructor(
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
-): PreviewTypeProcessor<DetailedManifestClass.General> {
+) : PreviewTypeProcessor<DetailedManifestClass.General> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
         val resources = getResourcesUseCase(addresses = summary.involvedResourceAddresses).getOrThrow()
 

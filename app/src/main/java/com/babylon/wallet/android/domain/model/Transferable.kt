@@ -116,13 +116,13 @@ sealed interface TransferableAsset {
         get() = resource.resourceAddress
     val isNewlyCreated: Boolean
 
-    sealed class Fungible: TransferableAsset {
+    sealed class Fungible : TransferableAsset {
         abstract val amount: BigDecimal
         data class Token(
             override val amount: BigDecimal,
             override val resource: Resource.FungibleResource,
             override val isNewlyCreated: Boolean
-        ): Fungible()
+        ) : Fungible()
 
         data class LSUAsset(
             override val amount: BigDecimal,
@@ -130,7 +130,7 @@ sealed interface TransferableAsset {
             val validator: ValidatorDetail,
             val xrdWorth: BigDecimal,
             override val isNewlyCreated: Boolean = false
-        ): Fungible() {
+        ) : Fungible() {
             override val resource: Resource.FungibleResource
                 get() = lsu.fungibleResource
         }
@@ -141,23 +141,23 @@ sealed interface TransferableAsset {
             val contributionPerResource: Map<String, BigDecimal>,
             val associatedDapp: DApp?,
             override val isNewlyCreated: Boolean = false
-        ): Fungible() {
+        ) : Fungible() {
             override val resource: Resource.FungibleResource
                 get() = unit.stake
         }
     }
 
-    sealed class NonFungible: TransferableAsset {
+    sealed class NonFungible : TransferableAsset {
         data class NFTAssets(
             override val resource: Resource.NonFungibleResource,
             override val isNewlyCreated: Boolean
-        ): NonFungible()
+        ) : NonFungible()
 
         data class StakeClaimAssets(
             override val resource: Resource.NonFungibleResource,
             val validator: ValidatorDetail,
             val xrdWorthPerNftItem: Map<String, BigDecimal>,
             override val isNewlyCreated: Boolean = false
-        ): NonFungible()
+        ) : NonFungible()
     }
 }

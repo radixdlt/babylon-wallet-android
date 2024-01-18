@@ -21,7 +21,7 @@ class PoolRedemptionProcessor @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getResourcesUseCase: GetResourcesUseCase,
     private val getPoolDetailsUseCase: GetPoolDetailsUseCase,
-): PreviewTypeProcessor<DetailedManifestClass.PoolRedemption> {
+) : PreviewTypeProcessor<DetailedManifestClass.PoolRedemption> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.PoolRedemption): PreviewType {
         val resources = getResourcesUseCase(addresses = summary.involvedResourceAddresses).getOrThrow()
         val involvedPools = getPoolDetailsUseCase(classification.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()

@@ -24,7 +24,7 @@ class PoolContributionProcessor @Inject constructor(
     private val getResourcesUseCase: GetResourcesUseCase,
     private val getPoolDetailsUseCase: GetPoolDetailsUseCase,
     private val getProfileUseCase: GetProfileUseCase
-): PreviewTypeProcessor<DetailedManifestClass.PoolContribution> {
+) : PreviewTypeProcessor<DetailedManifestClass.PoolContribution> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.PoolContribution): PreviewType {
         val resources = getResourcesUseCase(addresses = summary.involvedResourceAddresses).getOrThrow()
         val involvedPools = getPoolDetailsUseCase(classification.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()
@@ -38,7 +38,9 @@ class PoolContributionProcessor @Inject constructor(
             val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(depositsPerAddress.key) ?: error("No account found")
             val deposits = depositsPerAddress.value.mapNotNull { deposit ->
                 val resourceAddress = deposit.resourceAddress
-                val contributions = classification.poolContributions.filter { it.poolUnitsResourceAddress.addressString() == resourceAddress }
+                val contributions = classification.poolContributions.filter {
+                    it.poolUnitsResourceAddress.addressString() == resourceAddress
+                }
                 if (contributions.isEmpty()) {
                     null
                 } else {
@@ -95,5 +97,4 @@ class PoolContributionProcessor @Inject constructor(
                 resources = withdrawing
             )
         }
-
 }

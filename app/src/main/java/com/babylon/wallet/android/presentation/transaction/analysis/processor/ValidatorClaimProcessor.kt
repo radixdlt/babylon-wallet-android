@@ -24,7 +24,7 @@ class ValidatorClaimProcessor @Inject constructor(
     private val getResourcesUseCase: GetResourcesUseCase,
     private val getValidatorsUseCase: GetValidatorsUseCase,
     private val getNFTDetailsUseCase: GetNFTDetailsUseCase
-): PreviewTypeProcessor<DetailedManifestClass.ValidatorClaim> {
+) : PreviewTypeProcessor<DetailedManifestClass.ValidatorClaim> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.ValidatorClaim): PreviewType {
         val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
         val xrdAddress = XrdResource.address(networkId)

@@ -22,7 +22,7 @@ class ValidatorStakeProcessor @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getResourcesUseCase: GetResourcesUseCase,
     private val getValidatorsUseCase: GetValidatorsUseCase
-): PreviewTypeProcessor<DetailedManifestClass.ValidatorStake> {
+) : PreviewTypeProcessor<DetailedManifestClass.ValidatorStake> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.ValidatorStake): PreviewType {
         val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
         val xrdAddress = XrdResource.address(networkId)

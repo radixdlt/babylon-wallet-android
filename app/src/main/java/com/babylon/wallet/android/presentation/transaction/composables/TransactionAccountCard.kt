@@ -376,7 +376,11 @@ private fun TransferableLsuItemContent(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = transferableLsu.lsu.fungibleResource.displayTitle.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
+                    text = transferableLsu.lsu.fungibleResource.displayTitle.ifEmpty {
+                        stringResource(
+                            id = R.string.transactionReview_unknown
+                        )
+                    },
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
