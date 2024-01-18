@@ -1,6 +1,6 @@
 @file:Suppress("TooManyFunctions")
 
-package com.babylon.wallet.android.presentation.transaction.analysis
+package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
