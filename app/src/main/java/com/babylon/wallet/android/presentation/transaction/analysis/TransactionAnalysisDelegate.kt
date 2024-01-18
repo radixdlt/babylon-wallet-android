@@ -156,7 +156,11 @@ class TransactionAnalysisDelegate @Inject constructor(
         val transactionType = detailedClassification.firstOrNull {
             it.isConformingManifestType()
         } ?: return PreviewType.NonConforming
-        val resources = getResourcesUseCase(addresses = involvedResourceAddresses + xrdAddress).getOrThrow()
+        val resourceAddresses = when (transactionType) {
+            is DetailedManifestClass.AccountDepositSettingsUpdate -> transactionType.involvedResourceAddresses
+            else -> involvedResourceAddresses + xrdAddress
+        }
+        val resources = getResourcesUseCase(addresses = resourceAddresses).getOrThrow()
 
         return when (transactionType) {
             is DetailedManifestClass.General -> {
@@ -168,10 +172,13 @@ class TransactionAnalysisDelegate @Inject constructor(
                 )
             }
 
-            is DetailedManifestClass.AccountDepositSettingsUpdate -> transactionType.resolve(
-                getProfileUseCase = getProfileUseCase,
-                allResources = resources
-            )
+            is DetailedManifestClass.AccountDepositSettingsUpdate -> {
+                transactionType.involvedResourceAddresses
+                transactionType.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    allResources = resources
+                )
+            }
 
             is DetailedManifestClass.Transfer -> resolveTransfer(getProfileUseCase, resources)
             is DetailedManifestClass.ValidatorClaim -> {

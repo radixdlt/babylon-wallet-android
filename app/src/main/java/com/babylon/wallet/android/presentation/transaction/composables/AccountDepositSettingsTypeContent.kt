@@ -3,19 +3,24 @@ package com.babylon.wallet.android.presentation.transaction.composables
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +34,9 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.ret.AccountDefaultDepositRule
 
@@ -43,13 +50,26 @@ fun AccountDepositSettingsTypeContent(
             .fillMaxSize()
             .padding(RadixTheme.dimensions.paddingDefault)
     ) {
-        Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.transactionReview_accountDepositSettings_subtitle).uppercase(),
-            style = RadixTheme.typography.body1Header,
-            maxLines = 1,
-            color = RadixTheme.colors.gray2
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            Icon(
+                modifier = Modifier.dashedCircleBorder(RadixTheme.colors.gray3),
+                painter = painterResource(
+                    id = DSR.ic_deposit_changes_heading
+                ),
+                contentDescription = null,
+                tint = Color.Unspecified
+            )
+            Text(
+                text = stringResource(id = R.string.transactionReview_accountDepositSettings_subtitle).uppercase(),
+                style = RadixTheme.typography.body1Header,
+                maxLines = 1,
+                color = RadixTheme.colors.gray2
+            )
+        }
         preview.accountsWithDepositSettingsChanges.forEach { accountWithSettings ->
             Column(
                 modifier = Modifier
@@ -87,13 +107,15 @@ fun AccountDepositSettingsTypeContent(
                 accountWithSettings.assetChanges.forEachIndexed { index, assetChange ->
                     val lastItem = accountWithSettings.assetChanges.lastIndex == index && accountWithSettings.depositorChanges.isEmpty()
                     val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-                    AccountDepositChangeRow(
+                    AccountRuleChangeRow(
                         resource = assetChange.resource,
-                        changeText = assetChange.change.description(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(RadixTheme.colors.gray5, shape)
-                            .padding(RadixTheme.dimensions.paddingDefault)
+                            .padding(RadixTheme.dimensions.paddingDefault),
+                        trailingSection = {
+                            assetChange.change.Layout()
+                        }
                     )
                     if (!lastItem) {
                         HorizontalDivider(color = RadixTheme.colors.gray4)
@@ -102,13 +124,15 @@ fun AccountDepositSettingsTypeContent(
                 accountWithSettings.depositorChanges.forEachIndexed { index, depositorChange ->
                     val lastItem = accountWithSettings.depositorChanges.lastIndex == index
                     val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-                    AccountDepositChangeRow(
+                    AccountRuleChangeRow(
                         resource = depositorChange.resource,
-                        changeText = depositorChange.change.description(),
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(RadixTheme.colors.gray5, shape)
-                            .padding(RadixTheme.dimensions.paddingDefault)
+                            .padding(RadixTheme.dimensions.paddingDefault),
+                        trailingSection = {
+                            depositorChange.change.Layout()
+                        }
                     )
                     if (!lastItem) {
                         HorizontalDivider(color = RadixTheme.colors.gray4)
@@ -120,41 +144,50 @@ fun AccountDepositSettingsTypeContent(
 }
 
 @Composable
-private fun AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.description(): String {
-    return stringResource(
-        id = when (this) {
-            AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add -> {
-                R.string.transactionReview_accountDepositSettings_depositorChangeAdd
-            }
-
-            AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Remove -> {
-                R.string.transactionReview_accountDepositSettings_depositorChangeRemove
-            }
-        }
+private fun PreferenceChange(text: String, icon: Int) {
+    Icon(painter = painterResource(id = icon), contentDescription = null, tint = RadixTheme.colors.gray1)
+    Text(
+        text = text,
+        style = RadixTheme.typography.body2HighImportance,
+        color = RadixTheme.colors.gray1,
+        textAlign = TextAlign.Center
     )
 }
 
 @Composable
-private fun AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.description(): String {
-    return stringResource(
-        id = when (this) {
-            AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Allow -> {
-                R.string.transactionReview_accountDepositSettings_assetChangeAllow
-            }
-
-            AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Disallow -> {
-                R.string.transactionReview_accountDepositSettings_assetChangeDisallow
-            }
-
-            AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Clear -> {
-                R.string.transactionReview_accountDepositSettings_assetChangeClear
-            }
+private fun AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Layout() {
+    val (text, icon) = when (this) {
+        AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add -> {
+            stringResource(id = R.string.transactionReview_accountDepositSettings_depositorChangeAdd) to DSR.ic_add_circle
         }
-    )
+
+        AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Remove -> {
+            stringResource(id = R.string.transactionReview_accountDepositSettings_depositorChangeRemove) to DSR.ic_minus_circle
+        }
+    }
+    PreferenceChange(text = text, icon = icon)
 }
 
 @Composable
-private fun AccountDepositChangeRow(resource: Resource?, changeText: String, modifier: Modifier = Modifier) {
+private fun AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Layout() {
+    val (text, icon) = when (this) {
+        AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Allow -> {
+            stringResource(id = R.string.transactionReview_accountDepositSettings_assetChangeAllow) to DSR.ic_accept_all
+        }
+
+        AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Disallow -> {
+            stringResource(id = R.string.transactionReview_accountDepositSettings_assetChangeDisallow) to DSR.ic_deny_all
+        }
+
+        AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Clear -> {
+            stringResource(id = R.string.transactionReview_accountDepositSettings_assetChangeClear) to DSR.ic_minus_circle
+        }
+    }
+    PreferenceChange(text = text, icon = icon)
+}
+
+@Composable
+private fun AccountRuleChangeRow(resource: Resource?, modifier: Modifier = Modifier, trailingSection: @Composable ColumnScope.() -> Unit) {
     Row(
         modifier = modifier,
         verticalAlignment = CenterVertically,
@@ -174,21 +207,21 @@ private fun AccountDepositChangeRow(resource: Resource?, changeText: String, mod
 
             else -> {}
         }
+        val name = when (resource) {
+            is Resource.FungibleResource -> resource.displayTitle
+            is Resource.NonFungibleResource -> resource.name
+            null -> ""
+        }.ifEmpty { stringResource(id = R.string.account_poolUnits_unknownSymbolName) }
         Text(
-            text = resource?.name.orEmpty()
-                .ifEmpty { stringResource(id = R.string.account_poolUnits_unknownSymbolName) },
+            text = name,
             style = RadixTheme.typography.body1Regular,
             maxLines = 1,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(0.7f),
             color = RadixTheme.colors.gray1
         )
-        Text(
-            text = changeText,
-            style = RadixTheme.typography.body1HighImportance,
-            modifier = Modifier.fillMaxWidth(0.35f),
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.End
-        )
+        Column(modifier = Modifier.widthIn(max = 90.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            trailingSection()
+        }
     }
 }
 

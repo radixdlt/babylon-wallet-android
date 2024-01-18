@@ -62,11 +62,13 @@ val ResourceOrNonFungible.resourceAddress: String
         is ResourceOrNonFungible.Resource -> value.addressString()
     }
 
-val DetailedManifestClass.AccountDepositSettingsUpdate.resourceAddresses: Set<String>
+val DetailedManifestClass.AccountDepositSettingsUpdate.involvedResourceAddresses: Set<String>
     get() = authorizedDepositorsAdded.values.map { depositors ->
         depositors.map { it.resourceAddress }
     }.flatten().toSet() union authorizedDepositorsRemoved.values.map { depositors ->
         depositors.map { it.resourceAddress }
+    }.flatten().toSet() union resourcePreferencesUpdates.values.map { updates ->
+        updates.keys
     }.flatten().toSet()
 
 val DetailedManifestClass.involvedValidatorAddresses: Set<String>
