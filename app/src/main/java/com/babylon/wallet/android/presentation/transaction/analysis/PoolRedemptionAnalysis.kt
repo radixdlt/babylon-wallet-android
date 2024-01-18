@@ -52,7 +52,7 @@ suspend fun DetailedManifestClass.PoolRedemption.resolve(
                         redemptions.mapNotNull { it.redeemedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
                             .sumOf { it }
                     },
-                    associatedDapp = poolsToDapps[pool.address]
+                    associatedDapp = poolsToDapps[pool]
                 )
             )
         }
@@ -64,7 +64,6 @@ suspend fun DetailedManifestClass.PoolRedemption.resolve(
     return PreviewType.Transfer.Pool(
         from = from,
         to = to,
-        pools = involvedPools,
         actionType = PreviewType.Transfer.Pool.ActionType.Redemption,
         poolsWithAssociatedDapps = poolsToDapps
     )

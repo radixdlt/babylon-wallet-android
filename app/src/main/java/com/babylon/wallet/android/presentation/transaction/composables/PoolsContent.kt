@@ -36,6 +36,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.metadata.name
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InvolvedComponentDetails
@@ -47,7 +48,7 @@ import kotlinx.collections.immutable.persistentMapOf
 fun PoolsContent(
     modifier: Modifier = Modifier,
     text: String,
-    poolsWithAssociatedDapps: ImmutableMap<String, DApp>,
+    poolsWithAssociatedDapps: ImmutableMap<Pool, DApp?>,
     unknownPoolCount: Int,
     onDAppClick: (DApp) -> Unit
 ) {
@@ -113,15 +114,15 @@ fun PoolsContent(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .fillMaxWidth()
         ) {
-            poolsWithAssociatedDapps.forEach { (_, dApp) ->
+            poolsWithAssociatedDapps.filterValues { it != null }.forEach { (_, dApp) ->
                 InvolvedComponentDetails(
                     iconSize = 44.dp,
                     dApp = dApp,
-                    text = dApp.metadata.name().orEmpty().ifEmpty { "" },
+                    text = dApp?.metadata?.name().orEmpty().ifEmpty { "" },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RadixTheme.shapes.roundedRectMedium)
-                        .clickable { onDAppClick(dApp) }
+                        .clickable { dApp?.let(onDAppClick) }
                         .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
                         .padding(RadixTheme.dimensions.paddingDefault)
                 )

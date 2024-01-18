@@ -62,7 +62,7 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
                             contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
                                 .sumOf { it }
                         },
-                        associatedDapp = poolsToDapps[pool.address]
+                        associatedDapp = poolsToDapps[pool]
                     ),
                     guaranteeType = guaranteeType,
                 )
@@ -76,7 +76,6 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
     return PreviewType.Transfer.Pool(
         from = from,
         to = to,
-        pools = involvedPools,
         poolsWithAssociatedDapps = poolsToDapps,
         actionType = PreviewType.Transfer.Pool.ActionType.Contribution
     )
@@ -84,15 +83,15 @@ suspend fun DetailedManifestClass.PoolContribution.resolve(
 
 suspend fun List<Pool>.resolveDApps(
     resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
-): Map<String, DApp> = coroutineScope {
+): Map<Pool, DApp?> = coroutineScope {
     mapNotNull { pool ->
         val dapp = pool.metadata.dAppDefinition()?.let { address ->
             resolveDAppInTransactionUseCase.invoke(address)
         }?.getOrNull()
         if (dapp == null || !dapp.second) {
-            null
+            pool to null
         } else {
-            pool.address to dapp.first
+            pool to dapp.first
         }
     }.toMap()
 }

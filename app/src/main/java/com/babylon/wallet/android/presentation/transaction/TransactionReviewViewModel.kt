@@ -490,16 +490,15 @@ sealed interface PreviewType {
         data class Pool(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
-            val pools: List<com.babylon.wallet.android.domain.model.resources.Pool>,
-            val poolsWithAssociatedDapps: Map<String, DApp>,
+            val poolsWithAssociatedDapps: Map<com.babylon.wallet.android.domain.model.resources.Pool, DApp?>,
             val actionType: ActionType
         ) : Transfer {
             enum class ActionType {
                 Contribution, Redemption
             }
 
-            val unknwonPoolComponents: Int
-                get() = pools.size - poolsWithAssociatedDapps.size
+            val unknownPoolComponents: Int
+                get() = poolsWithAssociatedDapps.count { it.value == null }
         }
 
         data class GeneralTransfer(
