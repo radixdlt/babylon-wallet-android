@@ -25,7 +25,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.ValidatorUnstake): PreviewType {
         val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
         val xrdAddress = XrdResource.address(networkId)
-        val resources = getResourcesUseCase(addresses = summary.involvedResourceAddresses + xrdAddress).getOrThrow()
+        val resources = getResourcesUseCase(addresses = summary.involvedResourceAddresses + xrdAddress, withDetails = true).getOrThrow()
         val involvedValidators = getValidatorsUseCase(classification.involvedValidatorAddresses).getOrThrow()
 
         val fromAccounts = classification.extractWithdrawals(summary, getProfileUseCase, resources, involvedValidators)
