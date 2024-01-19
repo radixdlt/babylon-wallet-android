@@ -132,6 +132,17 @@ class PreferencesManager @Inject constructor(
         }
     }
 
+    val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_LINK_CONNECTION_STATUS_INDICATOR] ?: true
+        }
+
+    suspend fun setLinkConnectionStatusIndicator(isEnabled: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[KEY_LINK_CONNECTION_STATUS_INDICATOR] = isEnabled
+        }
+    }
+
     suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
@@ -144,5 +155,6 @@ class PreferencesManager @Inject constructor(
         private val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED =
             booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
         private val KEY_DEVICE_ROOTED_DIALOG_SHOWN = booleanPreferencesKey("device_rooted_dialog_shown")
+        private val KEY_LINK_CONNECTION_STATUS_INDICATOR = booleanPreferencesKey("link_connection_status_indicator")
     }
 }
