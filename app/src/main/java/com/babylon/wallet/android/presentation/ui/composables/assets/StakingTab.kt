@@ -497,7 +497,6 @@ private fun ValidatorHeader(
                 }
             }
 
-
             Text(
                 modifier = Modifier
                     .fillMaxWidth()

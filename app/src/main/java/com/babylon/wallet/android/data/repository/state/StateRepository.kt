@@ -178,7 +178,7 @@ class StateRepositoryImpl @Inject constructor(
 
                 result = result.map { item ->
                     item.copy(
-                        liquidStakeUnit = if (item.liquidStakeUnit != null && item.liquidStakeUnit.fungibleResource.isDetailsAvailable.not()) {
+                        liquidStakeUnit = if (item.liquidStakeUnit != null && !item.liquidStakeUnit.fungibleResource.isDetailsAvailable) {
                             val newLsu = lsuEntities[item.liquidStakeUnit.resourceAddress]?.toResource(
                                 item.liquidStakeUnit.fungibleResource.ownedAmount
                             ) as? Resource.FungibleResource
