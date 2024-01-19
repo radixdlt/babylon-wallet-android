@@ -150,6 +150,7 @@ fun TransactionReviewScreen(
     }
 }
 
+@Suppress("CyclomaticComplexMethod")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TransactionPreviewContent(
