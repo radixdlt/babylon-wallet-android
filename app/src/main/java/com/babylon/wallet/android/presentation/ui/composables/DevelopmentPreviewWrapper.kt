@@ -2,12 +2,18 @@
 
 package com.babylon.wallet.android.presentation.ui.composables
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -24,13 +30,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun DevelopmentPreviewWrapper(
     modifier: Modifier = Modifier,
+    linkConnectionsStatus: LinkConnectionsStatus? = null,
     devBannerState: DevBannerState = DevBannerState(false),
     content: @Composable (PaddingValues) -> Unit
 ) {
@@ -40,7 +51,40 @@ fun DevelopmentPreviewWrapper(
             content(if (devBannerState.isVisible) PaddingValues(top = bannerHeight) else PaddingValues())
         }
 
-        if (devBannerState.isVisible) {
+        if (devBannerState.isVisible && linkConnectionsStatus != null) {
+            val density = LocalDensity.current
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(RadixTheme.colors.orange2)
+                    .statusBarsPadding()
+                    .onGloballyPositioned { coordinates ->
+                        bannerHeight = with(density) { coordinates.size.height.toDp() }
+                    }
+                    .padding(RadixTheme.dimensions.paddingXSmall)
+            ) {
+                Text(
+                    text = stringResource(R.string.common_developerDisclaimerText),
+                    style = RadixTheme.typography.body2HighImportance,
+                    fontSize = 12.sp,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center,
+                )
+                LazyRow(
+                    modifier = Modifier,
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+                ) {
+                    items(items = linkConnectionsStatus.currentStatus()) { color ->
+                        Canvas(
+                            modifier = Modifier.size(12.dp),
+                            onDraw = {
+                                drawCircle(color = color)
+                            }
+                        )
+                    }
+                }
+            }
+        } else if (devBannerState.isVisible) {
             val density = LocalDensity.current
             Text(
                 modifier = Modifier
@@ -60,7 +104,10 @@ fun DevelopmentPreviewWrapper(
     }
 }
 
-data class DevBannerState(val isVisible: Boolean = false)
+data class DevBannerState(
+    val isVisible: Boolean = false,
+    val connectionStatus: ImmutableList<Boolean> = persistentListOf()
+)
 
 val LocalDevBannerState = compositionLocalOf { DevBannerState() }
 
@@ -68,6 +115,14 @@ val LocalDevBannerState = compositionLocalOf { DevBannerState() }
 @Composable
 fun DevelopmentBannerPreview() {
     RadixWalletTheme {
-        DevelopmentPreviewWrapper(modifier = Modifier, DevBannerState(isVisible = true), content = {})
+        DevelopmentPreviewWrapper(
+            modifier = Modifier,
+            linkConnectionsStatus = null,
+            DevBannerState(
+                isVisible = true,
+                connectionStatus = persistentListOf()
+            ),
+            content = {}
+        )
     }
 }
