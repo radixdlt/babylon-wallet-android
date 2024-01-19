@@ -30,7 +30,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
@@ -154,9 +153,11 @@ private fun StakingSummary(
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                 .clickable(enabled = summary?.hasReadyToClaimValue == true && action is AssetsViewAction.Click) {
                     if (action is AssetsViewAction.Click) {
-                        val claims = assets.ownedValidatorsWithStakes.filter {
-                            it.hasClaims
-                        }.mapNotNull { it.stakeClaimNft }
+                        val claims = assets.ownedValidatorsWithStakes
+                            .filter {
+                                it.hasClaims
+                            }
+                            .mapNotNull { it.stakeClaimNft }
 
                         action.onClaimClick(claims)
                     }
@@ -277,8 +278,7 @@ fun ValidatorDetails(
                         action.onCollectionClick(validatorWithStakes.validatorDetail.address)
                     }
                     .padding(RadixTheme.dimensions.paddingLarge),
-                validator = validatorWithStakes.validatorDetail,
-                stakedAmount = validatorWithStakes.stakeValue()
+                validatorWithStakes = validatorWithStakes
             )
         }
 
@@ -468,8 +468,7 @@ private fun StakeClaims(
 @Composable
 private fun ValidatorHeader(
     modifier: Modifier = Modifier,
-    validator: ValidatorDetail,
-    stakedAmount: BigDecimal?
+    validatorWithStakes: ValidatorWithStakes
 ) {
     Row(
         modifier = modifier,
@@ -478,17 +477,26 @@ private fun ValidatorHeader(
     ) {
         Thumbnail.Validator(
             modifier = Modifier.size(44.dp),
-            validator = validator
+            validator = validatorWithStakes.validatorDetail
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
             Text(
-                text = validator.name,
+                text = validatorWithStakes.validatorDetail.name,
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1
             )
+
+            val stakedAmount = remember(validatorWithStakes) {
+                if (validatorWithStakes.liquidStakeUnit != null) {
+                    validatorWithStakes.stakeValue()
+                } else {
+                    BigDecimal.ZERO
+                }
+            }
+
 
             Text(
                 modifier = Modifier

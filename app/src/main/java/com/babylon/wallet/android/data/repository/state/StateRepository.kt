@@ -161,35 +161,38 @@ class StateRepositoryImpl @Inject constructor(
             var result = validatorsWithStakes
 
             val lsuEntities = mutableMapOf<String, ResourceEntity>()
-            stateApi.paginateDetails(
-                addresses = result
-                    .filter { it.liquidStakeUnit != null && it.liquidStakeUnit.fungibleResource.isDetailsAvailable.not() }
-                    .map { it.liquidStakeUnit!!.resourceAddress }
-                    .toSet(),
-                metadataKeys = ExplicitMetadataKey.forAssets,
-                onPage = { response ->
-                    val synced = InstantGenerator()
-                    val newLSUs = response.items.map { it.asEntity(synced) }.associateBy { it.address }
-                    lsuEntities.putAll(newLSUs)
-                }
-            )
+            val lsuAddresses = result
+                .filter { it.liquidStakeUnit != null && it.liquidStakeUnit.fungibleResource.isDetailsAvailable.not() }
+                .map { it.liquidStakeUnit!!.resourceAddress }
+                .toSet()
+            if (lsuAddresses.isNotEmpty()) {
+                stateApi.paginateDetails(
+                    addresses = lsuAddresses,
+                    metadataKeys = ExplicitMetadataKey.forAssets,
+                    onPage = { response ->
+                        val synced = InstantGenerator()
+                        val newLSUs = response.items.map { it.asEntity(synced) }.associateBy { it.address }
+                        lsuEntities.putAll(newLSUs)
+                    }
+                )
 
-            result = result.map { item ->
-                item.copy(
-                    liquidStakeUnit = if (item.liquidStakeUnit != null && item.liquidStakeUnit.fungibleResource.isDetailsAvailable.not()) {
-                        val newLsu = lsuEntities[item.liquidStakeUnit.resourceAddress]?.toResource(
-                            item.liquidStakeUnit.fungibleResource.ownedAmount
-                        ) as? Resource.FungibleResource
+                result = result.map { item ->
+                    item.copy(
+                        liquidStakeUnit = if (item.liquidStakeUnit != null && item.liquidStakeUnit.fungibleResource.isDetailsAvailable.not()) {
+                            val newLsu = lsuEntities[item.liquidStakeUnit.resourceAddress]?.toResource(
+                                item.liquidStakeUnit.fungibleResource.ownedAmount
+                            ) as? Resource.FungibleResource
 
-                        if (newLsu != null) {
-                            LiquidStakeUnit(newLsu)
+                            if (newLsu != null) {
+                                LiquidStakeUnit(newLsu)
+                            } else {
+                                item.liquidStakeUnit
+                            }
                         } else {
                             item.liquidStakeUnit
                         }
-                    } else {
-                        item.liquidStakeUnit
-                    }
-                )
+                    )
+                }
             }
 
             val claims = result.map { validatorWithStakes ->
