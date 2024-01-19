@@ -160,7 +160,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             is DetailedManifestClass.AccountDepositSettingsUpdate -> transactionType.involvedResourceAddresses
             else -> involvedResourceAddresses + xrdAddress
         }
-        val resources = getResourcesUseCase(addresses = resourceAddresses).getOrThrow()
+        val resources = getResourcesUseCase(addresses = resourceAddresses, withDetails = true).getOrThrow()
 
         return when (transactionType) {
             is DetailedManifestClass.General -> {

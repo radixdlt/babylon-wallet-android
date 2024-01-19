@@ -281,14 +281,12 @@ private fun TransferableItemContent(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        if (transferable.hasEditableGuarantees) {
-            GuaranteedQuantitySection(transferable)
-        }
+        GuaranteesSection(transferable)
     }
 }
 
 @Composable
-private fun GuaranteedQuantitySection(transferable: Transferable, modifier: Modifier = Modifier) {
+private fun GuaranteesSection(transferable: Transferable, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.End
@@ -438,7 +436,7 @@ private fun TransferableLsuItemContent(
             )
         }
         if (transferable.hasEditableGuarantees) {
-            GuaranteedQuantitySection(
+            GuaranteesSection(
                 transferable,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -656,7 +654,7 @@ private fun TransferablePoolUnitItemContent(
             }
         }
         if (transferable.hasEditableGuarantees) {
-            GuaranteedQuantitySection(
+            GuaranteesSection(
                 transferable,
                 modifier = Modifier
                     .fillMaxWidth()
