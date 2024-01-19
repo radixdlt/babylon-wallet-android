@@ -282,9 +282,6 @@ class TransactionReviewViewModel @Inject constructor(
         val isTransactionDismissed: Boolean = false
     ) : UiState {
 
-        val showRawTransactionWarning
-            get() = previewType == PreviewType.NonConforming
-
         val requestNonNull: MessageFromDataChannel.IncomingRequest.TransactionRequest
             get() = requireNotNull(request)
 
