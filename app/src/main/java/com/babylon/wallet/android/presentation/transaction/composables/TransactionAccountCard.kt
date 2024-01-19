@@ -49,7 +49,6 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
-import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
@@ -396,7 +395,7 @@ private fun TransferableLsuItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
+//            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
         }
         Text(
             modifier = Modifier
@@ -494,7 +493,7 @@ private fun TransferableStakeClaimNftItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
+//            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
         }
         Text(
             modifier = Modifier
@@ -603,7 +602,7 @@ private fun TransferablePoolUnitItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
+//            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
         }
         Text(
             modifier = Modifier
