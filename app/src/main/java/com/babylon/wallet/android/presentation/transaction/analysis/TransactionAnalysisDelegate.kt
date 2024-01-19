@@ -173,7 +173,6 @@ class TransactionAnalysisDelegate @Inject constructor(
             }
 
             is DetailedManifestClass.AccountDepositSettingsUpdate -> {
-                transactionType.involvedResourceAddresses
                 transactionType.resolve(
                     getProfileUseCase = getProfileUseCase,
                     allResources = resources
