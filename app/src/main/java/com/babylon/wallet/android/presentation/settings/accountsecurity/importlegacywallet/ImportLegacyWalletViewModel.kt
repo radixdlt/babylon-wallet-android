@@ -91,11 +91,6 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            ledgerMessenger.isConnected.collect { connected ->
-                _state.update { it.copy(isLinkConnectionEstablished = connected) }
-            }
-        }
-        viewModelScope.launch {
             useLedgerDelegate.state.collect { delegateState ->
                 _state.update { uiState ->
                     val state = delegateState.addLedgerSheetState
@@ -446,15 +441,11 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     fun onContinueWithLedgerClick() {
         viewModelScope.launch {
-            if (getProfileUseCase.p2pLinks.first().isNotEmpty()) {
-                if (state.value.isLinkConnectionEstablished.not()) {
-                    _state.update {
-                        it.copy(shouldShowAddLinkConnectorScreen = true)
-                    }
-                } else {
-                    useLedgerDelegate.onSendAddLedgerRequest()
-                }
-            } else if (getProfileUseCase.p2pLinks.first().isEmpty()) {
+            val hasAtLeastOneLinkedConnector = getProfileUseCase.p2pLinks.first().isNotEmpty()
+
+            if (hasAtLeastOneLinkedConnector) {
+                useLedgerDelegate.onSendAddLedgerRequest()
+            } else if (hasAtLeastOneLinkedConnector.not()) {
                 _state.update {
                     it.copy(shouldShowAddLinkConnectorScreen = true)
                 }
@@ -522,8 +513,7 @@ data class ImportLegacyWalletUiState(
     val seedPhraseInputState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
     val shouldShowAddLinkConnectorScreen: Boolean = false,
     val shouldShowAddLedgerDeviceScreen: Boolean = false,
-    var existingOlympiaFactorSourceId: FactorSourceID.FromHash? = null,
-    val isLinkConnectionEstablished: Boolean = false,
+    var existingOlympiaFactorSourceId: FactorSourceID.FromHash? = null
 ) : UiState {
 
     fun mnemonicWithPassphrase(): MnemonicWithPassphrase {

@@ -8,9 +8,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -29,11 +29,6 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            ledgerMessenger.isConnected.collect { connected ->
-                _state.update { it.copy(isLinkConnectionEstablished = connected) }
-            }
-        }
-        viewModelScope.launch {
             getProfileUseCase.ledgerFactorSources.collect { ledgerDevices ->
                 _state.update { uiState ->
                     uiState.copy(ledgerDevices = ledgerDevices.toPersistentList())
@@ -44,19 +39,18 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
 
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
-            if (getProfileUseCase.p2pLinks.first().isEmpty()) {
-                _state.update { it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.LinkNewConnector) }
+            val hasAtLeastOneLinkedConnector = getProfileUseCase.p2pLinks.first().isNotEmpty()
+            if (hasAtLeastOneLinkedConnector) {
+                _state.update {
+                    it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.AddLedger)
+                }
             } else {
-                if (!state.value.isLinkConnectionEstablished) {
-                    _state.update {
-                        it.copy(
-                            showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
-                                ShowLinkConnectorPromptState.Source.UseLedger
-                            )
+                _state.update {
+                    it.copy(
+                        showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
+                            source = ShowLinkConnectorPromptState.Source.UseLedger
                         )
-                    }
-                } else {
-                    _state.update { it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.AddLedger) }
+                    )
                 }
             }
         }
@@ -77,18 +71,16 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
 
     fun disableAddLedgerButtonUntilConnectionIsEstablished() {
         _state.update {
-            it.copy(
-                showContent = LedgerHardwareWalletsUiState.ShowContent.Details,
-                isAddLedgerButtonEnabled = true
-            )
+            it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.Details)
         }
-        viewModelScope.launch {
-            ledgerMessenger.isConnected.filter { it }.firstOrNull()?.let {
+        ledgerMessenger.isAnyLinkedConnectorConnected
+            .dropWhile { isConnected ->
                 _state.update { state ->
-                    state.copy(isAddLedgerButtonEnabled = false)
+                    state.copy(isNewLinkedConnectorConnected = isConnected)
                 }
+                isConnected.not() // continue while isConnected is not true
             }
-        }
+            .launchIn(viewModelScope)
     }
 
     fun onCloseClick() {
@@ -115,8 +107,7 @@ data class LedgerHardwareWalletsUiState(
     val showContent: ShowContent = ShowContent.Details,
     val ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
     val showLinkConnectorPromptState: ShowLinkConnectorPromptState = ShowLinkConnectorPromptState.None,
-    val isLinkConnectionEstablished: Boolean = false,
-    val isAddLedgerButtonEnabled: Boolean = false
+    val isNewLinkedConnectorConnected: Boolean = true
 ) : UiState {
 
     sealed interface ShowContent {

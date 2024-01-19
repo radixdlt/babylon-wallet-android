@@ -54,11 +54,6 @@ class ChooseLedgerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            ledgerMessenger.isConnected.collect { connected ->
-                _state.update { it.copy(isLinkConnectionEstablished = connected) }
-            }
-        }
-        viewModelScope.launch {
             getProfileUseCase.ledgerFactorSources.collect { ledgerDevices ->
                 _state.update { uiState ->
                     uiState.copy(
@@ -117,23 +112,15 @@ class ChooseLedgerViewModel @Inject constructor(
             selectableLedgerDevice.selected
         }?.let { ledgerFactorSource ->
             viewModelScope.launch {
-                if (getProfileUseCase.p2pLinks.first().isEmpty()) {
+                val hasAtLeastOneLinkedConnector = getProfileUseCase.p2pLinks.first().isNotEmpty()
+                // check if there is not linked connector and show link new connector screen
+                if (hasAtLeastOneLinkedConnector.not()) {
                     _state.update {
                         it.copy(showContent = ChooseLedgerUiState.ShowContent.LinkNewConnector(false))
                     }
                     return@launch
-                } else {
-                    if (!state.value.isLinkConnectionEstablished) {
-                        _state.update {
-                            it.copy(
-                                showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
-                                    ShowLinkConnectorPromptState.Source.UseLedger
-                                )
-                            )
-                        }
-                        return@launch
-                    }
                 }
+
                 when (args.ledgerSelectionPurpose) {
                     LedgerSelectionPurpose.CreateAccount -> {
                         // check again if link connector exists
@@ -192,19 +179,12 @@ class ChooseLedgerViewModel @Inject constructor(
 
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
-            _state.update {
-                if (getProfileUseCase.p2pLinks.first().isEmpty()) {
-                    it.copy(showContent = ChooseLedgerUiState.ShowContent.LinkNewConnector())
+            _state.update { uiState ->
+                val hasAtLeastOneLinkedConnector = getProfileUseCase.p2pLinks.first().isNotEmpty()
+                if (hasAtLeastOneLinkedConnector) {
+                    uiState.copy(showContent = ChooseLedgerUiState.ShowContent.AddLedger)
                 } else {
-                    if (!it.isLinkConnectionEstablished) {
-                        it.copy(
-                            showLinkConnectorPromptState = ShowLinkConnectorPromptState.Show(
-                                ShowLinkConnectorPromptState.Source.AddLedgerDevice
-                            )
-                        )
-                    } else {
-                        it.copy(showContent = ChooseLedgerUiState.ShowContent.AddLedger)
-                    }
+                    uiState.copy(showContent = ChooseLedgerUiState.ShowContent.LinkNewConnector())
                 }
             }
         }
@@ -222,16 +202,16 @@ class ChooseLedgerViewModel @Inject constructor(
         }
     }
 
-    fun onNewConnectorAdded(addDeviceAfterLinking: Boolean) {
-        _state.update { it.copy(linkingToConnector = true) }
+    fun onNewLinkConnectorAdded(addDeviceAfterLinking: Boolean) {
+        _state.update { it.copy(isAddingLinkConnector = true) }
         if (addDeviceAfterLinking) {
             showAddLedgerDeviceContent()
         } else {
             onCloseClick()
         }
         viewModelScope.launch {
-            ledgerMessenger.isConnected.filter { it }.firstOrNull()?.let {
-                _state.update { state -> state.copy(linkingToConnector = false) }
+            ledgerMessenger.isAnyLinkedConnectorConnected.filter { it }.firstOrNull()?.let {
+                _state.update { state -> state.copy(isAddingLinkConnector = false) }
             }
         }
     }
@@ -250,7 +230,7 @@ data class ChooseLedgerUiState(
     val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null,
     val isLinkConnectionEstablished: Boolean = false,
     val showLinkConnectorPromptState: ShowLinkConnectorPromptState = ShowLinkConnectorPromptState.None,
-    val linkingToConnector: Boolean = false
+    val isAddingLinkConnector: Boolean = false
 ) : UiState {
 
     sealed interface ShowContent {

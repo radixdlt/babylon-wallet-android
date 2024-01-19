@@ -102,7 +102,7 @@ fun ChooseLedgerScreen(
                         context.biometricAuthenticateSuspend()
                     })
                 },
-                linkingToConnector = state.linkingToConnector
+                linkingToConnector = state.isAddingLinkConnector
             )
         }
 
@@ -126,7 +126,7 @@ fun ChooseLedgerScreen(
                 isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
                 onNewConnectorContinueClick = {
                     addLinkConnectorViewModel.onContinueClick()
-                    viewModel.onNewConnectorAdded(showContent.addDeviceAfterLinking)
+                    viewModel.onNewLinkConnectorAdded(showContent.addDeviceAfterLinking)
                 },
                 onNewConnectorCloseClick = {
                     addLinkConnectorViewModel.onCloseClick()
@@ -161,7 +161,7 @@ fun ChooseLedgerScreen(
                     viewModel.onCloseClick()
                 },
                 onMessageShown = addLedgerDeviceViewModel::onMessageShown,
-                isLinkConnectionEstablished = addLedgerDeviceState.isLinkConnectionEstablished && state.linkingToConnector.not()
+                isLinkedConnectorEstablished = addLedgerDeviceState.isAnyLinkedConnectorConnected && state.isAddingLinkConnector.not()
             )
         }
     }
