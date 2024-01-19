@@ -16,9 +16,8 @@ class PreviewTypeAnalyzer @Inject constructor(
     private val validatorClaimProcessor: ValidatorClaimProcessor,
     private val validatorUnstakeProcessor: ValidatorUnstakeProcessor
 ) {
-
     suspend fun analyze(summary: ExecutionSummary): PreviewType {
-        val manifestClass = summary.detailedClassification.firstOrNull() ?: return PreviewType.NonConforming
+        val manifestClass = summary.detailedClassification.firstOrNull { it.isConforming } ?: return PreviewType.NonConforming
 
         return when (manifestClass) {
             is DetailedManifestClass.General -> generalTransferProcessor.process(summary, manifestClass)
@@ -31,6 +30,19 @@ class PreviewTypeAnalyzer @Inject constructor(
             is DetailedManifestClass.ValidatorUnstake -> validatorUnstakeProcessor.process(summary, manifestClass)
         }
     }
+
+    private val DetailedManifestClass.isConforming: Boolean
+        get() = when (this) {
+            is DetailedManifestClass.AccountDepositSettingsUpdate -> true
+            is DetailedManifestClass.General -> true
+            is DetailedManifestClass.PoolContribution -> true
+            is DetailedManifestClass.PoolRedemption -> true
+            is DetailedManifestClass.Transfer -> true
+            is DetailedManifestClass.ValidatorClaim -> true
+            is DetailedManifestClass.ValidatorStake -> true
+            is DetailedManifestClass.ValidatorUnstake -> true
+            else -> false
+        }
 }
 
 interface PreviewTypeProcessor<C : DetailedManifestClass> {
