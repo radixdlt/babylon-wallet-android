@@ -22,7 +22,7 @@ class AccountDepositSettingsProcessor @Inject constructor(
         summary: ExecutionSummary,
         classification: DetailedManifestClass.AccountDepositSettingsUpdate
     ): PreviewType {
-        val allResources = getResourcesUseCase(addresses = summary.involvedResourceAddresses).getOrThrow()
+        val allResources = getResourcesUseCase(addresses = classification.involvedResourceAddresses).getOrThrow()
 
         val involvedAccountAddresses = classification.depositModeUpdates.keys +
             classification.resourcePreferencesUpdates.keys +
