@@ -103,6 +103,9 @@ fun TransactionAccountCard(
                 transferable = amountTransferable,
                 shape = shape,
             )
+            if (lastItem.not()) {
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+            }
         }
 
         // Non fungibles
