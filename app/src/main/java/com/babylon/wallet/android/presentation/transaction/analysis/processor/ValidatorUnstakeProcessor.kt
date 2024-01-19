@@ -60,7 +60,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
                 involvedValidators.find { validatorUnstake.validatorAddress.addressString() == it.address } ?: error("No validator found")
             val lsuAmount = validatorUnstake.liquidStakeUnitAmount.asStr().toBigDecimal()
             val xrdWorth = lsuAmount.divide(lsuResource.currentSupply, lsuResource.mathContext)
-                    .multiply(validator.totalXrdStake, lsuResource.mathContext)
+                .multiply(validator.totalXrdStake, lsuResource.mathContext)
             val stakeClaimNftItems = validatorUnstake.claimNftIds.map { localId ->
                 Resource.NonFungibleResource.Item(
                     collectionAddress = resourceAddress,

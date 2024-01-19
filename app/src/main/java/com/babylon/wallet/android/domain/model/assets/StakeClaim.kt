@@ -6,7 +6,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 data class StakeClaim(
     val nonFungibleResource: Resource.NonFungibleResource,
     val validator: ValidatorDetail
-): Asset {
+) : Asset {
 
     override val resource: Resource
         get() = nonFungibleResource

@@ -7,7 +7,7 @@ import java.math.BigDecimal
 data class LiquidStakeUnit(
     val fungibleResource: Resource.FungibleResource,
     val validator: ValidatorDetail
-): Asset {
+) : Asset {
 
     override val resource: Resource
         get() = fungibleResource
