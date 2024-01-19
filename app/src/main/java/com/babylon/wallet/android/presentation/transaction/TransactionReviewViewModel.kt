@@ -487,7 +487,13 @@ sealed interface PreviewType {
 
     data class AccountsDepositSettings(
         val accountsWithDepositSettingsChanges: List<AccountWithDepositSettingsChanges> = emptyList()
-    ) : PreviewType
+    ) : PreviewType {
+        val hasSettingSection: Boolean
+            get() = accountsWithDepositSettingsChanges.any { it.defaultDepositRule != null }
+
+        val hasExceptionsSection: Boolean
+            get() = accountsWithDepositSettingsChanges.any { it.assetChanges.isNotEmpty() || it.depositorChanges.isNotEmpty() }
+    }
 
     sealed interface Transfer : PreviewType {
         val from: List<AccountWithTransferableResources>
