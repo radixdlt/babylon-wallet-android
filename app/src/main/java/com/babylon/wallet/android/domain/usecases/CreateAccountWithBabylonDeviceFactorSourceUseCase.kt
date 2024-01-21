@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
@@ -44,7 +45,7 @@ class CreateAccountWithBabylonDeviceFactorSourceUseCase @Inject constructor(
             _interactionState.update { InteractionState.Device.DerivingAccounts(factorSource) }
 
             // Construct new account
-            val networkId = networkID ?: profile.currentNetwork.knownNetworkId
+            val networkId = networkID ?: profile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val nextAccountIndex = profile.nextAccountIndex(DerivationPathScheme.CAP_26, networkId, factorSource.id)
             val nextAppearanceId = profile.nextAppearanceId(networkId)
             val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.id).getOrNull())

@@ -123,5 +123,5 @@ fun Profile.mainBabylonFactorSource(): DeviceFactorSource? {
 }
 
 fun Profile.isCurrentNetworkMainnet(): Boolean {
-    return currentNetwork.networkID == Radix.Network.mainnet.id
+    return currentNetwork?.networkID == Radix.Network.mainnet.id
 }
