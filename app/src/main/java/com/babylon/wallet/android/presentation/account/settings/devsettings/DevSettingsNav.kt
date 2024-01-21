@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.account.settings.devsettings
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -27,7 +26,6 @@ fun NavController.devSettings(address: String) {
     navigate("dev_account_settings_route/$address")
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.devSettings(
     onBackClick: () -> Unit
 ) {

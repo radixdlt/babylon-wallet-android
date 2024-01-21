@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.account.settings.specificassets
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -15,7 +14,6 @@ fun NavController.specificAssets() {
     navigate("account_specific_assets_route")
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.specificAssets(navController: NavController, onBackClick: () -> Unit) {
     composable(
         route = "account_specific_assets_route",
