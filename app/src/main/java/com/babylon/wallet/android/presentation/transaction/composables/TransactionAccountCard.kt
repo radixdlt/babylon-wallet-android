@@ -49,7 +49,6 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
-import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
@@ -103,6 +102,9 @@ fun TransactionAccountCard(
                 transferable = amountTransferable,
                 shape = shape,
             )
+            if (lastItem.not()) {
+                HorizontalDivider(color = RadixTheme.colors.gray4)
+            }
         }
 
         // Non fungibles
@@ -281,14 +283,12 @@ private fun TransferableItemContent(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        if (transferable.hasEditableGuarantees) {
-            GuaranteedQuantitySection(transferable)
-        }
+        GuaranteesSection(transferable)
     }
 }
 
 @Composable
-private fun GuaranteedQuantitySection(transferable: Transferable, modifier: Modifier = Modifier) {
+private fun GuaranteesSection(transferable: Transferable, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.End
@@ -395,7 +395,7 @@ private fun TransferableLsuItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
+//            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
         }
         Text(
             modifier = Modifier
@@ -438,7 +438,7 @@ private fun TransferableLsuItemContent(
             )
         }
         if (transferable.hasEditableGuarantees) {
-            GuaranteedQuantitySection(
+            GuaranteesSection(
                 transferable,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -493,7 +493,7 @@ private fun TransferableStakeClaimNftItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
+//            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
         }
         Text(
             modifier = Modifier
@@ -600,7 +600,7 @@ private fun TransferablePoolUnitItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
+//            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
         }
         Text(
             modifier = Modifier
@@ -654,7 +654,7 @@ private fun TransferablePoolUnitItemContent(
             }
         }
         if (transferable.hasEditableGuarantees) {
-            GuaranteedQuantitySection(
+            GuaranteesSection(
                 transferable,
                 modifier = Modifier
                     .fillMaxWidth()

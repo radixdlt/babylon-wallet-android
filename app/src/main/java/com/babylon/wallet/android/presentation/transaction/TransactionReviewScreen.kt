@@ -283,8 +283,8 @@ private fun TransactionPreviewContent(
                                 onAcknowledgeRawTransactionWarning()
                             }
                         },
-                        titleText = "This is a complex transaction that cannot be summarized - the raw transaction " +
-                            "manifest will be shown. Do not submit unless you understand the contents.", // Crowdin
+                        titleText = stringResource(id = R.string.transactionReview_nonConformingManifestWarning_title),
+                        messageText = stringResource(id = R.string.transactionReview_nonConformingManifestWarning_message),
                         confirmText = stringResource(
                             id = R.string.common_continue
                         ),
