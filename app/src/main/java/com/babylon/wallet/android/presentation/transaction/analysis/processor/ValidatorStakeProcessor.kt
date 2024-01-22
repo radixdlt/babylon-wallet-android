@@ -63,7 +63,6 @@ class ValidatorStakeProcessor @Inject constructor(
                 transferable = TransferableAsset.Fungible.LSUAsset(
                     amount = stakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() },
                     lsu = LiquidStakeUnit(lsuResource, validator),
-                    validator = validator,
                     xrdWorth = stakes.sumOf { it.xrdAmount.asStr().toBigDecimal() },
                 )
             )

@@ -165,7 +165,8 @@ fun ResourceIndicator.toTransferableAsset(
         is ResourceIndicator.Fungible -> when (asset) {
             is PoolUnit -> {
                 val assetWithAmount = asset.copy(
-                    stake = asset.stake.copy(ownedAmount = amount)
+                    stake = asset.stake.copy(ownedAmount = amount),
+                    pool = asset.pool?.copy(associatedDApp = null) // TODO FIX THIS
                 )
                 TransferableAsset.Fungible.PoolUnitAsset(
                     amount = amount,
@@ -173,7 +174,6 @@ fun ResourceIndicator.toTransferableAsset(
                     contributionPerResource = assetWithAmount.pool?.resources?.associate {
                         it.resourceAddress to (assetWithAmount.resourceRedemptionValue(it) ?: BigDecimal.ZERO)
                     }.orEmpty(),
-                    associatedDapp = null,
                     isNewlyCreated = false
                 )
             }
@@ -183,7 +183,6 @@ fun ResourceIndicator.toTransferableAsset(
                 TransferableAsset.Fungible.LSUAsset(
                     amount = amount,
                     lsu = assetWithAmount,
-                    validator = assetWithAmount.validator,
                     xrdWorth = assetWithAmount.stakeValueInXRD(asset.validator.totalXrdStake) ?: BigDecimal.ZERO,
                     isNewlyCreated = false
                 )
@@ -226,8 +225,7 @@ fun ResourceIndicator.toTransferableAsset(
                 val assetWithItems = asset.copy(nonFungibleResource = asset.nonFungibleResource.copy(items = items))
 
                 TransferableAsset.NonFungible.StakeClaimAssets(
-                    resource = assetWithItems.nonFungibleResource,
-                    validator = assetWithItems.validator,
+                    claim = assetWithItems,
                     xrdWorthPerNftItem = items.associate { it.localId.displayable to (it.claimAmountXrd ?: BigDecimal.ZERO) },
                     isNewlyCreated = false
                 )

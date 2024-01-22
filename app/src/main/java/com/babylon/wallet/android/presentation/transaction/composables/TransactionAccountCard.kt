@@ -388,7 +388,7 @@ private fun TransferableLsuItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferableLsu.validator.name,
+                    text = transferableLsu.lsu.validator.name,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
@@ -591,7 +591,7 @@ private fun TransferablePoolUnitItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferablePoolUnit.associatedDapp?.metadata?.name().orEmpty(),
+                    text = transferablePoolUnit.unit.pool?.associatedDApp?.metadata?.name().orEmpty(),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,

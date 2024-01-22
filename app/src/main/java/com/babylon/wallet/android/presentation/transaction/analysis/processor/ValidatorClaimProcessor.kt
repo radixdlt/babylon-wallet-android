@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
@@ -82,8 +83,10 @@ class ValidatorClaimProcessor @Inject constructor(
                 }.flatten()
                 Transferable.Withdrawing(
                     transferable = TransferableAsset.NonFungible.StakeClaimAssets(
-                        resource = nftResource.copy(items = items.map { it.first }),
-                        validator = validator,
+                        claim = StakeClaim(
+                            nonFungibleResource = nftResource.copy(items = items.map { it.first }),
+                            validator = validator
+                        ),
                         xrdWorthPerNftItem = items.associate {
                             it.first.localId.displayable to it.second
                         }

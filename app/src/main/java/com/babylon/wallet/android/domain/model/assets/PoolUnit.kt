@@ -1,12 +1,13 @@
 package com.babylon.wallet.android.domain.model.assets
 
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
 
 data class PoolUnit(
     val stake: Resource.FungibleResource,
-    val pool: Pool? = null,
+    val pool: Pool? = null
 ) : Asset {
 
     override val resource: Resource

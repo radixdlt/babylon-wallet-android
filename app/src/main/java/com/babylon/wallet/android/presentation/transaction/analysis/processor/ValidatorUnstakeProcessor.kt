@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
@@ -69,8 +70,10 @@ class ValidatorUnstakeProcessor @Inject constructor(
             }
             Transferable.Depositing(
                 transferable = TransferableAsset.NonFungible.StakeClaimAssets(
-                    resource = nftResource.copy(items = stakeClaimNftItems.map { it.first }),
-                    validator = validator,
+                    claim = StakeClaim(
+                        nonFungibleResource = nftResource.copy(items = stakeClaimNftItems.map { it.first }),
+                        validator = validator
+                    ),
                     xrdWorthPerNftItem = stakeClaimNftItems.associate {
                         it.first.localId.displayable to it.second
                     },
@@ -106,7 +109,6 @@ class ValidatorUnstakeProcessor @Inject constructor(
                 transferable = TransferableAsset.Fungible.LSUAsset(
                     amount = totalLSU,
                     lsu = LiquidStakeUnit(lsuResource, validator),
-                    validator = validator,
                     xrdWorth = xrdWorth,
                 )
             )

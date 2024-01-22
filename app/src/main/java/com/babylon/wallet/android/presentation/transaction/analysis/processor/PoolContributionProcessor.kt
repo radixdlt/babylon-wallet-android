@@ -62,13 +62,12 @@ class PoolContributionProcessor @Inject constructor(
                             amount = contributions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
                             unit = PoolUnit(
                                 stake = poolResource,
-                                pool = pool
+                                pool = pool.copy(associatedDApp = poolsToDapps[pool])
                             ),
                             contributionPerResource = contributedResourceAddresses.associateWith { contributedResourceAddress ->
                                 contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
                                     .sumOf { it }
-                            },
-                            associatedDapp = poolsToDapps[pool]
+                            }
                         ),
                         guaranteeType = guaranteeType,
                     )
