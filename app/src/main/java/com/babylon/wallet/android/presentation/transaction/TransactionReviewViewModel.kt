@@ -682,6 +682,27 @@ sealed interface AccountWithTransferableResources {
             is Owned -> copy(resources = resources)
         }
     }
+
+    companion object {
+        class Sorter(
+            private val ownedAccountsOrder: List<Network.Account>
+        ) : Comparator<AccountWithTransferableResources> {
+            override fun compare(thisAccount: AccountWithTransferableResources?, otherAccount: AccountWithTransferableResources?): Int {
+                val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.address }
+                val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.address }
+
+                if (indexOfThisAccount == -1 && indexOfOtherAccount >= 0) {
+                    return 1 // The other account is owned, so it takes higher priority
+                } else if (indexOfOtherAccount == -1 && indexOfThisAccount >= 0) {
+                    return -1 // This account is owned, so it takes higher priority
+                } else if (indexOfThisAccount == -1 && indexOfOtherAccount == -1) {
+                    return 0 // Both accounts are not owned, both considered equal, so they will be sorted according to the receiving order
+                }
+
+                return indexOfThisAccount - indexOfOtherAccount
+            }
+        }
+    }
 }
 
 fun List<AccountWithTransferableResources>.hasCustomizableGuarantees() = any { accountWithTransferableResources ->

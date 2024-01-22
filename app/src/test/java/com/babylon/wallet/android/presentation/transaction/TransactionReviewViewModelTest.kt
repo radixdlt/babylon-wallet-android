@@ -27,6 +27,7 @@ import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetPoolDetailsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.mockdata.account
@@ -105,6 +106,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val transactionClient = mockk<TransactionClient>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getResourcesUseCase = mockk<GetResourcesUseCase>()
+    private val resolveAssetsFromAddressUseCase = mockk<ResolveAssetsFromAddressUseCase>()
     private val cacheNewlyCreatedEntitiesUseCase = mockk<CacheNewlyCreatedEntitiesUseCase>()
     private val searchFeePayersUseCase = mockk<SearchFeePayersUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
@@ -125,14 +127,14 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val resolveDAppInTransactionUseCase = mockk<ResolveDAppInTransactionUseCase>()
     private val previewTypeAnalyzer = PreviewTypeAnalyzer(
         generalTransferProcessor = GeneralTransferProcessor(
-            getResourcesUseCase = getResourcesUseCase,
+            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase,
             getTransactionBadgesUseCase = getTransactionBadgesUseCase,
             getProfileUseCase = getProfileUseCase,
             resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
         ),
         transferProcessor = TransferProcessor(
             getProfileUseCase = getProfileUseCase,
-            getResourcesUseCase = getResourcesUseCase
+            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         ),
         poolContributionProcessor = PoolContributionProcessor(
             getResourcesUseCase = getResourcesUseCase,
@@ -315,6 +317,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
         every { getProfileUseCase() } returns flowOf(profile(accounts = (identifiedArrayListOf(fromAccount) + otherAccounts).toIdentifiedArrayList()))
         coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
+        coEvery { resolveAssetsFromAddressUseCase(any(), any()) } returns Result.success(listOf())
     }
 
     override fun initVM(): TransactionReviewViewModel {

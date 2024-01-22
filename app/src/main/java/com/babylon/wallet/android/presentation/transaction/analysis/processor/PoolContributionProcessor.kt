@@ -55,7 +55,7 @@ class PoolContributionProcessor @Inject constructor(
                     val poolResource = resources.find { it.resourceAddress == pool.metadata.poolUnit() } as? Resource.FungibleResource
                         ?: error("No pool resource found")
                     val contributedResourceAddresses = contributions.first().contributedResources.keys
-                    val guaranteeType = (deposit as? ResourceIndicator.Fungible)?.indicator?.toGuaranteeType(defaultDepositGuarantees)
+                    val guaranteeType = (deposit as? ResourceIndicator.Fungible)?.guaranteeType(defaultDepositGuarantees)
                         ?: GuaranteeType.Guaranteed
                     Transferable.Depositing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(

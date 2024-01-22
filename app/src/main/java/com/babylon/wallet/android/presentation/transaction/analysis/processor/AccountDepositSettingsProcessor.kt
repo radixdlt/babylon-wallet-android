@@ -105,4 +105,13 @@ class AccountDepositSettingsProcessor @Inject constructor(
             )
         }
     }.orEmpty()
+
+    private val DetailedManifestClass.AccountDepositSettingsUpdate.involvedResourceAddresses: Set<String>
+        get() = authorizedDepositorsAdded.values.map { depositors ->
+            depositors.map { it.resourceAddress }
+        }.flatten().toSet() union authorizedDepositorsRemoved.values.map { depositors ->
+            depositors.map { it.resourceAddress }
+        }.flatten().toSet() union resourcePreferencesUpdates.values.map { updates ->
+            updates.keys
+        }.flatten().toSet()
 }
