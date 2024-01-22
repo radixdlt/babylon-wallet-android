@@ -129,7 +129,8 @@ data class ValidatorWithStakes(
 ) {
 
     val isDetailsAvailable: Boolean
-        get() = validatorDetail.totalXrdStake != null && liquidStakeUnit != null && liquidStakeUnit.fungibleResource.isDetailsAvailable &&
+        get() = validatorDetail.totalXrdStake != null &&
+            (liquidStakeUnit == null || liquidStakeUnit.fungibleResource.isDetailsAvailable) &&
             (stakeClaimNft == null || stakeClaimNft.nonFungibleResource.amount.toInt() == stakeClaimNft.nonFungibleResource.items.size)
 
     val hasLSU: Boolean
