@@ -123,6 +123,7 @@ class TransactionAnalysisDelegate @Inject constructor(
         _state.update {
             it.copy(
                 isRawManifestVisible = previewType == PreviewType.NonConforming,
+                showRawTransactionWarning = previewType == PreviewType.NonConforming,
                 isLoading = false,
                 previewType = previewType,
                 defaultSignersCount = notaryAndSigners.signers.count()

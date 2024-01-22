@@ -244,6 +244,10 @@ class TransactionReviewViewModel @Inject constructor(
         onBackClick()
     }
 
+    fun onAcknowledgeRawTransactionWarning() {
+        _state.update { it.copy(showRawTransactionWarning = false) }
+    }
+
     sealed interface Event : OneOffEvent {
         data class OnFungibleClick(
             val resource: FungibleResource,
@@ -265,6 +269,7 @@ class TransactionReviewViewModel @Inject constructor(
         val isNetworkFeeLoading: Boolean,
         val isSubmitting: Boolean = false,
         val isRawManifestVisible: Boolean = false,
+        val showRawTransactionWarning: Boolean = false,
         val previewType: PreviewType,
         val transactionFees: TransactionFees = TransactionFees(),
         val feePayerSearchResult: FeePayerSearchResult? = null,
@@ -276,9 +281,6 @@ class TransactionReviewViewModel @Inject constructor(
         val interactionState: InteractionState? = null,
         val isTransactionDismissed: Boolean = false
     ) : UiState {
-
-        val showRawTransactionWarning
-            get() = previewType == PreviewType.NonConforming
 
         val requestNonNull: MessageFromDataChannel.IncomingRequest.TransactionRequest
             get() = requireNotNull(request)
