@@ -82,9 +82,9 @@ class ValidatorClaimProcessor @Inject constructor(
                 }.flatten()
                 Transferable.Withdrawing(
                     transferable = TransferableAsset.NonFungible.StakeClaimAssets(
-                        nftResource.copy(items = items.map { it.first }),
-                        validator,
-                        items.associate {
+                        resource = nftResource.copy(items = items.map { it.first }),
+                        validator = validator,
+                        xrdWorthPerNftItem = items.associate {
                             it.first.localId.displayable to it.second
                         }
                     )

@@ -60,11 +60,11 @@ class PoolContributionProcessor @Inject constructor(
                     Transferable.Depositing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(
                             amount = contributions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
-                            PoolUnit(
+                            unit = PoolUnit(
                                 stake = poolResource,
                                 pool = pool
                             ),
-                            contributedResourceAddresses.associateWith { contributedResourceAddress ->
+                            contributionPerResource = contributedResourceAddresses.associateWith { contributedResourceAddress ->
                                 contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
                                     .sumOf { it }
                             },

@@ -69,12 +69,12 @@ class ValidatorUnstakeProcessor @Inject constructor(
             }
             Transferable.Depositing(
                 transferable = TransferableAsset.NonFungible.StakeClaimAssets(
-                    nftResource.copy(items = stakeClaimNftItems.map { it.first }),
-                    validator,
-                    stakeClaimNftItems.associate {
+                    resource = nftResource.copy(items = stakeClaimNftItems.map { it.first }),
+                    validator = validator,
+                    xrdWorthPerNftItem = stakeClaimNftItems.associate {
                         it.first.localId.displayable to it.second
                     },
-                    true
+                    isNewlyCreated = true
                 )
             )
         }
@@ -104,10 +104,10 @@ class ValidatorUnstakeProcessor @Inject constructor(
                 .multiply(validator.totalXrdStake, lsuResource.mathContext)
             Transferable.Withdrawing(
                 transferable = TransferableAsset.Fungible.LSUAsset(
-                    totalLSU,
-                    LiquidStakeUnit(lsuResource, validator),
-                    validator,
-                    xrdWorth,
+                    amount = totalLSU,
+                    lsu = LiquidStakeUnit(lsuResource, validator),
+                    validator = validator,
+                    xrdWorth = xrdWorth,
                 )
             )
         }
