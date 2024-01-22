@@ -10,22 +10,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.metadata.name
+import com.babylon.wallet.android.domain.model.DApp
 
 @Composable
-fun PoolDetailsItem(pool: Pool, modifier: Modifier = Modifier, iconSize: Dp = 24.dp) {
+fun InvolvedComponentDetails(modifier: Modifier = Modifier, dApp: DApp?, text: String, iconSize: Dp = 24.dp) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
-        Thumbnail.Pool(
+        Thumbnail.DApp(
             modifier = Modifier.size(iconSize),
-            pool = pool
+            dapp = dApp
         )
         Text(
-            pool.metadata.name().orEmpty().ifEmpty { "Unknown pool" }, // TODO crowdin
+            text = text,
             style = RadixTheme.typography.body1Header,
             color = RadixTheme.colors.gray1,
             maxLines = 1

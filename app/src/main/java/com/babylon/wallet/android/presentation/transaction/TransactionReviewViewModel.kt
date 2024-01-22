@@ -40,6 +40,7 @@ import com.babylon.wallet.android.presentation.transaction.guarantees.Transactio
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.radixdlt.ret.AccountDefaultDepositRule
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
@@ -148,7 +149,9 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun onGuaranteesApplyClick() = guarantees.onApply()
 
-    fun onGuaranteesCloseClick() = guarantees.onClose()
+    fun onCloseBottomSheetClick() {
+        _state.update { it.copy(sheetState = State.Sheet.None) }
+    }
 
     fun onCustomizeClick() {
         viewModelScope.launch {
@@ -214,6 +217,12 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
+    fun onUnknownDAppsClick(unknownComponentAddresses: ImmutableList<String>) {
+        _state.update {
+            it.copy(sheetState = State.Sheet.UnknownDAppComponents(unknownComponentAddresses))
+        }
+    }
+
     fun onFungibleResourceClick(fungibleResource: FungibleResource, isNewlyCreated: Boolean) {
         viewModelScope.launch {
             sendEvent(Event.OnFungibleClick(fungibleResource, isNewlyCreated))
@@ -267,6 +276,9 @@ class TransactionReviewViewModel @Inject constructor(
         val interactionState: InteractionState? = null,
         val isTransactionDismissed: Boolean = false
     ) : UiState {
+
+        val showRawTransactionWarning
+            get() = previewType == PreviewType.NonConforming
 
         val requestNonNull: MessageFromDataChannel.IncomingRequest.TransactionRequest
             get() = requireNotNull(request)
@@ -327,7 +339,7 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         val isRawManifestToggleVisible: Boolean
-            get() = true // previewType is PreviewType.Transfer
+            get() = previewType is PreviewType.Transfer
 
         val rawManifest: String = request
             ?.transactionManifestData
@@ -390,6 +402,14 @@ class TransactionReviewViewModel @Inject constructor(
                 return xrdInCandidateAccount - xrdUsed < transactionFees.transactionFeeToLock
             }
 
+        val showDottedLine: Boolean
+            get() = when (previewType) {
+                is PreviewType.Transfer -> {
+                    previewType.from.isNotEmpty() && previewType.to.isNotEmpty()
+                }
+                else -> false
+            }
+
         sealed interface Sheet {
 
             data object None : Sheet
@@ -424,6 +444,10 @@ class TransactionReviewViewModel @Inject constructor(
                     Default, Advanced
                 }
             }
+
+            data class UnknownDAppComponents(
+                val unknownComponentAddresses: ImmutableList<String>
+            ) : Sheet
         }
     }
 }
@@ -463,11 +487,21 @@ sealed interface PreviewType {
 
     data class AccountsDepositSettings(
         val accountsWithDepositSettingsChanges: List<AccountWithDepositSettingsChanges> = emptyList()
-    ) : PreviewType
+    ) : PreviewType {
+        val hasSettingSection: Boolean
+            get() = accountsWithDepositSettingsChanges.any { it.defaultDepositRule != null }
+
+        val hasExceptionsSection: Boolean
+            get() = accountsWithDepositSettingsChanges.any { it.assetChanges.isNotEmpty() || it.depositorChanges.isNotEmpty() }
+    }
 
     sealed interface Transfer : PreviewType {
         val from: List<AccountWithTransferableResources>
         val to: List<AccountWithTransferableResources>
+
+        fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
+            allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
+        }.flatten()
 
         data class Staking(
             override val from: List<AccountWithTransferableResources>,
@@ -483,12 +517,15 @@ sealed interface PreviewType {
         data class Pool(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
-            val pools: List<com.babylon.wallet.android.domain.model.resources.Pool>,
+            val poolsWithAssociatedDapps: Map<com.babylon.wallet.android.domain.model.resources.Pool, DApp?>,
             val actionType: ActionType
         ) : Transfer {
             enum class ActionType {
                 Contribution, Redemption
             }
+
+            val unknownPoolComponents: Int
+                get() = poolsWithAssociatedDapps.count { it.value == null }
         }
 
         data class GeneralTransfer(
@@ -496,12 +533,7 @@ sealed interface PreviewType {
             override val to: List<AccountWithTransferableResources>,
             val badges: List<Badge> = emptyList(),
             val dApps: List<Pair<DApp, Boolean>> = emptyList()
-        ) : Transfer {
-
-            fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
-                allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
-            }.flatten()
-        }
+        ) : Transfer
     }
 }
 

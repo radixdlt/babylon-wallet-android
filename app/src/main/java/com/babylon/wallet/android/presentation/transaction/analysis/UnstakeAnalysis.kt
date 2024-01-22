@@ -35,20 +35,26 @@ private suspend fun DetailedManifestClass.ValidatorUnstake.extractDeposits(
     involvedValidators: List<ValidatorDetail>
 ) = executionSummary.accountDeposits.map { claimsPerAddress ->
     val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(claimsPerAddress.key) ?: error("No account found")
-    val withdrawingNfts = claimsPerAddress.value.map { claimedResource ->
+    val depositingNfts = claimsPerAddress.value.map { claimedResource ->
         val resourceAddress = claimedResource.resourceAddress
         val nftResource =
             resources.find { it.resourceAddress == resourceAddress } as? Resource.NonFungibleResource
                 ?: error("No resource found")
         val validatorUnstake = validatorUnstakes.find { it.claimNftAddress.addressString() == resourceAddress }
             ?: error("No validator claim found")
+        val lsuResource = resources.find {
+            it.resourceAddress == validatorUnstake.liquidStakeUnitAddress.addressString()
+        } as? Resource.FungibleResource ?: error("No resource found")
         val validator =
             involvedValidators.find { validatorUnstake.validatorAddress.addressString() == it.address } ?: error("No validator found")
+        val lsuAmount = validatorUnstake.liquidStakeUnitAmount.asStr().toBigDecimal()
+        val xrdWorth =
+            lsuAmount.divide(lsuResource.currentSupply, lsuResource.mathContext).multiply(validator.totalXrdStake, lsuResource.mathContext)
         val stakeClaimNftItems = validatorUnstake.claimNftIds.map { localId ->
             Resource.NonFungibleResource.Item(
                 collectionAddress = resourceAddress,
                 localId = Resource.NonFungibleResource.Item.ID.from(localId)
-            ) to validatorUnstake.liquidStakeUnitAmount.asStr().toBigDecimal()
+            ) to xrdWorth
         }
         Transferable.Depositing(
             transferable = TransferableResource.StakeClaimNft(
@@ -63,7 +69,7 @@ private suspend fun DetailedManifestClass.ValidatorUnstake.extractDeposits(
     }
     AccountWithTransferableResources.Owned(
         account = ownedAccount,
-        resources = withdrawingNfts
+        resources = depositingNfts
     )
 }
 
@@ -74,20 +80,23 @@ private suspend fun DetailedManifestClass.ValidatorUnstake.extractWithdrawals(
     involvedValidators: List<ValidatorDetail>
 ) = executionSummary.accountWithdraws.map { withdrawalsPerAccount ->
     val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(withdrawalsPerAccount.key) ?: error("No account found")
-    val withdrawingLsu = withdrawalsPerAccount.value.map { depositedResource ->
-        val resourceAddress = depositedResource.resourceAddress
+    val withdrawingLsu = withdrawalsPerAccount.value.groupBy { it.resourceAddress }.map { depositedResource ->
+        val resourceAddress = depositedResource.key
         val lsuResource = resources.find {
             it.resourceAddress == resourceAddress
         } as? Resource.FungibleResource ?: error("No resource found")
         val unstakes = validatorUnstakes.filter { it.liquidStakeUnitAddress.asStr() == resourceAddress }
         val validator =
             involvedValidators.find { it.address == unstakes.first().validatorAddress.addressString() } ?: error("No validator found")
+        val totalLSU = unstakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() }
+        val xrdWorth =
+            totalLSU.divide(lsuResource.currentSupply, lsuResource.mathContext).multiply(validator.totalXrdStake, lsuResource.mathContext)
         Transferable.Withdrawing(
             transferable = TransferableResource.LsuAmount(
-                unstakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() },
+                totalLSU,
                 lsuResource,
                 validator,
-                unstakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() },
+                xrdWorth,
             )
         )
     }

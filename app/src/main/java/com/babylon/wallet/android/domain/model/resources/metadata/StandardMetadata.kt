@@ -104,7 +104,7 @@ fun List<Metadata>.tags(): List<String>? = findCollection(
     type = MetadataType.String
 )?.map { it.value }
 
-fun List<Metadata>.dAppDefinitions(): List<String>? {
+fun List<Metadata>.dAppDefinitions(): List<String> {
     val dAppDefinitions = findCollection(
         key = ExplicitMetadataKey.DAPP_DEFINITIONS,
         type = MetadataType.Address
@@ -114,12 +114,18 @@ fun List<Metadata>.dAppDefinitions(): List<String>? {
         key = ExplicitMetadataKey.DAPP_DEFINITION,
         type = MetadataType.Address
     )?.value
-
     return if (single != null) {
         dAppDefinitions + single
     } else {
         dAppDefinitions
     }
+}
+
+fun List<Metadata>.dAppDefinition(): String? {
+    return findPrimitive(
+        key = ExplicitMetadataKey.DAPP_DEFINITION,
+        type = MetadataType.Address
+    )?.value
 }
 
 fun List<Metadata>.relatedWebsites(): List<String>? = findCollection(

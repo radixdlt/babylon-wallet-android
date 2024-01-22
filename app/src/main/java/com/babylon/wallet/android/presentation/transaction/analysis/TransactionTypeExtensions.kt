@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.model.resources.findFungible
 import com.babylon.wallet.android.domain.model.resources.findNonFungible
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
@@ -23,6 +24,9 @@ import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import rdx.works.core.ret.asStr
 import rdx.works.core.toHexString
 import java.math.BigDecimal
@@ -62,11 +66,13 @@ val ResourceOrNonFungible.resourceAddress: String
         is ResourceOrNonFungible.Resource -> value.addressString()
     }
 
-val DetailedManifestClass.AccountDepositSettingsUpdate.resourceAddresses: Set<String>
+val DetailedManifestClass.AccountDepositSettingsUpdate.involvedResourceAddresses: Set<String>
     get() = authorizedDepositorsAdded.values.map { depositors ->
         depositors.map { it.resourceAddress }
     }.flatten().toSet() union authorizedDepositorsRemoved.values.map { depositors ->
         depositors.map { it.resourceAddress }
+    }.flatten().toSet() union resourcePreferencesUpdates.values.map { updates ->
+        updates.keys
     }.flatten().toSet()
 
 val DetailedManifestClass.involvedValidatorAddresses: Set<String>
@@ -246,6 +252,19 @@ fun FungibleResourceIndicator.toGuaranteeType(defaultDepositGuarantees: Double):
             guaranteeOffset = defaultDepositGuarantees
         )
     }
+}
+
+suspend fun ExecutionSummary.resolveDApps(
+    resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
+) = coroutineScope {
+    encounteredEntities.filter { it.isGlobalComponent() }
+        .map { address ->
+            async {
+                resolveDAppInTransactionUseCase.invoke(address.addressString())
+            }
+        }
+        .awaitAll()
+        .mapNotNull { it.getOrNull() }
 }
 
 private val ResourceIndicator.Fungible.amount: BigDecimal

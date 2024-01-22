@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
+import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
@@ -19,8 +20,10 @@ suspend fun DetailedManifestClass.PoolRedemption.resolve(
     executionSummary: ExecutionSummary,
     getProfileUseCase: GetProfileUseCase,
     resources: List<Resource>,
-    involvedPools: List<Pool>
+    involvedPools: List<Pool>,
+    resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
 ): PreviewType.Transfer.Pool {
+    val poolsToDapps = involvedPools.resolveDApps(resolveDAppInTransactionUseCase)
     val accountsWithdrawnFrom = executionSummary.accountDeposits.keys
     val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {
         accountsWithdrawnFrom.contains(it.address)
@@ -49,6 +52,7 @@ suspend fun DetailedManifestClass.PoolRedemption.resolve(
                         redemptions.mapNotNull { it.redeemedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
                             .sumOf { it }
                     },
+                    associatedDapp = poolsToDapps[pool]
                 )
             )
         }
@@ -60,8 +64,8 @@ suspend fun DetailedManifestClass.PoolRedemption.resolve(
     return PreviewType.Transfer.Pool(
         from = from,
         to = to,
-        pools = involvedPools,
-        actionType = PreviewType.Transfer.Pool.ActionType.Redemption
+        actionType = PreviewType.Transfer.Pool.ActionType.Redemption,
+        poolsWithAssociatedDapps = poolsToDapps
     )
 }
 

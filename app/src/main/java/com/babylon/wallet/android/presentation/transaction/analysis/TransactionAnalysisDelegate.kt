@@ -113,7 +113,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             processConformingManifest()
         }
 
-        if (previewType is PreviewType.Transfer.GeneralTransfer) {
+        if (previewType is PreviewType.Transfer) {
             val newlyCreated = previewType.getNewlyCreatedResources()
             if (newlyCreated.isNotEmpty()) {
                 cacheNewlyCreatedEntitiesUseCase(newlyCreated.map { it.resource })
@@ -156,7 +156,11 @@ class TransactionAnalysisDelegate @Inject constructor(
         val transactionType = detailedClassification.firstOrNull {
             it.isConformingManifestType()
         } ?: return PreviewType.NonConforming
-        val resources = getResourcesUseCase(addresses = involvedResourceAddresses + xrdAddress).getOrThrow()
+        val resourceAddresses = when (transactionType) {
+            is DetailedManifestClass.AccountDepositSettingsUpdate -> transactionType.involvedResourceAddresses
+            else -> involvedResourceAddresses + xrdAddress
+        }
+        val resources = getResourcesUseCase(addresses = resourceAddresses, withDetails = true).getOrThrow()
 
         return when (transactionType) {
             is DetailedManifestClass.General -> {
@@ -168,10 +172,12 @@ class TransactionAnalysisDelegate @Inject constructor(
                 )
             }
 
-            is DetailedManifestClass.AccountDepositSettingsUpdate -> transactionType.resolve(
-                getProfileUseCase = getProfileUseCase,
-                allResources = resources
-            )
+            is DetailedManifestClass.AccountDepositSettingsUpdate -> {
+                transactionType.resolve(
+                    getProfileUseCase = getProfileUseCase,
+                    allResources = resources
+                )
+            }
 
             is DetailedManifestClass.Transfer -> resolveTransfer(getProfileUseCase, resources)
             is DetailedManifestClass.ValidatorClaim -> {
@@ -214,7 +220,8 @@ class TransactionAnalysisDelegate @Inject constructor(
                     getProfileUseCase = getProfileUseCase,
                     resources = resources,
                     involvedPools = pools,
-                    executionSummary = this
+                    executionSummary = this,
+                    resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
                 )
             }
 
@@ -224,7 +231,8 @@ class TransactionAnalysisDelegate @Inject constructor(
                     getProfileUseCase = getProfileUseCase,
                     resources = resources,
                     involvedPools = pools,
-                    executionSummary = this
+                    executionSummary = this,
+                    resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
                 )
             }
 

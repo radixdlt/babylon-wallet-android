@@ -9,7 +9,6 @@ import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPe
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.claimAmount
 import com.babylon.wallet.android.domain.model.resources.metadata.claimEpoch
-import com.babylon.wallet.android.domain.model.resources.metadata.dAppDefinitions
 import com.babylon.wallet.android.domain.model.resources.metadata.description
 import com.babylon.wallet.android.domain.model.resources.metadata.iconUrl
 import com.babylon.wallet.android.domain.model.resources.metadata.keyImageUrl
@@ -70,10 +69,6 @@ sealed class Resource {
 
         val poolAddress: String? by lazy {
             metadata.poolAddress()
-        }
-
-        val dappDefinitions: List<String> by lazy {
-            metadata.dAppDefinitions().orEmpty()
         }
 
         val tags: List<Tag> by lazy {
@@ -177,10 +172,6 @@ sealed class Resource {
 
         val validatorAddress: String? by lazy {
             metadata.validatorAddress()
-        }
-
-        val dappDefinitions: List<String> by lazy {
-            metadata.dAppDefinitions().orEmpty()
         }
 
         val behaviours: AssetBehaviours? = assetBehaviours

@@ -260,7 +260,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             reservedInstructions = emptyList(),
         )
         every { getProfileUseCase() } returns flowOf(profile(accounts = (identifiedArrayListOf(fromAccount) + otherAccounts).toIdentifiedArrayList()))
-        coEvery { getResourcesUseCase(any()) } returns Result.success(listOf())
+        coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
     }
 
     override fun initVM(): TransactionReviewViewModel {

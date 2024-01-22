@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.transaction.composables
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -46,17 +45,15 @@ fun DepositAccountContent(
     modifier: Modifier = Modifier,
     to: ImmutableList<AccountWithTransferableResources>,
     promptForGuarantees: () -> Unit,
-    showStrokeLine: Boolean,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
     if (to.isNotEmpty()) {
-        Box {
+        Column(modifier = modifier) {
             Row(verticalAlignment = Alignment.Bottom) {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                        .fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
                 ) {
@@ -74,48 +71,45 @@ fun DepositAccountContent(
                         color = RadixTheme.colors.gray2,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Spacer(modifier = Modifier.weight(1f))
-                    if (showStrokeLine) {
-                        StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 60.dp)
-                    }
-                }
-            }
-        }
-
-        Column(
-            modifier = modifier
-                .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
-                .background(
-                    color = Color.White,
-                    shape = RadixTheme.shapes.roundedRectDefault
-                )
-                .padding(RadixTheme.dimensions.paddingMedium),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            to.onEachIndexed { index, accountEntry ->
-                val lastItem = index == to.size - 1
-                TransactionAccountCard(
-                    account = accountEntry,
-                    onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
-                        onFungibleResourceClick(fungibleResource, isNewlyCreated)
-                    },
-                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
-                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
-                    }
-                )
-
-                if (!lastItem) {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 }
             }
 
-            if (to.hasCustomizableGuarantees()) {
-                RadixTextButton(
-                    modifier = Modifier
-                        .padding(top = RadixTheme.dimensions.paddingXSmall),
-                    text = stringResource(id = R.string.transactionReview_customizeGuaranteesButtonTitle),
-                    onClick = promptForGuarantees
-                )
+            Column(
+                modifier = Modifier
+                    .padding(top = RadixTheme.dimensions.paddingSmall)
+                    .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
+                    .background(
+                        color = Color.White,
+                        shape = RadixTheme.shapes.roundedRectDefault
+                    )
+                    .padding(RadixTheme.dimensions.paddingMedium),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                to.onEachIndexed { index, accountEntry ->
+                    val lastItem = index == to.size - 1
+                    TransactionAccountCard(
+                        account = accountEntry,
+                        onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
+                            onFungibleResourceClick(fungibleResource, isNewlyCreated)
+                        },
+                        onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
+                            onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
+                        }
+                    )
+
+                    if (!lastItem) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                    }
+                }
+
+                if (to.hasCustomizableGuarantees()) {
+                    RadixTextButton(
+                        modifier = Modifier
+                            .padding(top = RadixTheme.dimensions.paddingXSmall),
+                        text = stringResource(id = R.string.transactionReview_customizeGuaranteesButtonTitle),
+                        onClick = promptForGuarantees
+                    )
+                }
             }
         }
     }
@@ -131,7 +125,11 @@ fun StrokeLine(
     val strokeInterval = with(LocalDensity.current) { 6.dp.toPx() }
     val lineHeight = with(LocalDensity.current) { height.toPx() }
     val pathEffect = PathEffect.dashPathEffect(floatArrayOf(strokeInterval, strokeInterval), 0f)
-    Canvas(modifier.width(1.dp).height(height)) {
+    Canvas(
+        modifier
+            .width(1.dp)
+            .height(height)
+    ) {
         val width = size.width
         drawLine(
             color = strokeColor,
@@ -150,7 +148,6 @@ fun DepositAccountPreview() {
         DepositAccountContent(
             to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned).toPersistentList(),
             promptForGuarantees = {},
-            showStrokeLine = true,
             onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> }
         )
