@@ -48,6 +48,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.assets.name
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -583,16 +584,14 @@ private fun TransferablePoolUnitItemContent(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(id = R.string.transactionReview_poolUnits),
+                    text = transferablePoolUnit.unit.name(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferablePoolUnit.associatedDapp?.metadata?.name().orEmpty().ifEmpty {
-                        stringResource(id = R.string.transactionReview_poolName_unknown)
-                    },
+                    text = transferablePoolUnit.associatedDapp?.metadata?.name().orEmpty(),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,

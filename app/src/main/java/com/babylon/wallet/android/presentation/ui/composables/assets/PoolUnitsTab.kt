@@ -153,6 +153,4 @@ fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PoolUnit.name() = displayTitle.ifEmpty {
-    stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
-}
+fun PoolUnit.name() = displayTitle
