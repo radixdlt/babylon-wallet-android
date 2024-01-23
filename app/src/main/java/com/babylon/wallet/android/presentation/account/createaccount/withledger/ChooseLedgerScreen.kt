@@ -66,7 +66,7 @@ fun ChooseLedgerScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is ChooseLedgerEvent.DerivedPublicKeyForAccount -> goBackToCreateAccount()
+                is ChooseLedgerEvent.LedgerSelected -> goBackToCreateAccount()
                 is ChooseLedgerEvent.RecoverAccounts -> onStartRecovery(event.factorSource, event.isOlympia)
             }
         }

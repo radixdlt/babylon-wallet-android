@@ -257,7 +257,7 @@ fun NavigationHost(
                 )
             },
             onAddLedgerDevice = {
-                navController.chooseLedger(networkId = it)
+                navController.chooseLedger()
             }
         )
         chooseLedger(

@@ -28,11 +28,6 @@ sealed interface AppEvent {
     data object RestoredMnemonic : AppEvent
     data object BabylonFactorSourceDoesNotExist : AppEvent
     data class BabylonFactorSourceNeedsRecovery(val factorSourceID: FactorSource.FactorSourceID.FromHash) : AppEvent
-    data class DerivedAccountPublicKeyWithLedger(
-        val factorSourceID: FactorSource.FactorSourceID.FromHash,
-        val derivationPath: DerivationPath,
-        val derivedPublicKeyHex: String
-    ) : AppEvent
 
     sealed interface AccessFactorSources : AppEvent {
         data object ToCreateAccount : AccessFactorSources
