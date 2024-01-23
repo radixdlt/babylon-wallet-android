@@ -3,7 +3,6 @@
 
 package rdx.works.profile.data.model.pernetwork
 
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.OlympiaNetwork
@@ -66,7 +65,7 @@ data class Network(
 ) {
 
     val knownNetworkId: NetworkId?
-        get() = NetworkId.values().find { it.value == networkID }
+        get() = NetworkId.entries.find { it.value == networkID }
 
     @Serializable
     data class Account(
@@ -663,23 +662,6 @@ fun Profile.usedAccountDerivationIndices(
     }.map { it.derivationPathEntityIndex }.toSet()
 }
 
-fun Profile.nextAccountIndex(
-    derivationPathScheme: DerivationPathScheme,
-    forNetworkId: NetworkId? = null,
-    factorSourceID: FactorSource.FactorSourceID? = null
-): Int {
-    val network = networks.firstOrNull { it.networkID == forNetworkId?.value } ?: return 0
-    val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource() ?: return 0
-    val accountsControlledByFactorSource = network.accounts.filter {
-        it.factorSourceId == factorSource.id && it.derivationPathScheme == derivationPathScheme
-    }
-    return if (accountsControlledByFactorSource.isEmpty()) {
-        0
-    } else {
-        accountsControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1
-    }
-}
-
 fun Profile.nextPersonaIndex(
     derivationPathScheme: DerivationPathScheme,
     forNetworkId: NetworkId,
@@ -694,20 +676,6 @@ fun Profile.nextPersonaIndex(
         0
     } else {
         personasControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1
-    }
-}
-
-fun Profile.nextAppearanceId(
-    forNetworkId: NetworkId? = null,
-    factorSourceID: FactorSource.FactorSourceID? = null
-): Int {
-    val network = networks.firstOrNull { it.networkID == forNetworkId?.value } ?: return 0
-    val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource() ?: return 0
-    val accountsControlledByFactorSource = network.accounts.filter { it.factorSourceId == factorSource.id }
-    return if (accountsControlledByFactorSource.isEmpty()) {
-        0
-    } else {
-        (accountsControlledByFactorSource.maxOf { it.appearanceID } + 1) % AccountGradientList.size
     }
 }
 
