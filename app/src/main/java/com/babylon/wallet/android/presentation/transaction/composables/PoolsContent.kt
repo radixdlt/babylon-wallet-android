@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -41,15 +42,14 @@ import com.babylon.wallet.android.domain.model.resources.metadata.name
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InvolvedComponentDetails
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
-import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun PoolsContent(
     modifier: Modifier = Modifier,
     text: String,
-    poolsWithAssociatedDapps: ImmutableMap<Pool, DApp?>,
-    unknownPoolCount: Int,
+    pools: ImmutableList<Pool>,
     onDAppClick: (DApp) -> Unit
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
@@ -104,6 +104,10 @@ fun PoolsContent(
         }
     }
 
+    val (associatedDApps, unknownPoolsCount) = remember(pools) {
+        pools.mapNotNull { it.associatedDApp } to pools.count { it.associatedDApp == null }
+    }
+
     AnimatedVisibility(
         visible = expanded,
         enter = fadeIn(),
@@ -114,25 +118,25 @@ fun PoolsContent(
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .fillMaxWidth()
         ) {
-            poolsWithAssociatedDapps.filterValues { it != null }.forEach { (_, dApp) ->
+            associatedDApps.forEach { dApp ->
                 InvolvedComponentDetails(
                     iconSize = 44.dp,
                     dApp = dApp,
-                    text = dApp?.metadata?.name().orEmpty().ifEmpty { "" },
+                    text = dApp.name.orEmpty(),
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RadixTheme.shapes.roundedRectMedium)
-                        .clickable { dApp?.let(onDAppClick) }
+                        .clickable { onDAppClick(dApp) }
                         .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
                         .padding(RadixTheme.dimensions.paddingDefault)
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
-            if (unknownPoolCount > 0) {
+            if (unknownPoolsCount > 0) {
                 InvolvedComponentDetails(
                     iconSize = 44.dp,
                     dApp = null,
-                    text = stringResource(id = R.string.transactionReview_unknownPools, unknownPoolCount),
+                    text = stringResource(id = R.string.transactionReview_unknownPools, unknownPoolsCount),
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
@@ -150,8 +154,7 @@ fun PoolsContentPreview() {
         Column {
             PoolsContent(
                 text = "Contributing to pools".uppercase(),
-                poolsWithAssociatedDapps = persistentMapOf(),
-                unknownPoolCount = 0,
+                pools = persistentListOf(),
                 onDAppClick = {}
             )
         }

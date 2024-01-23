@@ -140,7 +140,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             getResourcesUseCase = getResourcesUseCase,
             getPoolDetailsUseCase = getPoolDetailsUseCase,
             getProfileUseCase = getProfileUseCase,
-            resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
         ),
         accountDepositSettingsProcessor = AccountDepositSettingsProcessor(
             getProfileUseCase = getProfileUseCase,
@@ -150,7 +149,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             getProfileUseCase = getProfileUseCase,
             getResourcesUseCase = getResourcesUseCase,
             getPoolDetailsUseCase = getPoolDetailsUseCase,
-            resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
         ),
         validatorStakeProcessor = ValidatorStakeProcessor(
             getProfileUseCase = getProfileUseCase,

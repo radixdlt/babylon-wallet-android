@@ -158,115 +158,118 @@ val ExecutionSummary.involvedResourceAddresses: Set<String>
 
 fun ResourceIndicator.toTransferableAsset(
     assets: List<Asset>
-): TransferableAsset {
-    val asset = assets.find { it.resource.resourceAddress == resourceAddress }
+): TransferableAsset = when (this) {
+    is ResourceIndicator.Fungible -> toTransferableAsset(assets)
+    is ResourceIndicator.NonFungible -> toTransferableAsset(assets)
+}
 
-    return when (this) {
-        is ResourceIndicator.Fungible -> when (asset) {
-            is PoolUnit -> {
-                val assetWithAmount = asset.copy(
-                    stake = asset.stake.copy(ownedAmount = amount),
-                    pool = asset.pool?.copy(associatedDApp = null) // TODO FIX THIS
-                )
-                TransferableAsset.Fungible.PoolUnitAsset(
-                    amount = amount,
-                    unit = assetWithAmount,
-                    contributionPerResource = assetWithAmount.pool?.resources?.associate {
-                        it.resourceAddress to (assetWithAmount.resourceRedemptionValue(it) ?: BigDecimal.ZERO)
-                    }.orEmpty(),
-                    isNewlyCreated = false
-                )
-            }
+private fun ResourceIndicator.Fungible.toTransferableAsset(
+    assets: List<Asset>
+): TransferableAsset.Fungible = when (val asset = assets.find { it.resource.resourceAddress == resourceAddress.addressString() }) {
+    is PoolUnit -> {
+        val assetWithAmount = asset.copy(
+            stake = asset.stake.copy(ownedAmount = amount),
+            pool = asset.pool
+        )
+        TransferableAsset.Fungible.PoolUnitAsset(
+            amount = amount,
+            unit = assetWithAmount,
+            contributionPerResource = assetWithAmount.pool?.resources?.associate {
+                it.resourceAddress to (assetWithAmount.resourceRedemptionValue(it) ?: BigDecimal.ZERO)
+            }.orEmpty(),
+            isNewlyCreated = false
+        )
+    }
 
-            is LiquidStakeUnit -> {
-                val assetWithAmount = asset.copy(fungibleResource = asset.fungibleResource.copy(ownedAmount = amount))
-                TransferableAsset.Fungible.LSUAsset(
-                    amount = amount,
-                    lsu = assetWithAmount,
-                    xrdWorth = assetWithAmount.stakeValueInXRD(asset.validator.totalXrdStake) ?: BigDecimal.ZERO,
-                    isNewlyCreated = false
-                )
-            }
+    is LiquidStakeUnit -> {
+        val assetWithAmount = asset.copy(fungibleResource = asset.fungibleResource.copy(ownedAmount = amount))
+        TransferableAsset.Fungible.LSUAsset(
+            amount = amount,
+            lsu = assetWithAmount,
+            xrdWorth = assetWithAmount.stakeValueInXRD(asset.validator.totalXrdStake) ?: BigDecimal.ZERO,
+            isNewlyCreated = false
+        )
+    }
 
-            is Token -> {
-                val resourceWithAmount = asset.resource.copy(ownedAmount = amount)
-                TransferableAsset.Fungible.Token(
-                    amount = amount,
-                    resource = resourceWithAmount,
-                    isNewlyCreated = false
-                )
-            }
+    is Token -> {
+        val resourceWithAmount = asset.resource.copy(ownedAmount = amount)
+        TransferableAsset.Fungible.Token(
+            amount = amount,
+            resource = resourceWithAmount,
+            isNewlyCreated = false
+        )
+    }
 
-            else -> {
-                val resourceWithAmount = Resource.FungibleResource(
-                    resourceAddress = resourceAddress.addressString(),
-                    ownedAmount = amount
-                )
-                TransferableAsset.Fungible.Token(
-                    amount = amount,
-                    resource = resourceWithAmount,
-                    isNewlyCreated = false
-                )
-            }
+    else -> {
+        val resourceWithAmount = Resource.FungibleResource(
+            resourceAddress = resourceAddress.addressString(),
+            ownedAmount = amount
+        )
+        TransferableAsset.Fungible.Token(
+            amount = amount,
+            resource = resourceWithAmount,
+            isNewlyCreated = false
+        )
+    }
+}
+
+private fun ResourceIndicator.NonFungible.toTransferableAsset(
+    assets: List<Asset>
+): TransferableAsset.NonFungible = when (val asset = assets.find { it.resource.resourceAddress == resourceAddress.addressString() }) {
+    is StakeClaim -> {
+        val items = indicator.nonFungibleLocalIds.map {
+            val localId = Resource.NonFungibleResource.Item.ID.from(it)
+
+            asset.nonFungibleResource.items.find { item ->
+                item.localId == localId
+            } ?: Resource.NonFungibleResource.Item(
+                collectionAddress = resourceAddress.addressString(),
+                localId = localId
+            )
+        }
+        val assetWithItems = asset.copy(nonFungibleResource = asset.nonFungibleResource.copy(items = items))
+
+        TransferableAsset.NonFungible.StakeClaimAssets(
+            claim = assetWithItems,
+            xrdWorthPerNftItem = items.associate { it.localId.displayable to (it.claimAmountXrd ?: BigDecimal.ZERO) },
+            isNewlyCreated = false
+        )
+    }
+
+    is NonFungibleCollection -> {
+        val items = indicator.nonFungibleLocalIds.map {
+            val localId = Resource.NonFungibleResource.Item.ID.from(it)
+
+            asset.collection.items.find { item ->
+                item.localId == localId
+            } ?: Resource.NonFungibleResource.Item(
+                collectionAddress = resourceAddress.addressString(),
+                localId = localId
+            )
         }
 
-        is ResourceIndicator.NonFungible -> when (asset) {
-            is StakeClaim -> {
-                val items = indicator.nonFungibleLocalIds.map {
-                    val localId = Resource.NonFungibleResource.Item.ID.from(it)
+        TransferableAsset.NonFungible.NFTAssets(
+            resource = asset.collection.copy(items = items),
+            isNewlyCreated = false
+        )
+    }
 
-                    asset.nonFungibleResource.items.find { item ->
-                        item.localId == localId
-                    } ?: Resource.NonFungibleResource.Item(
-                        collectionAddress = resourceAddress.addressString(),
-                        localId = localId
-                    )
-                }
-                val assetWithItems = asset.copy(nonFungibleResource = asset.nonFungibleResource.copy(items = items))
-
-                TransferableAsset.NonFungible.StakeClaimAssets(
-                    claim = assetWithItems,
-                    xrdWorthPerNftItem = items.associate { it.localId.displayable to (it.claimAmountXrd ?: BigDecimal.ZERO) },
-                    isNewlyCreated = false
-                )
-            }
-
-            is NonFungibleCollection -> {
-                val items = indicator.nonFungibleLocalIds.map {
-                    val localId = Resource.NonFungibleResource.Item.ID.from(it)
-
-                    asset.collection.items.find { item ->
-                        item.localId == localId
-                    } ?: Resource.NonFungibleResource.Item(
-                        collectionAddress = resourceAddress.addressString(),
-                        localId = localId
-                    )
-                }
-
-                TransferableAsset.NonFungible.NFTAssets(
-                    resource = asset.collection.copy(items = items),
-                    isNewlyCreated = false
-                )
-            }
-
-            else -> {
-                val items = indicator.nonFungibleLocalIds.map { localId ->
-                    Resource.NonFungibleResource.Item(
-                        collectionAddress = resourceAddress.addressString(),
-                        localId = Resource.NonFungibleResource.Item.ID.from(localId)
-                    )
-                }
-
-                TransferableAsset.NonFungible.NFTAssets(
-                    resource = Resource.NonFungibleResource(
-                        resourceAddress = resourceAddress.addressString(),
-                        amount = items.size.toLong(),
-                        items = items
-                    ),
-                    isNewlyCreated = false
-                )
-            }
+    else -> {
+        val items = indicator.nonFungibleLocalIds.map { localId ->
+            Resource.NonFungibleResource.Item(
+                collectionAddress = resourceAddress.addressString(),
+                localId = Resource.NonFungibleResource.Item.ID.from(localId)
+            )
         }
+
+        TransferableAsset.NonFungible.NFTAssets(
+            resource = Resource.NonFungibleResource(
+                resourceAddress = resourceAddress.addressString(),
+                amount = items.size.toLong(),
+                items = items
+            ),
+            isNewlyCreated = false
+        )
     }
 }
 

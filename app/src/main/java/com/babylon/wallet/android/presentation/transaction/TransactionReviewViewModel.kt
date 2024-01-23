@@ -19,6 +19,7 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Badge
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.Resource.FungibleResource
 import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource
@@ -519,15 +520,18 @@ sealed interface PreviewType {
         data class Pool(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
-            val poolsWithAssociatedDapps: Map<com.babylon.wallet.android.domain.model.resources.Pool, DApp?>,
             val actionType: ActionType
         ) : Transfer {
             enum class ActionType {
                 Contribution, Redemption
             }
 
-            val unknownPoolComponents: Int
-                get() = poolsWithAssociatedDapps.count { it.value == null }
+            val poolsInvolved: Set<com.babylon.wallet.android.domain.model.resources.Pool>
+                get() = (from + to).toSet().map { accountWithAssets ->
+                    accountWithAssets.resources.mapNotNull {
+                        (it.transferable as? TransferableAsset.Fungible.PoolUnitAsset)?.unit?.pool
+                    }
+                }.flatten().toSet()
         }
 
         data class GeneralTransfer(
@@ -691,15 +695,15 @@ sealed interface AccountWithTransferableResources {
                 val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.address }
                 val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.address }
 
-                if (indexOfThisAccount == -1 && indexOfOtherAccount >= 0) {
-                    return 1 // The other account is owned, so it takes higher priority
+                return if (indexOfThisAccount == -1 && indexOfOtherAccount >= 0) {
+                    1 // The other account is owned, so it takes higher priority
                 } else if (indexOfOtherAccount == -1 && indexOfThisAccount >= 0) {
-                    return -1 // This account is owned, so it takes higher priority
+                    -1 // This account is owned, so it takes higher priority
                 } else if (indexOfThisAccount == -1 && indexOfOtherAccount == -1) {
-                    return 0 // Both accounts are not owned, both considered equal, so they will be sorted according to the receiving order
+                    0 // Both accounts are not owned, both considered equal, so they will be sorted according to the receiving order
+                } else {
+                    indexOfThisAccount - indexOfOtherAccount
                 }
-
-                return indexOfThisAccount - indexOfOtherAccount
             }
         }
     }

@@ -42,7 +42,6 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.name
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
@@ -590,13 +589,19 @@ private fun TransferablePoolUnitItemContent(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    text = transferablePoolUnit.unit.pool?.associatedDApp?.metadata?.name().orEmpty(),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+
+                val associatedDAppName = remember(transferablePoolUnit) {
+                    transferablePoolUnit.unit.pool?.associatedDApp?.name
+                }
+                if (!associatedDAppName.isNullOrEmpty()) {
+                    Text(
+                        text = associatedDAppName,
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray2,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
 //            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
         }

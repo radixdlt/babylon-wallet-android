@@ -32,7 +32,7 @@ class GeneralTransferProcessor @Inject constructor(
 
         val assets = resolveAssetsFromAddressUseCase(
             fungibleAddresses = summary.involvedFungibleAddresses,
-            nonFungibleIds = summary.involvedNonFungibleIds,
+            nonFungibleIds = summary.involvedNonFungibleIds
         ).getOrThrow()
 
         return PreviewType.Transfer.GeneralTransfer(

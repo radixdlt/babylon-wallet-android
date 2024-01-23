@@ -48,7 +48,7 @@ open class StateRepositoryFake: StateRepository {
     override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>> =
         Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun getDAppsDetails(definitionAddresses: List<String>, skipCache: Boolean): Result<List<DApp>> =
+    override suspend fun getDAppsDetails(definitionAddresses: List<String>, isRefreshing: Boolean): Result<List<DApp>> =
         Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit> =

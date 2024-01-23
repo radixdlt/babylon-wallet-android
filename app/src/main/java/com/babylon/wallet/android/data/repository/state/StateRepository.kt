@@ -9,7 +9,6 @@ import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.database.DAppEntity
-import com.babylon.wallet.android.data.repository.cache.database.MetadataColumn
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsResourcesJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity
@@ -66,7 +65,7 @@ interface StateRepository {
 
     suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>>
 
-    suspend fun getDAppsDetails(definitionAddresses: List<String>, skipCache: Boolean): Result<List<DApp>>
+    suspend fun getDAppsDetails(definitionAddresses: List<String>, isRefreshing: Boolean): Result<List<DApp>>
 
     suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit>
 
@@ -292,20 +291,25 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> = withContext(dispatcher) {
         runCatching {
-            val stateVersion = stateDao.getLatestStateVersion() ?: error("No cached state version found")
-            var cachedPools = stateDao.getCachedPools(
-                poolAddresses = poolAddresses,
-                atStateVersion = stateVersion
-            ).values.toList()
+            val stateVersion = stateDao.getLatestStateVersion()
+            var cachedPools = if (stateVersion != null) {
+                stateDao.getCachedPools(
+                    poolAddresses = poolAddresses,
+                    atStateVersion = stateVersion
+                ).values.toList()
+            } else {
+                emptyList()
+            }
             val unknownPools = poolAddresses - cachedPools.map { it.address }.toSet()
             if (unknownPools.isNotEmpty()) {
                 val newPools = stateApi.fetchPools(unknownPools, stateVersion)
+                val fetchedStateVersion = newPools.first().stateVersion
                 if (newPools.isNotEmpty()) {
-                    val join = newPools.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
+                    val join = newPools.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), fetchedStateVersion))
                     stateDao.updatePools(pools = join)
                     cachedPools = stateDao.getCachedPools(
                         poolAddresses = poolAddresses,
-                        atStateVersion = stateVersion
+                        atStateVersion = fetchedStateVersion
                     ).values.toList()
                 }
             }
@@ -382,12 +386,12 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getDAppsDetails(
         definitionAddresses: List<String>,
-        skipCache: Boolean
+        isRefreshing: Boolean
     ): Result<List<DApp>> = withContext(dispatcher) {
         runCatching {
             if (definitionAddresses.isEmpty()) return@runCatching listOf()
 
-            val cachedDApps = if (skipCache) {
+            val cachedDApps = if (isRefreshing) {
                 mutableListOf()
             } else {
                 stateDao.getDApps(
@@ -405,13 +409,7 @@ class StateRepositoryImpl @Inject constructor(
                     metadataKeys = ExplicitMetadataKey.forDApps
                 ) { page ->
                     val syncedAt = InstantGenerator()
-                    val entities = page.items.map { item ->
-                        DAppEntity(
-                            definitionAddress = item.address,
-                            metadata = item.explicitMetadata?.toMetadata()?.let { MetadataColumn(it) },
-                            synced = syncedAt
-                        )
-                    }
+                    val entities = page.items.map { item -> DAppEntity.from(item, syncedAt) }
                     stateDao.insertDApps(entities)
 
                     cachedDApps.addAll(entities.map { entity -> entity.toDApp() })

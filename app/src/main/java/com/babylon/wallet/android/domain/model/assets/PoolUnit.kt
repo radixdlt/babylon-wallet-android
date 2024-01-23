@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.model.assets
 
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal

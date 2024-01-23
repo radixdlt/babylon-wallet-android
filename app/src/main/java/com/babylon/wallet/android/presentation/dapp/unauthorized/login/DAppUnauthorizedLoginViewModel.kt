@@ -88,7 +88,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             }
             stateRepository.getDAppsDetails(
                 definitionAddresses = listOf(request.metadata.dAppDefinitionAddress),
-                skipCache = false
+                isRefreshing = false
             ).onSuccess { dApps ->
                 dApps.firstOrNull()?.let { dApp ->
                     _state.update { it.copy(dapp = dApp) }

@@ -4,7 +4,6 @@ import androidx.annotation.FloatRange
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
 
@@ -159,7 +158,6 @@ sealed interface TransferableAsset {
         ) : NonFungible() {
             override val resource: Resource.NonFungibleResource
                 get() = claim.nonFungibleResource
-
         }
     }
 }
