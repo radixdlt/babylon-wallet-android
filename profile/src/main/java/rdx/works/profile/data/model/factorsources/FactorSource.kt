@@ -18,6 +18,8 @@ import java.time.Instant
 @Serializable(with = FactorSourceSerializer::class)
 sealed class FactorSource : Identified {
 
+    sealed interface CreatingEntity
+
     override val identifier: String
         get() = when (this) {
             is DeviceFactorSource -> id.body.value
