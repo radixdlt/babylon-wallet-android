@@ -37,7 +37,7 @@ fun StateDao.getCachedPools(poolAddresses: Set<String>, atStateVersion: Long): M
             associatedDApp = associatedDApp
         )
     }
-    return pools
+    return pools.mapValues { it.value.copy(resources = it.value.resources.sorted()) }
 }
 
 fun StateDao.getCachedValidators(addresses: Set<String>, atStateVersion: Long): Map<String, ValidatorDetail> {
