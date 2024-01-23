@@ -157,7 +157,7 @@ sealed interface TransferableAsset {
             val xrdWorthPerNftItem: Map<String, BigDecimal>,
             override val isNewlyCreated: Boolean = false
         ) : NonFungible() {
-            override val resource: Resource
+            override val resource: Resource.NonFungibleResource
                 get() = claim.nonFungibleResource
 
         }

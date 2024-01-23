@@ -486,7 +486,7 @@ private fun TransferableStakeClaimNftItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferable.validator.name,
+                    text = transferable.claim.validator.name,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
