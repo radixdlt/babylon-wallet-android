@@ -65,11 +65,19 @@ data class Assets(
         // TODO sort
         val validators = (liquidStakeUnits.map { it.validator } + stakeClaims.map { it.validator }).toSet()
 
-        validators.map { validator ->
+        validators.mapNotNull { validator ->
+            val lsu = liquidStakeUnits.find {
+                it.validator == validator && it.fungibleResource.ownedAmount != BigDecimal.ZERO
+            }
+            val claimCollection = stakeClaims.find { claim ->
+                claim.validator == validator && claim.nonFungibleResource.amount > 0
+            }
+            if (lsu == null && claimCollection == null) return@mapNotNull null
+
             ValidatorWithStakes(
                 validatorDetail = validator,
-                liquidStakeUnit = liquidStakeUnits.find { it.validator == validator },
-                stakeClaimNft = stakeClaims.find { it.validator == validator }
+                liquidStakeUnit = lsu,
+                stakeClaimNft = claimCollection
             )
         }
     }
