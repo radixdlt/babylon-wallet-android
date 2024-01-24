@@ -21,7 +21,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.userFriendlyMessage
-import com.babylon.wallet.android.presentation.accessfactorsource.accessFactorSourceBottomSheet
+import com.babylon.wallet.android.presentation.accessfactorsources.accessFactorSources
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -105,7 +105,7 @@ fun WalletApp(
     }
     HandleAccessFactorSourcesEvents(
         navController = navController,
-        statusEvents = mainViewModel.accessFactorSourceEvents
+        statusEvents = mainViewModel.accessFactorSourcesEvents
     )
     HandleStatusEvents(
         navController = navController,
@@ -181,13 +181,13 @@ private fun SyncStatusBarWithScreenChanges(navController: NavHostController) {
 @Composable
 private fun HandleAccessFactorSourcesEvents(
     navController: NavController,
-    statusEvents: Flow<AppEvent.AccessFactorSource.ToCreateAccount>
+    statusEvents: Flow<AppEvent.AccessFactorSources.ToCreateAccount>
 ) {
     LaunchedEffect(Unit) {
         statusEvents.collect { event ->
             when (event) {
-                is AppEvent.AccessFactorSource.ToCreateAccount -> {
-                    navController.accessFactorSourceBottomSheet()
+                is AppEvent.AccessFactorSources -> {
+                    navController.accessFactorSources()
                 }
             }
         }

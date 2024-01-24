@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsource
+package com.babylon.wallet.android.presentation.accessfactorsources
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -18,9 +18,9 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.babylon.wallet.android.utils.biometricAuthenticate
 
 @Composable
-fun AccessFactorSourceBottomSheet(
+fun AccessFactorSourcesDialog(
     modifier: Modifier = Modifier,
-    viewModel: AccessFactorSourceViewModel,
+    viewModel: AccessFactorSourcesViewModel,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -68,7 +68,7 @@ private fun AccessFactorSourceBottomSheetContent(
 
 @Preview
 @Composable
-fun AccessFactorSourceBottomSheetPreview() {
+fun AccessFactorSourcesDialogPreview() {
     AccessFactorSourceBottomSheetContent(
         onDismiss = {}
     )
