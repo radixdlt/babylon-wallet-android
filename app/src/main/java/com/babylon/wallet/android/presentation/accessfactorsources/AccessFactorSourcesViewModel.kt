@@ -4,8 +4,8 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
-import com.babylon.wallet.android.presentation.accessfactorsource.AccessFactorSourceOutput.PublicKeyAndDerivationPath
-import com.babylon.wallet.android.presentation.accessfactorsource.AccessFactorSourceViewModel.AccessFactorSourceUiState.ShowContentFor
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.PublicKeyAndDerivationPath
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesViewModel.AccessFactorSourcesUiState.ShowContentFor
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,20 +16,20 @@ import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.repository.AccessFactorSourceProvider
+import rdx.works.profile.data.repository.AccessFactorSourcesProvider
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class AccessFactorSourcesViewModel @Inject constructor(
-    private val accessFactorSourceProvider: AccessFactorSourceProvider,
-    private val accessFactorSourceUiProxy: AccessFactorSourceUiProxy,
+    private val accessFactorSourcesProvider: AccessFactorSourcesProvider,
+    private val accessFactorSourcesUiProxy: AccessFactorSourcesUiProxy,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val ledgerMessenger: LedgerMessenger
-) : StateViewModel<AccessFactorSourcesViewModel.AccessFactorSourceUiState>() {
+) : StateViewModel<AccessFactorSourcesViewModel.AccessFactorSourcesUiState>() {
 
-    override fun initialState(): AccessFactorSourceUiState = AccessFactorSourceUiState()
+    override fun initialState(): AccessFactorSourcesUiState = AccessFactorSourcesUiState()
 
     fun biometricAuthenticationCompleted(isAuthenticated: Boolean) {
         viewModelScope.launch {
@@ -37,14 +37,14 @@ class AccessFactorSourcesViewModel @Inject constructor(
                 _state.update { uiState ->
                     uiState.copy(isAccessingFactorSourceInProgress = true)
                 }
-                when (val input = accessFactorSourceUiProxy.getInput()) {
-                    AccessFactorSourceInput.Init -> { /* do nothing */ }
+                when (val input = accessFactorSourcesUiProxy.getInput()) {
+                    AccessFactorSourcesInput.Init -> { /* do nothing */ }
 
-                    is AccessFactorSourceInput.ToCreateAccount -> {
+                    is AccessFactorSourcesInput.ToCreateAccount -> {
                         derivePublicKey(input)
                     }
 
-                    is AccessFactorSourceInput.ToSign -> { /* TBD */ }
+                    is AccessFactorSourcesInput.ToSign -> { /* TBD */ }
                 }
 
                 _state.update { uiState ->
@@ -59,7 +59,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
         }
     }
 
-    private suspend fun derivePublicKey(input: AccessFactorSourceInput.ToCreateAccount) {
+    private suspend fun derivePublicKey(input: AccessFactorSourcesInput.ToCreateAccount) {
         if (input.factorSource == null) { // device factor source
             val profile = ensureBabylonFactorSourceExistUseCase()
             val deviceFactorSource = profile.mainBabylonFactorSource() ?: error("Babylon factor source is not present")
@@ -85,11 +85,11 @@ class AccessFactorSourcesViewModel @Inject constructor(
         forNetworkId: NetworkId,
         deviceFactorSource: DeviceFactorSource
     ) {
-        val derivationPath = accessFactorSourceProvider.getDerivationPathForFactorSource(
+        val derivationPath = accessFactorSourcesProvider.getDerivationPathForFactorSource(
             forNetworkId = forNetworkId,
             factorSource = deviceFactorSource
         )
-        val compressedPublicKey = accessFactorSourceProvider.derivePublicKeyForDeviceFactorSource(
+        val compressedPublicKey = accessFactorSourcesProvider.derivePublicKeyForDeviceFactorSource(
             deviceFactorSource = deviceFactorSource,
             derivationPath = derivationPath
         )
@@ -98,14 +98,14 @@ class AccessFactorSourcesViewModel @Inject constructor(
             derivationPath = derivationPath
         )
 
-        accessFactorSourceUiProxy.setOutput(output)
+        accessFactorSourcesUiProxy.setOutput(output)
     }
 
     private suspend fun derivePublicKeyFromLedgerFactorSource(
         forNetworkId: NetworkId,
         ledgerFactorSource: LedgerHardwareWalletFactorSource
     ) {
-        val derivationPath = accessFactorSourceProvider.getDerivationPathForFactorSource(
+        val derivationPath = accessFactorSourcesProvider.getDerivationPathForFactorSource(
             forNetworkId = forNetworkId,
             factorSource = ledgerFactorSource
         )
@@ -118,7 +118,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
         if (derivePublicKeyResponse.isSuccess) {
             val publicKeyResponse = derivePublicKeyResponse.getOrNull()
             if (publicKeyResponse == null) {
-                accessFactorSourceUiProxy.setOutput(null)
+                accessFactorSourcesUiProxy.setOutput(null)
                 return
             }
 
@@ -127,20 +127,20 @@ class AccessFactorSourcesViewModel @Inject constructor(
                 compressedPublicKey = publicKey,
                 derivationPath = derivationPath
             )
-            accessFactorSourceUiProxy.setOutput(publicKeyAndDerivationPath)
+            accessFactorSourcesUiProxy.setOutput(publicKeyAndDerivationPath)
         } else {
-            accessFactorSourceUiProxy.setOutput(null)
+            accessFactorSourcesUiProxy.setOutput(null)
         }
     }
 
     private fun biometricAuthenticationDismissed() {
         viewModelScope.launch {
-            accessFactorSourceUiProxy.setOutput(null)
-            accessFactorSourceUiProxy.reset()
+            accessFactorSourcesUiProxy.setOutput(null)
+            accessFactorSourcesUiProxy.reset()
         }
     }
 
-    data class AccessFactorSourceUiState(
+    data class AccessFactorSourcesUiState(
         val isAccessingFactorSourceInProgress: Boolean = false,
         val isAccessingFactorSourceCompleted: Boolean = false,
         val showContentFor: ShowContentFor = ShowContentFor.Device

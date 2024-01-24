@@ -125,7 +125,7 @@ class ChooseLedgerViewModel @Inject constructor(
                             }
                         }
                         appEventBus.sendEvent(
-                            AppEvent.AccessFactorSource.SelectedLedgerDevice(ledgerFactorSource = ledgerFactorSource.data)
+                            AppEvent.AccessFactorSources.SelectedLedgerDevice(ledgerFactorSource = ledgerFactorSource.data)
                         )
                         sendEvent(ChooseLedgerEvent.LedgerSelected)
                     }

@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
-import com.babylon.wallet.android.presentation.accessfactorsource.AccessFactorSourceOutput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.radixdlt.extensions.removeLeadingZero
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -60,7 +60,7 @@ class CreateAccountUseCaseTest {
             // given
             val displayName = "A"
             val factorSource = TestData.ledgerFactorSource
-            val publicKeyAndDerivationPath = AccessFactorSourceOutput.PublicKeyAndDerivationPath(
+            val publicKeyAndDerivationPath = AccessFactorSourcesOutput.PublicKeyAndDerivationPath(
                 compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath)
                     .removeLeadingZero(),
                 derivationPath = derivationPath,

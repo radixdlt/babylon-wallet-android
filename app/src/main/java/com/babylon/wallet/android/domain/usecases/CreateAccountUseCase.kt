@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
-import com.babylon.wallet.android.presentation.accessfactorsource.AccessFactorSourceOutput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
@@ -22,7 +22,7 @@ class CreateAccountUseCase @Inject constructor(
     suspend operator fun invoke(
         displayName: String,
         factorSource: FactorSource.CreatingEntity,
-        publicKeyAndDerivationPath: AccessFactorSourceOutput.PublicKeyAndDerivationPath,
+        publicKeyAndDerivationPath: AccessFactorSourcesOutput.PublicKeyAndDerivationPath,
         onNetworkId: NetworkId?
     ): Network.Account {
         val currentProfile = profileRepository.profile.first()

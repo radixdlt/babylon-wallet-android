@@ -4,8 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.usecases.CreateAccountUseCase
-import com.babylon.wallet.android.presentation.accessfactorsource.AccessFactorSourceInput
-import com.babylon.wallet.android.presentation.accessfactorsource.AccessFactorSourceProxy
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -43,7 +43,7 @@ import javax.inject.Inject
 class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val createAccountUseCase: CreateAccountUseCase,
-    private val accessFactorSourceProxy: AccessFactorSourceProxy,
+    private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val getProfileUseCase: GetProfileUseCase,
     private val getProfileStateUseCase: GetProfileStateUseCase,
     private val generateProfileUseCase: GenerateProfileUseCase,
@@ -94,13 +94,13 @@ class CreateAccountViewModel @Inject constructor(
             if (isWithLedger) { // get the selected ledger device
                 sendEvent(CreateAccountEvent.AddLedgerDevice)
                 selectedFactorSource = appEventBus.events
-                    .filterIsInstance<AppEvent.AccessFactorSource.SelectedLedgerDevice>()
+                    .filterIsInstance<AppEvent.AccessFactorSources.SelectedLedgerDevice>()
                     .first().ledgerFactorSource
             }
 
             // if main babylon factor source is not present, it will be created during the public key derivation
-            val publicKeyAndDerivationPath = accessFactorSourceProxy.getPublicKeyAndDerivationPathForFactorSource(
-                accessFactorSourceInput = AccessFactorSourceInput.ToCreateAccount(
+            val publicKeyAndDerivationPath = accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToCreateAccount(
                     forNetworkId = onNetworkId,
                     factorSource = if (isWithLedger && selectedFactorSource != null) {
                         selectedFactorSource

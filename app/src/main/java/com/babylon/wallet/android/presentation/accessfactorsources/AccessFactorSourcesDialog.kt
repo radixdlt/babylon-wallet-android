@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.presentation.accessfactorsource.AccessFactorSourceViewModel.AccessFactorSourceUiState
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesViewModel.AccessFactorSourcesUiState
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -49,7 +49,7 @@ fun AccessFactorSourcesDialog(
         }
     }
 
-    AccessFactorSourceBottomSheetContent(
+    AccessFactorSourcesBottomSheetContent(
         modifier = modifier,
         isAccessingFactorSourceInProgress = state.isAccessingFactorSourceInProgress,
         isAccessingFactorSourceCompleted = state.isAccessingFactorSourceCompleted,
@@ -59,11 +59,11 @@ fun AccessFactorSourcesDialog(
 }
 
 @Composable
-private fun AccessFactorSourceBottomSheetContent(
+private fun AccessFactorSourcesBottomSheetContent(
     modifier: Modifier = Modifier,
     isAccessingFactorSourceInProgress: Boolean,
     isAccessingFactorSourceCompleted: Boolean,
-    showContentForFactorSource: AccessFactorSourceUiState.ShowContentFor,
+    showContentForFactorSource: AccessFactorSourcesUiState.ShowContentFor,
     onDismiss: () -> Unit
 ) {
     if (isAccessingFactorSourceCompleted) {
@@ -94,14 +94,14 @@ private fun AccessFactorSourceBottomSheetContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             when (showContentForFactorSource) {
-                AccessFactorSourceUiState.ShowContentFor.Device -> {
+                AccessFactorSourcesUiState.ShowContentFor.Device -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
                     )
                 }
 
-                is AccessFactorSourceUiState.ShowContentFor.Ledger -> {
+                is AccessFactorSourcesUiState.ShowContentFor.Ledger -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.derivePublicKeys_subtitleLedger)

@@ -12,7 +12,7 @@ import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import javax.inject.Inject
 
-class AccessFactorSourceProvider @Inject constructor(
+class AccessFactorSourcesProvider @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val profileRepository: ProfileRepository
 ) {
