@@ -33,12 +33,16 @@ import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.PublicKeyHash
 import com.babylon.wallet.android.domain.model.resources.metadata.ownerKeyHashes
+import com.radixdlt.ret.Address
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.currentNetwork
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -85,7 +89,8 @@ class StateRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val stateDao: StateDao,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
-    private val accountsStateCache: AccountsStateCache
+    private val accountsStateCache: AccountsStateCache,
+    private val getProfileUseCase: GetProfileUseCase
 ) : StateRepository {
 
     override fun observeAccountsOnLedger(
@@ -291,7 +296,7 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> = withContext(dispatcher) {
         runCatching {
-            val stateVersion = stateDao.getLatestStateVersion()
+            val stateVersion = getLatestCachedStateVersionInNetwork()
             var cachedPools = if (stateVersion != null) {
                 stateDao.getCachedPools(
                     poolAddresses = poolAddresses,
@@ -323,7 +328,7 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> = withContext(dispatcher) {
         runCatching {
-            val stateVersion = stateDao.getLatestStateVersion() ?: error("No cached state version found")
+            val stateVersion = getLatestCachedStateVersionInNetwork() ?: error("No cached state version found")
             val validators = stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion)
             val unknownAddresses = validatorAddresses - validators.map { it.address }.toSet()
             if (unknownAddresses.isNotEmpty()) {
@@ -431,4 +436,12 @@ class StateRepositoryImpl @Inject constructor(
     }
 
     override suspend fun clearCachedState(): Result<Unit> = accountsStateCache.clear()
+
+    private suspend fun getLatestCachedStateVersionInNetwork(): Long? {
+        val currentNetworkId = (getProfileUseCase.currentNetwork()?.networkID ?: Radix.Gateway.default.network.id).toUByte()
+
+        return stateDao.getAccountStateVersions().filter {
+            Address(it.address).networkId() == currentNetworkId
+        }.maxByOrNull { it.stateVersion }?.stateVersion
+    }
 }

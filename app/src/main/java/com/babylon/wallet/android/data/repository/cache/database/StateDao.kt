@@ -46,10 +46,10 @@ interface StateDao {
 
     @Query(
         """
-        SELECT MAX(state_version) FROM AccountEntity
+        SELECT address, state_version FROM AccountEntity
     """
     )
-    fun getLatestStateVersion(): Long?
+    fun getAccountStateVersions(): List<AccountStateVersion>
 
     @Suppress("UnsafeCallOnNullableType")
     @Transaction
