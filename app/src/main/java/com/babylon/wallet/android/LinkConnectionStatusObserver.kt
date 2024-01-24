@@ -33,7 +33,7 @@ class LinkConnectionStatusObserver @Inject constructor(
         .peerConnectionStatus
         .map { mapOfPeerConnectionStatus ->
             LinkConnectionsStatus(
-                peerConnectionState = mapOfPeerConnectionStatus.values.toPersistentList()
+                peerConnectionStatus = mapOfPeerConnectionStatus.values.toPersistentList()
             )
         }
         .stateIn(
@@ -43,10 +43,10 @@ class LinkConnectionStatusObserver @Inject constructor(
         )
 
     data class LinkConnectionsStatus(
-        private val peerConnectionState: ImmutableList<PeerConnectionStatus> = persistentListOf()
+        private val peerConnectionStatus: ImmutableList<PeerConnectionStatus> = persistentListOf()
     ) {
 
-        fun currentStatus() = peerConnectionState
+        fun currentStatus() = peerConnectionStatus
             .map { state ->
                 when (state) {
                     PeerConnectionStatus.OPEN -> {
