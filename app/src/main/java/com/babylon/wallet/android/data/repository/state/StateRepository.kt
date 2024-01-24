@@ -307,7 +307,7 @@ class StateRepositoryImpl @Inject constructor(
             if (unknownPools.isNotEmpty()) {
                 val newPools = stateApi.fetchPools(unknownPools, stateVersion)
                 if (newPools.poolItems.isNotEmpty()) {
-                    val fetchedStateVersion = newPools.stateVersion!!
+                    val fetchedStateVersion = requireNotNull(newPools.stateVersion)
                     val join = newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), fetchedStateVersion))
                     stateDao.updatePools(pools = join)
                     cachedPools = stateDao.getCachedPools(
@@ -339,7 +339,7 @@ class StateRepositoryImpl @Inject constructor(
                 )
                 val details = response.validators.asValidators()
                 if (details.isNotEmpty()) {
-                    val syncInfo = SyncInfo(InstantGenerator(), response.stateVersion!!)
+                    val syncInfo = SyncInfo(InstantGenerator(), requireNotNull(response.stateVersion))
                     stateDao.insertValidators(details.map { it.asValidatorEntity(syncInfo) })
                 }
                 details + cachedValidators
