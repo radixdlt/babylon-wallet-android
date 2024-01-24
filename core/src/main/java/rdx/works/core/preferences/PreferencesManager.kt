@@ -134,7 +134,7 @@ class PreferencesManager @Inject constructor(
 
     val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean> = dataStore.data
         .map { preferences ->
-            preferences[KEY_LINK_CONNECTION_STATUS_INDICATOR] ?: true
+            preferences[KEY_LINK_CONNECTION_STATUS_INDICATOR] ?: false
         }
 
     suspend fun setLinkConnectionStatusIndicator(isEnabled: Boolean) {
