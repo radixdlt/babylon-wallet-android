@@ -11,7 +11,7 @@ import kotlin.coroutines.cancellation.CancellationException
 @ActivityRetainedScoped
 class AccessFactorSourceProxyImpl @Inject constructor(
     private val appEventBus: AppEventBus
-) : AccessFactorSourceProxy, AccessFactorSourceUiProxy, AccessFactorSourceOutput {
+) : AccessFactorSourceProxy, AccessFactorSourceUiProxy {
 
     private var input: AccessFactorSourceInput = AccessFactorSourceInput.Init
     private val _output = MutableSharedFlow<AccessFactorSourceOutput?>()
