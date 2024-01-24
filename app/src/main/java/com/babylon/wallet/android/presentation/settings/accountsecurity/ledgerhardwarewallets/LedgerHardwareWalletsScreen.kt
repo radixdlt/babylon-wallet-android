@@ -95,7 +95,7 @@ fun LedgerHardwareWalletsScreen(
                     ledgerDevices = state.ledgerDevices,
                     onAddLedgerDeviceClick = viewModel::onAddLedgerDeviceClick,
                     onBackClick = onBackClick,
-                    linkingToConnector = state.isAddLedgerButtonEnabled
+                    isNewLinkedConnectorConnected = state.isNewLinkedConnectorConnected
                 )
             }
 
@@ -122,7 +122,7 @@ fun LedgerHardwareWalletsScreen(
                         addLedgerDeviceViewModel.initState()
                         viewModel.onCloseClick()
                     },
-                    isLinkConnectionEstablished = addLedgerDeviceState.isLinkConnectionEstablished
+                    isLinkedConnectorEstablished = addLedgerDeviceState.isAnyLinkedConnectorConnected
                 )
             }
 
@@ -163,7 +163,7 @@ private fun LedgerHardwareWalletsContent(
     ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
     onAddLedgerDeviceClick: () -> Unit,
     onBackClick: () -> Unit,
-    linkingToConnector: Boolean,
+    isNewLinkedConnectorConnected: Boolean,
 ) {
     BackHandler(onBack = onBackClick)
 
@@ -183,7 +183,7 @@ private fun LedgerHardwareWalletsContent(
                 modifier = Modifier.fillMaxWidth(),
                 ledgerFactorSources = ledgerDevices,
                 onAddLedgerDeviceClick = onAddLedgerDeviceClick,
-                linkingToConnector = linkingToConnector
+                isNewLinkedConnectorConnected = isNewLinkedConnectorConnected
             )
         }
     }
@@ -194,7 +194,7 @@ private fun LedgerDeviceDetails(
     modifier: Modifier = Modifier,
     ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource>,
     onAddLedgerDeviceClick: () -> Unit,
-    linkingToConnector: Boolean
+    isNewLinkedConnectorConnected: Boolean
 ) {
     Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
@@ -212,7 +212,7 @@ private fun LedgerDeviceDetails(
                     .fillMaxWidth(),
                 ledgerDevices = ledgerFactorSources,
                 onAddLedgerDeviceClick = onAddLedgerDeviceClick,
-                linkingToConnector = linkingToConnector
+                isNewLinkedConnectorConnected = isNewLinkedConnectorConnected
             )
         } else {
             Text(
@@ -234,7 +234,8 @@ private fun LedgerDeviceDetails(
                 modifier = Modifier
                     .fillMaxWidth(0.7f)
                     .imePadding(),
-                enabled = linkingToConnector.not(),
+                isLoading = isNewLinkedConnectorConnected.not(),
+                enabled = isNewLinkedConnectorConnected,
                 throttleClicks = true
             )
         }
@@ -246,7 +247,7 @@ private fun LedgerDevicesListContent(
     modifier: Modifier = Modifier,
     ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
     onAddLedgerDeviceClick: () -> Unit,
-    linkingToConnector: Boolean
+    isNewLinkedConnectorConnected: Boolean
 ) {
     LazyColumn(
         modifier,
@@ -280,7 +281,8 @@ private fun LedgerDevicesListContent(
                 text = stringResource(id = R.string.ledgerHardwareDevices_addNewLedger),
                 onClick = onAddLedgerDeviceClick,
                 throttleClicks = true,
-                enabled = linkingToConnector.not()
+                isLoading = isNewLinkedConnectorConnected.not(),
+                enabled = isNewLinkedConnectorConnected
             )
         }
     }
@@ -294,7 +296,7 @@ fun LedgerHardwareWalletsScreenEmptyPreview() {
             ledgerDevices = persistentListOf(),
             onAddLedgerDeviceClick = {},
             onBackClick = {},
-            linkingToConnector = true
+            isNewLinkedConnectorConnected = true
         )
     }
 }
@@ -307,7 +309,7 @@ fun LedgerHardwareWalletsScreenPreview() {
             ledgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
             onAddLedgerDeviceClick = {},
             onBackClick = {},
-            linkingToConnector = true
+            isNewLinkedConnectorConnected = true
         )
     }
 }

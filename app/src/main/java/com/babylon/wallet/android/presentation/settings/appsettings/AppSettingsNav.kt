@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.appsettings
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -43,7 +42,6 @@ fun NavGraphBuilder.appSettingsNavGraph(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.appSettingsScreen(
     navController: NavController
 ) {
@@ -87,7 +85,6 @@ fun NavGraphBuilder.appSettingsScreen(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 private fun NavGraphBuilder.settingsGateway(navController: NavController) {
     composable(
         route = Screen.SettingsEditGatewayApiDestination.route,

@@ -17,18 +17,23 @@ import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
+import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.main.AppState
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
 @AndroidEntryPoint
 class MainActivity : FragmentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
+
+    @Inject
+    lateinit var linkConnectionStatusObserver: LinkConnectionStatusObserver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -46,7 +51,18 @@ class MainActivity : FragmentActivity() {
                     derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }
                 }
 
-                DevelopmentPreviewWrapper(devBannerState = devBannerState) { padding ->
+                var linkConnectionsStatus: LinkConnectionsStatus? = null
+                if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
+                    val isLinkConnectionsStatusEnabled by linkConnectionStatusObserver.isEnabled.collectAsState()
+                    if (isLinkConnectionsStatusEnabled) {
+                        linkConnectionsStatus = linkConnectionStatusObserver.currentStatus.collectAsState().value
+                    }
+                }
+
+                DevelopmentPreviewWrapper(
+                    devBannerState = devBannerState,
+                    linkConnectionsStatus = linkConnectionsStatus
+                ) { padding ->
                     WalletApp(
                         modifier = Modifier.padding(padding),
                         mainViewModel = viewModel,

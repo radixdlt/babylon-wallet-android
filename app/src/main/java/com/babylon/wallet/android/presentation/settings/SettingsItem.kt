@@ -108,10 +108,13 @@ sealed interface SettingsItem {
     sealed interface DebugSettingsItem {
         data object InspectProfile : DebugSettingsItem
 
+        data object LinkConnectionStatusIndicator : DebugSettingsItem
+
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
                 InspectProfile -> R.string.settings_debugSettings_inspectProfile
+                LinkConnectionStatusIndicator -> R.string.linkedConnectors_title
             }
         }
 
@@ -119,12 +122,14 @@ sealed interface SettingsItem {
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
                 InspectProfile -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
+                LinkConnectionStatusIndicator -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
             }
         }
 
         companion object {
             fun values() = setOf(
-                InspectProfile
+                InspectProfile,
+                LinkConnectionStatusIndicator
             )
         }
     }

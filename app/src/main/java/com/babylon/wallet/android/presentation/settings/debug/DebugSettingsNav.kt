@@ -2,10 +2,12 @@ package com.babylon.wallet.android.presentation.settings.debug
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.SettingsItem.DebugSettingsItem.InspectProfile
 import com.babylon.wallet.android.presentation.settings.debug.profile.inspectProfile
 
@@ -41,12 +43,14 @@ fun NavGraphBuilder.debugSettings(
             }
         ) {
             DebugSettingsScreen(
+                viewModel = hiltViewModel(),
                 onBackClick = {
                     navController.popBackStack()
                 },
                 onItemClick = { item ->
                     when (item) {
                         InspectProfile -> navController.inspectProfile()
+                        SettingsItem.DebugSettingsItem.LinkConnectionStatusIndicator -> {}
                     }
                 }
             )

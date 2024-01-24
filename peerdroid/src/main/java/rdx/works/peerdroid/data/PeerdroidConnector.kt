@@ -47,6 +47,7 @@ import rdx.works.peerdroid.domain.ConnectionIdHolder
 import rdx.works.peerdroid.domain.DataChannelHolder
 import rdx.works.peerdroid.domain.DataChannelWrapperEvent
 import rdx.works.peerdroid.domain.PeerConnectionHolder
+import rdx.works.peerdroid.domain.PeerConnectionStatus
 import rdx.works.peerdroid.domain.RemoteClientHolder
 import rdx.works.peerdroid.domain.WebSocketHolder
 import timber.log.Timber
@@ -55,6 +56,8 @@ import java.util.concurrent.ConcurrentHashMap
 interface PeerdroidConnector {
 
     val anyChannelConnected: Flow<Boolean>
+
+    val peerConnectionStatus: Flow<Map<String, PeerConnectionStatus>>
 
     suspend fun connectToConnectorExtension(encryptionKey: ByteArray): Result<Unit>
 
@@ -92,12 +95,17 @@ internal class PeerdroidConnectorImpl(
 
     private val isAnyChannelConnected = MutableStateFlow(false)
 
+    private val _peerConnectionStatus = MutableStateFlow(emptyMap<String, PeerConnectionStatus>())
+
     init {
         Timber.d("⚙️ init PeerdroidConnector")
     }
 
     override val anyChannelConnected: Flow<Boolean>
         get() = isAnyChannelConnected.asSharedFlow()
+
+    override val peerConnectionStatus: Flow<Map<String, PeerConnectionStatus>>
+        get() = _peerConnectionStatus
 
     override suspend fun connectToConnectorExtension(encryptionKey: ByteArray): Result<Unit> {
         val connectionId = encryptionKey.blake2Hash().toHexString()
@@ -151,6 +159,7 @@ internal class PeerdroidConnectorImpl(
                 dataChannelHolder.dataChannel.close()
             }
             mapOfDataChannels.values.removeAll(dataChannelsForTermination.toSet())
+            updatePeerConnectionStatus(connectionId = connectionId, isOpen = false, isDeleted = true)
             Timber.d("⚙️ \uD83D\uDDD1️ link connection with connectionId: ${connectionId.id} deleted ✅")
         }
     }
@@ -304,6 +313,7 @@ internal class PeerdroidConnectorImpl(
             .onEach { event ->
                 when (event) {
                     is PeerConnectionEvent.RenegotiationNeeded -> {
+                        updatePeerConnectionStatus(connectionId = connectionId, isConnecting = true)
                         Timber.d("⚙️ ⚡ renegotiation needed for remote client: $remoteClientHolder \uD83C\uDD97")
                         renegotiationDeferred.complete(Unit)
                     }
@@ -333,6 +343,7 @@ internal class PeerdroidConnectorImpl(
                             dataChannel = dataChannel
                         )
                         isAnyChannelConnected.tryEmit(mapOfDataChannels.values.isNotEmpty())
+                        updatePeerConnectionStatus(connectionId = connectionId, isConnecting = false, isOpen = true)
                         Timber.d("⚙️ ℹ️ current count of data channels: ${mapOfDataChannels.size}")
                     }
 
@@ -340,6 +351,7 @@ internal class PeerdroidConnectorImpl(
                         Timber.d("⚙️ ⚡ peer connection disconnected for remote client: $remoteClientHolder \uD83D\uDD34")
                         terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionId)
                         isAnyChannelConnected.tryEmit(mapOfDataChannels.values.isNotEmpty())
+                        updatePeerConnectionStatus(connectionId = connectionId, isConnecting = false, isOpen = false)
                     }
 
                     is PeerConnectionEvent.Failed -> {
@@ -475,5 +487,27 @@ internal class PeerdroidConnectorImpl(
                 iceCandidateData = iceCandidateData
             )
         }
+    }
+
+    private fun updatePeerConnectionStatus(
+        connectionId: ConnectionIdHolder,
+        isConnecting: Boolean = false,
+        isOpen: Boolean = false,
+        isDeleted: Boolean = false
+    ) {
+        val mapOfPeerConnectionStatus = _peerConnectionStatus.value.toMutableMap()
+        mapOfPeerConnectionStatus[connectionId.id] = if (isConnecting) {
+            PeerConnectionStatus.CONNECTING
+        } else {
+            if (isOpen) {
+                PeerConnectionStatus.OPEN
+            } else {
+                PeerConnectionStatus.CLOSED
+            }
+        }
+        if (isDeleted) {
+            mapOfPeerConnectionStatus.remove(connectionId.id)
+        }
+        _peerConnectionStatus.tryEmit(mapOfPeerConnectionStatus)
     }
 }

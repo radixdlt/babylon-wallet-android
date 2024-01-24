@@ -41,7 +41,7 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
 
     @Before
     fun setup() {
-        coEvery { ledgerMessengerMock.isConnected } returns flowOf(true)
+        coEvery { ledgerMessengerMock.isAnyLinkedConnectorConnected } returns flowOf(true)
     }
 
     @Test

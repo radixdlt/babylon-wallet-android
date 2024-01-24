@@ -86,8 +86,8 @@ class AddLedgerDeviceViewModel @Inject constructor(
 
     private fun observeLinkConnectionStatus() {
         viewModelScope.launch {
-            ledgerMessenger.isConnected.collect { connected ->
-                _state.update { it.copy(isLinkConnectionEstablished = connected) }
+            ledgerMessenger.isAnyLinkedConnectorConnected.collect { isConnected ->
+                _state.update { it.copy(isAnyLinkedConnectorConnected = isConnected) }
             }
         }
     }
@@ -101,7 +101,7 @@ class AddLedgerDeviceViewModel @Inject constructor(
 
     fun initState() {
         _state.update { current ->
-            AddLedgerDeviceUiState.init.copy(isLinkConnectionEstablished = current.isLinkConnectionEstablished)
+            AddLedgerDeviceUiState.init.copy(isAnyLinkedConnectorConnected = current.isAnyLinkedConnectorConnected)
         }
     }
 
@@ -136,7 +136,7 @@ data class AddLedgerDeviceUiState(
     val showContent: ShowContent,
     val newConnectedLedgerDevice: LedgerDeviceUiModel?,
     val uiMessage: UiMessage?,
-    val isLinkConnectionEstablished: Boolean = false
+    val isAnyLinkedConnectorConnected: Boolean = false
 ) : UiState {
 
     enum class ShowContent {

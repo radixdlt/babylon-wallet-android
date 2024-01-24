@@ -18,7 +18,8 @@ import javax.inject.Inject
 
 interface LedgerMessenger {
 
-    val isConnected: Flow<Boolean>
+    val isAnyLinkedConnectorConnected: Flow<Boolean>
+
     suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse>
 
     suspend fun signTransactionRequest(
@@ -55,7 +56,7 @@ class LedgerMessengerImpl @Inject constructor(
     private val peerdroidClient: PeerdroidClient,
 ) : LedgerMessenger {
 
-    override val isConnected: Flow<Boolean>
+    override val isAnyLinkedConnectorConnected: Flow<Boolean>
         get() = peerdroidClient.hasAtLeastOneConnection
 
     override suspend fun sendDeviceInfoRequest(interactionId: String): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse> {
