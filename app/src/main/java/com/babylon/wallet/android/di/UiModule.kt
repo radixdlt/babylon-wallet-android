@@ -10,10 +10,10 @@ import dagger.hilt.android.components.ActivityRetainedComponent
 
 @Module
 @InstallIn(ActivityRetainedComponent::class)
-interface ViewModule {
+interface UiModule {
 
     @Binds
-    fun bindInputOutput(
+    fun bindAccessFactorSourceUiProxy(
         accessFactorSourceProxyImpl: AccessFactorSourceProxyImpl
     ): AccessFactorSourceUiProxy
 
