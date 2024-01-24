@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Text
@@ -23,11 +24,19 @@ fun ValidatorDetailsItem(validator: ValidatorDetail, modifier: Modifier = Modifi
             modifier = Modifier.size(iconSize),
             validator = validator
         )
-        Text(
-            validator.name,
-            style = RadixTheme.typography.body1Header,
-            color = RadixTheme.colors.gray1,
-            maxLines = 1
-        )
+        Column {
+            Text(
+                validator.name,
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1
+            )
+
+            ActionableAddressView(
+                address = validator.address,
+                textStyle = RadixTheme.typography.body2HighImportance,
+                textColor = RadixTheme.colors.gray2
+            )
+        }
     }
 }
