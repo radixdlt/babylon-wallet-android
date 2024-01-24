@@ -449,7 +449,7 @@
   <string name="transactionStatus_error_title">Transaction Error</string>
   <string name="transactionStatus_success_text">Your transaction was successful</string>
   <string name="transactionStatus_failed_text">Your transaction was processed, but had a problem that caused it to fail permanently</string>
-  <string name="transactionStatus_error_text">Your transaction could not be processed, but could potentially still be processed within the next %s minutes</string>
+  <string name="transactionStatus_error_text">This transaction was rejected and is unlikely to be processed, but could potentially be processed within the next %s minutes. It is likely that the dApp you are using proposed a transaction that includes an action that is not currently valid.</string>
   <string name="transactionStatus_rejected_text">Your transaction was improperly constructed and cannot be processed</string>
   <string name="transactionStatus_failure_title">Something went wrong</string>
   <string name="transactionStatus_failure_text">Transaction was rejected as invalid by the Radix Network.</string>
