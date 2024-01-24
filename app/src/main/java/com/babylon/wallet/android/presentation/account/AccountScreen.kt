@@ -57,6 +57,7 @@ import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
@@ -448,10 +449,11 @@ fun AccountContentPreview() {
                     accountWithAssets = AccountWithAssets(
                         account = sampleAccount("acount_rdx_abcde"),
                         assets = Assets(
-                            fungibles = sampleFungibleResources(),
+                            tokens = sampleFungibleResources().map { Token(it) },
                             nonFungibles = listOf(),
                             poolUnits = listOf(),
-                            validatorsWithStakes = emptyList()
+                            liquidStakeUnits = emptyList(),
+                            stakeClaims = emptyList()
                         ),
                     )
                 ),

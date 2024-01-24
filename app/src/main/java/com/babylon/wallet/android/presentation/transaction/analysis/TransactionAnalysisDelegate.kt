@@ -3,23 +3,16 @@ package com.babylon.wallet.android.presentation.transaction.analysis
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
-import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
-import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
-import com.babylon.wallet.android.domain.usecases.assets.GetPoolDetailsUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.guaranteesCount
-import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.flow.update
@@ -33,14 +26,9 @@ import javax.inject.Inject
 
 @Suppress("LongParameterList")
 class TransactionAnalysisDelegate @Inject constructor(
+    private val previewTypeAnalyzer: PreviewTypeAnalyzer,
     private val getProfileUseCase: GetProfileUseCase,
-    private val getResourcesUseCase: GetResourcesUseCase,
-    private val getValidatorsUseCase: GetValidatorsUseCase,
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
-    private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
-    private val getNFTDetailsUseCase: GetNFTDetailsUseCase,
-    private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase,
-    private val getPoolDetailsUseCase: GetPoolDetailsUseCase,
     private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
@@ -107,16 +95,14 @@ class TransactionAnalysisDelegate @Inject constructor(
                 )
             }
             PreviewType.UnacceptableManifest
-        } else if (detailedClassification.isEmpty()) {
-            PreviewType.NonConforming
         } else {
-            processConformingManifest()
+            previewTypeAnalyzer.analyze(this)
         }
 
         if (previewType is PreviewType.Transfer) {
-            val newlyCreated = previewType.getNewlyCreatedResources()
+            val newlyCreated = previewType.newlyCreatedResources
             if (newlyCreated.isNotEmpty()) {
-                cacheNewlyCreatedEntitiesUseCase(newlyCreated.map { it.resource })
+                cacheNewlyCreatedEntitiesUseCase(newlyCreated)
             }
         }
 
@@ -147,97 +133,6 @@ class TransactionAnalysisDelegate @Inject constructor(
             fees.copy(includeLockFee = true)
         } else {
             fees
-        }
-    }
-
-    @Suppress("LongMethod")
-    private suspend fun ExecutionSummary.processConformingManifest(): PreviewType {
-        val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
-        val xrdAddress = XrdResource.address(networkId)
-        val transactionType = detailedClassification.firstOrNull {
-            it.isConformingManifestType()
-        } ?: return PreviewType.NonConforming
-        val resourceAddresses = when (transactionType) {
-            is DetailedManifestClass.AccountDepositSettingsUpdate -> transactionType.involvedResourceAddresses
-            else -> involvedResourceAddresses + xrdAddress
-        }
-        val resources = getResourcesUseCase(addresses = resourceAddresses, withDetails = true).getOrThrow()
-
-        return when (transactionType) {
-            is DetailedManifestClass.General -> {
-                resolveGeneralTransaction(
-                    resources = resources,
-                    getTransactionBadgesUseCase = getTransactionBadgesUseCase,
-                    getProfileUseCase = getProfileUseCase,
-                    resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
-                )
-            }
-
-            is DetailedManifestClass.AccountDepositSettingsUpdate -> {
-                transactionType.resolve(
-                    getProfileUseCase = getProfileUseCase,
-                    allResources = resources
-                )
-            }
-
-            is DetailedManifestClass.Transfer -> resolveTransfer(getProfileUseCase, resources)
-            is DetailedManifestClass.ValidatorClaim -> {
-                val validators = getValidatorsUseCase(transactionType.involvedValidatorAddresses).getOrThrow()
-                val stakeClaimsNfts = involvedStakeClaims.map {
-                    getNFTDetailsUseCase(it.resourceAddress, it.localId).getOrDefault(emptyList())
-                }.flatten()
-                transactionType.resolve(
-                    executionSummary = this,
-                    getProfileUseCase = getProfileUseCase,
-                    resources = resources,
-                    involvedValidators = validators,
-                    stakeClaimsNfts = stakeClaimsNfts
-                )
-            }
-
-            is DetailedManifestClass.ValidatorStake -> {
-                val validators = getValidatorsUseCase(transactionType.involvedValidatorAddresses).getOrThrow()
-                transactionType.resolve(
-                    getProfileUseCase = getProfileUseCase,
-                    resources = resources,
-                    involvedValidators = validators,
-                    executionSummary = this
-                )
-            }
-
-            is DetailedManifestClass.ValidatorUnstake -> {
-                val validators = getValidatorsUseCase(transactionType.involvedValidatorAddresses).getOrThrow()
-                transactionType.resolve(
-                    getProfileUseCase = getProfileUseCase,
-                    resources = resources,
-                    involvedValidators = validators,
-                    executionSummary = this
-                )
-            }
-
-            is DetailedManifestClass.PoolContribution -> {
-                val pools = getPoolDetailsUseCase(transactionType.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()
-                transactionType.resolve(
-                    getProfileUseCase = getProfileUseCase,
-                    resources = resources,
-                    involvedPools = pools,
-                    executionSummary = this,
-                    resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
-                )
-            }
-
-            is DetailedManifestClass.PoolRedemption -> {
-                val pools = getPoolDetailsUseCase(transactionType.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()
-                transactionType.resolve(
-                    getProfileUseCase = getProfileUseCase,
-                    resources = resources,
-                    involvedPools = pools,
-                    executionSummary = this,
-                    resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
-                )
-            }
-
-            else -> PreviewType.NonConforming
         }
     }
 

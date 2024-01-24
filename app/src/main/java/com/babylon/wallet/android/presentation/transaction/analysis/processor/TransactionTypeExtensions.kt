@@ -1,10 +1,10 @@
 @file:Suppress("TooManyFunctions")
 
-package com.babylon.wallet.android.presentation.transaction.analysis
+package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.findFungible
 import com.babylon.wallet.android.domain.model.resources.findNonFungible
@@ -119,7 +119,7 @@ val ExecutionSummary.involvedResourceAddresses: Set<String>
         }
     }.flatten().toSet()
 
-fun ResourceIndicator.toTransferableResource(resources: List<Resource>): TransferableResource {
+fun ResourceIndicator.toTransferableResource(resources: List<Resource>): TransferableAsset {
     val resourceAddress = this.resourceAddress
     return when (this) {
         is ResourceIndicator.Fungible -> {
@@ -127,7 +127,7 @@ fun ResourceIndicator.toTransferableResource(resources: List<Resource>): Transfe
                 resourceAddress = resourceAddress,
                 ownedAmount = BigDecimal.ZERO
             )
-            TransferableResource.FungibleAmount(
+            TransferableAsset.Fungible.Token(
                 amount = amount,
                 resource = resource,
                 isNewlyCreated = false
@@ -148,7 +148,7 @@ fun ResourceIndicator.toTransferableResource(resources: List<Resource>): Transfe
                 items = items
             )
 
-            TransferableResource.NFTs(
+            TransferableAsset.NonFungible.NFTAssets(
                 resource = collection,
                 isNewlyCreated = false
             )
@@ -277,14 +277,14 @@ private fun ResourceIndicator.Fungible.toTransferableResource(
     resources: List<Resource>,
     newlyCreatedMetadata: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>
-): TransferableResource.FungibleAmount {
+): TransferableAsset.Fungible.Token {
     val resource = resources.findFungible(
         resourceAddress.addressString()
     ) ?: Resource.FungibleResource.from(
         resourceAddress = resourceAddress, metadata = newlyCreatedMetadata[resourceAddress.addressString()].orEmpty()
     )
 
-    return TransferableResource.FungibleAmount(
+    return TransferableAsset.Fungible.Token(
         amount = amount,
         resource = resource,
         isNewlyCreated = resourceAddress.addressString() in newlyCreatedEntities.map { it.addressString() }
@@ -304,7 +304,7 @@ private fun ResourceIndicator.NonFungible.toTransferableResource(
     resources: List<Resource>,
     newlyCreated: Map<String, Map<String, MetadataValue?>>,
     newlyCreatedEntities: List<Address>
-): TransferableResource.NFTs {
+): TransferableAsset.NonFungible.NFTAssets {
     val items = indicator.nonFungibleLocalIds.map { id ->
         Resource.NonFungibleResource.Item(
             collectionAddress = this.resourceAddress.addressString(),
@@ -318,7 +318,7 @@ private fun ResourceIndicator.NonFungible.toTransferableResource(
         metadata = newlyCreated[resourceAddress.addressString()].orEmpty()
     )
 
-    return TransferableResource.NFTs(
+    return TransferableAsset.NonFungible.NFTAssets(
         resource = collection,
         isNewlyCreated = resourceAddress.addressString() in newlyCreatedEntities.map { it.addressString() }
     )

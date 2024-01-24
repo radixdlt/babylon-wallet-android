@@ -16,8 +16,7 @@ import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
-import com.babylon.wallet.android.domain.model.TransferableWithGuarantees
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Badge
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -385,7 +384,7 @@ class TransactionReviewViewModel @Inject constructor(
                         if (candidateAddressWithdrawn != null) {
                             val xrdResourceWithdrawn = candidateAddressWithdrawn.resources.map {
                                 it.transferable
-                            }.filterIsInstance<TransferableResource.FungibleAmount>().find { it.resource.isXrd }
+                            }.filterIsInstance<TransferableAsset.Fungible.Token>().find { it.resource.isXrd }
 
                             xrdResourceWithdrawn?.amount ?: BigDecimal.ZERO
                         } else {
@@ -501,9 +500,10 @@ sealed interface PreviewType {
         val from: List<AccountWithTransferableResources>
         val to: List<AccountWithTransferableResources>
 
-        fun getNewlyCreatedResources() = (from + to).map { allTransfers ->
-            allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable }
-        }.flatten()
+        val newlyCreatedResources: List<Resource>
+            get() = (from + to).map { allTransfers ->
+                allTransfers.resources.filter { it.transferable.isNewlyCreated }.map { it.transferable.resource }
+            }.flatten()
 
         data class Staking(
             override val from: List<AccountWithTransferableResources>,
@@ -570,7 +570,7 @@ data class AccountWithDepositSettingsChanges(
 @Suppress("MagicNumber")
 sealed interface AccountWithPredictedGuarantee {
     val address: String
-    val transferable: TransferableWithGuarantees
+    val transferable: TransferableAsset.Fungible
     val instructionIndex: Long
     val guaranteeAmountString: String
 
@@ -614,11 +614,11 @@ sealed interface AccountWithPredictedGuarantee {
     }
 
     fun isTheSameGuaranteeItem(with: AccountWithPredictedGuarantee): Boolean = address == with.address &&
-        transferable.fungibleResource.resourceAddress == with.transferable.fungibleResource.resourceAddress
+        transferable.resourceAddress == with.transferable.resourceAddress
 
     data class Owned(
         val account: Network.Account,
-        override val transferable: TransferableWithGuarantees,
+        override val transferable: TransferableAsset.Fungible,
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
     ) : AccountWithPredictedGuarantee {
@@ -628,7 +628,7 @@ sealed interface AccountWithPredictedGuarantee {
 
     data class Other(
         override val address: String,
-        override val transferable: TransferableWithGuarantees,
+        override val transferable: TransferableAsset.Fungible,
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
     ) : AccountWithPredictedGuarantee
@@ -662,12 +662,12 @@ sealed interface AccountWithTransferableResources {
         val resources = resources.mapWhen(
             predicate = { depositing ->
                 resourcesWithGuaranteesForAccount.any {
-                    it.address == address && it.transferable.fungibleResource.resourceAddress == depositing.transferable.resourceAddress
+                    it.address == address && it.transferable.resourceAddress == depositing.transferable.resourceAddress
                 }
             },
             mutation = { depositing ->
                 val accountWithGuarantee = resourcesWithGuaranteesForAccount.find {
-                    it.transferable.fungibleResource.resourceAddress == depositing.transferable.resourceAddress
+                    it.transferable.resourceAddress == depositing.transferable.resourceAddress
                 }
 
                 if (accountWithGuarantee != null) {

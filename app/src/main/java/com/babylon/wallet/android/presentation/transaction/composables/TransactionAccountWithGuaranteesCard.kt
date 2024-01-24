@@ -36,7 +36,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.TransferableResource
+import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Owned
@@ -109,14 +110,14 @@ fun TransactionAccountWithGuaranteesCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
-                val transferable = accountWithGuarantee.transferable
+                val fungible = accountWithGuarantee.transferable.resource as Resource.FungibleResource
                 Thumbnail.Fungible(
                     modifier = Modifier.size(44.dp),
-                    token = transferable.fungibleResource
+                    token = fungible
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = transferable.fungibleResource.displayTitle,
+                    text = fungible.displayTitle,
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
@@ -245,7 +246,7 @@ fun TransactionAccountWithGuaranteesCardPreview() {
             mutableStateOf(
                 Owned(
                     account = SampleDataProvider().sampleAccount(),
-                    transferable = TransferableResource.FungibleAmount(
+                    transferable = TransferableAsset.Fungible.Token(
                         amount = BigDecimal.TEN,
                         resource = SampleDataProvider().sampleFungibleResources()[0],
                         isNewlyCreated = false

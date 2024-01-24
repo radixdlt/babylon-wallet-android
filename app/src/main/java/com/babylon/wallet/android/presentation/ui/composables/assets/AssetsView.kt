@@ -22,10 +22,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
@@ -110,8 +111,8 @@ data class AssetsViewState(
     companion object {
         fun from(selectedTab: AssetsTab = AssetsTab.Tokens, assets: Assets?): AssetsViewState {
             val collectionAddresses = assets?.nonFungibles?.map {
-                it.resourceAddress
-            }.orEmpty() + assets?.validatorsWithStakes?.map {
+                it.collection.resourceAddress
+            }.orEmpty() + assets?.ownedValidatorsWithStakes?.map {
                 it.validatorDetail.address
             }.orEmpty()
 
@@ -212,19 +213,21 @@ fun AssetsViewWithAssets() {
     val assets by remember {
         mutableStateOf(
             Assets(
-                fungibles = listOf(
-                    Resource.FungibleResource(
-                        resourceAddress = XrdResource.address(),
-                        ownedAmount = BigDecimal(1000),
-                        metadata = listOf(
-                            Metadata.Primitive(
-                                key = ExplicitMetadataKey.SYMBOL.key,
-                                value = XrdResource.SYMBOL,
-                                valueType = MetadataType.String
+                tokens = listOf(
+                    Token(
+                        Resource.FungibleResource(
+                            resourceAddress = XrdResource.address(),
+                            ownedAmount = BigDecimal(1000),
+                            metadata = listOf(
+                                Metadata.Primitive(
+                                    key = ExplicitMetadataKey.SYMBOL.key,
+                                    value = XrdResource.SYMBOL,
+                                    valueType = MetadataType.String
+                                )
                             )
                         )
                     )
-                ) + SampleDataProvider().sampleFungibleResources(),
+                ) + SampleDataProvider().sampleFungibleResources().map { Token(it) },
                 nonFungibles = listOf(
                     Resource.NonFungibleResource(
                         resourceAddress = SampleDataProvider().randomAddress(),
@@ -257,7 +260,7 @@ fun AssetsViewWithAssets() {
                             )
                         )
                     },
-                ),
+                ).map { NonFungibleCollection(it) },
                 poolUnits = listOf(
                     PoolUnit(
                         stake = Resource.FungibleResource(
@@ -316,55 +319,60 @@ fun AssetsViewWithAssets() {
                         )
                     )
                 ),
-                validatorsWithStakes = listOf(
-                    ValidatorWithStakes(
-                        validatorDetail = ValidatorDetail(
+                liquidStakeUnits = listOf(
+                    LiquidStakeUnit(
+                        Resource.FungibleResource(
+                            resourceAddress = "resource_dfgh",
+                            ownedAmount = BigDecimal(100),
+                            metadata = listOf(
+                                Metadata.Primitive(
+                                    key = ExplicitMetadataKey.NAME.key,
+                                    value = "Liquid Stake Unit",
+                                    valueType = MetadataType.String
+                                )
+                            )
+                        ),
+                        ValidatorDetail(
                             address = "validator_abc",
                             totalXrdStake = BigDecimal(1000),
                             metadata = listOf(
                                 Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Awesome Validator", MetadataType.String)
                             )
-                        ),
-                        liquidStakeUnit = LiquidStakeUnit(
-                            Resource.FungibleResource(
-                                resourceAddress = "resource_dfgh",
-                                ownedAmount = BigDecimal(100),
-                                metadata = listOf(
-                                    Metadata.Primitive(
-                                        key = ExplicitMetadataKey.NAME.key,
-                                        value = "Liquid Stake Unit",
-                                        valueType = MetadataType.String
-                                    )
+                        )
+                    ),
+                    LiquidStakeUnit(
+                        Resource.FungibleResource(
+                            resourceAddress = "resource_dfg",
+                            ownedAmount = BigDecimal(21),
+                            metadata = listOf(
+                                Metadata.Primitive(
+                                    key = ExplicitMetadataKey.NAME.key,
+                                    value = "Liquid Stake Unit",
+                                    valueType = MetadataType.String
                                 )
                             )
                         ),
-                        stakeClaimNft = StakeClaim(
-                            nonFungibleResource = Resource.NonFungibleResource(
-                                resourceAddress = "resource_stake_claim-abc",
-                                amount = 2,
-                                items = listOf()
-                            )
-                        )
-                    ),
-                    ValidatorWithStakes(
-                        validatorDetail = ValidatorDetail(
+                        ValidatorDetail(
                             address = "validator_abcd",
                             totalXrdStake = BigDecimal(10000),
                             metadata = listOf(
                                 Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Another Validator", MetadataType.String)
                             )
+                        )
+                    )
+                ),
+                stakeClaims = listOf(
+                    StakeClaim(
+                        nonFungibleResource = Resource.NonFungibleResource(
+                            resourceAddress = "resource_stake_claim-abc",
+                            amount = 2,
+                            items = listOf()
                         ),
-                        liquidStakeUnit = LiquidStakeUnit(
-                            Resource.FungibleResource(
-                                resourceAddress = "resource_dfg",
-                                ownedAmount = BigDecimal(21),
-                                metadata = listOf(
-                                    Metadata.Primitive(
-                                        key = ExplicitMetadataKey.NAME.key,
-                                        value = "Liquid Stake Unit",
-                                        valueType = MetadataType.String
-                                    )
-                                )
+                        ValidatorDetail(
+                            address = "validator_abc",
+                            totalXrdStake = BigDecimal(1000),
+                            metadata = listOf(
+                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Awesome Validator", MetadataType.String)
                             )
                         )
                     )

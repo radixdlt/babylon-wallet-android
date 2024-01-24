@@ -5,7 +5,11 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 
 data class StakeClaim(
     val nonFungibleResource: Resource.NonFungibleResource,
-) {
+    val validator: ValidatorDetail
+) : Asset {
+
+    override val resource: Resource
+        get() = nonFungibleResource
 
     val validatorAddress: String
         get() = nonFungibleResource.validatorAddress.orEmpty()
@@ -20,6 +24,5 @@ data class StakeClaim(
         get() = nonFungibleResource.iconUrl
 
     fun unstakingNFTs(epoch: Long) = nonFungibleResource.items.filter { !it.isReadyToClaim(epoch) }
-
     fun readyToClaimNFTs(epoch: Long) = nonFungibleResource.items.filter { it.isReadyToClaim(epoch) }
 }

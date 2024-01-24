@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.presentation.transaction.analysis.sort
+import com.babylon.wallet.android.presentation.transaction.analysis.processor.sort
 import com.radixdlt.ret.ResourceIndicator
 import kotlinx.coroutines.test.runTest
 import org.junit.Test

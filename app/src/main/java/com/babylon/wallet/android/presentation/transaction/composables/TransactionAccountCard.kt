@@ -39,11 +39,9 @@ import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableResource
-import com.babylon.wallet.android.domain.model.TransferableWithGuarantees
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.asLsu
 import com.babylon.wallet.android.domain.model.resources.metadata.name
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
@@ -70,30 +68,30 @@ fun TransactionAccountCard(
         )
 
         val fungibleAmountTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableResource.FungibleAmount }
+            account.resources.filter { it.transferable is TransferableAsset.Fungible.Token }
         }
 
         val nftTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableResource.NFTs }
+            account.resources.filter { it.transferable is TransferableAsset.NonFungible.NFTAssets }
         }
 
         val lsuTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableResource.LsuAmount }
+            account.resources.filter { it.transferable is TransferableAsset.Fungible.LSUAsset }
         }
 
         val stakeClaimNftTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableResource.StakeClaimNft }
+            account.resources.filter { it.transferable is TransferableAsset.NonFungible.StakeClaimAssets }
         }
 
         val poolUnitTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableResource.PoolUnitAmount }
+            account.resources.filter { it.transferable is TransferableAsset.Fungible.PoolUnitAsset }
         }
 
         // Fungibles
         fungibleAmountTransferables.forEachIndexed { index, amountTransferable ->
             val lastItem = if (nftTransferables.isEmpty()) index == fungibleAmountTransferables.lastIndex else false
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableFungibleAmount = amountTransferable.transferable as TransferableResource.FungibleAmount
+            val transferableFungibleAmount = amountTransferable.transferable as TransferableAsset.Fungible.Token
 
             TransferableItemContent(
                 modifier = Modifier.clickable {
@@ -109,7 +107,7 @@ fun TransactionAccountCard(
 
         // Non fungibles
         nftTransferables.forEachIndexed { collectionIndex, nftTransferable ->
-            val collection = nftTransferable.transferable as TransferableResource.NFTs
+            val collection = nftTransferable.transferable as TransferableAsset.NonFungible.NFTAssets
             // Show each nft item
             collection.resource.items.forEachIndexed { itemIndex, item ->
                 val lastItem = itemIndex == collection.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
@@ -125,11 +123,11 @@ fun TransactionAccountCard(
         lsuTransferables.forEachIndexed { index, transferable ->
             val lastItem = index == lsuTransferables.lastIndex
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableLsu = transferable.transferable as TransferableResource.LsuAmount
+            val transferableLsu = transferable.transferable as TransferableAsset.Fungible.LSUAsset
 
             TransferableLsuItemContent(
                 modifier = Modifier.clickable {
-                    onFungibleResourceClick(transferableLsu.resource, transferableLsu.isNewlyCreated)
+                    onFungibleResourceClick(transferableLsu.lsu.fungibleResource, transferableLsu.isNewlyCreated)
                 },
                 transferable = transferable,
                 shape = shape,
@@ -141,7 +139,7 @@ fun TransactionAccountCard(
         stakeClaimNftTransferables.forEachIndexed { index, transferable ->
             val lastItem = index == stakeClaimNftTransferables.lastIndex
             val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableStakeClaim = transferable.transferable as TransferableResource.StakeClaimNft
+            val transferableStakeClaim = transferable.transferable as TransferableAsset.NonFungible.StakeClaimAssets
 
             TransferableStakeClaimNftItemContent(
                 transferable = transferableStakeClaim,
@@ -254,14 +252,14 @@ private fun TransferableItemContent(
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
         when (val resource = transferable.transferable) {
-            is TransferableResource.FungibleAmount -> {
+            is TransferableAsset.Fungible.Token -> {
                 Thumbnail.Fungible(
                     modifier = Modifier.size(44.dp),
                     token = resource.resource,
                 )
             }
 
-            is TransferableResource.NFTs -> {
+            is TransferableAsset.NonFungible.NFTAssets -> {
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(44.dp),
                     collection = resource.resource,
@@ -274,8 +272,8 @@ private fun TransferableItemContent(
         Text(
             modifier = Modifier.weight(1f),
             text = when (val resource = transferable.transferable) {
-                is TransferableResource.FungibleAmount -> resource.resource.displayTitle
-                is TransferableResource.NFTs -> resource.resource.name
+                is TransferableAsset.Fungible.Token -> resource.resource.displayTitle
+                is TransferableAsset.NonFungible.NFTAssets -> resource.resource.name
                 else -> ""
             }.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
             style = RadixTheme.typography.body2HighImportance,
@@ -310,7 +308,7 @@ private fun GuaranteesSection(transferable: Transferable, modifier: Modifier = M
                 )
             }
 
-            (transferable.transferable as? TransferableWithGuarantees)?.let {
+            (transferable.transferable as? TransferableAsset.Fungible)?.let {
                 Text(
                     modifier = Modifier,
                     text = it.amount.displayableQuantity(),
@@ -353,10 +351,7 @@ private fun TransferableLsuItemContent(
     transferable: Transferable,
     shape: Shape
 ) {
-    val transferableLsu = transferable.transferable as TransferableResource.LsuAmount
-    val lsu = remember(transferableLsu) {
-        transferableLsu.resource.asLsu()
-    }
+    val transferableLsu = transferable.transferable as TransferableAsset.Fungible.LSUAsset
     Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
@@ -376,19 +371,23 @@ private fun TransferableLsuItemContent(
         ) {
             Thumbnail.LSU(
                 modifier = Modifier.size(44.dp),
-                liquidStakeUnit = lsu,
+                liquidStakeUnit = transferableLsu.lsu,
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = lsu.fungibleResource.displayTitle.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
+                    text = transferableLsu.lsu.fungibleResource.displayTitle.ifEmpty {
+                        stringResource(
+                            id = R.string.transactionReview_unknown
+                        )
+                    },
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferableLsu.validatorDetail.name,
+                    text = transferableLsu.validator.name,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
@@ -451,7 +450,7 @@ private fun TransferableLsuItemContent(
 @Composable
 private fun TransferableStakeClaimNftItemContent(
     modifier: Modifier = Modifier,
-    transferable: TransferableResource.StakeClaimNft,
+    transferable: TransferableAsset.NonFungible.StakeClaimAssets,
     shape: Shape,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
@@ -486,7 +485,7 @@ private fun TransferableStakeClaimNftItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferable.validatorDetail.name,
+                    text = transferable.validator.name,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
@@ -559,7 +558,7 @@ private fun TransferablePoolUnitItemContent(
     shape: Shape,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit
 ) {
-    val transferablePoolUnit = transferable.transferable as TransferableResource.PoolUnitAmount
+    val transferablePoolUnit = transferable.transferable as TransferableAsset.Fungible.PoolUnitAsset
     Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
@@ -579,7 +578,7 @@ private fun TransferablePoolUnitItemContent(
         ) {
             Thumbnail.PoolUnit(
                 modifier = Modifier.size(44.dp),
-                poolUnit = transferablePoolUnit.poolUnit
+                poolUnit = transferablePoolUnit.unit
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -611,7 +610,7 @@ private fun TransferablePoolUnitItemContent(
             color = RadixTheme.colors.gray2,
             maxLines = 1
         )
-        val poolResources = transferablePoolUnit.poolUnit.pool?.resources.orEmpty()
+        val poolResources = transferablePoolUnit.unit.pool?.resources.orEmpty()
         Column(modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)) {
             poolResources.forEachIndexed { index, item ->
                 val addDivider = index != poolResources.lastIndex
@@ -667,7 +666,7 @@ private fun TransferablePoolUnitItemContent(
 @Composable
 private fun TransferableNftItemContent(
     modifier: Modifier = Modifier,
-    transferable: TransferableResource.NFTs,
+    transferable: TransferableAsset.NonFungible.NFTAssets,
     shape: Shape,
     nftItem: Resource.NonFungibleResource.Item
 ) {
@@ -722,7 +721,7 @@ fun TransactionAccountCardPreview() {
                 account = SampleDataProvider().sampleAccount(),
                 resources = SampleDataProvider().sampleFungibleResources().map {
                     Transferable.Withdrawing(
-                        transferable = TransferableResource.FungibleAmount(
+                        transferable = TransferableAsset.Fungible.Token(
                             amount = "689.203".toBigDecimal(),
                             resource = it,
                             isNewlyCreated = false

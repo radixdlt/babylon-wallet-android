@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.transaction.guarantees
 
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
-import com.babylon.wallet.android.domain.model.TransferableWithGuarantees
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
@@ -21,11 +21,11 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
         val accountsWithPredictedGuarantee = mutableListOf<AccountWithPredictedGuarantee>()
         transaction.to.forEach { depositing ->
             val resourcesWithGuarantees = depositing.resources.filterIsInstance<Transferable.Depositing>().filter {
-                it.guaranteeType is GuaranteeType.Predicted && it.transferable is TransferableWithGuarantees
+                it.guaranteeType is GuaranteeType.Predicted && it.transferable is TransferableAsset.Fungible
             }
 
             val predictedAmounts = resourcesWithGuarantees.associate {
-                it.transferable as TransferableWithGuarantees to it.guaranteeType as GuaranteeType.Predicted
+                it.transferable as TransferableAsset.Fungible to it.guaranteeType as GuaranteeType.Predicted
             }
             when (depositing) {
                 is AccountWithTransferableResources.Other -> {

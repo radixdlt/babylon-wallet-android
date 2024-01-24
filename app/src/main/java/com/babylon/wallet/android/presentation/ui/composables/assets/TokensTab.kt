@@ -38,15 +38,15 @@ fun LazyListScope.tokensTab(
     }
 
     item {
-        val xrdResource = remember(assets.ownedXrd) { assets.ownedXrd }
-        if (xrdResource != null) {
+        val xrdToken = remember(assets.ownedXrd) { assets.ownedXrd }
+        if (xrdToken != null) {
             AssetCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge)
             ) {
                 FungibleResourceItem(
-                    resource = xrdResource,
+                    resource = xrdToken.resource,
                     action = action
                 )
             }
@@ -54,9 +54,9 @@ fun LazyListScope.tokensTab(
     }
 
     itemsIndexed(
-        items = assets.ownedNonXrdFungibles,
-        key = { _, resource -> resource.resourceAddress },
-        itemContent = { index, resource ->
+        items = assets.ownedNonXrdTokens,
+        key = { _, token -> token.resource.resourceAddress },
+        itemContent = { index, token ->
             AssetCard(
                 modifier = Modifier
                     .padding(
@@ -64,14 +64,14 @@ fun LazyListScope.tokensTab(
                     )
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 itemIndex = index,
-                allItemsSize = assets.ownedNonXrdFungibles.size
+                allItemsSize = assets.ownedNonXrdTokens.size
             ) {
                 FungibleResourceItem(
-                    resource = resource,
+                    resource = token.resource,
                     action = action
                 )
 
-                if (index != assets.ownedNonXrdFungibles.lastIndex) {
+                if (index != assets.ownedNonXrdTokens.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 20.dp),
                         color = RadixTheme.colors.gray4

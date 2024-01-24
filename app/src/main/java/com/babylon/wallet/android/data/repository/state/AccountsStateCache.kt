@@ -20,10 +20,11 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.AccountDetails
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -317,7 +318,8 @@ class AccountsStateCache @Inject constructor(
             val claimTokenAddressToValidator = validators.mapKeys { it.value.claimTokenResourceAddress }
 
             val resultingPoolUnits = mutableListOf<PoolUnit>()
-            val resultingStakeUnits = mutableMapOf<ValidatorDetail, ValidatorWithStakes>()
+            val resultingLSUs = mutableListOf<LiquidStakeUnit>()
+            val resultingStakeClaims = mutableListOf<StakeClaim>()
 
             val resultingFungibles = fungibles.toMutableList()
             val resultingNonFungibles = nonFungibles.toMutableList()
@@ -348,12 +350,7 @@ class AccountsStateCache @Inject constructor(
                     validator.address == fungible.validatorAddress
                 }
                 if (validatorDetails != null) {
-                    val lsu = LiquidStakeUnit(fungible)
-
-                    resultingStakeUnits[validatorDetails] = ValidatorWithStakes(
-                        validatorDetail = validatorDetails,
-                        liquidStakeUnit = lsu
-                    )
+                    resultingLSUs.add(LiquidStakeUnit(fungible, validatorDetails))
 
                     // Remove this fungible from the list as it will be included as an lsu
                     fungiblesIterator.remove()
@@ -370,25 +367,11 @@ class AccountsStateCache @Inject constructor(
                     validator.address == nonFungible.validatorAddress
                 }
                 if (validatorDetails != null) {
-                    val existingValidatorWithStakes = resultingStakeUnits[validatorDetails]
-                    if (existingValidatorWithStakes != null) {
-                        resultingStakeUnits[validatorDetails] = existingValidatorWithStakes.copy(
-                            stakeClaimNft = StakeClaim(nonFungible)
-                        )
-                    } else {
-                        resultingStakeUnits[validatorDetails] = ValidatorWithStakes(
-                            validatorDetail = validatorDetails,
-                            stakeClaimNft = StakeClaim(nonFungible)
-                        )
-                    }
+                    resultingStakeClaims.add(StakeClaim(nonFungible, validatorDetails))
 
                     // Remove this non-fungible from the list as it will be included as a stake claim
                     nonFungiblesIterator.remove()
                 }
-            }
-
-            val resultingValidatorsWithStakeResources = validators.values.mapNotNull { validatorDetail ->
-                resultingStakeUnits[validatorDetail]
             }
 
             return AccountAddressWithAssets(
@@ -398,10 +381,11 @@ class AccountsStateCache @Inject constructor(
                     accountType = accountType
                 ),
                 assets = Assets(
-                    fungibles = resultingFungibles.sorted(),
-                    nonFungibles = resultingNonFungibles.sorted(),
+                    tokens = resultingFungibles.sorted().map { Token(it) },
+                    nonFungibles = resultingNonFungibles.sorted().map { NonFungibleCollection(it) },
                     poolUnits = resultingPoolUnits,
-                    validatorsWithStakes = resultingValidatorsWithStakeResources
+                    liquidStakeUnits = resultingLSUs,
+                    stakeClaims = resultingStakeClaims,
                 )
             )
         }
@@ -418,22 +402,19 @@ class AccountsStateCache @Inject constructor(
             details = details,
             assets = details?.stateVersion?.let { stateVersion ->
                 val nonFungibles = assets?.nonFungibles?.map { nonFungible ->
-                    val items = dao.getOwnedNfts(account.address, nonFungible.resourceAddress, stateVersion).map { it.toItem() }.sorted()
-                    nonFungible.copy(items = items)
+                    val items = dao.getOwnedNfts(account.address, nonFungible.collection.resourceAddress, stateVersion)
+                        .map { it.toItem() }.sorted()
+                    nonFungible.copy(collection = nonFungible.collection.copy(items = items))
                 }.orEmpty()
 
-                val validatorsWithStakes = assets?.validatorsWithStakes?.map { validatorWithStakes ->
-                    val updatedClaims = validatorWithStakes.stakeClaimNft?.let { stakeClaim ->
-                        val items = dao.getOwnedNfts(account.address, stakeClaim.resourceAddress, stateVersion)
-                            .map { it.toItem() }
-                            .sorted()
-                        stakeClaim.copy(nonFungibleResource = stakeClaim.nonFungibleResource.copy(items = items))
-                    }
-
-                    validatorWithStakes.copy(stakeClaimNft = updatedClaims)
+                val updatedClaims = assets?.stakeClaims?.map { stakeClaim ->
+                    val items = dao.getOwnedNfts(account.address, stakeClaim.resourceAddress, stateVersion)
+                        .map { it.toItem() }
+                        .sorted()
+                    stakeClaim.copy(nonFungibleResource = stakeClaim.nonFungibleResource.copy(items = items))
                 }.orEmpty()
 
-                assets?.copy(nonFungibles = nonFungibles, validatorsWithStakes = validatorsWithStakes)
+                assets?.copy(nonFungibles = nonFungibles, stakeClaims = updatedClaims)
             } ?: assets
         )
     }

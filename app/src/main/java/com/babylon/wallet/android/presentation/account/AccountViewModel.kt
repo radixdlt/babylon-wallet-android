@@ -6,6 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
@@ -317,9 +318,10 @@ data class AccountUiState(
                 assets = accountWithAssets.assets.copy(
                     nonFungibles = accountWithAssets.assets.nonFungibles.mapWhen(
                         predicate = {
-                            it.resourceAddress == forResource.resourceAddress && it.items.size < forResource.items.size
+                            it.collection.resourceAddress == forResource.resourceAddress &&
+                                it.collection.items.size < forResource.items.size
                         },
-                        mutation = { forResource }
+                        mutation = { NonFungibleCollection(forResource) }
                     )
                 )
             ),
@@ -338,7 +340,8 @@ data class AccountUiState(
     fun onValidatorsReceived(validatorsWithStakes: List<ValidatorWithStakes>): AccountUiState = copy(
         accountWithAssets = accountWithAssets?.copy(
             assets = accountWithAssets.assets?.copy(
-                validatorsWithStakes = validatorsWithStakes
+                liquidStakeUnits = validatorsWithStakes.mapNotNull { it.liquidStakeUnit },
+                stakeClaims = validatorsWithStakes.mapNotNull { it.stakeClaimNft }
             )
         ),
         pendingStakeUnits = false

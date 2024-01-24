@@ -3,8 +3,10 @@ package com.babylon.wallet.android.presentation.status.assets.nonfungible
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
+import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ObserveResourceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
@@ -25,6 +27,7 @@ import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 @HiltViewModel
 class NonFungibleAssetDialogViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -32,6 +35,7 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
     getNFTDetailsUseCase: GetNFTDetailsUseCase,
     getNetworkInfoUseCase: GetNetworkInfoUseCase,
     getProfileUseCase: GetProfileUseCase,
+    private val getValidatorsUseCase: GetValidatorsUseCase,
     private val sendClaimRequestUseCase: SendClaimRequestUseCase
 ) : StateViewModel<NonFungibleAssetDialogViewModel.State>() {
 
@@ -99,9 +103,13 @@ class NonFungibleAssetDialogViewModel @Inject constructor(
             state.accountContext != null && state.item.isReadyToClaim(state.epoch)
         ) {
             viewModelScope.launch {
+                val validatorAddress = state.resource.validatorAddress.orEmpty()
+                val validator = getValidatorsUseCase(addresses = setOf(validatorAddress))
+                    .getOrNull()?.firstOrNull() ?: ValidatorDetail(address = validatorAddress, totalXrdStake = null)
+
                 sendClaimRequestUseCase(
                     account = state.accountContext,
-                    claim = StakeClaim(state.resource),
+                    claim = StakeClaim(state.resource, validator),
                     nft = state.item,
                     epoch = state.epoch
                 )
