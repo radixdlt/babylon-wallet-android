@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,12 +54,27 @@ fun TransactionPreviewHeader(
         is PreviewType.Transfer -> stringResource(R.string.transactionReview_transferTitle)
         else -> stringResource(R.string.transactionReview_title)
     }
-    val animationRangePx = with(LocalDensity.current) { 40.dp.toPx() }
-    val progress by remember {
-        derivedStateOf {
-            (scrollState.value / animationRangePx).coerceIn(0f, 1f)
+    val animationValue = remember(scrollState.maxValue) {
+        if (scrollState.maxValue >= 200) {
+            40.dp
+        } else {
+            200.dp
         }
     }
+
+    val animationRangePx = with(LocalDensity.current) {
+        animationValue.toPx()
+    }
+    val progress by remember(scrollState.value) {
+        if (scrollState.maxValue != Int.MAX_VALUE) {
+            derivedStateOf {
+                (scrollState.value / animationRangePx).coerceIn(0f, 1f)
+            }
+        } else {
+            mutableStateOf(0f)
+        }
+    }
+
     MotionLayout(
         modifier = modifier
             .statusBarsPadding()
