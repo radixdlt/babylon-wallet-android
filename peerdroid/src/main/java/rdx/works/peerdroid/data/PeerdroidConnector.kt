@@ -159,7 +159,7 @@ internal class PeerdroidConnectorImpl(
                 dataChannelHolder.dataChannel.close()
             }
             mapOfDataChannels.values.removeAll(dataChannelsForTermination.toSet())
-            updateMapOfPeerConnectionState(connectionId = connectionId, isOpen = false, isDeleted = true)
+            updatePeerConnectionStatus(connectionId = connectionId, isOpen = false, isDeleted = true)
             Timber.d("⚙️ \uD83D\uDDD1️ link connection with connectionId: ${connectionId.id} deleted ✅")
         }
     }
@@ -313,7 +313,7 @@ internal class PeerdroidConnectorImpl(
             .onEach { event ->
                 when (event) {
                     is PeerConnectionEvent.RenegotiationNeeded -> {
-                        updateMapOfPeerConnectionState(connectionId = connectionId, isConnecting = true)
+                        updatePeerConnectionStatus(connectionId = connectionId, isConnecting = true)
                         Timber.d("⚙️ ⚡ renegotiation needed for remote client: $remoteClientHolder \uD83C\uDD97")
                         renegotiationDeferred.complete(Unit)
                     }
@@ -343,7 +343,7 @@ internal class PeerdroidConnectorImpl(
                             dataChannel = dataChannel
                         )
                         isAnyChannelConnected.tryEmit(mapOfDataChannels.values.isNotEmpty())
-                        updateMapOfPeerConnectionState(connectionId = connectionId, isConnecting = false, isOpen = true)
+                        updatePeerConnectionStatus(connectionId = connectionId, isConnecting = false, isOpen = true)
                         Timber.d("⚙️ ℹ️ current count of data channels: ${mapOfDataChannels.size}")
                     }
 
@@ -351,7 +351,7 @@ internal class PeerdroidConnectorImpl(
                         Timber.d("⚙️ ⚡ peer connection disconnected for remote client: $remoteClientHolder \uD83D\uDD34")
                         terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionId)
                         isAnyChannelConnected.tryEmit(mapOfDataChannels.values.isNotEmpty())
-                        updateMapOfPeerConnectionState(connectionId = connectionId, isConnecting = false, isOpen = false)
+                        updatePeerConnectionStatus(connectionId = connectionId, isConnecting = false, isOpen = false)
                     }
 
                     is PeerConnectionEvent.Failed -> {
@@ -489,7 +489,7 @@ internal class PeerdroidConnectorImpl(
         }
     }
 
-    private fun updateMapOfPeerConnectionState(
+    private fun updatePeerConnectionStatus(
         connectionId: ConnectionIdHolder,
         isConnecting: Boolean = false,
         isOpen: Boolean = false,
