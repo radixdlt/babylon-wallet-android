@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables.card
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,7 +29,8 @@ fun NonFungibleCard(
     nonFungible: Resource.NonFungibleResource,
     modifier: Modifier = Modifier,
     showChevron: Boolean = true,
-    elevation: Dp = 8.dp
+    elevation: Dp = 8.dp,
+    onClick: (() -> Unit)? = null,
 ) {
     Row(
         modifier = modifier
@@ -36,6 +38,9 @@ fun NonFungibleCard(
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
             .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
+            .clickable(enabled = onClick != null) {
+                onClick?.invoke()
+            }
             .padding(
                 horizontal = RadixTheme.dimensions.paddingLarge,
                 vertical = RadixTheme.dimensions.paddingDefault

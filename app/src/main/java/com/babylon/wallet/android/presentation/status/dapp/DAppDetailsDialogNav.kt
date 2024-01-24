@@ -8,6 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.domain.model.resources.Resource
 
 private const val ROUTE = "dApp_details_dialog"
 private const val ARG_DAPP_DEFINITION_ADDRESS = "dApp_definition_address"
@@ -28,6 +29,8 @@ internal class DAppDetailsDialogArgs(
 }
 
 fun NavGraphBuilder.dAppDetailsDialog(
+    onFungibleClick: (Resource.FungibleResource) -> Unit,
+    onNonFungibleClick: (Resource.NonFungibleResource) -> Unit,
     onDismiss: () -> Unit
 ) {
     dialog(
@@ -41,6 +44,8 @@ fun NavGraphBuilder.dAppDetailsDialog(
     ) {
         DAppDetailsDialog(
             viewModel = hiltViewModel(),
+            onFungibleClick = onFungibleClick,
+            onNonFungibleClick = onNonFungibleClick,
             onDismiss = onDismiss
         )
     }

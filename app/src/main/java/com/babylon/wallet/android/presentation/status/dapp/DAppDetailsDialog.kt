@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DAppWebsiteAddressRow
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.DappDefinitionAddressRow
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -39,12 +40,16 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 @Composable
 fun DAppDetailsDialog(
     viewModel: DAppDetailsDialogViewModel,
+    onFungibleClick: (Resource.FungibleResource) -> Unit,
+    onNonFungibleClick: (Resource.NonFungibleResource) -> Unit,
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     DAppDetailsDialogContent(
         state = state,
         onMessageShown = viewModel::onMessageShown,
+        onFungibleClick = onFungibleClick,
+        onNonFungibleClick = onNonFungibleClick,
         onDismiss = onDismiss
     )
 }
@@ -53,6 +58,8 @@ fun DAppDetailsDialog(
 private fun DAppDetailsDialogContent(
     modifier: Modifier = Modifier,
     state: DAppDetailsDialogViewModel.State,
+    onFungibleClick: (Resource.FungibleResource) -> Unit,
+    onNonFungibleClick: (Resource.NonFungibleResource) -> Unit,
     onMessageShown: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -142,7 +149,8 @@ private fun DAppDetailsDialogContent(
                     GrayBackgroundWrapper {
                         FungibleCard(
                             fungible = resource,
-                            showChevron = false
+                            showChevron = false,
+                            onClick = { onFungibleClick(resource) }
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     }
@@ -165,7 +173,8 @@ private fun DAppDetailsDialogContent(
                     GrayBackgroundWrapper {
                         NonFungibleCard(
                             nonFungible = resource,
-                            showChevron = false
+                            showChevron = false,
+                            onClick = { onNonFungibleClick(resource) }
                         )
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     }
