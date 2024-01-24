@@ -59,8 +59,6 @@ interface StateRepository {
 
     suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>>
 
-    suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail>
-
     suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>>
 
     suspend fun getNFTDetails(resourceAddress: String, localIds: Set<String>): Result<List<Resource.NonFungibleResource.Item>>
@@ -320,10 +318,6 @@ class StateRepositoryImpl @Inject constructor(
             }
             cachedPools
         }
-    }
-
-    override suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail> = getValidators(setOf(validatorAddress)).map {
-        it.first()
     }
 
     override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> = withContext(dispatcher) {

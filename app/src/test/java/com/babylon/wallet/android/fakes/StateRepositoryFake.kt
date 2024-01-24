@@ -33,9 +33,6 @@ open class StateRepositoryFake: StateRepository {
 
     override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> = Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail> =
-        Result.failure(RuntimeException("Not implemented"))
-
     override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> =
         Result.failure(RuntimeException("Not implemented"))
 

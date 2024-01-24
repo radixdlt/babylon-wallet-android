@@ -322,10 +322,6 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             error("Not needed")
         }
 
-        override suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail> {
-            error("Not needed")
-        }
-
         override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> {
             error("Not needed")
         }
