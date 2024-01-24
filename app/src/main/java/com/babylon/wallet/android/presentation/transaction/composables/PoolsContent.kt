@@ -54,8 +54,8 @@ fun PoolsContent(
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     Box(
-        modifier = modifier.fillMaxWidth().
-        padding(bottom = RadixTheme.dimensions.paddingSmall),
+        modifier = modifier.fillMaxWidth()
+            .padding(bottom = RadixTheme.dimensions.paddingSmall),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(

@@ -59,9 +59,9 @@ fun CommonTransferContent(
                 DepositAccountContent(
                     modifier = Modifier
                         .padding(
-                        start = RadixTheme.dimensions.paddingDefault,
-                        end = RadixTheme.dimensions.paddingDefault
-                    )
+                            start = RadixTheme.dimensions.paddingDefault,
+                            end = RadixTheme.dimensions.paddingDefault
+                        )
                         .padding(top = RadixTheme.dimensions.paddingLarge),
                     to = previewType.to.toPersistentList(),
                     promptForGuarantees = onPromptForGuarantees,

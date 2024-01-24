@@ -53,10 +53,7 @@ fun ConnectedDAppsContent(
 
     var expanded by rememberSaveable { mutableStateOf(true) }
 
-    Column(
-        modifier = Modifier
-            .padding(bottom = RadixTheme.dimensions.paddingXLarge)
-    ) {
+    Column {
         Box(
             modifier = modifier
                 .fillMaxWidth()

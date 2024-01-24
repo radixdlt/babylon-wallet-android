@@ -105,7 +105,6 @@ fun ValidatorsContent(
         Column(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                .padding(bottom = RadixTheme.dimensions.paddingXLarge)
                 .fillMaxWidth()
                 .background(RadixTheme.colors.gray5)
         ) {
