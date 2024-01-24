@@ -154,7 +154,7 @@ private fun DAppDetailsDialogContent(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(RadixTheme.dimensions.paddingDefault),
-                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_tokens),
+                            text = stringResource(id = R.string.authorizedDapps_dAppDetails_nfts),
                             style = RadixTheme.typography.body1Regular,
                             color = RadixTheme.colors.gray2,
                             textAlign = TextAlign.Start
