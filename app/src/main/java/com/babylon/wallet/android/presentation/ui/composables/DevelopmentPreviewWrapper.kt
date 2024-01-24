@@ -30,7 +30,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -48,11 +47,17 @@ fun DevelopmentPreviewWrapper(
     Box(modifier = modifier) {
         var bannerHeight by remember { mutableStateOf(0.dp) }
         CompositionLocalProvider(LocalDevBannerState provides devBannerState) {
-            content(if (devBannerState.isVisible) PaddingValues(top = bannerHeight) else PaddingValues())
+            content(
+                if (devBannerState.isVisible || linkConnectionsStatus != null) {
+                    PaddingValues(top = bannerHeight)
+                } else {
+                    PaddingValues()
+                }
+            )
         }
 
-        if (devBannerState.isVisible && linkConnectionsStatus != null) {
-            val density = LocalDensity.current
+        val density = LocalDensity.current
+        if (devBannerState.isVisible) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -64,42 +69,48 @@ fun DevelopmentPreviewWrapper(
                     .padding(RadixTheme.dimensions.paddingXSmall)
             ) {
                 Text(
+                    modifier = Modifier.fillMaxWidth(),
                     text = stringResource(R.string.common_developerDisclaimerText),
                     style = RadixTheme.typography.body2HighImportance,
-                    fontSize = 12.sp,
                     color = Color.Black,
                     textAlign = TextAlign.Center,
                 )
-                LazyRow(
-                    modifier = Modifier,
-                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-                ) {
-                    items(items = linkConnectionsStatus.currentStatus()) { color ->
-                        Canvas(
-                            modifier = Modifier.size(12.dp),
-                            onDraw = {
-                                drawCircle(color = color)
-                            }
-                        )
+
+                if (linkConnectionsStatus != null) {
+                    LazyRow(
+                        modifier = Modifier,
+                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+                    ) {
+                        items(items = linkConnectionsStatus.currentStatus()) { color ->
+                            Canvas(
+                                modifier = Modifier.size(12.dp),
+                                onDraw = {
+                                    drawCircle(color = color)
+                                }
+                            )
+                        }
                     }
                 }
             }
-        } else if (devBannerState.isVisible) {
-            val density = LocalDensity.current
-            Text(
+        } else if (linkConnectionsStatus != null) {
+            LazyRow(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(RadixTheme.colors.orange2)
                     .statusBarsPadding()
                     .onGloballyPositioned { coordinates ->
                         bannerHeight = with(density) { coordinates.size.height.toDp() }
                     }
-                    .padding(RadixTheme.dimensions.paddingSmall),
-                text = stringResource(R.string.common_developerDisclaimerText),
-                style = RadixTheme.typography.body2HighImportance,
-                color = Color.Black,
-                textAlign = TextAlign.Center,
-            )
+                    .padding(RadixTheme.dimensions.paddingXSmall),
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+            ) {
+                items(items = linkConnectionsStatus.currentStatus()) { color ->
+                    Canvas(
+                        modifier = Modifier.size(12.dp),
+                        onDraw = {
+                            drawCircle(color = color)
+                        }
+                    )
+                }
+            }
         }
     }
 }
