@@ -308,9 +308,9 @@ class StateRepositoryImpl @Inject constructor(
             val unknownPools = poolAddresses - cachedPools.map { it.address }.toSet()
             if (unknownPools.isNotEmpty()) {
                 val newPools = stateApi.fetchPools(unknownPools, stateVersion)
-                val fetchedStateVersion = newPools.first().stateVersion
-                if (newPools.isNotEmpty()) {
-                    val join = newPools.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), fetchedStateVersion))
+                if (newPools.poolItems.isNotEmpty()) {
+                    val fetchedStateVersion = newPools.stateVersion!!
+                    val join = newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), fetchedStateVersion))
                     stateDao.updatePools(pools = join)
                     cachedPools = stateDao.getCachedPools(
                         poolAddresses = poolAddresses,
@@ -328,19 +328,29 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> = withContext(dispatcher) {
         runCatching {
-            val stateVersion = getLatestCachedStateVersionInNetwork() ?: error("No cached state version found")
-            val validators = stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion)
-            val unknownAddresses = validatorAddresses - validators.map { it.address }.toSet()
+            val stateVersion = getLatestCachedStateVersionInNetwork()
+            val cachedValidators = if (stateVersion != null) {
+                stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion).map {
+                    it.asValidatorDetail()
+                }
+            } else {
+                emptyList()
+            }
+
+            val unknownAddresses = validatorAddresses - cachedValidators.map { it.address }.toSet()
             if (unknownAddresses.isNotEmpty()) {
-                val details = stateApi.fetchValidators(
+                val response = stateApi.fetchValidators(
                     validatorsAddresses = unknownAddresses.toSet(),
                     stateVersion = stateVersion
-                ).asValidators()
-
-                stateDao.insertValidators(details.map { it.asValidatorEntity(SyncInfo(InstantGenerator(), stateVersion)) })
-                details + validators.map { it.asValidatorDetail() }
+                )
+                val details = response.validators.asValidators()
+                if (details.isNotEmpty()) {
+                    val syncInfo = SyncInfo(InstantGenerator(), response.stateVersion!!)
+                    stateDao.insertValidators(details.map { it.asValidatorEntity(syncInfo) })
+                }
+                details + cachedValidators
             } else {
-                validators.map { it.asValidatorDetail() }
+                cachedValidators
             }
         }
     }

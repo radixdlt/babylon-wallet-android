@@ -34,7 +34,7 @@ data class PoolEntity(
 
     companion object {
         @Suppress("UnsafeCallOnNullableType")
-        fun List<PoolsResponse>.asPoolsResourcesJoin(
+        fun List<PoolsResponse.PoolItem>.asPoolsResourcesJoin(
             syncInfo: SyncInfo
         ): List<PoolWithResourcesJoinResult> =
             mapNotNull { fetchedPoolDetails ->
