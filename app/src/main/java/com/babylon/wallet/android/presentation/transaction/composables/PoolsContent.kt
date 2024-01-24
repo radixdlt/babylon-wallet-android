@@ -54,7 +54,8 @@ fun PoolsContent(
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     Box(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().
+        padding(bottom = RadixTheme.dimensions.paddingSmall),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(
@@ -74,13 +75,12 @@ fun PoolsContent(
             )
             Row(
                 Modifier.weight(1f),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     modifier = Modifier.weight(1f, false),
                     maxLines = 2,
-                    text = text,
+                    text = text.uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2,
                     overflow = TextOverflow.Ellipsis,
@@ -95,11 +95,6 @@ fun PoolsContent(
                     tint = RadixTheme.colors.gray2,
                     contentDescription = "arrow"
                 )
-            }
-            if (expanded) {
-                StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 60.dp)
-            } else {
-                Spacer(modifier = Modifier.height(60.dp))
             }
         }
     }
