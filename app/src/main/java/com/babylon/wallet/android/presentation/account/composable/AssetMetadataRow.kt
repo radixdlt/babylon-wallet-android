@@ -82,9 +82,7 @@ fun Metadata.KeyView(
 ) {
     Text(
         modifier = modifier.padding(end = RadixTheme.dimensions.paddingMedium),
-        text = key.replaceFirstChar {
-            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-        },
+        text = key,
         style = RadixTheme.typography.body1Regular,
         color = RadixTheme.colors.gray2,
         textAlign = TextAlign.Start
