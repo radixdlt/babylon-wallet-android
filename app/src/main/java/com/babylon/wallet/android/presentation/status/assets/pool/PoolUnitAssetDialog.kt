@@ -128,7 +128,8 @@ private fun FungibleAssetDialogContent(
                         poolUnit = state.poolUnit,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingMedium)
+                            .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                        isCompact = false
                     )
                 } else {
                     Column(

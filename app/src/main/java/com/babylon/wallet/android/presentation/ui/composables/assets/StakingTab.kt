@@ -412,7 +412,7 @@ private fun StakeClaims(
                     .fillMaxWidth()
                     .padding(
                         top = RadixTheme.dimensions.paddingDefault,
-                        bottom = RadixTheme.dimensions.paddingSmall
+                        bottom = RadixTheme.dimensions.paddingMedium
                     ),
                 text = stringResource(id = R.string.account_staking_unstaking).uppercase(),
                 style = RadixTheme.typography.body2HighImportance,
