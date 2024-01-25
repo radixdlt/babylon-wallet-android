@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,7 +24,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
@@ -51,7 +49,8 @@ fun PoolsContent(
     modifier: Modifier = Modifier,
     text: String,
     pools: ImmutableList<Pool>,
-    onDAppClick: (DApp) -> Unit
+    onDAppClick: (DApp) -> Unit,
+    onUnknownPoolComponentsClick: (List<Pool>) -> Unit
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     Box(
@@ -100,8 +99,8 @@ fun PoolsContent(
         }
     }
 
-    val (associatedDApps, unknownPoolsCount) = remember(pools) {
-        pools.mapNotNull { it.associatedDApp } to pools.count { it.associatedDApp == null }
+    val (associatedDApps, unknownPools) = remember(pools) {
+        pools.mapNotNull { it.associatedDApp } to pools.filter { it.associatedDApp == null }
     }
 
     AnimatedVisibility(
@@ -122,22 +121,18 @@ fun PoolsContent(
                     text = dApp.name.orEmpty(),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RadixTheme.shapes.roundedRectMedium)
                         .clickable { onDAppClick(dApp) }
-                        .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
-                        .padding(RadixTheme.dimensions.paddingDefault)
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
-            if (unknownPoolsCount > 0) {
+            if (unknownPools.isNotEmpty()) {
                 InvolvedComponentDetails(
                     iconSize = 44.dp,
                     dApp = null,
-                    text = stringResource(id = R.string.transactionReview_unknownPools, unknownPoolsCount),
+                    text = stringResource(id = R.string.transactionReview_unknownPools, unknownPools.size),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
-                        .padding(RadixTheme.dimensions.paddingDefault)
+                        .clickable { onUnknownPoolComponentsClick(unknownPools) }
                 )
             }
         }
@@ -152,6 +147,7 @@ fun PoolsContentPreview() {
             PoolsContent(
                 text = "Contributing to pools".uppercase(),
                 pools = persistentListOf(),
+                onUnknownPoolComponentsClick = {},
                 onDAppClick = {}
             )
         }

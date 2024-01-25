@@ -41,7 +41,7 @@ import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.UnknownDAppComponentsSheetContent
+import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.UnknownComponentsSheetContent
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
@@ -108,7 +108,7 @@ fun TransactionReviewScreen(
         onGuaranteeValueIncreased = viewModel::onGuaranteeValueIncreased,
         onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
         onDAppClick = onDAppClick,
-        onUnknownDAppsClick = viewModel::onUnknownDAppsClick,
+        onUnknownComponentsClick = viewModel::onUnknownComponentsClick,
         onFungibleResourceClick = viewModel::onFungibleResourceClick,
         onNonFungibleResourceClick = viewModel::onNonFungibleResourceClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
@@ -168,7 +168,7 @@ private fun TransactionPreviewContent(
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onDAppClick: (DApp) -> Unit,
-    onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
+    onUnknownComponentsClick: (ImmutableList<String>) -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
     onChangeFeePayerClick: () -> Unit,
@@ -315,7 +315,9 @@ private fun TransactionPreviewContent(
                                     preview = preview,
                                     onPromptForGuarantees = promptForGuarantees,
                                     onDAppClick = onDAppClick,
-                                    onUnknownDAppsClick = onUnknownDAppsClick,
+                                    onUnknownComponentsClick = { componentAddresses ->
+                                        onUnknownComponentsClick(componentAddresses.toPersistentList())
+                                    },
                                     onFungibleResourceClick = onFungibleResourceClick,
                                     onNonFungibleResourceClick = onNonFungibleResourceClick
                                 )
@@ -352,7 +354,10 @@ private fun TransactionPreviewContent(
                                     onFungibleResourceClick = onFungibleResourceClick,
                                     onPromptForGuarantees = promptForGuarantees,
                                     previewType = preview,
-                                    onDAppClick = onDAppClick
+                                    onDAppClick = onDAppClick,
+                                    onUnknownPoolsClick = { pools ->
+                                        onUnknownComponentsClick(pools.map { it.address }.toPersistentList())
+                                    }
                                 )
                                 ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                             }
@@ -457,11 +462,11 @@ private fun BottomSheetContent(
             )
         }
 
-        is State.Sheet.UnknownDAppComponents -> {
-            UnknownDAppComponentsSheetContent(
+        is State.Sheet.UnknownComponents -> {
+            UnknownComponentsSheetContent(
                 modifier = modifier,
                 onBackClick = onCloseBottomSheetClick,
-                unknownDAppComponents = sheetState.unknownComponentAddresses
+                unknownComponentAddresses = sheetState.unknownComponentAddresses
             )
         }
 
@@ -523,7 +528,7 @@ fun TransactionPreviewContentPreview() {
             promptForGuarantees = {},
             onCustomizeClick = {},
             onDAppClick = {},
-            onUnknownDAppsClick = {},
+            onUnknownComponentsClick = {},
             onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> },
             onGuaranteeValueChanged = { _, _ -> },

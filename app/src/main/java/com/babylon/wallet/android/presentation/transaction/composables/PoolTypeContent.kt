@@ -9,6 +9,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -23,7 +24,8 @@ fun PoolTypeContent(
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     previewType: PreviewType.Transfer.Pool,
     onPromptForGuarantees: () -> Unit,
-    onDAppClick: (DApp) -> Unit
+    onDAppClick: (DApp) -> Unit,
+    onUnknownPoolsClick: (List<Pool>) -> Unit
 ) {
     val poolSectionLabel = when (previewType.actionType) {
         PreviewType.Transfer.Pool.ActionType.Contribution -> "Contributing to pools"
@@ -41,7 +43,8 @@ fun PoolTypeContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 pools = previewType.poolsInvolved.toImmutableList(),
                 text = poolSectionLabel,
-                onDAppClick = onDAppClick
+                onDAppClick = onDAppClick,
+                onUnknownPoolComponentsClick = onUnknownPoolsClick
             )
         }
     )
@@ -66,6 +69,7 @@ fun PoolTypePreview() {
             ),
             onPromptForGuarantees = {},
             onDAppClick = {},
+            onUnknownPoolsClick = {}
         )
     }
 }

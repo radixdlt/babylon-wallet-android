@@ -6,7 +6,7 @@ import com.babylon.wallet.android.domain.model.DApp
 import rdx.works.core.then
 import javax.inject.Inject
 
-class ResolveDAppInTransactionUseCase @Inject constructor(
+class ResolveComponentAddressesUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
@@ -17,9 +17,9 @@ class ResolveDAppInTransactionUseCase @Inject constructor(
      * - validate that account_type is "dapp definition"
      * - check if componentAddress is within claimed_entities metadata of dAppDefinitionAddress metadata
      */
-    suspend operator fun invoke(
+    suspend fun invoke(
         componentAddress: String
-    ): Result<Pair<DApp, Boolean>> = stateRepository.getDAppsDetails(
+    ): Result<Pair<String, DApp?>> = stateRepository.getDAppsDetails(
         definitionAddresses = listOf(componentAddress),
         isRefreshing = true
     ).then { components ->
@@ -30,7 +30,8 @@ class ResolveDAppInTransactionUseCase @Inject constructor(
                 isRefreshing = true
             ).mapCatching { dApps ->
                 val dApp = dApps.first()
-                dApp to dApp.claimedEntities.contains(componentAddress)
+
+                componentAddress to dApp.takeIf { it.claimedEntities.contains(componentAddress) }
             }
         } else {
             Result.failure(RadixWalletException.DappVerificationException.WrongAccountType)

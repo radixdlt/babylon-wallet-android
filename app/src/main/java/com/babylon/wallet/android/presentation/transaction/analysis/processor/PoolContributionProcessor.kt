@@ -1,16 +1,12 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.dAppDefinition
 import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetPoolDetailsUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -101,16 +97,3 @@ class PoolContributionProcessor @Inject constructor(
             )
         }
 }
-
-suspend fun List<Pool>.resolveDApps(
-    resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
-): Map<Pool, DApp?> = mapNotNull { pool ->
-    val dapp = pool.metadata.dAppDefinition()?.let { address ->
-        resolveDAppInTransactionUseCase(address)
-    }?.getOrNull()
-    if (dapp == null || !dapp.second) {
-        pool to null
-    } else {
-        pool to dapp.first
-    }
-}.toMap()
