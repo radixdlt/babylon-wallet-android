@@ -52,15 +52,17 @@ fun CommonTransferContent(
             Column(
                 modifier = Modifier
                     .applyIf(condition = state.showDottedLine, modifier = Modifier.strokeLine())
-                    .padding(top = RadixTheme.dimensions.paddingXLarge)
+                    .padding(top = RadixTheme.dimensions.paddingLarge)
             ) {
                 middleSection()
 
                 DepositAccountContent(
-                    modifier = Modifier.padding(
-                        start = RadixTheme.dimensions.paddingDefault,
-                        end = RadixTheme.dimensions.paddingDefault
-                    ),
+                    modifier = Modifier
+                        .padding(
+                            start = RadixTheme.dimensions.paddingDefault,
+                            end = RadixTheme.dimensions.paddingDefault
+                        )
+                        .padding(top = RadixTheme.dimensions.paddingLarge),
                     to = previewType.to.toPersistentList(),
                     promptForGuarantees = onPromptForGuarantees,
                     onFungibleResourceClick = { fungibleResource, isNewlyCreated ->

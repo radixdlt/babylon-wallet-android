@@ -26,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -54,7 +55,8 @@ fun PoolsContent(
 ) {
     var expanded by rememberSaveable { mutableStateOf(true) }
     Box(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth()
+            .padding(bottom = RadixTheme.dimensions.paddingSmall),
         contentAlignment = Alignment.CenterStart
     ) {
         Row(
@@ -74,13 +76,12 @@ fun PoolsContent(
             )
             Row(
                 Modifier.weight(1f),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     modifier = Modifier.weight(1f, false),
                     maxLines = 2,
-                    text = text,
+                    text = text.uppercase(),
                     style = RadixTheme.typography.body1Link,
                     color = RadixTheme.colors.gray2,
                     overflow = TextOverflow.Ellipsis,
@@ -95,11 +96,6 @@ fun PoolsContent(
                     tint = RadixTheme.colors.gray2,
                     contentDescription = "arrow"
                 )
-            }
-            if (expanded) {
-                StrokeLine(modifier = Modifier.padding(end = RadixTheme.dimensions.paddingLarge), height = 60.dp)
-            } else {
-                Spacer(modifier = Modifier.height(60.dp))
             }
         }
     }
@@ -117,6 +113,7 @@ fun PoolsContent(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .fillMaxWidth()
+                .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
         ) {
             associatedDApps.forEach { dApp ->
                 InvolvedComponentDetails(
