@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,6 +25,10 @@ import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressV
 import com.babylon.wallet.android.presentation.ui.composables.ExpandableText
 import com.babylon.wallet.android.utils.openUrl
 import rdx.works.core.displayableQuantity
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.util.Locale
 
 @Composable
@@ -86,6 +91,7 @@ fun Metadata.KeyView(
     )
 }
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 fun Metadata.ValueView(
     modifier: Modifier = Modifier,
@@ -106,20 +112,18 @@ fun Metadata.ValueView(
             MetadataType.Bool,
             is MetadataType.Integer,
             MetadataType.Bytes,
-            MetadataType.Instant,
             MetadataType.Enum,
             MetadataType.PublicKeyEcdsaSecp256k1,
             MetadataType.PublicKeyEddsaEd25519,
             MetadataType.PublicKeyHashEcdsaSecp256k1,
-            MetadataType.PublicKeyHashEddsaEd25519 ->
-                Text(
-                    modifier = modifier,
-                    text = value,
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1,
-                    textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
-                    maxLines = 2
-                )
+            MetadataType.PublicKeyHashEddsaEd25519 -> Text(
+                modifier = modifier,
+                text = value,
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1,
+                textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
+                maxLines = 2
+            )
 
             MetadataType.String -> ExpandableText(
                 modifier = modifier,
@@ -133,42 +137,58 @@ fun Metadata.ValueView(
                 ),
             )
 
-            MetadataType.Address, MetadataType.NonFungibleGlobalId, MetadataType.NonFungibleLocalId ->
-                ActionableAddressView(
-                    modifier = modifier,
-                    address = value
-                )
+            MetadataType.Instant -> {
+                val displayable = remember(value) {
+                    val epochSeconds = value.toLongOrNull() ?: return@remember value
+                    val dateTime = Instant.ofEpochSecond(epochSeconds)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDateTime()
 
-            MetadataType.Decimal ->
+                    dateTime.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM))
+                }
                 Text(
                     modifier = modifier,
-                    // If value is unable to transform to big decimal we just display raw value
-                    text = value.toBigDecimalOrNull()?.displayableQuantity() ?: value,
+                    text = displayable,
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
                     maxLines = 2
                 )
+            }
 
-            MetadataType.Url ->
-                Row(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .clickable { context.openUrl(value) },
-                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = value,
-                        style = RadixTheme.typography.body1StandaloneLink,
-                        color = RadixTheme.colors.blue1
-                    )
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_external_link),
-                        contentDescription = null,
-                        tint = RadixTheme.colors.gray3
-                    )
-                }
+            MetadataType.Address, MetadataType.NonFungibleGlobalId, MetadataType.NonFungibleLocalId -> ActionableAddressView(
+                modifier = modifier,
+                address = value
+            )
+
+            MetadataType.Decimal -> Text(
+                modifier = modifier,
+                // If value is unable to transform to big decimal we just display raw value
+                text = value.toBigDecimalOrNull()?.displayableQuantity() ?: value,
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1,
+                textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,
+                maxLines = 2
+            )
+
+            MetadataType.Url -> Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .clickable { context.openUrl(value) },
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = value,
+                    style = RadixTheme.typography.body1StandaloneLink,
+                    color = RadixTheme.colors.blue1
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_external_link),
+                    contentDescription = null,
+                    tint = RadixTheme.colors.gray3
+                )
+            }
         }
     }
 }
