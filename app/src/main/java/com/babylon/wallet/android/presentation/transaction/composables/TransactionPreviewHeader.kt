@@ -54,6 +54,13 @@ fun TransactionPreviewHeader(
         is PreviewType.Transfer -> stringResource(R.string.transactionReview_transferTitle)
         else -> stringResource(R.string.transactionReview_title)
     }
+    // TODO improve this at later time.
+    // AnimationRangePx is the threshold which scrollState.value hits and then transition of the motion layout starts.
+    // When its relatively low i.e. 40.dp we start transition early and if content is large enough scroll state continue
+    // with its scroll value.
+    // When content is relatively small we might start topbar transition too early which makes scroll state to reset its
+    // scroll.value which is causing the flickering.
+    // That is why for smaller content, we increase animation threshold value from 40.do to 200.dp
     val animationValue = remember(scrollState.maxValue) {
         if (scrollState.maxValue >= 200) {
             40.dp
