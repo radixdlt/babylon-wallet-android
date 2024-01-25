@@ -134,10 +134,6 @@ class SampleDataProvider {
                     totalXrdStake = BigDecimal(1000000)
                 )
             ),
-            validator = ValidatorDetail(
-                "validator_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
-                totalXrdStake = BigDecimal(1000000)
-            ),
             xrdWorth = BigDecimal(1000)
         )
     )
@@ -206,8 +202,7 @@ class SampleDataProvider {
             contributionPerResource = mapOf(
                 "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt12" to BigDecimal(100),
                 "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt21" to BigDecimal(200)
-            ),
-            associatedDapp = null
+            )
         )
     )
 

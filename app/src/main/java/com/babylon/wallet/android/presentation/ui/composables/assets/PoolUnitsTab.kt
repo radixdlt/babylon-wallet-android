@@ -14,9 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
@@ -84,13 +83,28 @@ private fun PoolUnitItem(
                 modifier = Modifier.size(44.dp),
                 poolUnit = resource
             )
-            Text(
-                modifier = Modifier.weight(1f),
-                text = resource.name(),
-                style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
-                maxLines = 2
-            )
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = resource.name(),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 2
+                )
+
+                val associatedDAppName = remember(resource) {
+                    resource.pool?.associatedDApp?.name
+                }
+                if (!associatedDAppName.isNullOrEmpty()) {
+                    Text(
+                        text = associatedDAppName,
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray2,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
 
             if (action is AssetsViewAction.Selection) {
                 val isSelected = remember(resource.stake, action) {
@@ -153,6 +167,4 @@ fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun PoolUnit.name() = displayTitle.ifEmpty {
-    stringResource(id = R.string.account_poolUnits_unknownPoolUnitName)
-}
+fun PoolUnit.name() = displayTitle

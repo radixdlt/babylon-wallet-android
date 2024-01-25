@@ -152,10 +152,6 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail> {
-                error("Not needed")
-            }
-
             override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> {
                 error("Not needed")
             }
@@ -180,7 +176,7 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getDAppsDetails(definitionAddresses: List<String>, skipCache: Boolean): Result<List<DApp>> {
+            override suspend fun getDAppsDetails(definitionAddresses: List<String>, isRefreshing: Boolean): Result<List<DApp>> {
                 error("Not needed")
             }
 

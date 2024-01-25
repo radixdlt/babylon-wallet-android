@@ -46,10 +46,10 @@ interface StateDao {
 
     @Query(
         """
-        SELECT MAX(state_version) FROM AccountEntity
+        SELECT address, state_version FROM AccountEntity
     """
     )
-    fun getLatestStateVersion(): Long?
+    fun getAccountStateVersions(): List<AccountStateVersion>
 
     @Suppress("UnsafeCallOnNullableType")
     @Transaction
@@ -60,8 +60,16 @@ interface StateDao {
             listOf(pool.poolUnitResource) + pool.resources.map { it.second }
         }.flatten()
         insertOrReplaceResources(resourcesInvolved)
-        val join = pools.map { poolResource -> poolResource.resources.map { it.first } }.flatten()
-        insertPoolResources(join)
+        val poolResourcesJoin = pools.map { poolResource -> poolResource.resources.map { it.first } }.flatten()
+        insertPoolResources(poolResourcesJoin)
+
+        insertDApps(pools.mapNotNull { it.associatedDApp })
+        insertPoolDApp(
+            pools.mapNotNull { join ->
+                val dAppAddress = join.associatedDApp?.definitionAddress ?: return@mapNotNull null
+                PoolDAppJoin(join.pool.address, dAppDefinitionAddress = dAppAddress)
+            }
+        )
     }
 
     @Transaction
@@ -120,6 +128,9 @@ interface StateDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPoolResources(poolResources: List<PoolResourceJoin>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertPoolDApp(poolDApps: List<PoolDAppJoin>)
+
     @Query(
         """
         SELECT 
@@ -136,6 +147,15 @@ interface StateDao {
     """
     )
     fun getPoolDetails(addresses: Set<String>, atStateVersion: Long): List<PoolWithResourceResponse>
+
+    @Query(
+        """
+            SELECT * FROM DAppEntity
+            INNER JOIN PoolDAppJoin ON PoolDAppJoin.dApp_definition_address = DAppEntity.definition_address
+            WHERE PoolDAppJoin.pool_address = :poolAddress
+        """
+    )
+    fun getPoolAssociatedDApp(poolAddress: String): DAppEntity?
 
     @Query(
         """

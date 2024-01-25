@@ -240,7 +240,7 @@ class AccountsStateCache @Inject constructor(
                 api.fetchValidators(
                     allValidatorAddresses - cachedValidators.keys,
                     stateVersion
-                ).asValidators().onEach {
+                ).validators.asValidators().onEach {
                     cachedValidators[it.address] = it
                 }
             }.onFailure { error ->
@@ -264,8 +264,8 @@ class AccountsStateCache @Inject constructor(
                     cacheErrors.value = error
                 }.getOrNull() ?: return@transform
 
-                if (newPools.isNotEmpty()) {
-                    val join = newPools.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
+                if (newPools.poolItems.isNotEmpty()) {
+                    val join = newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
                     dao.updatePools(pools = join)
                 } else {
                     emit(

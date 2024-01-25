@@ -22,6 +22,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.toResult
+import com.babylon.wallet.android.domain.model.resources.metadata.claimedEntities
+import com.babylon.wallet.android.domain.model.resources.metadata.dAppDefinition
 import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -83,70 +85,144 @@ suspend fun StateApi.fetchAccountGatewayDetails(
     items
 }
 
+@Suppress("LongMethod")
 suspend fun StateApi.fetchPools(
     poolAddresses: Set<String>,
-    stateVersion: Long
-): List<PoolsResponse> {
-    if (poolAddresses.isEmpty()) return emptyList()
+    stateVersion: Long?
+): PoolsResponse {
+    if (poolAddresses.isEmpty()) return PoolsResponse(emptyList(), stateVersion)
+
+    val poolUnitToPool = mutableMapOf<String, String>()
+    val poolToResources = mutableMapOf<String, List<FungibleResourcesCollectionItem>>()
+    val poolToDAppDefinition = mutableMapOf<String, String>()
 
     val poolDetails = mutableMapOf<String, StateEntityDetailsResponseItem>()
-    val poolWithResources = mutableMapOf<String, List<FungibleResourcesCollectionItem>>()
-    val resourceToPoolComponentAssociation = mutableMapOf<String, String>()
+    val dApps = mutableMapOf<String, StateEntityDetailsResponseItem>()
 
+    var resolvedVersion = stateVersion
     paginateDetails(
         addresses = poolAddresses,
         metadataKeys = ExplicitMetadataKey.forPools,
-        stateVersion = stateVersion,
-    ) { poolComponents ->
-        poolComponents.items.forEach { pool ->
+        stateVersion = resolvedVersion,
+    ) { page ->
+        page.items.forEach { pool ->
             poolDetails[pool.address] = pool
             val metadata = pool.explicitMetadata?.toMetadata().orEmpty()
-            val associatedResource = metadata.poolUnit().orEmpty()
-            resourceToPoolComponentAssociation[associatedResource] = pool.address
-            poolWithResources[pool.address] = pool.fungibleResources?.items.orEmpty()
+            val poolUnit = metadata.poolUnit().orEmpty()
+
+            // Associate Pool with Pool Unit
+            poolUnitToPool[poolUnit] = pool.address
+
+            // Associate Pool with resources
+            poolToResources[pool.address] = pool.fungibleResources?.items.orEmpty()
+
+            // Associate pool with dApp definition
+            val dAppDefinition = metadata.dAppDefinition()
+            if (dAppDefinition != null) {
+                poolToDAppDefinition[pool.address] = dAppDefinition
+            }
         }
+        resolvedVersion = page.ledgerState.stateVersion
     }
 
-    val result = mutableListOf<PoolsResponse>()
-    paginateDetails(
-        addresses = resourceToPoolComponentAssociation.keys, // Request details for resources
-        metadataKeys = ExplicitMetadataKey.forAssets,
-        stateVersion = stateVersion
-    ) { resourcesDetails ->
-        resourcesDetails.items.forEach { resourceDetails ->
-            val poolAddress = resourceToPoolComponentAssociation[resourceDetails.address]
-            poolDetails[poolAddress]?.let { poolDetails ->
-                result.add(PoolsResponse(poolDetails, resourceDetails, poolWithResources[poolAddress].orEmpty()))
+    // Resolve associated dApps
+    val dAppDefinitionAddresses = poolToDAppDefinition.values.toSet()
+    if (dAppDefinitionAddresses.isNotEmpty()) {
+        paginateDetails(
+            addresses = dAppDefinitionAddresses,
+            metadataKeys = ExplicitMetadataKey.forDApps,
+            stateVersion = resolvedVersion
+        ) { page ->
+            page.items.forEach { item ->
+                val dAppDefinition = item.address
+                val claimedEntities = item.explicitMetadata?.toMetadata().orEmpty().claimedEntities()
+                if (claimedEntities != null) {
+                    val poolAddress = poolToDAppDefinition.entries.find { entry ->
+                        entry.value == dAppDefinition
+                    }?.key
+
+                    if (poolAddress in claimedEntities) {
+                        // Two way linking exists, store dApp information
+                        dApps[dAppDefinition] = item
+                    }
+                }
             }
         }
     }
 
-    return result
+    // Resolve Pool Units
+    val poolItems = mutableListOf<PoolsResponse.PoolItem>()
+    paginateDetails(
+        addresses = poolUnitToPool.keys,
+        metadataKeys = ExplicitMetadataKey.forAssets,
+        stateVersion = resolvedVersion
+    ) { page ->
+        page.items.forEach { poolUnitDetails ->
+            val poolAddress = poolUnitToPool[poolUnitDetails.address]
+            poolDetails[poolAddress]?.let { poolDetails ->
+                val dAppDefinition = poolToDAppDefinition[poolDetails.address]
+                val dAppDetails = if (dAppDefinition != null) {
+                    dApps[dAppDefinition]
+                } else {
+                    null
+                }
+                poolItems.add(
+                    PoolsResponse.PoolItem(
+                        poolDetails = poolDetails,
+                        poolUnitDetails = poolUnitDetails,
+                        associatedDAppDetails = dAppDetails,
+                        poolResourcesDetails = poolToResources[poolAddress].orEmpty(),
+                    )
+                )
+            }
+        }
+    }
+
+    return PoolsResponse(
+        poolItems = poolItems,
+        stateVersion = resolvedVersion
+    )
 }
 
 data class PoolsResponse(
-    val poolDetails: StateEntityDetailsResponseItem,
-    val poolUnitDetails: StateEntityDetailsResponseItem,
-    val poolResourcesDetails: List<FungibleResourcesCollectionItem>
-)
+    val poolItems: List<PoolItem>,
+    val stateVersion: Long?
+) {
+    data class PoolItem(
+        val poolDetails: StateEntityDetailsResponseItem,
+        val poolUnitDetails: StateEntityDetailsResponseItem,
+        val associatedDAppDetails: StateEntityDetailsResponseItem?,
+        val poolResourcesDetails: List<FungibleResourcesCollectionItem>
+    )
+}
 
 suspend fun StateApi.fetchValidators(
     validatorsAddresses: Set<String>,
-    stateVersion: Long
-): List<StateEntityDetailsResponseItem> {
-    if (validatorsAddresses.isEmpty()) return emptyList()
+    stateVersion: Long?
+): ValidatorsResponse {
+    if (validatorsAddresses.isEmpty()) return ValidatorsResponse(emptyList(), stateVersion)
 
     val validators = mutableListOf<StateEntityDetailsResponseItem>()
+    var returnedStateVersion = stateVersion
     paginateDetails(
         addresses = validatorsAddresses,
         metadataKeys = ExplicitMetadataKey.forValidators,
         stateVersion = stateVersion,
     ) { poolsChunked ->
         validators.addAll(poolsChunked.items)
+        returnedStateVersion = poolsChunked.ledgerState.stateVersion
     }
 
-    return validators
+    return ValidatorsResponse(
+        validators = validators,
+        stateVersion = returnedStateVersion
+    )
 }
+
+data class ValidatorsResponse(
+    val validators: List<StateEntityDetailsResponseItem>,
+    val stateVersion: Long? = null
+)
 
 suspend fun StateApi.fetchVaultDetails(vaultAddresses: Set<String>): Map<String, BigDecimal> {
     val vaultAmount = mutableMapOf<String, BigDecimal>()

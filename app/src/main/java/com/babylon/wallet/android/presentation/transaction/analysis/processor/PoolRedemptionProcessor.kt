@@ -6,7 +6,6 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetPoolDetailsUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -22,12 +21,10 @@ class PoolRedemptionProcessor @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getResourcesUseCase: GetResourcesUseCase,
     private val getPoolDetailsUseCase: GetPoolDetailsUseCase,
-    private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.PoolRedemption> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.PoolRedemption): PreviewType {
         val resources = getResourcesUseCase(addresses = summary.involvedResourceAddresses).getOrThrow()
         val involvedPools = getPoolDetailsUseCase(classification.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()
-        val poolsToDapps = involvedPools.resolveDApps(resolveDAppInTransactionUseCase)
         val accountsWithdrawnFrom = summary.accountDeposits.keys
         val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {
             accountsWithdrawnFrom.contains(it.address)
@@ -55,8 +52,7 @@ class PoolRedemptionProcessor @Inject constructor(
                         redemptionResourceAddresses.associateWith { contributedResourceAddress ->
                             redemptions.mapNotNull { it.redeemedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
                                 .sumOf { it }
-                        },
-                        associatedDapp = poolsToDapps[pool]
+                        }
                     )
                 )
             }
@@ -68,7 +64,6 @@ class PoolRedemptionProcessor @Inject constructor(
         return PreviewType.Transfer.Pool(
             from = from,
             to = to,
-            poolsWithAssociatedDapps = poolsToDapps,
             actionType = PreviewType.Transfer.Pool.ActionType.Redemption
         )
     }

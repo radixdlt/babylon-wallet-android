@@ -151,3 +151,28 @@ data class PoolResourceJoin(
         ) to asEntity(syncInfo.synced)
     }
 }
+
+@Entity(
+    primaryKeys = ["pool_address", "dApp_definition_address"],
+    foreignKeys = [
+        ForeignKey(
+            entity = PoolEntity::class,
+            parentColumns = ["address"],
+            childColumns = ["pool_address"]
+        ),
+        ForeignKey(
+            entity = DAppEntity::class,
+            parentColumns = ["definition_address"],
+            childColumns = ["dApp_definition_address"]
+        )
+    ],
+    indices = [
+        Index("dApp_definition_address")
+    ]
+)
+data class PoolDAppJoin(
+    @ColumnInfo("pool_address")
+    val poolAddress: String,
+    @ColumnInfo("dApp_definition_address")
+    val dAppDefinitionAddress: String,
+)

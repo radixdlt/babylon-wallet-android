@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
+import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -39,6 +40,7 @@ class TransactionAnalysisDelegate @Inject constructor(
         _state.value.requestNonNull.transactionManifestData
             .toTransactionManifest()
             .then {
+                logger.v(it.toPrettyString())
                 startAnalysis(it, transactionClient)
             }.onFailure { error ->
                 reportFailure(error)
@@ -61,7 +63,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 manifest = manifest,
                 notaryAndSigners = notaryAndSigners
             ).mapCatching { preview ->
-                logger.d(preview.encodedReceipt)
+                logger.v(preview.encodedReceipt)
                 manifest
                     .executionSummary(
                         networkId = networkId.toUByte(),

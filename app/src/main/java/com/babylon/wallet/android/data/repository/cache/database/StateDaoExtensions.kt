@@ -17,6 +17,8 @@ fun StateDao.getCachedPools(poolAddresses: Set<String>, atStateVersion: Long): M
         // If pool's resource is not up to date or has no details, all pool info is considered stale
         val poolResource = getPoolResource(join.address, resourcesCacheValidity()) ?: return@forEach
 
+        val associatedDApp = getPoolAssociatedDApp(join.address)?.toDApp()
+
         val resource = if (join.resource != null && join.amount != null) {
             join.resource.toResource(join.amount) as Resource.FungibleResource
         } else {
@@ -26,14 +28,16 @@ fun StateDao.getCachedPools(poolAddresses: Set<String>, atStateVersion: Long): M
         // TODO maybe add check if pool resource is up to date with details
         val pool = pools[poolResource.poolAddress]
         pools[poolResource.poolAddress!!] = pool?.copy(
-            resources = pool.resources.toMutableList().apply { add(resource) }
+            resources = pool.resources.toMutableList().apply { add(resource) },
+            associatedDApp = associatedDApp
         ) ?: Pool(
             address = join.address,
             resources = listOf(resource),
             metadata = join.poolMetadata?.metadata.orEmpty(),
+            associatedDApp = associatedDApp
         )
     }
-    return pools
+    return pools.mapValues { it.value.copy(resources = it.value.resources.sorted()) }
 }
 
 fun StateDao.getCachedValidators(addresses: Set<String>, atStateVersion: Long): Map<String, ValidatorDetail> {

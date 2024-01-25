@@ -34,18 +34,23 @@ data class PoolEntity(
 
     companion object {
         @Suppress("UnsafeCallOnNullableType")
-        fun List<PoolsResponse>.asPoolsResourcesJoin(
+        fun List<PoolsResponse.PoolItem>.asPoolsResourcesJoin(
             syncInfo: SyncInfo
         ): List<PoolWithResourcesJoinResult> =
             mapNotNull { fetchedPoolDetails ->
                 val poolResourceEntity = fetchedPoolDetails.poolUnitDetails.asEntity(syncInfo.synced)
-
                 val resourcesInPool = fetchedPoolDetails.poolResourcesDetails.map { fungibleItem ->
                     fungibleItem.asPoolResourceJoin(poolAddress = poolResourceEntity.poolAddress!!, syncInfo)
                 }
                 val poolEntity = fetchedPoolDetails.poolDetails.asPoolEntity()
+                val associatedDAppEntity = fetchedPoolDetails.associatedDAppDetails?.let { DAppEntity.from(it, syncInfo.synced) }
                 poolEntity?.let {
-                    PoolWithResourcesJoinResult(poolEntity, poolResourceEntity, resourcesInPool)
+                    PoolWithResourcesJoinResult(
+                        pool = poolEntity,
+                        poolUnitResource = poolResourceEntity,
+                        associatedDApp = associatedDAppEntity,
+                        resources = resourcesInPool
+                    )
                 }
             }
     }
@@ -64,5 +69,6 @@ fun StateEntityDetailsResponseItem.asPoolEntity(): PoolEntity? {
 data class PoolWithResourcesJoinResult(
     val pool: PoolEntity,
     val poolUnitResource: ResourceEntity,
+    val associatedDApp: DAppEntity?,
     val resources: List<Pair<PoolResourceJoin, ResourceEntity>>
 )

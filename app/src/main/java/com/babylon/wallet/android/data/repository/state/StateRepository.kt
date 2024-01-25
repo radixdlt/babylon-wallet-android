@@ -9,7 +9,6 @@ import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.database.DAppEntity
-import com.babylon.wallet.android.data.repository.cache.database.MetadataColumn
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsResourcesJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity
@@ -34,12 +33,16 @@ import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.PublicKeyHash
 import com.babylon.wallet.android.domain.model.resources.metadata.ownerKeyHashes
+import com.radixdlt.ret.Address
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.currentNetwork
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -56,8 +59,6 @@ interface StateRepository {
 
     suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>>
 
-    suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail>
-
     suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>>
 
     suspend fun getNFTDetails(resourceAddress: String, localIds: Set<String>): Result<List<Resource.NonFungibleResource.Item>>
@@ -66,7 +67,7 @@ interface StateRepository {
 
     suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>>
 
-    suspend fun getDAppsDetails(definitionAddresses: List<String>, skipCache: Boolean): Result<List<DApp>>
+    suspend fun getDAppsDetails(definitionAddresses: List<String>, isRefreshing: Boolean): Result<List<DApp>>
 
     suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit>
 
@@ -86,7 +87,8 @@ class StateRepositoryImpl @Inject constructor(
     private val stateApi: StateApi,
     private val stateDao: StateDao,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
-    private val accountsStateCache: AccountsStateCache
+    private val accountsStateCache: AccountsStateCache,
+    private val getProfileUseCase: GetProfileUseCase
 ) : StateRepository {
 
     override fun observeAccountsOnLedger(
@@ -292,20 +294,25 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> = withContext(dispatcher) {
         runCatching {
-            val stateVersion = stateDao.getLatestStateVersion() ?: error("No cached state version found")
-            var cachedPools = stateDao.getCachedPools(
-                poolAddresses = poolAddresses,
-                atStateVersion = stateVersion
-            ).values.toList()
+            val stateVersion = getLatestCachedStateVersionInNetwork()
+            var cachedPools = if (stateVersion != null) {
+                stateDao.getCachedPools(
+                    poolAddresses = poolAddresses,
+                    atStateVersion = stateVersion
+                ).values.toList()
+            } else {
+                emptyList()
+            }
             val unknownPools = poolAddresses - cachedPools.map { it.address }.toSet()
             if (unknownPools.isNotEmpty()) {
                 val newPools = stateApi.fetchPools(unknownPools, stateVersion)
-                if (newPools.isNotEmpty()) {
-                    val join = newPools.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), stateVersion))
+                if (newPools.poolItems.isNotEmpty()) {
+                    val fetchedStateVersion = requireNotNull(newPools.stateVersion)
+                    val join = newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), fetchedStateVersion))
                     stateDao.updatePools(pools = join)
                     cachedPools = stateDao.getCachedPools(
                         poolAddresses = poolAddresses,
-                        atStateVersion = stateVersion
+                        atStateVersion = fetchedStateVersion
                     ).values.toList()
                 }
             }
@@ -313,25 +320,31 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getValidator(validatorAddress: String): Result<ValidatorDetail> = getValidators(setOf(validatorAddress)).map {
-        it.first()
-    }
-
     override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> = withContext(dispatcher) {
         runCatching {
-            val stateVersion = stateDao.getLatestStateVersion() ?: error("No cached state version found")
-            val validators = stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion)
-            val unknownAddresses = validatorAddresses - validators.map { it.address }.toSet()
+            val stateVersion = getLatestCachedStateVersionInNetwork()
+            val cachedValidators = if (stateVersion != null) {
+                stateDao.getValidators(addresses = validatorAddresses.toSet(), atStateVersion = stateVersion).map {
+                    it.asValidatorDetail()
+                }
+            } else {
+                emptyList()
+            }
+
+            val unknownAddresses = validatorAddresses - cachedValidators.map { it.address }.toSet()
             if (unknownAddresses.isNotEmpty()) {
-                val details = stateApi.fetchValidators(
+                val response = stateApi.fetchValidators(
                     validatorsAddresses = unknownAddresses.toSet(),
                     stateVersion = stateVersion
-                ).asValidators()
-
-                stateDao.insertValidators(details.map { it.asValidatorEntity(SyncInfo(InstantGenerator(), stateVersion)) })
-                details + validators.map { it.asValidatorDetail() }
+                )
+                val details = response.validators.asValidators()
+                if (details.isNotEmpty()) {
+                    val syncInfo = SyncInfo(InstantGenerator(), requireNotNull(response.stateVersion))
+                    stateDao.insertValidators(details.map { it.asValidatorEntity(syncInfo) })
+                }
+                details + cachedValidators
             } else {
-                validators.map { it.asValidatorDetail() }
+                cachedValidators
             }
         }
     }
@@ -382,12 +395,12 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getDAppsDetails(
         definitionAddresses: List<String>,
-        skipCache: Boolean
+        isRefreshing: Boolean
     ): Result<List<DApp>> = withContext(dispatcher) {
         runCatching {
             if (definitionAddresses.isEmpty()) return@runCatching listOf()
 
-            val cachedDApps = if (skipCache) {
+            val cachedDApps = if (isRefreshing) {
                 mutableListOf()
             } else {
                 stateDao.getDApps(
@@ -405,13 +418,7 @@ class StateRepositoryImpl @Inject constructor(
                     metadataKeys = ExplicitMetadataKey.forDApps
                 ) { page ->
                     val syncedAt = InstantGenerator()
-                    val entities = page.items.map { item ->
-                        DAppEntity(
-                            definitionAddress = item.address,
-                            metadata = item.explicitMetadata?.toMetadata()?.let { MetadataColumn(it) },
-                            synced = syncedAt
-                        )
-                    }
+                    val entities = page.items.map { item -> DAppEntity.from(item, syncedAt) }
                     stateDao.insertDApps(entities)
 
                     cachedDApps.addAll(entities.map { entity -> entity.toDApp() })
@@ -433,4 +440,12 @@ class StateRepositoryImpl @Inject constructor(
     }
 
     override suspend fun clearCachedState(): Result<Unit> = accountsStateCache.clear()
+
+    private suspend fun getLatestCachedStateVersionInNetwork(): Long? {
+        val currentNetworkId = (getProfileUseCase.currentNetwork()?.networkID ?: Radix.Gateway.default.network.id).toUByte()
+
+        return stateDao.getAccountStateVersions().filter {
+            Address(it.address).networkId() == currentNetworkId
+        }.maxByOrNull { it.stateVersion }?.stateVersion
+    }
 }

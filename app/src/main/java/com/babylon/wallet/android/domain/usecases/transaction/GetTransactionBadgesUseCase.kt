@@ -13,7 +13,7 @@ class GetTransactionBadgesUseCase @Inject constructor(
         accountProofs: List<Address>
     ): List<Badge> = stateRepository.getDAppsDetails(
         definitionAddresses = accountProofs.map { it.addressString() },
-        skipCache = false
+        isRefreshing = false
     ).map { dApps ->
         dApps.map {
             Badge(

@@ -27,13 +27,11 @@ import javax.inject.Inject
 class PoolContributionProcessor @Inject constructor(
     private val getResourcesUseCase: GetResourcesUseCase,
     private val getPoolDetailsUseCase: GetPoolDetailsUseCase,
-    private val getProfileUseCase: GetProfileUseCase,
-    private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
+    private val getProfileUseCase: GetProfileUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.PoolContribution> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.PoolContribution): PreviewType {
         val resources = getResourcesUseCase(addresses = summary.involvedResourceAddresses).getOrThrow()
         val involvedPools = getPoolDetailsUseCase(classification.poolAddresses.map { it.addressString() }.toSet()).getOrThrow()
-        val poolsToDapps = involvedPools.resolveDApps(resolveDAppInTransactionUseCase)
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         val accountsWithdrawnFrom = summary.accountWithdraws.keys
         val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {
@@ -55,20 +53,19 @@ class PoolContributionProcessor @Inject constructor(
                     val poolResource = resources.find { it.resourceAddress == pool.metadata.poolUnit() } as? Resource.FungibleResource
                         ?: error("No pool resource found")
                     val contributedResourceAddresses = contributions.first().contributedResources.keys
-                    val guaranteeType = (deposit as? ResourceIndicator.Fungible)?.indicator?.toGuaranteeType(defaultDepositGuarantees)
+                    val guaranteeType = (deposit as? ResourceIndicator.Fungible)?.guaranteeType(defaultDepositGuarantees)
                         ?: GuaranteeType.Guaranteed
                     Transferable.Depositing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(
                             amount = contributions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
-                            PoolUnit(
+                            unit = PoolUnit(
                                 stake = poolResource,
                                 pool = pool
                             ),
-                            contributedResourceAddresses.associateWith { contributedResourceAddress ->
+                            contributionPerResource = contributedResourceAddresses.associateWith { contributedResourceAddress ->
                                 contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
                                     .sumOf { it }
-                            },
-                            associatedDapp = poolsToDapps[pool]
+                            }
                         ),
                         guaranteeType = guaranteeType,
                     )
@@ -82,7 +79,6 @@ class PoolContributionProcessor @Inject constructor(
         return PreviewType.Transfer.Pool(
             from = from,
             to = to,
-            poolsWithAssociatedDapps = poolsToDapps,
             actionType = PreviewType.Transfer.Pool.ActionType.Contribution
         )
     }

@@ -13,7 +13,7 @@ class GetDAppsUseCase @Inject constructor(
         needMostRecentData: Boolean
     ): Result<List<DApp>> = stateRepository.getDAppsDetails(
         definitionAddresses = definitionAddresses.toList(),
-        skipCache = needMostRecentData
+        isRefreshing = needMostRecentData
     )
 
     suspend operator fun invoke(
@@ -21,7 +21,7 @@ class GetDAppsUseCase @Inject constructor(
         needMostRecentData: Boolean
     ): Result<DApp> = stateRepository.getDAppsDetails(
         definitionAddresses = listOf(definitionAddress),
-        skipCache = needMostRecentData
+        isRefreshing = needMostRecentData
     ).mapCatching { dApps ->
         val dApp = dApps.first()
         dApp

@@ -21,13 +21,13 @@ class ResolveDAppInTransactionUseCase @Inject constructor(
         componentAddress: String
     ): Result<Pair<DApp, Boolean>> = stateRepository.getDAppsDetails(
         definitionAddresses = listOf(componentAddress),
-        skipCache = true
+        isRefreshing = true
     ).then { components ->
         val dAppDefinitionAddress = components.firstOrNull()?.definitionAddresses?.firstOrNull()
         if (dAppDefinitionAddress != null) {
             stateRepository.getDAppsDetails(
                 definitionAddresses = listOf(dAppDefinitionAddress),
-                skipCache = true
+                isRefreshing = true
             ).mapCatching { dApps ->
                 val dApp = dApps.first()
                 dApp to dApp.claimedEntities.contains(componentAddress)

@@ -61,10 +61,9 @@ class ValidatorStakeProcessor @Inject constructor(
                 involvedValidators.find { it.address == stakes.first().validatorAddress.addressString() } ?: error("No validator found")
             Transferable.Depositing(
                 transferable = TransferableAsset.Fungible.LSUAsset(
-                    stakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() },
-                    LiquidStakeUnit(lsuResource, validator),
-                    validator,
-                    stakes.sumOf { it.xrdAmount.asStr().toBigDecimal() },
+                    amount = stakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() },
+                    lsu = LiquidStakeUnit(lsuResource, validator),
+                    xrdWorth = stakes.sumOf { it.xrdAmount.asStr().toBigDecimal() },
                 )
             )
         }

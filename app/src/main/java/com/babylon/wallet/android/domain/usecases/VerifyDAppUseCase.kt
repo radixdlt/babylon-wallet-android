@@ -62,7 +62,7 @@ class VerifyDAppUseCase @Inject constructor(
     ): Result<Boolean> = if (origin.isValidHttpsUrl()) {
         stateRepository.getDAppsDetails(
             definitionAddresses = listOf(dAppDefinitionAddress),
-            skipCache = true
+            isRefreshing = true
         ).mapCatching { dApps ->
             dApps.first()
         }.then {

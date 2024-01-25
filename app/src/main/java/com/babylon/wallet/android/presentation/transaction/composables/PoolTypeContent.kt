@@ -13,7 +13,7 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
@@ -39,9 +39,8 @@ fun PoolTypeContent(
         middleSection = {
             PoolsContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                poolsWithAssociatedDapps = previewType.poolsWithAssociatedDapps.toImmutableMap(),
+                pools = previewType.poolsInvolved.toImmutableList(),
                 text = poolSectionLabel,
-                unknownPoolCount = previewType.unknownPoolComponents,
                 onDAppClick = onDAppClick
             )
         }
@@ -63,8 +62,7 @@ fun PoolTypePreview() {
             previewType = PreviewType.Transfer.Pool(
                 to = persistentListOf(),
                 from = listOf(SampleDataProvider().accountWithTransferablePool).toPersistentList(),
-                actionType = PreviewType.Transfer.Pool.ActionType.Contribution,
-                poolsWithAssociatedDapps = emptyMap()
+                actionType = PreviewType.Transfer.Pool.ActionType.Contribution
             ),
             onPromptForGuarantees = {},
             onDAppClick = {},

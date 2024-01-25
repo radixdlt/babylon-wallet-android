@@ -105,3 +105,10 @@ data class PoolWithResourceResponse(
         null
     }
 }
+
+data class AccountStateVersion(
+    @ColumnInfo("address")
+    val address: String,
+    @ColumnInfo("state_version")
+    val stateVersion: Long
+)

@@ -3,7 +3,7 @@ package com.babylon.wallet.android.domain.model
 import androidx.annotation.FloatRange
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
 
@@ -127,7 +127,6 @@ sealed interface TransferableAsset {
         data class LSUAsset(
             override val amount: BigDecimal,
             val lsu: LiquidStakeUnit,
-            val validator: ValidatorDetail,
             val xrdWorth: BigDecimal,
             override val isNewlyCreated: Boolean = false
         ) : Fungible() {
@@ -139,7 +138,6 @@ sealed interface TransferableAsset {
             override val amount: BigDecimal,
             val unit: PoolUnit,
             val contributionPerResource: Map<String, BigDecimal>,
-            val associatedDapp: DApp?,
             override val isNewlyCreated: Boolean = false
         ) : Fungible() {
             override val resource: Resource.FungibleResource
@@ -154,10 +152,12 @@ sealed interface TransferableAsset {
         ) : NonFungible()
 
         data class StakeClaimAssets(
-            override val resource: Resource.NonFungibleResource,
-            val validator: ValidatorDetail,
+            val claim: StakeClaim,
             val xrdWorthPerNftItem: Map<String, BigDecimal>,
             override val isNewlyCreated: Boolean = false
-        ) : NonFungible()
+        ) : NonFungible() {
+            override val resource: Resource.NonFungibleResource
+                get() = claim.nonFungibleResource
+        }
     }
 }

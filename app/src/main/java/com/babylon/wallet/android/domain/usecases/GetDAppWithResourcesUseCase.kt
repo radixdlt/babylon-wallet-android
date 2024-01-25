@@ -15,7 +15,7 @@ class GetDAppWithResourcesUseCase @Inject constructor(
         needMostRecentData: Boolean
     ): Result<DAppWithResources> = stateRepository.getDAppsDetails(
         definitionAddresses = listOf(definitionAddress),
-        skipCache = needMostRecentData
+        isRefreshing = needMostRecentData
     ).mapCatching { dApps ->
         val dApp = dApps.first()
         val claimedResources = dApp.claimedEntities.filter { Address(it).isGlobalResourceManager() }

@@ -42,12 +42,12 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.name
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.assets.name
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -387,7 +387,7 @@ private fun TransferableLsuItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferableLsu.validator.name,
+                    text = transferableLsu.lsu.validator.name,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
@@ -485,7 +485,7 @@ private fun TransferableStakeClaimNftItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = transferable.validator.name,
+                    text = transferable.claim.validator.name,
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,
@@ -583,21 +583,25 @@ private fun TransferablePoolUnitItemContent(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(id = R.string.transactionReview_poolUnits),
+                    text = transferablePoolUnit.unit.name(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    text = transferablePoolUnit.associatedDapp?.metadata?.name().orEmpty().ifEmpty {
-                        stringResource(id = R.string.transactionReview_poolName_unknown)
-                    },
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+
+                val associatedDAppName = remember(transferablePoolUnit) {
+                    transferablePoolUnit.unit.pool?.associatedDApp?.name
+                }
+                if (!associatedDAppName.isNullOrEmpty()) {
+                    Text(
+                        text = associatedDAppName,
+                        style = RadixTheme.typography.body2Regular,
+                        color = RadixTheme.colors.gray2,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
 //            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
         }
