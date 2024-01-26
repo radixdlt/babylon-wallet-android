@@ -30,6 +30,8 @@ data class LiquidStakeUnit(
             return fungibleResource.ownedAmount?.divide(fungibleResource.currentSupply, fungibleResource.mathContext)
         }
 
+    fun stakeValue(): BigDecimal? = stakeValueInXRD(validator.totalXrdStake)
+
     fun stakeValueInXRD(totalXrdStake: BigDecimal?): BigDecimal? {
         if (totalXrdStake == null) return null
         return percentageOwned?.multiply(totalXrdStake, fungibleResource.mathContext)

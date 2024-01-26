@@ -166,7 +166,7 @@ class AccountViewModel @Inject constructor(
         val account = _state.value.accountWithAssets?.account ?: return
 
         viewModelScope.launch {
-            sendEvent(AccountEvent.OnLSUClick(liquidStakeUnit = liquidStakeUnit, account = account))
+            sendEvent(AccountEvent.OnFungibleClick(resource = liquidStakeUnit.fungibleResource, account = account))
         }
     }
 
@@ -174,7 +174,7 @@ class AccountViewModel @Inject constructor(
         val account = _state.value.accountWithAssets?.account ?: return
 
         viewModelScope.launch {
-            sendEvent(AccountEvent.OnPoolUnitClick(poolUnit, account))
+            sendEvent(AccountEvent.OnFungibleClick(resource = poolUnit.resource, account))
         }
     }
 
@@ -272,8 +272,6 @@ internal sealed interface AccountEvent : OneOffEvent {
         val item: Resource.NonFungibleResource.Item,
         val account: Network.Account
     ) : AccountEvent
-    data class OnPoolUnitClick(val poolUnit: PoolUnit, val account: Network.Account) : AccountEvent
-    data class OnLSUClick(val liquidStakeUnit: LiquidStakeUnit, val account: Network.Account) : AccountEvent
 }
 
 data class AccountUiState(

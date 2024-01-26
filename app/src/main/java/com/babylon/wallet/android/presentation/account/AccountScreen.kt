@@ -87,8 +87,6 @@ fun AccountScreen(
     onNavigateToMnemonicRestore: () -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Network.Account) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Network.Account) -> Unit,
-    onPoolUnitClick: (PoolUnit, Network.Account) -> Unit,
-    onLSUClick: (LiquidStakeUnit, Network.Account) -> Unit,
     onTransferClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -99,8 +97,6 @@ fun AccountScreen(
                 is AccountEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore()
                 is AccountEvent.OnFungibleClick -> onFungibleResourceClick(it.resource, it.account)
                 is AccountEvent.OnNonFungibleClick -> onNonFungibleResourceClick(it.resource, it.item, it.account)
-                is AccountEvent.OnPoolUnitClick -> onPoolUnitClick(it.poolUnit, it.account)
-                is AccountEvent.OnLSUClick -> onLSUClick(it.liquidStakeUnit, it.account)
             }
         }
     }
