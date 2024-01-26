@@ -644,7 +644,7 @@ Or you can clear this wallet from this phone and start fresh.</string>
   <string name="assetTransfer_accountList_externalAccountName">Account</string>
   <string name="assetTransfer_accountList_fromLabel">From</string>
   <string name="assetTransfer_accountList_toLabel">To</string>
-  <string name="assetTransfer_accountList_addAccountButton">Add Account</string>
+  <string name="assetTransfer_accountList_addAccountButton">Add Transfer</string>
   <string name="assetTransfer_header_transfer">Transfer</string>
   <string name="assetTransfer_header_addMessageButton">Add Message</string>
   <string name="assetTransfer_chooseReceivingAccount_invalidAddressError">Invalid address</string>
