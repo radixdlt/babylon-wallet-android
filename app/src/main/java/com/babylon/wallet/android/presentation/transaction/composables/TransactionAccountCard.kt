@@ -583,14 +583,14 @@ private fun TransferablePoolUnitItemContent(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Thumbnail.PoolUnit(
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(42.dp),
                 poolUnit = transferablePoolUnit.unit
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = transferablePoolUnit.unit.name(),
-                    style = RadixTheme.typography.body2HighImportance,
+                    style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -634,12 +634,15 @@ private fun TransferablePoolUnitItemContent(
                             )
                         }
                         .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault),
+                        .padding(
+                            horizontal = RadixTheme.dimensions.paddingDefault,
+                            vertical = RadixTheme.dimensions.paddingMedium
+                        ),
                     verticalAlignment = CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
                 ) {
                     Thumbnail.Fungible(
-                        modifier = Modifier.size(44.dp),
+                        modifier = Modifier.size(24.dp),
                         token = item,
                     )
                     Text(
@@ -651,7 +654,7 @@ private fun TransferablePoolUnitItemContent(
                     Text(
                         modifier = Modifier.weight(1f),
                         text = transferablePoolUnit.contributionPerResource[item.resourceAddress]?.displayableQuantity().orEmpty(),
-                        style = RadixTheme.typography.secondaryHeader,
+                        style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1,
                         textAlign = TextAlign.End,
                         maxLines = 2
