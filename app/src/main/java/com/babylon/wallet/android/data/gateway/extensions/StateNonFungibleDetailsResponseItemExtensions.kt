@@ -30,6 +30,10 @@ import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.utils.isValidUrl
 import com.babylon.wallet.android.utils.toAddressOrNull
 
+private enum class SborTypeName(val code: String) {
+    INSTANT("Instant")
+}
+
 // https://docs.radixdlt.com/v1/docs/metadata-for-wallet-display#nonfungibles
 private val NFTExplicitMetadataKeys = listOf(
     ExplicitMetadataKey.NAME.key,
@@ -98,11 +102,20 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
             valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.INT)
         )
 
-        is ProgrammaticScryptoSborValueI64 -> Metadata.Primitive(
-            key = key,
-            value = sborValue.value,
-            valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.LONG)
-        )
+        is ProgrammaticScryptoSborValueI64 ->
+            if (sborValue.typeName == SborTypeName.INSTANT.code && sborValue.value.toLongOrNull() != null) {
+                Metadata.Primitive(
+                    key = key,
+                    value = sborValue.value,
+                    valueType = MetadataType.Instant
+                )
+            } else {
+                Metadata.Primitive(
+                    key = key,
+                    value = sborValue.value,
+                    valueType = MetadataType.Integer(signed = true, size = MetadataType.Integer.Size.LONG)
+                )
+            }
 
         is ProgrammaticScryptoSborValueI128 -> Metadata.Primitive(
             key = key,
