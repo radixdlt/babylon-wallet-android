@@ -50,10 +50,8 @@ fun TransactionPreviewHeader(
     scrollState: ScrollState
 ) {
     val context = LocalContext.current
-    val title = when (state.previewType) {
-        is PreviewType.Transfer -> stringResource(R.string.transactionReview_transferTitle)
-        else -> stringResource(R.string.transactionReview_title)
-    }
+    val title = stringResource(R.string.transactionReview_title)
+
     // TODO improve this at later time.
     // AnimationRangePx is the threshold which scrollState.value hits and then transition of the motion layout starts.
     // When its relatively low i.e. 40.dp we start transition early and if content is large enough scroll state continue
