@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -48,6 +47,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.name
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -94,7 +94,7 @@ fun TransactionAccountCard(
             val transferableFungibleAmount = amountTransferable.transferable as TransferableAsset.Fungible.Token
 
             TransferableItemContent(
-                modifier = Modifier.clickable {
+                modifier = Modifier.throttleClickable {
                     onFungibleResourceClick(transferableFungibleAmount.resource, transferableFungibleAmount.isNewlyCreated)
                 },
                 transferable = amountTransferable,
@@ -112,7 +112,7 @@ fun TransactionAccountCard(
             collection.resource.items.forEachIndexed { itemIndex, item ->
                 val lastItem = itemIndex == collection.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
                 TransferableNftItemContent(
-                    modifier = Modifier.clickable { onNonFungibleResourceClick(collection.resource, item, collection.isNewlyCreated) },
+                    modifier = Modifier.throttleClickable { onNonFungibleResourceClick(collection.resource, item, collection.isNewlyCreated) },
                     transferable = collection,
                     shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
                     nftItem = item
@@ -126,7 +126,7 @@ fun TransactionAccountCard(
             val transferableLsu = transferable.transferable as TransferableAsset.Fungible.LSUAsset
 
             TransferableLsuItemContent(
-                modifier = Modifier.clickable {
+                modifier = Modifier.throttleClickable {
                     onFungibleResourceClick(transferableLsu.lsu.fungibleResource, transferableLsu.isNewlyCreated)
                 },
                 transferable = transferable,
@@ -508,7 +508,7 @@ private fun TransferableStakeClaimNftItemContent(
             Row(
                 modifier = Modifier
                     .clip(RadixTheme.shapes.roundedRectSmall)
-                    .clickable {
+                    .throttleClickable {
                         onNonFungibleResourceClick(
                             transferable.resource,
                             item,
@@ -621,7 +621,7 @@ private fun TransferablePoolUnitItemContent(
                 Row(
                     modifier = Modifier
                         .clip(RadixTheme.shapes.roundedRectSmall)
-                        .clickable {
+                        .throttleClickable {
                             onFungibleResourceClick(
                                 item,
                                 transferablePoolUnit.isNewlyCreated
