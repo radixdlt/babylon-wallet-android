@@ -51,11 +51,15 @@ class PoolContributionProcessor @Inject constructor(
                     val contributedResourceAddresses = contributions.first().contributedResources.keys
                     val guaranteeType = (deposit as? ResourceIndicator.Fungible)?.guaranteeType(defaultDepositGuarantees)
                         ?: GuaranteeType.Guaranteed
+
+                    val poolUnitAmount = contributions.find {
+                        it.poolUnitsResourceAddress.addressString() == poolResource.resourceAddress
+                    }?.poolUnitsAmount?.asStr()?.toBigDecimalOrNull()
                     Transferable.Depositing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(
                             amount = contributions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
                             unit = PoolUnit(
-                                stake = poolResource,
+                                stake = poolResource.copy(ownedAmount = poolUnitAmount),
                                 pool = pool
                             ),
                             contributionPerResource = contributedResourceAddresses.associateWith { contributedResourceAddress ->

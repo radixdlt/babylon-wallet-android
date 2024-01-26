@@ -518,6 +518,12 @@ private fun TransferablePoolUnitItemContent(
     Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
+            .throttleClickable {
+                onFungibleResourceClick(
+                    transferablePoolUnit.resource,
+                    transferablePoolUnit.isNewlyCreated
+                )
+            }
             .background(
                 color = RadixTheme.colors.gray5,
                 shape = shape
@@ -576,13 +582,6 @@ private fun TransferablePoolUnitItemContent(
                 val addDivider = index != poolResources.lastIndex
                 Row(
                     modifier = Modifier
-                        .clip(RadixTheme.shapes.roundedRectSmall)
-                        .throttleClickable {
-                            onFungibleResourceClick(
-                                item,
-                                transferablePoolUnit.isNewlyCreated
-                            )
-                        }
                         .fillMaxWidth()
                         .padding(
                             horizontal = RadixTheme.dimensions.paddingDefault,
