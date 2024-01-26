@@ -7,9 +7,9 @@ import java.math.BigDecimal
 data class PoolUnit(
     val stake: Resource.FungibleResource,
     val pool: Pool? = null
-) : Asset {
+) : Asset.Fungible {
 
-    override val resource: Resource
+    override val resource: Resource.FungibleResource
         get() = stake
 
     val resourceAddress: String

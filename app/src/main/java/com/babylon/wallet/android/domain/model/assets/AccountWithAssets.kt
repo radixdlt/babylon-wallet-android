@@ -22,8 +22,24 @@ data class AccountWithAssets(
         get() = details?.accountType == AccountType.DAPP_DEFINITION
 }
 
-interface Asset {
+sealed interface Asset {
     val resource: Resource
+
+    // Asset that can have an amount like
+    // - token
+    // - LSU
+    // - pool unit
+    sealed interface Fungible: Asset {
+        override val resource: Resource.FungibleResource
+    }
+
+    // Asset that is non fungible and needs a local id from a collection
+    // - NFT
+    // - stake claim
+    sealed interface NonFungible: Asset {
+        override val resource: Resource.NonFungibleResource
+    }
+
 }
 
 data class Assets(
