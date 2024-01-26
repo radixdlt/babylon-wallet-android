@@ -444,15 +444,18 @@ enum class ThumbnailRequestSize(val size: Int) {
     }
 }
 
+@Suppress("MagicNumber")
 private fun ImageRequest.Builder.applyAllSupportedImageDecoders() = apply {
     this.decoderFactory { result, options, _ ->
         if (result.mimeType == "image/svg+xml" || DecodeUtils.isSvg(result.source.source())) {
             SvgDecoder(result.source, options)
         } else if (DecodeUtils.isGif(result.source.source())) {
             GifDecoder(result.source, options)
-        } else if (Build.VERSION.SDK_INT >= 28 && (DecodeUtils.isAnimatedWebP(result.source.source()) || DecodeUtils.isAnimatedHeif(
-                result.source.source()
-            ))
+        } else if (Build.VERSION.SDK_INT >= 28 && (
+                DecodeUtils.isAnimatedWebP(result.source.source()) || DecodeUtils.isAnimatedHeif(
+                    result.source.source()
+                )
+                )
         ) {
             ImageDecoderDecoder(result.source, options)
         } else {
