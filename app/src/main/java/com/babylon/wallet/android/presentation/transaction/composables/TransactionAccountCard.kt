@@ -376,7 +376,7 @@ private fun TransferableLsuItemContent(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Thumbnail.LSU(
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(42.dp),
                 liquidStakeUnit = transferableLsu.lsu,
             )
             Column(modifier = Modifier.weight(1f)) {
@@ -387,7 +387,7 @@ private fun TransferableLsuItemContent(
                             id = R.string.transactionReview_unknown
                         )
                     },
-                    style = RadixTheme.typography.body2HighImportance,
+                    style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -415,7 +415,7 @@ private fun TransferableLsuItemContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
-                .padding(RadixTheme.dimensions.paddingDefault),
+                .padding(RadixTheme.dimensions.paddingMedium),
             verticalAlignment = CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
@@ -423,7 +423,7 @@ private fun TransferableLsuItemContent(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(24.dp)
                     .clip(RadixTheme.shapes.circle),
                 tint = Color.Unspecified
             )
@@ -436,7 +436,7 @@ private fun TransferableLsuItemContent(
             Text(
                 modifier = Modifier.weight(1f),
                 text = transferableLsu.xrdWorth.displayableQuantity(),
-                style = RadixTheme.typography.secondaryHeader,
+                style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.End,
                 maxLines = 2
@@ -478,14 +478,14 @@ private fun TransferableStakeClaimNftItemContent(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Thumbnail.NonFungible(
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(42.dp),
                 collection = transferable.resource
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = transferable.resource.name.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
-                    style = RadixTheme.typography.body2HighImportance,
+                    style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -523,7 +523,7 @@ private fun TransferableStakeClaimNftItemContent(
                     }
                     .fillMaxWidth()
                     .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
-                    .padding(RadixTheme.dimensions.paddingDefault),
+                    .padding(RadixTheme.dimensions.paddingMedium),
                 verticalAlignment = CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
@@ -531,7 +531,7 @@ private fun TransferableStakeClaimNftItemContent(
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(24.dp)
                         .clip(RadixTheme.shapes.circle),
                     tint = Color.Unspecified
                 )
@@ -544,7 +544,7 @@ private fun TransferableStakeClaimNftItemContent(
                 Text(
                     modifier = Modifier.weight(1f),
                     text = transferable.xrdWorthPerNftItem[item.localId.displayable]?.displayableQuantity().orEmpty(),
-                    style = RadixTheme.typography.secondaryHeader,
+                    style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End,
                     maxLines = 2
