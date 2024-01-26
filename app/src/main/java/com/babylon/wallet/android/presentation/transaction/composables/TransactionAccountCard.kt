@@ -67,106 +67,56 @@ fun TransactionAccountCard(
             shape = RadixTheme.shapes.roundedRectTopMedium
         )
 
-        val fungibleAmountTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableAsset.Fungible.Token }
-        }
+        account.resources.forEachIndexed { index, transferable ->
+            val lastAsset = index == account.resources.lastIndex
+            val shape = if (lastAsset) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
 
-        val nftTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableAsset.NonFungible.NFTAssets }
-        }
-
-        val lsuTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableAsset.Fungible.LSUAsset }
-        }
-
-        val stakeClaimNftTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableAsset.NonFungible.StakeClaimAssets }
-        }
-
-        val poolUnitTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableAsset.Fungible.PoolUnitAsset }
-        }
-
-        // Fungibles
-        fungibleAmountTransferables.forEachIndexed { index, amountTransferable ->
-            val lastItem = if (nftTransferables.isEmpty()) index == fungibleAmountTransferables.lastIndex else false
-            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableFungibleAmount = amountTransferable.transferable as TransferableAsset.Fungible.Token
-
-            TransferableItemContent(
-                modifier = Modifier.throttleClickable {
-                    onFungibleResourceClick(transferableFungibleAmount.resource, transferableFungibleAmount.isNewlyCreated)
-                },
-                transferable = amountTransferable,
-                shape = shape,
-            )
-            if (lastItem.not()) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
-            }
-        }
-
-        // Non fungibles
-        nftTransferables.forEachIndexed { collectionIndex, nftTransferable ->
-            val collection = nftTransferable.transferable as TransferableAsset.NonFungible.NFTAssets
-            // Show each nft item
-            collection.resource.items.forEachIndexed { itemIndex, item ->
-                val lastItem = itemIndex == collection.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
-                TransferableNftItemContent(
+            when (val asset = transferable.transferable) {
+                is TransferableAsset.Fungible.Token -> TransferableItemContent(
                     modifier = Modifier.throttleClickable {
-                        onNonFungibleResourceClick(
-                            collection.resource,
-                            item,
-                            collection.isNewlyCreated
-                        )
+                        onFungibleResourceClick(asset.resource, asset.isNewlyCreated)
                     },
-                    transferable = collection,
-                    shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
-                    nftItem = item
+                    transferable = transferable,
+                    shape = shape,
+                )
+
+                is TransferableAsset.NonFungible.NFTAssets -> {
+                    // Show each nft item
+                    asset.resource.items.forEachIndexed { itemIndex, item ->
+                        val lastNFT = itemIndex == asset.resource.items.lastIndex
+                        TransferableNftItemContent(
+                            modifier = Modifier.throttleClickable {
+                                onNonFungibleResourceClick(asset.resource, item, asset.isNewlyCreated)
+                            },
+                            transferable = asset,
+                            shape = if (lastAsset && lastNFT) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
+                            nftItem = item
+                        )
+                    }
+                }
+
+                is TransferableAsset.Fungible.PoolUnitAsset -> TransferablePoolUnitItemContent(
+                    transferable = transferable,
+                    shape = shape,
+                    onFungibleResourceClick = onFungibleResourceClick
+                )
+
+                is TransferableAsset.Fungible.LSUAsset -> TransferableLsuItemContent(
+                    modifier = Modifier.throttleClickable {
+                        onFungibleResourceClick(asset.lsu.fungibleResource, asset.isNewlyCreated)
+                    },
+                    transferable = transferable,
+                    shape = shape,
+                )
+
+                is TransferableAsset.NonFungible.StakeClaimAssets -> TransferableStakeClaimNftItemContent(
+                    transferable = asset,
+                    shape = shape,
+                    onNonFungibleResourceClick = onNonFungibleResourceClick
                 )
             }
-        }
 
-        lsuTransferables.forEachIndexed { index, transferable ->
-            val lastItem = index == lsuTransferables.lastIndex
-            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableLsu = transferable.transferable as TransferableAsset.Fungible.LSUAsset
-
-            TransferableLsuItemContent(
-                modifier = Modifier.throttleClickable {
-                    onFungibleResourceClick(transferableLsu.lsu.fungibleResource, transferableLsu.isNewlyCreated)
-                },
-                transferable = transferable,
-                shape = shape,
-            )
-            if (lastItem.not()) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
-            }
-        }
-        stakeClaimNftTransferables.forEachIndexed { index, transferable ->
-            val lastItem = index == stakeClaimNftTransferables.lastIndex
-            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableStakeClaim = transferable.transferable as TransferableAsset.NonFungible.StakeClaimAssets
-
-            TransferableStakeClaimNftItemContent(
-                transferable = transferableStakeClaim,
-                shape = shape,
-                onNonFungibleResourceClick = onNonFungibleResourceClick
-            )
-            if (lastItem.not()) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
-            }
-        }
-
-        poolUnitTransferables.forEachIndexed { index, transferable ->
-            val lastItem = index == poolUnitTransferables.lastIndex
-            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-
-            TransferablePoolUnitItemContent(
-                transferable = transferable,
-                shape = shape,
-                onFungibleResourceClick = onFungibleResourceClick
-            )
-            if (lastItem.not()) {
+            if (lastAsset.not()) {
                 HorizontalDivider(color = RadixTheme.colors.gray4)
             }
         }
