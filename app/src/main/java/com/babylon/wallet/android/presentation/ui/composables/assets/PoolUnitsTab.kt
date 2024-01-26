@@ -130,7 +130,7 @@ private fun PoolUnitItem(
             color = RadixTheme.colors.gray2
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-        
+
         PoolResourcesValues(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
