@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
+import coil.decode.BitmapFactoryDecoder
 import coil.decode.DecodeUtils
 import coil.decode.GifDecoder
 import coil.decode.ImageDecoderDecoder
@@ -444,14 +445,13 @@ enum class ThumbnailRequestSize(val size: Int) {
     }
 }
 
-@Suppress("MagicNumber")
 private fun ImageRequest.Builder.applyAllSupportedImageDecoders() = apply {
     this.decoderFactory { result, options, _ ->
         if (result.mimeType == "image/svg+xml" || DecodeUtils.isSvg(result.source.source())) {
             SvgDecoder(result.source, options)
         } else if (DecodeUtils.isGif(result.source.source())) {
             GifDecoder(result.source, options)
-        } else if (Build.VERSION.SDK_INT >= 28 && (
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && (
                 DecodeUtils.isAnimatedWebP(result.source.source()) || DecodeUtils.isAnimatedHeif(
                     result.source.source()
                 )
@@ -459,7 +459,7 @@ private fun ImageRequest.Builder.applyAllSupportedImageDecoders() = apply {
         ) {
             ImageDecoderDecoder(result.source, options)
         } else {
-            null
+            BitmapFactoryDecoder(result.source, options)
         }
     }
 }
