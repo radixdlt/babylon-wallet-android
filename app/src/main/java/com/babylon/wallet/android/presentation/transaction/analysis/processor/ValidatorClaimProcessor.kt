@@ -109,14 +109,16 @@ class ValidatorClaimProcessor @Inject constructor(
         val xrdResource = resources.find {
             it.resourceAddress == XrdResource.address(NetworkId.from(ownedAccount.networkID))
         } as? Resource.FungibleResource ?: error("No resource found")
+
+        val amount = entry.value.sumOf { it.amount }
         AccountWithTransferableResources.Owned(
             account = ownedAccount,
             resources = listOf(
-                element = Transferable.Depositing(
+                Transferable.Depositing(
                     transferable = TransferableAsset.Fungible.Token(
-                        entry.value.sumOf { it.amount },
-                        xrdResource,
-                        false
+                        amount = amount,
+                        resource = xrdResource.copy(ownedAmount = amount),
+                        isNewlyCreated = false
                     )
                 )
             )

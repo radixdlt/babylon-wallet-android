@@ -59,10 +59,11 @@ class ValidatorStakeProcessor @Inject constructor(
             val stakes = validatorStakes.filter { it.liquidStakeUnitAddress.asStr() == resourceAddress }
             val validator =
                 involvedValidators.find { it.address == stakes.first().validatorAddress.addressString() } ?: error("No validator found")
+            val amount = stakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() }
             Transferable.Depositing(
                 transferable = TransferableAsset.Fungible.LSUAsset(
-                    amount = stakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() },
-                    lsu = LiquidStakeUnit(lsuResource, validator),
+                    amount = amount,
+                    lsu = LiquidStakeUnit(lsuResource.copy(ownedAmount = amount), validator),
                     xrdWorth = stakes.sumOf { it.xrdAmount.asStr().toBigDecimal() },
                 )
             )
@@ -82,14 +83,15 @@ class ValidatorStakeProcessor @Inject constructor(
         val xrdResource = resources.find {
             it.resourceAddress == XrdResource.address(NetworkId.from(ownedAccount.networkID))
         } as? Resource.FungibleResource ?: error("No resource found")
+        val amount = entry.value.sumOf { it.amount }
         AccountWithTransferableResources.Owned(
             account = ownedAccount,
             resources = listOf(
                 element = Transferable.Withdrawing(
                     transferable = TransferableAsset.Fungible.Token(
-                        entry.value.sumOf { it.amount },
-                        xrdResource,
-                        false
+                        amount = amount,
+                        resource = xrdResource.copy(ownedAmount = amount),
+                        isNewlyCreated = false
                     )
                 )
             )
