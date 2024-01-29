@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
+import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
@@ -13,11 +14,14 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
+import kotlinx.coroutines.flow.first
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.currentNetwork
+import java.math.BigDecimal
 import javax.inject.Inject
 
 class ValidatorClaimProcessor @Inject constructor(
@@ -36,7 +40,7 @@ class ValidatorClaimProcessor @Inject constructor(
         }.flatten()
 
         val toAccounts = extractDeposits(summary, getProfileUseCase, resources)
-        val fromAccounts = classification.extractWithdrawals(
+        val fromAccounts = extractWithdrawals(
             executionSummary = summary,
             getProfileUseCase = getProfileUseCase,
             resources = resources,
@@ -51,7 +55,7 @@ class ValidatorClaimProcessor @Inject constructor(
         )
     }
 
-    private suspend fun DetailedManifestClass.ValidatorClaim.extractWithdrawals(
+    private suspend fun extractWithdrawals(
         executionSummary: ExecutionSummary,
         getProfileUseCase: GetProfileUseCase,
         resources: List<Resource>,
@@ -60,39 +64,38 @@ class ValidatorClaimProcessor @Inject constructor(
     ): List<AccountWithTransferableResources.Owned> {
         return executionSummary.accountWithdraws.map { claimsPerAddress ->
             val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(claimsPerAddress.key) ?: error("No account found")
-            val withdrawingNfts = claimsPerAddress.value.distinctBy { it.resourceAddress }.map { resourceClaim ->
-                val resourceAddress = resourceClaim.resourceAddress
-                val nftResource =
-                    resources.find { it.resourceAddress == resourceAddress } as? Resource.NonFungibleResource
-                        ?: error("No resource found")
-                val validatorClaim = validatorClaims.find { it.claimNftAddress.addressString() == resourceAddress }
-                    ?: error("No validator claim found")
-                val validator =
-                    involvedValidators.find { validatorClaim.validatorAddress.addressString() == it.address } ?: error("No validator found")
-                val items = validatorClaims.filter { it.claimNftAddress.addressString() == resourceAddress }.map { claim ->
-                    claim.claimNftIds.map { localId ->
-                        val localIdString = nonFungibleLocalIdAsStr(localId)
-                        val claimAmount = stakeClaimsNfts.find {
-                            resourceAddress == it.collectionAddress && localIdString == nonFungibleLocalIdAsStr(it.localId.toRetId())
-                        }?.claimAmountXrd
-                        Resource.NonFungibleResource.Item(
-                            collectionAddress = resourceAddress,
-                            localId = Resource.NonFungibleResource.Item.ID.from(localId)
-                        ) to (claimAmount ?: claim.xrdAmount.asStr().toBigDecimal())
+            val withdrawingNfts =
+                claimsPerAddress.value.filterIsInstance<ResourceIndicator.NonFungible>().groupBy { it.resourceAddress.addressString() }
+                    .map { resourceClaim ->
+                        val resourceAddress = resourceClaim.key
+                        val nftResource =
+                            resources.find { it.resourceAddress == resourceAddress } as? Resource.NonFungibleResource
+                                ?: error("No resource found")
+                        val validatorAddress = nftResource.validatorAddress ?: error("No validator address")
+                        val validator = involvedValidators.find { validatorAddress == it.address } ?: error("No validator found")
+                        val items = resourceClaim.value.map { resourceIndicator ->
+                            resourceIndicator.localIds.map { localId ->
+                                val claimAmount = stakeClaimsNfts.find {
+                                    resourceAddress == it.collectionAddress && localId == nonFungibleLocalIdAsStr(it.localId.toRetId())
+                                }?.claimAmountXrd ?: BigDecimal.ZERO
+                                Resource.NonFungibleResource.Item(
+                                    collectionAddress = resourceAddress,
+                                    localId = Resource.NonFungibleResource.Item.ID.from(localId)
+                                ) to claimAmount
+                            }
+                        }.flatten()
+                        Transferable.Withdrawing(
+                            transferable = TransferableAsset.NonFungible.StakeClaimAssets(
+                                claim = StakeClaim(
+                                    nonFungibleResource = nftResource.copy(items = items.map { it.first }),
+                                    validator = validator
+                                ),
+                                xrdWorthPerNftItem = items.associate {
+                                    it.first.localId.displayable to it.second
+                                }
+                            )
+                        )
                     }
-                }.flatten()
-                Transferable.Withdrawing(
-                    transferable = TransferableAsset.NonFungible.StakeClaimAssets(
-                        claim = StakeClaim(
-                            nonFungibleResource = nftResource.copy(items = items.map { it.first }),
-                            validator = validator
-                        ),
-                        xrdWorthPerNftItem = items.associate {
-                            it.first.localId.displayable to it.second
-                        }
-                    )
-                )
-            }
             AccountWithTransferableResources.Owned(
                 account = ownedAccount,
                 resources = withdrawingNfts
@@ -106,10 +109,12 @@ class ValidatorClaimProcessor @Inject constructor(
         resources: List<Resource>
     ) = executionSummary.accountDeposits.map { entry ->
         val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(entry.key) ?: error("No account found")
+        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         val xrdResource = resources.find {
             it.resourceAddress == XrdResource.address(NetworkId.from(ownedAccount.networkID))
         } as? Resource.FungibleResource ?: error("No resource found")
-
+        val guaranteeType = entry.value.firstOrNull()?.guaranteeType(defaultDepositGuarantees)
+            ?: GuaranteeType.Guaranteed
         val amount = entry.value.sumOf { it.amount }
         AccountWithTransferableResources.Owned(
             account = ownedAccount,
@@ -119,7 +124,8 @@ class ValidatorClaimProcessor @Inject constructor(
                         amount = amount,
                         resource = xrdResource.copy(ownedAmount = amount),
                         isNewlyCreated = false
-                    )
+                    ),
+                    guaranteeType = guaranteeType
                 )
             )
         )

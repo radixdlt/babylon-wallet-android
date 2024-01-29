@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
+import kotlinx.coroutines.flow.first
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
@@ -51,6 +52,7 @@ class ValidatorStakeProcessor @Inject constructor(
         involvedValidators: List<ValidatorDetail>
     ) = executionSummary.accountDeposits.map { depositsPerAccount ->
         val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(depositsPerAccount.key) ?: error("No account found")
+        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         val depositingLsu = depositsPerAccount.value.map { depositedResource ->
             val resourceAddress = depositedResource.resourceAddress
             val lsuResource = resources.find {
@@ -60,12 +62,14 @@ class ValidatorStakeProcessor @Inject constructor(
             val validator =
                 involvedValidators.find { it.address == stakes.first().validatorAddress.addressString() } ?: error("No validator found")
             val amount = stakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() }
+            val guaranteeType = depositedResource.guaranteeType(defaultDepositGuarantees)
             Transferable.Depositing(
                 transferable = TransferableAsset.Fungible.LSUAsset(
                     amount = amount,
                     lsu = LiquidStakeUnit(lsuResource.copy(ownedAmount = amount), validator),
                     xrdWorth = stakes.sumOf { it.xrdAmount.asStr().toBigDecimal() },
-                )
+                ),
+                guaranteeType = guaranteeType
             )
         }
         AccountWithTransferableResources.Owned(
