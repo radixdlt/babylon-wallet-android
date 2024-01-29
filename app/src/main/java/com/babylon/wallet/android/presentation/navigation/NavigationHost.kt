@@ -435,7 +435,7 @@ fun NavigationHost(
                 navController.fungibleAssetDialog(resourceAddress = it.resourceAddress)
             },
             onNonFungibleClick = {
-                navController.nonFungibleAssetDialog(resourceAddress = it.resourceAddress)
+                navController.nftAssetDialog(resourceAddress = it.resourceAddress)
             },
             onDismiss = {
                 navController.popBackStack()

@@ -326,7 +326,7 @@ fun ResourceIndicator.toTransferableResource(resources: List<Resource>): Transfe
             )
             TransferableAsset.Fungible.Token(
                 amount = amount,
-                resource = resource,
+                resource = resource.copy(ownedAmount = amount),
                 isNewlyCreated = false
             )
         }
