@@ -449,6 +449,12 @@ fun NavigationHost(
             }
         )
         dAppDetailsDialog(
+            onFungibleClick = {
+                navController.fungibleAssetDialog(resourceAddress = it.resourceAddress)
+            },
+            onNonFungibleClick = {
+                navController.nonFungibleAssetDialog(resourceAddress = it.resourceAddress)
+            },
             onDismiss = {
                 navController.popBackStack()
             }
