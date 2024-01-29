@@ -207,7 +207,7 @@ fun RadixWalletException.LedgerCommunicationException.toUserFriendlyMessage(cont
             } // TODO consider different copy
             is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction -> when (this.reason) {
                 LedgerErrorCode.Generic -> R.string.common_somethingWentWrong
-                LedgerErrorCode.BlindSigningNotEnabledButRequired -> R.string.error_transactionFailure_blindSigningNotEnabledButRequired
+                LedgerErrorCode.BlindSigningNotEnabledButRequired -> R.string.ledgerHardwareDevices_couldNotSign_message
                 LedgerErrorCode.UserRejectedSigningOfTransaction -> R.string.error_transactionFailure_rejected
             }
 

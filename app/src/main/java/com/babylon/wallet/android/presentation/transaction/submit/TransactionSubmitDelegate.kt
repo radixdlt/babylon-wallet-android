@@ -205,7 +205,10 @@ class TransactionSubmitDelegate @Inject constructor(
                     is RadixWalletException.LedgerCommunicationException -> {
                         logNonFatalException(radixWalletException)
                         _state.update {
-                            it.copy(isSubmitting = false)
+                            it.copy(
+                                isSubmitting = false,
+                                error = TransactionErrorMessage(radixWalletException)
+                            )
                         }
                         approvalJob = null
                         return
