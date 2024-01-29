@@ -594,7 +594,7 @@ private fun ClaimWorth(
 }
 
 @Composable
-private fun WorthXRD(
+fun WorthXRD(
     modifier: Modifier = Modifier,
     amount: BigDecimal?,
     trailingContent: @Composable (() -> Unit)? = null

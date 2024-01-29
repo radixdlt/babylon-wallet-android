@@ -83,22 +83,22 @@ class PoolRedemptionProcessor @Inject constructor(
         resources: List<Resource>,
         defaultGuarantee: Double
     ) = accountDeposits.entries.map { transferEntry ->
-            val accountOnNetwork = allOwnedAccounts.find { it.address == transferEntry.key }
+        val accountOnNetwork = allOwnedAccounts.find { it.address == transferEntry.key }
 
-            val depositing = transferEntry.value.map { resourceIndicator ->
-                Transferable.Depositing(
-                    transferable = resourceIndicator.toTransferableResource(resources),
-                    guaranteeType = resourceIndicator.guaranteeType(defaultGuarantee)
-                )
-            }
-            accountOnNetwork?.let { account ->
-                AccountWithTransferableResources.Owned(
-                    account = account,
-                    resources = depositing
-                )
-            } ?: AccountWithTransferableResources.Other(
-                address = transferEntry.key,
-                resources = depositing
+        val depositing = transferEntry.value.map { resourceIndicator ->
+            Transferable.Depositing(
+                transferable = resourceIndicator.toTransferableResource(resources),
+                guaranteeType = resourceIndicator.guaranteeType(defaultGuarantee)
             )
         }
+        accountOnNetwork?.let { account ->
+            AccountWithTransferableResources.Owned(
+                account = account,
+                resources = depositing
+            )
+        } ?: AccountWithTransferableResources.Other(
+            address = transferEntry.key,
+            resources = depositing
+        )
+    }
 }

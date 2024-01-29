@@ -1,9 +1,11 @@
 package com.babylon.wallet.android.presentation.status.assets.nonfungible
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,7 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
@@ -36,11 +38,12 @@ import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.assets.WorthXRD
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import rdx.works.core.displayableQuantity
 import rdx.works.profile.data.model.pernetwork.Network
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 fun NonFungibleAssetDialogContent(
     modifier: Modifier = Modifier,
@@ -116,23 +119,20 @@ fun NonFungibleAssetDialogContent(
                         textColor = RadixTheme.colors.gray1
                     )
                 }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
 
-            if (asset is StakeClaim && accountContext != null && item?.claimEpoch != null && item.claimAmountXrd != null) {
-                RadixPrimaryButton(
-                    modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
-                        .fillMaxWidth()
-                        .radixPlaceholder(visible = claimState == null),
-                    text = claimState?.description().orEmpty(),
-                    onClick = { onClaimClick() },
-                    enabled = claimState is AssetDialogViewModel.State.ClaimState.ReadyToClaim
+            if (asset is StakeClaim && item?.claimEpoch != null && item.claimAmountXrd != null) {
+                ClaimNFTInfo(
+                    claimState = claimState,
+                    accountContextMissing = accountContext == null,
+                    onClaimClick = onClaimClick
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             }
 
             if (!item?.nonStandardMetadata.isNullOrEmpty()) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -268,11 +268,57 @@ fun NonFungibleAssetDialogContent(
 }
 
 @Composable
-private fun AssetDialogViewModel.State.ClaimState.description() = when (this) {
-    is AssetDialogViewModel.State.ClaimState.ReadyToClaim -> stringResource(id = R.string.assetDetails_staking_readyToClaim, amount.displayableQuantity())
-    is AssetDialogViewModel.State.ClaimState.Unstaking -> stringResource(
-        id = R.string.assetDetails_staking_unstaking,
-        amount.displayableQuantity(),
-        approximateClaimMinutes
-    )
+private fun ClaimNFTInfo(
+    modifier: Modifier = Modifier,
+    claimState: AssetDialogViewModel.State.ClaimState?,
+    accountContextMissing: Boolean,
+    onClaimClick: () -> Unit
+) {
+    val showClaimButton = claimState is AssetDialogViewModel.State.ClaimState.ReadyToClaim && !accountContextMissing
+    Column(
+        modifier = modifier
+            .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+            .fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier.padding(bottom = if (showClaimButton) 0.dp else RadixTheme.dimensions.paddingSmall),
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = when (claimState) {
+                    is AssetDialogViewModel.State.ClaimState.ReadyToClaim -> stringResource(
+                        id = if (accountContextMissing) R.string.transactionReview_toBeClaimed else R.string.account_staking_readyToBeClaimed
+                    )
+                    is AssetDialogViewModel.State.ClaimState.Unstaking ->
+                        stringResource(id = R.string.account_staking_unstaking)
+                    null -> ""
+                }.uppercase(),
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray2
+            )
+
+            if (showClaimButton) {
+                RadixTextButton(
+                    text = stringResource(id = R.string.account_staking_claim),
+                    onClick = onClaimClick,
+                    textStyle = RadixTheme.typography.body2Link
+                )
+            }
+        }
+
+        WorthXRD(
+            amount = claimState?.amount
+        )
+
+        if (claimState is AssetDialogViewModel.State.ClaimState.Unstaking) {
+            Text(
+                modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+                text = stringResource(id = R.string.assetDetails_staking_unstaking, claimState.approximateClaimMinutes),
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray2
+            )
+        }
+    }
 }

@@ -29,17 +29,16 @@ sealed interface Asset {
     // - token
     // - LSU
     // - pool unit
-    sealed interface Fungible: Asset {
+    sealed interface Fungible : Asset {
         override val resource: Resource.FungibleResource
     }
 
     // Asset that is non fungible and needs a local id from a collection
     // - NFT
     // - stake claim
-    sealed interface NonFungible: Asset {
+    sealed interface NonFungible : Asset {
         override val resource: Resource.NonFungibleResource
     }
-
 }
 
 data class Assets(

@@ -94,6 +94,7 @@ class AssetDialogViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
+    @Suppress("ComplexCondition")
     fun onClaimClick() {
         val state = _state.value
         val claim = state.asset as? StakeClaim
@@ -159,6 +160,5 @@ class AssetDialogViewModel @Inject constructor(
                 private const val EPOCH_TIME_MINUTES = 5
             }
         }
-
     }
 }

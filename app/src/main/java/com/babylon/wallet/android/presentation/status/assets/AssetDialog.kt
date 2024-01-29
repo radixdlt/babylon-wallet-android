@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.status.assets
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
@@ -17,7 +16,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.babylon.wallet.android.R
@@ -39,14 +37,17 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.Tag
 import com.babylon.wallet.android.presentation.ui.composables.icon
 import com.babylon.wallet.android.presentation.ui.composables.name
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun AssetDialog(
+    modifier: Modifier = Modifier,
     viewModel: AssetDialogViewModel = hiltViewModel(),
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     BottomSheetDialogWrapper(
+        modifier = modifier,
         title = state.asset?.displayTitle(),
         onDismiss = onDismiss
     ) {
@@ -107,7 +108,6 @@ fun AssetDialog(
         }
     }
 }
-
 
 @Composable
 fun Asset.displayTitle() = when (this) {
@@ -174,7 +174,7 @@ fun BehavioursSection(
 @Composable
 fun TagsSection(
     modifier: Modifier = Modifier,
-    tags: List<Tag>?
+    tags: ImmutableList<Tag>?
 ) {
     if (!tags.isNullOrEmpty()) {
         Column(modifier = modifier) {

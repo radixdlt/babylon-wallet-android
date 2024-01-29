@@ -28,13 +28,13 @@ fun NavController.fungibleAssetDialog(
     underAccountAddress: String? = null
 ) {
     val amountParam = if (amount != null) "&$ARG_AMOUNT=${amount.toPlainString()}" else ""
-    val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=${underAccountAddress}" else ""
+    val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=$underAccountAddress" else ""
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_FUNGIBLE" +
-                "?${ARG_RESOURCE_ADDRESS}=$resourceAddress" +
-                "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
-                amountParam +
-                underAccountAddressParam
+            "?${ARG_RESOURCE_ADDRESS}=$resourceAddress" +
+            "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
+            amountParam +
+            underAccountAddressParam
     )
 }
 
@@ -45,13 +45,13 @@ fun NavController.nftAssetDialog(
     underAccountAddress: String? = null
 ) {
     val localIdParam = if (localId != null) "&$ARG_LOCAL_ID=${URLEncoder.encode(localId, Charsets.UTF_8.name())}" else ""
-    val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=${underAccountAddress}" else ""
+    val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=$underAccountAddress" else ""
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_NFT" +
-                "?${ARG_RESOURCE_ADDRESS}=$resourceAddress" +
-                "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
-                localIdParam +
-                underAccountAddressParam
+            "?${ARG_RESOURCE_ADDRESS}=$resourceAddress" +
+            "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
+            localIdParam +
+            underAccountAddressParam
     )
 }
 
@@ -76,7 +76,7 @@ sealed interface AssetDialogArgs {
         override val underAccountAddress: String?,
         val localId: String?
     ) : AssetDialogArgs
-    
+
     companion object {
         fun from(savedStateHandle: SavedStateHandle): AssetDialogArgs {
             return when (requireNotNull(savedStateHandle[ARG_RESOURCE_TYPE])) {
@@ -85,13 +85,13 @@ sealed interface AssetDialogArgs {
                     isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
                     underAccountAddress = savedStateHandle[ARG_UNDER_ACCOUNT_ADDRESS],
                     amount = savedStateHandle.get<String>(ARG_AMOUNT)?.toBigDecimalOrNull()
-                );
+                )
                 ARG_RESOURCE_TYPE_VALUE_NFT -> NFT(
                     resourceAddress = requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS]),
                     isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
                     underAccountAddress = savedStateHandle[ARG_UNDER_ACCOUNT_ADDRESS],
                     localId = savedStateHandle[ARG_LOCAL_ID]
-                );
+                )
                 else -> error("No type specified.")
             }
         }
@@ -103,11 +103,11 @@ fun NavGraphBuilder.assetDialog(
 ) {
     dialog(
         route = "$ROUTE/{$ARG_RESOURCE_TYPE}" +
-                "?$ARG_RESOURCE_ADDRESS={$ARG_RESOURCE_ADDRESS}" +
-                "&$ARG_NEWLY_CREATED={$ARG_NEWLY_CREATED}" +
-                "&$ARG_AMOUNT={$ARG_AMOUNT}" +
-                "&$ARG_LOCAL_ID={$ARG_LOCAL_ID}" +
-                "&$ARG_UNDER_ACCOUNT_ADDRESS={$ARG_UNDER_ACCOUNT_ADDRESS}",
+            "?$ARG_RESOURCE_ADDRESS={$ARG_RESOURCE_ADDRESS}" +
+            "&$ARG_NEWLY_CREATED={$ARG_NEWLY_CREATED}" +
+            "&$ARG_AMOUNT={$ARG_AMOUNT}" +
+            "&$ARG_LOCAL_ID={$ARG_LOCAL_ID}" +
+            "&$ARG_UNDER_ACCOUNT_ADDRESS={$ARG_UNDER_ACCOUNT_ADDRESS}",
         arguments = listOf(
             navArgument(ARG_RESOURCE_TYPE) {
                 type = NavType.StringType
