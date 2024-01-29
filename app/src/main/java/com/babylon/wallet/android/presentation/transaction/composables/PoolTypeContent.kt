@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -28,8 +30,8 @@ fun PoolTypeContent(
     onUnknownPoolsClick: (List<Pool>) -> Unit
 ) {
     val poolSectionLabel = when (previewType.actionType) {
-        PreviewType.Transfer.Pool.ActionType.Contribution -> "Contributing to pools"
-        PreviewType.Transfer.Pool.ActionType.Redemption -> "Redeeming from pools"
+        PreviewType.Transfer.Pool.ActionType.Contribution -> stringResource(id = R.string.transactionReview_poolContributionHeading)
+        PreviewType.Transfer.Pool.ActionType.Redemption -> stringResource(id = R.string.transactionReview_poolRedemptionHeading)
     }
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),

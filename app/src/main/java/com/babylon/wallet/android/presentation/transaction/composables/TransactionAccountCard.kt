@@ -454,7 +454,7 @@ private fun TransferableStakeClaimNftItemContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
-            text = "To be claimed".uppercase(),
+            text = stringResource(id = R.string.transactionReview_toBeClaimed).uppercase(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray2,
             maxLines = 1

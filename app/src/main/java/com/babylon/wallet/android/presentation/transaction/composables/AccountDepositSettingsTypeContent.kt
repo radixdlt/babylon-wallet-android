@@ -54,7 +54,7 @@ fun AccountDepositSettingsTypeContent(
         if (preview.hasSettingSection) {
             SectionHeader(
                 Modifier.fillMaxWidth(),
-                stringResource(id = R.string.transactionReview_accountDepositSettings_subtitle).uppercase()
+                stringResource(id = R.string.transactionReview_thirdPartyDepositSettingHeading).uppercase()
             )
         }
         preview.accountsWithDepositSettingsChanges.filter { it.defaultDepositRule != null }.forEach { accountWithSettings ->

@@ -53,7 +53,8 @@ fun WithdrawAccountContent(
                 tint = RadixTheme.colors.gray2
             )
             Text(
-                text = stringResource(id = R.string.transactionReview_withdrawalsHeading).uppercase(),
+                text = stringResource(id = R.string.transactionReview_withdrawalsHeading)
+                        .uppercase(),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray2,
                 overflow = TextOverflow.Ellipsis,
