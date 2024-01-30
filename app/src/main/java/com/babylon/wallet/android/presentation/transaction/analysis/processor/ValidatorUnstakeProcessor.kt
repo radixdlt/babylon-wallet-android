@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
+import kotlinx.coroutines.flow.first
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.currentNetwork
@@ -47,6 +48,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
         involvedValidators: List<ValidatorDetail>
     ) = executionSummary.accountDeposits.map { claimsPerAddress ->
         val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(claimsPerAddress.key) ?: error("No account found")
+        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         val depositingNfts = claimsPerAddress.value.map { claimedResource ->
             val resourceAddress = claimedResource.resourceAddress
             val nftResource =
@@ -68,6 +70,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
                     localId = Resource.NonFungibleResource.Item.ID.from(localId)
                 ) to xrdWorth
             }
+            val guaranteeType = claimedResource.guaranteeType(defaultDepositGuarantees)
             Transferable.Depositing(
                 transferable = TransferableAsset.NonFungible.StakeClaimAssets(
                     claim = StakeClaim(
@@ -78,7 +81,8 @@ class ValidatorUnstakeProcessor @Inject constructor(
                         it.first.localId.displayable to it.second
                     },
                     isNewlyCreated = true
-                )
+                ),
+                guaranteeType = guaranteeType
             )
         }
         AccountWithTransferableResources.Owned(
