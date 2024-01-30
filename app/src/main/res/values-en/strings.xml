@@ -489,6 +489,7 @@
   <string name="common_none">None</string>
   <string name="common_ok">OK</string>
   <string name="common_done">Done</string>
+  <string name="common_copy">Copy</string>
   <string name="common_persona">Persona</string>
   <string name="common_history">History</string>
   <string name="common_pool">Pool</string>
