@@ -23,7 +23,7 @@ class PoolContributionProcessor @Inject constructor(
     private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase,
     private val getProfileUseCase: GetProfileUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.PoolContribution> {
-    @Suppress("LongMethod")
+
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.PoolContribution): PreviewType {
         val assets = resolveAssetsFromAddressUseCase(
             fungibleAddresses = summary.involvedFungibleAddresses(),
