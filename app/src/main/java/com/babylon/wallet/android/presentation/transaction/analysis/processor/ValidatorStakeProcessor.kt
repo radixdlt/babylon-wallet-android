@@ -31,7 +31,7 @@ class ValidatorStakeProcessor @Inject constructor(
         val involvedValidators = getValidatorsUseCase(classification.involvedValidatorAddresses).getOrThrow()
 
         val fromAccounts = extractWithdrawals(summary, getProfileUseCase, resources)
-        val toAccounts = classification.extractDeposits(
+        val toAccounts = extractDeposits(
             executionSummary = summary,
             getProfileUseCase = getProfileUseCase,
             resources = resources,
@@ -45,7 +45,7 @@ class ValidatorStakeProcessor @Inject constructor(
         )
     }
 
-    private suspend fun DetailedManifestClass.ValidatorStake.extractDeposits(
+    private suspend fun extractDeposits(
         executionSummary: ExecutionSummary,
         getProfileUseCase: GetProfileUseCase,
         resources: List<Resource>,
@@ -53,21 +53,22 @@ class ValidatorStakeProcessor @Inject constructor(
     ) = executionSummary.accountDeposits.map { depositsPerAccount ->
         val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(depositsPerAccount.key) ?: error("No account found")
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
-        val depositingLsu = depositsPerAccount.value.map { depositedResource ->
-            val resourceAddress = depositedResource.resourceAddress
+        val depositingLsu = depositsPerAccount.value.groupBy { it.resourceAddress }.map { depositedResources ->
             val lsuResource = resources.find {
-                it.resourceAddress == resourceAddress
+                it.resourceAddress == depositedResources.key
             } as? Resource.FungibleResource ?: error("No resource found")
-            val stakes = validatorStakes.filter { it.liquidStakeUnitAddress.asStr() == resourceAddress }
+            val validatorAddress = lsuResource.validatorAddress ?: error("No validator address found")
             val validator =
-                involvedValidators.find { it.address == stakes.first().validatorAddress.addressString() } ?: error("No validator found")
-            val amount = stakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() }
-            val guaranteeType = depositedResource.guaranteeType(defaultDepositGuarantees)
+                involvedValidators.find { it.address == validatorAddress } ?: error("No validator found")
+            val lsuAmount = depositedResources.value.sumOf { it.amount }
+            val xrdWorth = lsuAmount.divide(lsuResource.currentSupply, lsuResource.mathContext)
+                .multiply(validator.totalXrdStake, lsuResource.mathContext)
+            val guaranteeType = depositedResources.value.first().guaranteeType(defaultDepositGuarantees)
             Transferable.Depositing(
                 transferable = TransferableAsset.Fungible.LSUAsset(
-                    amount = amount,
-                    lsu = LiquidStakeUnit(lsuResource.copy(ownedAmount = amount), validator),
-                    xrdWorth = stakes.sumOf { it.xrdAmount.asStr().toBigDecimal() },
+                    amount = lsuAmount,
+                    lsu = LiquidStakeUnit(lsuResource.copy(ownedAmount = lsuAmount), validator),
+                    xrdWorth = xrdWorth,
                 ),
                 guaranteeType = guaranteeType
             )

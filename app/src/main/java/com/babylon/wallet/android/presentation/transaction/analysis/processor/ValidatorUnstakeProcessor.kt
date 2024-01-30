@@ -30,7 +30,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
         val resources = getResourcesUseCase(addresses = summary.involvedResourceAddresses + xrdAddress, withDetails = true).getOrThrow()
         val involvedValidators = getValidatorsUseCase(classification.involvedValidatorAddresses).getOrThrow()
 
-        val fromAccounts = classification.extractWithdrawals(summary, getProfileUseCase, resources, involvedValidators)
+        val fromAccounts = extractWithdrawals(summary, getProfileUseCase, resources, involvedValidators)
         val toAccounts = classification.extractDeposits(summary, getProfileUseCase, resources, involvedValidators)
         val validatorAddressesSet = classification.validatorAddresses.map { it.addressString() }.toSet()
         return PreviewType.Transfer.Staking(
@@ -91,22 +91,21 @@ class ValidatorUnstakeProcessor @Inject constructor(
         )
     }
 
-    private suspend fun DetailedManifestClass.ValidatorUnstake.extractWithdrawals(
+    private suspend fun extractWithdrawals(
         executionSummary: ExecutionSummary,
         getProfileUseCase: GetProfileUseCase,
         resources: List<Resource>,
         involvedValidators: List<ValidatorDetail>
     ) = executionSummary.accountWithdraws.map { withdrawalsPerAccount ->
         val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(withdrawalsPerAccount.key) ?: error("No account found")
-        val withdrawingLsu = withdrawalsPerAccount.value.map { depositedResource ->
-            val resourceAddress = depositedResource.resourceAddress
+        val withdrawingLsu = withdrawalsPerAccount.value.groupBy { it.resourceAddress }.map { depositedResources ->
+            val resourceAddress = depositedResources.key
             val lsuResource = resources.find {
                 it.resourceAddress == resourceAddress
             } as? Resource.FungibleResource ?: error("No resource found")
-            val unstakes = validatorUnstakes.filter { it.liquidStakeUnitAddress.asStr() == resourceAddress }
-            val validator =
-                involvedValidators.find { it.address == unstakes.first().validatorAddress.addressString() } ?: error("No validator found")
-            val totalLSU = unstakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() }
+            val validatorAddress = lsuResource.validatorAddress ?: error("No validator address found")
+            val validator = involvedValidators.find { it.address == validatorAddress } ?: error("No validator found")
+            val totalLSU = depositedResources.value.sumOf { it.amount }
             val xrdWorth = totalLSU.divide(lsuResource.currentSupply, lsuResource.mathContext)
                 .multiply(validator.totalXrdStake, lsuResource.mathContext)
             Transferable.Withdrawing(
