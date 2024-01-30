@@ -112,7 +112,13 @@ fun TransactionAccountCard(
             collection.resource.items.forEachIndexed { itemIndex, item ->
                 val lastItem = itemIndex == collection.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
                 TransferableNftItemContent(
-                    modifier = Modifier.throttleClickable { onNonFungibleResourceClick(collection.resource, item, collection.isNewlyCreated) },
+                    modifier = Modifier.throttleClickable {
+                        onNonFungibleResourceClick(
+                            collection.resource,
+                            item,
+                            collection.isNewlyCreated
+                        )
+                    },
                     transferable = collection,
                     shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
                     nftItem = item
