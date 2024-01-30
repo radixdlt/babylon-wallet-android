@@ -108,7 +108,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
             Transferable.Withdrawing(
                 transferable = TransferableAsset.Fungible.LSUAsset(
                     amount = totalLSU,
-                    lsu = LiquidStakeUnit(lsuResource, validator),
+                    lsu = LiquidStakeUnit(lsuResource.copy(ownedAmount = totalLSU), validator),
                     xrdWorth = xrdWorth,
                 )
             )

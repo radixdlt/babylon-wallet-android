@@ -34,21 +34,27 @@ import rdx.works.core.toHexString
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 
-val ExecutionSummary.involvedFungibleAddresses
-    get() = accountWithdraws.values.flatten().involvedFungibleAddresses.toSet() +
-        accountDeposits.values.flatten().involvedFungibleAddresses.toSet()
+fun ExecutionSummary.involvedFungibleAddresses(excludeNewlyCreated: Boolean = true): Set<String> {
+    val withdrawIndicators = accountWithdraws.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
+    val depositIndicators = accountDeposits.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
+    return (withdrawIndicators + depositIndicators)
+        .filterNot {
+            excludeNewlyCreated && it.isNewlyCreated(this)
+        }.map {
+            it.resourceAddress.addressString()
+        }.toSet()
+}
 
-val ExecutionSummary.involvedNonFungibleIds
-    get() = accountWithdraws.values.flatten().involvedNonFungibleIds +
-        accountDeposits.values.flatten().involvedNonFungibleIds
-
-private val List<ResourceIndicator>.involvedFungibleAddresses
-    get() = mapNotNull { (it as? ResourceIndicator.Fungible)?.resourceAddress?.addressString() }
-
-private val List<ResourceIndicator>.involvedNonFungibleIds
-    get() = mapNotNull { it as? ResourceIndicator.NonFungible }.associate {
-        it.resourceAddress.addressString() to it.localIds
-    }
+fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true): Map<String, List<String>> {
+    val withdrawIndicators = accountWithdraws.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
+    val depositIndicators = accountDeposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
+    return (withdrawIndicators + depositIndicators)
+        .filterNot {
+            excludeNewlyCreated && it.isNewlyCreated(this)
+        }.associate {
+            it.resourceAddress.addressString() to it.localIds
+        }
+}
 
 val ResourceIndicator.resourceAddress: String
     get() = when (this) {
@@ -326,7 +332,7 @@ fun ResourceIndicator.toTransferableResource(resources: List<Resource>): Transfe
             )
             TransferableAsset.Fungible.Token(
                 amount = amount,
-                resource = resource,
+                resource = resource.copy(ownedAmount = amount),
                 isNewlyCreated = false
             )
         }

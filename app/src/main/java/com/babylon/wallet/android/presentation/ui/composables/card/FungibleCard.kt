@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables.card
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +22,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 
 @Composable
 fun FungibleCard(
@@ -38,7 +38,7 @@ fun FungibleCard(
             .clip(RadixTheme.shapes.roundedRectMedium)
             .fillMaxWidth()
             .background(RadixTheme.colors.white, shape = RadixTheme.shapes.roundedRectMedium)
-            .clickable(enabled = onClick != null) {
+            .throttleClickable(enabled = onClick != null) {
                 onClick?.invoke()
             }
             .padding(

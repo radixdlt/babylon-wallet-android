@@ -26,9 +26,14 @@ fun StakeTypeContent(
     onPromptForGuarantees: () -> Unit
 ) {
     val validatorSectionText = when (previewType.actionType) {
-        PreviewType.Transfer.Staking.ActionType.Stake -> stringResource(id = R.string.transactionReview_validators_stake).uppercase()
-        PreviewType.Transfer.Staking.ActionType.Unstake -> stringResource(id = R.string.transactionReview_validators_unstake).uppercase()
-        PreviewType.Transfer.Staking.ActionType.ClaimStake -> stringResource(id = R.string.transactionReview_validators_claim).uppercase()
+        PreviewType.Transfer.Staking.ActionType.Stake ->
+            stringResource(id = R.string.transactionReview_stakingToValidatorsHeading).uppercase()
+
+        PreviewType.Transfer.Staking.ActionType.Unstake ->
+            stringResource(id = R.string.transactionReview_unstakingFromValidatorsHeading).uppercase()
+
+        PreviewType.Transfer.Staking.ActionType.ClaimStake ->
+            stringResource(id = R.string.transactionReview_claimFromValidatorsHeading).uppercase()
     }
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),

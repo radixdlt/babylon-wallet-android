@@ -45,6 +45,7 @@ enum class ExplicitMetadataKey(val key: String) {
 
         val forPools: Set<ExplicitMetadataKey> = setOf(
             NAME,
+            SYMBOL,
             ICON_URL,
             POOL_UNIT,
             DAPP_DEFINITION

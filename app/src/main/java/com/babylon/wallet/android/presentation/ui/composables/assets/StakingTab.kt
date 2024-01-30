@@ -324,7 +324,24 @@ private fun LiquidStakeUnit(
     action: AssetsViewAction,
 ) {
     Column(
-        modifier = modifier.padding(RadixTheme.dimensions.paddingDefault)
+        modifier = modifier
+            .throttleClickable {
+                when (action) {
+                    is AssetsViewAction.Click -> {
+                        validatorWithStakes.liquidStakeUnit?.let { action.onLSUClick(it) }
+                    }
+
+                    is AssetsViewAction.Selection -> {
+                        validatorWithStakes.liquidStakeUnit?.let { liquidStakeUnit ->
+                            action.onFungibleCheckChanged(
+                                liquidStakeUnit.fungibleResource,
+                                !action.isSelected(liquidStakeUnit.resourceAddress)
+                            )
+                        }
+                    }
+                }
+            }
+            .padding(RadixTheme.dimensions.paddingDefault)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -336,11 +353,23 @@ private fun LiquidStakeUnit(
             )
 
             Text(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.weight(1f),
                 text = stringResource(id = R.string.account_staking_liquidStakeUnits),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1
             )
+
+            if (action is AssetsViewAction.Selection && validatorWithStakes.liquidStakeUnit != null) {
+                val isSelected = remember(validatorWithStakes.liquidStakeUnit.resourceAddress, action) {
+                    action.isSelected(validatorWithStakes.liquidStakeUnit.resourceAddress)
+                }
+                AssetsViewCheckBox(
+                    isSelected = isSelected,
+                    onCheckChanged = { isChecked ->
+                        action.onFungibleCheckChanged(validatorWithStakes.liquidStakeUnit.fungibleResource, isChecked)
+                    }
+                )
+            }
         }
 
         Text(
@@ -355,9 +384,8 @@ private fun LiquidStakeUnit(
             color = RadixTheme.colors.gray2
         )
 
-        LSUWorth(
-            validatorWithStakes = validatorWithStakes,
-            action = action
+        WorthXRD(
+            amount = remember(validatorWithStakes) { validatorWithStakes.stakeValue() }
         )
     }
 }
@@ -412,7 +440,7 @@ private fun StakeClaims(
                     .fillMaxWidth()
                     .padding(
                         top = RadixTheme.dimensions.paddingDefault,
-                        bottom = RadixTheme.dimensions.paddingSmall
+                        bottom = RadixTheme.dimensions.paddingMedium
                     ),
                 text = stringResource(id = R.string.account_staking_unstaking).uppercase(),
                 style = RadixTheme.typography.body2HighImportance,
@@ -431,7 +459,14 @@ private fun StakeClaims(
 
         if (claimItems.isNotEmpty() && validatorWithStakes.stakeClaimNft != null) {
             Row(
-                modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+                modifier = Modifier.padding(
+                    top = if (action is AssetsViewAction.Selection) {
+                        RadixTheme.dimensions.paddingDefault
+                    } else {
+                        RadixTheme.dimensions.paddingSmall
+                    },
+                    bottom = if (action is AssetsViewAction.Selection) RadixTheme.dimensions.paddingSmall else 0.dp
+                ),
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -513,50 +548,6 @@ private fun ValidatorHeader(
 }
 
 @Composable
-private fun LSUWorth(
-    modifier: Modifier = Modifier,
-    validatorWithStakes: ValidatorWithStakes,
-    action: AssetsViewAction
-) {
-    WorthXRD(
-        modifier = modifier.throttleClickable {
-            when (action) {
-                is AssetsViewAction.Click -> {
-                    validatorWithStakes.liquidStakeUnit?.let { action.onLSUClick(it) }
-                }
-
-                is AssetsViewAction.Selection -> {
-                    validatorWithStakes.liquidStakeUnit?.let { liquidStakeUnit ->
-                        action.onFungibleCheckChanged(
-                            liquidStakeUnit.fungibleResource,
-                            !action.isSelected(liquidStakeUnit.resourceAddress)
-                        )
-                    }
-                }
-            }
-        },
-        amount = remember(validatorWithStakes) { validatorWithStakes.stakeValue() },
-        trailingContent = if (action is AssetsViewAction.Selection) {
-            {
-                validatorWithStakes.liquidStakeUnit?.let { liquidStakeUnit ->
-                    val isSelected = remember(liquidStakeUnit.resourceAddress, action) {
-                        action.isSelected(liquidStakeUnit.resourceAddress)
-                    }
-                    AssetsViewCheckBox(
-                        isSelected = isSelected,
-                        onCheckChanged = { isChecked ->
-                            action.onFungibleCheckChanged(liquidStakeUnit.fungibleResource, isChecked)
-                        }
-                    )
-                }
-            }
-        } else {
-            null
-        }
-    )
-}
-
-@Composable
 private fun ClaimWorth(
     modifier: Modifier = Modifier,
     claimCollection: Resource.NonFungibleResource,
@@ -603,7 +594,7 @@ private fun ClaimWorth(
 }
 
 @Composable
-private fun WorthXRD(
+fun WorthXRD(
     modifier: Modifier = Modifier,
     amount: BigDecimal?,
     trailingContent: @Composable (() -> Unit)? = null

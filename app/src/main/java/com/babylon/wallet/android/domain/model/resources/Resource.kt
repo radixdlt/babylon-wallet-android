@@ -21,6 +21,8 @@ import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
@@ -70,7 +72,7 @@ sealed class Resource {
             metadata.poolAddress()
         }
 
-        val tags: List<Tag> by lazy {
+        val tags: ImmutableList<Tag> by lazy {
             if (isXrd) {
                 metadata.tags()?.map {
                     Tag.Dynamic(name = it.truncate(maxNumberOfCharacters = TAG_MAX_CHARS))
@@ -79,7 +81,7 @@ sealed class Resource {
                 metadata.tags()?.map {
                     Tag.Dynamic(name = it.truncate(maxNumberOfCharacters = TAG_MAX_CHARS))
                 }.orEmpty()
-            }.take(TAGS_MAX)
+            }.take(TAGS_MAX).toImmutableList()
         }
 
         val behaviours: AssetBehaviours? = if (assetBehaviours != null && isXrd) {
@@ -163,10 +165,10 @@ sealed class Resource {
             metadata.iconUrl()
         }
 
-        val tags: List<Tag> by lazy {
+        val tags: ImmutableList<Tag> by lazy {
             metadata.tags().orEmpty().map {
                 Tag.Dynamic(name = it.truncate(maxNumberOfCharacters = TAG_MAX_CHARS))
-            }.take(TAGS_MAX)
+            }.take(TAGS_MAX).toImmutableList()
         }
 
         val validatorAddress: String? by lazy {

@@ -59,10 +59,9 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.p
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
-import com.babylon.wallet.android.presentation.status.assets.fungible.fungibleAssetDialog
-import com.babylon.wallet.android.presentation.status.assets.lsu.lsuAssetDialog
-import com.babylon.wallet.android.presentation.status.assets.nonfungible.nonFungibleAssetDialog
-import com.babylon.wallet.android.presentation.status.assets.pool.poolUnitAssetDialog
+import com.babylon.wallet.android.presentation.status.assets.assetDialog
+import com.babylon.wallet.android.presentation.status.assets.fungibleAssetDialog
+import com.babylon.wallet.android.presentation.status.assets.nftAssetDialog
 import com.babylon.wallet.android.presentation.status.dapp.dAppDetailsDialog
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
@@ -217,20 +216,18 @@ fun NavigationHost(
                     )
                 },
                 onFungibleResourceClick = { resource, account ->
-                    navController.fungibleAssetDialog(resource.resourceAddress, account.address)
-                },
-                onNonFungibleResourceClick = { resource, item, account ->
-                    navController.nonFungibleAssetDialog(
+                    navController.fungibleAssetDialog(
                         resourceAddress = resource.resourceAddress,
-                        localId = item.localId.code,
-                        accountAddress = account.address
+                        amount = resource.ownedAmount,
+                        underAccountAddress = account.address
                     )
                 },
-                onPoolUnitClick = { poolUnit, account ->
-                    navController.poolUnitAssetDialog(poolUnit.resourceAddress, account.address)
-                },
-                onLSUClick = { liquidStakeUnit, account ->
-                    navController.lsuAssetDialog(liquidStakeUnit.resourceAddress, account.address)
+                onNonFungibleResourceClick = { resource, item, account ->
+                    navController.nftAssetDialog(
+                        resourceAddress = resource.resourceAddress,
+                        localId = item.localId.code,
+                        underAccountAddress = account.address
+                    )
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
@@ -317,15 +314,15 @@ fun NavigationHost(
             onFungibleClick = { resource, isNewlyCreated ->
                 navController.fungibleAssetDialog(
                     resourceAddress = resource.resourceAddress,
+                    amount = resource.ownedAmount,
                     isNewlyCreated = isNewlyCreated
                 )
             },
-            onNonFungibleClick = { resource, item, isNewlyCreated, showStakeClaimButton ->
-                navController.nonFungibleAssetDialog(
+            onNonFungibleClick = { resource, item, isNewlyCreated ->
+                navController.nftAssetDialog(
                     resourceAddress = resource.resourceAddress,
                     localId = item.localId.code,
-                    isNewlyCreated = isNewlyCreated,
-                    showStakeClaimButton = showStakeClaimButton
+                    isNewlyCreated = isNewlyCreated
                 )
             },
             onDAppClick = { dApp ->
@@ -428,22 +425,7 @@ fun NavigationHost(
                 navController.popBackStack()
             }
         )
-        fungibleAssetDialog(
-            onDismiss = {
-                navController.popBackStack()
-            }
-        )
-        nonFungibleAssetDialog(
-            onDismiss = {
-                navController.popBackStack()
-            }
-        )
-        poolUnitAssetDialog(
-            onDismiss = {
-                navController.popBackStack()
-            }
-        )
-        lsuAssetDialog(
+        assetDialog(
             onDismiss = {
                 navController.popBackStack()
             }
@@ -453,7 +435,7 @@ fun NavigationHost(
                 navController.fungibleAssetDialog(resourceAddress = it.resourceAddress)
             },
             onNonFungibleClick = {
-                navController.nonFungibleAssetDialog(resourceAddress = it.resourceAddress)
+                navController.nftAssetDialog(resourceAddress = it.resourceAddress)
             },
             onDismiss = {
                 navController.popBackStack()

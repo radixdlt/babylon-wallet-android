@@ -67,106 +67,56 @@ fun TransactionAccountCard(
             shape = RadixTheme.shapes.roundedRectTopMedium
         )
 
-        val fungibleAmountTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableAsset.Fungible.Token }
-        }
+        account.resources.forEachIndexed { index, transferable ->
+            val lastAsset = index == account.resources.lastIndex
+            val shape = if (lastAsset) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
 
-        val nftTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableAsset.NonFungible.NFTAssets }
-        }
-
-        val lsuTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableAsset.Fungible.LSUAsset }
-        }
-
-        val stakeClaimNftTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableAsset.NonFungible.StakeClaimAssets }
-        }
-
-        val poolUnitTransferables = remember(account.resources) {
-            account.resources.filter { it.transferable is TransferableAsset.Fungible.PoolUnitAsset }
-        }
-
-        // Fungibles
-        fungibleAmountTransferables.forEachIndexed { index, amountTransferable ->
-            val lastItem = if (nftTransferables.isEmpty()) index == fungibleAmountTransferables.lastIndex else false
-            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableFungibleAmount = amountTransferable.transferable as TransferableAsset.Fungible.Token
-
-            TransferableItemContent(
-                modifier = Modifier.throttleClickable {
-                    onFungibleResourceClick(transferableFungibleAmount.resource, transferableFungibleAmount.isNewlyCreated)
-                },
-                transferable = amountTransferable,
-                shape = shape,
-            )
-            if (lastItem.not()) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
-            }
-        }
-
-        // Non fungibles
-        nftTransferables.forEachIndexed { collectionIndex, nftTransferable ->
-            val collection = nftTransferable.transferable as TransferableAsset.NonFungible.NFTAssets
-            // Show each nft item
-            collection.resource.items.forEachIndexed { itemIndex, item ->
-                val lastItem = itemIndex == collection.resource.items.lastIndex && collectionIndex == nftTransferables.lastIndex
-                TransferableNftItemContent(
+            when (val asset = transferable.transferable) {
+                is TransferableAsset.Fungible.Token -> TransferableItemContent(
                     modifier = Modifier.throttleClickable {
-                        onNonFungibleResourceClick(
-                            collection.resource,
-                            item,
-                            collection.isNewlyCreated
-                        )
+                        onFungibleResourceClick(asset.resource, asset.isNewlyCreated)
                     },
-                    transferable = collection,
-                    shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
-                    nftItem = item
+                    transferable = transferable,
+                    shape = shape,
+                )
+
+                is TransferableAsset.NonFungible.NFTAssets -> {
+                    // Show each nft item
+                    asset.resource.items.forEachIndexed { itemIndex, item ->
+                        val lastNFT = itemIndex == asset.resource.items.lastIndex
+                        TransferableNftItemContent(
+                            modifier = Modifier.throttleClickable {
+                                onNonFungibleResourceClick(asset.resource, item, asset.isNewlyCreated)
+                            },
+                            transferable = asset,
+                            shape = if (lastAsset && lastNFT) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
+                            nftItem = item
+                        )
+                    }
+                }
+
+                is TransferableAsset.Fungible.PoolUnitAsset -> TransferablePoolUnitItemContent(
+                    transferable = transferable,
+                    shape = shape,
+                    onFungibleResourceClick = onFungibleResourceClick
+                )
+
+                is TransferableAsset.Fungible.LSUAsset -> TransferableLsuItemContent(
+                    modifier = Modifier.throttleClickable {
+                        onFungibleResourceClick(asset.lsu.fungibleResource, asset.isNewlyCreated)
+                    },
+                    transferable = transferable,
+                    shape = shape,
+                )
+
+                is TransferableAsset.NonFungible.StakeClaimAssets -> TransferableStakeClaimNftItemContent(
+                    transferable = asset,
+                    shape = shape,
+                    onNonFungibleResourceClick = onNonFungibleResourceClick
                 )
             }
-        }
 
-        lsuTransferables.forEachIndexed { index, transferable ->
-            val lastItem = index == lsuTransferables.lastIndex
-            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableLsu = transferable.transferable as TransferableAsset.Fungible.LSUAsset
-
-            TransferableLsuItemContent(
-                modifier = Modifier.throttleClickable {
-                    onFungibleResourceClick(transferableLsu.lsu.fungibleResource, transferableLsu.isNewlyCreated)
-                },
-                transferable = transferable,
-                shape = shape,
-            )
-            if (lastItem.not()) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
-            }
-        }
-        stakeClaimNftTransferables.forEachIndexed { index, transferable ->
-            val lastItem = index == stakeClaimNftTransferables.lastIndex
-            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-            val transferableStakeClaim = transferable.transferable as TransferableAsset.NonFungible.StakeClaimAssets
-
-            TransferableStakeClaimNftItemContent(
-                transferable = transferableStakeClaim,
-                shape = shape,
-                onNonFungibleResourceClick = onNonFungibleResourceClick
-            )
-            if (lastItem.not()) {
-                HorizontalDivider(color = RadixTheme.colors.gray4)
-            }
-        }
-
-        poolUnitTransferables.forEachIndexed { index, transferable ->
-            val lastItem = index == poolUnitTransferables.lastIndex
-            val shape = if (lastItem) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-
-            TransferablePoolUnitItemContent(
-                transferable = transferable,
-                shape = shape,
-                onFungibleResourceClick = onFungibleResourceClick
-            )
-            if (lastItem.not()) {
+            if (lastAsset.not()) {
                 HorizontalDivider(color = RadixTheme.colors.gray4)
             }
         }
@@ -376,7 +326,7 @@ private fun TransferableLsuItemContent(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Thumbnail.LSU(
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(42.dp),
                 liquidStakeUnit = transferableLsu.lsu,
             )
             Column(modifier = Modifier.weight(1f)) {
@@ -387,7 +337,7 @@ private fun TransferableLsuItemContent(
                             id = R.string.transactionReview_unknown
                         )
                     },
-                    style = RadixTheme.typography.body2HighImportance,
+                    style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -415,7 +365,7 @@ private fun TransferableLsuItemContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
-                .padding(RadixTheme.dimensions.paddingDefault),
+                .padding(RadixTheme.dimensions.paddingMedium),
             verticalAlignment = CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
@@ -423,7 +373,7 @@ private fun TransferableLsuItemContent(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(24.dp)
                     .clip(RadixTheme.shapes.circle),
                 tint = Color.Unspecified
             )
@@ -436,7 +386,7 @@ private fun TransferableLsuItemContent(
             Text(
                 modifier = Modifier.weight(1f),
                 text = transferableLsu.xrdWorth.displayableQuantity(),
-                style = RadixTheme.typography.secondaryHeader,
+                style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.End,
                 maxLines = 2
@@ -478,14 +428,14 @@ private fun TransferableStakeClaimNftItemContent(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Thumbnail.NonFungible(
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(42.dp),
                 collection = transferable.resource
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = transferable.resource.name.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
-                    style = RadixTheme.typography.body2HighImportance,
+                    style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -504,7 +454,7 @@ private fun TransferableStakeClaimNftItemContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
-            text = "To be claimed".uppercase(),
+            text = stringResource(id = R.string.transactionReview_toBeClaimed).uppercase(),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray2,
             maxLines = 1
@@ -523,7 +473,7 @@ private fun TransferableStakeClaimNftItemContent(
                     }
                     .fillMaxWidth()
                     .border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
-                    .padding(RadixTheme.dimensions.paddingDefault),
+                    .padding(RadixTheme.dimensions.paddingMedium),
                 verticalAlignment = CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
@@ -531,7 +481,7 @@ private fun TransferableStakeClaimNftItemContent(
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(24.dp)
                         .clip(RadixTheme.shapes.circle),
                     tint = Color.Unspecified
                 )
@@ -544,7 +494,7 @@ private fun TransferableStakeClaimNftItemContent(
                 Text(
                     modifier = Modifier.weight(1f),
                     text = transferable.xrdWorthPerNftItem[item.localId.displayable]?.displayableQuantity().orEmpty(),
-                    style = RadixTheme.typography.secondaryHeader,
+                    style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End,
                     maxLines = 2
@@ -568,6 +518,12 @@ private fun TransferablePoolUnitItemContent(
     Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
+            .throttleClickable {
+                onFungibleResourceClick(
+                    transferablePoolUnit.resource,
+                    transferablePoolUnit.isNewlyCreated
+                )
+            }
             .background(
                 color = RadixTheme.colors.gray5,
                 shape = shape
@@ -583,14 +539,14 @@ private fun TransferablePoolUnitItemContent(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Thumbnail.PoolUnit(
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(42.dp),
                 poolUnit = transferablePoolUnit.unit
             )
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = transferablePoolUnit.unit.name(),
-                    style = RadixTheme.typography.body2HighImportance,
+                    style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -626,20 +582,16 @@ private fun TransferablePoolUnitItemContent(
                 val addDivider = index != poolResources.lastIndex
                 Row(
                     modifier = Modifier
-                        .clip(RadixTheme.shapes.roundedRectSmall)
-                        .throttleClickable {
-                            onFungibleResourceClick(
-                                item,
-                                transferablePoolUnit.isNewlyCreated
-                            )
-                        }
                         .fillMaxWidth()
-                        .padding(RadixTheme.dimensions.paddingDefault),
+                        .padding(
+                            horizontal = RadixTheme.dimensions.paddingDefault,
+                            vertical = RadixTheme.dimensions.paddingMedium
+                        ),
                     verticalAlignment = CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
                 ) {
                     Thumbnail.Fungible(
-                        modifier = Modifier.size(44.dp),
+                        modifier = Modifier.size(24.dp),
                         token = item,
                     )
                     Text(
@@ -651,7 +603,7 @@ private fun TransferablePoolUnitItemContent(
                     Text(
                         modifier = Modifier.weight(1f),
                         text = transferablePoolUnit.contributionPerResource[item.resourceAddress]?.displayableQuantity().orEmpty(),
-                        style = RadixTheme.typography.secondaryHeader,
+                        style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1,
                         textAlign = TextAlign.End,
                         maxLines = 2

@@ -18,8 +18,8 @@ import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdeta
 import com.babylon.wallet.android.presentation.settings.debug.debugSettings
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
-import com.babylon.wallet.android.presentation.status.assets.fungible.fungibleAssetDialog
-import com.babylon.wallet.android.presentation.status.assets.nonfungible.nonFungibleAssetDialog
+import com.babylon.wallet.android.presentation.status.assets.fungibleAssetDialog
+import com.babylon.wallet.android.presentation.status.assets.nftAssetDialog
 
 @Suppress("LongMethod")
 fun NavGraphBuilder.settingsNavGraph(
@@ -49,9 +49,7 @@ fun NavGraphBuilder.settingsNavGraph(
                 navController.fungibleAssetDialog(resourceAddress = resource.resourceAddress)
             },
             onNonFungibleClick = { resource ->
-                navController.nonFungibleAssetDialog(
-                    resourceAddress = resource.resourceAddress
-                )
+                navController.nftAssetDialog(resourceAddress = resource.resourceAddress)
             }
         )
         accountSecurityNavGraph(navController)

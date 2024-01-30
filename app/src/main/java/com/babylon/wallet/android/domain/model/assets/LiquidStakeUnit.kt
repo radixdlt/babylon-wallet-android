@@ -7,9 +7,9 @@ import java.math.BigDecimal
 data class LiquidStakeUnit(
     val fungibleResource: Resource.FungibleResource,
     val validator: ValidatorDetail
-) : Asset {
+) : Asset.Fungible {
 
-    override val resource: Resource
+    override val resource: Resource.FungibleResource
         get() = fungibleResource
 
     val validatorAddress: String
@@ -29,6 +29,8 @@ data class LiquidStakeUnit(
 
             return fungibleResource.ownedAmount?.divide(fungibleResource.currentSupply, fungibleResource.mathContext)
         }
+
+    fun stakeValue(): BigDecimal? = stakeValueInXRD(validator.totalXrdStake)
 
     fun stakeValueInXRD(totalXrdStake: BigDecimal?): BigDecimal? {
         if (totalXrdStake == null) return null

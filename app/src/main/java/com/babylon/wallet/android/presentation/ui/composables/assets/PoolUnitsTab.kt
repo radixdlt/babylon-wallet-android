@@ -3,7 +3,9 @@ package com.babylon.wallet.android.presentation.ui.composables.assets
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
@@ -14,8 +16,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
@@ -47,7 +51,7 @@ fun LazyListScope.poolUnitsTab(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-                resource = item,
+                poolUnit = item,
                 action = action
             )
         }
@@ -57,7 +61,7 @@ fun LazyListScope.poolUnitsTab(
 @Composable
 private fun PoolUnitItem(
     modifier: Modifier = Modifier,
-    resource: PoolUnit,
+    poolUnit: PoolUnit,
     action: AssetsViewAction
 ) {
     AssetCard(
@@ -65,11 +69,11 @@ private fun PoolUnitItem(
             .throttleClickable {
                 when (action) {
                     is AssetsViewAction.Click -> {
-                        action.onPoolUnitClick(resource)
+                        action.onPoolUnitClick(poolUnit)
                     }
 
                     is AssetsViewAction.Selection -> {
-                        action.onFungibleCheckChanged(resource.stake, !action.isSelected(resource.resourceAddress))
+                        action.onFungibleCheckChanged(poolUnit.stake, !action.isSelected(poolUnit.resourceAddress))
                     }
                 }
             }
@@ -81,24 +85,24 @@ private fun PoolUnitItem(
         ) {
             Thumbnail.PoolUnit(
                 modifier = Modifier.size(44.dp),
-                poolUnit = resource
+                poolUnit = poolUnit
             )
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = resource.name(),
+                    text = poolUnit.name(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
                 )
 
-                val associatedDAppName = remember(resource) {
-                    resource.pool?.associatedDApp?.name
+                val associatedDAppName = remember(poolUnit) {
+                    poolUnit.pool?.associatedDApp?.name
                 }
                 if (!associatedDAppName.isNullOrEmpty()) {
                     Text(
                         text = associatedDAppName,
-                        style = RadixTheme.typography.body2Regular,
+                        style = RadixTheme.typography.body2HighImportance,
                         color = RadixTheme.colors.gray2,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -107,42 +111,54 @@ private fun PoolUnitItem(
             }
 
             if (action is AssetsViewAction.Selection) {
-                val isSelected = remember(resource.stake, action) {
-                    action.isSelected(resource.resourceAddress)
+                val isSelected = remember(poolUnit.stake, action) {
+                    action.isSelected(poolUnit.resourceAddress)
                 }
                 AssetsViewCheckBox(
                     isSelected = isSelected,
                     onCheckChanged = { isChecked ->
-                        action.onFungibleCheckChanged(resource.stake, isChecked)
+                        action.onFungibleCheckChanged(poolUnit.stake, isChecked)
                     }
                 )
             }
         }
 
+        Text(
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+            text = stringResource(id = R.string.account_staking_worth),
+            style = RadixTheme.typography.body2HighImportance,
+            color = RadixTheme.colors.gray2
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
         PoolResourcesValues(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                 .padding(bottom = RadixTheme.dimensions.paddingLarge),
-            poolUnit = resource
+            poolUnit = poolUnit
         )
     }
 }
 
 @Composable
-fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
+fun PoolResourcesValues(
+    modifier: Modifier = Modifier,
+    poolUnit: PoolUnit,
+    isCompact: Boolean = true
+) {
     Column(modifier = modifier.assetOutlineBorder()) {
         val itemsSize = poolUnit.pool?.resources?.size ?: 0
         poolUnit.pool?.resources?.forEachIndexed { index, poolResource ->
             Row(
                 modifier = Modifier.padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingLarge
+                    vertical = if (isCompact) RadixTheme.dimensions.paddingMedium else RadixTheme.dimensions.paddingLarge
                 ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
                 Thumbnail.Fungible(
-                    modifier = Modifier.size(44.dp),
+                    modifier = Modifier.size(if (isCompact) 24.dp else 44.dp),
                     token = poolResource
                 )
                 Text(
@@ -154,7 +170,7 @@ fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
                 )
                 Text(
                     text = poolUnit.resourceRedemptionValue(poolResource)?.displayableQuantity().orEmpty(),
-                    style = RadixTheme.typography.secondaryHeader,
+                    style = if (isCompact) RadixTheme.typography.body1HighImportance else RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1
                 )
@@ -166,5 +182,6 @@ fun PoolResourcesValues(poolUnit: PoolUnit, modifier: Modifier = Modifier) {
     }
 }
 
+// Pool units just display the name and have no fallback
 @Composable
 fun PoolUnit.name() = displayTitle
