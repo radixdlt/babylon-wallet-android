@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables
 
 import android.net.Uri
+import android.os.Build
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -41,8 +42,15 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
 import coil.compose.SubcomposeAsyncImage
+import coil.decode.BitmapFactoryDecoder
+import coil.decode.DecodeUtils
 import coil.decode.GifDecoder
+import coil.decode.ImageDecoderDecoder
 import coil.decode.SvgDecoder
+import coil.decode.isAnimatedHeif
+import coil.decode.isAnimatedWebP
+import coil.decode.isGif
+import coil.decode.isSvg
 import coil.request.ImageRequest
 import coil.request.NullRequestDataException
 import com.babylon.wallet.android.BuildConfig
@@ -154,8 +162,7 @@ object Thumbnail {
                 ImageRequest.Builder(context)
                     .data(imageType.cloudFlareUri)
                     .error(R.drawable.ic_broken_image)
-                    .decoderFactory(SvgDecoder.Factory())
-                    .decoderFactory(GifDecoder.Factory())
+                    .applyCorrectDecoderBasedOnMimeType()
                     // Needed for cloudflare
                     .addHeader("accept", "text/html")
                     .build()
@@ -352,8 +359,7 @@ object Thumbnail {
                         error(errorDrawable)
                     }
                 }
-                .decoderFactory(SvgDecoder.Factory())
-                .decoderFactory(GifDecoder.Factory())
+                .applyCorrectDecoderBasedOnMimeType()
                 // Needed for cloudflare
                 .addHeader("accept", "text/html")
                 .build()
@@ -436,6 +442,25 @@ enum class ThumbnailRequestSize(val size: Int) {
 
     companion object {
         fun closest(from: IntSize): ThumbnailRequestSize = values().minByOrNull { (from.width - it.size).absoluteValue } ?: MEDIUM
+    }
+}
+
+private fun ImageRequest.Builder.applyCorrectDecoderBasedOnMimeType() = apply {
+    this.decoderFactory { result, options, _ ->
+        if (result.mimeType == "image/svg+xml" || DecodeUtils.isSvg(result.source.source())) {
+            SvgDecoder(result.source, options)
+        } else if (DecodeUtils.isGif(result.source.source())) {
+            GifDecoder(result.source, options)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && (
+                DecodeUtils.isAnimatedWebP(result.source.source()) || DecodeUtils.isAnimatedHeif(
+                    result.source.source()
+                )
+                )
+        ) {
+            ImageDecoderDecoder(result.source, options)
+        } else {
+            BitmapFactoryDecoder(result.source, options)
+        }
     }
 }
 
