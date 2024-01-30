@@ -15,8 +15,8 @@ class TransferProcessor @Inject constructor(
 ) : PreviewTypeProcessor<DetailedManifestClass.Transfer> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.Transfer): PreviewType {
         val assets = resolveAssetsFromAddressUseCase(
-            fungibleAddresses = summary.involvedFungibleAddresses,
-            nonFungibleIds = summary.involvedNonFungibleIds
+            fungibleAddresses = summary.involvedFungibleAddresses(),
+            nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
 
         val involvedAccountAddresses = summary.accountDeposits.keys + summary.accountWithdraws.keys
