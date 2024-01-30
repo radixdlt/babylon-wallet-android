@@ -137,7 +137,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         ),
         poolContributionProcessor = PoolContributionProcessor(
-            getPoolDetailsUseCase = getPoolDetailsUseCase,
             getProfileUseCase = getProfileUseCase,
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         ),
