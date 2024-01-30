@@ -162,7 +162,7 @@ object Thumbnail {
                 ImageRequest.Builder(context)
                     .data(imageType.cloudFlareUri)
                     .error(R.drawable.ic_broken_image)
-                    .applyAllSupportedImageDecoders()
+                    .applyCorrectDecoderBasedOnMimeType()
                     // Needed for cloudflare
                     .addHeader("accept", "text/html")
                     .build()
@@ -359,7 +359,7 @@ object Thumbnail {
                         error(errorDrawable)
                     }
                 }
-                .applyAllSupportedImageDecoders()
+                .applyCorrectDecoderBasedOnMimeType()
                 // Needed for cloudflare
                 .addHeader("accept", "text/html")
                 .build()
@@ -445,7 +445,7 @@ enum class ThumbnailRequestSize(val size: Int) {
     }
 }
 
-private fun ImageRequest.Builder.applyAllSupportedImageDecoders() = apply {
+private fun ImageRequest.Builder.applyCorrectDecoderBasedOnMimeType() = apply {
     this.decoderFactory { result, options, _ ->
         if (result.mimeType == "image/svg+xml" || DecodeUtils.isSvg(result.source.source())) {
             SvgDecoder(result.source, options)
