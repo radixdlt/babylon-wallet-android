@@ -53,7 +53,8 @@ data class ActionableAddress(
             ACCOUNT(HRP.ACCOUNT),
             VALIDATOR(HRP.VALIDATOR),
             TRANSACTION(HRP.TRANSACTION),
-            COMPONENT(HRP.COMPONENT);
+            COMPONENT(HRP.COMPONENT),
+            POOL(HRP.POOL);
 
             companion object {
                 private object HRP {
@@ -62,6 +63,7 @@ data class ActionableAddress(
                     const val PACKAGE = "package"
                     const val VALIDATOR = "validator"
                     const val COMPONENT = "component"
+                    const val POOL = "pool"
                     const val TRANSACTION = "txid"
                 }
 
