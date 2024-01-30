@@ -467,7 +467,7 @@ data class TransactionErrorMessage(
         get() = isNoMnemonicErrorVisible ||
             error is RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits ||
             error is RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities ||
-                error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
+            error is RadixWalletException.LedgerCommunicationException.FailedToSignTransaction
 
     val uiMessage: UiMessage = UiMessage.ErrorMessage(error)
 
