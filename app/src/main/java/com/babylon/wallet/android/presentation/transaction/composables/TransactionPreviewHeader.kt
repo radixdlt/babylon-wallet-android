@@ -50,7 +50,6 @@ fun TransactionPreviewHeader(
     scrollState: ScrollState
 ) {
     val context = LocalContext.current
-    val title = stringResource(R.string.transactionReview_title)
 
     // TODO improve this at later time.
     // AnimationRangePx is the threshold which scrollState.value hits and then transition of the motion layout starts.
@@ -97,7 +96,7 @@ fun TransactionPreviewHeader(
         CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 1f)) {
             Text(
                 modifier = Modifier.layoutId("title"),
-                text = title,
+                text = stringResource(R.string.transactionReview_title),
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Start,
                 maxLines = 2,
