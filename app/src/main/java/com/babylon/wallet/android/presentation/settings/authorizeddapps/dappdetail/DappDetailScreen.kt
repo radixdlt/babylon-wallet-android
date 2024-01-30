@@ -369,11 +369,11 @@ private fun DappDetails(
             itemsIndexed(dAppWithResources?.fungibleResources.orEmpty()) { _, fungibleToken ->
                 GrayBackgroundWrapper {
                     FungibleCard(
-                        modifier = Modifier.throttleClickable {
-                            onFungibleTokenClick(fungibleToken)
-                        },
                         fungible = fungibleToken,
-                        showChevron = false
+                        showChevron = false,
+                        onClick = {
+                            onFungibleTokenClick(fungibleToken)
+                        }
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }
@@ -396,11 +396,11 @@ private fun DappDetails(
             items(dAppWithResources?.nonFungibleResources.orEmpty()) { nonFungibleResource ->
                 GrayBackgroundWrapper {
                     NonFungibleCard(
-                        modifier = Modifier.throttleClickable {
-                            onNonFungibleClick(nonFungibleResource)
-                        },
                         nonFungible = nonFungibleResource,
-                        showChevron = false
+                        showChevron = false,
+                        onClick = {
+                            onNonFungibleClick(nonFungibleResource)
+                        }
                     )
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                 }

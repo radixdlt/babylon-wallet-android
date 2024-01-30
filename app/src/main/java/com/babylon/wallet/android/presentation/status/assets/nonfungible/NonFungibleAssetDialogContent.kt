@@ -289,7 +289,11 @@ private fun ClaimNFTInfo(
                 modifier = Modifier.weight(1f),
                 text = when (claimState) {
                     is AssetDialogViewModel.State.ClaimState.ReadyToClaim -> stringResource(
-                        id = if (accountContextMissing) R.string.transactionReview_toBeClaimed else R.string.account_staking_readyToBeClaimed
+                        id = if (accountContextMissing) {
+                            R.string.transactionReview_toBeClaimed
+                        } else {
+                            R.string.account_staking_readyToBeClaimed
+                        }
                     )
                     is AssetDialogViewModel.State.ClaimState.Unstaking ->
                         stringResource(id = R.string.account_staking_unstaking)
