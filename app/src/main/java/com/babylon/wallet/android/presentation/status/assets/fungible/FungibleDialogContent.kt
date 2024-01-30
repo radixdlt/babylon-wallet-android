@@ -98,7 +98,8 @@ fun FungibleDialogContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            address = resourceAddress
+            address = resourceAddress,
+            isNewlyCreatedEntity = isNewlyCreated
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 

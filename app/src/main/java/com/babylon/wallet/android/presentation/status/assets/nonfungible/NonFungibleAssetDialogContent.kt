@@ -115,6 +115,7 @@ fun NonFungibleAssetDialogContent(
                     ActionableAddressView(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingDefault),
                         address = item.globalAddress,
+                        visitableInDashboard = !isNewlyCreated,
                         textStyle = RadixTheme.typography.body1HighImportance,
                         textColor = RadixTheme.colors.gray1
                     )
@@ -208,7 +209,8 @@ fun NonFungibleAssetDialogContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
-                address = resourceAddress
+                address = resourceAddress,
+                isNewlyCreatedEntity = isNewlyCreated
             )
             if (!asset?.resource?.name.isNullOrBlank() && localId != null) {
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

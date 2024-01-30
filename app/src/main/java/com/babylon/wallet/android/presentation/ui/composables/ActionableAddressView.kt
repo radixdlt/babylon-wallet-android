@@ -69,11 +69,18 @@ fun ActionableAddressView(
     address: String,
     modifier: Modifier = Modifier,
     truncateAddress: Boolean = true,
+    visitableInDashboard: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
-    val actionableAddress = resolveAddress(address = address, truncateAddress = truncateAddress)
+    val actionableAddress = remember(address, truncateAddress, visitableInDashboard) {
+        ActionableAddress(
+            address = address,
+            truncateAddress = truncateAddress,
+            isVisitableInDashboard = visitableInDashboard
+        )
+    }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -302,12 +309,6 @@ fun ActionableAddressView(
         }
     }
 }
-
-@Composable
-private fun resolveAddress(
-    address: String,
-    truncateAddress: Boolean
-): ActionableAddress = remember(address) { ActionableAddress(address, truncateAddress) }
 
 private data class PopupActions(
     val primary: PopupActionItem,

@@ -8,7 +8,8 @@ import rdx.works.profile.derivation.model.NetworkId
 
 data class ActionableAddress(
     val address: String,
-    val truncateAddress: Boolean = true
+    val truncateAddress: Boolean = true,
+    val isVisitableInDashboard: Boolean = true
 ) {
 
     val type: Type? = Type.from(address)
@@ -25,6 +26,8 @@ data class ActionableAddress(
     }
 
     fun toDashboardUrl(networkId: NetworkId): String? {
+        if (!isVisitableInDashboard) return null
+
         val addressUrlEncoded = address.encodeUtf8()
         val suffix = when (type) {
             is Type.LocalId -> return null

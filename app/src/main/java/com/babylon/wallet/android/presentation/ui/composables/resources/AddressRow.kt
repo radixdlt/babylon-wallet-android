@@ -15,7 +15,8 @@ import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressV
 fun AddressRow(
     modifier: Modifier = Modifier,
     label: String = stringResource(id = R.string.assetDetails_resourceAddress),
-    address: String
+    address: String,
+    isNewlyCreatedEntity: Boolean = false
 ) {
     Row(
         modifier,
@@ -30,6 +31,7 @@ fun AddressRow(
 
         ActionableAddressView(
             address = address,
+            visitableInDashboard = !isNewlyCreatedEntity,
             textStyle = RadixTheme.typography.body1HighImportance,
             textColor = RadixTheme.colors.gray1,
             iconColor = RadixTheme.colors.gray2
