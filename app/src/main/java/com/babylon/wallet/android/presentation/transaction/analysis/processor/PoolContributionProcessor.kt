@@ -36,7 +36,7 @@ class PoolContributionProcessor @Inject constructor(
         val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {
             accountsWithdrawnFrom.contains(it.address)
         }
-        val from = summary.extractWithdraws(ownedAccountsWithdrawnFrom, assets.map { it.resource })
+        val from = summary.extractWithdraws(ownedAccountsWithdrawnFrom, assets)
         val to = summary.accountDeposits.map { depositsPerAddress ->
             val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(depositsPerAddress.key) ?: error("No account found")
             val deposits = depositsPerAddress.value.map { deposit ->
@@ -104,12 +104,12 @@ class PoolContributionProcessor @Inject constructor(
         )
     }
 
-    private fun ExecutionSummary.extractWithdraws(allOwnedAccounts: List<Network.Account>, resources: List<Resource>) =
+    private fun ExecutionSummary.extractWithdraws(allOwnedAccounts: List<Network.Account>, assets: List<Asset>) =
         accountWithdraws.entries.map { transferEntry ->
             val accountOnNetwork = allOwnedAccounts.find { it.address == transferEntry.key }
 
             val withdrawing = transferEntry.value.map { resourceIndicator ->
-                Transferable.Withdrawing(resourceIndicator.toTransferableResource(resources))
+                Transferable.Withdrawing(resourceIndicator.toTransferableAsset(assets))
             }
             accountOnNetwork?.let { account ->
                 AccountWithTransferableResources.Owned(
