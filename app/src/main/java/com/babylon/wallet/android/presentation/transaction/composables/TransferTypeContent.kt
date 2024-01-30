@@ -12,7 +12,6 @@ import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
@@ -22,7 +21,7 @@ fun TransferTypeContent(
     preview: PreviewType.Transfer.GeneralTransfer,
     onPromptForGuarantees: () -> Unit,
     onDAppClick: (DApp) -> Unit,
-    onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
+    onUnknownComponentsClick: (List<String>) -> Unit,
     onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
     onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
 ) {
@@ -38,7 +37,7 @@ fun TransferTypeContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 connectedDApps = preview.dApps.toPersistentList(),
                 onDAppClick = onDAppClick,
-                onUnknownDAppsClick = onUnknownDAppsClick
+                onUnknownComponentsClick = onUnknownComponentsClick
             )
         }
     )
@@ -61,7 +60,7 @@ fun TransactionPreviewTypePreview() {
             ),
             onPromptForGuarantees = {},
             onDAppClick = { _ -> },
-            onUnknownDAppsClick = {},
+            onUnknownComponentsClick = {},
             onFungibleResourceClick = { _, _ -> },
             onNonFungibleResourceClick = { _, _, _ -> }
         )

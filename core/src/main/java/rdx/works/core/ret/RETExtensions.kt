@@ -5,6 +5,7 @@ import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.model.ECKeyPair
 import com.radixdlt.model.PrivateKey
+import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.Signature
 import com.radixdlt.ret.SignatureWithPublicKey
@@ -91,3 +92,7 @@ fun Signature.Ed25519.toHexString(): String = Hex.toHexString(value)
 
 fun PublicKey.Secp256k1.toHexString(): String = Hex.toHexString(value)
 fun PublicKey.Ed25519.toHexString(): String = Hex.toHexString(value)
+
+fun EntityType.isPool() = this == EntityType.GLOBAL_ONE_RESOURCE_POOL ||
+    this == EntityType.GLOBAL_TWO_RESOURCE_POOL ||
+    this == EntityType.GLOBAL_MULTI_RESOURCE_POOL

@@ -21,7 +21,7 @@ import com.babylon.wallet.android.domain.model.resources.Badge
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatorsUseCase
-import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
@@ -124,13 +124,13 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val getDAppsUseCase = mockk<GetDAppsUseCase>()
-    private val resolveDAppInTransactionUseCase = mockk<ResolveDAppInTransactionUseCase>()
+    private val resolveComponentAddressesUseCase = mockk<ResolveComponentAddressesUseCase>()
     private val previewTypeAnalyzer = PreviewTypeAnalyzer(
         generalTransferProcessor = GeneralTransferProcessor(
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase,
             getTransactionBadgesUseCase = getTransactionBadgesUseCase,
             getProfileUseCase = getProfileUseCase,
-            resolveDAppInTransactionUseCase = resolveDAppInTransactionUseCase
+            resolveComponentAddressesUseCase = resolveComponentAddressesUseCase
         ),
         transferProcessor = TransferProcessor(
             getProfileUseCase = getProfileUseCase,

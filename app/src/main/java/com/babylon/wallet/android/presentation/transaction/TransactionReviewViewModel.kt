@@ -19,7 +19,6 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Badge
-import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.Resource.FungibleResource
 import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource
@@ -217,9 +216,9 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    fun onUnknownDAppsClick(unknownComponentAddresses: ImmutableList<String>) {
+    fun onUnknownComponentsClick(unknownComponentAddresses: ImmutableList<String>) {
         _state.update {
-            it.copy(sheetState = State.Sheet.UnknownDAppComponents(unknownComponentAddresses))
+            it.copy(sheetState = State.Sheet.UnknownComponents(unknownComponentAddresses))
         }
     }
 
@@ -447,7 +446,7 @@ class TransactionReviewViewModel @Inject constructor(
                 }
             }
 
-            data class UnknownDAppComponents(
+            data class UnknownComponents(
                 val unknownComponentAddresses: ImmutableList<String>
             ) : Sheet
         }
@@ -538,7 +537,7 @@ sealed interface PreviewType {
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
             val badges: List<Badge> = emptyList(),
-            val dApps: List<Pair<DApp, Boolean>> = emptyList()
+            val dApps: List<Pair<String, DApp?>> = emptyList()
         ) : Transfer
     }
 }

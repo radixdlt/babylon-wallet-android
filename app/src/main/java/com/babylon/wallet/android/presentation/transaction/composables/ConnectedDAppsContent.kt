@@ -4,26 +4,24 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -35,19 +33,17 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.InvolvedComponentDetails
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.babylon.wallet.android.presentation.ui.composables.displayName
-import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun ConnectedDAppsContent(
-    connectedDApps: ImmutableList<Pair<DApp, Boolean>>,
+    connectedDApps: ImmutableList<Pair<String, DApp?>>,
     onDAppClick: (DApp) -> Unit,
-    onUnknownDAppsClick: (ImmutableList<String>) -> Unit,
+    onUnknownComponentsClick: (List<String>) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (connectedDApps.isEmpty()) return
@@ -102,58 +98,34 @@ fun ConnectedDAppsContent(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .fillMaxWidth()
-                    .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
-                    .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium),
-                horizontalAlignment = Alignment.End
             ) {
-                val unverifiedDappsCount = connectedDApps.count { it.second.not() }
-                val verifiedDapps = connectedDApps.filter { it.second }
-                if (unverifiedDappsCount > 0) {
-                    ConnectedDappRow(
-                        modifier = Modifier.throttleClickable {
-                            onUnknownDAppsClick(connectedDApps.map { it.first.componentAddresses }.flatten().toPersistentList())
-                        },
-                        dApp = null,
-                        name = stringResource(id = R.string.transactionReview_unknownComponents, unverifiedDappsCount)
-                    )
+                val (verifiedDApps, unknownComponents) = remember(connectedDApps) {
+                    connectedDApps.mapNotNull { it.second } to connectedDApps.mapNotNull { if (it.second == null) it.first else null }
                 }
-                verifiedDapps.forEach { connectedDApp ->
-                    ConnectedDappRow(
-                        dApp = connectedDApp.first,
-                        modifier = Modifier.throttleClickable {
-                            onDAppClick(connectedDApp.first)
-                        }
+
+                verifiedDApps.forEach { dApp ->
+                    InvolvedComponentDetails(
+                        iconSize = 44.dp,
+                        dApp = dApp,
+                        text = dApp.displayName(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onDAppClick(dApp) }
+                    )
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                }
+                if (unknownComponents.isNotEmpty()) {
+                    InvolvedComponentDetails(
+                        iconSize = 44.dp,
+                        dApp = null,
+                        text = stringResource(id = R.string.transactionReview_unknownComponents, unknownComponents.size),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onUnknownComponentsClick(unknownComponents) }
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun ConnectedDappRow(
-    dApp: DApp?,
-    name: String = dApp.displayName(),
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(RadixTheme.dimensions.paddingDefault),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Thumbnail.DApp(
-            modifier = Modifier.size(44.dp),
-            dapp = dApp,
-            shape = RadixTheme.shapes.roundedRectXSmall
-        )
-        Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
-        Text(
-            text = name,
-            style = RadixTheme.typography.body1HighImportance,
-            color = RadixTheme.colors.gray1,
-            overflow = TextOverflow.Ellipsis
-        )
     }
 }
 
@@ -162,11 +134,10 @@ private fun ConnectedDappRow(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            DApp(
-                dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"
-            ) to true
+            "component_tdx_19jd32jd3928jd3892jd329" to DApp(dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"),
+            "component_tdx_19jd32jd3928jd3892jd330" to null
         ),
         onDAppClick = {},
-        onUnknownDAppsClick = {}
+        onUnknownComponentsClick = {}
     )
 }

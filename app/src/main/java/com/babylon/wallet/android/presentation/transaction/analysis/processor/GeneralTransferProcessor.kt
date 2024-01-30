@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
-import com.babylon.wallet.android.domain.usecases.ResolveDAppInTransactionUseCase
+import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -18,13 +18,11 @@ class GeneralTransferProcessor @Inject constructor(
     private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase,
     private val getTransactionBadgesUseCase: GetTransactionBadgesUseCase,
     private val getProfileUseCase: GetProfileUseCase,
-    private val resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
+    private val resolveComponentAddressesUseCase: ResolveComponentAddressesUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.General> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
         val badges = getTransactionBadgesUseCase(accountProofs = summary.presentedProofs)
-        val dApps = summary.resolveDApps(resolveDAppInTransactionUseCase).distinctBy {
-            it.first.definitionAddresses
-        }
+        val dApps = summary.resolveDApps()
         val involvedAccountAddresses = summary.accountWithdraws.keys + summary.accountDeposits.keys
         val allOwnedAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
             involvedAccountAddresses.contains(it.address)
@@ -50,16 +48,15 @@ class GeneralTransferProcessor @Inject constructor(
         )
     }
 
-    private suspend fun ExecutionSummary.resolveDApps(
-        resolveDAppInTransactionUseCase: ResolveDAppInTransactionUseCase
-    ) = coroutineScope {
+    private suspend fun ExecutionSummary.resolveDApps() = coroutineScope {
         encounteredEntities.filter { it.isGlobalComponent() }
             .map { address ->
                 async {
-                    resolveDAppInTransactionUseCase.invoke(address.addressString())
+                    resolveComponentAddressesUseCase.invoke(address.addressString())
                 }
             }
             .awaitAll()
             .mapNotNull { it.getOrNull() }
+            .distinctBy { it.first }
     }
 }
