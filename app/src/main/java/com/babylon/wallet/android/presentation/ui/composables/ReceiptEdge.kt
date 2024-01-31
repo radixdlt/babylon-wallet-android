@@ -13,19 +13,23 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
 @Composable
-fun ReceiptEdge(modifier: Modifier, color: Color, topEdge: Boolean = false) {
+fun ReceiptEdge(
+    modifier: Modifier = Modifier,
+    color: Color,
+) {
     val density = LocalDensity.current
     val expectedWidth = with(density) { 12.dp.toPx() }
     val triangleHeight = with(density) { 6.dp.toPx() }
     Box(
         modifier = modifier
-            .fillMaxWidth().height(6.dp)
+            .fillMaxWidth()
+            .height(6.dp)
             .drawWithCache {
                 val triangles = (size.width / expectedWidth).roundToInt()
                 val triangleWidth = size.width / triangles
-                val startY = if (topEdge) triangleHeight else 0f
-                val y1 = if (topEdge) 0f else triangleHeight
-                val y2 = if (topEdge) triangleHeight else 0f
+                val startY = 0f
+                val y1 = triangleHeight
+                val y2 = 0f
                 val path = Path().apply {
                     moveTo(0f, startY)
                     repeat(triangles) { i ->
@@ -35,7 +39,8 @@ fun ReceiptEdge(modifier: Modifier, color: Color, topEdge: Boolean = false) {
                     }
                     close()
                 }
-                onDrawBehind {
+                onDrawWithContent {
+                    drawContent()
                     drawPath(path, color = color)
                 }
             }
