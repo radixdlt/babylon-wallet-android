@@ -14,9 +14,11 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -25,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
@@ -38,6 +41,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
+import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.profile.data.model.apppreferences.Radix
 
@@ -50,57 +54,60 @@ fun TransactionPreviewHeader(
     scrollState: ScrollState
 ) {
     val context = LocalContext.current
-
-    // TODO improve this at later time.
-    // AnimationRangePx is the threshold which scrollState.value hits and then transition of the motion layout starts.
-    // When its relatively low i.e. 40.dp we start transition early and if content is large enough scroll state continue
-    // with its scroll value.
-    // When content is relatively small we might start topbar transition too early which makes scroll state to reset its
-    // scroll.value which is causing the flickering.
-    // That is why for smaller content, we increase animation threshold value from 40.do to 200.dp
-    val animationValue = remember(scrollState.maxValue) {
-        if (scrollState.maxValue >= 200) {
-            40.dp
-        } else {
-            200.dp
-        }
+    val motionSceneContent = remember {
+        context.resources
+            .openRawResource(R.raw.transaction_review_top_bar_scene)
+            .readBytes()
+            .decodeToString()
     }
 
-    val animationRangePx = with(LocalDensity.current) {
-        animationValue.toPx()
-    }
-    val progress by remember(scrollState.value) {
-        if (scrollState.maxValue != Int.MAX_VALUE) {
-            derivedStateOf {
+    // size of the preview header
+    var size by remember { mutableStateOf(IntSize.Zero) }
+
+    val animationRangePx = with(LocalDensity.current) { 200.dp.toPx() }
+    val progress by remember {
+        derivedStateOf {
+            // if max value of the scroll is less than the height of the preview header
+            // then don't use the animation
+            if (scrollState.maxValue <= size.height) {
+                0f
+            } else {
                 (scrollState.value / animationRangePx).coerceIn(0f, 1f)
             }
-        } else {
-            mutableStateOf(0f)
         }
     }
 
     MotionLayout(
         modifier = modifier
             .statusBarsPadding()
-            .fillMaxWidth(),
-        motionScene = MotionScene(
-            content = remember {
-                context.resources.openRawResource(
-                    R.raw.transaction_review_top_bar_scene
-                ).readBytes().decodeToString()
+            .fillMaxWidth()
+            .onGloballyPositioned { layoutCoordinates ->
+                size = layoutCoordinates.size
             },
+        motionScene = MotionScene(
+            content = motionSceneContent,
         ),
-        transitionName = if (state.request?.isInternal == true) "noSubtitle" else "default",
         progress = progress
     ) {
-        CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 1f)) {
+        CompositionLocalProvider(
+            value = LocalDensity provides Density(
+                density = LocalDensity.current.density,
+                fontScale = 1f
+            )
+        ) {
             Text(
                 modifier = Modifier.layoutId("title"),
                 text = stringResource(R.string.transactionReview_title),
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Start,
                 maxLines = 2,
-                style = RadixTheme.typography.title.copy(fontSize = lerp(RadixTheme.typography.title.fontSize, 20.sp, progress))
+                style = RadixTheme.typography.title.copy(
+                    fontSize = lerp(
+                        start = RadixTheme.typography.title.fontSize,
+                        stop = 18.sp,
+                        fraction = progress
+                    )
+                )
             )
             if (state.request?.isInternal != true) {
                 val dAppName = state.proposingDApp?.name.orEmpty().ifEmpty {
@@ -129,7 +136,7 @@ fun TransactionPreviewHeader(
             )
         }
         IconButton(
-            modifier = Modifier.layoutId("backButton"),
+            modifier = Modifier.layoutId("closeButton"),
             onClick = onBackClick
         ) {
             Icon(
@@ -159,6 +166,12 @@ fun TransactionPreviewHeader(
                 )
             }
         }
+
+        ReceiptEdge(
+            modifier = Modifier.layoutId("receiptEdge").fillMaxWidth(),
+            color = RadixTheme.colors.gray5,
+            topEdge = true
+        )
     }
 }
 

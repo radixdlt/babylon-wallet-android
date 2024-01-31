@@ -219,8 +219,7 @@ private fun TransactionPreviewContent(
     )
     val scrollState = rememberScrollState()
     Scaffold(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         topBar = {
             TransactionPreviewHeader(
                 onBackClick = onBackClick,
@@ -249,7 +248,6 @@ private fun TransactionPreviewContent(
                     Column(
                         modifier = Modifier.verticalScroll(scrollState)
                     ) {
-                        ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5, topEdge = true)
                         RawManifestView(
                             modifier = Modifier
                                 .background(color = RadixTheme.colors.gray5)
@@ -303,7 +301,6 @@ private fun TransactionPreviewContent(
                     Column(
                         modifier = Modifier.verticalScroll(scrollState)
                     ) {
-                        ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5, topEdge = true)
                         when (val preview = state.previewType) {
                             is PreviewType.None -> {}
                             is PreviewType.UnacceptableManifest -> {
