@@ -372,7 +372,7 @@ val NonFungibleResourceIndicator.nonFungibleLocalIds: List<NonFungibleLocalId>
         is NonFungibleResourceIndicator.ByIds -> ids
     }
 
-private fun Map<String, MetadataValue?>.toMetadata(): List<Metadata> = mapNotNull { it.toMetadata() }
+fun Map<String, MetadataValue?>.toMetadata(): List<Metadata> = mapNotNull { it.toMetadata() }
 
 @Suppress("CyclomaticComplexMethod", "LongMethod")
 private fun Map.Entry<String, MetadataValue?>.toMetadata(): Metadata? = when (val typed = value) {

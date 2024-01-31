@@ -4,8 +4,6 @@ import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -48,7 +46,6 @@ class PoolContributionProcessor @Inject constructor(
         assets: List<Asset>,
         defaultDepositGuarantee: Double
     ): List<AccountWithTransferableResources.Owned> {
-        val involvedPools = assets.filterIsInstance<PoolUnit>().mapNotNull { it.pool }
         val to = accountDeposits.map { depositsPerAddress ->
             val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(depositsPerAddress.key) ?: error("No account found")
             val deposits = depositsPerAddress.value.map { deposit ->
@@ -59,24 +56,17 @@ class PoolContributionProcessor @Inject constructor(
                 if (contributions.isEmpty()) {
                     resolveGeneralAsset(deposit, this, assets, defaultDepositGuarantee)
                 } else {
-                    val pool = involvedPools.find { it.address == contributions.first().poolAddress.addressString() }
-                        ?: error("No pool found")
-                    val poolResource = assets.find {
-                        it.resource.resourceAddress == pool.metadata.poolUnit()
-                    }?.resource as? Resource.FungibleResource
-                        ?: error("No pool resource found")
+                    val poolUnit = assets.find { it.resource.resourceAddress == resourceAddress } as? PoolUnit
+                        ?: error("No pool unit found")
                     val contributedResourceAddresses = contributions.first().contributedResources.keys
                     val guaranteeType = deposit.guaranteeType(defaultDepositGuarantee)
                     val poolUnitAmount = contributions.find {
-                        it.poolUnitsResourceAddress.addressString() == poolResource.resourceAddress
+                        it.poolUnitsResourceAddress.addressString() == poolUnit.resourceAddress
                     }?.poolUnitsAmount?.asStr()?.toBigDecimalOrNull()
                     Transferable.Depositing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(
                             amount = contributions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
-                            unit = PoolUnit(
-                                stake = poolResource.copy(ownedAmount = poolUnitAmount),
-                                pool = pool
-                            ),
+                            unit = poolUnit.copy(stake = poolUnit.stake.copy(ownedAmount = poolUnitAmount)),
                             contributionPerResource = contributedResourceAddresses.associateWith { contributedResourceAddress ->
                                 contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
                                     .sumOf { it }

@@ -13,6 +13,8 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.ret.NonFungibleGlobalId
+import com.radixdlt.ret.ResourceIndicator
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
@@ -49,26 +51,23 @@ class ValidatorUnstakeProcessor @Inject constructor(
     ) = executionSummary.accountDeposits.map { claimsPerAddress ->
         val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(claimsPerAddress.key) ?: error("No account found")
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
-        val depositingNfts = claimsPerAddress.value.map { claimedResource ->
-            val resourceAddress = claimedResource.resourceAddress
+        val depositingNfts = claimsPerAddress.value.filterIsInstance<ResourceIndicator.NonFungible>().map { claimedResource ->
+            val resourceAddress = claimedResource.resourceAddress.addressString()
             val nftResource =
                 resources.find { it.resourceAddress == resourceAddress } as? Resource.NonFungibleResource
                     ?: error("No resource found")
-            val validatorUnstake = validatorUnstakes.find { it.claimNftAddress.addressString() == resourceAddress }
-                ?: error("No validator claim found")
-            val lsuResource = resources.find {
-                it.resourceAddress == validatorUnstake.liquidStakeUnitAddress.addressString()
-            } as? Resource.FungibleResource ?: error("No resource found")
             val validator =
-                involvedValidators.find { validatorUnstake.validatorAddress.addressString() == it.address } ?: error("No validator found")
-            val lsuAmount = validatorUnstake.liquidStakeUnitAmount.asStr().toBigDecimal()
-            val xrdWorth = lsuAmount.divide(lsuResource.currentSupply, lsuResource.mathContext)
-                .multiply(validator.totalXrdStake, lsuResource.mathContext)
-            val stakeClaimNftItems = validatorUnstake.claimNftIds.map { localId ->
+                involvedValidators.find { nftResource.validatorAddress == it.address } ?: error("No validator found")
+            val stakeClaimNftItems = claimedResource.indicator.nonFungibleLocalIds.map { localId ->
+                val globalId = NonFungibleGlobalId.fromParts(claimedResource.resourceAddress, localId)
+                val claimAmount =
+                    claimsNonFungibleData.find { it.nonFungibleGlobalId.asStr() == globalId.asStr() }?.data?.claimAmount?.asStr()
+                        ?.toBigDecimal()
+                        ?: error("No claim amount found")
                 Resource.NonFungibleResource.Item(
                     collectionAddress = resourceAddress,
                     localId = Resource.NonFungibleResource.Item.ID.from(localId)
-                ) to xrdWorth
+                ) to claimAmount
             }
             val guaranteeType = claimedResource.guaranteeType(defaultDepositGuarantees)
             Transferable.Depositing(
