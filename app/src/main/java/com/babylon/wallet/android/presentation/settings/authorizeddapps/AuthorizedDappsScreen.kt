@@ -68,7 +68,7 @@ private fun AuthorizedDAppsContent(
     )
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.authorizedDapps_title),

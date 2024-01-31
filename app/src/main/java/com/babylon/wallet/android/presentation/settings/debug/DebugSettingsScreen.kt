@@ -32,7 +32,7 @@ fun DebugSettingsScreen(
     val linkConnectionStatusIndicatorState by viewModel.linkConnectionStatusIndicatorState.collectAsStateWithLifecycle()
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         topBar = {
             RadixCenteredTopAppBar(
                 title = stringResource(R.string.settings_debugSettings),

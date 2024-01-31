@@ -116,7 +116,7 @@ fun DappDetailScreen(
     }
     DappDetailContent(
         onBackClick = onBackClick,
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         state = state,
         onPersonaClick = viewModel::onPersonaClick,
         onFungibleTokenClick = viewModel::onFungibleTokenClick,
@@ -191,6 +191,7 @@ private fun DappDetailContent(
     }
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             Column {
                 RadixCenteredTopAppBar(

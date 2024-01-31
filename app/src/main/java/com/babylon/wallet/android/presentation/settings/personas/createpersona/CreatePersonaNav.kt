@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.settings.personas.createpersona
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -68,7 +67,6 @@ fun NavGraphBuilder.personaInfoScreen(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.createPersonaScreen(
     onBackClick: () -> Unit,
     onContinueClick: (personaId: String) -> Unit
@@ -98,7 +96,6 @@ fun NavGraphBuilder.createPersonaScreen(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.personasScreen(
     onBackClick: () -> Unit,
     createPersonaScreen: (Boolean) -> Unit,

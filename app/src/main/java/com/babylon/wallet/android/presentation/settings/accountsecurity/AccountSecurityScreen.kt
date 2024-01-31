@@ -38,7 +38,7 @@ fun AccountSecurityScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     AccountSecurityContent(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         appSettings = state.settings,
         onAccountSecuritySettingItemClick = onAccountSecuritySettingItemClick,
         onBackClick = onBackClick,
