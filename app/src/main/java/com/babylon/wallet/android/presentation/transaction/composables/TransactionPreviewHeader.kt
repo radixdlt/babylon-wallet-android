@@ -67,9 +67,9 @@ fun TransactionPreviewHeader(
     val animationRangePx = with(LocalDensity.current) { 200.dp.toPx() }
     val progress by remember {
         derivedStateOf {
-            // if max value of the scroll is less than the height of the preview header
-            // then don't use the animation
-            if (scrollState.maxValue <= size.height) {
+            // if max value of the scroll is less than the height of the preview header then don't use the animation
+            // the + 100 is for these cases where the warnings at the bottom of the receipt are visible (e.g. congested network)
+            if (scrollState.maxValue <= size.height + 100) {
                 0f
             } else {
                 (scrollState.value / animationRangePx).coerceIn(0f, 1f)
