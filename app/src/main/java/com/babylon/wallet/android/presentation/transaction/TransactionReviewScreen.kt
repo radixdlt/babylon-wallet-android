@@ -258,6 +258,7 @@ private fun TransactionPreviewContent(
                         )
                         ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                         NetworkFeeContent(
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
                             fees = state.transactionFees,
                             noFeePayerSelected = state.noFeePayerSelected,
                             insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
@@ -265,10 +266,12 @@ private fun TransactionPreviewContent(
                             onCustomizeClick = onCustomizeClick
                         )
                         SlideToSignButton(
-                            modifier = Modifier.padding(
-                                horizontal = RadixTheme.dimensions.paddingXLarge,
-                                vertical = RadixTheme.dimensions.paddingDefault
-                            ),
+                            modifier = Modifier
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                                .padding(
+                                    top = RadixTheme.dimensions.paddingDefault,
+                                    bottom = RadixTheme.dimensions.paddingXLarge
+                                ),
                             enabled = state.isSubmitEnabled,
                             isSubmitting = state.isSubmitting,
                             onSwipeComplete = onApproveTransaction
@@ -363,6 +366,7 @@ private fun TransactionPreviewContent(
                             }
                         }
                         NetworkFeeContent(
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
                             fees = state.transactionFees,
                             noFeePayerSelected = state.noFeePayerSelected,
                             insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
@@ -370,10 +374,12 @@ private fun TransactionPreviewContent(
                             onCustomizeClick = onCustomizeClick
                         )
                         SlideToSignButton(
-                            modifier = Modifier.padding(
-                                horizontal = RadixTheme.dimensions.paddingXLarge,
-                                vertical = RadixTheme.dimensions.paddingDefault
-                            ),
+                            modifier = Modifier
+                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                                .padding(
+                                    top = RadixTheme.dimensions.paddingDefault,
+                                    bottom = RadixTheme.dimensions.paddingXLarge
+                                ),
                             enabled = state.isSubmitEnabled,
                             isSubmitting = state.isSubmitting,
                             onSwipeComplete = onApproveTransaction
