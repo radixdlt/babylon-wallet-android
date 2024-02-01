@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -68,16 +69,31 @@ fun AccountDepositSettingsTypeContent(
                             AccountDefaultDepositRule.ALLOW_EXISTING -> R.string.transactionReview_accountDepositSettings_acceptKnownRule
                         }
                     ).formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
+                    val icon = when (newRule) {
+                        AccountDefaultDepositRule.ACCEPT -> com.babylon.wallet.android.designsystem.R.drawable.ic_accept_all
+                        AccountDefaultDepositRule.REJECT -> com.babylon.wallet.android.designsystem.R.drawable.ic_deny_all
+                        AccountDefaultDepositRule.ALLOW_EXISTING -> com.babylon.wallet.android.designsystem.R.drawable.ic_accept_known
+                    }
                     val ruleBackgroundShape =
                         if (accountWithSettings.onlyDepositRuleChanged) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
-                    Text(
-                        text = ruleText,
-                        style = RadixTheme.typography.body1Regular,
+
+                    Row(
                         modifier = Modifier
                             .background(RadixTheme.colors.gray5, shape = ruleBackgroundShape)
                             .padding(RadixTheme.dimensions.paddingDefault),
-                        color = RadixTheme.colors.gray1
-                    )
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            modifier = Modifier.padding(end = RadixTheme.dimensions.paddingDefault),
+                            painter = painterResource(id = icon),
+                            contentDescription = null
+                        )
+                        Text(
+                            text = ruleText,
+                            style = RadixTheme.typography.body1Regular,
+                            color = RadixTheme.colors.gray1
+                        )
+                    }
                 }
             }
         }

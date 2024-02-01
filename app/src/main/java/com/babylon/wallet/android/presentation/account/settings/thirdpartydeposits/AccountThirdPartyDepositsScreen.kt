@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.account.settings.thirdpartydepos
 
 import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -300,7 +301,7 @@ fun getDepositRuleCopiesAndIcon(depositRule: Network.Account.OnLedgerSettings.Th
             Triple(
                 stringResource(id = R.string.accountSettings_thirdPartyDeposits_onlyKnown),
                 stringResource(id = R.string.accountSettings_thirdPartyDeposits_onlyKnownSubtitle),
-                com.babylon.wallet.android.designsystem.R.drawable.ic_accept_all,
+                com.babylon.wallet.android.designsystem.R.drawable.ic_accept_known,
             )
         }
 
@@ -335,7 +336,7 @@ fun DepositOptionItem(
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
         icon?.let {
-            Icon(painter = painterResource(id = it), contentDescription = null)
+            Image(painter = painterResource(id = it), contentDescription = null)
         }
         Column(
             modifier = Modifier
