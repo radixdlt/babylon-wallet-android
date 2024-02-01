@@ -62,7 +62,7 @@ fun CommonTransferContent(
                             start = RadixTheme.dimensions.paddingDefault,
                             end = RadixTheme.dimensions.paddingDefault
                         )
-                        .padding(top = RadixTheme.dimensions.paddingLarge),
+                        .padding(top = RadixTheme.dimensions.paddingSemiLarge),
                     to = previewType.to.toPersistentList(),
                     promptForGuarantees = onPromptForGuarantees,
                     onFungibleResourceClick = { fungibleResource, isNewlyCreated ->

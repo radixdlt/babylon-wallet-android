@@ -111,6 +111,7 @@ fun PoolsContent(
         Column(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                .padding(bottom = RadixTheme.dimensions.paddingMedium)
                 .fillMaxWidth()
                 .shadow(6.dp, RadixTheme.shapes.roundedRectDefault)
         ) {
