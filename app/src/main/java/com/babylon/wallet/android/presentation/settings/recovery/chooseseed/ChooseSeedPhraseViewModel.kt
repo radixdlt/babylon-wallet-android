@@ -83,9 +83,6 @@ class ChooseSeedPhraseViewModel @Inject constructor(
     ) : UiState {
         val selectedFactorSource
             get() = factorSources.firstOrNull { it.selected }?.data?.deviceFactorSource
-
-        val isAnyFactorSourceSelected: Boolean
-            get() = factorSources.any { it.selected }
     }
 
     sealed interface Event : OneOffEvent {
