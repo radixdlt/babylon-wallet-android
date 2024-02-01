@@ -378,8 +378,7 @@ private fun DepositorItem(
             is Resource.FungibleResource -> Thumbnail.Fungible(token = depositor.resource, modifier = Modifier.size(44.dp))
             is Resource.NonFungibleResource -> Thumbnail.NonFungible(
                 collection = depositor.resource,
-                modifier = Modifier.size(44.dp),
-                shape = RadixTheme.shapes.roundedRectSmall
+                modifier = Modifier.size(44.dp)
             )
 
             else -> {}

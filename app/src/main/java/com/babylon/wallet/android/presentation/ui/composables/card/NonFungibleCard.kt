@@ -50,8 +50,7 @@ fun NonFungibleCard(
     ) {
         Thumbnail.NonFungible(
             modifier = Modifier.size(44.dp),
-            collection = nonFungible,
-            shape = RadixTheme.shapes.roundedRectSmall
+            collection = nonFungible
         )
         Text(
             modifier = Modifier.weight(1f),

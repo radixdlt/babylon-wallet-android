@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -118,7 +119,7 @@ object Thumbnail {
     fun NonFungible(
         modifier: Modifier = Modifier,
         collection: Resource.NonFungibleResource?,
-        shape: Shape = RadixTheme.shapes.roundedRectSmall
+        radius: CornerSize = CornerSize(size = RadixTheme.dimensions.paddingSmall)
     ) {
         var viewSize: IntSize? by remember { mutableStateOf(null) }
         val imageType = remember(collection, viewSize) {
@@ -137,7 +138,7 @@ object Thumbnail {
             imageContentScale = ContentScale.Crop,
             emptyDrawable = R.drawable.ic_nfts,
             emptyContentScale = CustomContentScale.standard(density = density),
-            shape = shape,
+            shape = RoundedCornerShape(radius),
             contentDescription = collection?.name.orEmpty()
         )
     }
@@ -550,13 +551,12 @@ fun NonFungibleResourcesPreview() {
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(100.dp),
                     collection = withUrl,
-                    shape = CircleShape
+                    radius = CornerSize(size = 12.dp)
                 )
 
                 Thumbnail.NonFungible(
-                    modifier = Modifier.size(100.dp),
-                    collection = withUrl,
-                    shape = RadixTheme.shapes.roundedRectSmall
+                    modifier = Modifier.size(50.dp),
+                    collection = withUrl
                 )
             }
 
@@ -573,13 +573,12 @@ fun NonFungibleResourcesPreview() {
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(100.dp),
                     collection = withNoUrl,
-                    shape = CircleShape
+                    radius = CornerSize(size = 12.dp)
                 )
 
                 Thumbnail.NonFungible(
-                    modifier = Modifier.size(100.dp),
-                    collection = withNoUrl,
-                    shape = RadixTheme.shapes.roundedRectSmall
+                    modifier = Modifier.size(50.dp),
+                    collection = withNoUrl
                 )
             }
 
@@ -603,13 +602,12 @@ fun NonFungibleResourcesPreview() {
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(100.dp),
                     collection = error,
-                    shape = CircleShape
+                    radius = CornerSize(size = 12.dp)
                 )
 
                 Thumbnail.NonFungible(
-                    modifier = Modifier.size(100.dp),
-                    collection = error,
-                    shape = RadixTheme.shapes.roundedRectSmall
+                    modifier = Modifier.size(50.dp),
+                    collection = error
                 )
             }
         }

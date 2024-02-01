@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
@@ -167,7 +167,7 @@ fun NonFungibleAssetDialogContent(
                         .padding(vertical = RadixTheme.dimensions.paddingDefault)
                         .size(104.dp),
                     collection = asset.resource,
-                    shape = CircleShape
+                    radius = CornerSize(RadixTheme.dimensions.paddingMedium)
                 )
             } else {
                 Box(
@@ -176,7 +176,7 @@ fun NonFungibleAssetDialogContent(
                         .size(104.dp)
                         .radixPlaceholder(
                             visible = true,
-                            shape = CircleShape
+                            shape = RadixTheme.shapes.roundedRectMedium
                         )
                 )
             }
