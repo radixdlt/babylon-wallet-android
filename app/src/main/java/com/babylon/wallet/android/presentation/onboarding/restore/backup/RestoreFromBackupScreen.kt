@@ -293,7 +293,7 @@ private fun RestoreFromBackupContent(
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingXLarge),
+                            .padding(RadixTheme.dimensions.paddingXXLarge),
                         text = stringResource(id = R.string.androidRecoverProfileBackup_noBackupsAvailable),
                         color = RadixTheme.colors.gray2,
                         textAlign = TextAlign.Center,
@@ -407,7 +407,7 @@ private fun PasswordSheet(
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             onValueChanged = onPasswordTyped,
             value = state.password,
             hint = stringResource(id = R.string.encryptProfileBackup_enterPasswordField_placeholder),

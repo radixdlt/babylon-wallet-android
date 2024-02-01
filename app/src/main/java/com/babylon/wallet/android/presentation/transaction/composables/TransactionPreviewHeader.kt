@@ -1,37 +1,34 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.lerp
-import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.MotionLayout
-import androidx.constraintlayout.compose.MotionScene
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.TransactionVersion
+import com.babylon.wallet.android.designsystem.composable.TwoRowsTopAppBar
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
@@ -47,119 +44,113 @@ fun TransactionPreviewHeader(
     state: State,
     onBackClick: () -> Unit,
     onRawManifestClick: () -> Unit,
-    scrollState: ScrollState
+    scrollBehavior: TopAppBarScrollBehavior
 ) {
-    val context = LocalContext.current
-
-    // TODO improve this at later time.
-    // AnimationRangePx is the threshold which scrollState.value hits and then transition of the motion layout starts.
-    // When its relatively low i.e. 40.dp we start transition early and if content is large enough scroll state continue
-    // with its scroll value.
-    // When content is relatively small we might start topbar transition too early which makes scroll state to reset its
-    // scroll.value which is causing the flickering.
-    // That is why for smaller content, we increase animation threshold value from 40.do to 200.dp
-    val animationValue = remember(scrollState.maxValue) {
-        if (scrollState.maxValue >= 200) {
-            40.dp
-        } else {
-            200.dp
-        }
-    }
-
-    val animationRangePx = with(LocalDensity.current) {
-        animationValue.toPx()
-    }
-    val progress by remember(scrollState.value) {
-        if (scrollState.maxValue != Int.MAX_VALUE) {
-            derivedStateOf {
-                (scrollState.value / animationRangePx).coerceIn(0f, 1f)
+    TwoRowsTopAppBar(
+        modifier = modifier,
+        title = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = RadixTheme.dimensions.paddingXXLarge)
+                    .padding(end = RadixTheme.dimensions.paddingXLarge)
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            modifier = Modifier.weight(1.5f),
+                            text = stringResource(R.string.transactionReview_title),
+                            color = RadixTheme.colors.gray1,
+                            textAlign = TextAlign.Start,
+                            maxLines = 2,
+                        )
+                        if (state.proposingDApp?.iconUrl != null) {
+                            Thumbnail.DApp(
+                                modifier = Modifier
+                                    .size(64.dp),
+                                dapp = state.proposingDApp,
+                                shape = RadixTheme.shapes.roundedRectSmall
+                            )
+                        }
+                    }
+                    if (state.request?.isInternal != true) {
+                        val dAppName = state.proposingDApp?.name.orEmpty().ifEmpty {
+                            stringResource(id = R.string.dAppRequest_metadata_unknownName)
+                        }
+                        Text(
+                            text = stringResource(id = R.string.transactionReview_proposingDappSubtitle, dAppName),
+                            style = RadixTheme.typography.body2HighImportance,
+                            color = RadixTheme.colors.gray1,
+                            textAlign = TextAlign.Start,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
             }
-        } else {
-            mutableStateOf(0f)
-        }
-    }
-
-    MotionLayout(
-        modifier = modifier
-            .statusBarsPadding()
-            .fillMaxWidth(),
-        motionScene = MotionScene(
-            content = remember {
-                context.resources.openRawResource(
-                    R.raw.transaction_review_top_bar_scene
-                ).readBytes().decodeToString()
-            },
-        ),
-        transitionName = if (state.request?.isInternal == true) "noSubtitle" else "default",
-        progress = progress
-    ) {
-        CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 1f)) {
+        },
+        titleTextStyle = RadixTheme.typography.title,
+        smallTitle = {
             Text(
-                modifier = Modifier.layoutId("title"),
+                modifier = Modifier.fillMaxWidth(),
                 text = stringResource(R.string.transactionReview_title),
                 color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.Start,
-                maxLines = 2,
-                style = RadixTheme.typography.title.copy(fontSize = lerp(RadixTheme.typography.title.fontSize, 20.sp, progress))
+                textAlign = TextAlign.Center,
+                maxLines = 2
             )
-            if (state.request?.isInternal != true) {
-                val dAppName = state.proposingDApp?.name.orEmpty().ifEmpty {
-                    stringResource(
-                        id = R.string.dAppRequest_metadata_unknownName
-                    )
-                }
-                Text(
-                    modifier = Modifier.layoutId("subtitle"),
-                    text = stringResource(id = R.string.transactionReview_proposingDappSubtitle, dAppName),
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1,
-                    textAlign = TextAlign.Start,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-        state.proposingDApp?.iconUrl?.let {
-            Thumbnail.DApp(
-                modifier = Modifier
-                    .layoutId("dAppIcon")
-                    .size(64.dp),
-                dapp = state.proposingDApp,
-                shape = RadixTheme.shapes.roundedRectSmall
-            )
-        }
-        IconButton(
-            modifier = Modifier.layoutId("backButton"),
-            onClick = onBackClick
-        ) {
-            Icon(
-                painterResource(
-                    id = com.babylon.wallet.android.designsystem.R.drawable.ic_close
-                ),
-                tint = RadixTheme.colors.gray1,
-                contentDescription = "close"
-            )
-        }
-        if (state.isRawManifestToggleVisible) {
+        },
+        smallTitleTextStyle = RadixTheme.typography.secondaryHeader,
+        navigationIcon = {
             IconButton(
                 modifier = Modifier
-                    .layoutId("rawManifestButton")
-                    .background(
-                        color = RadixTheme.colors.gray4,
-                        shape = RadixTheme.shapes.roundedRectSmall
-                    ),
-                onClick = onRawManifestClick
+                    .padding(start = RadixTheme.dimensions.paddingDefault),
+                onClick = onBackClick
             ) {
                 Icon(
                     painterResource(
-                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
+                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_close
                     ),
-                    tint = Color.Unspecified,
-                    contentDescription = "manifest expand"
+                    tint = RadixTheme.colors.gray1,
+                    contentDescription = "close"
                 )
             }
-        }
-    }
+        },
+        actions = {
+            if (state.isRawManifestToggleVisible) {
+                IconButton(
+                    modifier = Modifier
+                        .padding(end = RadixTheme.dimensions.paddingXLarge)
+                        .background(
+                            color = RadixTheme.colors.gray4,
+                            shape = RadixTheme.shapes.roundedRectSmall
+                        )
+                        .size(width = 50.dp, height = 40.dp),
+                    onClick = onRawManifestClick
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            id = com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
+                        ),
+                        tint = Color.Unspecified,
+                        contentDescription = "manifest expand"
+                    )
+                }
+            }
+        },
+        colors = TopAppBarDefaults.largeTopAppBarColors(
+            containerColor = Color.Transparent,
+            scrolledContainerColor = Color.Transparent,
+        ),
+        titleBottomPadding = RadixTheme.dimensions.paddingSemiLarge,
+        windowInsets = TopAppBarDefaults.windowInsets,
+        maxHeight = 200.dp,
+        pinnedHeight = 82.dp,
+        scrollBehavior = scrollBehavior
+    )
 }
 
 @Preview(showBackground = true)
@@ -182,10 +173,10 @@ fun TransactionPreviewHeaderPreview() {
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,
-                previewType = PreviewType.None
+                previewType = PreviewType.None,
             ),
             onRawManifestClick = {},
-            scrollState = ScrollState(0)
+            scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         )
     }
 }

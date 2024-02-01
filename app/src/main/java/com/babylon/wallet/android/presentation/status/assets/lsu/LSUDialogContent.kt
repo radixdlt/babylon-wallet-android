@@ -145,7 +145,7 @@ fun LSUDialogContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall)
-                .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                 .radixPlaceholder(visible = lsu == null),
             label = stringResource(id = R.string.assetDetails_validator),
             address = lsu?.validator?.address.orEmpty()
@@ -161,7 +161,7 @@ fun LSUDialogContent(
             Text(
                 modifier = Modifier
                     .padding(start = RadixTheme.dimensions.paddingDefault)
-                    .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                    .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(visible = lsu == null),
                 text = lsu?.name().orEmpty(),
                 style = RadixTheme.typography.body1HighImportance,
@@ -179,7 +179,7 @@ fun LSUDialogContent(
             Text(
                 modifier = Modifier
                     .padding(start = RadixTheme.dimensions.paddingDefault)
-                    .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                    .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(
                         visible = lsu?.fungibleResource?.currentSupply == null
                     ),
@@ -243,7 +243,7 @@ private fun LSUResourceValue(
 
         Text(
             modifier = Modifier
-                .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                 .radixPlaceholder(visible = lsu == null),
             text = lsu?.stakeValue()?.displayableQuantity().orEmpty(),
             style = RadixTheme.typography.secondaryHeader,

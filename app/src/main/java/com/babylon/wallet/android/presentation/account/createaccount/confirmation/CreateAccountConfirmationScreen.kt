@@ -95,7 +95,7 @@ fun CreateAccountConfirmationContent(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
         Text(
-            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             text = stringResource(id = R.string.createEntity_nameNewEntity_explanation),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.body2Regular,

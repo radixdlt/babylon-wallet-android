@@ -334,7 +334,7 @@ private fun RenameAccountSheet(
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             onValueChanged = onNewAccountNameChange,
             value = accountNameChanged,
             singleLine = true,
@@ -344,7 +344,7 @@ private fun RenameAccountSheet(
                 null
             }
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
         RadixPrimaryButton(
             modifier = Modifier
                 .fillMaxWidth()

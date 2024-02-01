@@ -320,13 +320,13 @@ private fun EntitiesView(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge)
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge)
                         .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectMedium)
                 ) {
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingXLarge),
+                            .padding(RadixTheme.dimensions.paddingXXLarge),
                         text = stringResource(id = R.string.recoverSeedPhrase_hiddenAccountsOnly),
                         textAlign = TextAlign.Center,
                         style = RadixTheme.typography.body1HighImportance,

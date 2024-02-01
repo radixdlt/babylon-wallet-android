@@ -296,13 +296,13 @@ fun AssetsContent(
                             .background(
                                 brush = Brush.horizontalGradient(gradient)
                             )
-                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                             .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ActionableAddressView(
                             address = accountAddress,
-                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXLarge),
+                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
                             textStyle = RadixTheme.typography.body2HighImportance,
                             textColor = RadixTheme.colors.white
                         )

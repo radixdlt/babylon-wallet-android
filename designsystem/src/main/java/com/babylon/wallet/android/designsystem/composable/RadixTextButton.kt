@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.designsystem.composable
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -21,6 +22,7 @@ fun RadixTextButton(
     textStyle: TextStyle = RadixTheme.typography.body1Header,
     contentColor: Color = RadixTheme.colors.blue2,
     enabled: Boolean = true,
+    isWithoutPadding: Boolean = false,
     leadingIcon: (@Composable () -> Unit)? = null
 ) {
     TextButton(
@@ -31,7 +33,12 @@ fun RadixTextButton(
         colors = ButtonDefaults.textButtonColors(
             contentColor = contentColor,
             disabledContentColor = RadixTheme.colors.gray3,
-        )
+        ),
+        contentPadding = if (isWithoutPadding) {
+            PaddingValues(0.dp)
+        } else {
+            ButtonDefaults.TextButtonContentPadding
+        },
     ) {
         leadingIcon?.invoke()
         Text(text = text, style = textStyle)

@@ -464,8 +464,8 @@ private fun ScanQrPage(
             modifier = modifier
                 .fillMaxSize()
                 .padding(
-                    start = RadixTheme.dimensions.paddingXLarge,
-                    end = RadixTheme.dimensions.paddingXLarge,
+                    start = RadixTheme.dimensions.paddingXXLarge,
+                    end = RadixTheme.dimensions.paddingXXLarge,
                     bottom = RadixTheme.dimensions.paddingDefault
                 ),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSemiLarge),
@@ -739,7 +739,7 @@ private fun ImportCompletePage(
                     modifier = Modifier.padding(
                         start = RadixTheme.dimensions.paddingLarge,
                         end = RadixTheme.dimensions.paddingLarge,
-                        top = RadixTheme.dimensions.paddingXLarge
+                        top = RadixTheme.dimensions.paddingXXLarge
                     ),
                     text = stringResource(id = R.string.importOlympiaAccounts_completion_explanation),
                     textAlign = TextAlign.Center,

@@ -113,7 +113,7 @@ fun FungibleDialogContent(
                 Text(
                     modifier = Modifier
                         .padding(start = RadixTheme.dimensions.paddingDefault)
-                        .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                        .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                         .radixPlaceholder(visible = token?.resource?.currentSupply == null),
                     text = when {
                         token?.resource?.currentSupply != null -> when (token.resource.currentSupply) {

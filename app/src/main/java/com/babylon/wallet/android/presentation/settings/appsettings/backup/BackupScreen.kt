@@ -532,7 +532,7 @@ private fun EncryptSheet(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupTitle),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title
@@ -542,7 +542,7 @@ private fun EncryptSheet(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.profileBackup_manualBackups_encryptBackupSubtitle),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular
@@ -552,7 +552,7 @@ private fun EncryptSheet(
             RadixTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 onValueChanged = onPasswordTyped,
                 value = state.password,
                 hint = stringResource(id = R.string.encryptProfileBackup_enterPasswordField_placeholder),
@@ -585,7 +585,7 @@ private fun EncryptSheet(
             RadixTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                     .onFocusChanged {
                         isConfirmFocused = it.isFocused
                     },

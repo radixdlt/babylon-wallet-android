@@ -85,7 +85,7 @@ fun DepositGuaranteesContent(
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray2
                 )
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
 
 //                InfoLink( // TODO Uncomment when showing Infolinks
 //                    text = stringResource(R.string.transactionReview_guarantees_howDoGuaranteesWork),

@@ -79,7 +79,7 @@ fun FeesSheet(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXXLarge),
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXXXLarge),
                 text = title,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
@@ -100,7 +100,7 @@ fun FeesSheet(
             Text(
                 modifier = Modifier
                     .padding(
-                        horizontal = RadixTheme.dimensions.paddingXXXLarge,
+                        horizontal = RadixTheme.dimensions.paddingXXXXLarge,
                         vertical = RadixTheme.dimensions.paddingDefault
                     ),
                 text = body,
@@ -341,7 +341,7 @@ fun NetworkFeesDefaultView(
                 .background(RadixTheme.colors.gray5)
                 .padding(
                     vertical = RadixTheme.dimensions.paddingDefault,
-                    horizontal = RadixTheme.dimensions.paddingXLarge
+                    horizontal = RadixTheme.dimensions.paddingXXLarge
                 )
         ) {
             Row(
@@ -467,7 +467,7 @@ fun NetworkFeesAdvancedView(
                 .fillMaxWidth()
                 .padding(
                     vertical = RadixTheme.dimensions.paddingMedium,
-                    horizontal = RadixTheme.dimensions.paddingXLarge
+                    horizontal = RadixTheme.dimensions.paddingXXLarge
                 ),
             onValueChanged = onFeePaddingAmountChanged,
             value = transactionFees?.feePaddingAmountToDisplay.orEmpty(),
@@ -494,7 +494,7 @@ fun NetworkFeesAdvancedView(
                 .fillMaxWidth()
                 .padding(
                     vertical = RadixTheme.dimensions.paddingMedium,
-                    horizontal = RadixTheme.dimensions.paddingXLarge
+                    horizontal = RadixTheme.dimensions.paddingXXLarge
                 ),
             onValueChanged = onTipPercentageChanged,
             value = transactionFees?.tipPercentageToDisplay.orEmpty(),

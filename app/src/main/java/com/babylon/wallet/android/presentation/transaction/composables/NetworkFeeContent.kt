@@ -33,13 +33,10 @@ fun NetworkFeeContent(
     onCustomizeClick: () -> Unit
 ) {
     Column(
-        modifier = modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault)
+        modifier = modifier
     ) {
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        Row(
-            modifier = Modifier
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-        ) {
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        Row {
             Text(
                 text = stringResource(id = R.string.transactionReview_networkFee_heading).uppercase(),
                 style = RadixTheme.typography.body1Link,
@@ -76,11 +73,7 @@ fun NetworkFeeContent(
 
         if (fees.isNetworkCongested) {
             Text(
-                modifier = Modifier
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingSmall
-                    ),
+                modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
                 text = stringResource(id = R.string.transactionReview_networkFee_congestedText),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.orange1
@@ -92,10 +85,7 @@ fun NetworkFeeContent(
                 InfoLink(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(
-                            horizontal = RadixTheme.dimensions.paddingDefault,
-                            vertical = RadixTheme.dimensions.paddingSmall
-                        ),
+                        .padding(top = RadixTheme.dimensions.paddingSmall),
                     text = stringResource(id = R.string.customizeNetworkFees_warning_selectFeePayer),
                     contentColor = RadixTheme.colors.orange1,
                     iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
@@ -105,10 +95,7 @@ fun NetworkFeeContent(
             InfoLink(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(
-                        horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingSmall
-                    ),
+                    .padding(top = RadixTheme.dimensions.paddingSmall),
                 text = stringResource(id = R.string.customizeNetworkFees_warning_insufficientBalance),
                 contentColor = RadixTheme.colors.red1,
                 iconRes = com.babylon.wallet.android.designsystem.R.drawable.ic_warning_error
@@ -117,8 +104,9 @@ fun NetworkFeeContent(
 
         RadixTextButton(
             text = stringResource(id = R.string.transactionReview_networkFee_customizeButtonTitle),
+            enabled = !isNetworkFeeLoading,
+            isWithoutPadding = true,
             onClick = onCustomizeClick,
-            enabled = !isNetworkFeeLoading
         )
     }
 }

@@ -322,9 +322,9 @@ private fun ActiveAccountsPage(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                         .background(RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)
-                        .padding(RadixTheme.dimensions.paddingXLarge),
+                        .padding(RadixTheme.dimensions.paddingXXLarge),
                     text = "No new accounts found.",
                     color = RadixTheme.colors.gray2,
                     textAlign = TextAlign.Center,

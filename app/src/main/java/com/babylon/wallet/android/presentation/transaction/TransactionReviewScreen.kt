@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -19,6 +18,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -206,6 +207,22 @@ private fun TransactionPreviewContent(
         }
     }
 
+    if (state.showRawTransactionWarning) {
+        BasicPromptAlertDialog(
+            finish = { acknowledged ->
+                if (acknowledged) {
+                    onAcknowledgeRawTransactionWarning()
+                }
+            },
+            titleText = stringResource(id = R.string.transactionReview_nonConformingManifestWarning_title),
+            messageText = stringResource(id = R.string.transactionReview_nonConformingManifestWarning_message),
+            confirmText = stringResource(
+                id = R.string.common_continue
+            ),
+            dismissText = null
+        )
+    }
+
     BackHandler(onBack = onBackClick)
 
     SyncSheetState(
@@ -217,16 +234,17 @@ private fun TransactionPreviewContent(
             }
         }
     )
-    val scrollState = rememberScrollState()
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TransactionPreviewHeader(
                 onBackClick = onBackClick,
                 state = state,
                 onRawManifestClick = onRawManifestToggle,
-                scrollState = scrollState
+                scrollBehavior = scrollBehavior
             )
         },
         snackbarHost = {
@@ -237,70 +255,34 @@ private fun TransactionPreviewContent(
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
-        Box(modifier = Modifier.padding(padding)) {
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .background(RadixTheme.colors.gray5)
+        ) {
             if (state.isLoading) {
                 FullscreenCircularProgressContent()
             } else {
-                AnimatedVisibility(
-                    visible = state.isRawManifestVisible,
-                    enter = fadeIn(),
-                    exit = fadeOut()
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState())
                 ) {
-                    Column(
-                        modifier = Modifier.verticalScroll(scrollState)
+                    AnimatedVisibility(
+                        visible = state.isRawManifestVisible,
+                        enter = fadeIn(),
+                        exit = fadeOut()
                     ) {
-                        ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5, topEdge = true)
                         RawManifestView(
                             modifier = Modifier
-                                .background(color = RadixTheme.colors.gray5)
                                 .padding(RadixTheme.dimensions.paddingDefault),
                             manifest = state.rawManifest
                         )
-                        ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
-                        NetworkFeeContent(
-                            fees = state.transactionFees,
-                            noFeePayerSelected = state.noFeePayerSelected,
-                            insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
-                            isNetworkFeeLoading = state.isNetworkFeeLoading,
-                            onCustomizeClick = onCustomizeClick
-                        )
-                        SlideToSignButton(
-                            modifier = Modifier.padding(
-                                horizontal = RadixTheme.dimensions.paddingXLarge,
-                                vertical = RadixTheme.dimensions.paddingDefault
-                            ),
-                            enabled = state.isSubmitEnabled,
-                            isSubmitting = state.isSubmitting,
-                            onSwipeComplete = onApproveTransaction
-                        )
                     }
-                }
 
-                if (state.showRawTransactionWarning) {
-                    BasicPromptAlertDialog(
-                        finish = { acknowledged ->
-                            if (acknowledged) {
-                                onAcknowledgeRawTransactionWarning()
-                            }
-                        },
-                        titleText = stringResource(id = R.string.transactionReview_nonConformingManifestWarning_title),
-                        messageText = stringResource(id = R.string.transactionReview_nonConformingManifestWarning_message),
-                        confirmText = stringResource(
-                            id = R.string.common_continue
-                        ),
-                        dismissText = null
-                    )
-                }
-
-                AnimatedVisibility(
-                    visible = !state.isRawManifestVisible,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    Column(
-                        modifier = Modifier.verticalScroll(scrollState)
+                    AnimatedVisibility(
+                        visible = !state.isRawManifestVisible,
+                        enter = fadeIn(),
+                        exit = fadeOut()
                     ) {
-                        ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5, topEdge = true)
                         when (val preview = state.previewType) {
                             is PreviewType.None -> {}
                             is PreviewType.UnacceptableManifest -> {
@@ -310,7 +292,6 @@ private fun TransactionPreviewContent(
                             is PreviewType.NonConforming -> {}
                             is PreviewType.Transfer.GeneralTransfer -> {
                                 TransferTypeContent(
-                                    modifier = Modifier.background(RadixTheme.colors.gray5),
                                     state = state,
                                     preview = preview,
                                     onPromptForGuarantees = promptForGuarantees,
@@ -321,35 +302,26 @@ private fun TransactionPreviewContent(
                                     onFungibleResourceClick = onFungibleResourceClick,
                                     onNonFungibleResourceClick = onNonFungibleResourceClick
                                 )
-                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
-                                PresentingProofsContent(
-                                    badges = preview.badges.toPersistentList()
-                                )
                             }
 
                             is PreviewType.AccountsDepositSettings -> {
                                 AccountDepositSettingsTypeContent(
-                                    modifier = Modifier.background(RadixTheme.colors.gray5),
                                     preview = preview
                                 )
-                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                             }
 
                             is PreviewType.Transfer.Staking -> {
                                 StakeTypeContent(
-                                    modifier = Modifier.background(RadixTheme.colors.gray5),
                                     state = state,
                                     onFungibleResourceClick = onFungibleResourceClick,
                                     onNonFungibleResourceClick = onNonFungibleResourceClick,
                                     onPromptForGuarantees = promptForGuarantees,
                                     previewType = preview
                                 )
-                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                             }
 
                             is PreviewType.Transfer.Pool -> {
                                 PoolTypeContent(
-                                    modifier = Modifier.background(RadixTheme.colors.gray5),
                                     state = state,
                                     onFungibleResourceClick = onFungibleResourceClick,
                                     onPromptForGuarantees = promptForGuarantees,
@@ -359,10 +331,18 @@ private fun TransactionPreviewContent(
                                         onUnknownComponentsClick(pools.map { it.address }.toPersistentList())
                                     }
                                 )
-                                ReceiptEdge(modifier = Modifier.fillMaxWidth(), color = RadixTheme.colors.gray5)
                             }
                         }
+                    }
+
+                    Column(modifier = Modifier.background(RadixTheme.colors.defaultBackground)) {
+                        ReceiptEdge(color = RadixTheme.colors.gray5)
+                        if (state.previewType is PreviewType.Transfer.GeneralTransfer) {
+                            PresentingProofsContent(badges = state.previewType.badges.toPersistentList())
+                        }
+
                         NetworkFeeContent(
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                             fees = state.transactionFees,
                             noFeePayerSelected = state.noFeePayerSelected,
                             insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
@@ -370,10 +350,12 @@ private fun TransactionPreviewContent(
                             onCustomizeClick = onCustomizeClick
                         )
                         SlideToSignButton(
-                            modifier = Modifier.padding(
-                                horizontal = RadixTheme.dimensions.paddingXLarge,
-                                vertical = RadixTheme.dimensions.paddingDefault
-                            ),
+                            modifier = Modifier
+                                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                                .padding(
+                                    top = RadixTheme.dimensions.paddingDefault,
+                                    bottom = RadixTheme.dimensions.paddingXXLarge
+                                ),
                             enabled = state.isSubmitEnabled,
                             isSubmitting = state.isSubmitting,
                             onSwipeComplete = onApproveTransaction
@@ -381,6 +363,7 @@ private fun TransactionPreviewContent(
                     }
                 }
             }
+            ReceiptEdge(color = RadixTheme.colors.defaultBackground)
         }
     }
     if (state.isSheetVisible) {

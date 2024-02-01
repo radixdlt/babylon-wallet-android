@@ -281,7 +281,7 @@ fun AddAssetSheet(
                     }
                 )
             }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
             RadixPrimaryButton(
                 text = stringResource(R.string.accountSettings_specificAssetsDeposits_addAnAssetButton),
                 onClick = {

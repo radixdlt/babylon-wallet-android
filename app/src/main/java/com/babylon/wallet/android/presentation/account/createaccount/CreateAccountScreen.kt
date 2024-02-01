@@ -169,7 +169,7 @@ fun CreateAccountContent(
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
             RadixTextField(
                 modifier = Modifier.fillMaxWidth(),
                 onValueChanged = onAccountNameChange,

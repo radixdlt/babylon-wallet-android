@@ -85,7 +85,7 @@ private fun ChooseAccountsCompletionContent(
         Button(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 0.dp, vertical = RadixTheme.dimensions.paddingXLarge),
+                .padding(horizontal = 0.dp, vertical = RadixTheme.dimensions.paddingXXLarge),
             onClick = { onContinueClick() },
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = RadixButtonBackground,

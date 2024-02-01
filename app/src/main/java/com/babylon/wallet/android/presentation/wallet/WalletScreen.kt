@@ -215,7 +215,7 @@ private fun WalletAccountList(
                 text = stringResource(id = R.string.homePage_subtitle),
                 modifier = Modifier.padding(
                     vertical = RadixTheme.dimensions.paddingMedium,
-                    horizontal = RadixTheme.dimensions.paddingXLarge
+                    horizontal = RadixTheme.dimensions.paddingXXLarge
                 ),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
@@ -249,7 +249,7 @@ private fun WalletAccountList(
 
         item {
             if (state.isRadixBannerVisible) {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
                 RadixBanner(
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                     onDismiss = onRadixBannerDismiss
