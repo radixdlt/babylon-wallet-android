@@ -137,7 +137,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         ),
         poolContributionProcessor = PoolContributionProcessor(
-            getPoolDetailsUseCase = getPoolDetailsUseCase,
             getProfileUseCase = getProfileUseCase,
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         ),
@@ -232,7 +231,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             packageAddresses = listOf(),
             metadata = mapOf()
         ),
-        presentedProofs = listOf()
+        presentedProofs = listOf(),
+        newlyCreatedNonFungibles = listOf()
     )
 
     @Before
