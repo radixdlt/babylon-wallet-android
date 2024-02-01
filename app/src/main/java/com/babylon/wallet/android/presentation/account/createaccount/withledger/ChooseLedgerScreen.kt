@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -25,6 +27,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.AddLedgerDeviceViewModel
 import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.ShowLinkConnectorPromptState
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.AddLinkConnectorViewModel
@@ -35,6 +38,8 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.ChooseLedgerDeviceSection
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -66,11 +71,12 @@ fun ChooseLedgerScreen(
             }
         }
     }
+
     val promptState = state.showLinkConnectorPromptState
     if (promptState is ShowLinkConnectorPromptState.Show) {
         BasicPromptAlertDialog(
             finish = {
-                viewModel.dismissConnectorPrompt(it, promptState.source)
+                viewModel.dismissConnectorPrompt(it)
             },
             title = {
                 Text(
@@ -89,7 +95,7 @@ fun ChooseLedgerScreen(
             confirmText = stringResource(id = R.string.ledgerHardwareDevices_linkConnectorAlert_continue)
         )
     }
-    when (val showContent = state.showContent) {
+    when (state.showContent) {
         ChooseLedgerUiState.ShowContent.ChooseLedger -> {
             ChooseLedgerDeviceContent(
                 modifier = modifier,
@@ -102,7 +108,9 @@ fun ChooseLedgerScreen(
                         context.biometricAuthenticateSuspend()
                     })
                 },
-                linkingToConnector = state.isAddingLinkConnector
+                isAddingNewLinkConnectorInProgress = addLinkConnectorState.isAddingNewLinkConnectorInProgress,
+                uiMessage = state.uiMessage,
+                onMessageShown = viewModel::onMessageShown
             )
         }
 
@@ -110,7 +118,7 @@ fun ChooseLedgerScreen(
             LinkConnectorScreen(
                 modifier = Modifier.fillMaxSize(),
                 onLinkConnectorClick = {
-                    viewModel.onLinkConnectorClick(showContent.addDeviceAfterLinking)
+                    viewModel.onLinkConnectorClick()
                 },
                 onCloseClick = viewModel::onCloseClick
             )
@@ -126,7 +134,7 @@ fun ChooseLedgerScreen(
                 isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
                 onNewConnectorContinueClick = {
                     addLinkConnectorViewModel.onContinueClick()
-                    viewModel.onNewLinkConnectorAdded(showContent.addDeviceAfterLinking)
+                    viewModel.onNewLinkedConnectorAdded()
                 },
                 onNewConnectorCloseClick = {
                     addLinkConnectorViewModel.onCloseClick()
@@ -151,17 +159,12 @@ fun ChooseLedgerScreen(
                     }
                 },
                 backIconType = BackIconType.Back,
-                onClose = {
-                    addLedgerDeviceViewModel.initState()
-                    viewModel.onCloseClick()
-                },
+                onClose = viewModel::onCloseClick,
                 waitingForLedgerResponse = false,
-                onBackClick = {
-                    addLedgerDeviceViewModel.initState()
-                    viewModel.onCloseClick()
-                },
+                onBackClick = viewModel::onCloseClick,
                 onMessageShown = addLedgerDeviceViewModel::onMessageShown,
-                isLinkedConnectorEstablished = addLedgerDeviceState.isAnyLinkedConnectorConnected && state.isAddingLinkConnector.not()
+                isAddingLedgerDeviceInProgress = addLedgerDeviceState.isAddingLedgerDeviceInProgress,
+                isAddingNewLinkConnectorInProgress = addLinkConnectorState.isAddingNewLinkConnectorInProgress
             )
         }
     }
@@ -175,9 +178,18 @@ private fun ChooseLedgerDeviceContent(
     onUseLedgerContinueClick: () -> Unit,
     onAddLedgerDeviceClick: () -> Unit,
     onBackClick: () -> Unit,
-    linkingToConnector: Boolean
+    isAddingNewLinkConnectorInProgress: Boolean,
+    uiMessage: UiMessage? = null,
+    onMessageShown: () -> Unit
 ) {
     BackHandler { onBackClick() }
+
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
 
     Scaffold(
         modifier = modifier,
@@ -200,8 +212,14 @@ private fun ChooseLedgerDeviceContent(
                         vertical = RadixTheme.dimensions.paddingDefault
                     )
                     .navigationBarsPadding(),
-                enabled = ledgerDevices.any { it.selected } && linkingToConnector.not(),
-                isLoading = linkingToConnector
+                enabled = ledgerDevices.any { it.selected },
+                isLoading = isAddingNewLinkConnectorInProgress
+            )
+        },
+        snackbarHost = {
+            RadixSnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
         },
         containerColor = RadixTheme.colors.defaultBackground
@@ -236,7 +254,9 @@ fun ChooseLedgerScreenPreview() {
             onUseLedgerContinueClick = {},
             onAddLedgerDeviceClick = {},
             onBackClick = {},
-            linkingToConnector = false
+            isAddingNewLinkConnectorInProgress = false,
+            uiMessage = null,
+            onMessageShown = {}
         )
     }
 }

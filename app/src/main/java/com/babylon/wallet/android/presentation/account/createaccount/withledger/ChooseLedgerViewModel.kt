@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.ShowLinkConnectorPromptState
 import com.babylon.wallet.android.utils.AppEvent
@@ -20,9 +21,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -91,13 +90,11 @@ class ChooseLedgerViewModel @Inject constructor(
         }
     }
 
-    fun dismissConnectorPrompt(linkConnector: Boolean, source: ShowLinkConnectorPromptState.Source) {
+    fun dismissConnectorPrompt(linkConnector: Boolean) {
         _state.update {
             it.copy(
                 showContent = if (linkConnector) {
-                    ChooseLedgerUiState.ShowContent.LinkNewConnector(
-                        source == ShowLinkConnectorPromptState.Source.AddLedgerDevice
-                    )
+                    ChooseLedgerUiState.ShowContent.LinkNewConnector
                 } else {
                     it.showContent
                 },
@@ -116,7 +113,10 @@ class ChooseLedgerViewModel @Inject constructor(
                 // check if there is not linked connector and show link new connector screen
                 if (hasAtLeastOneLinkedConnector.not()) {
                     _state.update {
-                        it.copy(showContent = ChooseLedgerUiState.ShowContent.LinkNewConnector(false))
+                        it.copy(
+                            shouldShowChooseLedgerContentAfterNewLinkedConnector = true,
+                            showContent = ChooseLedgerUiState.ShowContent.LinkNewConnector
+                        )
                     }
                     return@launch
                 }
@@ -138,12 +138,11 @@ class ChooseLedgerViewModel @Inject constructor(
                             networkIdToCreateAccountOn(),
                             ledgerFactorSource.data.id
                         )
-                        val result = ledgerMessenger.sendDerivePublicKeyRequest(
+                        ledgerMessenger.sendDerivePublicKeyRequest(
                             interactionId = UUIDGenerator.uuid().toString(),
                             keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
                             ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource.data)
-                        )
-                        result.onSuccess { response ->
+                        ).onSuccess { response ->
                             appEventBus.sendEvent(
                                 AppEvent.DerivedAccountPublicKeyWithLedger(
                                     factorSourceID = ledgerFactorSource.data.id,
@@ -152,6 +151,12 @@ class ChooseLedgerViewModel @Inject constructor(
                                 )
                             )
                             sendEvent(ChooseLedgerEvent.DerivedPublicKeyForAccount)
+                        }.onFailure { error ->
+                            _state.update { state ->
+                                state.copy(
+                                    uiMessage = UiMessage.ErrorMessage(error)
+                                )
+                            }
                         }
                     }
 
@@ -169,14 +174,6 @@ class ChooseLedgerViewModel @Inject constructor(
         }
     }
 
-    private suspend fun networkIdToCreateAccountOn(): Int {
-        return if (args.networkId == Constants.USE_CURRENT_NETWORK) {
-            getCurrentGatewayUseCase.invoke().network.id
-        } else {
-            args.networkId
-        }
-    }
-
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
             _state.update { uiState ->
@@ -184,15 +181,30 @@ class ChooseLedgerViewModel @Inject constructor(
                 if (hasAtLeastOneLinkedConnector) {
                     uiState.copy(showContent = ChooseLedgerUiState.ShowContent.AddLedger)
                 } else {
-                    uiState.copy(showContent = ChooseLedgerUiState.ShowContent.LinkNewConnector())
+                    uiState.copy(
+                        shouldShowChooseLedgerContentAfterNewLinkedConnector = false,
+                        showContent = ChooseLedgerUiState.ShowContent.LinkNewConnector
+                    )
                 }
             }
         }
     }
 
-    private fun showAddLedgerDeviceContent() {
+    fun onLinkConnectorClick() {
         _state.update {
-            it.copy(showContent = ChooseLedgerUiState.ShowContent.AddLedger)
+            it.copy(showContent = ChooseLedgerUiState.ShowContent.AddLinkConnector)
+        }
+    }
+
+    fun onNewLinkedConnectorAdded() {
+        if (_state.value.shouldShowChooseLedgerContentAfterNewLinkedConnector) {
+            _state.update {
+                it.copy(showContent = ChooseLedgerUiState.ShowContent.ChooseLedger)
+            }
+        } else {
+            _state.update {
+                it.copy(showContent = ChooseLedgerUiState.ShowContent.AddLedger)
+            }
         }
     }
 
@@ -202,23 +214,15 @@ class ChooseLedgerViewModel @Inject constructor(
         }
     }
 
-    fun onNewLinkConnectorAdded(addDeviceAfterLinking: Boolean) {
-        _state.update { it.copy(isAddingLinkConnector = true) }
-        if (addDeviceAfterLinking) {
-            showAddLedgerDeviceContent()
-        } else {
-            onCloseClick()
-        }
-        viewModelScope.launch {
-            ledgerMessenger.isAnyLinkedConnectorConnected.filter { it }.firstOrNull()?.let {
-                _state.update { state -> state.copy(isAddingLinkConnector = false) }
-            }
-        }
+    fun onMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
     }
 
-    fun onLinkConnectorClick(addDeviceAfterLinking: Boolean) {
-        _state.update {
-            it.copy(showContent = ChooseLedgerUiState.ShowContent.AddLinkConnector(addDeviceAfterLinking))
+    private suspend fun networkIdToCreateAccountOn(): Int {
+        return if (args.networkId == Constants.USE_CURRENT_NETWORK) {
+            getCurrentGatewayUseCase.invoke().network.id
+        } else {
+            args.networkId
         }
     }
 }
@@ -228,16 +232,16 @@ data class ChooseLedgerUiState(
     val showContent: ShowContent = ShowContent.ChooseLedger,
     val ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>> = persistentListOf(),
     val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null,
-    val isLinkConnectionEstablished: Boolean = false,
     val showLinkConnectorPromptState: ShowLinkConnectorPromptState = ShowLinkConnectorPromptState.None,
-    val isAddingLinkConnector: Boolean = false
+    val shouldShowChooseLedgerContentAfterNewLinkedConnector: Boolean = false,
+    val uiMessage: UiMessage? = null
 ) : UiState {
 
     sealed interface ShowContent {
         data object ChooseLedger : ShowContent
         data object AddLedger : ShowContent
-        data class LinkNewConnector(val addDeviceAfterLinking: Boolean = true) : ShowContent
-        data class AddLinkConnector(val addDeviceAfterLinking: Boolean = true) : ShowContent
+        data object LinkNewConnector : ShowContent
+        data object AddLinkConnector : ShowContent
     }
 }
 

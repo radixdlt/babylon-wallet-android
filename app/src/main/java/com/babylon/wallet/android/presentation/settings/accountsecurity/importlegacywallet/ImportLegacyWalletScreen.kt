@@ -419,7 +419,7 @@ private fun ImportLegacyWalletContent(
                 onClose = onCloseSettings,
                 waitingForLedgerResponse = waitingForLedgerResponse,
                 onBackClick = onCloseSettings,
-                isLinkedConnectorEstablished = true
+                isAddingLedgerDeviceInProgress = false
 
             )
         }
