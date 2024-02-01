@@ -28,6 +28,7 @@ import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.utils.isValidUrl
+import com.babylon.wallet.android.utils.isValidUrlWithSpacesInLastPathSegment
 import com.babylon.wallet.android.utils.toAddressOrNull
 
 private enum class SborTypeName(val code: String) {
@@ -56,7 +57,7 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
                 // when the key is in the list of explicitly handled NFT data
                 MetadataType.String
             } else {
-                if (sborValue.value.isValidUrl()) {
+                if (sborValue.value.isValidUrl() || sborValue.value.isValidUrlWithSpacesInLastPathSegment()) {
                     MetadataType.Url
                 } else if (sborValue.value.toAddressOrNull() != null) {
                     MetadataType.Address
