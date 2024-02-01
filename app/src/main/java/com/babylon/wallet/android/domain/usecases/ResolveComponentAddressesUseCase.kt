@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.DApp
 import rdx.works.core.then
 import javax.inject.Inject
@@ -23,18 +22,17 @@ class ResolveComponentAddressesUseCase @Inject constructor(
         definitionAddresses = listOf(componentAddress),
         isRefreshing = true
     ).then { components ->
-        val dAppDefinitionAddress = components.firstOrNull()?.definitionAddresses?.firstOrNull()
+        val dAppDefinitionAddress = components.firstOrNull()?.definitionAddress
         if (dAppDefinitionAddress != null) {
             stateRepository.getDAppsDetails(
                 definitionAddresses = listOf(dAppDefinitionAddress),
                 isRefreshing = true
             ).mapCatching { dApps ->
                 val dApp = dApps.first()
-
-                componentAddress to dApp.takeIf { it.claimedEntities.contains(componentAddress) }
+                componentAddress to dApp
             }
         } else {
-            Result.failure(RadixWalletException.DappVerificationException.WrongAccountType)
+            Result.success(componentAddress to null)
         }
     }
 }
