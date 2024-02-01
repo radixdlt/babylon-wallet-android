@@ -36,6 +36,7 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlin
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import kotlinx.collections.immutable.toImmutableMap
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
@@ -98,7 +99,7 @@ fun PoolUnitDialogContent(
             val resourcesWithAmount = remember(poolUnit, args) {
                 poolUnit.pool?.resources?.associateWith {
                     args.fungibleAmountOf(it.resourceAddress) ?: poolUnit.resourceRedemptionValue(it)
-                }.orEmpty()
+                }.orEmpty().toImmutableMap()
             }
             PoolResourcesValues(
                 modifier = Modifier

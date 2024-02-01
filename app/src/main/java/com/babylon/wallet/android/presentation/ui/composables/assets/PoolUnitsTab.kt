@@ -28,6 +28,8 @@ import com.babylon.wallet.android.presentation.account.composable.EmptyResources
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.toImmutableMap
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
@@ -136,7 +138,7 @@ private fun PoolUnitItem(
         val resourcesWithAmounts = remember(poolUnit) {
             poolUnit.pool?.resources?.associateWith {
                 poolUnit.resourceRedemptionValue(it)
-            }.orEmpty()
+            }.orEmpty().toImmutableMap()
         }
         PoolResourcesValues(
             modifier = Modifier
@@ -150,7 +152,7 @@ private fun PoolUnitItem(
 @Composable
 fun PoolResourcesValues(
     modifier: Modifier = Modifier,
-    resources: Map<Resource.FungibleResource, BigDecimal?>,
+    resources: ImmutableMap<Resource.FungibleResource, BigDecimal?>,
     isCompact: Boolean = true
 ) {
     Column(modifier = modifier.assetOutlineBorder()) {
