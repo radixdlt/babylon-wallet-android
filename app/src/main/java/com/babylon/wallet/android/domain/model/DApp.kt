@@ -7,7 +7,6 @@ import com.babylon.wallet.android.domain.model.resources.metadata.accountType
 import com.babylon.wallet.android.domain.model.resources.metadata.claimedEntities
 import com.babylon.wallet.android.domain.model.resources.metadata.claimedWebsites
 import com.babylon.wallet.android.domain.model.resources.metadata.dAppDefinition
-import com.babylon.wallet.android.domain.model.resources.metadata.dAppDefinitions
 import com.babylon.wallet.android.domain.model.resources.metadata.description
 import com.babylon.wallet.android.domain.model.resources.metadata.iconUrl
 import com.babylon.wallet.android.domain.model.resources.metadata.name
@@ -29,10 +28,7 @@ data class DApp(
     val isDappDefinition: Boolean
         get() = metadata.accountType() == AccountType.DAPP_DEFINITION
 
-    val definitionAddresses: List<String>
-        get() = metadata.dAppDefinitions()
-
-    val dAppDefinitionAddress: String?
+    val definitionAddress: String?
         get() = metadata.dAppDefinition()
 
     val claimedWebsites: List<String>

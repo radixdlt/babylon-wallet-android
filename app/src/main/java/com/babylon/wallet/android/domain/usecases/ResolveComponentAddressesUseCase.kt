@@ -22,7 +22,7 @@ class ResolveComponentAddressesUseCase @Inject constructor(
         definitionAddresses = listOf(componentAddress),
         isRefreshing = true
     ).then { components ->
-        val dAppDefinitionAddress = components.firstOrNull()?.dAppDefinitionAddress
+        val dAppDefinitionAddress = components.firstOrNull()?.definitionAddress
         if (dAppDefinitionAddress != null) {
             stateRepository.getDAppsDetails(
                 definitionAddresses = listOf(dAppDefinitionAddress),
