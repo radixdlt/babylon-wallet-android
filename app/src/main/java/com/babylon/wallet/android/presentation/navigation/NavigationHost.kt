@@ -12,7 +12,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
@@ -76,6 +75,7 @@ import kotlinx.coroutines.flow.StateFlow
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.backup.BackupType
 
+@Suppress("CyclomaticComplexMethod")
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationHost(
