@@ -11,6 +11,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
@@ -216,9 +217,12 @@ fun NavigationHost(
                     )
                 },
                 onFungibleResourceClick = { resource, account ->
+                    val resourceWithAmount = resource.ownedAmount?.let {
+                        mapOf(resource.resourceAddress to it)
+                    }.orEmpty()
                     navController.fungibleAssetDialog(
                         resourceAddress = resource.resourceAddress,
-                        amount = resource.ownedAmount,
+                        amounts = resourceWithAmount,
                         underAccountAddress = account.address
                     )
                 },
@@ -312,9 +316,16 @@ fun NavigationHost(
                 navController.popBackStack()
             },
             onTransferableFungibleClick = { asset ->
+                val resourcesWithAmount = when (asset) {
+                    is TransferableAsset.Fungible.LSUAsset -> mapOf(asset.resource.resourceAddress to asset.amount)
+                    is TransferableAsset.Fungible.PoolUnitAsset -> mutableMapOf(asset.resource.resourceAddress to asset.amount).apply {
+                        putAll(asset.contributionPerResource)
+                    }
+                    is TransferableAsset.Fungible.Token -> mapOf(asset.resource.resourceAddress to asset.amount)
+                }
                 navController.fungibleAssetDialog(
                     resourceAddress = asset.resource.resourceAddress,
-                    amount = asset.amount,
+                    amounts = resourcesWithAmount,
                     isNewlyCreated = asset.isNewlyCreated
                 )
             },

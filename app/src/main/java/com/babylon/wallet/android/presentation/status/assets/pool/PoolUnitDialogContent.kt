@@ -17,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -26,6 +27,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
+import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -40,9 +42,11 @@ import java.math.BigDecimal
 @Composable
 fun PoolUnitDialogContent(
     modifier: Modifier = Modifier,
-    resourceAddress: String,
+    args: AssetDialogArgs.Fungible,
     poolUnit: PoolUnit?
 ) {
+    val resourceAddress = args.resourceAddress
+    val amount = args.fungibleAmountOf(resourceAddress) ?: poolUnit?.stake?.ownedAmount
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -74,7 +78,8 @@ fun PoolUnitDialogContent(
             modifier = Modifier
                 .fillMaxWidth(fraction = if (poolUnit?.stake == null) 0.5f else 1f)
                 .radixPlaceholder(visible = poolUnit?.stake == null),
-            fungibleResource = poolUnit?.stake
+            amount = amount,
+            symbol = poolUnit?.resource?.symbol.orEmpty()
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
@@ -90,11 +95,16 @@ fun PoolUnitDialogContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
         if (poolUnit != null) {
+            val resourcesWithAmount = remember(poolUnit, args) {
+                poolUnit.pool?.resources?.associateWith {
+                    args.fungibleAmountOf(it.resourceAddress) ?: poolUnit.resourceRedemptionValue(it)
+                }.orEmpty()
+            }
             PoolResourcesValues(
-                poolUnit = poolUnit,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                resources = resourcesWithAmount,
                 isCompact = false
             )
         } else {

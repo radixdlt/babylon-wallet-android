@@ -23,11 +23,13 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
+import java.math.BigDecimal
 
 fun LazyListScope.poolUnitsTab(
     assets: Assets,
@@ -131,11 +133,16 @@ private fun PoolUnitItem(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
+        val resourcesWithAmounts = remember(poolUnit) {
+            poolUnit.pool?.resources?.associateWith {
+                poolUnit.resourceRedemptionValue(it)
+            }.orEmpty()
+        }
         PoolResourcesValues(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                 .padding(bottom = RadixTheme.dimensions.paddingLarge),
-            poolUnit = poolUnit
+            resources = resourcesWithAmounts
         )
     }
 }
@@ -143,12 +150,12 @@ private fun PoolUnitItem(
 @Composable
 fun PoolResourcesValues(
     modifier: Modifier = Modifier,
-    poolUnit: PoolUnit,
+    resources: Map<Resource.FungibleResource, BigDecimal?>,
     isCompact: Boolean = true
 ) {
     Column(modifier = modifier.assetOutlineBorder()) {
-        val itemsSize = poolUnit.pool?.resources?.size ?: 0
-        poolUnit.pool?.resources?.forEachIndexed { index, poolResource ->
+        val itemsSize = resources.size
+        resources.entries.forEachIndexed { index, resourceWithAmount ->
             Row(
                 modifier = Modifier.padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
@@ -159,17 +166,17 @@ fun PoolResourcesValues(
             ) {
                 Thumbnail.Fungible(
                     modifier = Modifier.size(if (isCompact) 24.dp else 44.dp),
-                    token = poolResource
+                    token = resourceWithAmount.key
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = poolResource.displayTitle,
+                    text = resourceWithAmount.key.displayTitle,
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
                 )
                 Text(
-                    text = poolUnit.resourceRedemptionValue(poolResource)?.displayableQuantity().orEmpty(),
+                    text = resourceWithAmount.value?.displayableQuantity().orEmpty(),
                     style = if (isCompact) RadixTheme.typography.body1HighImportance else RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1

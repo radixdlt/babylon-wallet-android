@@ -29,6 +29,7 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
+import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -43,9 +44,11 @@ import java.math.BigDecimal
 @Composable
 fun LSUDialogContent(
     modifier: Modifier = Modifier,
-    resourceAddress: String,
-    lsu: LiquidStakeUnit?
+    lsu: LiquidStakeUnit?,
+    args: AssetDialogArgs.Fungible
 ) {
+    val resourceAddress = args.resourceAddress
+    val amount = args.fungibleAmountOf(resourceAddress) ?: lsu?.stakeValue()
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -77,7 +80,8 @@ fun LSUDialogContent(
             modifier = Modifier
                 .fillMaxWidth(fraction = if (lsu == null) 0.5f else 1f)
                 .radixPlaceholder(visible = lsu == null),
-            fungibleResource = lsu?.fungibleResource
+            amount = amount,
+            symbol = lsu?.resource?.symbol.orEmpty()
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
