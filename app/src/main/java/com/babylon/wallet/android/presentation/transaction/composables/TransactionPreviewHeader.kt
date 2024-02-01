@@ -3,8 +3,10 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -50,21 +52,31 @@ fun TransactionPreviewHeader(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .padding(bottom = RadixTheme.dimensions.paddingDefault),
+                    .padding(start = RadixTheme.dimensions.paddingXXLarge)
+                    .padding(end = RadixTheme.dimensions.paddingXLarge)
             ) {
-                Column(
-                    modifier = Modifier
-                        .padding(end = 64.dp)
-                        .align(Alignment.CenterStart),
-                ) {
-                    Text(
-                        text = stringResource(R.string.transactionReview_title),
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.Start,
-                        maxLines = 2,
-                    )
-
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            modifier = Modifier.weight(1.5f),
+                            text = stringResource(R.string.transactionReview_title),
+                            color = RadixTheme.colors.gray1,
+                            textAlign = TextAlign.Start,
+                            maxLines = 2,
+                        )
+                        if (state.proposingDApp?.iconUrl != null) {
+                            Thumbnail.DApp(
+                                modifier = Modifier
+                                    .size(64.dp),
+                                dapp = state.proposingDApp,
+                                shape = RadixTheme.shapes.roundedRectSmall
+                            )
+                        }
+                    }
                     if (state.request?.isInternal != true) {
                         val dAppName = state.proposingDApp?.name.orEmpty().ifEmpty {
                             stringResource(id = R.string.dAppRequest_metadata_unknownName)
@@ -78,16 +90,6 @@ fun TransactionPreviewHeader(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-                }
-
-                if (state.proposingDApp?.iconUrl != null) {
-                    Thumbnail.DApp(
-                        modifier = Modifier
-                            .size(64.dp)
-                            .align(Alignment.CenterEnd),
-                        dapp = state.proposingDApp,
-                        shape = RadixTheme.shapes.roundedRectSmall
-                    )
                 }
             }
         },
@@ -104,6 +106,8 @@ fun TransactionPreviewHeader(
         smallTitleTextStyle = RadixTheme.typography.secondaryHeader,
         navigationIcon = {
             IconButton(
+                modifier = Modifier
+                    .padding(start = RadixTheme.dimensions.paddingDefault),
                 onClick = onBackClick
             ) {
                 Icon(
@@ -116,32 +120,35 @@ fun TransactionPreviewHeader(
             }
         },
         actions = {
-            IconButton(
-                modifier = Modifier
-                    .padding(end = RadixTheme.dimensions.paddingDefault)
-                    .background(
-                        color = RadixTheme.colors.gray4,
-                        shape = RadixTheme.shapes.roundedRectSmall
-                    ),
-                onClick = onRawManifestClick
-            ) {
-                Icon(
-                    painter = painterResource(
-                        id = com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
-                    ),
-                    tint = Color.Unspecified,
-                    contentDescription = "manifest expand"
-                )
+            if (state.isRawManifestToggleVisible) {
+                IconButton(
+                    modifier = Modifier
+                        .padding(end = RadixTheme.dimensions.paddingXLarge)
+                        .background(
+                            color = RadixTheme.colors.gray4,
+                            shape = RadixTheme.shapes.roundedRectSmall
+                        )
+                        .size(width = 50.dp, height = 40.dp),
+                    onClick = onRawManifestClick
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            id = com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
+                        ),
+                        tint = Color.Unspecified,
+                        contentDescription = "manifest expand"
+                    )
+                }
             }
         },
         colors = TopAppBarDefaults.largeTopAppBarColors(
             containerColor = Color.Transparent,
             scrolledContainerColor = Color.Transparent,
         ),
-        titleBottomPadding = 0.dp,
+        titleBottomPadding = RadixTheme.dimensions.paddingSemiLarge,
         windowInsets = TopAppBarDefaults.windowInsets,
         maxHeight = 200.dp,
-        pinnedHeight = 72.dp,
+        pinnedHeight = 82.dp,
         scrollBehavior = scrollBehavior
     )
 }
@@ -166,7 +173,7 @@ fun TransactionPreviewHeaderPreview() {
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,
-                previewType = PreviewType.None
+                previewType = PreviewType.None,
             ),
             onRawManifestClick = {},
             scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
