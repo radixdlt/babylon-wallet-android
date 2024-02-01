@@ -3,6 +3,7 @@ package com.babylon.wallet.android
 import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -53,7 +54,7 @@ fun WalletApp(
     val navController = rememberNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
     NavigationHost(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         startDestination = MAIN_ROUTE,
         navController = navController,
         mainUiState = mainViewModel.state,

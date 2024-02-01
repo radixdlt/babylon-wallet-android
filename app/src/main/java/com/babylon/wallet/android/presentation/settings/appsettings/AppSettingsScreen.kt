@@ -38,7 +38,7 @@ fun AppSettingsScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     AppSettingsContent(
-        modifier = modifier,
+        modifier = modifier.fillMaxSize(),
         appSettings = state.settings,
         onAppSettingItemClick = onAppSettingItemClick,
         onDeveloperModeToggled = viewModel::onDeveloperModeToggled,
