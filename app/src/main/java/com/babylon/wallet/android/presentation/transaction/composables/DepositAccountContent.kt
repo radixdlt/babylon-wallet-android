@@ -32,6 +32,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.hasCustomizableGuarantees
@@ -45,8 +46,8 @@ fun DepositAccountContent(
     modifier: Modifier = Modifier,
     to: ImmutableList<AccountWithTransferableResources>,
     promptForGuarantees: () -> Unit,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
+    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
 ) {
     if (to.isNotEmpty()) {
         Column(modifier = modifier) {
@@ -89,12 +90,8 @@ fun DepositAccountContent(
                     val lastItem = index == to.size - 1
                     TransactionAccountCard(
                         account = accountEntry,
-                        onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
-                            onFungibleResourceClick(fungibleResource, isNewlyCreated)
-                        },
-                        onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
-                            onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
-                        }
+                        onTransferableFungibleClick = onTransferableFungibleClick,
+                        onTransferableNonFungibleClick = onNonTransferableFungibleClick
                     )
 
                     if (!lastItem) {
@@ -148,8 +145,8 @@ fun DepositAccountPreview() {
         DepositAccountContent(
             to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned).toPersistentList(),
             promptForGuarantees = {},
-            onFungibleResourceClick = { _, _ -> },
-            onNonFungibleResourceClick = { _, _, _ -> }
+            onTransferableFungibleClick = { },
+            onNonTransferableFungibleClick = { _, _ -> }
         )
     }
 }

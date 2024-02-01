@@ -10,6 +10,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -20,8 +21,8 @@ import kotlinx.collections.immutable.toPersistentList
 fun StakeTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
     previewType: PreviewType.Transfer.Staking,
     onPromptForGuarantees: () -> Unit
 ) {
@@ -38,8 +39,8 @@ fun StakeTypeContent(
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),
         state = state,
-        onFungibleResourceClick = onFungibleResourceClick,
-        onNonFungibleResourceClick = onNonFungibleResourceClick,
+        onTransferableFungibleClick = onTransferableFungibleClick,
+        onNonTransferableFungibleClick = onNonTransferableFungibleClick,
         previewType = previewType,
         onPromptForGuarantees = onPromptForGuarantees,
         middleSection = {
@@ -63,8 +64,8 @@ fun StakeUnstakeTypePreview() {
                 isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
-            onFungibleResourceClick = { _, _ -> },
-            onNonFungibleResourceClick = { _, _, _ -> },
+            onTransferableFungibleClick = { _ -> },
+            onNonTransferableFungibleClick = { _, _ -> },
             previewType = PreviewType.Transfer.Staking(
                 to = persistentListOf(),
                 from = listOf(SampleDataProvider().accountWithTransferableResourceLsu).toPersistentList(),

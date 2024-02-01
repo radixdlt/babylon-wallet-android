@@ -311,18 +311,18 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            onFungibleClick = { resource, isNewlyCreated ->
+            onTransferableFungibleClick = { asset ->
                 navController.fungibleAssetDialog(
-                    resourceAddress = resource.resourceAddress,
-                    amount = resource.ownedAmount,
-                    isNewlyCreated = isNewlyCreated
+                    resourceAddress = asset.resource.resourceAddress,
+                    amount = asset.amount,
+                    isNewlyCreated = asset.isNewlyCreated
                 )
             },
-            onNonFungibleClick = { resource, item, isNewlyCreated ->
+            onTransferableNonFungibleClick = { asset, item ->
                 navController.nftAssetDialog(
-                    resourceAddress = resource.resourceAddress,
+                    resourceAddress = asset.resource.resourceAddress,
                     localId = item.localId.code,
-                    isNewlyCreated = isNewlyCreated
+                    isNewlyCreated = asset.isNewlyCreated
                 )
             },
             onDAppClick = { dApp ->

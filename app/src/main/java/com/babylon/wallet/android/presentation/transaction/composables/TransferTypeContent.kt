@@ -9,6 +9,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -22,14 +24,14 @@ fun TransferTypeContent(
     onPromptForGuarantees: () -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownComponentsClick: (List<String>) -> Unit,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
+    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
 ) {
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),
         state = state,
-        onFungibleResourceClick = onFungibleResourceClick,
-        onNonFungibleResourceClick = onNonFungibleResourceClick,
+        onTransferableFungibleClick = onTransferableFungibleClick,
+        onNonTransferableFungibleClick = onNonTransferableFungibleClick,
         previewType = preview,
         onPromptForGuarantees = onPromptForGuarantees,
         middleSection = {
@@ -61,8 +63,8 @@ fun TransactionPreviewTypePreview() {
             onPromptForGuarantees = {},
             onDAppClick = { _ -> },
             onUnknownComponentsClick = {},
-            onFungibleResourceClick = { _, _ -> },
-            onNonFungibleResourceClick = { _, _, _ -> }
+            onTransferableFungibleClick = {},
+            onNonTransferableFungibleClick = { _, _ -> }
         )
     }
 }

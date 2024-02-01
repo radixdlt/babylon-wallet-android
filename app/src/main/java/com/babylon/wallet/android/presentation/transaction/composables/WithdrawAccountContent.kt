@@ -22,6 +22,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -32,8 +34,8 @@ import kotlinx.collections.immutable.ImmutableList
 fun WithdrawAccountContent(
     modifier: Modifier = Modifier,
     from: ImmutableList<AccountWithTransferableResources>,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
+    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
 ) {
     if (from.isNotEmpty()) {
         Row(
@@ -73,12 +75,8 @@ fun WithdrawAccountContent(
             from.forEachIndexed { index, account ->
                 TransactionAccountCard(
                     account = account,
-                    onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
-                        onFungibleResourceClick(fungibleResource, isNewlyCreated)
-                    },
-                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
-                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
-                    }
+                    onTransferableFungibleClick = onTransferableFungibleClick,
+                    onTransferableNonFungibleClick = onNonTransferableFungibleClick
                 )
 
                 if (index != from.lastIndex) {
