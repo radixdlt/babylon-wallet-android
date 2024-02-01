@@ -342,7 +342,7 @@ private fun TransactionPreviewContent(
                         }
 
                         NetworkFeeContent(
-                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                             fees = state.transactionFees,
                             noFeePayerSelected = state.noFeePayerSelected,
                             insufficientBalanceToPayTheFee = state.isBalanceInsufficientToPayTheFee,
@@ -351,10 +351,10 @@ private fun TransactionPreviewContent(
                         )
                         SlideToSignButton(
                             modifier = Modifier
-                                .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                                 .padding(
                                     top = RadixTheme.dimensions.paddingDefault,
-                                    bottom = RadixTheme.dimensions.paddingXLarge
+                                    bottom = RadixTheme.dimensions.paddingXXLarge
                                 ),
                             enabled = state.isSubmitEnabled,
                             isSubmitting = state.isSubmitting,

@@ -16,9 +16,10 @@ data class RadixDimensions(
     val paddingDefault: Dp = 16.dp,
     val paddingSemiLarge: Dp = 20.dp,
     val paddingLarge: Dp = 24.dp,
-    val paddingXLarge: Dp = 32.dp,
-    val paddingXXLarge: Dp = 40.dp,
-    val paddingXXXLarge: Dp = 48.dp,
+    val paddingXLarge: Dp = 28.dp,
+    val paddingXXLarge: Dp = 32.dp,
+    val paddingXXXLarge: Dp = 40.dp,
+    val paddingXXXXLarge: Dp = 48.dp,
 )
 
 @Composable

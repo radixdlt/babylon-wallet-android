@@ -67,7 +67,7 @@ fun NonFungibleAssetDialogContent(
                 Thumbnail.NFT(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     nft = item,
                     cropped = false
                 )
@@ -77,7 +77,7 @@ fun NonFungibleAssetDialogContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(Thumbnail.NFTAspectRatio)
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                         .radixPlaceholder(
                             visible = true,
                             shape = RoundedCornerShape(Thumbnail.NFTCornerRadius)
@@ -89,7 +89,7 @@ fun NonFungibleAssetDialogContent(
             if (!item?.description.isNullOrBlank()) {
                 Text(
                     modifier = Modifier
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                         .fillMaxWidth(),
                     text = item?.description.orEmpty(),
                     style = RadixTheme.typography.body2Regular,
@@ -109,7 +109,7 @@ fun NonFungibleAssetDialogContent(
                 AssetMetadataRow(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     key = stringResource(id = R.string.assetDetails_NFTDetails_id)
                 ) {
                     ActionableAddressView(
@@ -146,7 +146,7 @@ fun NonFungibleAssetDialogContent(
                     metadata.View(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+                            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                     )
                 }
 
@@ -160,7 +160,7 @@ fun NonFungibleAssetDialogContent(
                 color = RadixTheme.colors.gray4
             )
         }
-        GrayBackgroundWrapper(contentPadding = PaddingValues(bottom = RadixTheme.dimensions.paddingXLarge)) {
+        GrayBackgroundWrapper(contentPadding = PaddingValues(bottom = RadixTheme.dimensions.paddingXXLarge)) {
             if (asset?.resource != null) {
                 Thumbnail.NonFungible(
                     modifier = Modifier
@@ -191,7 +191,7 @@ fun NonFungibleAssetDialogContent(
 
             if (!asset?.resource?.description.isNullOrBlank()) {
                 Text(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     text = asset?.resource?.description.orEmpty(),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray1
@@ -208,7 +208,7 @@ fun NonFungibleAssetDialogContent(
             AddressRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                 address = resourceAddress,
                 isNewlyCreatedEntity = isNewlyCreated
             )
@@ -217,7 +217,7 @@ fun NonFungibleAssetDialogContent(
                 AssetMetadataRow(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     key = stringResource(id = R.string.assetDetails_name)
                 ) {
                     Text(
@@ -233,13 +233,13 @@ fun NonFungibleAssetDialogContent(
                 AssetMetadataRow(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                        .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     key = stringResource(id = R.string.assetDetails_currentSupply)
                 ) {
                     Text(
                         modifier = Modifier
                             .padding(start = RadixTheme.dimensions.paddingDefault)
-                            .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                            .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                             .radixPlaceholder(visible = asset?.resource?.currentSupply == null),
                         text = when {
                             asset?.resource?.currentSupply != null -> when (asset.resource.currentSupply) {
@@ -256,12 +256,12 @@ fun NonFungibleAssetDialogContent(
                 }
 
                 BehavioursSection(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     behaviours = asset?.resource?.behaviours
                 )
 
                 TagsSection(
-                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
                     tags = asset?.resource?.tags
                 )
             }
@@ -279,7 +279,7 @@ private fun ClaimNFTInfo(
     val showClaimButton = claimState is AssetDialogViewModel.State.ClaimState.ReadyToClaim && !accountContextMissing
     Column(
         modifier = modifier
-            .padding(horizontal = RadixTheme.dimensions.paddingXLarge)
+            .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
             .fillMaxWidth()
     ) {
         Row(

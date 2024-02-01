@@ -164,7 +164,7 @@ fun PoolUnitDialogContent(
             Text(
                 modifier = Modifier
                     .padding(start = RadixTheme.dimensions.paddingDefault)
-                    .widthIn(min = RadixTheme.dimensions.paddingXXXLarge * 2)
+                    .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(visible = poolUnit?.stake?.currentSupply == null),
                 text = when {
                     poolUnit?.stake?.currentSupply != null -> when (poolUnit.stake.currentSupply) {

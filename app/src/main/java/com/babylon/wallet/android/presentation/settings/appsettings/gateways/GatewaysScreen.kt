@@ -269,11 +269,11 @@ private fun AddGatewaySheet(
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
         RadixTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
+                .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
             onValueChanged = onNewUrlChanged,
             value = newUrl,
             hint = stringResource(id = R.string.gateways_addNewGateway_textFieldPlaceholder),
@@ -286,7 +286,7 @@ private fun AddGatewaySheet(
                 else -> null
             }
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
         RadixPrimaryButton(
             text = stringResource(R.string.gateways_addNewGateway_addGatewayButtonTitle),
             onClick = {

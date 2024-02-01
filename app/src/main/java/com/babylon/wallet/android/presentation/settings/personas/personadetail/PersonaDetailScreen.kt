@@ -214,7 +214,7 @@ private fun PersonaDetailList(
             RadixSecondaryButton(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = dimensions.paddingXLarge),
+                    .padding(horizontal = dimensions.paddingXXLarge),
                 text = stringResource(id = R.string.authorizedDapps_personaDetails_editPersona),
                 onClick = { onEditPersona(persona.address) },
                 throttleClicks = true
@@ -224,7 +224,7 @@ private fun PersonaDetailList(
                 RadixSecondaryButton(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = dimensions.paddingXLarge),
+                        .padding(horizontal = dimensions.paddingXXLarge),
                     text = stringResource(id = R.string.biometrics_prompt_createSignAuthKey),
                     onClick = onCreateAndUploadAuthKey,
                     enabled = !loading,

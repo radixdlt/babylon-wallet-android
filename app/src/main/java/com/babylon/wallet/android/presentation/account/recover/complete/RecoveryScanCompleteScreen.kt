@@ -63,7 +63,7 @@ private fun RecoveryScanCompleteContent(
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
             Text(
                 modifier = Modifier
                     .fillMaxWidth()

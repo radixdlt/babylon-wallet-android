@@ -54,7 +54,7 @@ fun LinkConnectorScreen(
                 .padding(padding)
                 .padding(
                     horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingXLarge
+                    vertical = RadixTheme.dimensions.paddingXXLarge
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -63,7 +63,7 @@ fun LinkConnectorScreen(
                 tint = Color.Unspecified,
                 contentDescription = null
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
             Text(
                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_title),
                 style = RadixTheme.typography.title,
@@ -71,7 +71,7 @@ fun LinkConnectorScreen(
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
             Text(
                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_message),
                 style = RadixTheme.typography.body1Regular,
@@ -79,7 +79,7 @@ fun LinkConnectorScreen(
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
             RadixPrimaryButton(
                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_linkConnectorAlert_title),
                 onClick = onLinkConnectorClick,

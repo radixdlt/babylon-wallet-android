@@ -120,7 +120,7 @@ private fun ChooseSeedPhraseContent(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge, vertical = RadixTheme.dimensions.paddingDefault),
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge, vertical = RadixTheme.dimensions.paddingDefault),
                 text = stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1,
@@ -129,7 +129,7 @@ private fun ChooseSeedPhraseContent(
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXLarge, vertical = RadixTheme.dimensions.paddingDefault),
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge, vertical = RadixTheme.dimensions.paddingDefault),
                 text = when (recoveryType) {
                     MnemonicType.Olympia -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_subtitleOlympia)
                     else -> stringResource(id = R.string.accountRecoveryScan_chooseSeedPhrase_subtitleBabylon)

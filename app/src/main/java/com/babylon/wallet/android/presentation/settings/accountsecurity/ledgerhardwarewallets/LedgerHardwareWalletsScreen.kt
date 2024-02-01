@@ -204,7 +204,7 @@ private fun LedgerDeviceDetails(
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray2
         )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
         if (ledgerFactorSources.isNotEmpty()) {
             LedgerDevicesListContent(
                 modifier = Modifier

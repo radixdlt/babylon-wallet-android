@@ -303,7 +303,7 @@ private fun PersonaDetailList(
                     onPersonaDisplayNameFocusChanged(it.hasFocus)
                 }
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(dimensions.paddingXXLarge))
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
             )

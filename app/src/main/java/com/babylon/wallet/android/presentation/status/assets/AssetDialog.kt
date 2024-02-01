@@ -205,7 +205,7 @@ fun TagsSection(
                     }
                 }
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
         }
     }
 }

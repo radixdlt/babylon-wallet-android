@@ -30,7 +30,7 @@ fun LazyListScope.feePayerSelectionContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(
-                    horizontal = RadixTheme.dimensions.paddingXXXLarge,
+                    horizontal = RadixTheme.dimensions.paddingXXXXLarge,
                     vertical = RadixTheme.dimensions.paddingDefault
                 ),
             text = stringResource(id = R.string.customizeNetworkFees_selectFeePayer_navigationTitle),

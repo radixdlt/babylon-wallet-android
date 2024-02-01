@@ -615,7 +615,7 @@ private fun PersonaDetailList(
                 label = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
                 value = persona.persona.displayName
             )
-            Spacer(modifier = Modifier.height(dimensions.paddingXLarge))
+            Spacer(modifier = Modifier.height(dimensions.paddingXXLarge))
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
             )

@@ -98,7 +98,7 @@ fun AddLedgerDeviceScreen(
                     modifier = Modifier
                         .padding(
                             horizontal = RadixTheme.dimensions.paddingDefault,
-                            vertical = RadixTheme.dimensions.paddingXLarge
+                            vertical = RadixTheme.dimensions.paddingXXLarge
                         )
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
@@ -111,7 +111,7 @@ fun AddLedgerDeviceScreen(
                                 tint = Color.Unspecified,
                                 contentDescription = null
                             )
-                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXLarge))
+                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
                             Text(
                                 text = stringResource(id = com.babylon.wallet.android.R.string.ledgerHardwareDevices_addNewLedger),
                                 style = RadixTheme.typography.title,

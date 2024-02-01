@@ -97,7 +97,7 @@ private fun AuthorizedDAppsContent(
                 LazyColumn(
                     contentPadding = PaddingValues(
                         horizontal = RadixTheme.dimensions.paddingDefault,
-                        vertical = RadixTheme.dimensions.paddingXLarge
+                        vertical = RadixTheme.dimensions.paddingXXLarge
                     ),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxSize()

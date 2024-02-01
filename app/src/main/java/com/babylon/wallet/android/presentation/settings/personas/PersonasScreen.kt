@@ -112,7 +112,7 @@ fun PersonasContent(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(
                     horizontal = RadixTheme.dimensions.paddingDefault,
-                    vertical = RadixTheme.dimensions.paddingXLarge
+                    vertical = RadixTheme.dimensions.paddingXXLarge
                 ),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -137,7 +137,7 @@ fun PersonasContent(
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
                     RadixSecondaryButton(
                         text = stringResource(id = R.string.personas_createNewPersona),
                         onClick = createNewPersona

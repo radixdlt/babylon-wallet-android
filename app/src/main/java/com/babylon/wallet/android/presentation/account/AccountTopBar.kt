@@ -109,7 +109,7 @@ fun AccountTopBar(
                 address = accountAddress,
                 modifier = Modifier
                     .layoutId("accountAddressView")
-                    .padding(bottom = RadixTheme.dimensions.paddingXLarge),
+                    .padding(bottom = RadixTheme.dimensions.paddingXXLarge),
                 textStyle = RadixTheme.typography.body2HighImportance,
                 textColor = RadixTheme.colors.white
             )
