@@ -9,6 +9,7 @@ import com.radixdlt.ret.ExecutionSummary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import rdx.works.core.ret.isGlobalComponent
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.defaultDepositGuarantee
@@ -49,7 +50,7 @@ class GeneralTransferProcessor @Inject constructor(
     }
 
     private suspend fun ExecutionSummary.resolveDApps() = coroutineScope {
-        encounteredEntities.filter { it.isGlobalComponent() }
+        encounteredEntities.filter { it.entityType().isGlobalComponent() }
             .map { address ->
                 async {
                     resolveComponentAddressesUseCase.invoke(address.addressString())
