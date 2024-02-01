@@ -292,7 +292,7 @@ object Thumbnail {
             imageType = poolUnit.stake.iconUrl?.let { ImageType.External(it, ThumbnailRequestSize.LARGE) },
             emptyDrawable = R.drawable.ic_pool_units,
             emptyContentScale = CustomContentScale.standard(density = LocalDensity.current),
-            shape = RadixTheme.shapes.roundedRectMedium,
+            shape = CircleShape,
             contentDescription = poolUnit.stake.displayTitle
         )
     }
