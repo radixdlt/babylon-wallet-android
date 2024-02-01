@@ -137,6 +137,7 @@ fun NavGraphBuilder.assetDialog(
             },
             navArgument(ARG_AMOUNTS) {
                 type = NavType.StringType
+                nullable = true
             },
             navArgument(ARG_LOCAL_ID) {
                 type = NavType.StringType
