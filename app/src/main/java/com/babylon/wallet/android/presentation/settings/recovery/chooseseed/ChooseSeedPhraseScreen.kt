@@ -108,6 +108,7 @@ private fun ChooseSeedPhraseContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault).navigationBarsPadding(),
+            enabled = state.selectedFactorSource != null,
             text = stringResource(id = R.string.common_continue),
             onClick = onUseFactorSource
         )
