@@ -28,7 +28,6 @@ import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.utils.isValidUrl
-import com.babylon.wallet.android.utils.isValidUrlWithSpacesInLastPathSegment
 import com.babylon.wallet.android.utils.toAddressOrNull
 
 private enum class SborTypeName(val code: String) {
@@ -36,9 +35,12 @@ private enum class SborTypeName(val code: String) {
 }
 
 // https://docs.radixdlt.com/v1/docs/metadata-for-wallet-display#nonfungibles
-private val NFTExplicitMetadataKeys = listOf(
+private val stringNFDataKeys = listOf(
     ExplicitMetadataKey.NAME.key,
     ExplicitMetadataKey.DESCRIPTION.key
+)
+private val urlNFDataKeys = listOf(
+    ExplicitMetadataKey.KEY_IMAGE_URL.key
 )
 
 fun StateNonFungibleDetailsResponseItem.toMetadata(): List<Metadata> {
@@ -52,12 +54,14 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
         is ProgrammaticScryptoSborValueString -> Metadata.Primitive(
             key = key,
             value = sborValue.value,
-            valueType = if (!isCollection && key in NFTExplicitMetadataKeys) {
+            valueType = if (!isCollection && key in stringNFDataKeys) {
                 // Keep the type as string even if the content resembles another type,
                 // when the key is in the list of explicitly handled NFT data
                 MetadataType.String
+            } else if (!isCollection && key in urlNFDataKeys) {
+                MetadataType.Url
             } else {
-                if (sborValue.value.isValidUrl() || sborValue.value.isValidUrlWithSpacesInLastPathSegment()) {
+                if (sborValue.value.isValidUrl()) {
                     MetadataType.Url
                 } else if (sborValue.value.toAddressOrNull() != null) {
                     MetadataType.Address

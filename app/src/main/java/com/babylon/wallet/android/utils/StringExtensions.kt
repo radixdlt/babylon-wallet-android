@@ -2,7 +2,6 @@
 
 package com.babylon.wallet.android.utils
 
-import android.net.Uri
 import android.util.Patterns
 import android.webkit.URLUtil
 import androidx.compose.ui.text.AnnotatedString
@@ -77,17 +76,6 @@ fun String.formatDecimalSeparator(): String {
 // TODO this does not work for IPv6 thus we can't add a IPv6 address in gateway settings
 fun String.isValidUrl(): Boolean {
     return Patterns.WEB_URL.matcher(this).matches()
-}
-
-fun String.isValidUrlWithSpacesInLastPathSegment(): Boolean {
-    return runCatching {
-        val uri = Uri.parse(this)
-        val lastPathSegment = uri.lastPathSegment
-        val path = lastPathSegment?.let { uri.path?.replace(it, "") }
-        val encodedLastSegment = URLEncoder.encode(lastPathSegment, "UTF-8")
-        val updatedVaule = uri.buildUpon().path(path).appendPath(encodedLastSegment).build().toString()
-        Patterns.WEB_URL.matcher(updatedVaule).matches()
-    }.getOrNull() ?: false
 }
 
 fun String.isValidHttpsUrl(): Boolean {
