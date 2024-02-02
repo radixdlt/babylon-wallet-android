@@ -252,8 +252,7 @@ private fun AccountRuleChangeRow(resource: Resource?, modifier: Modifier = Modif
 
             is Resource.NonFungibleResource -> Thumbnail.NonFungible(
                 collection = resource,
-                modifier = Modifier.size(44.dp),
-                shape = RadixTheme.shapes.roundedRectSmall
+                modifier = Modifier.size(44.dp)
             )
 
             else -> {}

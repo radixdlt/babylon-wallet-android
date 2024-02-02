@@ -132,8 +132,7 @@ private fun NFTHeader(
         ) {
             Thumbnail.NonFungible(
                 modifier = Modifier.size(44.dp),
-                collection = collection,
-                shape = RadixTheme.shapes.roundedRectSmall
+                collection = collection
             )
             Column(verticalArrangement = Arrangement.Center) {
                 if (collection.name.isNotEmpty()) {

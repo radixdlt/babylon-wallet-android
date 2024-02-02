@@ -218,8 +218,7 @@ private fun TransferableItemContent(
             is TransferableAsset.NonFungible.NFTAssets -> {
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(44.dp),
-                    collection = resource.resource,
-                    shape = RadixTheme.shapes.roundedRectSmall
+                    collection = resource.resource
                 )
             }
 
@@ -644,8 +643,7 @@ private fun TransferableNftItemContent(
     ) {
         Thumbnail.NonFungible(
             modifier = Modifier.size(44.dp),
-            collection = transferable.resource,
-            shape = RadixTheme.shapes.roundedRectSmall
+            collection = transferable.resource
         )
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(

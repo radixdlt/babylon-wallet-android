@@ -406,8 +406,7 @@ private fun StakeClaims(
         ) {
             Thumbnail.NonFungible(
                 modifier = Modifier.size(36.dp),
-                collection = validatorWithStakes.stakeClaimNft?.nonFungibleResource,
-                shape = RadixTheme.shapes.roundedRectSmall
+                collection = validatorWithStakes.stakeClaimNft?.nonFungibleResource
             )
 
             Text(
