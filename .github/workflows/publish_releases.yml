@@ -77,7 +77,7 @@ jobs:
           encodedString: ${{ env.GH_GOOGLE_SERVICE_ACCOUNT_JSON_FILE_BASE64 }}
 
       - name: Decode Firebase Crashlytics json
-        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        uses: RDXWorks-actions/base64-to-file@main
         id: crashlytics_credentials
         with:
           fileName: "google-services.json"
@@ -137,12 +137,12 @@ jobs:
         uses: RDXWorks-actions/ghaction-dump-context@master
 
       - name: Download Ruby (action)
-        uses: ruby/setup-ruby@8575951200e472d5f2d95c625da0c7bec8217c42
+        uses: RDXWorks-actions/setup-ruby@master
         with:
           ruby-version: '3.1.2'
           bundler-cache: true
 
-      - uses: actions/setup-java@0ab4596768b603586c0de567f2430c30f5b0d2b0 # v3.13.0
+      - uses: RDXWorks-actions/setup-java@main
         with:
           distribution: 'zulu' # See 'Supported distributions' for available options
           java-version: '17'
@@ -265,7 +265,7 @@ jobs:
           parse_json: true
 
       - name: Decode Firebase Crashlytics json
-        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        uses: RDXWorks-actions/base64-to-file@main
         id: crashlytics_credentials
         with:
           fileName: "google-services.json"
@@ -326,7 +326,7 @@ jobs:
           parse_json: true
 
       - name: Decode Firebase Crashlytics json
-        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        uses: RDXWorks-actions/base64-to-file@main
         id: crashlytics_credentials
         with:
           fileName: "google-services.json"
@@ -404,7 +404,7 @@ jobs:
           parse_json: true
 
       - name: Decode Firebase Crashlytics json
-        uses: timheuer/base64-to-file@48657ba25c726c2e3dcf02efa3639fff9b3d587e
+        uses: RDXWorks-actions/base64-to-file@main
         id: crashlytics_credentials
         with:
           fileName: "google-services.json"
