@@ -11,6 +11,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.domain.model.TransferableAsset
+import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
@@ -68,9 +70,12 @@ import com.babylon.wallet.android.presentation.status.transaction.transactionSta
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
+import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.StateFlow
+import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.backup.BackupType
 
+@Suppress("CyclomaticComplexMethod")
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationHost(
@@ -216,9 +221,12 @@ fun NavigationHost(
                     )
                 },
                 onFungibleResourceClick = { resource, account ->
+                    val resourceWithAmount = resource.ownedAmount?.let {
+                        mapOf(resource.resourceAddress to it)
+                    }.orEmpty()
                     navController.fungibleAssetDialog(
                         resourceAddress = resource.resourceAddress,
-                        amount = resource.ownedAmount,
+                        amounts = resourceWithAmount,
                         underAccountAddress = account.address
                     )
                 },
@@ -311,18 +319,38 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            onFungibleClick = { resource, isNewlyCreated ->
+            onTransferableFungibleClick = { asset ->
+                val resourcesWithAmount = when (asset) {
+                    is TransferableAsset.Fungible.LSUAsset -> {
+                        val xrdResourceAddress = runCatching {
+                            val networkId = Address(asset.resource.resourceAddress).networkId().toInt()
+                            XrdResource.address(networkId = NetworkId.from(networkId))
+                        }.getOrNull()
+
+                        mutableMapOf(
+                            asset.resource.resourceAddress to asset.amount,
+                        ).apply {
+                            if (xrdResourceAddress != null) {
+                                put(xrdResourceAddress, asset.xrdWorth)
+                            }
+                        }
+                    }
+                    is TransferableAsset.Fungible.PoolUnitAsset -> mutableMapOf(asset.resource.resourceAddress to asset.amount).apply {
+                        putAll(asset.contributionPerResource)
+                    }
+                    is TransferableAsset.Fungible.Token -> mapOf(asset.resource.resourceAddress to asset.amount)
+                }
                 navController.fungibleAssetDialog(
-                    resourceAddress = resource.resourceAddress,
-                    amount = resource.ownedAmount,
-                    isNewlyCreated = isNewlyCreated
+                    resourceAddress = asset.resource.resourceAddress,
+                    amounts = resourcesWithAmount,
+                    isNewlyCreated = asset.isNewlyCreated
                 )
             },
-            onNonFungibleClick = { resource, item, isNewlyCreated ->
+            onTransferableNonFungibleClick = { asset, item ->
                 navController.nftAssetDialog(
-                    resourceAddress = resource.resourceAddress,
+                    resourceAddress = asset.resource.resourceAddress,
                     localId = item.localId.code,
-                    isNewlyCreated = isNewlyCreated
+                    isNewlyCreated = asset.isNewlyCreated
                 )
             },
             onDAppClick = { dApp ->

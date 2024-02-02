@@ -56,10 +56,16 @@ interface StateDao {
     fun updatePools(pools: List<PoolWithResourcesJoinResult>) {
         insertPoolDetails(pools.map { it.pool })
 
-        val resourcesInvolved = pools.map { pool ->
-            listOf(pool.poolUnitResource) + pool.resources.map { it.second }
+        val poolUnitResources = pools.map { pool ->
+            pool.poolUnitResource
+        }
+        insertOrReplaceResources(poolUnitResources)
+
+        val resourcesInvolvedInPools = pools.map { pool ->
+            pool.resources.map { it.second }
         }.flatten()
-        insertOrReplaceResources(resourcesInvolved)
+        insertOrIgnoreResources(resourcesInvolvedInPools)
+
         val poolResourcesJoin = pools.map { poolResource -> poolResource.resources.map { it.first } }.flatten()
         insertPoolResources(poolResourcesJoin)
 
@@ -101,6 +107,9 @@ interface StateDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOrReplaceResources(resources: List<ResourceEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertOrIgnoreResources(resources: List<ResourceEntity>)
 
     @Query(
         """

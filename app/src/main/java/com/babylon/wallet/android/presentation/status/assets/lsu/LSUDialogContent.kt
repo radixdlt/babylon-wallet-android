@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,6 +30,7 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
+import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -37,15 +39,19 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlin
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.ret.Address
 import rdx.works.core.displayableQuantity
+import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 
 @Composable
 fun LSUDialogContent(
     modifier: Modifier = Modifier,
-    resourceAddress: String,
-    lsu: LiquidStakeUnit?
+    lsu: LiquidStakeUnit?,
+    args: AssetDialogArgs.Fungible
 ) {
+    val resourceAddress = args.resourceAddress
+    val amount = args.fungibleAmountOf(resourceAddress) ?: lsu?.stakeValue()
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -77,7 +83,8 @@ fun LSUDialogContent(
             modifier = Modifier
                 .fillMaxWidth(fraction = if (lsu == null) 0.5f else 1f)
                 .radixPlaceholder(visible = lsu == null),
-            fungibleResource = lsu?.fungibleResource
+            amount = amount,
+            symbol = lsu?.resource?.symbol.orEmpty()
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
@@ -110,9 +117,17 @@ fun LSUDialogContent(
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
+        val xrdWorth = remember(args, lsu) {
+            val xrdResourceAddress = runCatching {
+                val networkId = NetworkId.from(Address(args.resourceAddress).networkId().toInt())
+                XrdResource.address(networkId = networkId)
+            }.getOrNull()
+
+            xrdResourceAddress?.let { args.fungibleAmountOf(it) } ?: lsu?.stakeValue()
+        }
         LSUResourceValue(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            lsu = lsu,
+            amount = xrdWorth
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
@@ -213,8 +228,8 @@ fun LSUDialogContent(
 
 @Composable
 private fun LSUResourceValue(
-    lsu: LiquidStakeUnit?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    amount: BigDecimal?
 ) {
     Row(
         modifier = modifier
@@ -244,8 +259,8 @@ private fun LSUResourceValue(
         Text(
             modifier = Modifier
                 .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
-                .radixPlaceholder(visible = lsu == null),
-            text = lsu?.stakeValue()?.displayableQuantity().orEmpty(),
+                .radixPlaceholder(visible = amount == null),
+            text = amount?.displayableQuantity().orEmpty(),
             style = RadixTheme.typography.secondaryHeader,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.End,

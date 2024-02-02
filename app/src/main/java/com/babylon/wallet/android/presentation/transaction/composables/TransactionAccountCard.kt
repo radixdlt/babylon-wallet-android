@@ -55,8 +55,8 @@ import rdx.works.profile.data.model.pernetwork.Network
 fun TransactionAccountCard(
     modifier: Modifier = Modifier,
     account: AccountWithTransferableResources,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
+    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -74,7 +74,7 @@ fun TransactionAccountCard(
             when (val asset = transferable.transferable) {
                 is TransferableAsset.Fungible.Token -> TransferableItemContent(
                     modifier = Modifier.throttleClickable {
-                        onFungibleResourceClick(asset.resource, asset.isNewlyCreated)
+                        onTransferableFungibleClick(asset)
                     },
                     transferable = transferable,
                     shape = shape,
@@ -86,7 +86,7 @@ fun TransactionAccountCard(
                         val lastNFT = itemIndex == asset.resource.items.lastIndex
                         TransferableNftItemContent(
                             modifier = Modifier.throttleClickable {
-                                onNonFungibleResourceClick(asset.resource, item, asset.isNewlyCreated)
+                                onTransferableNonFungibleClick(asset, item)
                             },
                             transferable = asset,
                             shape = if (lastAsset && lastNFT) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape,
@@ -98,12 +98,12 @@ fun TransactionAccountCard(
                 is TransferableAsset.Fungible.PoolUnitAsset -> TransferablePoolUnitItemContent(
                     transferable = transferable,
                     shape = shape,
-                    onFungibleResourceClick = onFungibleResourceClick
+                    onClick = onTransferableFungibleClick
                 )
 
                 is TransferableAsset.Fungible.LSUAsset -> TransferableLsuItemContent(
                     modifier = Modifier.throttleClickable {
-                        onFungibleResourceClick(asset.lsu.fungibleResource, asset.isNewlyCreated)
+                        onTransferableFungibleClick(asset)
                     },
                     transferable = transferable,
                     shape = shape,
@@ -112,7 +112,7 @@ fun TransactionAccountCard(
                 is TransferableAsset.NonFungible.StakeClaimAssets -> TransferableStakeClaimNftItemContent(
                     transferable = asset,
                     shape = shape,
-                    onNonFungibleResourceClick = onNonFungibleResourceClick
+                    onClick = onTransferableNonFungibleClick
                 )
             }
 
@@ -408,7 +408,7 @@ private fun TransferableStakeClaimNftItemContent(
     modifier: Modifier = Modifier,
     transferable: TransferableAsset.NonFungible.StakeClaimAssets,
     shape: Shape,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
+    onClick: (TransferableAsset.NonFungible.StakeClaimAssets, Resource.NonFungibleResource.Item) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -465,10 +465,9 @@ private fun TransferableStakeClaimNftItemContent(
                 modifier = Modifier
                     .clip(RadixTheme.shapes.roundedRectSmall)
                     .throttleClickable {
-                        onNonFungibleResourceClick(
-                            transferable.resource,
-                            item,
-                            transferable.isNewlyCreated
+                        onClick(
+                            transferable,
+                            item
                         )
                     }
                     .fillMaxWidth()
@@ -512,17 +511,14 @@ private fun TransferablePoolUnitItemContent(
     modifier: Modifier = Modifier,
     transferable: Transferable,
     shape: Shape,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit
+    onClick: (poolUnit: TransferableAsset.Fungible.PoolUnitAsset) -> Unit
 ) {
     val transferablePoolUnit = transferable.transferable as TransferableAsset.Fungible.PoolUnitAsset
     Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
             .throttleClickable {
-                onFungibleResourceClick(
-                    transferablePoolUnit.resource,
-                    transferablePoolUnit.isNewlyCreated
-                )
+                onClick(transferablePoolUnit)
             }
             .background(
                 color = RadixTheme.colors.gray5,
@@ -691,8 +687,8 @@ fun TransactionAccountCardPreview() {
                     )
                 }
             ),
-            onFungibleResourceClick = { _, _ -> },
-            onNonFungibleResourceClick = { _, _, _ -> }
+            onTransferableFungibleClick = { },
+            onTransferableNonFungibleClick = { _, _ -> }
         )
     }
 }

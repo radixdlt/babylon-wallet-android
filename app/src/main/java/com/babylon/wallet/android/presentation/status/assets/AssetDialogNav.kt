@@ -7,13 +7,17 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
+import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import java.math.BigDecimal
 import java.net.URLEncoder
 
 private const val ROUTE = "asset_dialog"
 private const val ARG_RESOURCE_ADDRESS = "resource_address"
 private const val ARG_NEWLY_CREATED = "newly_created"
-private const val ARG_AMOUNT = "amount"
+private const val ARG_AMOUNTS = "amounts"
 private const val ARG_LOCAL_ID = "local_id"
 private const val ARG_UNDER_ACCOUNT_ADDRESS = "under_account_address"
 
@@ -23,17 +27,17 @@ private const val ARG_RESOURCE_TYPE_VALUE_NFT = "nft"
 
 fun NavController.fungibleAssetDialog(
     resourceAddress: String,
-    amount: BigDecimal? = null,
+    amounts: Map<String, BigDecimal> = emptyMap(),
     isNewlyCreated: Boolean = false,
-    underAccountAddress: String? = null
+    underAccountAddress: String? = null,
 ) {
-    val amountParam = if (amount != null) "&$ARG_AMOUNT=${amount.toPlainString()}" else ""
     val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=$underAccountAddress" else ""
+    val fungibleAmounts = Serializer.kotlinxSerializationJson.encodeToString(FungibleAmounts(amounts))
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_FUNGIBLE" +
             "?${ARG_RESOURCE_ADDRESS}=$resourceAddress" +
             "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
-            amountParam +
+            "&$ARG_AMOUNTS=$fungibleAmounts" +
             underAccountAddressParam
     )
 }
@@ -55,20 +59,25 @@ fun NavController.nftAssetDialog(
     )
 }
 
+@Serializable
+private data class FungibleAmounts(
+    val amounts: Map<String, @Contextual BigDecimal>
+)
+
 sealed interface AssetDialogArgs {
     val resourceAddress: String
     val isNewlyCreated: Boolean
     val underAccountAddress: String?
 
-    val isAmountPresent: Boolean
-        get() = (this as? Fungible)?.amount != null
-
     data class Fungible(
         override val resourceAddress: String,
         override val isNewlyCreated: Boolean,
         override val underAccountAddress: String?,
-        val amount: BigDecimal?,
-    ) : AssetDialogArgs
+        private val amounts: Map<String, BigDecimal>,
+    ) : AssetDialogArgs {
+
+        fun fungibleAmountOf(address: String): BigDecimal? = amounts[address]
+    }
 
     data class NFT(
         override val resourceAddress: String,
@@ -80,12 +89,16 @@ sealed interface AssetDialogArgs {
     companion object {
         fun from(savedStateHandle: SavedStateHandle): AssetDialogArgs {
             return when (requireNotNull(savedStateHandle[ARG_RESOURCE_TYPE])) {
-                ARG_RESOURCE_TYPE_VALUE_FUNGIBLE -> Fungible(
-                    resourceAddress = requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS]),
-                    isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
-                    underAccountAddress = savedStateHandle[ARG_UNDER_ACCOUNT_ADDRESS],
-                    amount = savedStateHandle.get<String>(ARG_AMOUNT)?.toBigDecimalOrNull()
-                )
+                ARG_RESOURCE_TYPE_VALUE_FUNGIBLE -> {
+                    val amountsSerialized = requireNotNull(savedStateHandle.get<String>(ARG_AMOUNTS))
+                    val fungibleAmounts = Serializer.kotlinxSerializationJson.decodeFromString<FungibleAmounts>(amountsSerialized)
+                    Fungible(
+                        resourceAddress = requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS]),
+                        isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
+                        underAccountAddress = savedStateHandle[ARG_UNDER_ACCOUNT_ADDRESS],
+                        amounts = fungibleAmounts.amounts
+                    )
+                }
                 ARG_RESOURCE_TYPE_VALUE_NFT -> NFT(
                     resourceAddress = requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS]),
                     isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
@@ -105,7 +118,7 @@ fun NavGraphBuilder.assetDialog(
         route = "$ROUTE/{$ARG_RESOURCE_TYPE}" +
             "?$ARG_RESOURCE_ADDRESS={$ARG_RESOURCE_ADDRESS}" +
             "&$ARG_NEWLY_CREATED={$ARG_NEWLY_CREATED}" +
-            "&$ARG_AMOUNT={$ARG_AMOUNT}" +
+            "&$ARG_AMOUNTS={$ARG_AMOUNTS}" +
             "&$ARG_LOCAL_ID={$ARG_LOCAL_ID}" +
             "&$ARG_UNDER_ACCOUNT_ADDRESS={$ARG_UNDER_ACCOUNT_ADDRESS}",
         arguments = listOf(
@@ -122,7 +135,7 @@ fun NavGraphBuilder.assetDialog(
             navArgument(ARG_RESOURCE_TYPE) {
                 type = NavType.StringType
             },
-            navArgument(ARG_AMOUNT) {
+            navArgument(ARG_AMOUNTS) {
                 type = NavType.StringType
                 nullable = true
             },

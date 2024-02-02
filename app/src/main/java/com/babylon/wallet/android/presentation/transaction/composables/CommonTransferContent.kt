@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
@@ -19,8 +20,8 @@ import kotlinx.collections.immutable.toPersistentList
 fun CommonTransferContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
     previewType: PreviewType.Transfer,
     onPromptForGuarantees: () -> Unit,
     middleSection: @Composable () -> Unit
@@ -41,12 +42,8 @@ fun CommonTransferContent(
             WithdrawAccountContent(
                 modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 from = previewType.from.toPersistentList(),
-                onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
-                    onFungibleResourceClick(fungibleResource, isNewlyCreated)
-                },
-                onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
-                    onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
-                }
+                onTransferableFungibleClick = onTransferableFungibleClick,
+                onNonTransferableFungibleClick = onNonTransferableFungibleClick
             )
 
             Column(
@@ -65,12 +62,8 @@ fun CommonTransferContent(
                         .padding(top = RadixTheme.dimensions.paddingSemiLarge),
                     to = previewType.to.toPersistentList(),
                     promptForGuarantees = onPromptForGuarantees,
-                    onFungibleResourceClick = { fungibleResource, isNewlyCreated ->
-                        onFungibleResourceClick(fungibleResource, isNewlyCreated)
-                    },
-                    onNonFungibleResourceClick = { nonFungibleResource, nonFungibleResourceItem, isNewlyCreated ->
-                        onNonFungibleResourceClick(nonFungibleResource, nonFungibleResourceItem, isNewlyCreated)
-                    }
+                    onTransferableFungibleClick = onTransferableFungibleClick,
+                    onNonTransferableFungibleClick = onNonTransferableFungibleClick
                 )
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

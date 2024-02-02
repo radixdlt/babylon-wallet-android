@@ -63,14 +63,17 @@ class PoolContributionProcessor @Inject constructor(
                     val poolUnitAmount = contributions.find {
                         it.poolUnitsResourceAddress.addressString() == poolUnit.resourceAddress
                     }?.poolUnitsAmount?.asStr()?.toBigDecimalOrNull()
+                    val contributionPerResource = contributedResourceAddresses.associateWith { contributedResourceAddress ->
+                        contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
+                            .sumOf { it }
+                    }
                     Transferable.Depositing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(
                             amount = contributions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
-                            unit = poolUnit.copy(stake = poolUnit.stake.copy(ownedAmount = poolUnitAmount)),
-                            contributionPerResource = contributedResourceAddresses.associateWith { contributedResourceAddress ->
-                                contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
-                                    .sumOf { it }
-                            }
+                            unit = poolUnit.copy(
+                                stake = poolUnit.stake.copy(ownedAmount = poolUnitAmount)
+                            ),
+                            contributionPerResource = contributionPerResource
                         ),
                         guaranteeType = guaranteeType,
                     )

@@ -53,7 +53,9 @@ class AssetDialogViewModel @Inject constructor(
                     is Asset.Fungible -> {
                         val fungibleArgs = (args as? AssetDialogArgs.Fungible) ?: return@mapCatching asset
 
-                        val resourceWithAmount = asset.resource.copy(ownedAmount = fungibleArgs.amount)
+                        val resourceWithAmount = asset.resource.copy(
+                            ownedAmount = fungibleArgs.fungibleAmountOf(asset.resource.resourceAddress)
+                        )
                         when (asset) {
                             is LiquidStakeUnit -> asset.copy(fungibleResource = resourceWithAmount)
                             is PoolUnit -> asset.copy(stake = resourceWithAmount)

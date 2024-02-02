@@ -26,6 +26,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
+import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -38,11 +39,12 @@ import java.math.BigDecimal
 @Composable
 fun FungibleDialogContent(
     modifier: Modifier = Modifier,
-    resourceAddress: String,
-    isAmountPresent: Boolean,
-    isNewlyCreated: Boolean,
-    token: Token?
+    token: Token?,
+    args: AssetDialogArgs.Fungible,
 ) {
+    val resourceAddress = args.resourceAddress
+    val isNewlyCreated = args.isNewlyCreated
+    val amount = args.fungibleAmountOf(resourceAddress) ?: token?.resource?.ownedAmount
     Column(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
@@ -70,12 +72,13 @@ fun FungibleDialogContent(
             )
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        if (isAmountPresent) {
+        if (amount != null) {
             TokenBalance(
                 modifier = Modifier
                     .fillMaxWidth(fraction = if (token?.resource == null) 0.5f else 1f)
                     .radixPlaceholder(visible = token?.resource == null),
-                fungibleResource = token?.resource
+                amount = amount,
+                symbol = token?.resource?.symbol.orEmpty(),
             )
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))

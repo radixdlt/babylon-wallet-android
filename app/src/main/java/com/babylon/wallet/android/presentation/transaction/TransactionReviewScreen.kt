@@ -39,6 +39,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
@@ -74,21 +75,12 @@ fun TransactionReviewScreen(
     modifier: Modifier = Modifier,
     viewModel: TransactionReviewViewModel,
     onDismiss: () -> Unit,
-    onFungibleClick: (Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onTransferableNonFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
     onDAppClick: (DApp) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect {
-            when (it) {
-                is TransactionReviewViewModel.Event.OnFungibleClick -> onFungibleClick(it.resource, it.isNewlyCreated)
-                is TransactionReviewViewModel.Event.OnNonFungibleClick -> onNonFungibleClick(it.resource, it.item, it.isNewlyCreated)
-            }
-        }
-    }
 
     TransactionPreviewContent(
         onBackClick = viewModel::onBackClick,
@@ -110,8 +102,8 @@ fun TransactionReviewScreen(
         onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
         onDAppClick = onDAppClick,
         onUnknownComponentsClick = viewModel::onUnknownComponentsClick,
-        onFungibleResourceClick = viewModel::onFungibleResourceClick,
-        onNonFungibleResourceClick = viewModel::onNonFungibleResourceClick,
+        onTransferableFungibleClick = onTransferableFungibleClick,
+        onNonTransferableFungibleClick = onTransferableNonFungibleClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
         onSelectFeePayerClick = viewModel::onSelectFeePayerClick,
         onPayerSelected = viewModel::onPayerSelected,
@@ -170,8 +162,8 @@ private fun TransactionPreviewContent(
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onUnknownComponentsClick: (ImmutableList<String>) -> Unit,
-    onFungibleResourceClick: (Resource.FungibleResource, Boolean) -> Unit,
-    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
+    onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
     onPayerSelected: (Network.Account) -> Unit,
@@ -299,8 +291,8 @@ private fun TransactionPreviewContent(
                                     onUnknownComponentsClick = { componentAddresses ->
                                         onUnknownComponentsClick(componentAddresses.toPersistentList())
                                     },
-                                    onFungibleResourceClick = onFungibleResourceClick,
-                                    onNonFungibleResourceClick = onNonFungibleResourceClick
+                                    onTransferableFungibleClick = onTransferableFungibleClick,
+                                    onNonTransferableFungibleClick = onNonTransferableFungibleClick
                                 )
                             }
 
@@ -313,8 +305,8 @@ private fun TransactionPreviewContent(
                             is PreviewType.Transfer.Staking -> {
                                 StakeTypeContent(
                                     state = state,
-                                    onFungibleResourceClick = onFungibleResourceClick,
-                                    onNonFungibleResourceClick = onNonFungibleResourceClick,
+                                    onTransferableFungibleClick = onTransferableFungibleClick,
+                                    onNonTransferableFungibleClick = onNonTransferableFungibleClick,
                                     onPromptForGuarantees = promptForGuarantees,
                                     previewType = preview
                                 )
@@ -323,7 +315,7 @@ private fun TransactionPreviewContent(
                             is PreviewType.Transfer.Pool -> {
                                 PoolTypeContent(
                                     state = state,
-                                    onFungibleResourceClick = onFungibleResourceClick,
+                                    onTransferableFungibleClick = onTransferableFungibleClick,
                                     onPromptForGuarantees = promptForGuarantees,
                                     previewType = preview,
                                     onDAppClick = onDAppClick,
@@ -512,8 +504,8 @@ fun TransactionPreviewContentPreview() {
             onCustomizeClick = {},
             onDAppClick = {},
             onUnknownComponentsClick = {},
-            onFungibleResourceClick = { _, _ -> },
-            onNonFungibleResourceClick = { _, _, _ -> },
+            onTransferableFungibleClick = {},
+            onNonTransferableFungibleClick = { _, _ -> },
             onGuaranteeValueChanged = { _, _ -> },
             onGuaranteeValueIncreased = {},
             onGuaranteeValueDecreased = {},

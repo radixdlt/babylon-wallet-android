@@ -20,17 +20,11 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Badge
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.Resource.FungibleResource
-import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource
 import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
-import com.babylon.wallet.android.presentation.common.OneOffEvent
-import com.babylon.wallet.android.presentation.common.OneOffEventHandler
-import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.Event
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
@@ -61,7 +55,7 @@ class TransactionReviewViewModel @Inject constructor(
     private val getDAppsUseCase: GetDAppsUseCase,
     incomingRequestRepository: IncomingRequestRepository,
     savedStateHandle: SavedStateHandle,
-) : StateViewModel<State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<State>() {
 
     private val args = TransactionReviewArgs(savedStateHandle)
 
@@ -222,22 +216,6 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    fun onFungibleResourceClick(fungibleResource: FungibleResource, isNewlyCreated: Boolean) {
-        viewModelScope.launch {
-            sendEvent(Event.OnFungibleClick(fungibleResource, isNewlyCreated))
-        }
-    }
-
-    fun onNonFungibleResourceClick(
-        nonFungibleResource: NonFungibleResource,
-        item: NonFungibleResource.Item,
-        isNewlyCreated: Boolean
-    ) {
-        viewModelScope.launch {
-            sendEvent(Event.OnNonFungibleClick(nonFungibleResource, item, isNewlyCreated))
-        }
-    }
-
     fun dismissTerminalErrorDialog() {
         _state.update { it.copy(error = null) }
         onBackClick()
@@ -245,19 +223,6 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun onAcknowledgeRawTransactionWarning() {
         _state.update { it.copy(showRawTransactionWarning = false) }
-    }
-
-    sealed interface Event : OneOffEvent {
-        data class OnFungibleClick(
-            val resource: FungibleResource,
-            val isNewlyCreated: Boolean
-        ) : Event
-
-        data class OnNonFungibleClick(
-            val resource: NonFungibleResource,
-            val item: NonFungibleResource.Item,
-            val isNewlyCreated: Boolean
-        ) : Event
     }
 
     data class State(

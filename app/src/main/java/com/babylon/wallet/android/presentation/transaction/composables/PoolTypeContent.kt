@@ -11,8 +11,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import kotlinx.collections.immutable.persistentListOf
@@ -23,7 +23,7 @@ import kotlinx.collections.immutable.toPersistentList
 fun PoolTypeContent(
     modifier: Modifier = Modifier,
     state: TransactionReviewViewModel.State,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit,
+    onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     previewType: PreviewType.Transfer.Pool,
     onPromptForGuarantees: () -> Unit,
     onDAppClick: (DApp) -> Unit,
@@ -36,8 +36,8 @@ fun PoolTypeContent(
     CommonTransferContent(
         modifier = modifier.fillMaxSize(),
         state = state,
-        onFungibleResourceClick = onFungibleResourceClick,
-        onNonFungibleResourceClick = { _, _, _ -> },
+        onTransferableFungibleClick = onTransferableFungibleClick,
+        onNonTransferableFungibleClick = { _, _ -> },
         previewType = previewType,
         onPromptForGuarantees = onPromptForGuarantees,
         middleSection = {
@@ -63,7 +63,7 @@ fun PoolTypePreview() {
                 isNetworkFeeLoading = false,
                 previewType = PreviewType.NonConforming
             ),
-            onFungibleResourceClick = { _, _ -> },
+            onTransferableFungibleClick = {},
             previewType = PreviewType.Transfer.Pool(
                 to = persistentListOf(),
                 from = listOf(SampleDataProvider().accountWithTransferablePool).toPersistentList(),

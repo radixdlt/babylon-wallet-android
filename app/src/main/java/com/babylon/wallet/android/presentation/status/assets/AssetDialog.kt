@@ -54,19 +54,17 @@ fun AssetDialog(
         Box(modifier = Modifier.fillMaxHeight(fraction = 0.9f)) {
             when (val asset = state.asset) {
                 is Token -> FungibleDialogContent(
-                    resourceAddress = state.args.resourceAddress,
-                    isAmountPresent = state.args.isAmountPresent,
-                    isNewlyCreated = state.args.isNewlyCreated,
-                    token = asset
+                    args = state.args as AssetDialogArgs.Fungible,
+                    token = asset,
                 )
 
                 is LiquidStakeUnit -> LSUDialogContent(
-                    resourceAddress = state.args.resourceAddress,
+                    args = state.args as AssetDialogArgs.Fungible,
                     lsu = asset
                 )
 
                 is PoolUnit -> PoolUnitDialogContent(
-                    resourceAddress = state.args.resourceAddress,
+                    args = state.args as AssetDialogArgs.Fungible,
                     poolUnit = asset
                 )
                 // Includes NFTs and stake claims
@@ -86,9 +84,7 @@ fun AssetDialog(
                 // When asset is not retrieved yet, we show the placeholders for tokens, or NFTs
                 null -> when (val args = state.args) {
                     is AssetDialogArgs.Fungible -> FungibleDialogContent(
-                        resourceAddress = args.resourceAddress,
-                        isAmountPresent = args.isAmountPresent,
-                        isNewlyCreated = args.isNewlyCreated,
+                        args = state.args as AssetDialogArgs.Fungible,
                         token = null
                     )
 

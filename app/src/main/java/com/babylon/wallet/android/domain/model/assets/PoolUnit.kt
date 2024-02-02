@@ -22,10 +22,11 @@ data class PoolUnit(
 
     fun resourceRedemptionValue(item: Resource.FungibleResource): BigDecimal? {
         val resourceVaultBalance = pool?.resources?.find { it.resourceAddress == item.resourceAddress }?.ownedAmount ?: return null
-        return if (stake.ownedAmount != null && stake.divisibility != null && stake.currentSupply != null) {
+        val poolUnitSupply = stake.currentSupply ?: BigDecimal.ZERO
+        return if (stake.ownedAmount != null && stake.divisibility != null && poolUnitSupply != BigDecimal.ZERO) {
             stake.ownedAmount
                 .multiply(resourceVaultBalance)
-                .divide(stake.currentSupply, stake.mathContext)
+                .divide(poolUnitSupply, stake.mathContext)
         } else {
             null
         }
