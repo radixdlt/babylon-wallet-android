@@ -157,19 +157,21 @@ private fun PoolAmountSection(transferable: Transferable, modifier: Modifier = M
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.End
             )
+        }
 
-            (transferable.transferable as? TransferableAsset.Fungible)?.let {
-                Text(
-                    modifier = Modifier,
-                    text = it.amount.displayableQuantity(),
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    textAlign = TextAlign.End
-                )
-            }
+        (transferable.transferable as? TransferableAsset.Fungible)?.let {
+            Text(
+                modifier = Modifier,
+                text = it.amount.displayableQuantity(),
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.End
+            )
+        }
 
+        if (guaranteedQuantity != null) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             Text(
                 text = stringResource(id = R.string.transactionReview_guaranteed),
