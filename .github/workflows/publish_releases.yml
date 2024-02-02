@@ -129,7 +129,7 @@ jobs:
           secret_name: "github-actions/radixdlt/babylon-wallet-android/push-pat-token"
           parse_json: true
 
-      - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4.0.0
+      - uses: RDXWorks-actions/checkout@main
         with:
           token: ${{ env.GH_RADIXBOT_PUSH_COMMIT_PAT_TOKEN }}
 
