@@ -29,66 +29,55 @@ class AddLedgerDeviceViewModel @Inject constructor(
 
     override fun initialState() = AddLedgerDeviceUiState.init
 
-    init {
-        observeLinkConnectionStatus()
-    }
-
     fun onSendAddLedgerRequestClick() {
         viewModelScope.launch {
             _state.update {
-                it.copy(isLoading = true)
+                it.copy(isAddingLedgerDeviceInProgress = true)
             }
-            ledgerMessenger.sendDeviceInfoRequest(interactionId = UUIDGenerator.uuid().toString()).onSuccess { deviceInfoResponse ->
-                val existingLedgerFactorSource = getProfileUseCase.factorSourceById(
-                    FactorSource.FactorSourceID.FromHash(
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        body = deviceInfoResponse.deviceId
-                    )
-                )
-                if (existingLedgerFactorSource == null) {
-                    _state.update { state ->
-                        state.copy(
-                            isLoading = false,
-                            showContent = AddLedgerDeviceUiState.ShowContent.NameLedgerDevice,
-                            newConnectedLedgerDevice = LedgerDeviceUiModel(
-                                id = deviceInfoResponse.deviceId,
-                                model = deviceInfoResponse.model
-                            )
+            ledgerMessenger.sendDeviceInfoRequest(interactionId = UUIDGenerator.uuid().toString())
+                .onSuccess { deviceInfoResponse ->
+                    val existingLedgerFactorSource = getProfileUseCase.factorSourceById(
+                        FactorSource.FactorSourceID.FromHash(
+                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                            body = deviceInfoResponse.deviceId
                         )
-                    }
-                } else {
-                    _state.update { state ->
-                        existingLedgerFactorSource as LedgerHardwareWalletFactorSource
-                        state.copy(
-                            isLoading = false,
-                            showContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
-                            newConnectedLedgerDevice = LedgerDeviceUiModel(
-                                id = deviceInfoResponse.deviceId,
-                                model = deviceInfoResponse.model,
-                                name = existingLedgerFactorSource.hint.name
-                            ),
-                            uiMessage = UiMessage.InfoMessage.LedgerAlreadyExist(
-                                label = existingLedgerFactorSource.hint.name
+                    )
+                    if (existingLedgerFactorSource == null) {
+                        _state.update { state ->
+                            state.copy(
+                                isAddingLedgerDeviceInProgress = false,
+                                showContent = AddLedgerDeviceUiState.ShowContent.NameLedgerDevice,
+                                newConnectedLedgerDevice = LedgerDeviceUiModel(
+                                    id = deviceInfoResponse.deviceId,
+                                    model = deviceInfoResponse.model
+                                )
                             )
+                        }
+                    } else {
+                        _state.update { state ->
+                            existingLedgerFactorSource as LedgerHardwareWalletFactorSource
+                            state.copy(
+                                isAddingLedgerDeviceInProgress = false,
+                                showContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
+                                newConnectedLedgerDevice = LedgerDeviceUiModel(
+                                    id = deviceInfoResponse.deviceId,
+                                    model = deviceInfoResponse.model,
+                                    name = existingLedgerFactorSource.hint.name
+                                ),
+                                uiMessage = UiMessage.InfoMessage.LedgerAlreadyExist(
+                                    label = existingLedgerFactorSource.hint.name
+                                )
+                            )
+                        }
+                    }
+                }.onFailure { error ->
+                    _state.update { state ->
+                        state.copy(
+                            uiMessage = UiMessage.ErrorMessage(error),
+                            isAddingLedgerDeviceInProgress = false
                         )
                     }
                 }
-            }.onFailure { error ->
-                _state.update { state ->
-                    state.copy(
-                        uiMessage = UiMessage.ErrorMessage(error),
-                        isLoading = false
-                    )
-                }
-            }
-        }
-    }
-
-    private fun observeLinkConnectionStatus() {
-        viewModelScope.launch {
-            ledgerMessenger.isAnyLinkedConnectorConnected.collect { isConnected ->
-                _state.update { it.copy(isAnyLinkedConnectorConnected = isConnected) }
-            }
         }
     }
 
@@ -97,12 +86,6 @@ class AddLedgerDeviceViewModel @Inject constructor(
             state.copy(newConnectedLedgerDevice = state.newConnectedLedgerDevice?.copy(name = name))
         }
         addLedgerDeviceToProfile()
-    }
-
-    fun initState() {
-        _state.update { current ->
-            AddLedgerDeviceUiState.init.copy(isAnyLinkedConnectorConnected = current.isAnyLinkedConnectorConnected)
-        }
     }
 
     fun onMessageShown() {
@@ -126,17 +109,15 @@ class AddLedgerDeviceViewModel @Inject constructor(
             _state.update { state ->
                 state.copy(uiMessage = message)
             }
-            initState()
         }
     }
 }
 
 data class AddLedgerDeviceUiState(
-    val isLoading: Boolean,
     val showContent: ShowContent,
     val newConnectedLedgerDevice: LedgerDeviceUiModel?,
     val uiMessage: UiMessage?,
-    val isAnyLinkedConnectorConnected: Boolean = false
+    val isAddingLedgerDeviceInProgress: Boolean = false
 ) : UiState {
 
     enum class ShowContent {
@@ -145,7 +126,6 @@ data class AddLedgerDeviceUiState(
 
     companion object {
         val init = AddLedgerDeviceUiState(
-            isLoading = false,
             showContent = ShowContent.AddLedgerDeviceInfo,
             newConnectedLedgerDevice = null,
             uiMessage = null
@@ -157,6 +137,7 @@ sealed interface ShowLinkConnectorPromptState {
     data object None : ShowLinkConnectorPromptState
     data class Show(val source: Source) : ShowLinkConnectorPromptState
 
+    // TODO fix this
     enum class Source {
         AddLedgerDevice, UseLedger
     }

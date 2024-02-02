@@ -113,16 +113,10 @@ fun LedgerHardwareWalletsScreen(
                     },
                     backIconType = BackIconType.Back,
                     onMessageShown = addLedgerDeviceViewModel::onMessageShown,
-                    onClose = {
-                        addLedgerDeviceViewModel.initState()
-                        viewModel.onCloseClick()
-                    },
+                    onClose = viewModel::onCloseClick,
                     waitingForLedgerResponse = false,
-                    onBackClick = {
-                        addLedgerDeviceViewModel.initState()
-                        viewModel.onCloseClick()
-                    },
-                    isLinkedConnectorEstablished = addLedgerDeviceState.isAnyLinkedConnectorConnected
+                    onBackClick = viewModel::onCloseClick,
+                    isAddingLedgerDeviceInProgress = addLedgerDeviceState.isAddingLedgerDeviceInProgress,
                 )
             }
 
