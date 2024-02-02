@@ -28,7 +28,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.name
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -39,17 +38,14 @@ fun TransferablePoolUnitItemContent(
     modifier: Modifier = Modifier,
     transferable: Transferable,
     shape: Shape,
-    onFungibleResourceClick: (fungibleResource: Resource.FungibleResource, Boolean) -> Unit
+    onClick: (poolUnit: TransferableAsset.Fungible.PoolUnitAsset) -> Unit
 ) {
     val transferablePoolUnit = transferable.transferable as TransferableAsset.Fungible.PoolUnitAsset
     Column(
         modifier = modifier
             .height(IntrinsicSize.Min)
             .throttleClickable {
-                onFungibleResourceClick(
-                    transferablePoolUnit.resource,
-                    transferablePoolUnit.isNewlyCreated
-                )
+                onClick(transferablePoolUnit)
             }
             .background(
                 color = RadixTheme.colors.gray5,
@@ -161,20 +157,19 @@ private fun PoolAmountSection(transferable: Transferable, modifier: Modifier = M
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.End
             )
-        }
 
-        (transferable.transferable as? TransferableAsset.Fungible)?.let {
-            Text(
-                modifier = Modifier,
-                text = it.amount.displayableQuantity(),
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.End
-            )
-        }
-        guaranteedQuantity?.let { quantity ->
+            (transferable.transferable as? TransferableAsset.Fungible)?.let {
+                Text(
+                    modifier = Modifier,
+                    text = it.amount.displayableQuantity(),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.End
+                )
+            }
+
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
             Text(
                 text = stringResource(id = R.string.transactionReview_guaranteed),
@@ -186,7 +181,7 @@ private fun PoolAmountSection(transferable: Transferable, modifier: Modifier = M
             )
             Text(
                 modifier = Modifier,
-                text = quantity.amount.displayableQuantity(),
+                text = guaranteedQuantity.amount.displayableQuantity(),
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray2,
                 maxLines = 1,

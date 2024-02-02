@@ -52,8 +52,7 @@ fun TransferableTokenItemContent(
             is TransferableAsset.NonFungible.NFTAssets -> {
                 Thumbnail.NonFungible(
                     modifier = Modifier.size(44.dp),
-                    collection = resource.resource,
-                    shape = RadixTheme.shapes.roundedRectSmall
+                    collection = resource.resource
                 )
             }
 

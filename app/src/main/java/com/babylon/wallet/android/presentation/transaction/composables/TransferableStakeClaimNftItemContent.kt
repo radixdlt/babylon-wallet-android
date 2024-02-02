@@ -38,7 +38,7 @@ fun TransferableStakeClaimNftItemContent(
     modifier: Modifier = Modifier,
     transferable: TransferableAsset.NonFungible.StakeClaimAssets,
     shape: Shape,
-    onNonFungibleResourceClick: (nonFungibleResource: Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit
+    onClick: (TransferableAsset.NonFungible.StakeClaimAssets, Resource.NonFungibleResource.Item) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -95,10 +95,9 @@ fun TransferableStakeClaimNftItemContent(
                 modifier = Modifier
                     .clip(RadixTheme.shapes.roundedRectSmall)
                     .throttleClickable {
-                        onNonFungibleResourceClick(
-                            transferable.resource,
-                            item,
-                            transferable.isNewlyCreated
+                        onClick(
+                            transferable,
+                            item
                         )
                     }
                     .fillMaxWidth()
