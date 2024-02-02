@@ -31,7 +31,7 @@ class ValidatorStakeProcessor @Inject constructor(
         val involvedValidators = getValidatorsUseCase(classification.involvedValidatorAddresses).getOrThrow()
 
         val fromAccounts = extractWithdrawals(summary, getProfileUseCase, resources)
-        val toAccounts = extractDeposits(
+        val toAccounts = classification.extractDeposits(
             executionSummary = summary,
             getProfileUseCase = getProfileUseCase,
             resources = resources,
@@ -45,7 +45,7 @@ class ValidatorStakeProcessor @Inject constructor(
         )
     }
 
-    private suspend fun extractDeposits(
+    private suspend fun DetailedManifestClass.ValidatorStake.extractDeposits(
         executionSummary: ExecutionSummary,
         getProfileUseCase: GetProfileUseCase,
         resources: List<Resource>,
@@ -57,12 +57,15 @@ class ValidatorStakeProcessor @Inject constructor(
             val lsuResource = resources.find {
                 it.resourceAddress == depositedResources.key
             } as? Resource.FungibleResource ?: error("No resource found")
+            val relatedStakes = validatorStakes.filter { it.liquidStakeUnitAddress.addressString() == lsuResource.resourceAddress }
+            val totalStakedLsuForAccount = relatedStakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() }
+            val totalStakeXrdWorthForAccount = relatedStakes.sumOf { it.xrdAmount.asStr().toBigDecimal() }
             val validatorAddress = lsuResource.validatorAddress ?: error("No validator address found")
             val validator =
                 involvedValidators.find { it.address == validatorAddress } ?: error("No validator found")
             val lsuAmount = depositedResources.value.sumOf { it.amount }
-            val xrdWorth = lsuAmount.divide(lsuResource.currentSupply, lsuResource.mathContext)
-                .multiply(validator.totalXrdStake, lsuResource.mathContext)
+            val xrdWorth = lsuAmount.divide(totalStakedLsuForAccount, lsuResource.mathContext)
+                .multiply(totalStakeXrdWorthForAccount, lsuResource.mathContext)
             val guaranteeType = depositedResources.value.first().guaranteeType(defaultDepositGuarantees)
             Transferable.Depositing(
                 transferable = TransferableAsset.Fungible.LSUAsset(
