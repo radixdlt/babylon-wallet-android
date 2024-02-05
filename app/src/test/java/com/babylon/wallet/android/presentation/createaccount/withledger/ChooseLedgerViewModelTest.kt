@@ -26,7 +26,6 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
-import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
@@ -37,7 +36,6 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
     private val ledgerMessenger = mockk<LedgerMessenger>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val addLedgerFactorSourceUseCase = mockk<AddLedgerFactorSourceUseCase>()
-    private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
     private val eventBus = mockk<AppEventBus>()
     private val savedStateHandle = mockk<SavedStateHandle>()
 
@@ -48,7 +46,6 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
     override fun initVM(): ChooseLedgerViewModel {
         return ChooseLedgerViewModel(
             getProfileUseCase,
-            ensureBabylonFactorSourceExistUseCase,
             eventBus,
             savedStateHandle
         )
@@ -60,7 +57,7 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
         coEvery { ledgerMessenger.isAnyLinkedConnectorConnected } returns flowOf(true)
         coEvery { eventBus.sendEvent(any()) } just Runs
         coEvery { getProfileUseCase() } returns flowOf(profile())
-        every { savedStateHandle.get<LedgerSelectionPurpose>(ARG_SELECTION_PURPOSE) } returns LedgerSelectionPurpose.CreateAccount
+        every { savedStateHandle.get<LedgerSelectionPurpose>(ARG_SELECTION_PURPOSE) } returns LedgerSelectionPurpose.DerivePublicKey
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.mainnet
         coEvery {
             addLedgerFactorSourceUseCase(

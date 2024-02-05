@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ledgerFactorSources
 import rdx.works.profile.domain.p2pLinks
@@ -31,7 +30,6 @@ import javax.inject.Inject
 @HiltViewModel
 class ChooseLedgerViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<ChooseLedgerUiState>(),
@@ -94,7 +92,7 @@ class ChooseLedgerViewModel @Inject constructor(
     }
 
     @Suppress("LongMethod")
-    fun onUseLedgerContinueClick(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
+    fun onUseLedgerContinueClick() {
         state.value.ledgerDevices.firstOrNull { selectableLedgerDevice ->
             selectableLedgerDevice.selected
         }?.let { ledgerFactorSource ->
@@ -112,19 +110,11 @@ class ChooseLedgerViewModel @Inject constructor(
                 }
 
                 when (args.ledgerSelectionPurpose) {
-                    LedgerSelectionPurpose.CreateAccount -> {
-                        // check again if link connector exists
-                        if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
-                            val authenticationResult = deviceBiometricAuthenticationProvider()
-                            if (authenticationResult) {
-                                ensureBabylonFactorSourceExistUseCase()
-                            } else {
-                                // don't move forward without babylon factor source
-                                return@launch
-                            }
-                        }
+                    LedgerSelectionPurpose.DerivePublicKey -> {
                         appEventBus.sendEvent(
-                            AppEvent.AccessFactorSources.SelectedLedgerDevice(ledgerFactorSource = ledgerFactorSource.data)
+                            event = AppEvent.AccessFactorSources.SelectedLedgerDevice(
+                                ledgerFactorSource = ledgerFactorSource.data
+                            )
                         )
                         sendEvent(ChooseLedgerEvent.LedgerSelected)
                     }
