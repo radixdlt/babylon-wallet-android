@@ -48,7 +48,6 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
     override fun initVM(): ChooseLedgerViewModel {
         return ChooseLedgerViewModel(
             getProfileUseCase,
-            ledgerMessenger,
             ensureBabylonFactorSourceExistUseCase,
             eventBus,
             savedStateHandle
