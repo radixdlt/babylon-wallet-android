@@ -32,6 +32,7 @@ class AccessFactorSourcesProvider @Inject constructor(
             keyType = KeyType.TRANSACTION_SIGNING
         )
     }
+
     suspend fun derivePublicKeyForDeviceFactorSource(
         deviceFactorSource: DeviceFactorSource,
         derivationPath: DerivationPath
