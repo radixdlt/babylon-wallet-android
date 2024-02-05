@@ -10,9 +10,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.accessfactorsources.accessFactorSources
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.babylon.wallet.android.presentation.accessfactorsources.accessFactorSources
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
