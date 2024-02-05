@@ -19,6 +19,7 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 import rdx.works.profile.data.repository.AccessFactorSourcesProvider
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
+import java.util.concurrent.CancellationException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -109,33 +110,27 @@ class AccessFactorSourcesViewModel @Inject constructor(
             forNetworkId = forNetworkId,
             factorSource = ledgerFactorSource
         )
-        val derivePublicKeyResponse = ledgerMessenger.sendDerivePublicKeyRequest(
+        ledgerMessenger.sendDerivePublicKeyRequest(
             interactionId = UUIDGenerator.uuid().toString(),
             keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
             ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource = ledgerFactorSource)
-        )
-
-        if (derivePublicKeyResponse.isSuccess) {
-            val publicKeyResponse = derivePublicKeyResponse.getOrNull()
-            if (publicKeyResponse == null) {
-                accessFactorSourcesUiProxy.setOutput(null)
-                return
-            }
-
-            val publicKey = publicKeyResponse.publicKeysHex.first().publicKeyHex.decodeHex() // TODO CHECK ABOUT IT
+        ).onSuccess { derivePublicKeyResponse ->
+            val publicKey = derivePublicKeyResponse.publicKeysHex.first().publicKeyHex.decodeHex() // TODO CHECK ABOUT IT
             val publicKeyAndDerivationPath = PublicKeyAndDerivationPath(
                 compressedPublicKey = publicKey,
                 derivationPath = derivationPath
             )
             accessFactorSourcesUiProxy.setOutput(publicKeyAndDerivationPath)
-        } else {
-            accessFactorSourcesUiProxy.setOutput(null)
+        }.onFailure { error ->
+            accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(error))
         }
     }
 
     private fun biometricAuthenticationDismissed() {
         viewModelScope.launch {
-            accessFactorSourcesUiProxy.setOutput(null)
+            accessFactorSourcesUiProxy.setOutput(
+                output = AccessFactorSourcesOutput.Failure(CancellationException("Authentication dismissed"))
+            )
             accessFactorSourcesUiProxy.reset()
         }
     }

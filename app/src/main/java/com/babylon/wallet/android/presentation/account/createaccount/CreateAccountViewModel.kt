@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
@@ -99,7 +100,7 @@ class CreateAccountViewModel @Inject constructor(
             }
 
             // if main babylon factor source is not present, it will be created during the public key derivation
-            val publicKeyAndDerivationPath = accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
+            accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToCreateAccount(
                     forNetworkId = onNetworkId,
                     factorSource = if (isWithLedger && selectedFactorSource != null) {
@@ -108,20 +109,26 @@ class CreateAccountViewModel @Inject constructor(
                         null
                     }
                 )
-            )
-
-            handleAccountCreate { nameOfAccount, networkId ->
-                // when we reach this point main babylon factor source has already created
-                if (selectedFactorSource == null && isWithLedger.not()) { // so take it if it is a creation with device
-                    val profile = getProfileUseCase.invoke().first() // get again the profile with its updated state
-                    selectedFactorSource = profile.mainBabylonFactorSource() ?: error("Babylon factor source is not present")
+            ).onSuccess {
+                handleAccountCreate { nameOfAccount, networkId ->
+                    // when we reach this point main babylon factor source has already created
+                    if (selectedFactorSource == null && isWithLedger.not()) { // so take it if it is a creation with device
+                        val profile = getProfileUseCase.invoke().first() // get again the profile with its updated state
+                        selectedFactorSource = profile.mainBabylonFactorSource() ?: error("Babylon factor source is not present")
+                    }
+                    createAccountUseCase(
+                        displayName = nameOfAccount,
+                        factorSource = selectedFactorSource ?: error("factor source must not be null"),
+                        publicKeyAndDerivationPath = it,
+                        onNetworkId = networkId
+                    )
                 }
-                createAccountUseCase(
-                    displayName = nameOfAccount,
-                    factorSource = selectedFactorSource ?: error("factor source must not be null"),
-                    publicKeyAndDerivationPath = publicKeyAndDerivationPath,
-                    onNetworkId = networkId
-                )
+            }.onFailure { error ->
+                _state.update { state ->
+                    state.copy(
+                        uiMessage = UiMessage.ErrorMessage(error)
+                    )
+                }
             }
         }
     }
@@ -141,6 +148,10 @@ class CreateAccountViewModel @Inject constructor(
 
     fun onUseLedgerSelectionChanged(selected: Boolean) {
         _state.update { it.copy(isWithLedger = selected) }
+    }
+
+    fun onUiMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
     }
 
     private suspend fun handleAccountCreate(
@@ -191,7 +202,8 @@ class CreateAccountViewModel @Inject constructor(
         val firstTime: Boolean = false,
         val isWithLedger: Boolean = false,
         val isCancelable: Boolean = true,
-        val interactionState: InteractionState? = null
+        val interactionState: InteractionState? = null,
+        val uiMessage: UiMessage? = null
     ) : UiState
 
     companion object {

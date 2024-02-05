@@ -15,10 +15,12 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -33,8 +35,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 
 @Composable
 fun CreateAccountScreen(
@@ -67,7 +72,9 @@ fun CreateAccountScreen(
             modifier = modifier,
             firstTime = state.firstTime,
             isWithLedger = state.isWithLedger,
-            onUseLedgerSelectionChanged = viewModel::onUseLedgerSelectionChanged
+            onUseLedgerSelectionChanged = viewModel::onUseLedgerSelectionChanged,
+            uiMessage = state.uiMessage,
+            onUiMessageShown = viewModel::onUiMessageShown
         )
     }
     LaunchedEffect(Unit) {
@@ -97,8 +104,17 @@ fun CreateAccountContent(
     modifier: Modifier,
     firstTime: Boolean,
     isWithLedger: Boolean,
-    onUseLedgerSelectionChanged: (Boolean) -> Unit
+    onUseLedgerSelectionChanged: (Boolean) -> Unit,
+    uiMessage: UiMessage? = null,
+    onUiMessageShown: () -> Unit = {}
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onUiMessageShown
+    )
+
     Scaffold(
         modifier = modifier.imePadding(),
         topBar = {
@@ -126,7 +142,13 @@ fun CreateAccountContent(
                 throttleClicks = true
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.defaultBackground,
+        snackbarHost = {
+            RadixSnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
+            )
+        }
     ) { padding ->
         Column(
             modifier = Modifier

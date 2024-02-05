@@ -9,7 +9,7 @@ interface AccessFactorSourcesProxy {
 
     suspend fun getPublicKeyAndDerivationPathForFactorSource(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToCreateAccount
-    ): AccessFactorSourcesOutput.PublicKeyAndDerivationPath
+    ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath>
 }
 
 // interface for the AccessFactorSourceViewModel that works as a mediator between the clients
@@ -18,7 +18,7 @@ interface AccessFactorSourcesUiProxy {
 
     fun getInput(): AccessFactorSourcesInput
 
-    suspend fun setOutput(output: AccessFactorSourcesOutput?)
+    suspend fun setOutput(output: AccessFactorSourcesOutput)
 
     suspend fun reset()
 }
@@ -51,4 +51,10 @@ sealed interface AccessFactorSourcesOutput {
     data class Signers(
         val someData: List<String>
     ) : AccessFactorSourcesOutput
+
+    data class Failure(
+        val error: Throwable
+    ) : AccessFactorSourcesOutput
+
+    data object Init : AccessFactorSourcesOutput
 }
