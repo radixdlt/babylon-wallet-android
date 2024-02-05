@@ -41,10 +41,16 @@ fun AccessFactorSourcesDialog(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        context.biometricAuthenticate { isAuthenticated ->
-            viewModel.biometricAuthenticationCompleted(isAuthenticated)
-            if (isAuthenticated.not()) {
-                onDismiss()
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
+                AccessFactorSourcesViewModel.Event.RequestBiometricPrompt -> {
+                    context.biometricAuthenticate { isAuthenticated ->
+                        viewModel.biometricAuthenticationCompleted(isAuthenticated)
+                        if (isAuthenticated.not()) {
+                            onDismiss()
+                        }
+                    }
+                }
             }
         }
     }

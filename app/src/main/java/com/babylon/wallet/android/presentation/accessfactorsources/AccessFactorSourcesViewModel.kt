@@ -6,6 +6,9 @@ import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.PublicKeyAndDerivationPath
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesViewModel.AccessFactorSourcesUiState.ShowContentFor
+import com.babylon.wallet.android.presentation.common.OneOffEvent
+import com.babylon.wallet.android.presentation.common.OneOffEventHandler
+import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,9 +31,16 @@ class AccessFactorSourcesViewModel @Inject constructor(
     private val accessFactorSourcesUiProxy: AccessFactorSourcesUiProxy,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val ledgerMessenger: LedgerMessenger
-) : StateViewModel<AccessFactorSourcesViewModel.AccessFactorSourcesUiState>() {
+) : StateViewModel<AccessFactorSourcesViewModel.AccessFactorSourcesUiState>(),
+    OneOffEventHandler<AccessFactorSourcesViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): AccessFactorSourcesUiState = AccessFactorSourcesUiState()
+
+    init {
+        viewModelScope.launch {
+            sendEvent(Event.RequestBiometricPrompt)
+        }
+    }
 
     fun biometricAuthenticationCompleted(isAuthenticated: Boolean) {
         viewModelScope.launch {
@@ -146,5 +156,9 @@ class AccessFactorSourcesViewModel @Inject constructor(
             data object Device : ShowContentFor
             data class Ledger(val selectedLedgerDevice: LedgerHardwareWalletFactorSource) : ShowContentFor
         }
+    }
+
+    sealed interface Event : OneOffEvent {
+        data object RequestBiometricPrompt : Event
     }
 }
