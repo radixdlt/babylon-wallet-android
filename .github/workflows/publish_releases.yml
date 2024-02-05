@@ -164,6 +164,14 @@ jobs:
           fileName: "service_account.json"
           encodedString: ${{ env.GH_GOOGLE_SERVICE_ACCOUNT_JSON_FILE_BASE64 }}
 
+      - name: Decode Firebase Crashlytics json
+        uses: RDXWorks-actions/base64-to-file@main
+        id: crashlytics_credentials
+        with:
+          fileName: "google-services.json"
+          fileDir: "app/"
+          encodedString: ${{ env.GH_CRASHLYTICS_GOOGLE_SERVICES_JSON_FILE_BASE64 }}
+
       - name: Fetch GPR credentials
         uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
         with:
