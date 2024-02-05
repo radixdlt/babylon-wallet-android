@@ -26,7 +26,7 @@ internal class ChooserLedgerArgs(
 }
 
 fun NavController.chooseLedger(
-    ledgerSelectionPurpose: LedgerSelectionPurpose = LedgerSelectionPurpose.CreateAccount
+    ledgerSelectionPurpose: LedgerSelectionPurpose = LedgerSelectionPurpose.DerivePublicKey
 ) {
     navigate(
         route = "route_choose_ledger?$ARG_SELECTION_PURPOSE=$ledgerSelectionPurpose"
@@ -50,7 +50,7 @@ fun NavGraphBuilder.chooseLedger(
         arguments = listOf(
             navArgument(ARG_SELECTION_PURPOSE) {
                 type = NavType.EnumType(LedgerSelectionPurpose::class.java)
-                defaultValue = LedgerSelectionPurpose.CreateAccount
+                defaultValue = LedgerSelectionPurpose.DerivePublicKey
             }
         )
     ) {
@@ -66,5 +66,5 @@ fun NavGraphBuilder.chooseLedger(
 }
 
 enum class LedgerSelectionPurpose {
-    CreateAccount, RecoveryScanOlympia, RecoveryScanBabylon
+    DerivePublicKey, RecoveryScanOlympia, RecoveryScanBabylon
 }
