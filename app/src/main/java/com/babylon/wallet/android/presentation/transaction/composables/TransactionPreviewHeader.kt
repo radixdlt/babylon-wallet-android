@@ -121,6 +121,11 @@ fun TransactionPreviewHeader(
         },
         actions = {
             if (state.isRawManifestToggleVisible) {
+                val icon = if (state.isRawManifestVisible) {
+                    com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_collapse
+                } else {
+                    com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
+                }
                 IconButton(
                     modifier = Modifier
                         .padding(end = RadixTheme.dimensions.paddingXLarge)
@@ -133,7 +138,7 @@ fun TransactionPreviewHeader(
                 ) {
                     Icon(
                         painter = painterResource(
-                            id = com.babylon.wallet.android.designsystem.R.drawable.ic_manifest_expand
+                            id = icon
                         ),
                         tint = Color.Unspecified,
                         contentDescription = "manifest expand"
