@@ -1,9 +1,9 @@
 plugins {
-    id 'com.android.library'
-    id 'org.jetbrains.kotlin.android'
-    id 'dagger.hilt.android.plugin'
+    alias libs.plugins.android.library
+    alias libs.plugins.kotlin.android
+    alias libs.plugins.hilt
     id 'kotlin-kapt'
-    id 'kotlinx-serialization'
+    alias libs.plugins.kotlin.serialization
 }
 
 android {
