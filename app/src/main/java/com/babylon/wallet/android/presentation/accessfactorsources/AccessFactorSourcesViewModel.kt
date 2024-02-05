@@ -61,8 +61,9 @@ class AccessFactorSourcesViewModel @Inject constructor(
     }
 
     private suspend fun derivePublicKey(input: AccessFactorSourcesInput.ToCreateAccount) {
+        val profile = ensureBabylonFactorSourceExistUseCase()
+
         if (input.factorSource == null) { // device factor source
-            val profile = ensureBabylonFactorSourceExistUseCase()
             val deviceFactorSource = profile.mainBabylonFactorSource() ?: error("Babylon factor source is not present")
             derivePublicKeyFromDeviceFactorSource(
                 forNetworkId = input.forNetworkId,
