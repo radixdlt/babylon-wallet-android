@@ -16,6 +16,8 @@ import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.ResourceIndicator
 import kotlinx.coroutines.flow.first
+import rdx.works.core.divideWithDivisibility
+import rdx.works.core.multiplyWithDivisibility
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.currentNetwork
@@ -105,8 +107,8 @@ class ValidatorUnstakeProcessor @Inject constructor(
             val validatorAddress = lsuResource.validatorAddress ?: error("No validator address found")
             val validator = involvedValidators.find { it.address == validatorAddress } ?: error("No validator found")
             val totalLSU = depositedResources.value.sumOf { it.amount }
-            val xrdWorth = totalLSU.divide(lsuResource.currentSupply, lsuResource.mathContext)
-                .multiply(validator.totalXrdStake, lsuResource.mathContext)
+            val xrdWorth = totalLSU.divideWithDivisibility(lsuResource.currentSupply, lsuResource.divisibility)
+                .multiplyWithDivisibility(validator.totalXrdStake, lsuResource.divisibility)
             Transferable.Withdrawing(
                 transferable = TransferableAsset.Fungible.LSUAsset(
                     amount = totalLSU,

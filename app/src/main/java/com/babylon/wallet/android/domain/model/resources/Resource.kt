@@ -99,13 +99,6 @@ sealed class Resource {
                 ""
             }
 
-        val mathContext: MathContext
-            get() = if (divisibility == null) {
-                MathContext.UNLIMITED
-            } else {
-                MathContext(divisibility, RoundingMode.HALF_DOWN)
-            }
-
         @Suppress("CyclomaticComplexMethod")
         override fun compareTo(other: FungibleResource): Int {
             // XRD should always be first

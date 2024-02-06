@@ -13,6 +13,8 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import kotlinx.coroutines.flow.first
+import rdx.works.core.divideWithDivisibility
+import rdx.works.core.multiplyWithDivisibility
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
@@ -64,8 +66,8 @@ class ValidatorStakeProcessor @Inject constructor(
             val validator =
                 involvedValidators.find { it.address == validatorAddress } ?: error("No validator found")
             val lsuAmount = depositedResources.value.sumOf { it.amount }
-            val xrdWorth = lsuAmount.divide(totalStakedLsuForAccount, lsuResource.mathContext)
-                .multiply(totalStakeXrdWorthForAccount, lsuResource.mathContext)
+            val xrdWorth = lsuAmount.divideWithDivisibility(totalStakedLsuForAccount, lsuResource.divisibility)
+                .multiplyWithDivisibility(totalStakeXrdWorthForAccount, lsuResource.divisibility)
             val guaranteeType = depositedResources.value.first().guaranteeType(defaultDepositGuarantees)
             Transferable.Depositing(
                 transferable = TransferableAsset.Fungible.LSUAsset(
