@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.composables
 
-import android.content.ClipData
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,13 +10,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.Typeface
 import androidx.compose.ui.unit.sp
-import androidx.core.content.getSystemService
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -27,7 +26,7 @@ fun RawManifestView(
     modifier: Modifier = Modifier,
     manifest: String
 ) {
-    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.End
@@ -40,15 +39,7 @@ fun RawManifestView(
                     shape = RadixTheme.shapes.roundedRectSmall
                 )
                 .throttleClickable {
-                    context
-                        .getSystemService<android.content.ClipboardManager>()
-                        ?.let { clipboardManager ->
-                            val clipData = ClipData.newPlainText(
-                                "Raw manifest",
-                                manifest
-                            )
-                            clipboardManager.setPrimaryClip(clipData)
-                        }
+                    clipboardManager.setText(buildAnnotatedString { append(manifest) })
                 }
                 .padding(RadixTheme.dimensions.paddingSmall),
             verticalAlignment = Alignment.CenterVertically
