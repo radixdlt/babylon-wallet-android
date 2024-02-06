@@ -3,8 +3,8 @@ plugins {
     alias libs.plugins.kotlin.android
     alias libs.plugins.hilt
     alias libs.plugins.sonarqube
+    alias libs.plugins.ksp
     id "jacoco"
-    id 'kotlin-kapt'
     id 'kotlin-parcelize'
     alias libs.plugins.kotlin.serialization
     alias libs.plugins.google.services
@@ -176,7 +176,7 @@ dependencies {
     // Hilt
     implementation libs.hilt
     implementation libs.hiltNavigation
-    kapt libs.hiltCompiler
+    ksp libs.hiltCompiler
 
     // Biometric
     implementation libs.biometricKtx
@@ -203,7 +203,7 @@ dependencies {
     // Database
     implementation libs.roomRuntime
     implementation libs.roomKtx
-    kapt libs.roomCompiler
+    ksp libs.roomCompiler
 
     //Timber
     implementation libs.timber

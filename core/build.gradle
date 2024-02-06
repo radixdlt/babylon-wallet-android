@@ -1,7 +1,7 @@
 plugins {
     alias libs.plugins.android.library
     alias libs.plugins.kotlin.android
-    id 'kotlin-kapt'
+    alias libs.plugins.ksp
     alias libs.plugins.kotlin.serialization
 }
 
@@ -46,7 +46,7 @@ dependencies {
 
     // Hilt
     implementation libs.hilt
-    kapt libs.hiltCompiler
+    ksp libs.hiltCompiler
 
     testImplementation libs.junit
     testImplementation libs.retKotlin

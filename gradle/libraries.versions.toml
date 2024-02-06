@@ -63,6 +63,7 @@ googleServicesPlugin = "4.4.0"
 firebaseCrashlyticsPlugin = "2.9.9"
 hiltPlugin = "2.50"
 sonarqubePlugin = "4.4.1.3373"
+kspPlugin = "1.9.21-1.0.16"
 
 [libraries]
 androidxCore = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -153,3 +154,4 @@ google-services = { id = "com.google.gms.google-services", version.ref = "google
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hiltPlugin" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonarqubePlugin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "kspPlugin" }
