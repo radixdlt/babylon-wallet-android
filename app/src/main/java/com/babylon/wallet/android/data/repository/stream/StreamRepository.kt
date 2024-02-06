@@ -26,5 +26,4 @@ class StreamRepositoryImpl @Inject constructor(
                 .toResult()
         }
     }
-
 }
