@@ -23,7 +23,7 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
 
     operator fun invoke() = combine(
         getProfileUseCase.entitiesOnCurrentNetwork,
-        preferencesManager.getBackedUpFactorSourceIds().distinctUntilChanged()
+        preferencesManager.getBackedUpFactorSourceIds()
     ) { entities, backedUpFactorSourceIds ->
         entities.mapNotNull { entity ->
             mapToEntityWithSecurityPrompt(entity, backedUpFactorSourceIds)
