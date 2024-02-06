@@ -16,6 +16,7 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerStateSelector
+import com.babylon.wallet.android.data.gateway.generated.models.StreamTransactionsRequestAllOfManifestClassFilter
 import com.babylon.wallet.android.data.gateway.generated.models.StreamTransactionsRequestEventFilterItem
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionDetailsOptIns
 
@@ -36,6 +37,9 @@ import kotlinx.serialization.Contextual
  * @param manifestResourcesFilter 
  * @param affectedGlobalEntitiesFilter 
  * @param eventsFilter 
+ * @param accountsWithManifestOwnerMethodCalls 
+ * @param accountsWithoutManifestOwnerMethodCalls 
+ * @param manifestClassFilter 
  * @param order Configures the order of returned result set. Defaults to `desc`.
  * @param optIns 
  */
@@ -75,6 +79,15 @@ data class StreamTransactionsRequest (
 
     @SerialName(value = "events_filter")
     val eventsFilter: kotlin.collections.List<StreamTransactionsRequestEventFilterItem>? = null,
+
+    @SerialName(value = "accounts_with_manifest_owner_method_calls")
+    val accountsWithManifestOwnerMethodCalls: kotlin.collections.List<kotlin.String>? = null,
+
+    @SerialName(value = "accounts_without_manifest_owner_method_calls")
+    val accountsWithoutManifestOwnerMethodCalls: kotlin.collections.List<kotlin.String>? = null,
+
+    @SerialName(value = "manifest_class_filter")
+    val manifestClassFilter: StreamTransactionsRequestAllOfManifestClassFilter? = null,
 
     /* Configures the order of returned result set. Defaults to `desc`. */
     @SerialName(value = "order")

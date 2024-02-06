@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.gateway.generated.apis
+package com.babylon.wallet.android.data.gateway.apis
 
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.CollectionFormats.*
 import retrofit2.http.*

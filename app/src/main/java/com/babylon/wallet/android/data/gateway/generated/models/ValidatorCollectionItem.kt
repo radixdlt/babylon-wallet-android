@@ -17,6 +17,7 @@ package com.babylon.wallet.android.data.gateway.generated.models
 
 import com.babylon.wallet.android.data.gateway.generated.models.EntityMetadataCollection
 import com.babylon.wallet.android.data.gateway.generated.models.ValidatorCollectionItemActiveInEpoch
+import com.babylon.wallet.android.data.gateway.generated.models.ValidatorCollectionItemEffectiveFeeFactor
 import com.babylon.wallet.android.data.gateway.generated.models.ValidatorVaultItem
 
 import kotlinx.serialization.Serializable
@@ -31,8 +32,9 @@ import kotlinx.serialization.Contextual
  * @param pendingXrdWithdrawVault 
  * @param lockedOwnerStakeUnitVault 
  * @param pendingOwnerStakeUnitUnlockVault 
- * @param metadata 
  * @param state Validator inner state representation. This type is defined in the Core API as `ValidatorFieldStateValue`. See the Core API documentation for more details. 
+ * @param metadata 
+ * @param effectiveFeeFactor 
  * @param activeInEpoch 
  */
 @Serializable
@@ -55,12 +57,15 @@ data class ValidatorCollectionItem (
     @SerialName(value = "pending_owner_stake_unit_unlock_vault")
     val pendingOwnerStakeUnitUnlockVault: ValidatorVaultItem,
 
+    /* Validator inner state representation. This type is defined in the Core API as `ValidatorFieldStateValue`. See the Core API documentation for more details.  */
+    @Contextual @SerialName(value = "state")
+    val state: kotlin.Any?,
+
     @SerialName(value = "metadata")
     val metadata: EntityMetadataCollection,
 
-    /* Validator inner state representation. This type is defined in the Core API as `ValidatorFieldStateValue`. See the Core API documentation for more details.  */
-//    @Contextual @SerialName(value = "state")
-//    val state: kotlin.Any? = null,
+    @SerialName(value = "effective_fee_factor")
+    val effectiveFeeFactor: ValidatorCollectionItemEffectiveFeeFactor,
 
     @SerialName(value = "active_in_epoch")
     val activeInEpoch: ValidatorCollectionItemActiveInEpoch? = null

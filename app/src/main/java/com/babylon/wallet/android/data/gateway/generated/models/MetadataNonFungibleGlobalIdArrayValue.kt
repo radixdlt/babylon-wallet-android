@@ -15,7 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import com.babylon.wallet.android.data.gateway.generated.models.MetadataNonFungibleGlobalIdValueAllOf
+import com.babylon.wallet.android.data.gateway.generated.models.MetadataNonFungibleGlobalIdArrayValueAllOfValues
 import com.babylon.wallet.android.data.gateway.generated.models.MetadataTypedValue
 import com.babylon.wallet.android.data.gateway.generated.models.MetadataValueType
 
@@ -37,7 +37,7 @@ data class MetadataNonFungibleGlobalIdArrayValue (
     override val type: MetadataValueType,
 
     @SerialName(value = "values")
-    val propertyValues: kotlin.collections.List<MetadataNonFungibleGlobalIdValueAllOf>
+    val propertyValues: kotlin.collections.List<MetadataNonFungibleGlobalIdArrayValueAllOfValues>
 
 ) : MetadataTypedValue()
 

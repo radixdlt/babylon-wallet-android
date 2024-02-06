@@ -21,7 +21,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * Check detailed [OptIns](#section/Using-endpoints-with-opt-in-features) documentation for more details
  *
  * @param ancestorIdentities if set to `true`, ancestor addresses - `parent_address`, `owner_address` and `global_address` for entities are returned.
  * @param componentRoyaltyVaultBalance if set to `true`, `royalty_vault_balance` for component entities is returned.

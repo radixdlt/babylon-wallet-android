@@ -15,6 +15,7 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.generated.models.ManifestClass
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
@@ -39,6 +40,8 @@ import kotlinx.serialization.Contextual
  * @param errorMessage 
  * @param rawHex Hex-encoded binary blob.
  * @param receipt 
+ * @param manifestInstructions A text-representation of a transaction manifest. This field will be present only for user transactions and when explicitly opted-in using `manifest_instructions` flag. 
+ * @param manifestClasses A collection of zero or more manifest classes ordered from the most specific class to the least specific one. This field will be present only for user transactions. 
  * @param message The optional transaction message. This type is defined in the Core API as `TransactionMessage`. See the Core API documentation for more details. 
  * @param balanceChanges 
  */
@@ -88,6 +91,14 @@ data class CommittedTransactionInfo (
 
     @SerialName(value = "receipt")
     val receipt: TransactionReceipt? = null,
+
+    /* A text-representation of a transaction manifest. This field will be present only for user transactions and when explicitly opted-in using `manifest_instructions` flag.  */
+    @SerialName(value = "manifest_instructions")
+    val manifestInstructions: kotlin.String? = null,
+
+    /* A collection of zero or more manifest classes ordered from the most specific class to the least specific one. This field will be present only for user transactions.  */
+    @SerialName(value = "manifest_classes")
+    val manifestClasses: kotlin.collections.List<@Contextual ManifestClass>? = null,
 
     /* The optional transaction message. This type is defined in the Core API as `TransactionMessage`. See the Core API documentation for more details.  */
 //    @Contextual @SerialName(value = "message")

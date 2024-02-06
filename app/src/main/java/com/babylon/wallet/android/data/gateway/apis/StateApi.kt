@@ -1,5 +1,13 @@
 package com.babylon.wallet.android.data.gateway.apis
 
+import com.babylon.wallet.android.data.gateway.generated.infrastructure.CollectionFormats.*
+import retrofit2.http.*
+import retrofit2.Response
+import okhttp3.RequestBody
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+import com.babylon.wallet.android.data.gateway.generated.models.ErrorResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityFungibleResourceVaultsPageRequest
@@ -24,197 +32,162 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleLocationResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateValidatorsListRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateValidatorsListResponse
-import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.POST
 
-@Suppress("TooManyFunctions")
 interface StateApi {
-
     /**
-     * Get vault page of Entity Fungible resource aggregated per vault
-     * Returns vaults for fungible resource owned by a given global entity. The returned response is in a paginated format,
-     * ordered by the resource&#39;s first appearance on the ledger.
+     * Get page of Global Entity Fungible Resource Vaults
+     * Returns vaults for fungible resource owned by a given global entity. The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger. 
      * Responses:
      *  - 200: Entity Fungibles (paginated)
      *  - 4XX: Client-originated request error
      *
-     * @param stateEntityFungibleResourceVaultsPageRequest
+     * @param stateEntityFungibleResourceVaultsPageRequest 
      * @return [StateEntityFungibleResourceVaultsPageResponse]
      */
     @POST("state/entity/page/fungible-vaults/")
-    fun entityFungibleResourceVaultPage(
-        @Body stateEntityFungibleResourceVaultsPageRequest: StateEntityFungibleResourceVaultsPageRequest
-    ): Call<StateEntityFungibleResourceVaultsPageResponse>
+    suspend fun entityFungibleResourceVaultPage(@Body stateEntityFungibleResourceVaultsPageRequest: StateEntityFungibleResourceVaultsPageRequest): Response<StateEntityFungibleResourceVaultsPageResponse>
 
     /**
-     * Get Entity Fungible Resource Totals Page aggregated globally
-     * Returns the total amount of each fungible resource owned by a given global entity. Result can be aggregated globally or per vault.
-     * The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger.
+     * Get page of Global Entity Fungible Resource Balances
+     * Returns the total amount of each fungible resource owned by a given global entity. Result can be aggregated globally or per vault. The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger. 
      * Responses:
      *  - 200: Entity Fungibles (paginated)
      *  - 4XX: Client-originated request error
      *
-     * @param stateEntityFungiblesPageRequest
+     * @param stateEntityFungiblesPageRequest 
      * @return [StateEntityFungiblesPageResponse]
      */
     @POST("state/entity/page/fungibles/")
-    fun entityFungiblesPage(
-        @Body stateEntityFungiblesPageRequest: StateEntityFungiblesPageRequest
-    ): Call<StateEntityFungiblesPageResponse>
+    suspend fun entityFungiblesPage(@Body stateEntityFungiblesPageRequest: StateEntityFungiblesPageRequest): Response<StateEntityFungiblesPageResponse>
 
     /**
      * Get Entity Metadata Page
-     * Returns all the metadata properties associated with a given global entity. The returned response is in a paginated format,
-     * ordered by first appearance on the ledger.
+     * Returns all the metadata properties associated with a given global entity. The returned response is in a paginated format, ordered by first appearance on the ledger. 
      * Responses:
      *  - 200: Entity Metadata (paginated)
      *  - 4XX: Client-originated request error
      *
-     * @param stateEntityMetadataPageRequest
+     * @param stateEntityMetadataPageRequest 
      * @return [StateEntityMetadataPageResponse]
      */
     @POST("state/entity/page/metadata")
-    fun entityMetadataPage(
-        @Body stateEntityMetadataPageRequest: StateEntityMetadataPageRequest
-    ): Call<StateEntityMetadataPageResponse>
+    suspend fun entityMetadataPage(@Body stateEntityMetadataPageRequest: StateEntityMetadataPageRequest): Response<StateEntityMetadataPageResponse>
 
     /**
-     * Get Entity Non-Fungible IDs
-     * Returns all non-fungible IDs of a given non-fungible resource owned by a given entity. The returned response is in a paginated
-     * format, ordered by the resource&#39;s first appearence on the ledger.
+     * Get page of Non-Fungibles in Vault
+     * Returns all non-fungible IDs of a given non-fungible resource owned by a given entity. The returned response is in a paginated format, ordered by the resource&#39;s first appearence on the ledger. 
      * Responses:
      *  - 200: Entity Non-Fungible IDs (paginated)
      *  - 4XX: Client-originated request error
      *
-     * @param stateEntityNonFungibleIdsPageRequest
+     * @param stateEntityNonFungibleIdsPageRequest 
      * @return [StateEntityNonFungibleIdsPageResponse]
      */
     @POST("state/entity/page/non-fungible-vault/ids")
-    fun entityNonFungibleIdsPage(
-        @Body stateEntityNonFungibleIdsPageRequest: StateEntityNonFungibleIdsPageRequest
-    ): Call<StateEntityNonFungibleIdsPageResponse>
+    suspend fun entityNonFungibleIdsPage(@Body stateEntityNonFungibleIdsPageRequest: StateEntityNonFungibleIdsPageRequest): Response<StateEntityNonFungibleIdsPageResponse>
 
     /**
-     * Get vault page of Entity Non Fungible aggregated per vault
-     * Returns vaults for non fungible resource owned by a given global entity. The returned response is in a paginated format,
-     * ordered by the resource&#39;s first appearance on the ledger.
+     * Get page of Global Entity Non-Fungible Resource Vaults
+     * Returns vaults for non fungible resource owned by a given global entity. The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger. 
      * Responses:
      *  - 200: Entity Fungibles (paginated)
      *  - 4XX: Client-originated request error
      *
-     * @param stateEntityNonFungibleResourceVaultsPageRequest
+     * @param stateEntityNonFungibleResourceVaultsPageRequest 
      * @return [StateEntityNonFungibleResourceVaultsPageResponse]
      */
     @POST("state/entity/page/non-fungible-vaults/")
-    fun entityNonFungibleResourceVaultPage(
-        @Body stateEntityNonFungibleResourceVaultsPageRequest: StateEntityNonFungibleResourceVaultsPageRequest
-    ): Call<StateEntityNonFungibleResourceVaultsPageResponse>
+    suspend fun entityNonFungibleResourceVaultPage(@Body stateEntityNonFungibleResourceVaultsPageRequest: StateEntityNonFungibleResourceVaultsPageRequest): Response<StateEntityNonFungibleResourceVaultsPageResponse>
 
     /**
-     * Get Entity Non-Fungible Resource Totals Page aggregated globally
-     * Returns the total amount of each non-fungible resource owned by a given global entity. Result can be aggregated globally
-     * or per vault. The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger.
+     * Get page of Global Entity Non-Fungible Resource Balances
+     * Returns the total amount of each non-fungible resource owned by a given global entity. Result can be aggregated globally or per vault. The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger. 
      * Responses:
      *  - 200: Entity Non-Fungibles (paginated)
      *  - 4XX: Client-originated request error
      *
-     * @param stateEntityNonFungiblesPageRequest
+     * @param stateEntityNonFungiblesPageRequest 
      * @return [StateEntityNonFungiblesPageResponse]
      */
     @POST("state/entity/page/non-fungibles/")
-    fun entityNonFungiblesPage(
-        @Body stateEntityNonFungiblesPageRequest: StateEntityNonFungiblesPageRequest
-    ): Call<StateEntityNonFungiblesPageResponse>
+    suspend fun entityNonFungiblesPage(@Body stateEntityNonFungiblesPageRequest: StateEntityNonFungiblesPageRequest): Response<StateEntityNonFungiblesPageResponse>
 
     /**
      * Get KeyValueStore Data
-     * Returns data (value) associated with a given key of a given key-value store.
+     * Returns data (value) associated with a given key of a given key-value store. [Check detailed documentation for explanation](#section/How-to-query-the-content-of-a-key-value-store-inside-a-component) 
      * Responses:
      *  - 200: Non-Fungible ID Data
      *  - 4XX: Client-originated request error
      *
-     * @param stateKeyValueStoreDataRequest
+     * @param stateKeyValueStoreDataRequest 
      * @return [StateKeyValueStoreDataResponse]
      */
     @POST("state/key-value-store/data")
-    fun keyValueStoreData(
-        @Body stateKeyValueStoreDataRequest: StateKeyValueStoreDataRequest
-    ): Call<StateKeyValueStoreDataResponse>
+    suspend fun keyValueStoreData(@Body stateKeyValueStoreDataRequest: StateKeyValueStoreDataRequest): Response<StateKeyValueStoreDataResponse>
 
     /**
      * Get Non-Fungible Data
-     * Returns data associated with a given non-fungible ID of a given non-fungible resource.
+     * Returns data associated with a given non-fungible ID of a given non-fungible resource. 
      * Responses:
      *  - 200: Non-Fungible ID Data
      *  - 4XX: Client-originated request error
      *
-     * @param stateNonFungibleDataRequest
+     * @param stateNonFungibleDataRequest 
      * @return [StateNonFungibleDataResponse]
      */
     @POST("state/non-fungible/data")
-    fun nonFungibleData(
-        @Body stateNonFungibleDataRequest: StateNonFungibleDataRequest
-    ): Call<StateNonFungibleDataResponse>
+    suspend fun nonFungibleData(@Body stateNonFungibleDataRequest: StateNonFungibleDataRequest): Response<StateNonFungibleDataResponse>
 
     /**
-     * Get Non-Fungible Collection
-     * Returns the non-fungible IDs of a given non-fungible resource. Returned response is in a paginated format, ordered by their first
-     * appearance on the ledger.
+     * Get page of Non-Fungible Ids in Resource Collection
+     * Returns the non-fungible IDs of a given non-fungible resource. Returned response is in a paginated format, ordered by their first appearance on the ledger. 
      * Responses:
      *  - 200: Non-Fungible IDs (paginated)
      *  - 4XX: Client-originated request error
      *
-     * @param stateNonFungibleIdsRequest
+     * @param stateNonFungibleIdsRequest 
      * @return [StateNonFungibleIdsResponse]
      */
     @POST("state/non-fungible/ids")
-    fun nonFungibleIds(
-        @Body stateNonFungibleIdsRequest: StateNonFungibleIdsRequest
-    ): Call<StateNonFungibleIdsResponse>
+    suspend fun nonFungibleIds(@Body stateNonFungibleIdsRequest: StateNonFungibleIdsRequest): Response<StateNonFungibleIdsResponse>
 
     /**
      * Get Non-Fungible Location
-     * Returns location of a given non-fungible ID.
+     * Returns location of a given non-fungible ID. 
      * Responses:
      *  - 200: Non-Fungible ID Location
      *  - 4XX: Client-originated request error
      *
-     * @param stateNonFungibleLocationRequest
+     * @param stateNonFungibleLocationRequest 
      * @return [StateNonFungibleLocationResponse]
      */
     @POST("state/non-fungible/location")
-    fun nonFungibleLocation(
-        @Body stateNonFungibleLocationRequest: StateNonFungibleLocationRequest
-    ): Call<StateNonFungibleLocationResponse>
+    suspend fun nonFungibleLocation(@Body stateNonFungibleLocationRequest: StateNonFungibleLocationRequest): Response<StateNonFungibleLocationResponse>
 
     /**
      * Get Entity Details
-     * Returns detailed information for collection of entities. Aggregate resources globally by default.
+     * Returns detailed information for collection of entities. Aggregate resources globally by default. 
      * Responses:
      *  - 200: Entity Details
      *  - 4XX: Client-originated request error
      *
-     * @param stateEntityDetailsRequest
+     * @param stateEntityDetailsRequest 
      * @return [StateEntityDetailsResponse]
      */
     @POST("state/entity/details")
-    fun stateEntityDetails(
-        @Body stateEntityDetailsRequest: StateEntityDetailsRequest
-    ): Call<StateEntityDetailsResponse>
+    suspend fun stateEntityDetails(@Body stateEntityDetailsRequest: StateEntityDetailsRequest): Response<StateEntityDetailsResponse>
 
     /**
      * Get Validators List
-     *
+     * 
      * Responses:
      *  - 200: Validators List
      *  - 4XX: Client-originated request error
      *
-     * @param stateValidatorsListRequest
+     * @param stateValidatorsListRequest 
      * @return [StateValidatorsListResponse]
      */
     @POST("state/validators/list")
-    fun stateValidatorsList(
-        @Body stateValidatorsListRequest: StateValidatorsListRequest
-    ): Call<StateValidatorsListResponse>
+    suspend fun stateValidatorsList(@Body stateValidatorsListRequest: StateValidatorsListRequest): Response<StateValidatorsListResponse>
+
 }

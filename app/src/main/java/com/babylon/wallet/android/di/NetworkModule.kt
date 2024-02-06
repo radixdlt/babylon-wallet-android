@@ -4,6 +4,7 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
 import com.babylon.wallet.android.data.gateway.apis.StateApi
+import com.babylon.wallet.android.data.gateway.apis.StreamApi
 import com.babylon.wallet.android.data.gateway.apis.TransactionApi
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -190,6 +191,17 @@ object NetworkModule {
         @JsonConverterFactory jsonConverterFactory: Factory,
         profileRepository: ProfileRepository
     ): TransactionApi = buildApi(
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
+        okHttpClient = okHttpClient,
+        jsonConverterFactory = jsonConverterFactory
+    )
+
+    @Provides
+    fun provideStreamApi(
+        @CurrentGatewayHttpClient okHttpClient: OkHttpClient,
+        @JsonConverterFactory jsonConverterFactory: Factory,
+        profileRepository: ProfileRepository
+    ): StreamApi = buildApi(
         baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory

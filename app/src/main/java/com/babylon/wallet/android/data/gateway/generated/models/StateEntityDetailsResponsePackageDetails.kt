@@ -19,6 +19,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.PackageVmType
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponsePackageDetailsBlueprintCollection
+import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponsePackageDetailsCodeCollection
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponsePackageDetailsSchemaCollection
 
 import kotlinx.serialization.Serializable
@@ -26,9 +27,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * vm_type, code_hash_hex and code_hex are always going to be empty, use `codes` property which will return collection (it's possible after protocol update that package might have multiple codes)
  *
  * @param type 
+ * @param codes 
  * @param vmType 
  * @param codeHashHex Hex-encoded binary blob.
  * @param codeHex Hex-encoded binary blob.
@@ -42,6 +44,9 @@ data class StateEntityDetailsResponsePackageDetails (
 
     @Contextual @SerialName(value = "type")
     override val type: StateEntityDetailsResponseItemDetailsType,
+
+    @SerialName(value = "codes")
+    val codes: StateEntityDetailsResponsePackageDetailsCodeCollection,
 
     @Contextual @SerialName(value = "vm_type")
     val vmType: PackageVmType,
