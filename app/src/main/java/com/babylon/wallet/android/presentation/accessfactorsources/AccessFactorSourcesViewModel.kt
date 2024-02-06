@@ -51,7 +51,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
                 when (val input = accessFactorSourcesUiProxy.getInput()) {
                     AccessFactorSourcesInput.Init -> { /* do nothing */ }
 
-                    is AccessFactorSourcesInput.ToCreateAccount -> {
+                    is AccessFactorSourcesInput.ToDeriveAccountPublicKey -> {
                         derivePublicKey(input)
                     }
 
@@ -70,7 +70,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
         }
     }
 
-    private suspend fun derivePublicKey(input: AccessFactorSourcesInput.ToCreateAccount) {
+    private suspend fun derivePublicKey(input: AccessFactorSourcesInput.ToDeriveAccountPublicKey) {
         val profile = ensureBabylonFactorSourceExistUseCase()
 
         if (input.factorSource == null) { // device factor source

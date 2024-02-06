@@ -181,7 +181,7 @@ private fun SyncStatusBarWithScreenChanges(navController: NavHostController) {
 @Composable
 private fun HandleAccessFactorSourcesEvents(
     navController: NavController,
-    statusEvents: Flow<AppEvent.AccessFactorSources.DeriveAccountPublicKeys>
+    statusEvents: Flow<AppEvent.AccessFactorSources.DeriveAccountPublicKey>
 ) {
     LaunchedEffect(Unit) {
         statusEvents.collect { event ->

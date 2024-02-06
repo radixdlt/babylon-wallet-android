@@ -8,7 +8,7 @@ import rdx.works.profile.derivation.model.NetworkId
 interface AccessFactorSourcesProxy {
 
     suspend fun getPublicKeyAndDerivationPathForFactorSource(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToCreateAccount
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToDeriveAccountPublicKey
     ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath>
 }
 
@@ -27,7 +27,7 @@ interface AccessFactorSourcesUiProxy {
 
 sealed interface AccessFactorSourcesInput {
 
-    data class ToCreateAccount(
+    data class ToDeriveAccountPublicKey(
         val forNetworkId: NetworkId,
         val factorSource: FactorSource.CreatingEntity? = null
     ) : AccessFactorSourcesInput

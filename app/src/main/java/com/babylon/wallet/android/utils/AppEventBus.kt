@@ -35,7 +35,7 @@ sealed interface AppEvent {
             val ledgerFactorSource: LedgerHardwareWalletFactorSource
         ) : AccessFactorSources
 
-        data class DeriveAccountPublicKeys(val isLedger: Boolean) : AccessFactorSources
+        data class DeriveAccountPublicKey(val isLedger: Boolean) : AccessFactorSources
     }
 
     sealed class Status : AppEvent {

@@ -16,11 +16,11 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
     private val _output = MutableSharedFlow<AccessFactorSourcesOutput>()
 
     override suspend fun getPublicKeyAndDerivationPathForFactorSource(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToCreateAccount
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToDeriveAccountPublicKey
     ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath> {
         input = accessFactorSourcesInput
         appEventBus.sendEvent(
-            event = AppEvent.AccessFactorSources.DeriveAccountPublicKeys(
+            event = AppEvent.AccessFactorSources.DeriveAccountPublicKey(
                 isLedger = accessFactorSourcesInput.factorSource != null
             )
         )

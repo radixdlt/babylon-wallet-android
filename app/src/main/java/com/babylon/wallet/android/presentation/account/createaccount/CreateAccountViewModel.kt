@@ -101,7 +101,7 @@ class CreateAccountViewModel @Inject constructor(
 
             // if main babylon factor source is not present, it will be created during the public key derivation
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
-                accessFactorSourcesInput = AccessFactorSourcesInput.ToCreateAccount(
+                accessFactorSourcesInput = AccessFactorSourcesInput.ToDeriveAccountPublicKey(
                     forNetworkId = onNetworkId,
                     factorSource = if (isWithLedger && selectedFactorSource != null) {
                         selectedFactorSource
