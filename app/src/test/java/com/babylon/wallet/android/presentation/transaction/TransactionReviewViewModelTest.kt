@@ -151,8 +151,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         ),
         validatorStakeProcessor = ValidatorStakeProcessor(
             getProfileUseCase = getProfileUseCase,
-            getResourcesUseCase = getResourcesUseCase,
-            getValidatorsUseCase = getValidatorsUseCase
+            getValidatorsUseCase = getValidatorsUseCase,
+            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         ),
         validatorUnstakeProcessor = ValidatorUnstakeProcessor(
             getProfileUseCase = getProfileUseCase,
