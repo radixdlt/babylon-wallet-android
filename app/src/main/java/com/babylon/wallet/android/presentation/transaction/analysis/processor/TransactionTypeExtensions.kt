@@ -45,6 +45,23 @@ fun ExecutionSummary.involvedFungibleAddresses(excludeNewlyCreated: Boolean = tr
         }.toSet()
 }
 
+fun ExecutionSummary.resolveGeneralAsset(
+    resourceIndicator: ResourceIndicator,
+    involvedAssets: List<Asset>,
+    defaultDepositGuarantee: Double
+): Transferable.Depositing {
+    val asset = if (resourceIndicator.isNewlyCreated(summary = this)) {
+        resourceIndicator.toNewlyCreatedTransferableAsset(resourceIndicator.newlyCreatedMetadata(summary = this))
+    } else {
+        resourceIndicator.toTransferableAsset(involvedAssets)
+    }
+
+    return Transferable.Depositing(
+        transferable = asset,
+        guaranteeType = resourceIndicator.guaranteeType(defaultDepositGuarantee)
+    )
+}
+
 fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true): Map<String, List<String>> {
     val withdrawIndicators = accountWithdraws.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
     val depositIndicators = accountDeposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()

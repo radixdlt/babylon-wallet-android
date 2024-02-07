@@ -9,7 +9,6 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.ResourceIndicator
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -54,7 +53,7 @@ class PoolContributionProcessor @Inject constructor(
                     it.poolUnitsResourceAddress.addressString() == resourceAddress
                 }
                 if (contributions.isEmpty()) {
-                    resolveGeneralAsset(deposit, this, assets, defaultDepositGuarantee)
+                    resolveGeneralAsset(deposit, assets, defaultDepositGuarantee)
                 } else {
                     val poolUnit = assets.find { it.resource.resourceAddress == resourceAddress } as? PoolUnit
                         ?: error("No pool unit found")
@@ -85,24 +84,6 @@ class PoolContributionProcessor @Inject constructor(
             )
         }
         return to
-    }
-
-    private fun resolveGeneralAsset(
-        deposit: ResourceIndicator,
-        summary: ExecutionSummary,
-        involvedAssets: List<Asset>,
-        defaultDepositGuarantee: Double
-    ): Transferable.Depositing {
-        val asset = if (deposit.isNewlyCreated(summary = summary)) {
-            deposit.toNewlyCreatedTransferableAsset(deposit.newlyCreatedMetadata(summary = summary))
-        } else {
-            deposit.toTransferableAsset(involvedAssets)
-        }
-
-        return Transferable.Depositing(
-            transferable = asset,
-            guaranteeType = deposit.guaranteeType(defaultDepositGuarantee)
-        )
     }
 
     private fun ExecutionSummary.extractWithdraws(allOwnedAccounts: List<Network.Account>, assets: List<Asset>) =
