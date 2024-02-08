@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.Asset
@@ -7,6 +8,7 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -58,13 +60,25 @@ class ValidatorUnstakeProcessor @Inject constructor(
                     ?: error("No non-fungible indicator found")
                 val stakeClaimNftItems = claimedResource.indicator.nonFungibleLocalIds.map { localId ->
                     val globalId = NonFungibleGlobalId.fromParts(claimedResource.resourceAddress, localId)
-                    val claimAmount =
-                        claimsNonFungibleData.find { it.nonFungibleGlobalId.asStr() == globalId.asStr() }?.data?.claimAmount?.asStr()
-                            ?.toBigDecimal()
-                            ?: error("No claim amount found")
+                    val claimNFTData = claimsNonFungibleData.find { it.nonFungibleGlobalId.asStr() == globalId.asStr() }?.data
+                        ?: error("No claim data found")
+                    val claimAmount = claimNFTData.claimAmount.asStr().toBigDecimal()
+                    val claimEpoch = claimNFTData.claimEpoch
                     Resource.NonFungibleResource.Item(
                         collectionAddress = resourceAddress,
-                        localId = Resource.NonFungibleResource.Item.ID.from(localId)
+                        localId = Resource.NonFungibleResource.Item.ID.from(localId),
+                        metadata = listOf(
+                            com.babylon.wallet.android.domain.model.resources.metadata.Metadata.Primitive(
+                                ExplicitMetadataKey.CLAIM_AMOUNT.key,
+                                claimAmount.toPlainString(),
+                                MetadataType.Decimal
+                            ),
+                            com.babylon.wallet.android.domain.model.resources.metadata.Metadata.Primitive(
+                                ExplicitMetadataKey.CLAIM_EPOCH.key,
+                                claimEpoch.toString(),
+                                MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.LONG)
+                            )
+                        ),
                     ) to claimAmount
                 }
                 val guaranteeType = claimedResource.guaranteeType(defaultDepositGuarantees)
