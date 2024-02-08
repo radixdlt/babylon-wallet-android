@@ -5,7 +5,6 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
@@ -35,7 +34,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
         val allOwnedAccounts = summary.allOwnedAccounts(getProfileUseCase)
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator }
         val fromAccounts = summary.toWithdrawingAccountsWithTransferableAssets(assets, allOwnedAccounts)
-        val toAccounts = classification.extractDeposits(summary, getProfileUseCase, assets, involvedValidators)
+        val toAccounts = classification.extractDeposits(summary, getProfileUseCase, assets)
         return PreviewType.Transfer.Staking(
             from = fromAccounts,
             to = toAccounts,
@@ -47,22 +46,14 @@ class ValidatorUnstakeProcessor @Inject constructor(
     private suspend fun DetailedManifestClass.ValidatorUnstake.extractDeposits(
         executionSummary: ExecutionSummary,
         getProfileUseCase: GetProfileUseCase,
-        assets: List<Asset>,
-        involvedValidators: List<ValidatorDetail>
+        assets: List<Asset>
     ) = executionSummary.accountDeposits.map { claimsPerAddress ->
         val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(claimsPerAddress.key) ?: error("No account found")
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         val depositingTransferables = claimsPerAddress.value.map { claimedResource ->
             val resourceAddress = claimedResource.resourceAddress
-            val resource =
-                assets.find { it.resource.resourceAddress == resourceAddress }?.resource
-                    ?: error("No resource found")
-            val validator =
-                involvedValidators.find { resource.validatorAddress == it.address }
-            if (validator == null) {
-                executionSummary.resolveDepositingAsset(claimedResource, assets, defaultDepositGuarantees)
-            } else {
-                resource as? Resource.NonFungibleResource ?: error("No fungible resource found")
+            val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No resource found")
+            if (asset is StakeClaim) {
                 claimedResource as? ResourceIndicator.NonFungible
                     ?: error("No non-fungible indicator found")
                 val stakeClaimNftItems = claimedResource.indicator.nonFungibleLocalIds.map { localId ->
@@ -80,8 +71,8 @@ class ValidatorUnstakeProcessor @Inject constructor(
                 Transferable.Depositing(
                     transferable = TransferableAsset.NonFungible.StakeClaimAssets(
                         claim = StakeClaim(
-                            nonFungibleResource = resource.copy(items = stakeClaimNftItems.map { it.first }),
-                            validator = validator
+                            nonFungibleResource = asset.resource.copy(items = stakeClaimNftItems.map { it.first }),
+                            validator = asset.validator
                         ),
                         xrdWorthPerNftItem = stakeClaimNftItems.associate {
                             it.first.localId.displayable to it.second
@@ -90,6 +81,8 @@ class ValidatorUnstakeProcessor @Inject constructor(
                     ),
                     guaranteeType = guaranteeType
                 )
+            } else {
+                executionSummary.resolveDepositingAsset(claimedResource, assets, defaultDepositGuarantees)
             }
         }
         AccountWithTransferableResources.Owned(
