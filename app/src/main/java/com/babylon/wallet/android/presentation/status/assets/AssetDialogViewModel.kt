@@ -45,7 +45,7 @@ class AssetDialogViewModel @Inject constructor(
                 },
                 nonFungibleIds = when (args) {
                     is AssetDialogArgs.Fungible -> mapOf()
-                    is AssetDialogArgs.NFT -> mapOf(args.resourceAddress to args.localId?.let { listOf(it) }.orEmpty())
+                    is AssetDialogArgs.NFT -> mapOf(args.resourceAddress to args.localId?.let { setOf(it) }.orEmpty())
                 }
             ).mapCatching { assets ->
                 when (val asset = assets.first()) {

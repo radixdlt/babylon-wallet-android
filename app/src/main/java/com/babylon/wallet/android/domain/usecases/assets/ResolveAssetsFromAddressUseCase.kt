@@ -18,7 +18,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
 
     suspend operator fun invoke(
         fungibleAddresses: Set<String>,
-        nonFungibleIds: Map<String, List<String>>
+        nonFungibleIds: Map<String, Set<String>>
     ): Result<List<Asset>> = stateRepository
         .getResources(
             addresses = fungibleAddresses + nonFungibleIds.keys,

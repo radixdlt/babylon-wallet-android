@@ -10,7 +10,6 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import kotlinx.coroutines.flow.first
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -31,7 +30,7 @@ class PoolContributionProcessor @Inject constructor(
         val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {
             accountsWithdrawnFrom.contains(it.address)
         }
-        val from = summary.extractWithdraws(ownedAccountsWithdrawnFrom, assets)
+        val from = summary.toWithdrawingAccountsWithTransferableAssets(assets, ownedAccountsWithdrawnFrom)
         val to = summary.extractDeposits(classification, assets, defaultDepositGuarantee)
         return PreviewType.Transfer.Pool(
             from = from,
@@ -49,14 +48,13 @@ class PoolContributionProcessor @Inject constructor(
             val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(depositsPerAddress.key) ?: error("No account found")
             val deposits = depositsPerAddress.value.map { deposit ->
                 val resourceAddress = deposit.resourceAddress
-                val contributions = classification.poolContributions.filter {
-                    it.poolUnitsResourceAddress.addressString() == resourceAddress
-                }
-                if (contributions.isEmpty()) {
-                    resolveGeneralAsset(deposit, assets, defaultDepositGuarantee)
+                val poolUnit = assets.find { it.resource.resourceAddress == resourceAddress } as? PoolUnit
+                if (poolUnit == null) {
+                    resolveDepositingAsset(deposit, assets, defaultDepositGuarantee)
                 } else {
-                    val poolUnit = assets.find { it.resource.resourceAddress == resourceAddress } as? PoolUnit
-                        ?: error("No pool unit found")
+                    val contributions = classification.poolContributions.filter {
+                        it.poolUnitsResourceAddress.addressString() == resourceAddress
+                    }
                     val contributedResourceAddresses = contributions.first().contributedResources.keys
                     val guaranteeType = deposit.guaranteeType(defaultDepositGuarantee)
                     val poolUnitAmount = contributions.find {
@@ -85,22 +83,4 @@ class PoolContributionProcessor @Inject constructor(
         }
         return to
     }
-
-    private fun ExecutionSummary.extractWithdraws(allOwnedAccounts: List<Network.Account>, assets: List<Asset>) =
-        accountWithdraws.entries.map { transferEntry ->
-            val accountOnNetwork = allOwnedAccounts.find { it.address == transferEntry.key }
-
-            val withdrawing = transferEntry.value.map { resourceIndicator ->
-                Transferable.Withdrawing(resourceIndicator.toTransferableAsset(assets))
-            }
-            accountOnNetwork?.let { account ->
-                AccountWithTransferableResources.Owned(
-                    account = account,
-                    resources = withdrawing
-                )
-            } ?: AccountWithTransferableResources.Other(
-                address = transferEntry.key,
-                resources = withdrawing
-            )
-        }
 }

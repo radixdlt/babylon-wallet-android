@@ -142,28 +142,23 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         ),
         accountDepositSettingsProcessor = AccountDepositSettingsProcessor(
             getProfileUseCase = getProfileUseCase,
-            getResourcesUseCase = getResourcesUseCase
+            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         ),
         poolRedemptionProcessor = PoolRedemptionProcessor(
             getProfileUseCase = getProfileUseCase,
-            getResourcesUseCase = getResourcesUseCase,
-            getPoolDetailsUseCase = getPoolDetailsUseCase,
+            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         ),
         validatorStakeProcessor = ValidatorStakeProcessor(
             getProfileUseCase = getProfileUseCase,
-            getValidatorsUseCase = getValidatorsUseCase,
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         ),
         validatorUnstakeProcessor = ValidatorUnstakeProcessor(
             getProfileUseCase = getProfileUseCase,
-            getResourcesUseCase = getResourcesUseCase,
-            getValidatorsUseCase = getValidatorsUseCase
+            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         ),
         validatorClaimProcessor = ValidatorClaimProcessor(
             getProfileUseCase = getProfileUseCase,
-            getResourcesUseCase = getResourcesUseCase,
-            getValidatorsUseCase = getValidatorsUseCase,
-            getNFTDetailsUseCase = getNFTDetailsUseCase
+            resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         )
     )
     private val sampleTxId = "txId1"
