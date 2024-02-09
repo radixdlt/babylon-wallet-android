@@ -17,7 +17,6 @@ import com.babylon.wallet.android.domain.model.resources.findNonFungible
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
-import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.FungibleResourceIndicator
 import com.radixdlt.ret.MetadataValue
@@ -45,15 +44,21 @@ fun ExecutionSummary.involvedFungibleAddresses(excludeNewlyCreated: Boolean = tr
         }.toSet()
 }
 
-fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true): Map<String, List<String>> {
+fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true): Map<String, Set<String>> {
     val withdrawIndicators = accountWithdraws.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
     val depositIndicators = accountDeposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
-    return (withdrawIndicators + depositIndicators)
-        .filterNot {
-            excludeNewlyCreated && it.isNewlyCreated(this)
-        }.associate {
-            it.resourceAddress.addressString() to it.localIds
+    return (withdrawIndicators + depositIndicators).filterNot {
+        excludeNewlyCreated && it.isNewlyCreated(this)
+    }.fold(mutableMapOf(), operation = { acc, indicator ->
+        val indicatorAddress = indicator.resourceAddress.addressString()
+        acc.apply {
+            if (containsKey(indicatorAddress)) {
+                this[indicatorAddress] = this[indicatorAddress].orEmpty() + indicator.localIds
+            } else {
+                this[indicatorAddress] = indicator.localIds.toSet()
+            }
         }
+    })
 }
 
 val ResourceIndicator.resourceAddress: String
@@ -118,67 +123,26 @@ val ResourceOrNonFungible.resourceAddress: String
         is ResourceOrNonFungible.Resource -> value.addressString()
     }
 
-val DetailedManifestClass.involvedValidatorAddresses: Set<String>
-    get() = when (this) {
-        is DetailedManifestClass.ValidatorClaim -> validatorAddresses.map { it.addressString() }.toSet()
-
-        is DetailedManifestClass.ValidatorUnstake -> validatorAddresses.map { it.addressString() }.toSet()
-
-        is DetailedManifestClass.ValidatorStake -> validatorAddresses.map { it.addressString() }.toSet()
-        else -> emptySet()
-    }
-
-data class StakeClaimAddressData(
-    val resourceAddress: String,
-    val localId: Set<String>
-)
-
-val ExecutionSummary.involvedStakeClaims: Set<StakeClaimAddressData>
-    get() {
-        if (detailedClassification.isEmpty()) return emptySet()
-        return when (detailedClassification.first()) {
-            is DetailedManifestClass.ValidatorClaim -> {
-                accountWithdraws.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>().map { nonFungibleIndicator ->
-                    StakeClaimAddressData(
-                        resourceAddress = nonFungibleIndicator.resourceAddress.addressString(),
-                        localId = nonFungibleIndicator.indicator.nonFungibleLocalIds.map { nonFungibleLocalIdAsStr(it) }.toSet()
-                    )
-                }.toSet()
-            }
-
-            else -> emptySet()
-        }
-    }
-
-val ExecutionSummary.involvedResourceAddresses: Set<String>
-    get() = accountDeposits.values.map { resourceIndicator ->
-        resourceIndicator.map { it.resourceAddress }
-    }.flatten().toSet() union accountWithdraws.values.map { resourceIndicator ->
-        resourceIndicator.map {
-            when (it) {
-                is ResourceIndicator.Fungible -> it.resourceAddress.addressString()
-                is ResourceIndicator.NonFungible -> it.resourceAddress.addressString()
-            }
-        }
-    }.flatten().toSet()
-
 fun ResourceIndicator.toTransferableAsset(
-    assets: List<Asset>
+    assets: List<Asset>,
+    aggregateAmount: BigDecimal? = null
 ): TransferableAsset = when (this) {
-    is ResourceIndicator.Fungible -> toTransferableAsset(assets)
+    is ResourceIndicator.Fungible -> toTransferableAsset(assets, aggregateAmount)
     is ResourceIndicator.NonFungible -> toTransferableAsset(assets)
 }
 
+@Suppress("CyclomaticComplexMethod")
 private fun ResourceIndicator.Fungible.toTransferableAsset(
-    assets: List<Asset>
+    assets: List<Asset>,
+    aggregateAmount: BigDecimal? = null
 ): TransferableAsset.Fungible = when (val asset = assets.find { it.resource.resourceAddress == resourceAddress.addressString() }) {
     is PoolUnit -> {
         val assetWithAmount = asset.copy(
-            stake = asset.stake.copy(ownedAmount = amount),
+            stake = asset.stake.copy(ownedAmount = aggregateAmount ?: amount),
             pool = asset.pool
         )
         TransferableAsset.Fungible.PoolUnitAsset(
-            amount = amount,
+            amount = aggregateAmount ?: amount,
             unit = assetWithAmount,
             contributionPerResource = assetWithAmount.pool?.resources?.associate {
                 it.resourceAddress to (assetWithAmount.resourceRedemptionValue(it) ?: BigDecimal.ZERO)
@@ -188,9 +152,9 @@ private fun ResourceIndicator.Fungible.toTransferableAsset(
     }
 
     is LiquidStakeUnit -> {
-        val assetWithAmount = asset.copy(fungibleResource = asset.fungibleResource.copy(ownedAmount = amount))
+        val assetWithAmount = asset.copy(fungibleResource = asset.fungibleResource.copy(ownedAmount = aggregateAmount ?: amount))
         TransferableAsset.Fungible.LSUAsset(
-            amount = amount,
+            amount = aggregateAmount ?: amount,
             lsu = assetWithAmount,
             xrdWorth = assetWithAmount.stakeValueInXRD(asset.validator.totalXrdStake) ?: BigDecimal.ZERO,
             isNewlyCreated = false
@@ -198,9 +162,9 @@ private fun ResourceIndicator.Fungible.toTransferableAsset(
     }
 
     is Token -> {
-        val resourceWithAmount = asset.resource.copy(ownedAmount = amount)
+        val resourceWithAmount = asset.resource.copy(ownedAmount = aggregateAmount ?: amount)
         TransferableAsset.Fungible.Token(
-            amount = amount,
+            amount = aggregateAmount ?: amount,
             resource = resourceWithAmount,
             isNewlyCreated = false
         )
@@ -209,10 +173,10 @@ private fun ResourceIndicator.Fungible.toTransferableAsset(
     else -> {
         val resourceWithAmount = Resource.FungibleResource(
             resourceAddress = resourceAddress.addressString(),
-            ownedAmount = amount
+            ownedAmount = aggregateAmount ?: amount
         )
         TransferableAsset.Fungible.Token(
-            amount = amount,
+            amount = aggregateAmount ?: amount,
             resource = resourceWithAmount,
             isNewlyCreated = false
         )
@@ -286,16 +250,17 @@ fun ResourceIndicator.isNewlyCreated(summary: ExecutionSummary) = summary.newEnt
 fun ResourceIndicator.newlyCreatedMetadata(summary: ExecutionSummary) = summary.newEntities.metadata[resourceAddress].orEmpty()
 
 fun ResourceIndicator.toNewlyCreatedTransferableAsset(
-    metadata: Map<String, MetadataValue?>
+    metadata: Map<String, MetadataValue?>,
+    aggregateAmount: BigDecimal? = null
 ): TransferableAsset {
     val metadataItems = metadata.toMetadata()
 
     return when (this) {
         is ResourceIndicator.Fungible -> TransferableAsset.Fungible.Token(
-            amount = amount,
+            amount = aggregateAmount ?: amount,
             resource = Resource.FungibleResource(
                 resourceAddress = resourceAddress.addressString(),
-                ownedAmount = amount,
+                ownedAmount = aggregateAmount ?: amount,
                 metadata = metadataItems
             ),
             isNewlyCreated = true
@@ -690,23 +655,80 @@ fun List<Transferable>.toAccountWithTransferableResources(
     }
 }
 
+fun ExecutionSummary.involvedOwnedAccounts(ownedAccounts: List<Network.Account>): List<Network.Account> {
+    val involvedAccountAddresses = accountWithdraws.keys + accountDeposits.keys
+    return ownedAccounts.filter {
+        involvedAccountAddresses.contains(it.address)
+    }
+}
+
 fun ExecutionSummary.toWithdrawingAccountsWithTransferableAssets(
     involvedAssets: List<Asset>,
-    allOwnedAccounts: List<Network.Account>
-) = accountWithdraws.map { withdrawEntry ->
-    withdrawEntry.value.map { resource ->
-        if (resource.isNewlyCreated(summary = this)) {
-            resource.toNewlyCreatedTransferableAsset(resource.newlyCreatedMetadata(summary = this))
+    allOwnedAccounts: List<Network.Account>,
+    aggregateByResourceAddress: Boolean = false // for now I turned aggregation off to not introduce any bugs
+): List<AccountWithTransferableResources> {
+    return accountWithdraws.map { withdrawEntry ->
+        if (aggregateByResourceAddress) {
+            withdrawEntry.value.groupBy { it.resourceAddress }.map { indicatorsPerResource ->
+                val resources = indicatorsPerResource.value
+                when (val first = resources.first()) {
+                    is ResourceIndicator.Fungible -> {
+                        val aggregateAmount = resources.map { it.amount }.sumOf { it }
+                        if (first.isNewlyCreated(summary = this)) {
+                            first.toNewlyCreatedTransferableAsset(first.newlyCreatedMetadata(summary = this), aggregateAmount)
+                        } else {
+                            first.toTransferableAsset(involvedAssets, aggregateAmount)
+                        }
+                    }
+
+                    is ResourceIndicator.NonFungible -> {
+                        val nonFungibleLocalIds = resources.filterIsInstance<ResourceIndicator.NonFungible>()
+                            .fold(setOf<NonFungibleLocalId>(), operation = { acc, resource ->
+                                acc + resource.indicator.nonFungibleLocalIds.toSet()
+                            })
+                        val resource = first.copy(indicator = NonFungibleResourceIndicator.ByIds(nonFungibleLocalIds.toList()))
+                        if (resource.isNewlyCreated(summary = this)) {
+                            resource.toNewlyCreatedTransferableAsset(first.newlyCreatedMetadata(summary = this))
+                        } else {
+                            resource.toTransferableAsset(involvedAssets)
+                        }
+                    }
+                }
+            }
         } else {
-            resource.toTransferableAsset(involvedAssets)
-        }
-    }.map {
-        Transferable.Withdrawing(it)
-    }.toAccountWithTransferableResources(
-        withdrawEntry.key,
-        allOwnedAccounts
+            withdrawEntry.value.map { resource ->
+                if (resource.isNewlyCreated(summary = this)) {
+                    resource.toNewlyCreatedTransferableAsset(resource.newlyCreatedMetadata(summary = this))
+                } else {
+                    resource.toTransferableAsset(involvedAssets)
+                }
+            }
+        }.map {
+            Transferable.Withdrawing(it)
+        }.toAccountWithTransferableResources(
+            withdrawEntry.key,
+            allOwnedAccounts
+        )
+    }.sortedWith(AccountWithTransferableResources.Companion.Sorter(allOwnedAccounts))
+}
+
+fun ExecutionSummary.resolveDepositingAsset(
+    resourceIndicator: ResourceIndicator,
+    involvedAssets: List<Asset>,
+    defaultDepositGuarantee: Double,
+    aggregateAmount: BigDecimal? = null
+): Transferable.Depositing {
+    val asset = if (resourceIndicator.isNewlyCreated(summary = this)) {
+        resourceIndicator.toNewlyCreatedTransferableAsset(resourceIndicator.newlyCreatedMetadata(summary = this))
+    } else {
+        resourceIndicator.toTransferableAsset(involvedAssets, aggregateAmount)
+    }
+
+    return Transferable.Depositing(
+        transferable = asset,
+        guaranteeType = resourceIndicator.guaranteeType(defaultDepositGuarantee)
     )
-}.sortedWith(AccountWithTransferableResources.Companion.Sorter(allOwnedAccounts))
+}
 
 fun ExecutionSummary.toDepositingAccountsWithTransferableAssets(
     involvedAssets: List<Asset>,
@@ -714,16 +736,7 @@ fun ExecutionSummary.toDepositingAccountsWithTransferableAssets(
     defaultGuarantee: Double
 ) = accountDeposits.map { withdrawEntry ->
     withdrawEntry.value.map { resource ->
-        val asset = if (resource.isNewlyCreated(summary = this)) {
-            resource.toNewlyCreatedTransferableAsset(resource.newlyCreatedMetadata(summary = this))
-        } else {
-            resource.toTransferableAsset(involvedAssets)
-        }
-
-        Transferable.Depositing(
-            transferable = asset,
-            guaranteeType = resource.guaranteeType(defaultGuarantee)
-        )
+        resolveDepositingAsset(resource, involvedAssets, defaultGuarantee)
     }.toAccountWithTransferableResources(
         withdrawEntry.key,
         allOwnedAccounts

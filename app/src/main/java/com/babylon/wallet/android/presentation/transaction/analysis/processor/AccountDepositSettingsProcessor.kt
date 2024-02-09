@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
+import com.babylon.wallet.android.domain.model.assets.Asset
+import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
@@ -16,14 +16,16 @@ import javax.inject.Inject
 
 class AccountDepositSettingsProcessor @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val getResourcesUseCase: GetResourcesUseCase
+    private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.AccountDepositSettingsUpdate> {
     override suspend fun process(
         summary: ExecutionSummary,
         classification: DetailedManifestClass.AccountDepositSettingsUpdate
     ): PreviewType {
-        val allResources = getResourcesUseCase(addresses = classification.involvedResourceAddresses).getOrThrow()
-
+        val assets = resolveAssetsFromAddressUseCase(
+            fungibleAddresses = summary.involvedFungibleAddresses(),
+            nonFungibleIds = summary.involvedNonFungibleIds()
+        ).getOrThrow()
         val involvedAccountAddresses = classification.depositModeUpdates.keys +
             classification.resourcePreferencesUpdates.keys +
             classification.authorizedDepositorsAdded.keys +
@@ -31,8 +33,8 @@ class AccountDepositSettingsProcessor @Inject constructor(
         val involvedAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter { involvedAccountAddresses.contains(it.address) }
         val result = involvedAccounts.map { involvedAccount ->
             val defaultDepositRule = classification.depositModeUpdates[involvedAccount.address]
-            val assetChanges = classification.resolveAssetChanges(involvedAccount, allResources)
-            val depositorChanges = classification.resolveDepositorChanges(involvedAccount, allResources)
+            val assetChanges = classification.resolveAssetChanges(involvedAccount, assets)
+            val depositorChanges = classification.resolveDepositorChanges(involvedAccount, assets)
             AccountWithDepositSettingsChanges(
                 account = involvedAccount,
                 defaultDepositRule = defaultDepositRule,
@@ -45,12 +47,12 @@ class AccountDepositSettingsProcessor @Inject constructor(
 
     private fun DetailedManifestClass.AccountDepositSettingsUpdate.resolveDepositorChanges(
         involvedAccount: Network.Account,
-        allResources: List<Resource>
+        assets: List<Asset>
     ) = authorizedDepositorsAdded[involvedAccount.address]?.let { authorizedDepositorsChangeForAccount ->
         val added = authorizedDepositorsChangeForAccount.map { added ->
             when (added) {
                 is ResourceOrNonFungible.NonFungible -> {
-                    val resource = allResources.find { it.resourceAddress == added.value.resourceAddress().addressString() }
+                    val resource = assets.find { it.resource.resourceAddress == added.value.resourceAddress().addressString() }?.resource
                     AccountWithDepositSettingsChanges.DepositorPreferenceChange(
                         change = AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add,
                         resource = resource
@@ -58,7 +60,7 @@ class AccountDepositSettingsProcessor @Inject constructor(
                 }
 
                 is ResourceOrNonFungible.Resource -> {
-                    val resource = allResources.find { it.resourceAddress == added.value.addressString() }
+                    val resource = assets.find { it.resource.resourceAddress == added.value.addressString() }?.resource
                     AccountWithDepositSettingsChanges.DepositorPreferenceChange(
                         change = AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add,
                         resource = resource
@@ -75,7 +77,7 @@ class AccountDepositSettingsProcessor @Inject constructor(
                 }
 
                 is ResourceOrNonFungible.Resource -> {
-                    val resource = allResources.find { it.resourceAddress == removed.value.addressString() }
+                    val resource = assets.find { it.resource.resourceAddress == removed.value.addressString() }?.resource
                     AccountWithDepositSettingsChanges.DepositorPreferenceChange(
                         change = AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Remove,
                         resource = resource
@@ -88,10 +90,10 @@ class AccountDepositSettingsProcessor @Inject constructor(
 
     private fun DetailedManifestClass.AccountDepositSettingsUpdate.resolveAssetChanges(
         involvedAccount: Network.Account,
-        allResources: List<Resource>
+        allResources: List<Asset>
     ) = resourcePreferencesUpdates[involvedAccount.address]?.let { resourcePreferenceChangeForAccount ->
         resourcePreferenceChangeForAccount.map { resourcePreferenceChange ->
-            val resource = allResources.find { it.resourceAddress == resourcePreferenceChange.key }
+            val resource = allResources.find { it.resource.resourceAddress == resourcePreferenceChange.key }?.resource
             val assetPreferenceChange = when (val action = resourcePreferenceChange.value) {
                 ResourcePreferenceUpdate.Remove -> AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Clear
                 is ResourcePreferenceUpdate.Set -> when (action.value) {
@@ -105,13 +107,4 @@ class AccountDepositSettingsProcessor @Inject constructor(
             )
         }
     }.orEmpty()
-
-    private val DetailedManifestClass.AccountDepositSettingsUpdate.involvedResourceAddresses: Set<String>
-        get() = authorizedDepositorsAdded.values.map { depositors ->
-            depositors.map { it.resourceAddress }
-        }.flatten().toSet() union authorizedDepositorsRemoved.values.map { depositors ->
-            depositors.map { it.resourceAddress }
-        }.flatten().toSet() union resourcePreferencesUpdates.values.map { updates ->
-            updates.keys
-        }.flatten().toSet()
 }

@@ -24,11 +24,7 @@ class GeneralTransferProcessor @Inject constructor(
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
         val badges = getTransactionBadgesUseCase(accountProofs = summary.presentedProofs)
         val dApps = summary.resolveDApps()
-        val involvedAccountAddresses = summary.accountWithdraws.keys + summary.accountDeposits.keys
-        val allOwnedAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
-            involvedAccountAddresses.contains(it.address)
-        }
-
+        val allOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
         val assets = resolveAssetsFromAddressUseCase(
             fungibleAddresses = summary.involvedFungibleAddresses(),
             nonFungibleIds = summary.involvedNonFungibleIds()

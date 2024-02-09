@@ -80,7 +80,7 @@ fun TransferableLsuItemContent(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-//            Icon(painter = painterResource(id = DSR.ic_info_outline), contentDescription = null, tint = RadixTheme.colors.gray3)
+            VerticalAmountSection(transferable = transferable)
         }
         Text(
             modifier = Modifier
@@ -120,14 +120,6 @@ fun TransferableLsuItemContent(
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.End,
                 maxLines = 2
-            )
-        }
-        if (transferable.hasEditableGuarantees) {
-            GuaranteesSection(
-                transferable,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = RadixTheme.dimensions.paddingMedium)
             )
         }
     }
