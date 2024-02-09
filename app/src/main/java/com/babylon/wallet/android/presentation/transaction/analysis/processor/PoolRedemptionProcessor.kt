@@ -10,7 +10,6 @@ import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
@@ -24,18 +23,14 @@ class PoolRedemptionProcessor @Inject constructor(
             nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
-        val accountsWithdrawnFrom = summary.accountDeposits.keys
-        val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {
-            accountsWithdrawnFrom.contains(it.address)
-        }
+        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
         val to = summary.toDepositingAccountsWithTransferableAssets(
-            allOwnedAccounts = ownedAccountsWithdrawnFrom,
+            allOwnedAccounts = involvedOwnedAccounts,
             involvedAssets = assets,
             defaultGuarantee = defaultDepositGuarantees
         )
         val from = summary.accountWithdraws.map { withdrawsPerAddress ->
-            val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(withdrawsPerAddress.key) ?: error("No account found")
-            val withdraws = withdrawsPerAddress.value.map { withdraw ->
+            withdrawsPerAddress.value.map { withdraw ->
                 val resourceAddress = withdraw.resourceAddress
                 val poolUnit = assets.find { it.resource.resourceAddress == resourceAddress } as? PoolUnit
                 if (poolUnit == null) {
@@ -61,12 +56,8 @@ class PoolRedemptionProcessor @Inject constructor(
                         )
                     )
                 }
-            }
-            AccountWithTransferableResources.Owned(
-                account = ownedAccount,
-                resources = withdraws
-            )
-        }
+            }.toAccountWithTransferableResources(withdrawsPerAddress.key, involvedOwnedAccounts)
+        }.sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
         return PreviewType.Transfer.Pool(
             from = from,
             to = to,

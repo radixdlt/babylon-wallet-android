@@ -17,7 +17,6 @@ import com.babylon.wallet.android.domain.model.resources.findNonFungible
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
-import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.FungibleResourceIndicator
 import com.radixdlt.ret.MetadataValue
@@ -32,8 +31,6 @@ import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import rdx.works.core.ret.asStr
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
 import java.math.BigDecimal
 
 fun ExecutionSummary.involvedFungibleAddresses(excludeNewlyCreated: Boolean = true): Set<String> {
@@ -53,12 +50,12 @@ fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true)
     return (withdrawIndicators + depositIndicators).filterNot {
         excludeNewlyCreated && it.isNewlyCreated(this)
     }.fold(mutableMapOf(), operation = { acc, indicator ->
+        val indicatorAddress = indicator.resourceAddress.addressString()
         acc.apply {
-            if (containsKey(indicator.resourceAddress.addressString())) {
-                this[indicator.resourceAddress.addressString()] =
-                    this[indicator.resourceAddress.addressString()].orEmpty() + indicator.localIds
+            if (containsKey(indicatorAddress)) {
+                this[indicatorAddress] = this[indicatorAddress].orEmpty() + indicator.localIds
             } else {
-                this[indicator.resourceAddress.addressString()] = indicator.localIds.toSet()
+                this[indicatorAddress] = indicator.localIds.toSet()
             }
         }
     })
@@ -124,16 +121,6 @@ val ResourceOrNonFungible.resourceAddress: String
     get() = when (this) {
         is ResourceOrNonFungible.NonFungible -> value.resourceAddress().addressString()
         is ResourceOrNonFungible.Resource -> value.addressString()
-    }
-
-val DetailedManifestClass.involvedValidatorAddresses: Set<String>
-    get() = when (this) {
-        is DetailedManifestClass.ValidatorClaim -> validatorAddresses.map { it.addressString() }.toSet()
-
-        is DetailedManifestClass.ValidatorUnstake -> validatorAddresses.map { it.addressString() }.toSet()
-
-        is DetailedManifestClass.ValidatorStake -> validatorAddresses.map { it.addressString() }.toSet()
-        else -> emptySet()
     }
 
 fun ResourceIndicator.toTransferableAsset(
@@ -668,9 +655,9 @@ fun List<Transferable>.toAccountWithTransferableResources(
     }
 }
 
-suspend fun ExecutionSummary.allOwnedAccounts(getProfileUseCase: GetProfileUseCase): List<Network.Account> {
+fun ExecutionSummary.involvedOwnedAccounts(ownedAccounts: List<Network.Account>): List<Network.Account> {
     val involvedAccountAddresses = accountWithdraws.keys + accountDeposits.keys
-    return getProfileUseCase.accountsOnCurrentNetwork().filter {
+    return ownedAccounts.filter {
         involvedAccountAddresses.contains(it.address)
     }
 }

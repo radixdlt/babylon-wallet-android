@@ -12,8 +12,9 @@ import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
 import kotlinx.coroutines.flow.first
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.currentNetwork
 import javax.inject.Inject
 
@@ -29,15 +30,16 @@ class ValidatorStakeProcessor @Inject constructor(
             nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator }
-        val allOwnedAccounts = summary.allOwnedAccounts(getProfileUseCase)
+        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
         val fromAccounts = summary.toWithdrawingAccountsWithTransferableAssets(
             involvedAssets = assets,
-            allOwnedAccounts = allOwnedAccounts
+            allOwnedAccounts = involvedOwnedAccounts
         )
         val toAccounts = classification.extractDeposits(
             executionSummary = summary,
-            assets = assets
-        )
+            assets = assets,
+            involvedOwnedAccounts = involvedOwnedAccounts
+        ).sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
         return PreviewType.Transfer.Staking(
             from = fromAccounts,
             to = toAccounts,
@@ -48,11 +50,11 @@ class ValidatorStakeProcessor @Inject constructor(
 
     private suspend fun DetailedManifestClass.ValidatorStake.extractDeposits(
         executionSummary: ExecutionSummary,
-        assets: List<Asset>
+        assets: List<Asset>,
+        involvedOwnedAccounts: List<Network.Account>
     ) = executionSummary.accountDeposits.map { depositsPerAccount ->
-        val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(depositsPerAccount.key) ?: error("No account found")
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
-        val depositingTransferable = depositsPerAccount.value.map { depositedResource ->
+        depositsPerAccount.value.map { depositedResource ->
             val asset = assets.find {
                 it.resource.resourceAddress == depositedResource.resourceAddress
             } ?: error("No asset found")
@@ -61,11 +63,7 @@ class ValidatorStakeProcessor @Inject constructor(
             } else {
                 executionSummary.resolveDepositingAsset(depositedResource, assets, defaultDepositGuarantees)
             }
-        }
-        AccountWithTransferableResources.Owned(
-            account = ownedAccount,
-            resources = depositingTransferable
-        )
+        }.toAccountWithTransferableResources(depositsPerAccount.key, involvedOwnedAccounts)
     }
 
     private fun DetailedManifestClass.ValidatorStake.resolveLSU(

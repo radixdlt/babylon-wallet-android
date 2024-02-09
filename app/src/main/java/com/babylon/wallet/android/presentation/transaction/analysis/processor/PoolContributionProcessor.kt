@@ -10,8 +10,8 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import kotlinx.coroutines.flow.first
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
@@ -26,12 +26,14 @@ class PoolContributionProcessor @Inject constructor(
             nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
         val defaultDepositGuarantee = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
-        val accountsWithdrawnFrom = summary.accountWithdraws.keys
-        val ownedAccountsWithdrawnFrom = getProfileUseCase.accountsOnCurrentNetwork().filter {
-            accountsWithdrawnFrom.contains(it.address)
-        }
-        val from = summary.toWithdrawingAccountsWithTransferableAssets(assets, ownedAccountsWithdrawnFrom)
-        val to = summary.extractDeposits(classification, assets, defaultDepositGuarantee)
+        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
+        val from = summary.toWithdrawingAccountsWithTransferableAssets(assets, involvedOwnedAccounts)
+        val to = summary.extractDeposits(
+            classification = classification,
+            assets = assets,
+            defaultDepositGuarantee = defaultDepositGuarantee,
+            involvedOwnedAccounts = involvedOwnedAccounts
+        ).sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
         return PreviewType.Transfer.Pool(
             from = from,
             to = to,
@@ -39,14 +41,14 @@ class PoolContributionProcessor @Inject constructor(
         )
     }
 
-    private suspend fun ExecutionSummary.extractDeposits(
+    private fun ExecutionSummary.extractDeposits(
         classification: DetailedManifestClass.PoolContribution,
         assets: List<Asset>,
-        defaultDepositGuarantee: Double
-    ): List<AccountWithTransferableResources.Owned> {
+        defaultDepositGuarantee: Double,
+        involvedOwnedAccounts: List<Network.Account>
+    ): List<AccountWithTransferableResources> {
         val to = accountDeposits.map { depositsPerAddress ->
-            val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(depositsPerAddress.key) ?: error("No account found")
-            val deposits = depositsPerAddress.value.map { deposit ->
+            depositsPerAddress.value.map { deposit ->
                 val resourceAddress = deposit.resourceAddress
                 val poolUnit = assets.find { it.resource.resourceAddress == resourceAddress } as? PoolUnit
                 if (poolUnit == null) {
@@ -75,11 +77,7 @@ class PoolContributionProcessor @Inject constructor(
                         guaranteeType = guaranteeType,
                     )
                 }
-            }
-            AccountWithTransferableResources.Owned(
-                account = ownedAccount,
-                resources = deposits
-            )
+            }.toAccountWithTransferableResources(depositsPerAddress.key, involvedOwnedAccounts)
         }
         return to
     }

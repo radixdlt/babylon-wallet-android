@@ -15,8 +15,8 @@ import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import kotlinx.coroutines.flow.first
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.currentNetwork
 import java.math.BigDecimal
@@ -39,16 +39,18 @@ class ValidatorClaimProcessor @Inject constructor(
         }.toSet() + assets.filterIsInstance<StakeClaim>().map {
             it.validator
         }.toSet()
-        val involvedAccountAddresses = summary.accountWithdraws.keys + summary.accountDeposits.keys
-        val allOwnedAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
-            involvedAccountAddresses.contains(it.address)
-        }
-        val toAccounts = summary.toDepositingAccountsWithTransferableAssets(assets, allOwnedAccounts, defaultDepositGuarantees)
+        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
+        val toAccounts = summary.toDepositingAccountsWithTransferableAssets(
+            assets,
+            involvedOwnedAccounts,
+            defaultDepositGuarantees
+        )
         val fromAccounts = extractWithdrawals(
             executionSummary = summary,
             assets = assets,
-            defaultDepositGuarantees = defaultDepositGuarantees
-        )
+            defaultDepositGuarantees = defaultDepositGuarantees,
+            involvedOwnedAccounts = involvedOwnedAccounts
+        ).sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
         return PreviewType.Transfer.Staking(
             validators = involvedValidators.toList(),
             from = fromAccounts,
@@ -57,48 +59,43 @@ class ValidatorClaimProcessor @Inject constructor(
         )
     }
 
-    private suspend fun extractWithdrawals(
+    private fun extractWithdrawals(
         executionSummary: ExecutionSummary,
         assets: List<Asset>,
-        defaultDepositGuarantees: Double
-    ): List<AccountWithTransferableResources.Owned> {
+        defaultDepositGuarantees: Double,
+        involvedOwnedAccounts: List<Network.Account>
+    ): List<AccountWithTransferableResources> {
         val stakeClaimNfts = assets.filterIsInstance<Asset.NonFungible>().map { it.resource.items }.flatten()
         return executionSummary.accountWithdraws.map { claimsPerAddress ->
-            val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(claimsPerAddress.key) ?: error("No account found")
-            val withdrawingTransferables =
-                claimsPerAddress.value.map { resourceIndicator ->
-                    val resourceAddress = resourceIndicator.resourceAddress
-                    val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No asset found")
-                    if (asset is StakeClaim) {
-                        resourceIndicator as? ResourceIndicator.NonFungible ?: error("No non-fungible resource claim found")
-                        val items = resourceIndicator.localIds.map { localId ->
-                            val claimAmount = stakeClaimNfts.find {
-                                resourceAddress == it.collectionAddress && localId == nonFungibleLocalIdAsStr(it.localId.toRetId())
-                            }?.claimAmountXrd ?: BigDecimal.ZERO
-                            Resource.NonFungibleResource.Item(
-                                collectionAddress = resourceAddress,
-                                localId = Resource.NonFungibleResource.Item.ID.from(localId)
-                            ) to claimAmount
-                        }
-                        Transferable.Withdrawing(
-                            transferable = TransferableAsset.NonFungible.StakeClaimAssets(
-                                claim = StakeClaim(
-                                    nonFungibleResource = asset.resource.copy(items = items.map { it.first }),
-                                    validator = asset.validator
-                                ),
-                                xrdWorthPerNftItem = items.associate {
-                                    it.first.localId.displayable to it.second
-                                }
-                            )
-                        )
-                    } else {
-                        executionSummary.resolveDepositingAsset(resourceIndicator, assets, defaultDepositGuarantees)
+            claimsPerAddress.value.map { resourceIndicator ->
+                val resourceAddress = resourceIndicator.resourceAddress
+                val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No asset found")
+                if (asset is StakeClaim) {
+                    resourceIndicator as? ResourceIndicator.NonFungible ?: error("No non-fungible resource claim found")
+                    val items = resourceIndicator.localIds.map { localId ->
+                        val claimAmount = stakeClaimNfts.find {
+                            resourceAddress == it.collectionAddress && localId == nonFungibleLocalIdAsStr(it.localId.toRetId())
+                        }?.claimAmountXrd ?: BigDecimal.ZERO
+                        Resource.NonFungibleResource.Item(
+                            collectionAddress = resourceAddress,
+                            localId = Resource.NonFungibleResource.Item.ID.from(localId)
+                        ) to claimAmount
                     }
+                    Transferable.Withdrawing(
+                        transferable = TransferableAsset.NonFungible.StakeClaimAssets(
+                            claim = StakeClaim(
+                                nonFungibleResource = asset.resource.copy(items = items.map { it.first }),
+                                validator = asset.validator
+                            ),
+                            xrdWorthPerNftItem = items.associate {
+                                it.first.localId.displayable to it.second
+                            }
+                        )
+                    )
+                } else {
+                    executionSummary.resolveDepositingAsset(resourceIndicator, assets, defaultDepositGuarantees)
                 }
-            AccountWithTransferableResources.Owned(
-                account = ownedAccount,
-                resources = withdrawingTransferables
-            )
+            }.toAccountWithTransferableResources(claimsPerAddress.key, involvedOwnedAccounts)
         }
     }
 }

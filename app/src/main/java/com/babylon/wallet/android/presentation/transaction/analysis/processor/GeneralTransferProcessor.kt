@@ -11,6 +11,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import rdx.works.core.ret.isGlobalComponent
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.defaultDepositGuarantee
 import javax.inject.Inject
 
@@ -23,7 +24,7 @@ class GeneralTransferProcessor @Inject constructor(
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
         val badges = getTransactionBadgesUseCase(accountProofs = summary.presentedProofs)
         val dApps = summary.resolveDApps()
-        val allOwnedAccounts = summary.allOwnedAccounts(getProfileUseCase)
+        val allOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
         val assets = resolveAssetsFromAddressUseCase(
             fungibleAddresses = summary.involvedFungibleAddresses(),
             nonFungibleIds = summary.involvedNonFungibleIds()

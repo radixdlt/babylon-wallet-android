@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
@@ -17,8 +18,9 @@ import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.ResourceIndicator
 import kotlinx.coroutines.flow.first
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.currentNetwork
 import javax.inject.Inject
 
@@ -33,10 +35,15 @@ class ValidatorUnstakeProcessor @Inject constructor(
             fungibleAddresses = summary.involvedFungibleAddresses() + xrdAddress,
             nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
-        val allOwnedAccounts = summary.allOwnedAccounts(getProfileUseCase)
+        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map { it.validator }
-        val fromAccounts = summary.toWithdrawingAccountsWithTransferableAssets(assets, allOwnedAccounts)
-        val toAccounts = classification.extractDeposits(summary, getProfileUseCase, assets)
+        val fromAccounts = summary.toWithdrawingAccountsWithTransferableAssets(assets, involvedOwnedAccounts)
+        val toAccounts = classification.extractDeposits(
+            executionSummary = summary,
+            getProfileUseCase = getProfileUseCase,
+            assets = assets,
+            involvedOwnedAccounts = involvedOwnedAccounts
+        ).sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
         return PreviewType.Transfer.Staking(
             from = fromAccounts,
             to = toAccounts,
@@ -48,11 +55,11 @@ class ValidatorUnstakeProcessor @Inject constructor(
     private suspend fun DetailedManifestClass.ValidatorUnstake.extractDeposits(
         executionSummary: ExecutionSummary,
         getProfileUseCase: GetProfileUseCase,
-        assets: List<Asset>
+        assets: List<Asset>,
+        involvedOwnedAccounts: List<Network.Account>
     ) = executionSummary.accountDeposits.map { claimsPerAddress ->
-        val ownedAccount = getProfileUseCase.accountOnCurrentNetwork(claimsPerAddress.key) ?: error("No account found")
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
-        val depositingTransferables = claimsPerAddress.value.map { claimedResource ->
+        claimsPerAddress.value.map { claimedResource ->
             val resourceAddress = claimedResource.resourceAddress
             val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No resource found")
             if (asset is StakeClaim) {
@@ -68,12 +75,12 @@ class ValidatorUnstakeProcessor @Inject constructor(
                         collectionAddress = resourceAddress,
                         localId = Resource.NonFungibleResource.Item.ID.from(localId),
                         metadata = listOf(
-                            com.babylon.wallet.android.domain.model.resources.metadata.Metadata.Primitive(
+                            Metadata.Primitive(
                                 ExplicitMetadataKey.CLAIM_AMOUNT.key,
                                 claimAmount.toPlainString(),
                                 MetadataType.Decimal
                             ),
-                            com.babylon.wallet.android.domain.model.resources.metadata.Metadata.Primitive(
+                            Metadata.Primitive(
                                 ExplicitMetadataKey.CLAIM_EPOCH.key,
                                 claimEpoch.toString(),
                                 MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.LONG)
@@ -98,10 +105,6 @@ class ValidatorUnstakeProcessor @Inject constructor(
             } else {
                 executionSummary.resolveDepositingAsset(claimedResource, assets, defaultDepositGuarantees)
             }
-        }
-        AccountWithTransferableResources.Owned(
-            account = ownedAccount,
-            resources = depositingTransferables
-        )
+        }.toAccountWithTransferableResources(claimsPerAddress.key, involvedOwnedAccounts)
     }
 }
