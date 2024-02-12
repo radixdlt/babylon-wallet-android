@@ -49,13 +49,11 @@ class AccessFactorSourcesViewModel @Inject constructor(
                     uiState.copy(isAccessingFactorSourceInProgress = true)
                 }
                 when (val input = accessFactorSourcesUiProxy.getInput()) {
-                    AccessFactorSourcesInput.Init -> { /* do nothing */ }
-
                     is AccessFactorSourcesInput.ToDerivePublicKey -> {
                         derivePublicKey(input)
                     }
 
-                    is AccessFactorSourcesInput.ToSign -> { /* TBD */ }
+                    else -> {/* do nothing */}
                 }
 
                 _state.update { uiState ->
@@ -126,7 +124,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
             keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
             ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource = ledgerFactorSource)
         ).onSuccess { derivePublicKeyResponse ->
-            val publicKey = derivePublicKeyResponse.publicKeysHex.first().publicKeyHex.decodeHex() // TODO CHECK ABOUT IT
+            val publicKey = derivePublicKeyResponse.publicKeysHex.first().publicKeyHex.decodeHex()
             val publicKeyAndDerivationPath = PublicKeyAndDerivationPath(
                 compressedPublicKey = publicKey,
                 derivationPath = derivationPath
