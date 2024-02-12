@@ -19,11 +19,7 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDeriveAccountPublicKey
     ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath> {
         input = accessFactorSourcesInput
-        appEventBus.sendEvent(
-            event = AppEvent.AccessFactorSources.DeriveAccountPublicKey(
-                isLedger = accessFactorSourcesInput.factorSource != null
-            )
-        )
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DeriveAccountPublicKey)
         val result = _output.first()
 
         return if (result is AccessFactorSourcesOutput.Failure) {
