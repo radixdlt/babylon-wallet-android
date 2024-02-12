@@ -51,7 +51,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
                 when (val input = accessFactorSourcesUiProxy.getInput()) {
                     AccessFactorSourcesInput.Init -> { /* do nothing */ }
 
-                    is AccessFactorSourcesInput.ToDeriveAccountPublicKey -> {
+                    is AccessFactorSourcesInput.ToDerivePublicKey -> {
                         derivePublicKey(input)
                     }
 
@@ -70,7 +70,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
         }
     }
 
-    private suspend fun derivePublicKey(input: AccessFactorSourcesInput.ToDeriveAccountPublicKey) {
+    private suspend fun derivePublicKey(input: AccessFactorSourcesInput.ToDerivePublicKey) {
         val profile = ensureBabylonFactorSourceExistUseCase()
 
         if (input.factorSource == null) { // device factor source
@@ -97,7 +97,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
         forNetworkId: NetworkId,
         deviceFactorSource: DeviceFactorSource
     ) {
-        val derivationPath = accessFactorSourcesProvider.getDerivationPathForFactorSource(
+        val derivationPath = accessFactorSourcesProvider.getNextDerivationPathForFactorSource(
             forNetworkId = forNetworkId,
             factorSource = deviceFactorSource
         )
@@ -117,7 +117,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
         forNetworkId: NetworkId,
         ledgerFactorSource: LedgerHardwareWalletFactorSource
     ) {
-        val derivationPath = accessFactorSourcesProvider.getDerivationPathForFactorSource(
+        val derivationPath = accessFactorSourcesProvider.getNextDerivationPathForFactorSource(
             forNetworkId = forNetworkId,
             factorSource = ledgerFactorSource
         )

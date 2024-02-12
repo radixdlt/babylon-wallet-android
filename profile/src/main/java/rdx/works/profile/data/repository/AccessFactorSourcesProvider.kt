@@ -20,7 +20,7 @@ class AccessFactorSourcesProvider @Inject constructor(
     /**
      * CAP26 derivation path scheme
      */
-    suspend fun getDerivationPathForFactorSource(
+    suspend fun getNextDerivationPathForFactorSource(
         forNetworkId: NetworkId,
         factorSource: FactorSource
     ): DerivationPath {
