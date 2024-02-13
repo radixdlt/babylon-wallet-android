@@ -16,7 +16,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,7 +39,6 @@ import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScree
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
-import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
@@ -57,7 +55,6 @@ fun ChooseLedgerScreen(
     goBackToCreateAccount: () -> Unit,
     onStartRecovery: (FactorSource, Boolean) -> Unit
 ) {
-    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addLedgerDeviceState by addLedgerDeviceViewModel.state.collectAsStateWithLifecycle()
     val addLinkConnectorState by addLinkConnectorViewModel.state.collectAsStateWithLifecycle()
@@ -66,7 +63,7 @@ fun ChooseLedgerScreen(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is ChooseLedgerEvent.DerivedPublicKeyForAccount -> goBackToCreateAccount()
+                is ChooseLedgerEvent.LedgerSelected -> goBackToCreateAccount()
                 is ChooseLedgerEvent.RecoverAccounts -> onStartRecovery(event.factorSource, event.isOlympia)
             }
         }
@@ -103,11 +100,7 @@ fun ChooseLedgerScreen(
                 ledgerDevices = state.ledgerDevices,
                 onLedgerDeviceSelected = viewModel::onLedgerDeviceSelected,
                 onAddLedgerDeviceClick = viewModel::onAddLedgerDeviceClick,
-                onUseLedgerContinueClick = {
-                    viewModel.onUseLedgerContinueClick(deviceBiometricAuthenticationProvider = {
-                        context.biometricAuthenticateSuspend()
-                    })
-                },
+                onUseLedgerContinueClick = viewModel::onUseLedgerContinueClick,
                 isAddingNewLinkConnectorInProgress = addLinkConnectorState.isAddingNewLinkConnectorInProgress,
                 uiMessage = state.uiMessage,
                 onMessageShown = viewModel::onMessageShown

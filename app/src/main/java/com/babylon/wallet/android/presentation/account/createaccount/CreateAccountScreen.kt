@@ -15,13 +15,14 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,9 +35,11 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 
 @Composable
 fun CreateAccountScreen(
@@ -47,7 +50,7 @@ fun CreateAccountScreen(
         accountId: String,
         requestSource: CreateAccountRequestSource?,
     ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
-    onAddLedgerDevice: (Int) -> Unit
+    onAddLedgerDevice: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     BackHandler(onBack = viewModel::onBackClick)
@@ -68,8 +71,10 @@ fun CreateAccountScreen(
             onBackClick = viewModel::onBackClick,
             modifier = modifier,
             firstTime = state.firstTime,
-            useLedgerSelected = state.useLedgerSelected,
-            onUseLedgerSelectionChanged = viewModel::onUseLedgerSelectionChanged
+            isWithLedger = state.isWithLedger,
+            onUseLedgerSelectionChanged = viewModel::onUseLedgerSelectionChanged,
+            uiMessage = state.uiMessage,
+            onUiMessageShown = viewModel::onUiMessageShown
         )
     }
     LaunchedEffect(Unit) {
@@ -80,7 +85,7 @@ fun CreateAccountScreen(
                     event.requestSource
                 )
 
-                is CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice(event.networkId)
+                is CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
                 is CreateAccountEvent.Dismiss -> onBackClick()
             }
         }
@@ -90,7 +95,7 @@ fun CreateAccountScreen(
 @Composable
 fun CreateAccountContent(
     onAccountNameChange: (String) -> Unit,
-    onAccountCreateClick: () -> Unit,
+    onAccountCreateClick: (Boolean) -> Unit,
     accountName: String,
     isAccountNameLengthMoreThanTheMaximum: Boolean,
     buttonEnabled: Boolean,
@@ -98,9 +103,18 @@ fun CreateAccountContent(
     cancelable: Boolean,
     modifier: Modifier,
     firstTime: Boolean,
-    useLedgerSelected: Boolean,
-    onUseLedgerSelectionChanged: (Boolean) -> Unit
+    isWithLedger: Boolean,
+    onUseLedgerSelectionChanged: (Boolean) -> Unit,
+    uiMessage: UiMessage? = null,
+    onUiMessageShown: () -> Unit = {}
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onUiMessageShown
+    )
+
     Scaffold(
         modifier = modifier.imePadding(),
         topBar = {
@@ -112,18 +126,10 @@ fun CreateAccountContent(
             )
         },
         bottomBar = {
-            val context = LocalContext.current
             RadixPrimaryButton(
                 text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
                 onClick = {
-                    when {
-                        useLedgerSelected -> onAccountCreateClick()
-                        else -> context.biometricAuthenticate { authenticatedSuccessfully ->
-                            if (authenticatedSuccessfully) {
-                                onAccountCreateClick()
-                            }
-                        }
-                    }
+                    onAccountCreateClick(isWithLedger)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -136,7 +142,13 @@ fun CreateAccountContent(
                 throttleClicks = true
             )
         },
-        containerColor = RadixTheme.colors.defaultBackground
+        containerColor = RadixTheme.colors.defaultBackground,
+        snackbarHost = {
+            RadixSnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
+            )
+        }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -185,7 +197,7 @@ fun CreateAccountContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             CreateWithLedgerSwitch(
-                useLedgerSelected = useLedgerSelected,
+                isChecked = isWithLedger,
                 onUseLedgerSelectionChanged = onUseLedgerSelectionChanged,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -195,7 +207,7 @@ fun CreateAccountContent(
 
 @Composable
 private fun CreateWithLedgerSwitch(
-    useLedgerSelected: Boolean,
+    isChecked: Boolean,
     onUseLedgerSelectionChanged: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -216,7 +228,7 @@ private fun CreateWithLedgerSwitch(
                 color = RadixTheme.colors.gray2
             )
         }
-        RadixSwitch(checked = useLedgerSelected, onCheckedChange = onUseLedgerSelectionChanged)
+        RadixSwitch(checked = isChecked, onCheckedChange = onUseLedgerSelectionChanged)
     }
 }
 
@@ -235,7 +247,7 @@ fun CreateAccountContentPreview() {
             cancelable = true,
             modifier = Modifier,
             firstTime = false,
-            useLedgerSelected = false,
+            isWithLedger = false,
             onUseLedgerSelectionChanged = {}
         )
     }

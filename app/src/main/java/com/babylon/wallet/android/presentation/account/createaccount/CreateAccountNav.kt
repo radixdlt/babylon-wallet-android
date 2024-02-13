@@ -72,7 +72,7 @@ fun NavController.createAccountScreen(
 fun NavGraphBuilder.createAccountScreen(
     onBackClick: () -> Unit,
     onContinueClick: (accountId: String, requestSource: CreateAccountRequestSource?) -> Unit,
-    onAddLedgerDevice: (Int) -> Unit
+    onAddLedgerDevice: () -> Unit
 ) {
     markAsHighPriority(route = ROUTE_CREATE_ACCOUNT)
     composable(

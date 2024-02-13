@@ -105,7 +105,7 @@ fun WalletApp(
     }
     HandleAccessFactorSourcesEvents(
         navController = navController,
-        statusEvents = mainViewModel.accessFactorSourcesEvents
+        accessFactorSourcesEvents = mainViewModel.accessFactorSourcesEvents
     )
     HandleStatusEvents(
         navController = navController,
@@ -181,10 +181,10 @@ private fun SyncStatusBarWithScreenChanges(navController: NavHostController) {
 @Composable
 private fun HandleAccessFactorSourcesEvents(
     navController: NavController,
-    statusEvents: Flow<AppEvent.AccessFactorSources.ToCreateAccount>
+    accessFactorSourcesEvents: Flow<AppEvent.AccessFactorSources.DeriveAccountPublicKey>
 ) {
     LaunchedEffect(Unit) {
-        statusEvents.collect { event ->
+        accessFactorSourcesEvents.collect { event ->
             when (event) {
                 is AppEvent.AccessFactorSources -> {
                     navController.accessFactorSources()
@@ -195,7 +195,10 @@ private fun HandleAccessFactorSourcesEvents(
 }
 
 @Composable
-private fun HandleStatusEvents(navController: NavController, statusEvents: Flow<AppEvent.Status>) {
+private fun HandleStatusEvents(
+    navController: NavController,
+    statusEvents: Flow<AppEvent.Status>
+) {
     LaunchedEffect(Unit) {
         statusEvents.collect { event ->
             when (event) {
