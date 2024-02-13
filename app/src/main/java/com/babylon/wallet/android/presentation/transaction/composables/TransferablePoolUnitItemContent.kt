@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,7 +14,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
@@ -25,7 +23,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -88,7 +85,7 @@ fun TransferablePoolUnitItemContent(
                     )
                 }
             }
-            PoolAmountSection(transferable)
+            VerticalAmountSection(transferable)
         }
         Text(
             modifier = Modifier
@@ -136,60 +133,6 @@ fun TransferablePoolUnitItemContent(
                     HorizontalDivider(color = RadixTheme.colors.gray3)
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun PoolAmountSection(transferable: Transferable, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.Center
-    ) {
-        val guaranteedQuantity = transferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount
-        if (guaranteedQuantity != null) {
-            Text(
-                text = stringResource(id = R.string.transactionReview_estimated),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.End
-            )
-        }
-
-        (transferable.transferable as? TransferableAsset.Fungible)?.let {
-            Text(
-                modifier = Modifier,
-                text = it.amount.displayableQuantity(),
-                style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.End
-            )
-        }
-
-        if (guaranteedQuantity != null) {
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            Text(
-                text = stringResource(id = R.string.transactionReview_guaranteed),
-                style = RadixTheme.typography.body2Regular,
-                color = RadixTheme.colors.gray2,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.End
-            )
-            Text(
-                modifier = Modifier,
-                text = guaranteedQuantity.amount.displayableQuantity(),
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.End
-            )
         }
     }
 }

@@ -42,7 +42,6 @@ import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.ProfileException
 import java.math.BigDecimal
-import java.math.MathContext
 import java.math.RoundingMode
 import javax.inject.Inject
 

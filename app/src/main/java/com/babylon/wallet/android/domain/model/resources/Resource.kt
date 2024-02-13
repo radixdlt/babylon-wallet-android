@@ -26,11 +26,10 @@ import kotlinx.collections.immutable.toImmutableList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
-import java.math.MathContext
-import java.math.RoundingMode
 
 sealed class Resource {
     abstract val resourceAddress: String
+    abstract val validatorAddress: String?
     abstract val name: String
     abstract val iconUrl: Uri?
 
@@ -64,7 +63,7 @@ sealed class Resource {
             metadata.iconUrl()
         }
 
-        val validatorAddress: String? by lazy {
+        override val validatorAddress: String? by lazy {
             metadata.validatorAddress()
         }
 
@@ -164,7 +163,7 @@ sealed class Resource {
             }.take(TAGS_MAX).toImmutableList()
         }
 
-        val validatorAddress: String? by lazy {
+        override val validatorAddress: String? by lazy {
             metadata.validatorAddress()
         }
 

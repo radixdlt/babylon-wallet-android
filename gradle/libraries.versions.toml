@@ -12,14 +12,14 @@ material = "1.11.0"
 composeMaterial3 = "1.2.0-rc01"
 material3WindowSizeClass = "1.1.2"
 splash = "1.0.1"
-immutableCollections = "0.3.6"
+immutableCollections = "0.3.7"
 accompanist = "0.32.0"
 datastorePreferences = "1.1.0-alpha06"
-hilt = "2.48.1"
+hilt = "2.50"
 hiltNavigation = "1.1.0"
 biometricKtx = "1.2.0-alpha05"
 coilCompose = "2.5.0"
-kotlinxSerialization = "1.6.1"
+kotlinxSerialization = "1.6.2"
 ret = "v1.0.9"
 slip10 = "1.2-snapshot"
 crypto = "1.72"
@@ -33,14 +33,14 @@ camera2 = "1.4.0-alpha02"
 cameraLifecycle = "1.4.0-alpha02"
 cameraView = "1.4.0-alpha02"
 rootCheck = "0.1.0"
-room = "2.6.0"
+room = "2.6.1"
 junit = "4.13.2"
-mockk = "1.13.8"
+mockk = "1.13.9"
 coroutinesTest = "1.7.3"
 mockitoKotlin = "5.1.0"
 mockitoInline = "5.2.0"
 androidXJunit = "1.1.5"
-kotlinTestJunit = "1.9.20"
+kotlinTestJunit = "1.9.22"
 espresso = "3.5.1"
 composeUiTestJunit = "1.6.0"
 composeUiTooling = "1.6.0"
@@ -51,6 +51,19 @@ zxing = "3.5.2"
 apacheCommonsValidator = "1.7"
 jsonAssert = "1.5.1"
 firebaseCrashlytics = "18.5.1"
+
+androidApplicationPlugin = "8.2.2"
+androidLibraryPlugin = "8.2.2"
+kotlinAndroidPlugin = "1.9.22"
+kotlinSerializationPlugin = "1.9.22"
+kotlinJvmPlugin = "1.9.22"
+benManesVersionsPlugin = "0.51.0"
+versionCatalogUpdatePlugin = "0.8.4"
+googleServicesPlugin = "4.4.0"
+firebaseCrashlyticsPlugin = "2.9.9"
+hiltPlugin = "2.50"
+sonarqubePlugin = "4.4.1.3373"
+kspPlugin = "1.9.22-1.0.17"
 
 [libraries]
 androidxCore = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
@@ -129,3 +142,16 @@ zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
 apacheCommonsValidator = { module = "commons-validator:commons-validator", version.ref = "apacheCommonsValidator" }
 jsonAssert = { module = "org.skyscreamer:jsonassert", version.ref = "jsonAssert" }
 firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics", version.ref = "firebaseCrashlytics" }
+[plugins]
+android-application = { id = "com.android.application", version.ref = "androidApplicationPlugin" }
+android-library = { id = "com.android.library", version.ref = "androidLibraryPlugin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinAndroidPlugin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinSerializationPlugin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlinJvmPlugin" }
+ben-manes-versions = { id = "com.github.ben-manes.versions", version.ref = "benManesVersionsPlugin" }
+version-catalog-update = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdatePlugin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServicesPlugin" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hiltPlugin" }
+sonarqube = { id = "org.sonarqube", version.ref = "sonarqubePlugin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "kspPlugin" }
