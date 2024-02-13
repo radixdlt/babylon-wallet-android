@@ -38,7 +38,7 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         reset() // access to factor sources is done
     }
 
-    override suspend fun reset() {
+    private suspend fun reset() {
         input = AccessFactorSourcesInput.Init
         _output.emit(AccessFactorSourcesOutput.Init)
     }

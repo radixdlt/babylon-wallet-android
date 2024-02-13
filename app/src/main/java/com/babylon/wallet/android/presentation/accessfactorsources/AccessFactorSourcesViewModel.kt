@@ -140,7 +140,6 @@ class AccessFactorSourcesViewModel @Inject constructor(
             accessFactorSourcesUiProxy.setOutput(
                 output = AccessFactorSourcesOutput.Failure(CancellationException("Authentication dismissed"))
             )
-            accessFactorSourcesUiProxy.reset()
         }
     }
 

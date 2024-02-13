@@ -19,8 +19,6 @@ interface AccessFactorSourcesUiProxy {
     fun getInput(): AccessFactorSourcesInput
 
     suspend fun setOutput(output: AccessFactorSourcesOutput)
-
-    suspend fun reset()
 }
 
 // ----- Models for input/output ----- //
