@@ -53,7 +53,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
                         derivePublicKey(input)
                     }
 
-                    else -> {/* do nothing */}
+                    else -> { /* do nothing */ }
                 }
 
                 _state.update { uiState ->
