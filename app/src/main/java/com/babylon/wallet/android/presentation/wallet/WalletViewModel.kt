@@ -7,6 +7,7 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.NPSSurveyUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -57,6 +58,7 @@ class WalletViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val preferencesManager: PreferencesManager,
+    private val npsSurveyUseCase: NPSSurveyUseCase,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -72,6 +74,8 @@ class WalletViewModel @Inject constructor(
 
     val babylonFactorSourceDoesNotExistEvent =
         appEventBus.events.filterIsInstance<AppEvent.BabylonFactorSourceDoesNotExist>()
+
+    val npsSurveyState = npsSurveyUseCase.npsSurveyState()
 
     init {
         viewModelScope.launch {

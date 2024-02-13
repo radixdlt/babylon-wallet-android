@@ -22,7 +22,8 @@ fun MainScreen(
     onNavigateToMnemonicRestore: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,
-    onNavigateToIncompatibleProfile: () -> Unit
+    onNavigateToIncompatibleProfile: () -> Unit,
+    showNPSSurvey: () -> Unit
 ) {
     val state by mainUiState.collectAsStateWithLifecycle()
     when (state.initialAppState) {
@@ -34,7 +35,8 @@ fun MainScreen(
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
                 onNavigateToMnemonicBackup = onNavigateToMnemonicBackup,
-                onNavigateToMnemonicRestore = onNavigateToMnemonicRestore
+                onNavigateToMnemonicRestore = onNavigateToMnemonicRestore,
+                showNPSSurvey = showNPSSurvey
             )
         }
 

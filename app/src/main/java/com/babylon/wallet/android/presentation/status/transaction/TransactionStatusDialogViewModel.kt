@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.toConnectorExtensionError
+import com.babylon.wallet.android.domain.usecases.NPSSurveyUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 @HiltViewModel
 class TransactionStatusDialogViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
@@ -31,6 +33,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
     private val dAppMessenger: DappMessenger,
     private val appEventBus: AppEventBus,
     private val exceptionMessageProvider: ExceptionMessageProvider,
+    private val nPSSurveyUseCase: NPSSurveyUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<TransactionStatusDialogViewModel.State>(),
     OneOffEventHandler<TransactionStatusDialogViewModel.Event> by OneOffEventHandlerImpl() {
@@ -76,6 +79,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
         viewModelScope.launch {
             transactionStatusClient.listenForPollStatus(status.transactionId).collect { pollResult ->
                 pollResult.result.onSuccess {
+                    nPSSurveyUseCase.incrementTransactionCompleteCounter()
                     // Notify the system and this particular dialog that the transaction is completed
                     appEventBus.sendEvent(
                         AppEvent.Status.Transaction.Success(

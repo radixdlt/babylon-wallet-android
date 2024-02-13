@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -143,6 +144,29 @@ class PreferencesManager @Inject constructor(
         }
     }
 
+    fun transactionCompleteCounter(): Flow<Int> = dataStore.data.map { preferences ->
+        preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] ?: 0
+    }
+
+    suspend fun updateTransactionCompleteCounter(currentCounter: Int) {
+        dataStore.edit { preferences ->
+            preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] = currentCounter
+        }
+    }
+
+    val lastNPSSurveyInstant: Flow<Instant?> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_SHOW_NPS_SURVEY_INSTANT]?.let {
+                Instant.parse(it)
+            }
+        }
+
+    suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant) {
+        dataStore.edit { preferences ->
+            preferences[KEY_SHOW_NPS_SURVEY_INSTANT] = npsSurveyInstant.toString()
+        }
+    }
+
     suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
@@ -156,5 +180,7 @@ class PreferencesManager @Inject constructor(
             booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
         private val KEY_DEVICE_ROOTED_DIALOG_SHOWN = booleanPreferencesKey("device_rooted_dialog_shown")
         private val KEY_LINK_CONNECTION_STATUS_INDICATOR = booleanPreferencesKey("link_connection_status_indicator")
+        private val KEY_TRANSACTIONS_COMPLETE_COUNT = intPreferencesKey("transaction_complete_count")
+        private val KEY_SHOW_NPS_SURVEY_INSTANT = stringPreferencesKey("show_nps_survey_instant")
     }
 }

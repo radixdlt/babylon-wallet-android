@@ -62,6 +62,9 @@ android {
         buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "true"
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
         buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service-dev.extratools.works"'
+        buildConfigField "String", "REFINER_API_KEY", getPropertyByName('REFINER_API_KEY')
+        buildConfigField "String", "REFINER_USER_ID", getPropertyByName('REFINER_USER_ID')
+        buildConfigField "String", "REFINER_FORM_UUID", getPropertyByName('REFINER_FORM_UUID')
         resValue "string", "app_name", "Radix Wallet"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -254,6 +257,18 @@ tasks.withType(Test.class).configureEach {
         excludes = ["*"]
     }
 }
+
+def getPropertyByName(String propName) {
+    def propsFile = rootProject.file('local.properties')
+    if (propsFile.exists()) {
+        def props = new Properties()
+        props.load(new FileInputStream(propsFile))
+        return props[propName]
+    } else {
+        return "";
+    }
+}
+
 /**
  * Copies the english translation file to the default location.
  * This is needed since Crowdin cannot create pull requests

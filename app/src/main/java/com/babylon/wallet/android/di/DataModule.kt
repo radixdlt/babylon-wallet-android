@@ -6,6 +6,8 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.LedgerMessengerImpl
+import com.babylon.wallet.android.data.repository.NPSSurveyRepository
+import com.babylon.wallet.android.data.repository.NPSSurveyRepositoryImpl
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
@@ -47,6 +49,11 @@ interface DataModule {
     fun bindTransactionRepository(
         transactionRepository: TransactionRepositoryImpl
     ): TransactionRepository
+
+    @Binds
+    fun bindNPSSurveyRepository(
+        nPSSurveyRepositoryImpl: NPSSurveyRepositoryImpl
+    ): NPSSurveyRepository
 
     @Binds
     fun bindNetworkInfoRepository(

@@ -51,6 +51,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.usecases.NPSSurveyState
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -70,7 +71,8 @@ fun WalletScreen(
     onAccountClick: (Network.Account) -> Unit = { },
     onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
     onNavigateToMnemonicRestore: () -> Unit,
-    onAccountCreationClick: () -> Unit
+    onAccountCreationClick: () -> Unit,
+    showNPSSurvey: () -> Unit
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
@@ -98,6 +100,15 @@ fun WalletScreen(
             when (it) {
                 is WalletEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                 is WalletEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore()
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.npsSurveyState.collect { npsSurveyState ->
+            when (npsSurveyState) {
+                is NPSSurveyState.Active -> showNPSSurvey()
+                else -> {}
             }
         }
     }

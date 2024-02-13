@@ -3,6 +3,7 @@ package com.babylon.wallet.android.di
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
+import com.babylon.wallet.android.data.gateway.apis.NPSSurveyApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.apis.StreamApi
 import com.babylon.wallet.android.data.gateway.apis.TransactionApi
@@ -203,6 +204,16 @@ object NetworkModule {
         profileRepository: ProfileRepository
     ): StreamApi = buildApi(
         baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
+        okHttpClient = okHttpClient,
+        jsonConverterFactory = jsonConverterFactory
+    )
+
+    @Provides
+    fun provideNPSSurveyApi(
+        @SimpleHttpClient okHttpClient: OkHttpClient,
+        @JsonConverterFactory jsonConverterFactory: Factory
+    ): NPSSurveyApi = buildApi(
+        baseUrl = "https://api.refiner.io/v1/",
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )
