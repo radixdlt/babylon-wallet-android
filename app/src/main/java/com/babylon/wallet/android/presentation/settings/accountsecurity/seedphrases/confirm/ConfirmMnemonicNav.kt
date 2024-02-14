@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm
 
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -29,7 +28,6 @@ internal class ConfirmSeedPhraseArgs(val factorSourceId: String, val mnemonicSiz
     )
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.confirmSeedPhrase(
     onMnemonicBackedUp: () -> Unit,
     onDismiss: () -> Unit

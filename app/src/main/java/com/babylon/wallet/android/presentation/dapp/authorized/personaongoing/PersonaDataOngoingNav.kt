@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaongoing
 
 import android.net.Uri
 import androidx.annotation.VisibleForTesting
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -41,7 +40,6 @@ fun NavController.personaDataOngoing(personaAddress: String, request: RequiredPe
 }
 
 @Suppress("LongParameterList")
-@OptIn(ExperimentalAnimationApi::class)
 fun NavGraphBuilder.personaDataOngoing(
     onEdit: (PersonaDataOngoingEvent.OnEditPersona) -> Unit,
     onBackClick: () -> Unit,

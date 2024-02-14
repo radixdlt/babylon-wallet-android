@@ -14,20 +14,15 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.usesCurve25519
 import rdx.works.profile.data.model.extensions.usesSecp256k1
-import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceFlag
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.derivation.model.KeyType
-import rdx.works.profile.derivation.model.NetworkId
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
@@ -49,7 +44,8 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
  */
 val GetProfileUseCase.entitiesOnCurrentNetwork: Flow<List<Entity>>
     get() = invoke().map {
-        it.currentNetwork?.accounts?.notHiddenAccounts().orEmpty() + it.currentNetwork?.personas?.notHiddenPersonas().orEmpty()
+        it.currentNetwork?.accounts?.notHiddenAccounts().orEmpty() +
+            it.currentNetwork?.personas?.notHiddenPersonas().orEmpty()
     }
 
 suspend fun GetProfileUseCase.currentNetwork(): Network? {
@@ -135,20 +131,6 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
     withAddress: String
 ) = accountsOnCurrentNetwork().firstOrNull { account ->
     account.address == withAddress
-}
-
-suspend fun GetProfileUseCase.nextDerivationPathForAccountOnNetwork(
-    derivationPathScheme: DerivationPathScheme,
-    networkId: Int,
-    factorSourceId: FactorSource.FactorSourceID
-): DerivationPath {
-    val profile = invoke().first()
-    val network = requireNotNull(NetworkId.from(networkId))
-    return DerivationPath.forAccount(
-        networkId = network,
-        accountIndex = profile.nextAccountIndex(derivationPathScheme, network, factorSourceId),
-        keyType = KeyType.TRANSACTION_SIGNING
-    )
 }
 
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {

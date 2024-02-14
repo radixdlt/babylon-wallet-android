@@ -15,7 +15,7 @@ data class DeviceFactorSource(
     override val common: Common,
     @SerialName("hint")
     val hint: Hint
-) : FactorSource() {
+) : FactorSource(), FactorSource.CreatingEntity {
 
     @Serializable
     data class Hint(

@@ -13,6 +13,7 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.extensions.addP2PLink
+import rdx.works.profile.data.model.extensions.nextAccountIndex
 import rdx.works.profile.data.model.extensions.renameAccountDisplayName
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
@@ -20,7 +21,6 @@ import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAcc
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.addPersona
-import rdx.works.profile.data.model.pernetwork.nextAccountIndex
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.TestData
@@ -53,9 +53,9 @@ class ProfileGenerationTest {
             "Next derivation index for first account",
             0,
             profile.nextAccountIndex(
+                factorSource = babylonFactorSource,
                 derivationPathScheme = DerivationPathScheme.CAP_26,
                 forNetworkId = defaultNetwork.networkId(),
-                factorSourceID = babylonFactorSource.id
             )
         )
 
@@ -86,9 +86,9 @@ class ProfileGenerationTest {
             "Next derivation index for second account",
             1,
             profile.nextAccountIndex(
+                factorSource = babylonFactorSource,
                 derivationPathScheme = DerivationPathScheme.CAP_26,
-                forNetworkId = defaultNetwork.networkId(),
-                factorSourceID = babylonFactorSource.id
+                forNetworkId = defaultNetwork.networkId()
             )
         )
 

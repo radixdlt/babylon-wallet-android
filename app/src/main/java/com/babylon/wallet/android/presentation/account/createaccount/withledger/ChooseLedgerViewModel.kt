@@ -2,9 +2,6 @@ package com.babylon.wallet.android.presentation.account.createaccount.withledger
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.LedgerMessenger
-import com.babylon.wallet.android.data.dapp.model.Curve
-import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -15,7 +12,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.ShowLinkConnectorPromptState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -24,24 +20,16 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.domain.ledgerFactorSources
-import rdx.works.profile.domain.nextDerivationPathForAccountOnNetwork
 import rdx.works.profile.domain.p2pLinks
 import javax.inject.Inject
 
 @HiltViewModel
 class ChooseLedgerViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
-    private val ledgerMessenger: LedgerMessenger,
-    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<ChooseLedgerUiState>(),
@@ -104,7 +92,7 @@ class ChooseLedgerViewModel @Inject constructor(
     }
 
     @Suppress("LongMethod")
-    fun onUseLedgerContinueClick(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
+    fun onUseLedgerContinueClick() {
         state.value.ledgerDevices.firstOrNull { selectableLedgerDevice ->
             selectableLedgerDevice.selected
         }?.let { ledgerFactorSource ->
@@ -122,42 +110,13 @@ class ChooseLedgerViewModel @Inject constructor(
                 }
 
                 when (args.ledgerSelectionPurpose) {
-                    LedgerSelectionPurpose.CreateAccount -> {
-                        // check again if link connector exists
-                        if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist().not()) {
-                            val authenticationResult = deviceBiometricAuthenticationProvider()
-                            if (authenticationResult) {
-                                ensureBabylonFactorSourceExistUseCase()
-                            } else {
-                                // don't move forward without babylon factor source
-                                return@launch
-                            }
-                        }
-                        val derivationPath = getProfileUseCase.nextDerivationPathForAccountOnNetwork(
-                            DerivationPathScheme.CAP_26,
-                            networkIdToCreateAccountOn(),
-                            ledgerFactorSource.data.id
-                        )
-                        ledgerMessenger.sendDerivePublicKeyRequest(
-                            interactionId = UUIDGenerator.uuid().toString(),
-                            keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
-                            ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource.data)
-                        ).onSuccess { response ->
-                            appEventBus.sendEvent(
-                                AppEvent.DerivedAccountPublicKeyWithLedger(
-                                    factorSourceID = ledgerFactorSource.data.id,
-                                    derivationPath = derivationPath,
-                                    derivedPublicKeyHex = response.publicKeysHex.first().publicKeyHex
-                                )
+                    LedgerSelectionPurpose.DerivePublicKey -> {
+                        appEventBus.sendEvent(
+                            event = AppEvent.AccessFactorSources.SelectedLedgerDevice(
+                                ledgerFactorSource = ledgerFactorSource.data
                             )
-                            sendEvent(ChooseLedgerEvent.DerivedPublicKeyForAccount)
-                        }.onFailure { error ->
-                            _state.update { state ->
-                                state.copy(
-                                    uiMessage = UiMessage.ErrorMessage(error)
-                                )
-                            }
-                        }
+                        )
+                        sendEvent(ChooseLedgerEvent.LedgerSelected)
                     }
 
                     LedgerSelectionPurpose.RecoveryScanBabylon,
@@ -217,14 +176,6 @@ class ChooseLedgerViewModel @Inject constructor(
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
-
-    private suspend fun networkIdToCreateAccountOn(): Int {
-        return if (args.networkId == Constants.USE_CURRENT_NETWORK) {
-            getCurrentGatewayUseCase.invoke().network.id
-        } else {
-            args.networkId
-        }
-    }
 }
 
 data class ChooseLedgerUiState(
@@ -246,6 +197,6 @@ data class ChooseLedgerUiState(
 }
 
 internal sealed interface ChooseLedgerEvent : OneOffEvent {
-    data object DerivedPublicKeyForAccount : ChooseLedgerEvent
+    data object LedgerSelected : ChooseLedgerEvent
     data class RecoverAccounts(val factorSource: FactorSource, val isOlympia: Boolean) : ChooseLedgerEvent
 }

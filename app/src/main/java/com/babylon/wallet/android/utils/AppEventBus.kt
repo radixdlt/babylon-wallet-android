@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,11 +28,13 @@ sealed interface AppEvent {
     data object RestoredMnemonic : AppEvent
     data object BabylonFactorSourceDoesNotExist : AppEvent
     data class BabylonFactorSourceNeedsRecovery(val factorSourceID: FactorSource.FactorSourceID.FromHash) : AppEvent
-    data class DerivedAccountPublicKeyWithLedger(
-        val factorSourceID: FactorSource.FactorSourceID.FromHash,
-        val derivationPath: DerivationPath,
-        val derivedPublicKeyHex: String
-    ) : AppEvent
+
+    sealed interface AccessFactorSources : AppEvent {
+
+        data class SelectedLedgerDevice(val ledgerFactorSource: LedgerHardwareWalletFactorSource) : AccessFactorSources
+
+        data object DeriveAccountPublicKey : AccessFactorSources
+    }
 
     sealed class Status : AppEvent {
         abstract val requestId: String

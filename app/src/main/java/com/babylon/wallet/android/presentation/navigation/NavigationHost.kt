@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.navigation
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -13,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.babylon.wallet.android.presentation.accessfactorsources.accessFactorSources
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
@@ -76,7 +76,6 @@ import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.backup.BackupType
 
 @Suppress("CyclomaticComplexMethod")
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun NavigationHost(
     modifier: Modifier = Modifier,
@@ -242,6 +241,11 @@ fun NavigationHost(
                 }
             )
         }
+        accessFactorSources(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
         createAccountScreen(
             onBackClick = {
                 navController.navigateUp()
@@ -253,7 +257,7 @@ fun NavigationHost(
                 )
             },
             onAddLedgerDevice = {
-                navController.chooseLedger(networkId = it)
+                navController.chooseLedger()
             }
         )
         chooseLedger(

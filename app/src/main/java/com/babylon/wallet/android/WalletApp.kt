@@ -21,6 +21,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.userFriendlyMessage
+import com.babylon.wallet.android.presentation.accessfactorsources.accessFactorSources
 import com.babylon.wallet.android.presentation.dapp.authorized.login.dAppLoginAuthorized
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLoginUnauthorized
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -43,7 +44,6 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.Flow
 
 @Composable
-@Suppress("ModifierMissing")
 fun WalletApp(
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel,
@@ -103,6 +103,10 @@ fun WalletApp(
             )
         }
     }
+    HandleAccessFactorSourcesEvents(
+        navController = navController,
+        accessFactorSourcesEvents = mainViewModel.accessFactorSourcesEvents
+    )
     HandleStatusEvents(
         navController = navController,
         statusEvents = mainViewModel.statusEvents
@@ -175,7 +179,26 @@ private fun SyncStatusBarWithScreenChanges(navController: NavHostController) {
 }
 
 @Composable
-fun HandleStatusEvents(navController: NavController, statusEvents: Flow<AppEvent.Status>) {
+private fun HandleAccessFactorSourcesEvents(
+    navController: NavController,
+    accessFactorSourcesEvents: Flow<AppEvent.AccessFactorSources.DeriveAccountPublicKey>
+) {
+    LaunchedEffect(Unit) {
+        accessFactorSourcesEvents.collect { event ->
+            when (event) {
+                is AppEvent.AccessFactorSources -> {
+                    navController.accessFactorSources()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HandleStatusEvents(
+    navController: NavController,
+    statusEvents: Flow<AppEvent.Status>
+) {
     LaunchedEffect(Unit) {
         statusEvents.collect { event ->
             when (event) {
@@ -192,7 +215,7 @@ fun HandleStatusEvents(navController: NavController, statusEvents: Flow<AppEvent
 }
 
 @Composable
-fun ObserveHighPriorityScreens(
+private fun ObserveHighPriorityScreens(
     navController: NavController,
     onLowPriorityScreen: () -> Unit,
     onHighPriorityScreen: () -> Unit
