@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
+import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.derivation.model.NetworkId
@@ -10,6 +12,10 @@ interface AccessFactorSourcesProxy {
     suspend fun getPublicKeyAndDerivationPathForFactorSource(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
     ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath>
+
+    suspend fun reDerivePublicKeys(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToReDerivePublicKey
+    ): Result<AccessFactorSourcesOutput.RecoveredAccountsWithOnLedgerStatus>
 }
 
 // interface for the AccessFactorSourceViewModel that works as a mediator between the clients
@@ -30,10 +36,25 @@ sealed interface AccessFactorSourcesInput {
         val factorSource: FactorSource.CreatingEntity? = null
     ) : AccessFactorSourcesInput
 
-    // just for demonstration - will change in next PR
-    data class ToSign(
-        val someData: List<Int>
-    ) : AccessFactorSourcesInput
+    sealed interface ToReDerivePublicKey : AccessFactorSourcesInput {
+
+        val factorSource: FactorSource.CreatingEntity
+        val isForLegacyOlympia: Boolean
+        val nextDerivationPathOffset: Int // is used as pointer when user clicks "scan the next 50"
+
+        data class WithGivenMnemonic(
+            override val factorSource: FactorSource.CreatingEntity,
+            override val isForLegacyOlympia: Boolean = false,
+            override val nextDerivationPathOffset: Int,
+            val mnemonicWithPassphrase: MnemonicWithPassphrase,
+        ) : ToReDerivePublicKey
+
+        data class WithGivenFactorSource(
+            override val factorSource: FactorSource.CreatingEntity,
+            override val isForLegacyOlympia: Boolean,
+            override val nextDerivationPathOffset: Int,
+        ) : ToReDerivePublicKey
+    }
 
     data object Init : AccessFactorSourcesInput
 }
@@ -45,9 +66,9 @@ sealed interface AccessFactorSourcesOutput {
         val derivationPath: DerivationPath
     ) : AccessFactorSourcesOutput
 
-    // just for demonstration - will change in next PR
-    data class Signers(
-        val someData: List<String>
+    data class RecoveredAccountsWithOnLedgerStatus(
+        val data: List<AccountWithOnLedgerStatus>,
+        val nextDerivationPathOffset: Int // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
 
     data class Failure(
