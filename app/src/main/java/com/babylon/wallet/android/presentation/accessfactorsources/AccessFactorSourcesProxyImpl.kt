@@ -30,7 +30,7 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
     }
 
     override suspend fun reDeriveAccounts(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToReDerivePublicKey
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
     ): Result<AccessFactorSourcesOutput.RecoveredAccountsWithOnLedgerStatus> {
         input = accessFactorSourcesInput
         appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DeriveAccounts)

@@ -14,7 +14,7 @@ interface AccessFactorSourcesProxy {
     ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath>
 
     suspend fun reDeriveAccounts(
-        accessFactorSourcesInput: AccessFactorSourcesInput.ToReDerivePublicKey
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
     ): Result<AccessFactorSourcesOutput.RecoveredAccountsWithOnLedgerStatus>
 }
 
@@ -36,7 +36,7 @@ sealed interface AccessFactorSourcesInput {
         val factorSource: FactorSource.CreatingEntity? = null
     ) : AccessFactorSourcesInput
 
-    sealed interface ToReDerivePublicKey : AccessFactorSourcesInput {
+    sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {
 
         val factorSource: FactorSource.CreatingEntity
         val isForLegacyOlympia: Boolean
@@ -47,13 +47,13 @@ sealed interface AccessFactorSourcesInput {
             override val isForLegacyOlympia: Boolean = false,
             override val nextDerivationPathOffset: Int,
             val mnemonicWithPassphrase: MnemonicWithPassphrase,
-        ) : ToReDerivePublicKey
+        ) : ToReDeriveAccounts
 
         data class WithGivenFactorSource(
             override val factorSource: FactorSource.CreatingEntity,
             override val isForLegacyOlympia: Boolean,
             override val nextDerivationPathOffset: Int,
-        ) : ToReDerivePublicKey
+        ) : ToReDeriveAccounts
     }
 
     data object Init : AccessFactorSourcesInput

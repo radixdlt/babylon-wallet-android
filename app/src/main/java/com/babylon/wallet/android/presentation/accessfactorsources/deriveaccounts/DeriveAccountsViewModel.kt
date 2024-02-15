@@ -8,7 +8,7 @@ import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepo
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToReDerivePublicKey
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToReDeriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.DeriveAccountsViewModel.DeriveAccountsUiState.ShowContentForFactorSource
@@ -71,10 +71,10 @@ class DeriveAccountsViewModel @Inject constructor(
             profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.invoke().firstOrNull() else null
 
             val input = accessFactorSourcesUiProxy.getInput()
-            nextDerivationPathOffset = (input as ToReDerivePublicKey).nextDerivationPathOffset
+            nextDerivationPathOffset = (input as ToReDeriveAccounts).nextDerivationPathOffset
             // if it is with given mnemonic it means it is an account recovery scan from onboarding,
             // thus profile is not initialized yet
-            if (input is ToReDerivePublicKey.WithGivenMnemonic) {
+            if (input is ToReDeriveAccounts.WithGivenMnemonic) {
                 recoverAccountsForGivenMnemonic(input = input)
                 sendEvent(Event.DerivingAccountsCompleted)
             } else { // else is with a given factor source
@@ -94,9 +94,9 @@ class DeriveAccountsViewModel @Inject constructor(
                     uiState.copy(isDerivingAccountsInProgress = true)
                 }
                 when (val input = accessFactorSourcesUiProxy.getInput()) {
-                    is ToReDerivePublicKey -> {
+                    is ToReDeriveAccounts -> {
                         when (input) {
-                            is ToReDerivePublicKey.WithGivenFactorSource -> {
+                            is ToReDeriveAccounts.WithGivenFactorSource -> {
                                 recoverAccountsForGivenFactorSource(input = input)
                             }
                             else -> { /* do nothing */ }
@@ -126,7 +126,7 @@ class DeriveAccountsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun initRecoveryFromLedgerFactorSource(input: ToReDerivePublicKey) {
+    private suspend fun initRecoveryFromLedgerFactorSource(input: ToReDeriveAccounts) {
         _state.update { uiState ->
             val ledger = input.factorSource as LedgerHardwareWalletFactorSource
             uiState.copy(
@@ -135,7 +135,7 @@ class DeriveAccountsViewModel @Inject constructor(
             )
         }
 
-        recoverAccountsForGivenFactorSource(input = input as ToReDerivePublicKey.WithGivenFactorSource)
+        recoverAccountsForGivenFactorSource(input = input as ToReDeriveAccounts.WithGivenFactorSource)
 
         _state.update { uiState ->
             uiState.copy(isDerivingAccountsInProgress = false)
@@ -144,7 +144,7 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     private suspend fun recoverAccountsForGivenMnemonic(
-        input: ToReDerivePublicKey.WithGivenMnemonic
+        input: ToReDeriveAccounts.WithGivenMnemonic
     ) {
         withContext(ioDispatcher) {
             val networkId = profile?.currentNetwork?.knownNetworkId ?: Radix.Gateway.mainnet.network.networkId()
@@ -178,7 +178,7 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     private suspend fun recoverAccountsForGivenFactorSource(
-        input: ToReDerivePublicKey.WithGivenFactorSource
+        input: ToReDeriveAccounts.WithGivenFactorSource
     ) {
         withContext(ioDispatcher) {
             val networkId = profile?.currentNetwork?.knownNetworkId ?: Radix.Gateway.mainnet.network.networkId()
@@ -212,7 +212,7 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     private fun reDerivePublicKeysWithGivenMnemonic(
-        input: ToReDerivePublicKey.WithGivenMnemonic,
+        input: ToReDeriveAccounts.WithGivenMnemonic,
         accountIndices: Set<Int>,
         forNetworkId: NetworkId
     ): Map<DerivationPath, ByteArray> {
@@ -228,7 +228,7 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     private suspend fun reDerivePublicKeysWithGivenAccountIndices(
-        input: ToReDerivePublicKey.WithGivenFactorSource,
+        input: ToReDeriveAccounts.WithGivenFactorSource,
         accountIndices: Set<Int>,
         forNetworkId: NetworkId
     ): Map<DerivationPath, ByteArray> {
@@ -283,7 +283,7 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     private suspend fun deriveAndResolveAccounts(
-        input: ToReDerivePublicKey,
+        input: ToReDeriveAccounts,
         derivationPathsWithPublicKeys: Map<DerivationPath, ByteArray>,
         forNetworkId: NetworkId
     ): Result<List<AccountWithOnLedgerStatus>> {
