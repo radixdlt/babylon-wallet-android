@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.account.recover.complete
+package com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scancomplete
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.material.Text
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,7 +59,10 @@ private fun RecoveryScanCompleteContent(
             Text(
                 modifier = Modifier
                     .padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.recoverWalletWithoutProfile_complete_headerTitle),
+                text = stringResource(
+                    id = R.string
+                        .recoverWalletWithoutProfile_complete_headerTitle
+                ),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )

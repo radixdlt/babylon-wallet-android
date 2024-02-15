@@ -1,5 +1,5 @@
 
-package com.babylon.wallet.android.presentation.settings.recovery
+package com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition

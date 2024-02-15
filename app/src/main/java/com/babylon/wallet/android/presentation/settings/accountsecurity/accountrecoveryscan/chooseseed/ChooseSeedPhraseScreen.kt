@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.recovery.chooseseed
+package com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.chooseseed
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
