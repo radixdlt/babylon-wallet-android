@@ -9,7 +9,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatu
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatusResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitResponse
-import retrofit2.Response
+import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -26,9 +26,9 @@ interface TransactionApi {
      * @return [TransactionCommittedDetailsResponse]
      */
     @POST("transaction/committed-details")
-    suspend fun transactionCommittedDetails(
+    fun transactionCommittedDetails(
         @Body transactionCommittedDetailsRequest: TransactionCommittedDetailsRequest
-    ): Response<TransactionCommittedDetailsResponse>
+    ): Call<TransactionCommittedDetailsResponse>
 
     /**
      * Get Construction Metadata
@@ -39,7 +39,7 @@ interface TransactionApi {
      * @return [TransactionConstructionResponse]
      */
     @POST("transaction/construction")
-    suspend fun transactionConstruction(): Response<TransactionConstructionResponse>
+    fun transactionConstruction(): Call<TransactionConstructionResponse>
 
     /**
      * Preview Transaction
@@ -53,7 +53,7 @@ interface TransactionApi {
      * @return [TransactionPreviewResponse]
      */
     @POST("transaction/preview")
-    suspend fun transactionPreview(@Body transactionPreviewRequest: TransactionPreviewRequest): Response<TransactionPreviewResponse>
+    fun transactionPreview(@Body transactionPreviewRequest: TransactionPreviewRequest): Call<TransactionPreviewResponse>
 
     /**
      * Get Transaction Status
@@ -66,7 +66,7 @@ interface TransactionApi {
      * @return [TransactionStatusResponse]
      */
     @POST("transaction/status")
-    suspend fun transactionStatus(@Body transactionStatusRequest: TransactionStatusRequest): Response<TransactionStatusResponse>
+    fun transactionStatus(@Body transactionStatusRequest: TransactionStatusRequest): Call<TransactionStatusResponse>
 
     /**
      * Submit Transaction
@@ -79,5 +79,5 @@ interface TransactionApi {
      * @return [TransactionSubmitResponse]
      */
     @POST("transaction/submit")
-    suspend fun transactionSubmit(@Body transactionSubmitRequest: TransactionSubmitRequest): Response<TransactionSubmitResponse>
+    fun transactionSubmit(@Body transactionSubmitRequest: TransactionSubmitRequest): Call<TransactionSubmitResponse>
 }

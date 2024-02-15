@@ -2,7 +2,7 @@ package com.babylon.wallet.android.data.gateway.apis
 
 import com.babylon.wallet.android.data.gateway.generated.models.ValidatorsUptimeRequest
 import com.babylon.wallet.android.data.gateway.generated.models.ValidatorsUptimeResponse
-import retrofit2.Response
+import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -18,5 +18,5 @@ interface StatisticsApi {
      * @return [ValidatorsUptimeResponse]
      */
     @POST("statistics/validators/uptime")
-    suspend fun validatorsUptime(@Body validatorsUptimeRequest: ValidatorsUptimeRequest): Response<ValidatorsUptimeResponse>
+    fun validatorsUptime(@Body validatorsUptimeRequest: ValidatorsUptimeRequest): Call<ValidatorsUptimeResponse>
 }

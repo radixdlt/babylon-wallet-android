@@ -2,7 +2,7 @@ package com.babylon.wallet.android.data.gateway.apis
 
 import com.babylon.wallet.android.data.gateway.generated.models.StreamTransactionsRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StreamTransactionsResponse
-import retrofit2.Response
+import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -18,5 +18,5 @@ interface StreamApi {
      * @return [StreamTransactionsResponse]
      */
     @POST("stream/transactions")
-    suspend fun streamTransactions(@Body streamTransactionsRequest: StreamTransactionsRequest): Response<StreamTransactionsResponse>
+    fun streamTransactions(@Body streamTransactionsRequest: StreamTransactionsRequest): Call<StreamTransactionsResponse>
 }

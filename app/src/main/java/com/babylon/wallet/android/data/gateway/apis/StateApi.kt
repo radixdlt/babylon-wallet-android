@@ -24,7 +24,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleLocationResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateValidatorsListRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateValidatorsListResponse
-import retrofit2.Response
+import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
 
@@ -42,9 +42,9 @@ interface StateApi {
      * @return [StateEntityFungibleResourceVaultsPageResponse]
      */
     @POST("state/entity/page/fungible-vaults/")
-    suspend fun entityFungibleResourceVaultPage(
+    fun entityFungibleResourceVaultPage(
         @Body stateEntityFungibleResourceVaultsPageRequest: StateEntityFungibleResourceVaultsPageRequest
-    ): Response<StateEntityFungibleResourceVaultsPageResponse>
+    ): Call<StateEntityFungibleResourceVaultsPageResponse>
 
     /**
      * Get page of Global Entity Fungible Resource Balances
@@ -59,9 +59,9 @@ interface StateApi {
      * @return [StateEntityFungiblesPageResponse]
      */
     @POST("state/entity/page/fungibles/")
-    suspend fun entityFungiblesPage(
+    fun entityFungiblesPage(
         @Body stateEntityFungiblesPageRequest: StateEntityFungiblesPageRequest
-    ): Response<StateEntityFungiblesPageResponse>
+    ): Call<StateEntityFungiblesPageResponse>
 
     /**
      * Get Entity Metadata Page
@@ -75,9 +75,9 @@ interface StateApi {
      * @return [StateEntityMetadataPageResponse]
      */
     @POST("state/entity/page/metadata")
-    suspend fun entityMetadataPage(
+    fun entityMetadataPage(
         @Body stateEntityMetadataPageRequest: StateEntityMetadataPageRequest
-    ): Response<StateEntityMetadataPageResponse>
+    ): Call<StateEntityMetadataPageResponse>
 
     /**
      * Get page of Non-Fungibles in Vault
@@ -91,9 +91,9 @@ interface StateApi {
      * @return [StateEntityNonFungibleIdsPageResponse]
      */
     @POST("state/entity/page/non-fungible-vault/ids")
-    suspend fun entityNonFungibleIdsPage(
+    fun entityNonFungibleIdsPage(
         @Body stateEntityNonFungibleIdsPageRequest: StateEntityNonFungibleIdsPageRequest
-    ): Response<StateEntityNonFungibleIdsPageResponse>
+    ): Call<StateEntityNonFungibleIdsPageResponse>
 
     /**
      * Get page of Global Entity Non-Fungible Resource Vaults
@@ -107,9 +107,9 @@ interface StateApi {
      * @return [StateEntityNonFungibleResourceVaultsPageResponse]
      */
     @POST("state/entity/page/non-fungible-vaults/")
-    suspend fun entityNonFungibleResourceVaultPage(
+    fun entityNonFungibleResourceVaultPage(
         @Body stateEntityNonFungibleResourceVaultsPageRequest: StateEntityNonFungibleResourceVaultsPageRequest
-    ): Response<StateEntityNonFungibleResourceVaultsPageResponse>
+    ): Call<StateEntityNonFungibleResourceVaultsPageResponse>
 
     /**
      * Get page of Global Entity Non-Fungible Resource Balances
@@ -124,9 +124,9 @@ interface StateApi {
      * @return [StateEntityNonFungiblesPageResponse]
      */
     @POST("state/entity/page/non-fungibles/")
-    suspend fun entityNonFungiblesPage(
+    fun entityNonFungiblesPage(
         @Body stateEntityNonFungiblesPageRequest: StateEntityNonFungiblesPageRequest
-    ): Response<StateEntityNonFungiblesPageResponse>
+    ): Call<StateEntityNonFungiblesPageResponse>
 
     /**
      * Get KeyValueStore Data
@@ -140,9 +140,9 @@ interface StateApi {
      * @return [StateKeyValueStoreDataResponse]
      */
     @POST("state/key-value-store/data")
-    suspend fun keyValueStoreData(
+    fun keyValueStoreData(
         @Body stateKeyValueStoreDataRequest: StateKeyValueStoreDataRequest
-    ): Response<StateKeyValueStoreDataResponse>
+    ): Call<StateKeyValueStoreDataResponse>
 
     /**
      * Get Non-Fungible Data
@@ -155,7 +155,7 @@ interface StateApi {
      * @return [StateNonFungibleDataResponse]
      */
     @POST("state/non-fungible/data")
-    suspend fun nonFungibleData(@Body stateNonFungibleDataRequest: StateNonFungibleDataRequest): Response<StateNonFungibleDataResponse>
+    fun nonFungibleData(@Body stateNonFungibleDataRequest: StateNonFungibleDataRequest): Call<StateNonFungibleDataResponse>
 
     /**
      * Get page of Non-Fungible Ids in Resource Collection
@@ -169,7 +169,7 @@ interface StateApi {
      * @return [StateNonFungibleIdsResponse]
      */
     @POST("state/non-fungible/ids")
-    suspend fun nonFungibleIds(@Body stateNonFungibleIdsRequest: StateNonFungibleIdsRequest): Response<StateNonFungibleIdsResponse>
+    fun nonFungibleIds(@Body stateNonFungibleIdsRequest: StateNonFungibleIdsRequest): Call<StateNonFungibleIdsResponse>
 
     /**
      * Get Non-Fungible Location
@@ -182,9 +182,9 @@ interface StateApi {
      * @return [StateNonFungibleLocationResponse]
      */
     @POST("state/non-fungible/location")
-    suspend fun nonFungibleLocation(
+    fun nonFungibleLocation(
         @Body stateNonFungibleLocationRequest: StateNonFungibleLocationRequest
-    ): Response<StateNonFungibleLocationResponse>
+    ): Call<StateNonFungibleLocationResponse>
 
     /**
      * Get Entity Details
@@ -197,7 +197,7 @@ interface StateApi {
      * @return [StateEntityDetailsResponse]
      */
     @POST("state/entity/details")
-    suspend fun stateEntityDetails(@Body stateEntityDetailsRequest: StateEntityDetailsRequest): Response<StateEntityDetailsResponse>
+    fun stateEntityDetails(@Body stateEntityDetailsRequest: StateEntityDetailsRequest): Call<StateEntityDetailsResponse>
 
     /**
      * Get Validators List
@@ -210,5 +210,5 @@ interface StateApi {
      * @return [StateValidatorsListResponse]
      */
     @POST("state/validators/list")
-    suspend fun stateValidatorsList(@Body stateValidatorsListRequest: StateValidatorsListRequest): Response<StateValidatorsListResponse>
+    fun stateValidatorsList(@Body stateValidatorsListRequest: StateValidatorsListRequest): Call<StateValidatorsListResponse>
 }
