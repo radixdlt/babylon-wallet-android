@@ -12,6 +12,8 @@ import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
 import kotlinx.coroutines.flow.first
+import rdx.works.core.divideWithDivisibility
+import rdx.works.core.multiplyWithDivisibility
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -75,8 +77,8 @@ class ValidatorStakeProcessor @Inject constructor(
         val totalStakedLsuForAccount = relatedStakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() }
         val totalStakeXrdWorthForAccount = relatedStakes.sumOf { it.xrdAmount.asStr().toBigDecimal() }
         val lsuAmount = depositedResource.amount
-        val xrdWorth = lsuAmount.divide(totalStakedLsuForAccount, asset.resource.mathContext)
-            .multiply(totalStakeXrdWorthForAccount, asset.resource.mathContext)
+        val xrdWorth = lsuAmount.divideWithDivisibility(totalStakedLsuForAccount, asset.resource.divisibility)
+            .multiplyWithDivisibility(totalStakeXrdWorthForAccount, asset.resource.divisibility)
         val guaranteeType = depositedResource.guaranteeType(defaultDepositGuarantees)
         return Transferable.Depositing(
             transferable = TransferableAsset.Fungible.LSUAsset(

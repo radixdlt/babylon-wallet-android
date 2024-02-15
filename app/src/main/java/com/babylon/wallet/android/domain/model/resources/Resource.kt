@@ -26,8 +26,6 @@ import kotlinx.collections.immutable.toImmutableList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
-import java.math.MathContext
-import java.math.RoundingMode
 
 sealed class Resource {
     abstract val resourceAddress: String
@@ -98,13 +96,6 @@ sealed class Resource {
                 name
             } else {
                 ""
-            }
-
-        val mathContext: MathContext
-            get() = if (divisibility == null) {
-                MathContext.UNLIMITED
-            } else {
-                MathContext(divisibility, RoundingMode.HALF_DOWN)
             }
 
         @Suppress("CyclomaticComplexMethod")

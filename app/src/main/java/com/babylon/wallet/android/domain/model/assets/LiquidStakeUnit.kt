@@ -2,6 +2,8 @@ package com.babylon.wallet.android.domain.model.assets
 
 import android.net.Uri
 import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.divideWithDivisibility
+import rdx.works.core.multiplyWithDivisibility
 import java.math.BigDecimal
 
 data class LiquidStakeUnit(
@@ -27,13 +29,16 @@ data class LiquidStakeUnit(
         get() {
             if (fungibleResource.currentSupply == null) return null
 
-            return fungibleResource.ownedAmount?.divide(fungibleResource.currentSupply, fungibleResource.mathContext)
+            return fungibleResource.ownedAmount?.divideWithDivisibility(
+                fungibleResource.currentSupply,
+                fungibleResource.divisibility
+            )
         }
 
     fun stakeValue(): BigDecimal? = stakeValueInXRD(validator.totalXrdStake)
 
     fun stakeValueInXRD(totalXrdStake: BigDecimal?): BigDecimal? {
         if (totalXrdStake == null) return null
-        return percentageOwned?.multiply(totalXrdStake, fungibleResource.mathContext)
+        return percentageOwned?.multiplyWithDivisibility(totalXrdStake, fungibleResource.divisibility)
     }
 }

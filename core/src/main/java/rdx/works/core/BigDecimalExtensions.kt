@@ -78,3 +78,23 @@ fun BigDecimal.displayableQuantity(): String {
 
 @Suppress("MagicNumber")
 fun BigDecimal.toRETDecimal(roundingMode: RoundingMode): Decimal = Decimal(setScale(18, roundingMode).toPlainString())
+
+fun BigDecimal.multiplyWithDivisibility(
+    multiplicand: BigDecimal?,
+    divisibility: Int?,
+    roundingMode: RoundingMode = RoundingMode.HALF_DOWN
+): BigDecimal = divisibility?.let {
+    multiply(multiplicand).setScale(it, roundingMode)
+} ?: run {
+    multiply(multiplicand)
+}
+
+fun BigDecimal.divideWithDivisibility(
+    divisor: BigDecimal?,
+    divisibility: Int?,
+    roundingMode: RoundingMode = RoundingMode.HALF_DOWN
+): BigDecimal = divisibility?.let {
+    divide(divisor, it, roundingMode)
+} ?: run {
+    divide(divisor)
+}

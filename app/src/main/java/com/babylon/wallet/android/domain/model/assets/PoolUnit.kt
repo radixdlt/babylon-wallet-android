@@ -2,6 +2,7 @@ package com.babylon.wallet.android.domain.model.assets
 
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.divideWithDivisibility
 import java.math.BigDecimal
 
 data class PoolUnit(
@@ -26,7 +27,7 @@ data class PoolUnit(
         return if (stake.ownedAmount != null && stake.divisibility != null && poolUnitSupply != BigDecimal.ZERO) {
             stake.ownedAmount
                 .multiply(resourceVaultBalance)
-                .divide(poolUnitSupply, stake.mathContext)
+                .divideWithDivisibility(poolUnitSupply, stake.divisibility)
         } else {
             null
         }

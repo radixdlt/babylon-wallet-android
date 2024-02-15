@@ -37,6 +37,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
+import rdx.works.core.multiplyWithDivisibility
 import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.ProfileException
@@ -550,7 +551,20 @@ sealed interface AccountWithPredictedGuarantee {
         get() = (guaranteeAmountString.toDoubleOrNull() ?: 0.0).div(100.0)
 
     val guaranteedAmount: BigDecimal
-        get() = transferable.amount * guaranteeOffsetDecimal.toBigDecimal()
+        get() = transferable.amount.multiplyWithDivisibility(guaranteeOffsetDecimal.toBigDecimal(), divisibility)
+
+    private val divisibility: Int?
+        get() = when (val asset = transferable) {
+            is TransferableAsset.Fungible.Token -> {
+                asset.resource.divisibility
+            }
+            is TransferableAsset.Fungible.LSUAsset -> {
+                asset.resource.divisibility
+            }
+            is TransferableAsset.Fungible.PoolUnitAsset -> {
+                asset.resource.divisibility
+            }
+        }
 
     fun increase(): AccountWithPredictedGuarantee {
         val newOffset = (guaranteeOffsetDecimal.toBigDecimal().plus(BigDecimal(0.001)))
