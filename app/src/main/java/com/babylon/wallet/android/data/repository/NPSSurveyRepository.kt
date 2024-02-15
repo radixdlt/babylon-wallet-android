@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.BuildConfig
-import com.babylon.wallet.android.data.gateway.apis.NPSSurveyApi
-import com.babylon.wallet.android.data.gateway.apis.SurveyRequest
-import com.babylon.wallet.android.data.gateway.apis.SurveyResponse
+import com.babylon.wallet.android.data.gateway.survey.NPSSurveyApi
+import com.babylon.wallet.android.data.gateway.survey.SurveyRequest
+import com.babylon.wallet.android.data.gateway.survey.SurveyResponse
 import javax.inject.Inject
 
 interface NPSSurveyRepository {

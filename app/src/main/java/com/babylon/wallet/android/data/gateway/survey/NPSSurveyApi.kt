@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.gateway.apis
+package com.babylon.wallet.android.data.gateway.survey
 
 import com.babylon.wallet.android.BuildConfig
 import kotlinx.serialization.SerialName
