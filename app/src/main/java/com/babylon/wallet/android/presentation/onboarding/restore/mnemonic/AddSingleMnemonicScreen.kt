@@ -49,7 +49,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.account.recover.scan.AccountRecoveryScanViewModel
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
@@ -68,8 +67,7 @@ import rdx.works.profile.data.model.SeedPhraseLength
 fun AddSingleMnemonicScreen(
     viewModel: AddSingleMnemonicViewModel,
     onBackClick: () -> Unit,
-    sharedViewModel: AccountRecoveryScanViewModel? = null,
-    onStartRecovery: () -> Unit
+    onStartRecovery: (mnemonic: String, passphrase: String) -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -78,10 +76,8 @@ fun AddSingleMnemonicScreen(
         onBackClick = onBackClick,
         onSubmitClick = {
             if (state.mnemonicType == MnemonicType.BabylonMain) {
-                sharedViewModel?.initMainBDFSFactorSource(
-                    mnemonicWithPassphrase = state.seedPhraseState.mnemonicWithPassphrase
-                )
-                onStartRecovery()
+                val mnemonicWithPassphrase = state.seedPhraseState.mnemonicWithPassphrase
+                onStartRecovery(mnemonicWithPassphrase.mnemonic, mnemonicWithPassphrase.bip39Passphrase)
             } else {
                 context.biometricAuthenticate { result ->
                     if (result == BiometricAuthenticationResult.Succeeded) {

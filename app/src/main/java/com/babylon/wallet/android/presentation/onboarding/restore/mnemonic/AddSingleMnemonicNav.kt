@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.onboarding.restore.mnemonic
 
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
@@ -9,7 +8,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.account.recover.scan.AccountRecoveryScanViewModel
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
 private const val ARGS_FACTOR_SOURCE_ID = "factor_source_id"
@@ -45,9 +43,8 @@ enum class MnemonicType {
 }
 
 fun NavGraphBuilder.addSingleMnemonic(
-    navController: NavController,
     onBackClick: () -> Unit,
-    onStartRecovery: () -> Unit
+    onStartRecovery: (mnemonic: String, passphrase: String) -> Unit
 ) {
     markAsHighPriority(ROUTE_ADD_SINGLE_MNEMONIC)
     composable(
@@ -70,15 +67,10 @@ fun NavGraphBuilder.addSingleMnemonic(
         exitTransition = {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
-    ) { entry ->
-        val parentEntry = remember(entry) {
-            navController.getBackStackEntry(ROUTE_ADD_SINGLE_MNEMONIC)
-        }
-        val sharedViewModel = hiltViewModel<AccountRecoveryScanViewModel>(parentEntry)
+    ) {
         AddSingleMnemonicScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            sharedViewModel = sharedViewModel,
             onStartRecovery = onStartRecovery
         )
     }
