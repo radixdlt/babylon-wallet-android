@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsources
+package com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey
 
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -6,18 +6,18 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.dialog
 
-fun NavController.accessFactorSources() {
-    navigate("access_factor_source_bottom_sheet")
+fun NavController.derivePublicKey() {
+    navigate("derive_public_key_bottom_sheet")
 }
 
-fun NavGraphBuilder.accessFactorSources(
+fun NavGraphBuilder.derivePublicKey(
     onDismiss: () -> Unit
 ) {
     dialog(
-        route = "access_factor_source_bottom_sheet",
+        route = "derive_public_key_bottom_sheet",
         dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        AccessFactorSourcesDialog(
+        DerivePublicKeyDialog(
             viewModel = hiltViewModel(),
             onDismiss = onDismiss
         )

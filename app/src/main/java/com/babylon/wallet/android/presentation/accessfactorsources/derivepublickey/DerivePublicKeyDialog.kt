@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.accessfactorsources
+package com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesViewModel.AccessFactorSourcesUiState
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.DerivePublicKeyViewModel.DerivePublicKeyUiState
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -36,9 +36,9 @@ import com.babylon.wallet.android.utils.formattedSpans
 import rdx.works.profile.domain.TestData.ledgerFactorSource
 
 @Composable
-fun AccessFactorSourcesDialog(
+fun DerivePublicKeyDialog(
     modifier: Modifier = Modifier,
-    viewModel: AccessFactorSourcesViewModel,
+    viewModel: DerivePublicKeyViewModel,
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
@@ -47,7 +47,7 @@ fun AccessFactorSourcesDialog(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                AccessFactorSourcesViewModel.Event.RequestBiometricPrompt -> {
+                DerivePublicKeyViewModel.Event.RequestBiometricPrompt -> {
                     context.biometricAuthenticate { result ->
                         viewModel.biometricAuthenticationCompleted(result == BiometricAuthenticationResult.Succeeded)
                         if (result != BiometricAuthenticationResult.Succeeded) {
@@ -59,7 +59,7 @@ fun AccessFactorSourcesDialog(
         }
     }
 
-    AccessFactorSourcesBottomSheetContent(
+    DerivePublicKeyBottomSheetContent(
         modifier = modifier,
         isAccessingFactorSourceInProgress = state.isAccessingFactorSourceInProgress,
         isAccessingFactorSourceCompleted = state.isAccessingFactorSourceCompleted,
@@ -69,11 +69,11 @@ fun AccessFactorSourcesDialog(
 }
 
 @Composable
-private fun AccessFactorSourcesBottomSheetContent(
+private fun DerivePublicKeyBottomSheetContent(
     modifier: Modifier = Modifier,
     isAccessingFactorSourceInProgress: Boolean,
     isAccessingFactorSourceCompleted: Boolean,
-    showContentForFactorSource: AccessFactorSourcesUiState.ShowContentFor,
+    showContentForFactorSource: DerivePublicKeyUiState.ShowContentFor,
     onDismiss: () -> Unit
 ) {
     if (isAccessingFactorSourceCompleted) {
@@ -109,21 +109,21 @@ private fun AccessFactorSourcesBottomSheetContent(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
             when (showContentForFactorSource) {
-                AccessFactorSourcesUiState.ShowContentFor.Device -> {
+                DerivePublicKeyUiState.ShowContentFor.Device -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
                     )
                 }
 
-                is AccessFactorSourcesUiState.ShowContentFor.Ledger -> {
+                is DerivePublicKeyUiState.ShowContentFor.Ledger -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.derivePublicKeys_subtitleLedger)
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-                    RoundLedgerItem(ledgerName = ledgerFactorSource.hint.name)
+                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.hint.name)
                 }
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
@@ -164,12 +164,12 @@ private fun RoundLedgerItem(ledgerName: String) {
 
 @Preview(showBackground = false)
 @Composable
-fun AccessFactorSourcesDialogDevicePreview() {
+fun DerivePublicKeyDialogDevicePreview() {
     RadixWalletTheme {
-        AccessFactorSourcesBottomSheetContent(
+        DerivePublicKeyBottomSheetContent(
             isAccessingFactorSourceInProgress = false,
             isAccessingFactorSourceCompleted = false,
-            showContentForFactorSource = AccessFactorSourcesUiState.ShowContentFor.Device,
+            showContentForFactorSource = DerivePublicKeyUiState.ShowContentFor.Device,
             onDismiss = {}
         )
     }
@@ -177,12 +177,12 @@ fun AccessFactorSourcesDialogDevicePreview() {
 
 @Preview(showBackground = false)
 @Composable
-fun AccessFactorSourcesDialogLedgerPreview() {
+fun DerivePublicKeyDialogLedgerPreview() {
     RadixWalletTheme {
-        AccessFactorSourcesBottomSheetContent(
+        DerivePublicKeyBottomSheetContent(
             isAccessingFactorSourceInProgress = false,
             isAccessingFactorSourceCompleted = false,
-            showContentForFactorSource = AccessFactorSourcesUiState.ShowContentFor.Ledger(
+            showContentForFactorSource = DerivePublicKeyUiState.ShowContentFor.Ledger(
                 selectedLedgerDevice = ledgerFactorSource
             ),
             onDismiss = {}

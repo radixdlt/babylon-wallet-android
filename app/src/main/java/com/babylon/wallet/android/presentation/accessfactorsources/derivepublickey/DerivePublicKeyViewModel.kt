@@ -1,11 +1,14 @@
-package com.babylon.wallet.android.presentation.accessfactorsources
+package com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.PublicKeyAndDerivationPath
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesViewModel.AccessFactorSourcesUiState.ShowContentFor
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.DerivePublicKeyViewModel.DerivePublicKeyUiState.ShowContentFor
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -19,22 +22,22 @@ import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.repository.AccessFactorSourcesProvider
+import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import java.util.concurrent.CancellationException
 import javax.inject.Inject
 
 @HiltViewModel
-class AccessFactorSourcesViewModel @Inject constructor(
-    private val accessFactorSourcesProvider: AccessFactorSourcesProvider,
+class DerivePublicKeyViewModel @Inject constructor(
+    private val publicKeyProvider: PublicKeyProvider,
     private val accessFactorSourcesUiProxy: AccessFactorSourcesUiProxy,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val ledgerMessenger: LedgerMessenger
-) : StateViewModel<AccessFactorSourcesViewModel.AccessFactorSourcesUiState>(),
-    OneOffEventHandler<AccessFactorSourcesViewModel.Event> by OneOffEventHandlerImpl() {
+) : StateViewModel<DerivePublicKeyViewModel.DerivePublicKeyUiState>(),
+    OneOffEventHandler<DerivePublicKeyViewModel.Event> by OneOffEventHandlerImpl() {
 
-    override fun initialState(): AccessFactorSourcesUiState = AccessFactorSourcesUiState()
+    override fun initialState(): DerivePublicKeyUiState = DerivePublicKeyUiState()
 
     init {
         viewModelScope.launch {
@@ -95,11 +98,11 @@ class AccessFactorSourcesViewModel @Inject constructor(
         forNetworkId: NetworkId,
         deviceFactorSource: DeviceFactorSource
     ) {
-        val derivationPath = accessFactorSourcesProvider.getNextDerivationPathForFactorSource(
+        val derivationPath = publicKeyProvider.getNextDerivationPathForFactorSource(
             forNetworkId = forNetworkId,
             factorSource = deviceFactorSource
         )
-        val compressedPublicKey = accessFactorSourcesProvider.derivePublicKeyForDeviceFactorSource(
+        val compressedPublicKey = publicKeyProvider.derivePublicKeyForDeviceFactorSource(
             deviceFactorSource = deviceFactorSource,
             derivationPath = derivationPath
         )
@@ -115,7 +118,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
         forNetworkId: NetworkId,
         ledgerFactorSource: LedgerHardwareWalletFactorSource
     ) {
-        val derivationPath = accessFactorSourcesProvider.getNextDerivationPathForFactorSource(
+        val derivationPath = publicKeyProvider.getNextDerivationPathForFactorSource(
             forNetworkId = forNetworkId,
             factorSource = ledgerFactorSource
         )
@@ -143,7 +146,7 @@ class AccessFactorSourcesViewModel @Inject constructor(
         }
     }
 
-    data class AccessFactorSourcesUiState(
+    data class DerivePublicKeyUiState(
         val isAccessingFactorSourceInProgress: Boolean = false,
         val isAccessingFactorSourceCompleted: Boolean = false,
         val showContentFor: ShowContentFor = ShowContentFor.Device
