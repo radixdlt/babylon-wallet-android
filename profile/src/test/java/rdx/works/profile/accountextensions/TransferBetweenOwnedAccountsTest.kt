@@ -1,5 +1,6 @@
 package rdx.works.profile.accountextensions
 
+import com.radixdlt.extensions.removeLeadingZero
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.Assert.assertFalse
@@ -10,12 +11,16 @@ import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.compressedPublicKey
+import rdx.works.profile.data.model.extensions.initializeAccount
 import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
+import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.updateThirdPartyDepositSettings
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.TestData
 import kotlin.test.assertTrue
 
@@ -112,13 +117,18 @@ class TransferBetweenOwnedAccountsTest {
         val mnemonicRepository = mockk<MnemonicRepository>()
         coEvery { mnemonicRepository() } returns mnemonicWithPassphrase
 
-        targetAccount = Network.Account.initAccountWithBabylonDeviceFactorSource(
-            entityIndex = 0,
-            displayName = "target account",
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
-            deviceFactorSource = (profile.factorSources.first() as DeviceFactorSource),
+        val derivationPath = DerivationPath.forAccount(
             networkId = defaultNetwork.networkId(),
-            appearanceID = 0
+            accountIndex = 0,
+            keyType = KeyType.TRANSACTION_SIGNING
+        )
+        targetAccount = initializeAccount(
+            displayName = "target account",
+            onNetworkId = defaultNetwork.networkId(),
+            compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero(),
+            derivationPath = derivationPath,
+            factorSource = (profile.factorSources.first() as DeviceFactorSource),
+            onLedgerSettings = Network.Account.OnLedgerSettings.init()
         )
 
         profile = profile.addAccounts(

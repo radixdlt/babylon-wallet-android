@@ -1,5 +1,6 @@
 package rdx.works.profile
 
+import com.radixdlt.extensions.removeLeadingZero
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.Assert
@@ -12,17 +13,21 @@ import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.extensions.addP2PLink
+import rdx.works.profile.data.model.extensions.initializeAccount
 import rdx.works.profile.data.model.extensions.nextAccountIndex
 import rdx.works.profile.data.model.extensions.renameAccountDisplayName
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.pernetwork.Network.Account.Companion.initAccountWithBabylonDeviceFactorSource
+import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
 import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.model.pernetwork.addPersona
 import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.TestData
 
 class ProfileGenerationTest {
@@ -61,13 +66,18 @@ class ProfileGenerationTest {
 
         println("Profile generated $profile")
 
-        val firstAccount = initAccountWithBabylonDeviceFactorSource(
-            entityIndex = 0,
-            displayName = "first account",
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
-            deviceFactorSource = (profile.factorSources.first() as DeviceFactorSource),
+        val derivationPath = DerivationPath.forAccount(
             networkId = defaultNetwork.networkId(),
-            appearanceID = 0
+            accountIndex = 0,
+            keyType = KeyType.TRANSACTION_SIGNING
+        )
+        val firstAccount = initializeAccount(
+            displayName = "first account",
+            onNetworkId = defaultNetwork.networkId(),
+            compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero(),
+            derivationPath = derivationPath,
+            factorSource = (profile.factorSources.first() as DeviceFactorSource),
+            onLedgerSettings = Network.Account.OnLedgerSettings.init()
         )
 
         profile = profile.addAccounts(
@@ -183,13 +193,18 @@ class ProfileGenerationTest {
             deviceInfo = TestData.deviceInfo,
             creationDate = InstantGenerator()
         ).copy(factorSources = identifiedArrayListOf(babylonFactorSource1))
-        val firstAccount = initAccountWithBabylonDeviceFactorSource(
-            entityIndex = 0,
-            displayName = "first account",
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
-            deviceFactorSource = (profile.factorSources.first() as DeviceFactorSource),
+        val derivationPath = DerivationPath.forAccount(
             networkId = Radix.Gateway.default.network.networkId(),
-            appearanceID = 0
+            accountIndex = 0,
+            keyType = KeyType.TRANSACTION_SIGNING
+        )
+        val firstAccount = initializeAccount(
+            displayName = "first account",
+            onNetworkId = Radix.Gateway.default.network.networkId(),
+            compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero(),
+            derivationPath = derivationPath,
+            factorSource = (profile.factorSources.first() as DeviceFactorSource),
+            onLedgerSettings = Network.Account.OnLedgerSettings.init()
         )
         val updatedProfile = profile.copy(factorSources = (profile.factorSources).toIdentifiedArrayList()).addAccounts(
             accounts = listOf(firstAccount),
