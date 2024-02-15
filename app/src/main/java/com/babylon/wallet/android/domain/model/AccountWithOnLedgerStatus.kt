@@ -6,6 +6,9 @@ data class AccountWithOnLedgerStatus(
     val account: Network.Account,
     val status: Status = Status.Inactive
 ) {
+    /**
+     * Active: account had at least one transaction
+     */
     enum class Status {
         Active, Inactive
     }
