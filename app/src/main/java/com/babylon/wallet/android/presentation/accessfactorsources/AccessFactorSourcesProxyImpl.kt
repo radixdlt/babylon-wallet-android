@@ -29,7 +29,7 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         }
     }
 
-    override suspend fun reDerivePublicKeys(
+    override suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDerivePublicKey
     ): Result<AccessFactorSourcesOutput.RecoveredAccountsWithOnLedgerStatus> {
         input = accessFactorSourcesInput

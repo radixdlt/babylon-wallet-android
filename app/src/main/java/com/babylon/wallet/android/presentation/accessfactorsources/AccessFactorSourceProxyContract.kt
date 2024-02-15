@@ -13,7 +13,7 @@ interface AccessFactorSourcesProxy {
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
     ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath>
 
-    suspend fun reDerivePublicKeys(
+    suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDerivePublicKey
     ): Result<AccessFactorSourcesOutput.RecoveredAccountsWithOnLedgerStatus>
 }

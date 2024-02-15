@@ -113,7 +113,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             val output = if (isMainBabylonFactorSource) { // account scan from onboarding with a given main babylon seed phrase
-                accessFactorSourcesProxy.reDerivePublicKeys(
+                accessFactorSourcesProxy.reDeriveAccounts(
                     accessFactorSourcesInput = AccessFactorSourcesInput.ToReDerivePublicKey.WithGivenMnemonic(
                         mnemonicWithPassphrase = givenTempMnemonic!!,
                         factorSource = factorSource,
@@ -121,7 +121,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                     )
                 )
             } else {
-                accessFactorSourcesProxy.reDerivePublicKeys(
+                accessFactorSourcesProxy.reDeriveAccounts(
                     accessFactorSourcesInput = AccessFactorSourcesInput.ToReDerivePublicKey.WithGivenFactorSource(
                         factorSource = factorSource,
                         isForLegacyOlympia = isOlympia,
