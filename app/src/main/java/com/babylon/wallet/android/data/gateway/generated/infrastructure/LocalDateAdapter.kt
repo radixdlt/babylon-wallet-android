@@ -10,7 +10,6 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-@Serializer(forClass = LocalDate::class)
 object LocalDateAdapter : KSerializer<LocalDate> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("LocalDate", PrimitiveKind.STRING)
 

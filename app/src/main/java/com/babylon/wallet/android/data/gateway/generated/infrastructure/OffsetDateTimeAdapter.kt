@@ -10,7 +10,6 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
-@Serializer(forClass = OffsetDateTime::class)
 object OffsetDateTimeAdapter : KSerializer<OffsetDateTime> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("OffsetDateTime", PrimitiveKind.STRING)
 
