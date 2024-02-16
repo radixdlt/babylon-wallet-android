@@ -18,8 +18,8 @@ interface AccessFactorSourcesProxy {
     ): Result<AccessFactorSourcesOutput.RecoveredAccountsWithOnLedgerStatus>
 }
 
-// interface for the AccessFactorSourceViewModel that works as a mediator between the clients
-// and the AccessFactorSourcesProvider
+// interface which acts as a mediator between the clients who need access to factor sources
+// and the viewmodels of the bottom sheet dialogs
 interface AccessFactorSourcesUiProxy {
 
     fun getInput(): AccessFactorSourcesInput
