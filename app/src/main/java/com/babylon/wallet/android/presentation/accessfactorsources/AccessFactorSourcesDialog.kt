@@ -30,6 +30,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesViewModel.AccessFactorSourcesUiState
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.formattedSpans
 import rdx.works.profile.domain.TestData.ledgerFactorSource
@@ -47,9 +48,9 @@ fun AccessFactorSourcesDialog(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 AccessFactorSourcesViewModel.Event.RequestBiometricPrompt -> {
-                    context.biometricAuthenticate { isAuthenticated ->
-                        viewModel.biometricAuthenticationCompleted(isAuthenticated)
-                        if (isAuthenticated.not()) {
+                    context.biometricAuthenticate { result ->
+                        viewModel.biometricAuthenticationCompleted(result == BiometricAuthenticationResult.Succeeded)
+                        if (result != BiometricAuthenticationResult.Succeeded) {
                             onDismiss()
                         }
                     }

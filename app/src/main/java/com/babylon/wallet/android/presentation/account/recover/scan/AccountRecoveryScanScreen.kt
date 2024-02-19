@@ -59,6 +59,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.Constants
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -90,8 +91,8 @@ fun AccountRecoveryScanScreen(
         if (state.recoveryFactorSource is RecoveryFactorSource.VirtualDeviceFactorSource) {
             viewModel.startRecoveryScan()
         } else {
-            context.biometricAuthenticate { authenticated ->
-                if (authenticated) {
+            context.biometricAuthenticate { result ->
+                if (result == BiometricAuthenticationResult.Succeeded) {
                     viewModel.startScanForExistingFactorSource()
                 } else {
                     onBackClick()
@@ -143,7 +144,7 @@ private fun AccountRecoveryScanContent(
     onContinueClick: () -> Unit,
     isRestoring: Boolean
 ) {
-    val pages = ScanCompletePages.values()
+    val pages = ScanCompletePages.entries.toTypedArray()
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
@@ -260,7 +261,7 @@ fun ScanCompleteContent(
     allScannedAccountsSize: Int,
     onAccountSelected: (Selectable<Network.Account>) -> Unit
 ) {
-    val pages = ScanCompletePages.values()
+    val pages = ScanCompletePages.entries.toTypedArray()
     HorizontalPager(state = pagerState, userScrollEnabled = false) { page ->
         when (pages[page]) {
             ScanCompletePages.ActiveAccounts -> {

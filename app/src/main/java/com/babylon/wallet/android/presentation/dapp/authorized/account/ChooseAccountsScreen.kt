@@ -22,6 +22,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.persistentListOf
@@ -128,8 +129,8 @@ private fun HandleOneOffEvents(
                             context.biometricAuthenticateSuspend()
                         }
                     } else {
-                        context.biometricAuthenticate { authenticated ->
-                            if (authenticated) {
+                        context.biometricAuthenticate { result ->
+                            if (result == BiometricAuthenticationResult.Succeeded) {
                                 completeRequestHandling { true }
                             }
                         }

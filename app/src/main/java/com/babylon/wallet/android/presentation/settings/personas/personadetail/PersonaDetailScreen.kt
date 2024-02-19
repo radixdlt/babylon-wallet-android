@@ -48,6 +48,7 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -96,8 +97,8 @@ fun PersonaDetailScreen(
         onEditPersona = onEditPersona,
         onDAppClick = onDAppClick,
         onCreateAndUploadAuthKey = {
-            context.biometricAuthenticate {
-                if (it) {
+            context.biometricAuthenticate { result ->
+                if (result == BiometricAuthenticationResult.Succeeded) {
                     viewModel.onCreateAndUploadAuthKey()
                 }
             }

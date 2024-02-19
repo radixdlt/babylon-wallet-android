@@ -50,6 +50,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import kotlinx.collections.immutable.ImmutableList
@@ -143,8 +144,8 @@ fun CreatePersonaContent(
                     text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
                     onClick = {
                         context.findFragmentActivity()?.let { activity ->
-                            activity.biometricAuthenticate { authenticatedSuccessfully ->
-                                if (authenticatedSuccessfully) {
+                            activity.biometricAuthenticate { result ->
+                                if (result == BiometricAuthenticationResult.Succeeded) {
                                     onPersonaCreateClick()
                                 }
                             }

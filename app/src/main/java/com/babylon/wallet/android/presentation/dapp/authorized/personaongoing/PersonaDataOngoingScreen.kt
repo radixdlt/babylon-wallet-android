@@ -51,6 +51,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButto
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
@@ -101,8 +102,8 @@ fun PersonaDataOngoingScreen(
                             context.biometricAuthenticateSuspend()
                         })
                     } else {
-                        context.biometricAuthenticate { authenticated ->
-                            if (authenticated) {
+                        context.biometricAuthenticate { result ->
+                            if (result == BiometricAuthenticationResult.Succeeded) {
                                 sharedViewModel.completeRequestHandling()
                             }
                         }

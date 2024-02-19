@@ -53,6 +53,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaSelectableCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
@@ -101,8 +102,8 @@ fun SelectPersonaScreen(
                     context.biometricAuthenticateSuspend()
                 })
             } else {
-                context.biometricAuthenticate { authenticated ->
-                    if (authenticated) {
+                context.biometricAuthenticate { result ->
+                    if (result == BiometricAuthenticationResult.Succeeded) {
                         sharedViewModel.completeRequestHandling()
                     }
                 }
