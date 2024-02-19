@@ -4,10 +4,8 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
-import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
-import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput.ToReDeriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
@@ -56,7 +54,6 @@ class DeriveAccountsViewModel @Inject constructor(
     private val publicKeyProvider: PublicKeyProvider,
     private val accessFactorSourcesUiProxy: AccessFactorSourcesUiProxy,
     private val ledgerMessenger: LedgerMessenger,
-    private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : StateViewModel<DeriveAccountsViewModel.DeriveAccountsUiState>(),
     OneOffEventHandler<DeriveAccountsViewModel.Event> by OneOffEventHandlerImpl() {
@@ -146,6 +143,12 @@ class DeriveAccountsViewModel @Inject constructor(
     private suspend fun recoverAccountsForGivenMnemonic(
         input: ToReDeriveAccounts.WithGivenMnemonic
     ) {
+        _state.update { uiState ->
+            uiState.copy(
+                isFromOnboarding = true,
+                isDerivingAccountsInProgress = true
+            )
+        }
         withContext(ioDispatcher) {
             val networkId = profile?.currentNetwork?.knownNetworkId ?: Radix.Gateway.mainnet.network.networkId()
 
@@ -159,27 +162,33 @@ class DeriveAccountsViewModel @Inject constructor(
                 accountIndices = indicesToScan,
                 forNetworkId = networkId
             )
-
-            deriveAndResolveAccounts(
+            val derivedAccounts = deriveAccounts(
                 input = input,
                 derivationPathsWithPublicKeys = derivationPathsWithPublicKeys,
                 forNetworkId = networkId
-            ).onSuccess { accountsWithOnLedgerStatus ->
-                accessFactorSourcesUiProxy.setOutput(
-                    output = AccessFactorSourcesOutput.RecoveredAccountsWithOnLedgerStatus(
-                        data = accountsWithOnLedgerStatus,
-                        nextDerivationPathOffset = indicesToScan.last() + 1
-                    )
+            )
+
+            _state.update { uiState ->
+                uiState.copy(
+                    isFromOnboarding = false,
+                    isDerivingAccountsInProgress = false
                 )
-            }.onFailure {
-                accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(error = Throwable("unknown error")))
             }
+            accessFactorSourcesUiProxy.setOutput(
+                output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
+                    derivedAccounts = derivedAccounts,
+                    nextDerivationPathOffset = indicesToScan.last() + 1
+                )
+            )
         }
     }
 
     private suspend fun recoverAccountsForGivenFactorSource(
         input: ToReDeriveAccounts.WithGivenFactorSource
     ) {
+        _state.update { uiState ->
+            uiState.copy(isDerivingAccountsInProgress = true)
+        }
         withContext(ioDispatcher) {
             val networkId = profile?.currentNetwork?.knownNetworkId ?: Radix.Gateway.mainnet.network.networkId()
 
@@ -193,21 +202,21 @@ class DeriveAccountsViewModel @Inject constructor(
                 accountIndices = indicesToScan,
                 forNetworkId = networkId
             )
-
-            deriveAndResolveAccounts(
+            val derivedAccounts = deriveAccounts(
                 input = input,
                 derivationPathsWithPublicKeys = derivationPathsWithPublicKeys,
                 forNetworkId = networkId
-            ).onSuccess { accountsWithOnLedgerStatus ->
-                accessFactorSourcesUiProxy.setOutput(
-                    output = AccessFactorSourcesOutput.RecoveredAccountsWithOnLedgerStatus(
-                        data = accountsWithOnLedgerStatus,
-                        nextDerivationPathOffset = indicesToScan.last() + 1
-                    )
-                )
-            }.onFailure {
-                accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(error = Throwable("unknown error")))
+            )
+
+            _state.update { uiState ->
+                uiState.copy(isDerivingAccountsInProgress = false)
             }
+            accessFactorSourcesUiProxy.setOutput(
+                output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
+                    derivedAccounts = derivedAccounts,
+                    nextDerivationPathOffset = indicesToScan.last() + 1
+                )
+            )
         }
     }
 
@@ -282,11 +291,11 @@ class DeriveAccountsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun deriveAndResolveAccounts(
+    private suspend fun deriveAccounts(
         input: ToReDeriveAccounts,
         derivationPathsWithPublicKeys: Map<DerivationPath, ByteArray>,
         forNetworkId: NetworkId
-    ): Result<List<AccountWithOnLedgerStatus>> {
+    ): List<Network.Account> {
         val profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.invoke().firstOrNull() else null
 
         val derivedAccounts = derivationPathsWithPublicKeys.map { publicKey ->
@@ -308,8 +317,7 @@ class DeriveAccountsViewModel @Inject constructor(
                 onLedgerSettings = Network.Account.OnLedgerSettings.init()
             )
         }
-
-        return resolveAccountsLedgerStateRepository(derivedAccounts)
+        return derivedAccounts
     }
 
     private fun computeIndicesToScan(
@@ -341,7 +349,8 @@ class DeriveAccountsViewModel @Inject constructor(
 
     data class DeriveAccountsUiState(
         val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.Device,
-        val isDerivingAccountsInProgress: Boolean = false
+        val isDerivingAccountsInProgress: Boolean = false,
+        val isFromOnboarding: Boolean = false
     ) : UiState {
 
         sealed interface ShowContentForFactorSource {

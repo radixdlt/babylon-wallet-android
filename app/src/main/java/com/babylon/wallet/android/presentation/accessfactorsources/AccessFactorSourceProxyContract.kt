@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
-import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 
 // interface for clients that need access to factor sources
@@ -15,7 +15,7 @@ interface AccessFactorSourcesProxy {
 
     suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
-    ): Result<AccessFactorSourcesOutput.RecoveredAccountsWithOnLedgerStatus>
+    ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
 }
 
 // interface which acts as a mediator between the clients who need access to factor sources
@@ -66,8 +66,8 @@ sealed interface AccessFactorSourcesOutput {
         val derivationPath: DerivationPath
     ) : AccessFactorSourcesOutput
 
-    data class RecoveredAccountsWithOnLedgerStatus(
-        val data: List<AccountWithOnLedgerStatus>,
+    data class DerivedAccountsWithNextDerivationPath(
+        val derivedAccounts: List<Network.Account>,
         val nextDerivationPathOffset: Int // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
 

@@ -101,13 +101,15 @@ private fun DeriveAccountsBottomSheetContent(
                 style = RadixTheme.typography.title,
                 text = stringResource(id = R.string.accountRecoveryScan_derivingAccounts)
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             when (showContentForFactorSource) {
                 ShowContentForFactorSource.Device -> {
-                    Text(
-                        style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
-                    )
+                    if (isDerivingAccountsInProgress.not()) {
+                        Text(
+                            style = RadixTheme.typography.body1Regular,
+                            text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
+                        )
+                    }
                 }
                 is ShowContentForFactorSource.Ledger -> {
                     Text(
@@ -173,7 +175,7 @@ fun DeriveAccountsLedgerDialogPreview() {
     RadixWalletTheme {
         DeriveAccountsBottomSheetContent(
             showContentForFactorSource = ShowContentForFactorSource.Ledger(TestData.ledgerFactorSource),
-            isDerivingAccountsInProgress = false,
+            isDerivingAccountsInProgress = true,
             onDismiss = {}
         )
     }

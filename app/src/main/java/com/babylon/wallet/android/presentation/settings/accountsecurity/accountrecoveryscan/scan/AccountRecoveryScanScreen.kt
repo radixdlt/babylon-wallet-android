@@ -13,12 +13,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -37,6 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -99,7 +102,7 @@ fun AccountRecoveryScanScreen(
         onContinueClick = {
             viewModel.onContinueClick { context.biometricAuthenticateSuspend() }
         },
-        isRestoring = state.isRestoring
+        isScanningNetwork = state.isScanningNetwork
     )
 }
 
@@ -112,7 +115,7 @@ private fun AccountRecoveryScanContent(
     state: AccountRecoveryScanViewModel.State,
     onAccountSelected: (Selectable<Network.Account>) -> Unit,
     onContinueClick: () -> Unit,
-    isRestoring: Boolean
+    isScanningNetwork: Boolean
 ) {
     val pages = ScanCompletePages.entries.toTypedArray()
     val scope = rememberCoroutineScope()
@@ -179,8 +182,8 @@ private fun AccountRecoveryScanContent(
                                 onContinueClick()
                             }
                         },
-                        enabled = isRestoring.not(),
-                        isLoading = isRestoring
+                        enabled = isScanningNetwork.not(),
+                        isLoading = isScanningNetwork
                     )
                 }
             }
@@ -196,7 +199,8 @@ private fun AccountRecoveryScanContent(
                         isLedgerDevice = state.recoveryFactorSource?.let {
                             it is LedgerHardwareWalletFactorSource
                         } ?: false,
-                        isOlympiaSeedPhrase = state.isOlympiaSeedPhrase
+                        isOlympiaSeedPhrase = state.isOlympiaSeedPhrase,
+                        isScanningNetwork = state.isScanningNetwork
                     )
                 }
             }
@@ -378,9 +382,13 @@ private fun InactiveAccountsPage(
 private fun ScanInProgressContent(
     modifier: Modifier = Modifier,
     isOlympiaSeedPhrase: Boolean,
-    isLedgerDevice: Boolean
+    isLedgerDevice: Boolean,
+    isScanningNetwork: Boolean
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
             modifier = Modifier
                 .fillMaxWidth()
@@ -417,6 +425,13 @@ private fun ScanInProgressContent(
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )
+        Spacer(modifier = Modifier.height(64.dp))
+        if (isScanningNetwork) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = RadixTheme.colors.gray1
+            )
+        }
     }
 }
 
@@ -430,7 +445,8 @@ fun ScanInProgressContentPreview() {
     RadixWalletTheme {
         ScanInProgressContent(
             isOlympiaSeedPhrase = false,
-            isLedgerDevice = false
+            isLedgerDevice = false,
+            isScanningNetwork = true
         )
     }
 }

@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.settings.accountsecurity.account
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
@@ -32,14 +33,16 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.factorSourceByIdValue
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 @HiltViewModel
 class AccountRecoveryScanViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    private val getProfileUseCase: GetProfileUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
-    private val getProfileUseCase: GetProfileUseCase
+    private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository
 ) : StateViewModel<AccountRecoveryScanViewModel.State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountRecoveryScanArgs(savedStateHandle)
@@ -129,10 +132,10 @@ class AccountRecoveryScanViewModel @Inject constructor(
                     )
                 )
             }
-            output.onSuccess { recoveredAccountsWithOnLedgerStatus ->
+            output.onSuccess { derivedAccountsWithNextDerivationPath ->
                 if (isActive) {
-                    nextDerivationPathOffset = recoveredAccountsWithOnLedgerStatus.nextDerivationPathOffset
-                    deriveStateFromRecoveredAccounts(recoveredAccountsWithOnLedgerStatus.data)
+                    nextDerivationPathOffset = derivedAccountsWithNextDerivationPath.nextDerivationPathOffset
+                    resolveStateFromDerivedAccounts(derivedAccountsWithNextDerivationPath.derivedAccounts)
                 }
             }.onFailure {
                 sendEvent(Event.CloseScan)
@@ -140,29 +143,39 @@ class AccountRecoveryScanViewModel @Inject constructor(
         }
     }
 
-    private fun deriveStateFromRecoveredAccounts(accounts: List<AccountWithOnLedgerStatus>) {
-        val allRecoveredAccounts = state.value.recoveredAccounts + accounts
-        val activeAccounts = allRecoveredAccounts
-            .filter { it.status == AccountWithOnLedgerStatus.Status.Active }
-            .map { it.account }.toPersistentList()
+    private suspend fun resolveStateFromDerivedAccounts(derivedAccounts: List<Network.Account>) {
+        _state.update { it.copy(isScanningNetwork = true) }
 
-        val maxActiveIndex = allRecoveredAccounts.indexOfLast { it.status == AccountWithOnLedgerStatus.Status.Active }
-        val inactiveAccounts = if (maxActiveIndex == -1) {
-            persistentListOf()
-        } else {
-            allRecoveredAccounts.subList(0, maxActiveIndex)
-                .filter { it.status == AccountWithOnLedgerStatus.Status.Inactive }
-                .map { it.account }
-                .toPersistentList()
-        }
+        val accountsWithLedgerState = resolveAccountsLedgerStateRepository(derivedAccounts)
 
-        _state.update { state ->
-            state.copy(
-                contentState = State.ContentState.ScanComplete,
-                recoveredAccounts = allRecoveredAccounts.toPersistentList(),
-                activeAccounts = activeAccounts,
-                inactiveAccounts = inactiveAccounts.map { Selectable(it) }.toPersistentList()
-            )
+        accountsWithLedgerState.onSuccess { accounts ->
+            val allRecoveredAccounts = state.value.recoveredAccounts + accounts
+            val activeAccounts = allRecoveredAccounts
+                .filter { it.status == AccountWithOnLedgerStatus.Status.Active }
+                .map { it.account }.toPersistentList()
+
+            val maxActiveIndex = allRecoveredAccounts.indexOfLast { it.status == AccountWithOnLedgerStatus.Status.Active }
+            val inactiveAccounts = if (maxActiveIndex == -1) {
+                persistentListOf()
+            } else {
+                allRecoveredAccounts.subList(0, maxActiveIndex)
+                    .filter { it.status == AccountWithOnLedgerStatus.Status.Inactive }
+                    .map { it.account }
+                    .toPersistentList()
+            }
+
+            _state.update { state ->
+                state.copy(
+                    contentState = State.ContentState.ScanComplete,
+                    recoveredAccounts = allRecoveredAccounts.toPersistentList(),
+                    activeAccounts = activeAccounts,
+                    inactiveAccounts = inactiveAccounts.map { Selectable(it) }.toPersistentList(),
+                    isScanningNetwork = false
+                )
+            }
+        }.onFailure {
+            _state.update { state -> state.copy(isScanningNetwork = false) }
+            sendEvent(Event.CloseScan)
         }
     }
 
@@ -179,10 +192,10 @@ class AccountRecoveryScanViewModel @Inject constructor(
             if (givenTempMnemonic != null) { // account scan from onboarding with a given main babylon seed phrase
                 val authenticated = biometricAuthenticationProvider()
                 if (authenticated.not()) {
-                    _state.update { it.copy(isRestoring = false) }
+                    _state.update { it.copy(isScanningNetwork = false) }
                     return@launch
                 }
-                _state.update { it.copy(isRestoring = true) }
+                _state.update { it.copy(isScanningNetwork = true) }
                 val bdfs = state.value.recoveryFactorSource
                 val accounts = state.value.activeAccounts +
                     state.value.inactiveAccounts.filter { it.selected }.map { it.data }
@@ -195,11 +208,11 @@ class AccountRecoveryScanViewModel @Inject constructor(
             } else {
                 val accounts = state.value.activeAccounts +
                     state.value.inactiveAccounts.filter { it.selected }.map { it.data }
-                _state.update { it.copy(isRestoring = true) }
+                _state.update { it.copy(isScanningNetwork = true) }
                 if (accounts.isNotEmpty()) {
                     val authenticated = biometricAuthenticationProvider()
                     if (authenticated.not()) {
-                        _state.update { it.copy(isRestoring = false) }
+                        _state.update { it.copy(isScanningNetwork = false) }
                         return@launch
                     }
                     addRecoveredAccountsToProfileUseCase(accounts = accounts)
@@ -241,7 +254,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
         val recoveredAccounts: ImmutableList<AccountWithOnLedgerStatus> = persistentListOf(),
         val activeAccounts: PersistentList<Network.Account> = persistentListOf(),
         val inactiveAccounts: PersistentList<Selectable<Network.Account>> = persistentListOf(),
-        val isRestoring: Boolean = false,
+        val isScanningNetwork: Boolean = false,
         val isNoMnemonicErrorVisible: Boolean = false
     ) : UiState {
 
