@@ -19,11 +19,15 @@ val backupSettingsScreenIntent: Intent
         )
     }
 
-fun Context.biometricAuthenticate(authenticationCallback: (successful: Boolean) -> Unit) {
+fun Context.biometricAuthenticate(
+    authenticationCallback: (biometricAuthenticationResult: BiometricAuthenticationResult) -> Unit
+) {
     findFragmentActivity()?.let { activity ->
-        activity.biometricAuthenticate { authenticatedSuccessfully ->
-            authenticationCallback(authenticatedSuccessfully)
-        }
+        activity.biometricAuthenticate(
+            authenticationCallback = { biometricAuthenticationResult ->
+                authenticationCallback(biometricAuthenticationResult)
+            }
+        )
     }
 }
 
