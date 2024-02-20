@@ -45,9 +45,9 @@ import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import java.io.IOException
-import java.util.concurrent.CancellationException
 import javax.inject.Inject
 
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class DeriveAccountsViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
@@ -60,6 +60,7 @@ class DeriveAccountsViewModel @Inject constructor(
 
     override fun initialState(): DeriveAccountsUiState = DeriveAccountsUiState()
 
+    private lateinit var input: ToReDeriveAccounts
     private var profile: Profile? = null
     private var nextDerivationPathOffset: Int = 0
 
@@ -67,82 +68,100 @@ class DeriveAccountsViewModel @Inject constructor(
         viewModelScope.launch {
             profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.invoke().firstOrNull() else null
 
-            val input = accessFactorSourcesUiProxy.getInput()
-            nextDerivationPathOffset = (input as ToReDeriveAccounts).nextDerivationPathOffset
+            input = accessFactorSourcesUiProxy.getInput() as ToReDeriveAccounts
+            nextDerivationPathOffset = input.nextDerivationPathOffset
             // if it is with given mnemonic it means it is an account recovery scan from onboarding,
             // thus profile is not initialized yet
             if (input is ToReDeriveAccounts.WithGivenMnemonic) {
-                recoverAccountsForGivenMnemonic(input = input)
+                recoverAccountsForGivenMnemonic()
                 sendEvent(Event.DerivingAccountsCompleted)
             } else { // else is with a given factor source
-                if (input.factorSource is LedgerHardwareWalletFactorSource) {
-                    initRecoveryFromLedgerFactorSource(input)
-                } else { // is DeviceFactorSource then request biometric auth
-                    sendEvent(Event.RequestBiometricPrompt)
+                when (input.factorSource) {
+                    is DeviceFactorSource -> sendEvent(Event.RequestBiometricPrompt) // request biometric auth
+                    is LedgerHardwareWalletFactorSource -> initRecoveryFromLedgerFactorSource()
                 }
             }
         }
     }
 
-    fun biometricAuthenticationCompleted(isAuthenticated: Boolean) {
+    fun biometricAuthenticationCompleted() {
         viewModelScope.launch {
-            if (isAuthenticated) {
-                _state.update { uiState ->
-                    uiState.copy(isDerivingAccountsInProgress = true)
-                }
-                when (val input = accessFactorSourcesUiProxy.getInput()) {
-                    is ToReDeriveAccounts -> {
-                        when (input) {
-                            is ToReDeriveAccounts.WithGivenFactorSource -> {
-                                recoverAccountsForGivenFactorSource(input = input)
-                            }
-                            else -> { /* do nothing */ }
+            when (val input = accessFactorSourcesUiProxy.getInput()) {
+                is ToReDeriveAccounts -> {
+                    when (input) {
+                        is ToReDeriveAccounts.WithGivenFactorSource -> {
+                            recoverAccountsForGivenFactorSource()
+                                .onSuccess {
+                                    sendEvent(Event.DerivingAccountsCompleted)
+                                }
+                                .onFailure {
+                                    _state.update { uiState ->
+                                        uiState.copy(
+                                            isDerivingAccountsInProgress = false,
+                                            shouldShowRetryButton = true
+                                        )
+                                    }
+                                }
                         }
+                        else -> { /* do nothing */ }
                     }
-                    else -> { /* do nothing */ }
                 }
-
-                _state.update { uiState ->
-                    uiState.copy(isDerivingAccountsInProgress = false)
-                }
-                sendEvent(Event.DerivingAccountsCompleted)
-            } else { // biometric auth dismissed
-                viewModelScope.launch {
-                    accessFactorSourcesUiProxy.setOutput(
-                        output = AccessFactorSourcesOutput.Failure(CancellationException("Authentication dismissed"))
-                    )
-                }
+                else -> { /* do nothing */ }
             }
         }
     }
 
-    fun onUserDismissed() {
-        viewModelScope.launch {
-            accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(CancellationException("User dismissed")))
-            sendEvent(Event.UserDismissed)
+    fun onBiometricAuthenticationDismiss() {
+        _state.update { uiState ->
+            uiState.copy(
+                isDerivingAccountsInProgress = false,
+                shouldShowRetryButton = true
+            )
         }
     }
 
-    private suspend fun initRecoveryFromLedgerFactorSource(input: ToReDeriveAccounts) {
+    fun onUserDismiss() {
+        viewModelScope.launch {
+            sendEvent(Event.UserDismissed) // one to dismiss the dialog
+            sendEvent(Event.UserDismissed) // one to dismiss the screen
+        }
+    }
+
+    fun onRetryClick() {
+        viewModelScope.launch {
+            _state.update { uiState ->
+                uiState.copy(shouldShowRetryButton = false)
+            }
+            when (state.value.showContentForFactorSource) {
+                ShowContentForFactorSource.Device -> sendEvent(Event.RequestBiometricPrompt)
+                is ShowContentForFactorSource.Ledger -> initRecoveryFromLedgerFactorSource()
+            }
+        }
+    }
+
+    private suspend fun initRecoveryFromLedgerFactorSource() {
         _state.update { uiState ->
             val ledger = input.factorSource as LedgerHardwareWalletFactorSource
             uiState.copy(
-                isDerivingAccountsInProgress = true,
                 showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = ledger)
             )
         }
 
-        recoverAccountsForGivenFactorSource(input = input as ToReDeriveAccounts.WithGivenFactorSource)
-
-        _state.update { uiState ->
-            uiState.copy(isDerivingAccountsInProgress = false)
-        }
-        sendEvent(Event.DerivingAccountsCompleted)
+        recoverAccountsForGivenFactorSource()
+            .onSuccess {
+                sendEvent(Event.DerivingAccountsCompleted)
+            }
+            .onFailure {
+                _state.update { uiState ->
+                    uiState.copy(
+                        isDerivingAccountsInProgress = false,
+                        shouldShowRetryButton = true
+                    )
+                }
+            }
     }
 
-    private suspend fun recoverAccountsForGivenMnemonic(
-        input: ToReDeriveAccounts.WithGivenMnemonic
-    ) {
+    private suspend fun recoverAccountsForGivenMnemonic() {
         _state.update { uiState ->
             uiState.copy(
                 isFromOnboarding = true,
@@ -158,12 +177,10 @@ class DeriveAccountsViewModel @Inject constructor(
                 factorSource = input.factorSource as FactorSource
             )
             val derivationPathsWithPublicKeys = reDerivePublicKeysWithGivenMnemonic(
-                input = input,
                 accountIndices = indicesToScan,
                 forNetworkId = networkId
             )
             val derivedAccounts = deriveAccounts(
-                input = input,
                 derivationPathsWithPublicKeys = derivationPathsWithPublicKeys,
                 forNetworkId = networkId
             )
@@ -183,13 +200,11 @@ class DeriveAccountsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun recoverAccountsForGivenFactorSource(
-        input: ToReDeriveAccounts.WithGivenFactorSource
-    ) {
+    private suspend fun recoverAccountsForGivenFactorSource(): Result<Unit> {
         _state.update { uiState ->
             uiState.copy(isDerivingAccountsInProgress = true)
         }
-        withContext(ioDispatcher) {
+        return withContext(ioDispatcher) {
             val networkId = profile?.currentNetwork?.knownNetworkId ?: Radix.Gateway.mainnet.network.networkId()
 
             val indicesToScan: Set<Int> = computeIndicesToScan(
@@ -198,30 +213,32 @@ class DeriveAccountsViewModel @Inject constructor(
                 factorSource = input.factorSource as FactorSource
             )
             val derivationPathsWithPublicKeys = reDerivePublicKeysWithGivenAccountIndices(
-                input = input,
                 accountIndices = indicesToScan,
                 forNetworkId = networkId
             )
-            val derivedAccounts = deriveAccounts(
-                input = input,
-                derivationPathsWithPublicKeys = derivationPathsWithPublicKeys,
-                forNetworkId = networkId
-            )
-
-            _state.update { uiState ->
-                uiState.copy(isDerivingAccountsInProgress = false)
-            }
-            accessFactorSourcesUiProxy.setOutput(
-                output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
-                    derivedAccounts = derivedAccounts,
-                    nextDerivationPathOffset = indicesToScan.last() + 1
+            if (derivationPathsWithPublicKeys != null) {
+                val derivedAccounts = deriveAccounts(
+                    derivationPathsWithPublicKeys = derivationPathsWithPublicKeys,
+                    forNetworkId = networkId
                 )
-            )
+
+                _state.update { uiState ->
+                    uiState.copy(isDerivingAccountsInProgress = false)
+                }
+                accessFactorSourcesUiProxy.setOutput(
+                    output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
+                        derivedAccounts = derivedAccounts,
+                        nextDerivationPathOffset = indicesToScan.last() + 1
+                    )
+                )
+                Result.success(Unit)
+            } else { // it failed for some reason to derive the public keys (e.g. lost link connection)
+                Result.failure(IOException("failed to derive public keys"))
+            }
         }
     }
 
     private fun reDerivePublicKeysWithGivenMnemonic(
-        input: ToReDeriveAccounts.WithGivenMnemonic,
         accountIndices: Set<Int>,
         forNetworkId: NetworkId
     ): Map<DerivationPath, ByteArray> {
@@ -229,28 +246,30 @@ class DeriveAccountsViewModel @Inject constructor(
             forNetworkId = forNetworkId,
             indices = accountIndices
         )
+
         val derivationPathsWithPublicKeys = derivationPaths.associateWith { derivationPath ->
-            input.mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
+            (input as ToReDeriveAccounts.WithGivenMnemonic).mnemonicWithPassphrase
+                .compressedPublicKey(derivationPath = derivationPath)
+                .removeLeadingZero()
         }
 
         return derivationPathsWithPublicKeys
     }
 
     private suspend fun reDerivePublicKeysWithGivenAccountIndices(
-        input: ToReDeriveAccounts.WithGivenFactorSource,
         accountIndices: Set<Int>,
         forNetworkId: NetworkId
-    ): Map<DerivationPath, ByteArray> {
+    ): Map<DerivationPath, ByteArray>? {
         val derivationPaths = publicKeyProvider.getDerivationPathsForIndices(
             forNetworkId = forNetworkId,
             indices = accountIndices,
             isForLegacyOlympia = input.isForLegacyOlympia
         )
 
-        return when (input.factorSource) {
+        return when (val factorSource = input.factorSource) {
             is DeviceFactorSource -> {
                 val derivationPathsWithPublicKeys = publicKeyProvider.derivePublicKeysDeviceFactorSource(
-                    deviceFactorSource = input.factorSource,
+                    deviceFactorSource = factorSource,
                     derivationPaths = derivationPaths,
                     isForLegacyOlympia = input.isForLegacyOlympia
                 )
@@ -258,7 +277,7 @@ class DeriveAccountsViewModel @Inject constructor(
             }
 
             is LedgerHardwareWalletFactorSource -> {
-                val response = ledgerMessenger.sendDerivePublicKeyRequest(
+                ledgerMessenger.sendDerivePublicKeyRequest(
                     interactionId = UUIDGenerator.uuid().toString(),
                     keyParameters = derivationPaths.map { derivationPath ->
                         LedgerInteractionRequest.KeyParameters(
@@ -266,33 +285,23 @@ class DeriveAccountsViewModel @Inject constructor(
                             derivationPath = derivationPath.path
                         )
                     },
-                    ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource = input.factorSource)
-                )
-
-                if (response.isSuccess) {
-                    val publicKeys = response.getOrThrow().publicKeysHex
+                    ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource = factorSource)
+                ).onSuccess { derivePublicKeyResponse ->
+                    val publicKeys = derivePublicKeyResponse.publicKeysHex
                     val derivationPathsWithPublicKeys = publicKeys.associate { publicKey ->
                         val derivationPath = derivationPaths.first { it.path == publicKey.derivationPath }
                         derivationPath to publicKey.publicKeyHex.decodeHex()
                     }
-                    derivationPathsWithPublicKeys
-                } else if (response.isFailure) {
-                    accessFactorSourcesUiProxy.setOutput(
-                        AccessFactorSourcesOutput.Failure(
-                            error = response.exceptionOrNull() ?: IOException("unknown error")
-                        )
-                    )
-                    emptyMap()
-                } else {
-                    accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(error = IOException("unknown error")))
-                    emptyMap()
+                    return derivationPathsWithPublicKeys
+                }.onFailure {
+                    return null
                 }
+                null
             }
         }
     }
 
     private suspend fun deriveAccounts(
-        input: ToReDeriveAccounts,
         derivationPathsWithPublicKeys: Map<DerivationPath, ByteArray>,
         forNetworkId: NetworkId
     ): List<Network.Account> {
@@ -350,7 +359,8 @@ class DeriveAccountsViewModel @Inject constructor(
     data class DeriveAccountsUiState(
         val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.Device,
         val isDerivingAccountsInProgress: Boolean = false,
-        val isFromOnboarding: Boolean = false
+        val isFromOnboarding: Boolean = false,
+        val shouldShowRetryButton: Boolean = false
     ) : UiState {
 
         sealed interface ShowContentForFactorSource {

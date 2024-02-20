@@ -1,9 +1,8 @@
 package com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,8 +25,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.accessfactorsources.composables.RoundLedgerItem
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.DeriveAccountsViewModel.DeriveAccountsUiState.ShowContentForFactorSource
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
@@ -44,14 +45,19 @@ fun DeriveAccountsDialog(
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
 
+    BackHandler {
+        viewModel.onUserDismiss()
+    }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 DeriveAccountsViewModel.Event.RequestBiometricPrompt -> {
-                    context.biometricAuthenticate { result ->
-                        viewModel.biometricAuthenticationCompleted(result == BiometricAuthenticationResult.Succeeded)
-                        if (result != BiometricAuthenticationResult.Succeeded) {
-                            onDismiss()
+                    context.biometricAuthenticate { biometricAuthenticationResult ->
+                        when (biometricAuthenticationResult) {
+                            BiometricAuthenticationResult.Succeeded -> viewModel.biometricAuthenticationCompleted()
+                            BiometricAuthenticationResult.Error -> viewModel.onBiometricAuthenticationDismiss()
+                            BiometricAuthenticationResult.Failed -> { /* do nothing */ }
                         }
                     }
                 }
@@ -66,7 +72,9 @@ fun DeriveAccountsDialog(
         modifier = modifier,
         showContentForFactorSource = state.showContentForFactorSource,
         isDerivingAccountsInProgress = state.isDerivingAccountsInProgress,
-        onDismiss = viewModel::onUserDismissed
+        shouldShowRetryButton = state.shouldShowRetryButton,
+        onDismiss = viewModel::onUserDismiss,
+        onRetryClick = viewModel::onRetryClick
     )
 }
 
@@ -75,7 +83,9 @@ private fun DeriveAccountsBottomSheetContent(
     modifier: Modifier = Modifier,
     showContentForFactorSource: ShowContentForFactorSource,
     isDerivingAccountsInProgress: Boolean,
-    onDismiss: () -> Unit
+    shouldShowRetryButton: Boolean,
+    onDismiss: () -> Unit,
+    onRetryClick: () -> Unit
 ) {
     BottomSheetDialogWrapper(
         modifier = modifier,
@@ -123,6 +133,15 @@ private fun DeriveAccountsBottomSheetContent(
                 }
             }
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            if (shouldShowRetryButton) {
+                RadixTextButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = stringResource(R.string.common_retry),
+                    onClick = onRetryClick
+                )
+            } else {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
+            }
             if (isDerivingAccountsInProgress) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
@@ -134,30 +153,6 @@ private fun DeriveAccountsBottomSheetContent(
     }
 }
 
-@Composable
-private fun RoundLedgerItem(ledgerName: String) {
-    Row(
-        modifier = Modifier
-            .background(RadixTheme.colors.gray5, RadixTheme.shapes.circle)
-            .padding(RadixTheme.dimensions.paddingDefault),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-    ) {
-        Icon(
-            painter = painterResource(
-                id = com.babylon.wallet.android.designsystem.R.drawable.ic_security_key
-            ),
-            contentDescription = null,
-            tint = RadixTheme.colors.gray3
-        )
-        Text(
-            text = ledgerName,
-            style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1
-        )
-    }
-}
-
 @Preview(showBackground = false)
 @Composable
 fun DeriveAccountsDeviceDialogPreview() {
@@ -165,7 +160,9 @@ fun DeriveAccountsDeviceDialogPreview() {
         DeriveAccountsBottomSheetContent(
             showContentForFactorSource = ShowContentForFactorSource.Device,
             isDerivingAccountsInProgress = false,
-            onDismiss = {}
+            shouldShowRetryButton = false,
+            onDismiss = {},
+            onRetryClick = {}
         )
     }
 }
@@ -176,8 +173,10 @@ fun DeriveAccountsLedgerDialogPreview() {
     RadixWalletTheme {
         DeriveAccountsBottomSheetContent(
             showContentForFactorSource = ShowContentForFactorSource.Ledger(TestData.ledgerFactorSource),
-            isDerivingAccountsInProgress = true,
-            onDismiss = {}
+            isDerivingAccountsInProgress = false,
+            shouldShowRetryButton = true,
+            onDismiss = {},
+            onRetryClick = {}
         )
     }
 }
