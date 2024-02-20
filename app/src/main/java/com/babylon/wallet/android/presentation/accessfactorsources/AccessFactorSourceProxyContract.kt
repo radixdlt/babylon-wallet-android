@@ -16,6 +16,20 @@ interface AccessFactorSourcesProxy {
     suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
     ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
+
+    /**
+     * This method temporarily keeps in memory the mnemonic that has been added through
+     * the Account Recovery Scan in the onboarding flow.
+     *
+     */
+    fun setTempMnemonicWithPassphrase(mnemonicWithPassphrase: MnemonicWithPassphrase)
+
+    /**
+     * This method returns the mnemonic that has been added through
+     * the Account Recovery Scan in the onboarding flow.
+     *
+     */
+    fun getTempMnemonicWithPassphrase(): MnemonicWithPassphrase?
 }
 
 // interface which acts as a mediator between the clients who need access to factor sources

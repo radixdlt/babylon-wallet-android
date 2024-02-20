@@ -44,7 +44,7 @@ enum class MnemonicType {
 
 fun NavGraphBuilder.addSingleMnemonic(
     onBackClick: () -> Unit,
-    onStartRecovery: (mnemonic: String, passphrase: String) -> Unit
+    onStartRecovery: () -> Unit
 ) {
     markAsHighPriority(ROUTE_ADD_SINGLE_MNEMONIC)
     composable(

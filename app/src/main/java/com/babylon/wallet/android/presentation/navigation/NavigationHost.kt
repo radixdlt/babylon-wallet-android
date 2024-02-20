@@ -143,11 +143,8 @@ fun NavigationHost(
             onBackClick = {
                 navController.popBackStack()
             },
-            onStartRecovery = { mnemonic, passphrase ->
-                navController.accountRecoveryScan(
-                    mnemonic = mnemonic,
-                    passphrase = passphrase
-                )
+            onStartRecovery = {
+                navController.accountRecoveryScan()
             }
         )
         restoreWithoutBackupScreen(

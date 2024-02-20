@@ -67,7 +67,7 @@ import rdx.works.profile.data.model.SeedPhraseLength
 fun AddSingleMnemonicScreen(
     viewModel: AddSingleMnemonicViewModel,
     onBackClick: () -> Unit,
-    onStartRecovery: (mnemonic: String, passphrase: String) -> Unit
+    onStartRecovery: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -75,9 +75,8 @@ fun AddSingleMnemonicScreen(
         state = state,
         onBackClick = onBackClick,
         onSubmitClick = {
-            if (state.mnemonicType == MnemonicType.BabylonMain) {
-                val mnemonicWithPassphrase = state.seedPhraseState.mnemonicWithPassphrase
-                onStartRecovery(mnemonicWithPassphrase.mnemonic, mnemonicWithPassphrase.bip39Passphrase)
+            if (state.mnemonicType == MnemonicType.BabylonMain) { // screen opened from onboarding flow
+                viewModel.onAddMainSeedPhrase()
             } else {
                 context.biometricAuthenticate { result ->
                     if (result == BiometricAuthenticationResult.Succeeded) {
@@ -99,6 +98,7 @@ fun AddSingleMnemonicScreen(
             when (it) {
                 AddSingleMnemonicViewModel.Event.MoveToNextWord -> focusManager.moveFocus(FocusDirection.Next)
                 AddSingleMnemonicViewModel.Event.FactorSourceAdded -> onBackClick()
+                AddSingleMnemonicViewModel.Event.MainSeedPhraseCompleted -> onStartRecovery()
             }
         }
     }

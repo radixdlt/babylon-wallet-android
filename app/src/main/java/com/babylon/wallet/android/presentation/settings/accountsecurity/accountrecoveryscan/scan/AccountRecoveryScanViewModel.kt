@@ -66,11 +66,8 @@ class AccountRecoveryScanViewModel @Inject constructor(
             }
 
             // if true it is account scan from recovery in onboarding with a given main babylon seed phrase
-            if (factorSource == null && args.mnemonic != null && args.passphrase != null) {
-                givenTempMnemonic = MnemonicWithPassphrase(
-                    mnemonic = args.mnemonic,
-                    bip39Passphrase = args.passphrase
-                )
+            if (factorSource == null) {
+                givenTempMnemonic = accessFactorSourcesProxy.getTempMnemonicWithPassphrase()
                 givenTempMnemonic?.let {
                     val mainBabylonDeviceFactorSource = ensureBabylonFactorSourceExistUseCase.initMainBabylonFactorSourceWithMnemonic(
                         mnemonic = it
@@ -101,7 +98,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
         val recoveryFactorSource = state.value.recoveryFactorSource
         if (recoveryFactorSource != null) { // this is always true
             startRecoveryScan(
-                isMainBabylonFactorSource = args.factorSourceId == null && args.mnemonic != null && args.passphrase != null,
+                isMainBabylonFactorSource = args.factorSourceId == null && givenTempMnemonic != null,
                 factorSource = recoveryFactorSource,
                 isOlympia = args.isOlympia == true
             )
