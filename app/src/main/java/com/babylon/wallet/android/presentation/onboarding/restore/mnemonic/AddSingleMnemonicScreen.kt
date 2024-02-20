@@ -60,6 +60,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseInputForm
 import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggestions
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import rdx.works.profile.data.model.SeedPhraseLength
 
@@ -82,8 +83,8 @@ fun AddSingleMnemonicScreen(
                 )
                 onStartRecovery()
             } else {
-                context.biometricAuthenticate { authenticated ->
-                    if (authenticated) {
+                context.biometricAuthenticate { result ->
+                    if (result == BiometricAuthenticationResult.Succeeded) {
                         viewModel.onAddFactorSource()
                     }
                 }

@@ -96,6 +96,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggesti
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -266,8 +267,8 @@ private fun ImportLegacyWalletContent(
                 }
 
                 OlympiaImportEvent.BiometricPromptBeforeFinalImport -> {
-                    context.biometricAuthenticate { authenticatedSuccessfully ->
-                        if (authenticatedSuccessfully) {
+                    context.biometricAuthenticate { result ->
+                        if (result == BiometricAuthenticationResult.Succeeded) {
                             importAllAccounts()
                         }
                     }

@@ -40,6 +40,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 
 @Composable
@@ -55,8 +56,10 @@ fun ConfirmMnemonicScreen(
         state = state,
         onBackClick = onDismiss,
         onSubmitClick = {
-            context.biometricAuthenticate { authenticated ->
-                if (authenticated) viewModel.onSubmit()
+            context.biometricAuthenticate { result ->
+                if (result == BiometricAuthenticationResult.Succeeded) {
+                    viewModel.onSubmit()
+                }
             }
         },
         onWordTyped = viewModel::onWordChanged,

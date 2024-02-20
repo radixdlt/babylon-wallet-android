@@ -38,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RedWarningText
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -65,8 +66,8 @@ fun SeedPhrasesScreen(
         viewModel.oneOffEvent.collect {
             when (it) {
                 is SeedPhrasesViewModel.Effect.OnRequestToShowMnemonic -> {
-                    context.biometricAuthenticate { authenticated ->
-                        if (authenticated) {
+                    context.biometricAuthenticate { result ->
+                        if (result == BiometricAuthenticationResult.Succeeded) {
                             onNavigateToSeedPhrase(it.factorSourceID)
                         }
                     }

@@ -31,6 +31,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 
 @Composable
@@ -52,8 +53,8 @@ fun DevSettingsScreen(
         error = state.error,
         hasAuthKey = state.hasAuthKey,
         onCreateAndUploadAuthKey = {
-            context.biometricAuthenticate {
-                if (it) {
+            context.biometricAuthenticate { result ->
+                if (result == BiometricAuthenticationResult.Succeeded) {
                     viewModel.onCreateAndUploadAuthKey()
                 }
             }
@@ -112,8 +113,8 @@ private fun DevSettingsContent(
                         .padding(horizontal = RadixTheme.dimensions.paddingLarge),
                     text = stringResource(R.string.accountSettings_getXrdTestTokens),
                     onClick = {
-                        context.biometricAuthenticate { authenticatedSuccessfully ->
-                            if (authenticatedSuccessfully) {
+                        context.biometricAuthenticate { result ->
+                            if (result == BiometricAuthenticationResult.Succeeded) {
                                 onGetFreeXrdClick()
                             }
                         }

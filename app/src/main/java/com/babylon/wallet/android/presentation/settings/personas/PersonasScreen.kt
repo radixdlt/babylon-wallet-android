@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.settings.personas.PersonasViewMod
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -66,8 +67,8 @@ fun PersonasScreen(
         onPersonaClick = onPersonaClick,
         onApplySecuritySettings = { factorSourceID ->
             (factorSourceID as? FactorSource.FactorSourceID.FromHash)?.let { id ->
-                context.biometricAuthenticate { authenticated ->
-                    if (authenticated) {
+                context.biometricAuthenticate { result ->
+                    if (result == BiometricAuthenticationResult.Succeeded) {
                         onNavigateToMnemonicBackup(id)
                     }
                 }
