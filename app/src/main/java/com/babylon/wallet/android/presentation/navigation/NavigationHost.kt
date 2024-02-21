@@ -29,6 +29,7 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
+import com.babylon.wallet.android.presentation.history.history
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
@@ -237,6 +238,9 @@ fun NavigationHost(
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
+                },
+                onHistoryClick = { accountAddress ->
+                    navController.history(accountAddress)
                 }
             )
         }
@@ -248,6 +252,11 @@ fun NavigationHost(
         deriveAccounts(
             onDismiss = {
                 navController.popBackStack()
+            }
+        )
+        history(
+            onBackClick = {
+                navController.navigateUp()
             }
         )
         createAccountScreen(

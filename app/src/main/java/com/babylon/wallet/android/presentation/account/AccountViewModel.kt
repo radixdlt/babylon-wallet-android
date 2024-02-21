@@ -44,11 +44,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
-import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import javax.inject.Inject
@@ -294,12 +292,6 @@ data class AccountUiState(
                 null
             }
             else -> null
-        }
-
-    val historyDashboardUrl: String?
-        get() = accountWithAssets?.account?.let { account ->
-            val dashboardUrl = NetworkId.from(account.networkID).dashboardUrl()
-            return "$dashboardUrl/account/${account.address}/recent-transactions"
         }
 
     val isTransferEnabled: Boolean

@@ -38,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -68,7 +67,6 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
-import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -84,7 +82,8 @@ fun AccountScreen(
     onNavigateToMnemonicRestore: () -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Network.Account) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Network.Account) -> Unit,
-    onTransferClick: (String) -> Unit
+    onTransferClick: (String) -> Unit,
+    onHistoryClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -122,7 +121,8 @@ fun AccountScreen(
         onStakesRequest = viewModel::onStakesRequest,
         onClaimClick = viewModel::onClaimClick,
         onTabClick = viewModel::onTabSelected,
-        onCollectionClick = viewModel::onCollectionToggle
+        onCollectionClick = viewModel::onCollectionToggle,
+        onHistoryClick = onHistoryClick
     )
 }
 
@@ -145,10 +145,9 @@ private fun AccountScreenContent(
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
-    onClaimClick: (List<StakeClaim>) -> Unit
+    onClaimClick: (List<StakeClaim>) -> Unit,
+    onHistoryClick: (String) -> Unit
 ) {
-    val context = LocalContext.current
-
     val gradient = remember(state.accountWithAssets) {
         val appearanceId = state.accountWithAssets?.account?.appearanceID ?: 0
         AccountGradientList[appearanceId % AccountGradientList.size]
@@ -223,11 +222,7 @@ private fun AccountScreenContent(
                 },
                 gradient = gradient,
                 onTransferClick = onTransferClick,
-                onHistoryClick = {
-                    state.historyDashboardUrl?.let { url ->
-                        context.openUrl(url)
-                    }
-                },
+                onHistoryClick = onHistoryClick,
                 onApplySecuritySettings = onApplySecuritySettings,
                 onPoolUnitClick = {
                     onPoolUnitClick(it)
@@ -265,7 +260,7 @@ fun AssetsContent(
     onPoolUnitClick: (PoolUnit) -> Unit,
     gradient: ImmutableList<Color>,
     onTransferClick: (String) -> Unit,
-    onHistoryClick: () -> Unit,
+    onHistoryClick: (String) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
@@ -318,7 +313,9 @@ fun AssetsContent(
                             ) {
                                 HistoryButton(
                                     modifier = Modifier.weight(1f),
-                                    onHistoryClick = onHistoryClick
+                                    onHistoryClick = {
+                                        onHistoryClick(accountAddress)
+                                    }
                                 )
                                 TransferButton(
                                     modifier = Modifier.weight(1f),
@@ -444,6 +441,8 @@ fun AccountContentPreview() {
                 onRefresh = {},
                 onTransferClick = {},
                 onMessageShown = {},
+                onTabClick = {},
+                onCollectionClick = {},
                 onFungibleItemClicked = {},
                 onNonFungibleItemClicked = { _, _ -> },
                 onApplySecuritySettings = {},
@@ -451,10 +450,8 @@ fun AccountContentPreview() {
                 onLSUUnitClicked = {},
                 onNextNFTsPageRequest = {},
                 onStakesRequest = {},
-                onClaimClick = {},
-                onTabClick = {},
-                onCollectionClick = {}
-            )
+                onClaimClick = {}
+            ) {}
         }
     }
 }

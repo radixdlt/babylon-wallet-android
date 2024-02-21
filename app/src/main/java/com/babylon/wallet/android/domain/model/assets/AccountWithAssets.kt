@@ -97,6 +97,13 @@ data class Assets(
         }
     }
 
+    val knownFungibles: List<Resource.FungibleResource> by lazy {
+        knownResources.filterIsInstance<Resource.FungibleResource>()
+    }
+    val knownNonFungibles: List<Resource.NonFungibleResource> by lazy {
+        knownResources.filterIsInstance<Resource.NonFungibleResource>()
+    }
+
     // knownResources of an account is when
     // it contains a resource with an amount greater than 0
     // or it had a resource in the past but the amount is 0 now

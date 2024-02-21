@@ -1,0 +1,79 @@
+package com.babylon.wallet.android.presentation.history.composables
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.HistoryFilters
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.presentation.history.name
+import com.babylon.wallet.android.utils.truncatedHash
+
+@Composable
+fun FiltersStrip(
+    historyFilters: HistoryFilters?,
+    userInteractionEnabled: Boolean,
+    onTransactionTypeFilterRemoved: () -> Unit,
+    onTransactionClassFilterRemoved: () -> Unit,
+    onResourceFilterSelected: (Resource) -> Unit,
+    onSubmittedByFilterRemoved: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyRow(
+        modifier = modifier
+            .background(RadixTheme.colors.defaultBackground)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium),
+        contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
+        userScrollEnabled = userInteractionEnabled,
+    ) {
+        historyFilters?.transactionType?.let { transactionType ->
+            item {
+                SingleTag(
+                    selected = true,
+                    text = transactionType.label(),
+                    leadingIcon = {
+                        Icon(painter = painterResource(id = transactionType.icon()), contentDescription = null, tint = Color.Unspecified)
+                    },
+                    onCloseClick = {3
+                        if (userInteractionEnabled) onTransactionTypeFilterRemoved()
+                    }
+                )
+            }
+        }
+        items(historyFilters?.resources.orEmpty().toList()) { resource ->
+            val name = when (resource) {
+                is Resource.FungibleResource -> resource.displayTitle
+                is Resource.NonFungibleResource -> resource.name
+            }
+            SingleTag(
+                selected = true,
+                text = name.ifEmpty { resource.resourceAddress.truncatedHash() },
+                onCloseClick = {
+                }
+            )
+        }
+        historyFilters?.transactionClass?.let { txClass ->
+            item {
+                SingleTag(selected = true, text = txClass.name(), onCloseClick = {
+                    if (userInteractionEnabled) onTransactionClassFilterRemoved()
+                })
+            }
+        }
+        historyFilters?.submittedBy?.let { submittedBy ->
+            item {
+                SingleTag(selected = true, text = submittedBy.label(), onCloseClick = {
+                    if (userInteractionEnabled) onSubmittedByFilterRemoved()
+                })
+            }
+        }
+    }
+}

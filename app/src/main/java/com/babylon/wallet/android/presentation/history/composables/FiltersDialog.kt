@@ -1,0 +1,273 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
+package com.babylon.wallet.android.presentation.history.composables
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
+import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.HistoryFilters
+import com.babylon.wallet.android.domain.model.TransactionClass
+import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.presentation.history.State
+import com.babylon.wallet.android.presentation.history.name
+import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.utils.truncatedHash
+
+@Composable
+fun FiltersDialog(
+    modifier: Modifier = Modifier,
+    state: State,
+    onDismiss: () -> Unit,
+    onClearAllFilters: () -> Unit,
+    onTransactionTypeFilterSelected: (HistoryFilters.TransactionType?) -> Unit,
+    onTransactionClassFilterSelected: (TransactionClass?) -> Unit,
+    onResourceFilterSelected: (Resource) -> Unit,
+    onSubmittedByFilterChanged: (HistoryFilters.SubmittedBy?) -> Unit,
+) {
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            RadixCenteredTopAppBar(
+                title = stringResource(id = R.string.history_filter_title),
+                onBackClick = onDismiss,
+                backIconType = BackIconType.Close,
+                containerColor = RadixTheme.colors.defaultBackground,
+                actions = {
+                    RadixTextButton(text = stringResource(id = R.string.history_filter_clearAll), onClick = onClearAllFilters)
+                }
+            )
+        },
+        bottomBar = {
+            Column(
+                modifier = Modifier.background(color = RadixTheme.colors.defaultBackground)
+            ) {
+                HorizontalDivider(color = RadixTheme.colors.gray5)
+
+                RadixPrimaryButton(
+                    text = "Show Results", // TODO crowdin
+                    onClick = onDismiss,
+                    modifier = Modifier
+                        .padding(RadixTheme.dimensions.paddingDefault)
+                        .fillMaxWidth()
+                )
+            }
+        },
+        containerColor = RadixTheme.colors.defaultBackground
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(RadixTheme.dimensions.paddingLarge),
+                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+            ) {
+                TagContainer {
+                    HistoryFilters.TransactionType.entries.forEach { entry ->
+                        val selected = state.filters.transactionType == entry
+                        SingleTag(selected = selected, text = entry.label(), leadingIcon = {
+                            Icon(painter = painterResource(id = entry.icon()), contentDescription = null, tint = Color.Unspecified)
+                        }, onClick = {
+                            onTransactionTypeFilterSelected(if (selected) null else entry)
+                        })
+                    }
+                }
+            }
+            HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
+            FilterTypeSection(label = "Type of Asset") {
+                val fungibles = remember(state.fungibleResources) {
+                    state.fungibleResources
+                }
+                val nonFungibles = remember(state.nonFungibleResources) {
+                    state.nonFungibleResources
+                }
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    if (fungibles.isNotEmpty()) {
+                        Text(
+                            text = "Tokens",
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray2
+                        )
+                        TagContainer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSmall)) {
+                            fungibles.forEach { fungible ->
+                                val selected = state.filters.resources.any { it.resourceAddress == fungible.resourceAddress }
+                                SingleTag(
+                                    selected = selected,
+                                    text = fungible.displayTitle.ifEmpty { fungible.resourceAddress.truncatedHash() },
+                                    onClick = {
+                                        onResourceFilterSelected(fungible)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    if (nonFungibles.isNotEmpty()) {
+                        HorizontalDivider(color = RadixTheme.colors.gray4)
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                        Text(
+                            text = "NFTs",
+                            style = RadixTheme.typography.body1HighImportance,
+                            color = RadixTheme.colors.gray2
+                        )
+                        TagContainer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSmall)) {
+                            nonFungibles.forEach { nonFungible ->
+                                val selected = state.filters.resources.any { it.resourceAddress == nonFungible.resourceAddress }
+                                SingleTag(
+                                    selected = selected,
+                                    text = nonFungible.name.ifEmpty { nonFungible.resourceAddress.truncatedHash() },
+                                    onClick = {
+                                        onResourceFilterSelected(nonFungible)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
+            FilterTypeSection(label = "Type of Transaction") {
+                TagContainer {
+                    TransactionClass.entries.forEach { entry ->
+                        val selected = state.filters.transactionClass == entry
+                        SingleTag(selected = selected, text = entry.name(), onClick = {
+                            onTransactionClassFilterSelected(if (selected) null else entry)
+                        })
+                    }
+                }
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+            }
+            HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
+            FilterTypeSection(label = "Submitted by") {
+                TagContainer {
+                    HistoryFilters.SubmittedBy.entries.forEach { entry ->
+                        val selected = state.filters.submittedBy == entry
+                        SingleTag(selected = selected, text = entry.label(), onClick = {
+                            onSubmittedByFilterChanged(if (selected) null else entry)
+                        })
+                    }
+                }
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+            }
+            HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
+        }
+    }
+}
+
+@Composable
+private fun TagContainer(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    FlowRow(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = RadixTheme.dimensions.paddingSmall),
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+        content = {
+            content()
+        }
+    )
+}
+
+@Composable
+private fun FilterTypeSection(modifier: Modifier = Modifier, label: String, content: @Composable () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .clickable { expanded = !expanded }
+                .padding(vertical = RadixTheme.dimensions.paddingDefault, horizontal = RadixTheme.dimensions.paddingLarge)
+        ) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = label,
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            val iconRes = if (expanded) {
+                com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_up
+            } else {
+                com.babylon.wallet.android.designsystem.R.drawable.ic_arrow_down
+            }
+            Icon(
+                painter = painterResource(id = iconRes),
+                tint = RadixTheme.colors.gray2,
+                contentDescription = "arrow"
+            )
+        }
+        AnimatedVisibility(
+            modifier = Modifier.padding(
+                horizontal = RadixTheme.dimensions.paddingLarge
+            ),
+            visible = expanded,
+            enter = expandVertically(),
+            exit = shrinkVertically()
+        ) {
+            Column(Modifier.fillMaxWidth()) {
+                content()
+            }
+        }
+    }
+}
+
+@Composable
+fun HistoryFilters.TransactionType.label(): String {
+    return when (this) {
+        HistoryFilters.TransactionType.DEPOSIT -> "Deposits"
+        HistoryFilters.TransactionType.WITHDRAWAL -> "Withdrawals"
+    }
+}
+
+@Composable
+fun HistoryFilters.SubmittedBy.label(): String {
+    return when (this) {
+        HistoryFilters.SubmittedBy.Me -> "Submitted By Me"
+        HistoryFilters.SubmittedBy.ThirdParty -> "Submitted By a Third-party"
+    }
+}
+
+@Composable
+fun HistoryFilters.TransactionType.icon(): Int {
+    return when (this) {
+        HistoryFilters.TransactionType.DEPOSIT -> DSR.ic_filter_deposit
+        HistoryFilters.TransactionType.WITHDRAWAL -> DSR.ic_filter_withdraw
+    }
+}

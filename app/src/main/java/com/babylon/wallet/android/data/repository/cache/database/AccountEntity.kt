@@ -12,5 +12,7 @@ data class AccountEntity(
     val accountType: AccountType?,
     val synced: Instant?,
     @ColumnInfo("state_version")
-    val stateVersion: Long?
+    val stateVersion: Long?,
+    @ColumnInfo("first_transaction_date")
+    val firstTransactionDate: Instant? = null
 )

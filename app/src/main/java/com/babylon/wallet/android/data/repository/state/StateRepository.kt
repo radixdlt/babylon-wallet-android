@@ -5,8 +5,8 @@ import com.babylon.wallet.android.data.gateway.extensions.fetchPools
 import com.babylon.wallet.android.data.gateway.extensions.fetchValidators
 import com.babylon.wallet.android.data.gateway.extensions.getNextNftItems
 import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
+import com.babylon.wallet.android.data.gateway.extensions.paginateNonFungibles
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.database.DAppEntity
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
@@ -22,7 +22,6 @@ import com.babylon.wallet.android.data.repository.cache.database.ValidatorEntity
 import com.babylon.wallet.android.data.repository.cache.database.getCachedPools
 import com.babylon.wallet.android.data.repository.cache.database.storeAccountNFTsPortfolio
 import com.babylon.wallet.android.data.repository.cache.database.updateResourceDetails
-import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
@@ -360,17 +359,14 @@ class StateRepositoryImpl @Inject constructor(
         }
         val unknownIds = localIds - cachedItems?.map { it.localId }.orEmpty().toSet()
 
-        stateApi.nonFungibleData(
-            StateNonFungibleDataRequest(
-                resourceAddress = resourceAddress,
-                nonFungibleIds = unknownIds.toList()
-            )
-        ).toResult().mapCatching { response ->
+        val result = mutableListOf<Resource.NonFungibleResource.Item>()
+        stateApi.paginateNonFungibles(resourceAddress, nonFungibleIds = unknownIds.toList(), onPage = { response ->
             val item = response.nonFungibleIds
             val entities = item.map { it.asEntity(resourceAddress, InstantGenerator()) }
             stateDao.insertNFTs(entities)
-            cachedItems.orEmpty().map { it.toItem() } + entities.map { it.toItem() }
-        }
+            result.addAll(entities.map { it.toItem() })
+        })
+        Result.success(result.toList())
     }
 
     override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> =

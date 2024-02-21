@@ -10,6 +10,8 @@ import java.time.temporal.ChronoUnit
 
 const val LAST_USED_DATE_FORMAT = "d MMM yyyy"
 const val LAST_USED_DATE_FORMAT_THIS_YEAR = "d MMM"
+const val TIMESTAMP_HOURS_MINUTES = "hh:mm"
+const val TIMESTAMP_ONLY_MONTH = "MMM"
 
 fun LocalDateTime.toISO8601String(): String {
     return DateTimeFormatter.ISO_ZONED_DATE_TIME.format(
@@ -47,7 +49,17 @@ fun Instant.ledgerLastUsedDateFormat(): String {
     return formatter.format(this)
 }
 
+fun Instant.timestampHoursMinutes(): String {
+    val formatter = DateTimeFormatter.ofPattern(TIMESTAMP_HOURS_MINUTES).withZone(ZoneId.systemDefault())
+    return formatter.format(this)
+}
+
 fun Instant.toDateString(): String {
     val formatter = DateTimeFormatter.ofPattern(LAST_USED_DATE_FORMAT).withZone(ZoneId.systemDefault())
+    return formatter.format(this)
+}
+
+fun ZonedDateTime.toMonthString(): String {
+    val formatter = DateTimeFormatter.ofPattern(TIMESTAMP_ONLY_MONTH)
     return formatter.format(this)
 }
