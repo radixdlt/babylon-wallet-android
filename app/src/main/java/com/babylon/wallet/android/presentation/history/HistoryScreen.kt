@@ -338,7 +338,7 @@ private fun LoadingItemPlaceholder(modifier: Modifier = Modifier) {
 @Composable
 private fun EmptyContent(modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().padding(RadixTheme.dimensions.paddingLarge),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingLarge)
     ) {
