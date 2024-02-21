@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.utils.ledgerLastUsedDateFormat
+import com.babylon.wallet.android.utils.dayMonthDateFormat
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 
 @Composable
@@ -45,13 +45,13 @@ fun LedgerListItem(
                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                     append(stringResource(id = R.string.ledgerHardwareDevices_usedHeading))
                 }
-                append(": ${ledgerFactorSource.common.lastUsedOn.ledgerLastUsedDateFormat()}")
+                append(": ${ledgerFactorSource.common.lastUsedOn.dayMonthDateFormat()}")
             }
             val addedText = buildAnnotatedString {
                 withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
                     append(stringResource(id = R.string.ledgerHardwareDevices_addedHeading))
                 }
-                append(": ${ledgerFactorSource.common.addedOn.ledgerLastUsedDateFormat()}")
+                append(": ${ledgerFactorSource.common.addedOn.dayMonthDateFormat()}")
             }
             Text(
                 text = usedText,

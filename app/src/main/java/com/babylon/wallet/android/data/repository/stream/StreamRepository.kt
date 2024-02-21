@@ -64,6 +64,7 @@ class StreamRepositoryImpl @Inject constructor(
         }
     }
 
+    @Suppress("LongMethod")
     private fun buildStreamTransactionRequest(
         accountAddress: String,
         cursor: String?,

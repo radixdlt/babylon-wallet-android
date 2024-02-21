@@ -14,7 +14,6 @@ import androidx.compose.ui.res.painterResource
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.presentation.history.name
 import com.babylon.wallet.android.utils.truncatedHash
 
 @Composable
@@ -43,7 +42,8 @@ fun FiltersStrip(
                     leadingIcon = {
                         Icon(painter = painterResource(id = transactionType.icon()), contentDescription = null, tint = Color.Unspecified)
                     },
-                    onCloseClick = {3
+                    onCloseClick = {
+                        3
                         if (userInteractionEnabled) onTransactionTypeFilterRemoved()
                     }
                 )
@@ -63,7 +63,7 @@ fun FiltersStrip(
         }
         historyFilters?.transactionClass?.let { txClass ->
             item {
-                SingleTag(selected = true, text = txClass.name(), onCloseClick = {
+                SingleTag(selected = true, text = txClass.description(), onCloseClick = {
                     if (userInteractionEnabled) onTransactionClassFilterRemoved()
                 })
             }

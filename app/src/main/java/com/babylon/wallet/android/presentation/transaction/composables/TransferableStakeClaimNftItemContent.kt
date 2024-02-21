@@ -40,6 +40,7 @@ fun TransferableStakeClaimNftItemContent(
     shape: Shape,
     onClick: (TransferableAsset.NonFungible.StakeClaimAssets, Resource.NonFungibleResource.Item) -> Unit
 ) {
+    transferable.resource
     Column(
         modifier = modifier
             .height(IntrinsicSize.Min)

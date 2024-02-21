@@ -70,8 +70,7 @@ class HistoryViewModel @Inject constructor(
                 }.mapNotNull { it.firstOrNull() }.collectLatest { accountWithAssets ->
                     _state.update { state ->
                         state.copy(
-                            accountWithAssets = state.accountWithAssets?.copy(assets = accountWithAssets.assets),
-                            filterResources = accountWithAssets.assets?.knownResources?.map { Selectable(it) }.orEmpty().toPersistentList()
+                            accountWithAssets = state.accountWithAssets?.copy(assets = accountWithAssets.assets)
                         )
                     }
                     if (accountWithAssets.details?.firstTransactionDate == null) {
@@ -168,6 +167,13 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun onTimeFilterSelected(timeFilterItem: TimeFilterItem.Month) {
+        val existingHistoryItem = _state.value.historyItems?.indexOfFirst {
+            it.dateTime?.isBefore(timeFilterItem.end) == true
+        }
+        if (existingHistoryItem == null || existingHistoryItem == -1) return
+        viewModelScope.launch {
+            sendEvent(HistoryEvent.ScrollToItem(existingHistoryItem))
+        }
 //        _state.update { state ->
 //            val updateItems = state.timeFilterItems.map {
 //                if (it.data == timeFilterItem) it.copy(selected = !it.selected) else it.copy(selected = false)
@@ -287,6 +293,7 @@ class HistoryViewModel @Inject constructor(
 
 internal sealed interface HistoryEvent : OneOffEvent {
     data class OnTransactionItemClick(val url: String) : HistoryEvent
+    data class ScrollToItem(val index: Int) : HistoryEvent
 }
 
 data class State(
@@ -298,7 +305,6 @@ data class State(
     val showFiltersSheet: Boolean = false,
     val filters: HistoryFilters = HistoryFilters(),
     val timeFilterItems: ImmutableList<Selectable<TimeFilterItem>> = persistentListOf(),
-    val filterResources: ImmutableList<Selectable<Resource>> = persistentListOf(),
     val isLoadingMore: Boolean = false
 ) : UiState {
 

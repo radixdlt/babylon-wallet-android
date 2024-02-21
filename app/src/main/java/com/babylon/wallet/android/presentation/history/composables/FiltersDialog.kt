@@ -40,7 +40,6 @@ import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.history.State
-import com.babylon.wallet.android.presentation.history.name
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -166,7 +165,7 @@ fun FiltersDialog(
                 TagContainer {
                     TransactionClass.entries.forEach { entry ->
                         val selected = state.filters.transactionClass == entry
-                        SingleTag(selected = selected, text = entry.name(), onClick = {
+                        SingleTag(selected = selected, text = entry.description(), onClick = {
                             onTransactionClassFilterSelected(if (selected) null else entry)
                         })
                     }
