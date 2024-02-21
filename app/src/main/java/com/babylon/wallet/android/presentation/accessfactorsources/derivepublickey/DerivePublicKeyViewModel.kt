@@ -42,7 +42,33 @@ class DerivePublicKeyViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            sendEvent(Event.RequestBiometricPrompt)
+            input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
+            when (input.factorSource) {
+                is LedgerHardwareWalletFactorSource -> {
+                    derivePublicKey()
+                        .onSuccess {
+                            // derivation is done so update UI
+                            _state.update { uiState ->
+                                uiState.copy(
+                                    isAccessingFactorSourceInProgress = false,
+                                    isAccessingFactorSourceCompleted = true
+                                )
+                            }
+                        }
+                        .onFailure {
+                            _state.update { uiState ->
+                                uiState.copy(
+                                    isAccessingFactorSourceInProgress = false,
+                                    shouldShowRetryButton = true
+                                )
+                            }
+                        }
+                }
+                is DeviceFactorSource,
+                null -> {
+                    sendEvent(Event.RequestBiometricPrompt)
+                }
+            }
         }
     }
 
