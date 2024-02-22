@@ -4,6 +4,11 @@ on:
    # branches to consider in the event; optional, defaults to all
    branches:
      - main
+
+permissions:
+  id-token: write
+  contents: write
+
 jobs:
  update_release_draft:
    runs-on: ubuntu-latest
