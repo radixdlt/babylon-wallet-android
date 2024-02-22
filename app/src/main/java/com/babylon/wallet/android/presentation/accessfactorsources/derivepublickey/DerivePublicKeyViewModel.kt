@@ -40,7 +40,6 @@ class DerivePublicKeyViewModel @Inject constructor(
     override fun initialState(): DerivePublicKeyUiState = DerivePublicKeyUiState()
 
     private lateinit var input: AccessFactorSourcesInput.ToDerivePublicKey
-
     private var derivePublicKeyJob: Job? = null
 
     init {
@@ -65,7 +64,6 @@ class DerivePublicKeyViewModel @Inject constructor(
             input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
             derivePublicKey()
                 .onSuccess {
-                    // derivation is done so update UI
                     sendEvent(Event.AccessingFactorSourceCompleted)
                 }
                 .onFailure {
