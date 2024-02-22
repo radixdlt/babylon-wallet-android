@@ -1,6 +1,8 @@
 package com.babylon.wallet.android
 
 import android.animation.ObjectAnimator
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
@@ -25,6 +27,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+
 
 // Extending from FragmentActivity because of Biometric
 @AndroidEntryPoint
@@ -68,6 +71,24 @@ class MainActivity : FragmentActivity() {
                         mainViewModel = viewModel,
                         onCloseApp = { finish() }
                     )
+                }
+            }
+        }
+
+        val intent: Intent = intent
+        val action: String? = intent.getAction()
+        val data: Uri? = intent.getData()
+
+        // Check if the intent is related to the deep link
+
+        // Check if the intent is related to the deep link
+        if (Intent.ACTION_VIEW.equals(action) && data != null) {
+            val scheme = data.scheme // "myApp"
+            val host = data.host // "interaction"
+            if (scheme == "radixwallet" && host == "dAppInteraction") {
+                val password = data.getQueryParameter("connectionPassword")
+                if(password != null) {
+                    viewModel.handleDeepLinkRequest(password)
                 }
             }
         }

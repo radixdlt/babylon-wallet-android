@@ -250,7 +250,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             ).onSuccess {
                 dAppMessenger.sendWalletInteractionSuccessResponse(
                     remoteConnectorId = request.remoteConnectorId,
-                    response = it
+                    response = it,
+                    encryptionKey = request.encryptionKey
                 )
                 sendEvent(Event.LoginFlowCompleted)
                 appEventBus.sendEvent(

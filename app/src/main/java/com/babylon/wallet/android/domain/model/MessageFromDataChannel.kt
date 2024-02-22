@@ -16,7 +16,8 @@ sealed interface MessageFromDataChannel {
     sealed class IncomingRequest(
         open val remoteConnectorId: String, // from which remote CE comes the message
         val id: String, // the id of the request
-        val metadata: RequestMetadata
+        val metadata: RequestMetadata,
+        open val encryptionKey: ByteArray? = null
     ) : MessageFromDataChannel {
 
         val isInternal: Boolean
@@ -38,8 +39,9 @@ sealed interface MessageFromDataChannel {
             val ongoingAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null,
             val ongoingPersonaDataRequestItem: PersonaRequestItem? = null,
-            val resetRequestItem: ResetRequestItem? = null
-        ) : IncomingRequest(remoteConnectorId, interactionId, requestMetadata) {
+            val resetRequestItem: ResetRequestItem? = null,
+            override val encryptionKey: ByteArray? = null
+        ) : IncomingRequest(remoteConnectorId, interactionId, requestMetadata, encryptionKey) {
 
             fun needSignatures(): Boolean {
                 return authRequest is AuthRequest.LoginRequest.WithChallenge ||
@@ -93,8 +95,9 @@ sealed interface MessageFromDataChannel {
             val interactionId: String,
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
-            val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(remoteConnectorId, interactionId, requestMetadata) {
+            val oneTimePersonaDataRequestItem: PersonaRequestItem? = null,
+            override val encryptionKey: ByteArray? = null
+        ) : IncomingRequest(remoteConnectorId, interactionId, requestMetadata, encryptionKey) {
             fun isValidRequest(): Boolean {
                 return oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
@@ -109,8 +112,9 @@ sealed interface MessageFromDataChannel {
             val requestId: String,
             val transactionManifestData: TransactionManifestData,
             val requestMetadata: RequestMetadata,
-            val transactionType: TransactionType = TransactionType.Generic
-        ) : IncomingRequest(remoteConnectorId, requestId, requestMetadata)
+            val transactionType: TransactionType = TransactionType.Generic,
+            override val encryptionKey: ByteArray? = null
+        ) : IncomingRequest(remoteConnectorId, requestId, requestMetadata, encryptionKey)
 
         data class RequestMetadata(
             val networkId: Int,

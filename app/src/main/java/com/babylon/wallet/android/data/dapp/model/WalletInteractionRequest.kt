@@ -88,7 +88,8 @@ data class WalletTransactionItems(
 fun WalletTransactionItems.SendTransactionItem.toDomainModel(
     remoteConnectorId: String, // from which CE comes the message
     requestId: String,
-    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
+    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata,
+    encryptionKey: ByteArray? = null
 ) =
     MessageFromDataChannel.IncomingRequest.TransactionRequest(
         remoteConnectorId = remoteConnectorId,
@@ -100,10 +101,11 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
             blobs?.map { decode(it) }.orEmpty(),
             message = message
         ),
-        requestMetadata = metadata
+        requestMetadata = metadata,
+        encryptionKey = encryptionKey
     )
 
-fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataChannel.IncomingRequest {
+fun WalletInteraction.toDomainModel(remoteConnectorId: String, encryptionKey: ByteArray? = null): MessageFromDataChannel.IncomingRequest {
     try {
         val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             networkId = metadata.networkId,
@@ -113,13 +115,13 @@ fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataC
         )
         return when (items) {
             is WalletTransactionItems -> {
-                items.send.toDomainModel(remoteConnectorId, interactionId, metadata)
+                items.send.toDomainModel(remoteConnectorId, interactionId, metadata, encryptionKey)
             }
             is WalletAuthorizedRequestItems -> {
-                items.parseAuthorizedRequest(remoteConnectorId, interactionId, metadata)
+                items.parseAuthorizedRequest(remoteConnectorId, interactionId, metadata, encryptionKey)
             }
             is WalletUnauthorizedRequestItems -> {
-                items.parseUnauthorizedRequest(remoteConnectorId, interactionId, metadata)
+                items.parseUnauthorizedRequest(remoteConnectorId, interactionId, metadata, encryptionKey)
             }
         }
     } catch (e: Exception) {
@@ -130,7 +132,8 @@ fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataC
 private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
     remoteConnectorId: String,
     requestId: String,
-    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
+    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata,
+    encryptionKey: ByteArray? = null
 ): MessageFromDataChannel.IncomingRequest.UnauthorizedRequest {
     return MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
         remoteConnectorId = remoteConnectorId,
@@ -138,13 +141,15 @@ private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
         requestMetadata = metadata,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(),
         oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(),
+        encryptionKey = encryptionKey
     )
 }
 
 private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
     remoteConnectorId: String,
     requestId: String,
-    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
+    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata,
+    encryptionKey: ByteArray? = null
 ): MessageFromDataChannel.IncomingRequest {
     val auth = when (this.auth) {
         is AuthLoginRequestItem -> auth.toDomainModel()
@@ -159,6 +164,7 @@ private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
         ongoingAccountsRequestItem = ongoingAccounts?.toDomainModel(),
         oneTimePersonaDataRequestItem = oneTimePersonaData?.toDomainModel(isOngoing = false),
         ongoingPersonaDataRequestItem = ongoingPersonaData?.toDomainModel(),
-        resetRequestItem = reset?.toDomainModel()
+        resetRequestItem = reset?.toDomainModel(),
+        encryptionKey = encryptionKey
     )
 }

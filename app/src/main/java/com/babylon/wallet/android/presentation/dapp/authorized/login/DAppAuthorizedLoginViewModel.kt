@@ -705,7 +705,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 ).onSuccess { response ->
                     dAppMessenger.sendWalletInteractionSuccessResponse(
                         remoteConnectorId = request.remoteConnectorId,
-                        response = response
+                        response = response,
+                        encryptionKey = request.encryptionKey
                     )
                     mutex.withLock {
                         editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }

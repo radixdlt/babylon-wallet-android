@@ -3,7 +3,12 @@ package com.babylon.wallet.android.presentation.main
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionInteraction
+import com.babylon.wallet.android.data.dapp.model.LedgerInteractionResponse
+import com.babylon.wallet.android.data.dapp.model.WalletInteraction
+import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
@@ -17,6 +22,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
@@ -31,7 +37,10 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import rdx.works.core.blake2Hash
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.toHexString
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
@@ -42,8 +51,18 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.IsAnyEntityCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.p2pLinks
 import timber.log.Timber
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
+import java.net.URL
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
+import com.google.gson.Gson
+import kotlinx.serialization.json.Json
+import okio.ByteString.Companion.decodeHex
+import rdx.works.core.decrypt
+import java.nio.charset.StandardCharsets
+
 
 @Suppress("LongParameterList")
 @HiltViewModel
@@ -66,6 +85,14 @@ class MainViewModel @Inject constructor(
     private var incomingDappRequestsJob: Job? = null
     private var incomingDappRequestErrorsJob: Job? = null
     private var countdownJob: Job? = null
+
+    private val json: Json = Json {
+        ignoreUnknownKeys = true
+    }
+
+    val peerdroidRequestJson = Json {
+        classDiscriminator = "discriminator"
+    }
 
     val observeP2PLinks = getProfileUseCase
         .p2pLinks
@@ -219,6 +246,60 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun handleDeepLinkRequest(connectionPassword: String) {
+        val encryptionKey = parseEncryptionKeyFromConnectionPassword(
+            connectionPassword = connectionPassword
+        )
+
+        if(encryptionKey != null) {
+            viewModelScope.launch {
+                val connectionId = encryptionKey.blake2Hash().toHexString()
+                val response =
+                    makeHttpRequest("https://ddjdmrlme9v4i.cloudfront.net/api/dapp-request/${connectionId}")
+                val apiResponse = Gson().fromJson(response, ApiResponse::class.java)
+
+
+                val request = apiResponse.request.decodeHex().toByteArray().decrypt(
+                        withEncryptionKey = encryptionKey
+                    ).getOrNull()
+
+                val inc = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(String(request!!, StandardCharsets.UTF_8))
+
+                if (inc is WalletInteraction) {
+                    val request = inc.toDomainModel(remoteConnectorId = "deepLink", encryptionKey = encryptionKey)
+                    verifyIncomingRequest(request)
+                }
+            }
+        }
+        // make the request
+        // receive and decode the response
+
+
+    }
+
+    private suspend fun makeHttpRequest(urlString: String): String = withContext(Dispatchers.IO) {
+        var urlConnection: HttpURLConnection? = null
+        try {
+            val url = URL(urlString)
+            urlConnection = url.openConnection() as HttpURLConnection
+            urlConnection.requestMethod = "GET"
+
+            val responseCode = urlConnection.responseCode
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                val inStream = urlConnection.inputStream
+                val reader = BufferedReader(InputStreamReader(inStream))
+                reader.use { it.readText() } // Converts input stream to a string
+            } else {
+                "Error: Server returned response code: $responseCode"
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            "Error: ${e.message}"
+        } finally {
+            urlConnection?.disconnect()
+        }
+    }
+
     private fun verifyIncomingRequest(request: IncomingRequest) {
         verifyingDappRequestJob = viewModelScope.launch {
             verifyDappUseCase(request).onSuccess { verified ->
@@ -339,3 +420,9 @@ sealed interface AppState {
         }
     }
 }
+
+data class ApiResponse(
+    val id: String,
+    val request: String
+)
+

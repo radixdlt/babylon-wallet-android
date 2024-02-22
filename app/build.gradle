@@ -144,6 +144,8 @@ sonarqube {
 dependencies {
     implementation project(path: ':core')
 
+    implementation 'com.google.code.gson:gson:2.8.6' // Check for the latest version
+
     implementation libs.androidxCore
     implementation libs.lifecycleRuntimeKtx
     implementation libs.lifecycleViewmodelKtx
