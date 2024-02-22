@@ -19,6 +19,7 @@ import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.extensions.removeLeadingZero
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -63,9 +64,10 @@ class DeriveAccountsViewModel @Inject constructor(
     private lateinit var input: ToReDeriveAccounts
     private var profile: Profile? = null
     private var nextDerivationPathOffset: Int = 0
+    private var reDerivePublicKeyJob: Job? = null
 
     init {
-        viewModelScope.launch {
+        reDerivePublicKeyJob = viewModelScope.launch {
             profile = if (getProfileUseCase.isInitialized()) getProfileUseCase.invoke().firstOrNull() else null
 
             input = accessFactorSourcesUiProxy.getInput() as ToReDeriveAccounts
@@ -96,10 +98,7 @@ class DeriveAccountsViewModel @Inject constructor(
                                 }
                                 .onFailure {
                                     _state.update { uiState ->
-                                        uiState.copy(
-                                            isDerivingAccountsInProgress = false,
-                                            shouldShowRetryButton = true
-                                        )
+                                        uiState.copy(shouldShowRetryButton = true)
                                     }
                                 }
                         }
@@ -112,11 +111,10 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     fun onBiometricAuthenticationDismiss() {
+        // biometric prompt dismissed, but bottom dialog remains visible
+        // therefore we show the retry button
         _state.update { uiState ->
-            uiState.copy(
-                isDerivingAccountsInProgress = false,
-                shouldShowRetryButton = true
-            )
+            uiState.copy(shouldShowRetryButton = true)
         }
     }
 
@@ -128,7 +126,8 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     fun onRetryClick() {
-        viewModelScope.launch {
+        reDerivePublicKeyJob?.cancel()
+        reDerivePublicKeyJob = viewModelScope.launch {
             _state.update { uiState ->
                 uiState.copy(shouldShowRetryButton = false)
             }
@@ -142,9 +141,7 @@ class DeriveAccountsViewModel @Inject constructor(
     private suspend fun initRecoveryFromLedgerFactorSource() {
         _state.update { uiState ->
             val ledger = input.factorSource as LedgerHardwareWalletFactorSource
-            uiState.copy(
-                showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = ledger)
-            )
+            uiState.copy(showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = ledger))
         }
 
         recoverAccountsForGivenFactorSource()
@@ -153,24 +150,17 @@ class DeriveAccountsViewModel @Inject constructor(
             }
             .onFailure {
                 _state.update { uiState ->
-                    uiState.copy(
-                        isDerivingAccountsInProgress = false,
-                        shouldShowRetryButton = true
-                    )
+                    uiState.copy(shouldShowRetryButton = true)
                 }
             }
     }
 
     private suspend fun recoverAccountsForGivenMnemonic() {
         _state.update { uiState ->
-            uiState.copy(
-                isFromOnboarding = true,
-                isDerivingAccountsInProgress = true
-            )
+            uiState.copy(isFromOnboarding = true)
         }
         withContext(ioDispatcher) {
             val networkId = profile?.currentNetwork?.knownNetworkId ?: Radix.Gateway.mainnet.network.networkId()
-
             val indicesToScan: Set<Int> = computeIndicesToScan(
                 derivationPathScheme = if (input.isForLegacyOlympia) DerivationPathScheme.BIP_44_OLYMPIA else DerivationPathScheme.CAP_26,
                 forNetworkId = networkId,
@@ -185,12 +175,6 @@ class DeriveAccountsViewModel @Inject constructor(
                 forNetworkId = networkId
             )
 
-            _state.update { uiState ->
-                uiState.copy(
-                    isFromOnboarding = false,
-                    isDerivingAccountsInProgress = false
-                )
-            }
             accessFactorSourcesUiProxy.setOutput(
                 output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                     derivedAccounts = derivedAccounts,
@@ -201,9 +185,6 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     private suspend fun recoverAccountsForGivenFactorSource(): Result<Unit> {
-        _state.update { uiState ->
-            uiState.copy(isDerivingAccountsInProgress = true)
-        }
         return withContext(ioDispatcher) {
             val networkId = profile?.currentNetwork?.knownNetworkId ?: Radix.Gateway.mainnet.network.networkId()
 
@@ -221,10 +202,6 @@ class DeriveAccountsViewModel @Inject constructor(
                     derivationPathsWithPublicKeys = derivationPathsWithPublicKeys,
                     forNetworkId = networkId
                 )
-
-                _state.update { uiState ->
-                    uiState.copy(isDerivingAccountsInProgress = false)
-                }
                 accessFactorSourcesUiProxy.setOutput(
                     output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                         derivedAccounts = derivedAccounts,
@@ -356,9 +333,13 @@ class DeriveAccountsViewModel @Inject constructor(
         return indicesToScan
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        reDerivePublicKeyJob?.cancel()
+    }
+
     data class DeriveAccountsUiState(
         val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.Device,
-        val isDerivingAccountsInProgress: Boolean = false,
         val isFromOnboarding: Boolean = false,
         val shouldShowRetryButton: Boolean = false
     ) : UiState {

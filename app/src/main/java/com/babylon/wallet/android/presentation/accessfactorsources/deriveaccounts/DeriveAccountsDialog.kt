@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -71,7 +70,6 @@ fun DeriveAccountsDialog(
     DeriveAccountsBottomSheetContent(
         modifier = modifier,
         showContentForFactorSource = state.showContentForFactorSource,
-        isDerivingAccountsInProgress = state.isDerivingAccountsInProgress,
         shouldShowRetryButton = state.shouldShowRetryButton,
         onDismiss = viewModel::onUserDismiss,
         onRetryClick = viewModel::onRetryClick
@@ -82,7 +80,6 @@ fun DeriveAccountsDialog(
 private fun DeriveAccountsBottomSheetContent(
     modifier: Modifier = Modifier,
     showContentForFactorSource: ShowContentForFactorSource,
-    isDerivingAccountsInProgress: Boolean,
     shouldShowRetryButton: Boolean,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
@@ -115,11 +112,19 @@ private fun DeriveAccountsBottomSheetContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             when (showContentForFactorSource) {
                 ShowContentForFactorSource.Device -> {
-                    if (isDerivingAccountsInProgress.not()) {
-                        Text(
-                            style = RadixTheme.typography.body1Regular,
-                            text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
+                    Text(
+                        style = RadixTheme.typography.body1Regular,
+                        text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
+                    )
+                    if (shouldShowRetryButton) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                        RadixTextButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = stringResource(R.string.common_retry),
+                            onClick = onRetryClick
                         )
+                    } else {
+                        Spacer(modifier = Modifier.height(76.dp))
                     }
                 }
                 is ShowContentForFactorSource.Ledger -> {
@@ -130,23 +135,13 @@ private fun DeriveAccountsBottomSheetContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
                     RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.hint.name)
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                    RadixTextButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.common_retry),
+                        onClick = onRetryClick
+                    )
                 }
-            }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-            if (shouldShowRetryButton) {
-                RadixTextButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.common_retry),
-                    onClick = onRetryClick
-                )
-            } else {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
-            }
-            if (isDerivingAccountsInProgress) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = RadixTheme.colors.gray1
-                )
             }
             Spacer(Modifier.height(120.dp))
         }
@@ -159,7 +154,6 @@ fun DeriveAccountsDeviceDialogPreview() {
     RadixWalletTheme {
         DeriveAccountsBottomSheetContent(
             showContentForFactorSource = ShowContentForFactorSource.Device,
-            isDerivingAccountsInProgress = false,
             shouldShowRetryButton = false,
             onDismiss = {},
             onRetryClick = {}
@@ -173,7 +167,6 @@ fun DeriveAccountsLedgerDialogPreview() {
     RadixWalletTheme {
         DeriveAccountsBottomSheetContent(
             showContentForFactorSource = ShowContentForFactorSource.Ledger(TestData.ledgerFactorSource),
-            isDerivingAccountsInProgress = false,
             shouldShowRetryButton = true,
             onDismiss = {},
             onRetryClick = {}
