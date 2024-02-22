@@ -131,7 +131,7 @@ class HistoryViewModel @Inject constructor(
             if (end.isAfter(now)) end = now
             result.add(
                 TimeFilterItem.Month(
-                    start.toMonthString(),
+                    start.toMonthString().uppercase(),
                     start,
                     end
                 )
@@ -246,7 +246,7 @@ class HistoryViewModel @Inject constructor(
         }
     }
 
-    fun onResourceFilterRemoved(resource: Resource) {
+    fun onResourceFilterSelected(resource: Resource) {
         _state.update { state ->
             val addresses = state.filters.resources.map { it.resourceAddress }
             val containsFilter = addresses.contains(resource.resourceAddress)

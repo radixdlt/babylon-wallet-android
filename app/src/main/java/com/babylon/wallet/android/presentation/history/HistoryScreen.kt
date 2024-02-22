@@ -101,7 +101,7 @@ fun HistoryScreen(
         onScrollEvent = viewModel::onScrollEvent,
         onTransactionTypeFilterSelected = viewModel::onTransactionTypeFilterSelected,
         onTransactionClassFilterSelected = viewModel::onTransactionClassFilterSelected,
-        onResourceFilterRemoved = viewModel::onResourceFilterRemoved,
+        onResourceFilterRemoved = viewModel::onResourceFilterSelected,
         onSubmittedByFilterChanged = viewModel::onSubmittedByFilterChanged,
         listState = listState
     )
@@ -210,7 +210,10 @@ fun HistoryContent(
                             onTransactionClassFilterSelected(null)
                             onShowResults()
                         },
-                        onResourceFilterRemoved = onResourceFilterRemoved,
+                        onResourceFilterRemoved = { resource ->
+                            onResourceFilterRemoved(resource)
+                            onShowResults()
+                        },
                         onSubmittedByFilterRemoved = {
                             onSubmittedByFilterChanged(null)
                             onShowResults()
@@ -339,7 +342,9 @@ private fun LoadingItemPlaceholder(modifier: Modifier = Modifier) {
 @Composable
 private fun EmptyContent(modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier.fillMaxWidth().padding(RadixTheme.dimensions.paddingLarge),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(RadixTheme.dimensions.paddingLarge),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingLarge)
     ) {
@@ -368,7 +373,7 @@ private fun TimePicker(
         modifier = modifier
             .background(RadixTheme.colors.defaultBackground)
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium),
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
         state = timeFilterState,
         contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
         content = {

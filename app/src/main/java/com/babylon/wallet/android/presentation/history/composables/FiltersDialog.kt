@@ -104,7 +104,9 @@ fun FiltersDialog(
                         SingleTag(selected = selected, text = entry.label(), leadingIcon = {
                             Icon(painter = painterResource(id = entry.icon()), contentDescription = null, tint = Color.Unspecified)
                         }, onClick = {
-                            onTransactionTypeFilterSelected(if (selected) null else entry)
+                            onTransactionTypeFilterSelected(entry)
+                        }, onCloseClick = {
+                            onTransactionTypeFilterSelected(null)
                         })
                     }
                 }
@@ -131,6 +133,11 @@ fun FiltersDialog(
                                     selected = selected,
                                     text = fungible.displayTitle.ifEmpty { fungible.resourceAddress.truncatedHash() },
                                     onClick = {
+                                        if (selected.not()) {
+                                            onResourceFilterSelected(fungible)
+                                        }
+                                    },
+                                    onCloseClick = {
                                         onResourceFilterSelected(fungible)
                                     }
                                 )
@@ -152,6 +159,11 @@ fun FiltersDialog(
                                     selected = selected,
                                     text = nonFungible.name.ifEmpty { nonFungible.resourceAddress.truncatedHash() },
                                     onClick = {
+                                        if (selected.not()) {
+                                            onResourceFilterSelected(nonFungible)
+                                        }
+                                    },
+                                    onCloseClick = {
                                         onResourceFilterSelected(nonFungible)
                                     }
                                 )
@@ -166,7 +178,9 @@ fun FiltersDialog(
                     TransactionClass.entries.forEach { entry ->
                         val selected = state.filters.transactionClass == entry
                         SingleTag(selected = selected, text = entry.description(), onClick = {
-                            onTransactionClassFilterSelected(if (selected) null else entry)
+                            onTransactionClassFilterSelected(entry)
+                        }, onCloseClick = {
+                            onTransactionClassFilterSelected(null)
                         })
                     }
                 }
@@ -177,9 +191,16 @@ fun FiltersDialog(
                 TagContainer {
                     HistoryFilters.SubmittedBy.entries.forEach { entry ->
                         val selected = state.filters.submittedBy == entry
-                        SingleTag(selected = selected, text = entry.label(), onClick = {
-                            onSubmittedByFilterChanged(if (selected) null else entry)
-                        })
+                        SingleTag(
+                            selected = selected,
+                            text = entry.label(),
+                            onClick = {
+                                onSubmittedByFilterChanged(entry)
+                            },
+                            onCloseClick = {
+                                onSubmittedByFilterChanged(null)
+                            }
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
