@@ -3,6 +3,7 @@
 package com.babylon.wallet.android.presentation.history.composables
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
@@ -23,14 +24,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -113,64 +117,7 @@ fun FiltersDialog(
             }
             HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
             FilterTypeSection(label = "Type of Asset") {
-                val fungibles = remember(state.fungibleResources) {
-                    state.fungibleResources
-                }
-                val nonFungibles = remember(state.nonFungibleResources) {
-                    state.nonFungibleResources
-                }
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    if (fungibles.isNotEmpty()) {
-                        Text(
-                            text = "Tokens",
-                            style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray2
-                        )
-                        TagContainer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSmall)) {
-                            fungibles.forEach { fungible ->
-                                val selected = state.filters.resources.any { it.resourceAddress == fungible.resourceAddress }
-                                SingleTag(
-                                    selected = selected,
-                                    text = fungible.displayTitle.ifEmpty { fungible.resourceAddress.truncatedHash() },
-                                    onClick = {
-                                        if (selected.not()) {
-                                            onResourceFilterSelected(fungible)
-                                        }
-                                    },
-                                    onCloseClick = {
-                                        onResourceFilterSelected(fungible)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                    if (nonFungibles.isNotEmpty()) {
-                        HorizontalDivider(color = RadixTheme.colors.gray4)
-                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-                        Text(
-                            text = "NFTs",
-                            style = RadixTheme.typography.body1HighImportance,
-                            color = RadixTheme.colors.gray2
-                        )
-                        TagContainer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSmall)) {
-                            nonFungibles.forEach { nonFungible ->
-                                val selected = state.filters.resources.any { it.resourceAddress == nonFungible.resourceAddress }
-                                SingleTag(
-                                    selected = selected,
-                                    text = nonFungible.name.ifEmpty { nonFungible.resourceAddress.truncatedHash() },
-                                    onClick = {
-                                        if (selected.not()) {
-                                            onResourceFilterSelected(nonFungible)
-                                        }
-                                    },
-                                    onCloseClick = {
-                                        onResourceFilterSelected(nonFungible)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
+                ResourcesSection(state, onResourceFilterSelected)
             }
             HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
             FilterTypeSection(label = "Type of Transaction") {
@@ -211,6 +158,114 @@ fun FiltersDialog(
 }
 
 @Composable
+private fun ResourcesSection(
+    state: State,
+    onResourceFilterSelected: (Resource) -> Unit,
+) {
+    val maxFungiblesInCollapsedState = 12
+    val maxNonFungiblesInCollapsedState = 6
+    val fungibles = remember(state.fungibleResources) {
+        state.fungibleResources
+    }
+    val nonFungibles = remember(state.nonFungibleResources) {
+        state.nonFungibleResources
+    }
+    val showMoreFungiblesButton by remember {
+        derivedStateOf {
+            fungibles.size > maxFungiblesInCollapsedState
+        }
+    }
+    val showMoreNonFungiblesButton by remember {
+        derivedStateOf {
+            nonFungibles.size > maxNonFungiblesInCollapsedState
+        }
+    }
+    var showingAllFungibles by remember { mutableStateOf(fungibles.size < maxFungiblesInCollapsedState) }
+    var showingAllNonFungibleResource by remember { mutableStateOf(nonFungibles.size < maxNonFungiblesInCollapsedState) }
+    Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        if (fungibles.isNotEmpty()) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = "Tokens", // TODO crowdin
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2,
+                textAlign = TextAlign.Start
+            )
+            TagContainer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSmall).animateContentSize()) {
+                fungibles.take(
+                    if (showingAllFungibles) {
+                        fungibles.size
+                    } else {
+                        maxFungiblesInCollapsedState
+                    }
+                ).forEach { fungible ->
+                    val selected = state.filters.resources.any { it.resourceAddress == fungible.resourceAddress }
+                    SingleTag(
+                        selected = selected,
+                        text = fungible.displayTitle.ifEmpty { fungible.resourceAddress.truncatedHash() },
+                        onClick = {
+                            if (selected.not()) {
+                                onResourceFilterSelected(fungible)
+                            }
+                        },
+                        onCloseClick = {
+                            onResourceFilterSelected(fungible)
+                        }
+                    )
+                }
+            }
+            if (showMoreFungiblesButton) {
+                RadixTextButton(text = if (showingAllFungibles) "- Show Less Tokens" else "+ Show All Tokens", onClick = { // TODO crowdin
+                    showingAllFungibles = !showingAllFungibles
+                })
+            }
+        }
+        if (nonFungibles.isNotEmpty()) {
+            HorizontalDivider(color = RadixTheme.colors.gray4)
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = "NFTs", // TODO crowdin
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray2,
+                textAlign = TextAlign.Start
+            )
+            TagContainer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSmall).animateContentSize()) {
+                nonFungibles.take(
+                    if (showingAllNonFungibleResource) {
+                        nonFungibles.size
+                    } else {
+                        maxNonFungiblesInCollapsedState
+                    }
+                ).forEach { nonFungible ->
+                    val selected = state.filters.resources.any { it.resourceAddress == nonFungible.resourceAddress }
+                    SingleTag(
+                        selected = selected,
+                        text = nonFungible.name.ifEmpty { nonFungible.resourceAddress.truncatedHash() },
+                        onClick = {
+                            if (selected.not()) {
+                                onResourceFilterSelected(nonFungible)
+                            }
+                        },
+                        onCloseClick = {
+                            onResourceFilterSelected(nonFungible)
+                        }
+                    )
+                }
+            }
+            if (showMoreNonFungiblesButton) {
+                RadixTextButton(
+                    text = if (showingAllNonFungibleResource) "- Show Less NFTs" else "+ Show All NFTs",
+                    onClick = { // TODO crowdin
+                        showingAllNonFungibleResource = !showingAllNonFungibleResource
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun TagContainer(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     FlowRow(
         modifier = modifier
@@ -218,6 +273,7 @@ private fun TagContainer(modifier: Modifier = Modifier, content: @Composable () 
             .padding(vertical = RadixTheme.dimensions.paddingSmall),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
+
         content = {
             content()
         }
