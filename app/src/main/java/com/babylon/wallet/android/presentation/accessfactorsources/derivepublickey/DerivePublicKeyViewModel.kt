@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
@@ -40,29 +41,16 @@ class DerivePublicKeyViewModel @Inject constructor(
 
     private lateinit var input: AccessFactorSourcesInput.ToDerivePublicKey
 
+    private var derivePublicKeyJob: Job? = null
+
     init {
-        viewModelScope.launch {
+        derivePublicKeyJob = viewModelScope.launch {
             input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
             when (input.factorSource) {
                 is LedgerHardwareWalletFactorSource -> {
-                    derivePublicKey()
-                        .onSuccess {
-                            // derivation is done so update UI
-                            _state.update { uiState ->
-                                uiState.copy(
-                                    isAccessingFactorSourceInProgress = false,
-                                    isAccessingFactorSourceCompleted = true
-                                )
-                            }
-                        }
-                        .onFailure {
-                            _state.update { uiState ->
-                                uiState.copy(
-                                    isAccessingFactorSourceInProgress = false,
-                                    shouldShowRetryButton = true
-                                )
-                            }
-                        }
+                    derivePublicKey().onSuccess {
+                        sendEvent(Event.AccessingFactorSourceCompleted)
+                    }
                 }
                 is DeviceFactorSource,
                 null -> {
@@ -78,69 +66,42 @@ class DerivePublicKeyViewModel @Inject constructor(
             derivePublicKey()
                 .onSuccess {
                     // derivation is done so update UI
-                    _state.update { uiState ->
-                        uiState.copy(
-                            isAccessingFactorSourceInProgress = false,
-                            isAccessingFactorSourceCompleted = true
-                        )
-                    }
+                    sendEvent(Event.AccessingFactorSourceCompleted)
                 }
                 .onFailure {
                     _state.update { uiState ->
-                        uiState.copy(
-                            isAccessingFactorSourceInProgress = false,
-                            shouldShowRetryButton = true
-                        )
+                        uiState.copy(shouldShowRetryButton = true)
                     }
                 }
         }
     }
 
     fun onBiometricAuthenticationDismiss() {
+        // biometric prompt dismissed, but bottom dialog remains visible
+        // therefore we show the retry button
         _state.update { uiState ->
-            uiState.copy(
-                isAccessingFactorSourceInProgress = false,
-                shouldShowRetryButton = true
-            )
+            uiState.copy(shouldShowRetryButton = true)
         }
     }
 
     fun onRetryClick() {
-        viewModelScope.launch {
+        derivePublicKeyJob?.cancel()
+        derivePublicKeyJob = viewModelScope.launch {
             _state.update { uiState ->
                 uiState.copy(shouldShowRetryButton = false)
             }
             when (state.value.showContentForFactorSource) {
                 ShowContentForFactorSource.Device -> sendEvent(Event.RequestBiometricPrompt)
                 is ShowContentForFactorSource.Ledger -> {
-                    derivePublicKey()
-                        .onSuccess {
-                            // derivation is done so update UI
-                            _state.update { uiState ->
-                                uiState.copy(
-                                    isAccessingFactorSourceInProgress = false,
-                                    isAccessingFactorSourceCompleted = true
-                                )
-                            }
-                        }
-                        .onFailure {
-                            _state.update { uiState ->
-                                uiState.copy(
-                                    isAccessingFactorSourceInProgress = false,
-                                    shouldShowRetryButton = true
-                                )
-                            }
-                        }
+                    derivePublicKey().onSuccess {
+                        sendEvent(Event.AccessingFactorSourceCompleted)
+                    }
                 }
             }
         }
     }
 
     private suspend fun derivePublicKey(): Result<Unit> {
-        _state.update { uiState ->
-            uiState.copy(isAccessingFactorSourceInProgress = true)
-        }
-
         val profile = ensureBabylonFactorSourceExistUseCase()
 
         return if (input.factorSource == null) { // device factor source
@@ -212,8 +173,6 @@ class DerivePublicKeyViewModel @Inject constructor(
 
     data class DerivePublicKeyUiState(
         val showContentForFactorSource: ShowContentForFactorSource = ShowContentForFactorSource.Device,
-        val isAccessingFactorSourceInProgress: Boolean = false,
-        val isAccessingFactorSourceCompleted: Boolean = false,
         val shouldShowRetryButton: Boolean = false
     ) : UiState {
 
@@ -225,5 +184,6 @@ class DerivePublicKeyViewModel @Inject constructor(
 
     sealed interface Event : OneOffEvent {
         data object RequestBiometricPrompt : Event
+        data object AccessingFactorSourceCompleted : Event
     }
 }

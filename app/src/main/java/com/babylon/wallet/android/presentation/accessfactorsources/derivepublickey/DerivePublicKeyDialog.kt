@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,6 +55,7 @@ fun DerivePublicKeyDialog(
                         }
                     }
                 }
+                DerivePublicKeyViewModel.Event.AccessingFactorSourceCompleted -> onDismiss()
             }
         }
     }
@@ -63,8 +63,6 @@ fun DerivePublicKeyDialog(
     DerivePublicKeyBottomSheetContent(
         modifier = modifier,
         showContentForFactorSource = state.showContentForFactorSource,
-        isAccessingFactorSourceInProgress = state.isAccessingFactorSourceInProgress,
-        isAccessingFactorSourceCompleted = state.isAccessingFactorSourceCompleted,
         shouldShowRetryButton = state.shouldShowRetryButton,
         onDismiss = onDismiss,
         onRetryClick = viewModel::onRetryClick
@@ -75,16 +73,10 @@ fun DerivePublicKeyDialog(
 private fun DerivePublicKeyBottomSheetContent(
     modifier: Modifier = Modifier,
     showContentForFactorSource: DerivePublicKeyUiState.ShowContentForFactorSource,
-    isAccessingFactorSourceInProgress: Boolean,
-    isAccessingFactorSourceCompleted: Boolean,
     shouldShowRetryButton: Boolean,
     onDismiss: () -> Unit,
     onRetryClick: () -> Unit
 ) {
-    if (isAccessingFactorSourceCompleted) {
-        onDismiss()
-    }
-
     BottomSheetDialogWrapper(
         modifier = modifier,
         onDismiss = {
@@ -115,11 +107,19 @@ private fun DerivePublicKeyBottomSheetContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             when (showContentForFactorSource) {
                 DerivePublicKeyUiState.ShowContentForFactorSource.Device -> {
-                    if (isAccessingFactorSourceInProgress.not()) {
-                        Text(
-                            style = RadixTheme.typography.body1Regular,
-                            text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
+                    Text(
+                        style = RadixTheme.typography.body1Regular,
+                        text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
+                    )
+                    if (shouldShowRetryButton) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                        RadixTextButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = stringResource(R.string.common_retry),
+                            onClick = onRetryClick
                         )
+                    } else {
+                        Spacer(modifier = Modifier.height(76.dp))
                     }
                 }
 
@@ -131,23 +131,13 @@ private fun DerivePublicKeyBottomSheetContent(
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
                     RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.hint.name)
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                    RadixTextButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.common_retry),
+                        onClick = onRetryClick
+                    )
                 }
-            }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-            if (shouldShowRetryButton) {
-                RadixTextButton(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.common_retry),
-                    onClick = onRetryClick
-                )
-            } else {
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXXXLarge))
-            }
-            if (isAccessingFactorSourceInProgress) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = RadixTheme.colors.gray1
-                )
             }
             Spacer(Modifier.height(120.dp))
         }
@@ -159,8 +149,6 @@ private fun DerivePublicKeyBottomSheetContent(
 fun DerivePublicKeyDialogDevicePreview() {
     RadixWalletTheme {
         DerivePublicKeyBottomSheetContent(
-            isAccessingFactorSourceInProgress = false,
-            isAccessingFactorSourceCompleted = false,
             showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Device,
             shouldShowRetryButton = false,
             onDismiss = {},
@@ -174,8 +162,6 @@ fun DerivePublicKeyDialogDevicePreview() {
 fun DerivePublicKeyDialogLedgerPreview() {
     RadixWalletTheme {
         DerivePublicKeyBottomSheetContent(
-            isAccessingFactorSourceInProgress = false,
-            isAccessingFactorSourceCompleted = false,
             showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Ledger(
                 selectedLedgerDevice = ledgerFactorSource
             ),
