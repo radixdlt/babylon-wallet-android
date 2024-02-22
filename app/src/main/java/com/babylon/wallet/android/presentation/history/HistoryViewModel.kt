@@ -269,14 +269,16 @@ class HistoryViewModel @Inject constructor(
 
     private fun selectDate(date: ZonedDateTime?) {
         val selectedDate = date ?: return
+        var scrollToIndex = -1
         _state.update { state ->
-            val updateItems = state.timeFilterItems.map { filter ->
+            val updateItems = state.timeFilterItems.mapIndexed { index, filter ->
                 when (filter.data) {
                     is TimeFilterItem.Year -> filter.copy(selected = false)
                     is TimeFilterItem.Month -> {
                         if ((selectedDate.isAfter(filter.data.start) && selectedDate.isBefore(filter.data.end)) ||
                             filter.data.start.isEqual(date)
                         ) {
+                            scrollToIndex = index
                             filter.copy(selected = true)
                         } else {
                             filter.copy(selected = false)
@@ -288,12 +290,17 @@ class HistoryViewModel @Inject constructor(
                 timeFilterItems = updateItems
             )
         }
+        if (scrollToIndex == -1) return
+        viewModelScope.launch {
+            sendEvent(HistoryEvent.ScrollToTimeFilter(scrollToIndex))
+        }
     }
 }
 
 internal sealed interface HistoryEvent : OneOffEvent {
     data class OnTransactionItemClick(val url: String) : HistoryEvent
     data class ScrollToItem(val index: Int) : HistoryEvent
+    data class ScrollToTimeFilter(val index: Int) : HistoryEvent
 }
 
 data class State(

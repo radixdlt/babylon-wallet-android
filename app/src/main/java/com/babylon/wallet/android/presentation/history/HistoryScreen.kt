@@ -88,6 +88,7 @@ fun HistoryScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    val timeFilterScrollState = rememberLazyListState()
     HistoryContent(
         modifier = modifier.fillMaxSize(),
         onBackClick = onBackClick,
@@ -103,14 +104,16 @@ fun HistoryScreen(
         onTransactionClassFilterSelected = viewModel::onTransactionClassFilterSelected,
         onResourceFilterRemoved = viewModel::onResourceFilterSelected,
         onSubmittedByFilterChanged = viewModel::onSubmittedByFilterChanged,
-        listState = listState
+        listState = listState,
+        timeFilterScrollState = timeFilterScrollState
     )
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 is HistoryEvent.OnTransactionItemClick -> context.openUrl(event.url)
-                is HistoryEvent.ScrollToItem -> listState.scrollToItem(event.index + 2)
+                is HistoryEvent.ScrollToItem -> listState.scrollToItem(event.index)
+                is HistoryEvent.ScrollToTimeFilter -> timeFilterScrollState.scrollToItem(event.index)
             }
         }
     }
@@ -134,17 +137,17 @@ fun HistoryContent(
     onTransactionClassFilterSelected: (TransactionClass?) -> Unit,
     onResourceFilterRemoved: (Resource) -> Unit,
     onSubmittedByFilterChanged: (HistoryFilters.SubmittedBy?) -> Unit,
-    listState: LazyListState
+    listState: LazyListState,
+    timeFilterScrollState: LazyListState
 ) {
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
 
     SyncSheetState(sheetState = bottomSheetState, isSheetVisible = state.showFiltersSheet, onSheetClosed = { onShowFilters(false) })
-    val timeFilterState = rememberLazyListState()
     LaunchedEffect(state.timeFilterItems) {
         if (state.timeFilterItems.isNotEmpty()) {
-            timeFilterState.scrollToItem(state.timeFilterItems.lastIndex)
+            timeFilterScrollState.scrollToItem(state.timeFilterItems.lastIndex)
         }
     }
     MonitorListScroll(state = listState, fixedListElements = 2, onLoadMore = {
@@ -217,12 +220,13 @@ fun HistoryContent(
                         onSubmittedByFilterRemoved = {
                             onSubmittedByFilterChanged(null)
                             onShowResults()
-                        }
+                        },
+                        timeFilterScrollState = timeFilterScrollState
                     )
                 }
                 if (state.timeFilterItems.isNotEmpty()) {
                     TimePicker(
-                        timeFilterState = timeFilterState,
+                        timeFilterState = timeFilterScrollState,
                         timeFilterItems = state.timeFilterItems,
                         onTimeFilterSelected = onTimeFilterSelected
                     )
@@ -616,7 +620,8 @@ fun HistoryContentPreview() {
             onTransactionClassFilterSelected = {},
             onResourceFilterRemoved = {},
             onSubmittedByFilterChanged = {},
-            listState = rememberLazyListState()
+            listState = rememberLazyListState(),
+            timeFilterScrollState = rememberLazyListState()
         )
     }
 }
