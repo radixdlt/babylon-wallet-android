@@ -101,7 +101,7 @@ fun HistoryScreen(
         onScrollEvent = viewModel::onScrollEvent,
         onTransactionTypeFilterSelected = viewModel::onTransactionTypeFilterSelected,
         onTransactionClassFilterSelected = viewModel::onTransactionClassFilterSelected,
-        onResourceFilterSelected = viewModel::onResourceFilterSelected,
+        onResourceFilterRemoved = viewModel::onResourceFilterRemoved,
         onSubmittedByFilterChanged = viewModel::onSubmittedByFilterChanged,
         listState = listState
     )
@@ -116,6 +116,7 @@ fun HistoryScreen(
     }
 }
 
+@Suppress("CyclomaticComplexMethod")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HistoryContent(
@@ -131,7 +132,7 @@ fun HistoryContent(
     onScrollEvent: (ScrollInfo) -> Unit,
     onTransactionTypeFilterSelected: (HistoryFilters.TransactionType?) -> Unit,
     onTransactionClassFilterSelected: (TransactionClass?) -> Unit,
-    onResourceFilterSelected: (Resource) -> Unit,
+    onResourceFilterRemoved: (Resource) -> Unit,
     onSubmittedByFilterChanged: (HistoryFilters.SubmittedBy?) -> Unit,
     listState: LazyListState
 ) {
@@ -209,7 +210,7 @@ fun HistoryContent(
                             onTransactionClassFilterSelected(null)
                             onShowResults()
                         },
-                        onResourceFilterSelected = onResourceFilterSelected,
+                        onResourceFilterRemoved = onResourceFilterRemoved,
                         onSubmittedByFilterRemoved = {
                             onSubmittedByFilterChanged(null)
                             onShowResults()
@@ -310,7 +311,7 @@ fun HistoryContent(
                 onClearAllFilters = onClearAllFilters,
                 onTransactionTypeFilterSelected = onTransactionTypeFilterSelected,
                 onTransactionClassFilterSelected = onTransactionClassFilterSelected,
-                onResourceFilterSelected = onResourceFilterSelected,
+                onResourceFilterSelected = onResourceFilterRemoved,
                 onSubmittedByFilterChanged = onSubmittedByFilterChanged
             )
         }, showDragHandle = true, containerColor = RadixTheme.colors.defaultBackground, onDismissRequest = {
@@ -608,7 +609,7 @@ fun HistoryContentPreview() {
             onScrollEvent = {},
             onTransactionTypeFilterSelected = {},
             onTransactionClassFilterSelected = {},
-            onResourceFilterSelected = {},
+            onResourceFilterRemoved = {},
             onSubmittedByFilterChanged = {},
             listState = rememberLazyListState()
         )

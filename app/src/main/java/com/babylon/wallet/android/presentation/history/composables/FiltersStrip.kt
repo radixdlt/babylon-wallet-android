@@ -22,7 +22,7 @@ fun FiltersStrip(
     userInteractionEnabled: Boolean,
     onTransactionTypeFilterRemoved: () -> Unit,
     onTransactionClassFilterRemoved: () -> Unit,
-    onResourceFilterSelected: (Resource) -> Unit,
+    onResourceFilterRemoved: (Resource) -> Unit,
     onSubmittedByFilterRemoved: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -43,7 +43,6 @@ fun FiltersStrip(
                         Icon(painter = painterResource(id = transactionType.icon()), contentDescription = null, tint = Color.Unspecified)
                     },
                     onCloseClick = {
-                        3
                         if (userInteractionEnabled) onTransactionTypeFilterRemoved()
                     }
                 )
@@ -58,6 +57,7 @@ fun FiltersStrip(
                 selected = true,
                 text = name.ifEmpty { resource.resourceAddress.truncatedHash() },
                 onCloseClick = {
+                    onResourceFilterRemoved(resource)
                 }
             )
         }

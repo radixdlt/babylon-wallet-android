@@ -246,7 +246,7 @@ class HistoryViewModel @Inject constructor(
         }
     }
 
-    fun onResourceFilterSelected(resource: Resource) {
+    fun onResourceFilterRemoved(resource: Resource) {
         _state.update { state ->
             val addresses = state.filters.resources.map { it.resourceAddress }
             val containsFilter = addresses.contains(resource.resourceAddress)

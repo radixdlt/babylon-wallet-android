@@ -26,7 +26,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -209,7 +208,7 @@ private fun StakeClaimBalanceChange(asset: StakeClaim, modifier: Modifier = Modi
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Thumbnail.NonFungible(
-                modifier = Modifier.size(42.dp),
+                modifier = Modifier.size(24.dp),
                 collection = asset.resource
             )
             Column(modifier = Modifier.weight(1f)) {
@@ -253,7 +252,7 @@ private fun StakeClaimBalanceChange(asset: StakeClaim, modifier: Modifier = Modi
                     painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(18.dp)
                         .clip(RadixTheme.shapes.circle),
                     tint = Color.Unspecified
                 )
@@ -297,7 +296,7 @@ private fun PoolUnitBalanceChange(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Thumbnail.PoolUnit(
-                modifier = Modifier.size(42.dp),
+                modifier = Modifier.size(24.dp),
                 poolUnit = asset
             )
             Column(modifier = Modifier.weight(1f)) {
@@ -357,7 +356,7 @@ private fun PoolUnitBalanceChange(
                     horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
                 ) {
                     Thumbnail.Fungible(
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(18.dp),
                         token = item,
                     )
                     Text(
@@ -400,7 +399,7 @@ private fun LiquidStakeUnitBalanceChange(
             horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
         ) {
             Thumbnail.LSU(
-                modifier = Modifier.size(42.dp),
+                modifier = Modifier.size(24.dp),
                 liquidStakeUnit = asset,
             )
             Column(modifier = Modifier.weight(1f)) {
@@ -446,7 +445,7 @@ private fun LiquidStakeUnitBalanceChange(
                 painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(24.dp)
+                    .size(18.dp)
                     .clip(RadixTheme.shapes.circle),
                 tint = Color.Unspecified
             )
@@ -518,7 +517,7 @@ private fun TokenContent(
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Thumbnail.Fungible(token = resource, modifier = Modifier.size(44.dp))
+        Thumbnail.Fungible(token = resource, modifier = Modifier.size(24.dp))
         Text(
             text = resource.displayTitle,
             style = RadixTheme.typography.body2HighImportance,
@@ -541,18 +540,16 @@ private fun TokenContent(
 @Composable
 fun TypeAndTimestampLabel(modifier: Modifier = Modifier, item: TransactionHistoryItem) {
     val text = buildAnnotatedString {
-        withStyle(style = RadixTheme.typography.body2HighImportance.toSpanStyle()) {
-            append(item.transactionClass.description())
-        }
+        append(item.transactionClass.description())
         item.timestamp?.timestampHoursMinutes()?.let {
-            append(" ")
+            append(" \u2022 ")
             append(it)
         }
     }
     Text(
         modifier = modifier,
         text = text,
-        style = RadixTheme.typography.body2Regular,
+        style = RadixTheme.typography.body2HighImportance,
         maxLines = 1,
         color = RadixTheme.colors.gray2
     )
