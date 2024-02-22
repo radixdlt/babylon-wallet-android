@@ -203,15 +203,10 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 )
                 sendEvent(Event.RecoverComplete)
             } else {
+                _state.update { it.copy(isScanningNetwork = true) }
                 val accounts = state.value.activeAccounts +
                     state.value.inactiveAccounts.filter { it.selected }.map { it.data }
-                _state.update { it.copy(isScanningNetwork = true) }
                 if (accounts.isNotEmpty()) {
-                    val authenticated = biometricAuthenticationProvider()
-                    if (authenticated.not()) {
-                        _state.update { it.copy(isScanningNetwork = false) }
-                        return@launch
-                    }
                     addRecoveredAccountsToProfileUseCase(accounts = accounts)
                     sendEvent(Event.RecoverComplete)
                 }
