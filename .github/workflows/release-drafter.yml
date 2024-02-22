@@ -4,6 +4,12 @@ on:
    # branches to consider in the event; optional, defaults to all
    branches:
      - main
+     - DO-2224-fix-release-drafter
+
+permissions:
+  id-token: write
+  contents: write
+
 jobs:
  update_release_draft:
    runs-on: ubuntu-latest
