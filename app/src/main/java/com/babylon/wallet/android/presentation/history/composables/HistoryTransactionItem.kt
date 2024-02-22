@@ -59,88 +59,102 @@ fun HistoryTransactionItem(modifier: Modifier = Modifier, transactionItem: Trans
             .background(
                 color = RadixTheme.colors.defaultBackground,
                 shape = RadixTheme.shapes.roundedRectMedium
-            )
-            .padding(RadixTheme.dimensions.paddingMedium),
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+            ),
     ) {
-        val withdrawn = remember(transactionItem.withdrawn) {
-            transactionItem.withdrawn
-        }
-        val deposited = remember(transactionItem.deposited) {
-            transactionItem.deposited
-        }
-        if (transactionItem.noBalanceChanges) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TypeAndTimestampLabel(item = transactionItem)
+        Column(
+            modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
+            verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            val withdrawn = remember(transactionItem.withdrawn) {
+                transactionItem.withdrawn
             }
-            Text(
-                modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingMedium)
-                    .fillMaxWidth()
-                    .border(1.dp, RadixTheme.colors.gray4, shape = RadixTheme.shapes.roundedRectMedium)
-                    .padding(RadixTheme.dimensions.paddingMedium),
-                text = "No deposits or withdrawals from this account in this transaction.", // TODO crowdin
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1
-            )
-        } else {
-            val withdrawnShown = withdrawn.isNotEmpty()
-            if (withdrawnShown) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-                ) {
-                    Icon(painter = painterResource(id = DSR.ic_tx_withdrawn), contentDescription = null, tint = Color.Unspecified)
-                    Text(
-                        text = "Withdrawn", // TODO crowdin
-                        style = RadixTheme.typography.body2Header,
-                        color = RadixTheme.colors.gray1
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
+            val deposited = remember(transactionItem.deposited) {
+                transactionItem.deposited
+            }
+            if (transactionItem.noBalanceChanges) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TypeAndTimestampLabel(item = transactionItem)
                 }
-                Column(
-                    modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
-                ) {
-                    val lastItem = withdrawn.last()
-                    withdrawn.forEach { withdraw ->
-                        val addDivider = lastItem != withdraw
-                        BalanceChangeItem(withdraw)
-                        if (addDivider) {
-                            HorizontalDivider(color = RadixTheme.colors.gray3)
-                        }
-                    }
-                }
-            }
-            if (deposited.isNotEmpty()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-                ) {
-                    Icon(painter = painterResource(id = DSR.ic_tx_deposited), contentDescription = null, tint = Color.Unspecified)
-                    Text(
-                        text = "Deposited", // TODO crowdin
-                        style = RadixTheme.typography.body2Header,
-                        color = RadixTheme.colors.green1
-                    )
-                    if (withdrawnShown.not()) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, RadixTheme.colors.gray4, shape = RadixTheme.shapes.roundedRectMedium)
+                        .padding(RadixTheme.dimensions.paddingMedium),
+                    text = "No deposits or withdrawals from this account in this transaction.", // TODO crowdin
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1
+                )
+            } else {
+                val withdrawnShown = withdrawn.isNotEmpty()
+                if (withdrawnShown) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+                    ) {
+                        Icon(painter = painterResource(id = DSR.ic_tx_withdrawn), contentDescription = null, tint = Color.Unspecified)
+                        Text(
+                            text = "Withdrawn", // TODO crowdin
+                            style = RadixTheme.typography.body2Header,
+                            color = RadixTheme.colors.gray1
+                        )
                         Spacer(modifier = Modifier.weight(1f))
                         TypeAndTimestampLabel(item = transactionItem)
                     }
+                    Column(
+                        modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
+                    ) {
+                        val lastItem = withdrawn.last()
+                        withdrawn.forEach { withdraw ->
+                            val addDivider = lastItem != withdraw
+                            BalanceChangeItem(withdraw)
+                            if (addDivider) {
+                                HorizontalDivider(color = RadixTheme.colors.gray3)
+                            }
+                        }
+                    }
                 }
-                Column(
-                    modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
-                ) {
-                    val lastItem = deposited.last()
-                    deposited.forEach { deposited ->
-                        val addDivider = lastItem != deposited
-                        BalanceChangeItem(deposited)
-                        if (addDivider) {
-                            HorizontalDivider(color = RadixTheme.colors.gray3)
+                if (deposited.isNotEmpty()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+                    ) {
+                        Icon(painter = painterResource(id = DSR.ic_tx_deposited), contentDescription = null, tint = Color.Unspecified)
+                        Text(
+                            text = "Deposited", // TODO crowdin
+                            style = RadixTheme.typography.body2Header,
+                            color = RadixTheme.colors.green1
+                        )
+                        if (withdrawnShown.not()) {
+                            Spacer(modifier = Modifier.weight(1f))
+                            TypeAndTimestampLabel(item = transactionItem)
+                        }
+                    }
+                    Column(
+                        modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
+                    ) {
+                        val lastItem = deposited.last()
+                        deposited.forEach { deposited ->
+                            val addDivider = lastItem != deposited
+                            BalanceChangeItem(deposited)
+                            if (addDivider) {
+                                HorizontalDivider(color = RadixTheme.colors.gray3)
+                            }
                         }
                     }
                 }
             }
+        }
+        if (transactionItem.unknownTransaction) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(1.dp)
+                    .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
+                    .padding(RadixTheme.dimensions.paddingMedium),
+                text = "This transaction cannot be summarized. Only the raw transaction manifest may be viewed.", // TODO crowding
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray1
+            )
         }
     }
 }

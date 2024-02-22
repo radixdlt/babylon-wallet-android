@@ -267,22 +267,13 @@ fun HistoryContent(
                                     }
 
                                     else -> {
-                                        if (item.transactionItem.unknownTransaction) {
-                                            UnknownTransactionItem(
-                                                item.transactionItem,
-                                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium)
-                                            ) {
+                                        HistoryTransactionItem(
+                                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                                            transactionItem = item.transactionItem,
+                                            onClick = {
                                                 onOpenTransactionDetails(item.transactionItem.txId)
                                             }
-                                        } else {
-                                            HistoryTransactionItem(
-                                                modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                                                transactionItem = item.transactionItem,
-                                                onClick = {
-                                                    onOpenTransactionDetails(item.transactionItem.txId)
-                                                }
-                                            )
-                                        }
+                                        )
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
@@ -413,40 +404,6 @@ private fun TimePicker(
             }
         }
     )
-}
-
-@Composable
-private fun UnknownTransactionItem(item: TransactionHistoryItem, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Column(
-        modifier = modifier
-            .clip(RadixTheme.shapes.roundedRectMedium)
-            .clickable {
-                onClick()
-            }
-            .fillMaxWidth()
-            .background(color = RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectMedium),
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-    ) {
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            horizontalArrangement = Arrangement.End
-        ) {
-            TypeAndTimestampLabel(item = item)
-        }
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(1.dp)
-                .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
-                .padding(RadixTheme.dimensions.paddingMedium),
-            text = "This transaction cannot be summarized. Only the raw transaction manifest may be viewed.", // TODO crowding
-            style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray1
-        )
-    }
 }
 
 @Composable
