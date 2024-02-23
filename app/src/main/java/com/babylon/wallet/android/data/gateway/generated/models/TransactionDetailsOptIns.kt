@@ -32,6 +32,7 @@ import kotlinx.serialization.Contextual
  * @param receiptEvents if set to `true`, events inside receipt object is returned.
  * @param receiptOutput (true by default) if set to `true`, transaction receipt output is returned.
  * @param affectedGlobalEntities if set to `true`, all affected global entities by given transaction are returned.
+ * @param manifestInstructions if set to `true`, manifest instructions for user transactions are returned.
  * @param balanceChanges if set to `true`, returns the fungible and non-fungible balance changes.  **Warning!** This opt-in might be missing for recently committed transactions, in that case a `null` value will be returned. Retry the request until non-null value is returned. 
  */
 @Serializable
@@ -73,6 +74,10 @@ data class TransactionDetailsOptIns (
     /* if set to `true`, all affected global entities by given transaction are returned. */
     @SerialName(value = "affected_global_entities")
     val affectedGlobalEntities: kotlin.Boolean? = false,
+
+    /* if set to `true`, manifest instructions for user transactions are returned. */
+    @SerialName(value = "manifest_instructions")
+    val manifestInstructions: kotlin.Boolean? = false,
 
     /* if set to `true`, returns the fungible and non-fungible balance changes.  **Warning!** This opt-in might be missing for recently committed transactions, in that case a `null` value will be returned. Retry the request until non-null value is returned.  */
     @SerialName(value = "balance_changes")

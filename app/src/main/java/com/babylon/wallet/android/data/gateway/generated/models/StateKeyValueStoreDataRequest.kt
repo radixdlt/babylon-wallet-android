@@ -26,7 +26,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param keyValueStoreAddress Bech32m-encoded human readable version of the address.
- * @param propertyKeys 
+ * @param propertyKeys limited to max 100 items.
  * @param atLedgerState 
  */
 @Serializable
@@ -37,6 +37,7 @@ data class StateKeyValueStoreDataRequest (
     @SerialName(value = "key_value_store_address")
     val keyValueStoreAddress: kotlin.String,
 
+    /* limited to max 100 items. */
     @SerialName(value = "keys")
     val propertyKeys: kotlin.collections.List<StateKeyValueStoreDataRequestKeyItem>,
 

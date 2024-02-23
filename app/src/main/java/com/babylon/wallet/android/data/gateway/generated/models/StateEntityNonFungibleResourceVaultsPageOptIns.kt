@@ -21,7 +21,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Contextual
 
 /**
- * 
+ * Check detailed [OptIns](#section/Using-endpoints-with-opt-in-features) documentation for more details
  *
  * @param nonFungibleIncludeNfids if set to `true`, first page of non fungible ids are returned for each non fungible resource, with cursor which can be later used at `/state/entity/page/non-fungible-vault/ids` endpoint.
  */

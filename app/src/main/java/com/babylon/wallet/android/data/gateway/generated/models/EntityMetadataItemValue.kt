@@ -43,8 +43,5 @@ data class EntityMetadataItemValue (
     @SerialName(value = "typed")
     val typed: MetadataTypedValue
 
-) {
-
-    inline fun <reified T: MetadataTypedValue> typed(): T? = typed as? T
-}
+)
 

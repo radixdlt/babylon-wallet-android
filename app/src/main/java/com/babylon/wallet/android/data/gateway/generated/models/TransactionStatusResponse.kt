@@ -33,6 +33,7 @@ import kotlinx.serialization.Contextual
  * @param intentStatusDescription An additional description to clarify the intent status. 
  * @param knownPayloads 
  * @param committedStateVersion If the intent was committed, this gives the state version when this intent was committed. 
+ * @param permanentlyRejectsAtEpoch The epoch number at which the transaction is guaranteed to get permanently rejected by the Network due to exceeded epoch range defined when submitting transaction.
  * @param errorMessage The most relevant error message received, due to a rejection or commit as failure. Please note that presence of an error message doesn't imply that the intent will definitely reject or fail. This could represent a temporary error (such as out of fees), or an error with a payload which doesn't end up being committed. 
  */
 @Serializable
@@ -58,6 +59,10 @@ data class TransactionStatusResponse (
     /* If the intent was committed, this gives the state version when this intent was committed.  */
     @SerialName(value = "committed_state_version")
     val committedStateVersion: kotlin.Long? = null,
+
+    /* The epoch number at which the transaction is guaranteed to get permanently rejected by the Network due to exceeded epoch range defined when submitting transaction. */
+    @SerialName(value = "permanently_rejects_at_epoch")
+    val permanentlyRejectsAtEpoch: kotlin.Long? = null,
 
     /* The most relevant error message received, due to a rejection or commit as failure. Please note that presence of an error message doesn't imply that the intent will definitely reject or fail. This could represent a temporary error (such as out of fees), or an error with a payload which doesn't end up being committed.  */
     @SerialName(value = "error_message")

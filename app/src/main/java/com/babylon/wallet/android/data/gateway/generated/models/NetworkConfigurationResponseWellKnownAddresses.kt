@@ -43,12 +43,14 @@ import kotlinx.serialization.Contextual
  * @param metadataModulePackage Bech32m-encoded human readable version of the address.
  * @param royaltyModulePackage Bech32m-encoded human readable version of the address.
  * @param accessRulesPackage Bech32m-encoded human readable version of the address.
+ * @param roleAssignmentModulePackage Bech32m-encoded human readable version of the address.
  * @param genesisHelperPackage Bech32m-encoded human readable version of the address.
  * @param faucetPackage Bech32m-encoded human readable version of the address.
  * @param consensusManager Bech32m-encoded human readable version of the address.
  * @param genesisHelper Bech32m-encoded human readable version of the address.
  * @param faucet Bech32m-encoded human readable version of the address.
  * @param poolPackage Bech32m-encoded human readable version of the address.
+ * @param transactionTracker Bech32m-encoded human readable version of the address.
  */
 @Serializable
 
@@ -135,6 +137,10 @@ data class NetworkConfigurationResponseWellKnownAddresses (
     val accessRulesPackage: kotlin.String,
 
     /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "role_assignment_module_package")
+    val roleAssignmentModulePackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "genesis_helper_package")
     val genesisHelperPackage: kotlin.String,
 
@@ -156,7 +162,11 @@ data class NetworkConfigurationResponseWellKnownAddresses (
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "pool_package")
-    val poolPackage: kotlin.String
+    val poolPackage: kotlin.String,
+
+    /* Bech32m-encoded human readable version of the address. */
+    @SerialName(value = "transaction_tracker")
+    val transactionTracker: kotlin.String
 
 )
 

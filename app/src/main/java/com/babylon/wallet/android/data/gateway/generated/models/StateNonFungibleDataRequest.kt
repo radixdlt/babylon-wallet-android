@@ -25,7 +25,7 @@ import kotlinx.serialization.Contextual
  * 
  *
  * @param resourceAddress Bech32m-encoded human readable version of the address.
- * @param nonFungibleIds 
+ * @param nonFungibleIds limited to max 100 items.
  * @param atLedgerState 
  */
 @Serializable
@@ -36,6 +36,7 @@ data class StateNonFungibleDataRequest (
     @SerialName(value = "resource_address")
     val resourceAddress: kotlin.String,
 
+    /* limited to max 100 items. */
     @SerialName(value = "non_fungible_ids")
     val nonFungibleIds: kotlin.collections.List<kotlin.String>,
 

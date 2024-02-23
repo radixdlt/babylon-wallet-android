@@ -6,7 +6,6 @@ import retrofit2.Call
 import retrofit2.http.POST
 
 interface StatusApi {
-
     /**
      * Get Gateway Status
      * Returns the Gateway API version and current ledger state.

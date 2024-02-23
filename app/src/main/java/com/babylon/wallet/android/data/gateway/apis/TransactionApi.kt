@@ -14,11 +14,10 @@ import retrofit2.http.Body
 import retrofit2.http.POST
 
 interface TransactionApi {
-
     /**
      * Get Committed Transaction Details
-     * Returns the committed details and receipt of the transaction for a given transaction identifier. Transaction identifiers which
-     * don&#39;t correspond to a committed transaction will return a &#x60;TransactionNotFoundError&#x60;.
+     * Returns the committed details and receipt of the transaction for a given transaction identifier.
+     * Transaction identifiers which don&#39;t correspond to a committed transaction will return a &#x60;TransactionNotFoundError&#x60;.
      * Responses:
      *  - 200: Transaction Status
      *  - 4XX: Client-originated request error
@@ -44,8 +43,8 @@ interface TransactionApi {
 
     /**
      * Preview Transaction
-     * Previews transaction against the network. This endpoint is effectively a proxy towards the Core API
-     * &#x60;/v0/transaction/preview&#x60; endpoint. See the Core API documentation for more details.
+     * Previews transaction against the network. This endpoint is effectively a proxy towards the
+     * Core API &#x60;/v0/transaction/preview&#x60; endpoint. See the Core API documentation for more details.
      * Responses:
      *  - 200: Successful Preview
      *  - 4XX: Client-originated request error
@@ -54,9 +53,7 @@ interface TransactionApi {
      * @return [TransactionPreviewResponse]
      */
     @POST("transaction/preview")
-    fun transactionPreview(
-        @Body transactionPreviewRequest: TransactionPreviewRequest
-    ): Call<TransactionPreviewResponse>
+    fun transactionPreview(@Body transactionPreviewRequest: TransactionPreviewRequest): Call<TransactionPreviewResponse>
 
     /**
      * Get Transaction Status
@@ -69,9 +66,7 @@ interface TransactionApi {
      * @return [TransactionStatusResponse]
      */
     @POST("transaction/status")
-    fun transactionStatus(
-        @Body transactionStatusRequest: TransactionStatusRequest
-    ): Call<TransactionStatusResponse>
+    fun transactionStatus(@Body transactionStatusRequest: TransactionStatusRequest): Call<TransactionStatusResponse>
 
     /**
      * Submit Transaction
@@ -84,7 +79,5 @@ interface TransactionApi {
      * @return [TransactionSubmitResponse]
      */
     @POST("transaction/submit")
-    fun transactionSubmit(
-        @Body transactionSubmitRequest: TransactionSubmitRequest
-    ): Call<TransactionSubmitResponse>
+    fun transactionSubmit(@Body transactionSubmitRequest: TransactionSubmitRequest): Call<TransactionSubmitResponse>
 }

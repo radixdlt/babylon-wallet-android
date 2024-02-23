@@ -16,20 +16,22 @@
 package com.babylon.wallet.android.data.gateway.generated.models
 
 
-import com.babylon.wallet.android.data.gateway.serialisers.GatewayErrorSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Contextual
 
 /**
  * 
  *
- * @param type The type of error. Each subtype may have its own additional structured fields.
+ * @param feeFactor String-encoded decimal representing the amount of a related fungible resource.
  */
-@Serializable(with = GatewayErrorSerializer::class)
-abstract class GatewayError {
+@Serializable
 
-    /* The type of error. Each subtype may have its own additional structured fields. */
-    @SerialName(value = "type")
-    abstract val type: kotlin.String
-}
+data class ValidatorCollectionItemEffectiveFeeFactorCurrent (
+
+    /* String-encoded decimal representing the amount of a related fungible resource. */
+    @SerialName(value = "fee_factor")
+    val feeFactor: kotlin.String
+
+)
 

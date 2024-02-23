@@ -15,9 +15,6 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
-import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregatedVaultItem
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
-import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetailsType
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -26,23 +23,20 @@ import kotlinx.serialization.Contextual
 /**
  * 
  *
- * @param type 
  * @param resourceAddress Bech32m-encoded human readable version of the address.
- * @param balance 
+ * @param nonFungibleId String-encoded non-fungible ID.
  */
 @Serializable
 
-data class StateEntityDetailsResponseFungibleVaultDetails (
-
-    @Contextual @SerialName(value = "type")
-    override val type: StateEntityDetailsResponseItemDetailsType,
+data class MetadataNonFungibleGlobalIdArrayValueAllOfValues (
 
     /* Bech32m-encoded human readable version of the address. */
     @SerialName(value = "resource_address")
     val resourceAddress: kotlin.String,
 
-    @SerialName(value = "balance")
-    val balance: FungibleResourcesCollectionItemVaultAggregatedVaultItem
+    /* String-encoded non-fungible ID. */
+    @SerialName(value = "non_fungible_id")
+    val nonFungibleId: kotlin.String
 
-) : StateEntityDetailsResponseItemDetails()
+)
 

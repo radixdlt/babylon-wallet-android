@@ -30,9 +30,8 @@ import retrofit2.http.POST
 
 @Suppress("TooManyFunctions")
 interface StateApi {
-
     /**
-     * Get vault page of Entity Fungible resource aggregated per vault
+     * Get page of Global Entity Fungible Resource Vaults
      * Returns vaults for fungible resource owned by a given global entity. The returned response is in a paginated format,
      * ordered by the resource&#39;s first appearance on the ledger.
      * Responses:
@@ -48,9 +47,10 @@ interface StateApi {
     ): Call<StateEntityFungibleResourceVaultsPageResponse>
 
     /**
-     * Get Entity Fungible Resource Totals Page aggregated globally
-     * Returns the total amount of each fungible resource owned by a given global entity. Result can be aggregated globally or per vault.
-     * The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger.
+     * Get page of Global Entity Fungible Resource Balances
+     * Returns the total amount of each fungible resource owned by a given global entity.
+     * Result can be aggregated globally or per vault. The returned response is in a paginated format,
+     * ordered by the resource&#39;s first appearance on the ledger.
      * Responses:
      *  - 200: Entity Fungibles (paginated)
      *  - 4XX: Client-originated request error
@@ -80,9 +80,9 @@ interface StateApi {
     ): Call<StateEntityMetadataPageResponse>
 
     /**
-     * Get Entity Non-Fungible IDs
-     * Returns all non-fungible IDs of a given non-fungible resource owned by a given entity. The returned response is in a paginated
-     * format, ordered by the resource&#39;s first appearence on the ledger.
+     * Get page of Non-Fungibles in Vault
+     * Returns all non-fungible IDs of a given non-fungible resource owned by a given entity.
+     * The returned response is in a paginated format, ordered by the resource&#39;s first appearence on the ledger.
      * Responses:
      *  - 200: Entity Non-Fungible IDs (paginated)
      *  - 4XX: Client-originated request error
@@ -96,7 +96,7 @@ interface StateApi {
     ): Call<StateEntityNonFungibleIdsPageResponse>
 
     /**
-     * Get vault page of Entity Non Fungible aggregated per vault
+     * Get page of Global Entity Non-Fungible Resource Vaults
      * Returns vaults for non fungible resource owned by a given global entity. The returned response is in a paginated format,
      * ordered by the resource&#39;s first appearance on the ledger.
      * Responses:
@@ -112,9 +112,10 @@ interface StateApi {
     ): Call<StateEntityNonFungibleResourceVaultsPageResponse>
 
     /**
-     * Get Entity Non-Fungible Resource Totals Page aggregated globally
-     * Returns the total amount of each non-fungible resource owned by a given global entity. Result can be aggregated globally
-     * or per vault. The returned response is in a paginated format, ordered by the resource&#39;s first appearance on the ledger.
+     * Get page of Global Entity Non-Fungible Resource Balances
+     * Returns the total amount of each non-fungible resource owned by a given global entity.
+     * Result can be aggregated globally or per vault. The returned response is in a paginated format,
+     * ordered by the resource&#39;s first appearance on the ledger.
      * Responses:
      *  - 200: Entity Non-Fungibles (paginated)
      *  - 4XX: Client-originated request error
@@ -130,6 +131,7 @@ interface StateApi {
     /**
      * Get KeyValueStore Data
      * Returns data (value) associated with a given key of a given key-value store.
+     * [Check detailed documentation for explanation](#section/How-to-query-the-content-of-a-key-value-store-inside-a-component)
      * Responses:
      *  - 200: Non-Fungible ID Data
      *  - 4XX: Client-originated request error
@@ -153,14 +155,12 @@ interface StateApi {
      * @return [StateNonFungibleDataResponse]
      */
     @POST("state/non-fungible/data")
-    fun nonFungibleData(
-        @Body stateNonFungibleDataRequest: StateNonFungibleDataRequest
-    ): Call<StateNonFungibleDataResponse>
+    fun nonFungibleData(@Body stateNonFungibleDataRequest: StateNonFungibleDataRequest): Call<StateNonFungibleDataResponse>
 
     /**
-     * Get Non-Fungible Collection
-     * Returns the non-fungible IDs of a given non-fungible resource. Returned response is in a paginated format, ordered by their first
-     * appearance on the ledger.
+     * Get page of Non-Fungible Ids in Resource Collection
+     * Returns the non-fungible IDs of a given non-fungible resource. Returned response is in a paginated format,
+     * ordered by their first appearance on the ledger.
      * Responses:
      *  - 200: Non-Fungible IDs (paginated)
      *  - 4XX: Client-originated request error
@@ -169,9 +169,7 @@ interface StateApi {
      * @return [StateNonFungibleIdsResponse]
      */
     @POST("state/non-fungible/ids")
-    fun nonFungibleIds(
-        @Body stateNonFungibleIdsRequest: StateNonFungibleIdsRequest
-    ): Call<StateNonFungibleIdsResponse>
+    fun nonFungibleIds(@Body stateNonFungibleIdsRequest: StateNonFungibleIdsRequest): Call<StateNonFungibleIdsResponse>
 
     /**
      * Get Non-Fungible Location
@@ -199,9 +197,7 @@ interface StateApi {
      * @return [StateEntityDetailsResponse]
      */
     @POST("state/entity/details")
-    fun stateEntityDetails(
-        @Body stateEntityDetailsRequest: StateEntityDetailsRequest
-    ): Call<StateEntityDetailsResponse>
+    fun stateEntityDetails(@Body stateEntityDetailsRequest: StateEntityDetailsRequest): Call<StateEntityDetailsResponse>
 
     /**
      * Get Validators List
@@ -214,7 +210,5 @@ interface StateApi {
      * @return [StateValidatorsListResponse]
      */
     @POST("state/validators/list")
-    fun stateValidatorsList(
-        @Body stateValidatorsListRequest: StateValidatorsListRequest
-    ): Call<StateValidatorsListResponse>
+    fun stateValidatorsList(@Body stateValidatorsListRequest: StateValidatorsListRequest): Call<StateValidatorsListResponse>
 }
