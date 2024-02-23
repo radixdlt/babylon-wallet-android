@@ -45,13 +45,13 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         return updatedProfile
     }
 
-    fun initBabylonFactorSourceWithMnemonic(mnemonic: MnemonicWithPassphrase, isMain: Boolean = false): DeviceFactorSource {
+    fun initMainBabylonFactorSourceWithMnemonic(mnemonic: MnemonicWithPassphrase): DeviceFactorSource {
         return DeviceFactorSource.babylon(
             mnemonicWithPassphrase = mnemonic,
             model = deviceInfo.model,
             name = deviceInfo.name,
             createdAt = Instant.now(),
-            isMain = isMain
+            isMain = true
         )
     }
 

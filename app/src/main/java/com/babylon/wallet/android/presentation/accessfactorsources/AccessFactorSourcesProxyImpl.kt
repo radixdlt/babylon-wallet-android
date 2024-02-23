@@ -5,6 +5,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import javax.inject.Inject
 
 @ActivityRetainedScoped
@@ -15,17 +16,36 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
     private var input: AccessFactorSourcesInput = AccessFactorSourcesInput.Init
     private val _output = MutableSharedFlow<AccessFactorSourcesOutput>()
 
+    // used only when recovering accounts from onboarding (reDeriveAccounts)
+    private var tempMnemonicWithPassphrase: MnemonicWithPassphrase? = null
+
     override suspend fun getPublicKeyAndDerivationPathForFactorSource(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
     ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath> {
         input = accessFactorSourcesInput
-        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DeriveAccountPublicKey)
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DerivePublicKey)
         val result = _output.first()
 
         return if (result is AccessFactorSourcesOutput.Failure) {
             Result.failure(result.error)
         } else {
             Result.success(result as AccessFactorSourcesOutput.PublicKeyAndDerivationPath)
+        }
+    }
+
+    override suspend fun reDeriveAccounts(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
+    ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath> {
+        input = accessFactorSourcesInput
+        tempMnemonicWithPassphrase = null // at this point the DeriveAccountsViewModel has already received the mnemonic
+
+        appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DeriveAccounts)
+        val result = _output.first()
+
+        return if (result is AccessFactorSourcesOutput.Failure) {
+            Result.failure(result.error)
+        } else {
+            Result.success(result as AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath)
         }
     }
 
@@ -41,5 +61,13 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
     private suspend fun reset() {
         input = AccessFactorSourcesInput.Init
         _output.emit(AccessFactorSourcesOutput.Init)
+    }
+
+    override fun setTempMnemonicWithPassphrase(mnemonicWithPassphrase: MnemonicWithPassphrase) {
+        tempMnemonicWithPassphrase = mnemonicWithPassphrase
+    }
+
+    override fun getTempMnemonicWithPassphrase(): MnemonicWithPassphrase? {
+        return tempMnemonicWithPassphrase
     }
 }

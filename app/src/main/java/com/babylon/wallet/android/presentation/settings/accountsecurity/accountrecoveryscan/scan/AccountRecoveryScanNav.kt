@@ -1,8 +1,7 @@
-package com.babylon.wallet.android.presentation.account.recover.scan
+package com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scan
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope
-import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -12,29 +11,35 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
 @VisibleForTesting
-internal const val ARG_FACTOR_SOURCE_ID = "factor_source_id"
+internal const val ARG_FACTOR_SOURCE_ID = "arg_factor_source_id"
+internal const val ARG_IS_OLYMPIA = "arg_is_olympia"
 
-internal const val ARG_IS_OLYMPIA = "is_olympia"
+private const val ROUTE = "account_recovery_scan?" +
+    "$ARG_FACTOR_SOURCE_ID={$ARG_FACTOR_SOURCE_ID}" +
+    "&$ARG_IS_OLYMPIA={$ARG_IS_OLYMPIA}"
 
-private const val ROUTE = "accountRecoveryScan?$ARG_FACTOR_SOURCE_ID={$ARG_FACTOR_SOURCE_ID}&$ARG_IS_OLYMPIA={$ARG_IS_OLYMPIA}"
-
-internal class AccountRecoveryScanArgs(val factorSourceId: String?, val isOlympia: Boolean?) {
+internal class AccountRecoveryScanArgs(
+    val factorSourceId: String?,
+    val isOlympia: Boolean?
+) {
     constructor(savedStateHandle: androidx.lifecycle.SavedStateHandle) : this(
-        savedStateHandle.get<String>(
-            ARG_FACTOR_SOURCE_ID
-        ),
-        savedStateHandle.get<Boolean>(
-            ARG_IS_OLYMPIA
-        )
+        savedStateHandle.get<String>(ARG_FACTOR_SOURCE_ID),
+        savedStateHandle.get<Boolean>(ARG_IS_OLYMPIA),
     )
 }
 
-fun NavController.accountRecoveryScan(factorSourceIdString: String? = null, isOlympia: Boolean = false) {
-    navigate(route = "accountRecoveryScan?$ARG_FACTOR_SOURCE_ID=$factorSourceIdString&$ARG_IS_OLYMPIA=$isOlympia")
+fun NavController.accountRecoveryScan(
+    factorSourceId: String? = null,
+    isOlympia: Boolean = false
+) {
+    navigate(
+        route = "account_recovery_scan?" +
+            "$ARG_FACTOR_SOURCE_ID=$factorSourceId" +
+            "&$ARG_IS_OLYMPIA=$isOlympia"
+    )
 }
 
 fun NavGraphBuilder.accountRecoveryScan(
-    navController: NavController,
     onBackClick: () -> Unit,
     onRecoveryComplete: () -> Unit
 ) {
@@ -58,19 +63,10 @@ fun NavGraphBuilder.accountRecoveryScan(
                 type = NavType.BoolType
             }
         )
-    ) { entry ->
-        val viewModel = if (entry.arguments?.getString(ARG_FACTOR_SOURCE_ID) == null) {
-            val parentEntry = remember(entry) {
-                navController.previousBackStackEntry
-            }
-            checkNotNull(parentEntry, lazyMessage = { "Account recovery scan requires AccountRecoveryViewModel started by parent" })
-            hiltViewModel<AccountRecoveryScanViewModel>(parentEntry)
-        } else {
-            hiltViewModel()
-        }
+    ) {
         AccountRecoveryScanScreen(
             onBackClick = onBackClick,
-            viewModel = viewModel,
+            viewModel = hiltViewModel(),
             onRecoveryComplete = onRecoveryComplete
         )
     }

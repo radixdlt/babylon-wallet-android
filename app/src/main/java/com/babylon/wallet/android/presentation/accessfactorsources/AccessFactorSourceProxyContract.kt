@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
+import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 
 // interface for clients that need access to factor sources
@@ -10,10 +12,28 @@ interface AccessFactorSourcesProxy {
     suspend fun getPublicKeyAndDerivationPathForFactorSource(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
     ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath>
+
+    suspend fun reDeriveAccounts(
+        accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
+    ): Result<AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath>
+
+    /**
+     * This method temporarily keeps in memory the mnemonic that has been added through
+     * the Account Recovery Scan in the onboarding flow.
+     *
+     */
+    fun setTempMnemonicWithPassphrase(mnemonicWithPassphrase: MnemonicWithPassphrase)
+
+    /**
+     * This method returns the mnemonic that has been added through
+     * the Account Recovery Scan in the onboarding flow.
+     *
+     */
+    fun getTempMnemonicWithPassphrase(): MnemonicWithPassphrase?
 }
 
-// interface for the AccessFactorSourceViewModel that works as a mediator between the clients
-// and the AccessFactorSourcesProvider
+// interface which acts as a mediator between the clients who need access to factor sources
+// and the viewmodels of the bottom sheet dialogs
 interface AccessFactorSourcesUiProxy {
 
     fun getInput(): AccessFactorSourcesInput
@@ -30,10 +50,25 @@ sealed interface AccessFactorSourcesInput {
         val factorSource: FactorSource.CreatingEntity? = null
     ) : AccessFactorSourcesInput
 
-    // just for demonstration - will change in next PR
-    data class ToSign(
-        val someData: List<Int>
-    ) : AccessFactorSourcesInput
+    sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {
+
+        val factorSource: FactorSource.CreatingEntity
+        val isForLegacyOlympia: Boolean
+        val nextDerivationPathOffset: Int // is used as pointer when user clicks "scan the next 50"
+
+        data class WithGivenMnemonic(
+            override val factorSource: FactorSource.CreatingEntity,
+            override val isForLegacyOlympia: Boolean = false,
+            override val nextDerivationPathOffset: Int,
+            val mnemonicWithPassphrase: MnemonicWithPassphrase,
+        ) : ToReDeriveAccounts
+
+        data class WithGivenFactorSource(
+            override val factorSource: FactorSource.CreatingEntity,
+            override val isForLegacyOlympia: Boolean,
+            override val nextDerivationPathOffset: Int,
+        ) : ToReDeriveAccounts
+    }
 
     data object Init : AccessFactorSourcesInput
 }
@@ -45,9 +80,9 @@ sealed interface AccessFactorSourcesOutput {
         val derivationPath: DerivationPath
     ) : AccessFactorSourcesOutput
 
-    // just for demonstration - will change in next PR
-    data class Signers(
-        val someData: List<String>
+    data class DerivedAccountsWithNextDerivationPath(
+        val derivedAccounts: List<Network.Account>,
+        val nextDerivationPathOffset: Int // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
 
     data class Failure(

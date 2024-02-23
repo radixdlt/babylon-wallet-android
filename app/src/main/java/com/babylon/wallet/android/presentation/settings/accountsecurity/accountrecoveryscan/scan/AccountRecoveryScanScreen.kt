@@ -1,29 +1,26 @@
-@file:OptIn(ExperimentalFoundationApi::class, ExperimentalFoundationApi::class)
-
-package com.babylon.wallet.android.presentation.account.recover.scan
+package com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scan
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -41,8 +38,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
@@ -50,22 +47,19 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.model.Selectable
-import com.babylon.wallet.android.domain.usecases.RecoverAccountsForFactorSourceUseCase
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
-import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
+import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scan.AccountRecoveryScanViewModel.Companion.ACCOUNTS_PER_SCAN
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
-import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.Constants
-import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -87,19 +81,7 @@ fun AccountRecoveryScanScreen(
             dismissText = null
         )
     }
-    LaunchedEffect(Unit) {
-        if (state.recoveryFactorSource is RecoveryFactorSource.VirtualDeviceFactorSource) {
-            viewModel.startRecoveryScan()
-        } else {
-            context.biometricAuthenticate { result ->
-                if (result == BiometricAuthenticationResult.Succeeded) {
-                    viewModel.startScanForExistingFactorSource()
-                } else {
-                    onBackClick()
-                }
-            }
-        }
-    }
+
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
@@ -113,36 +95,26 @@ fun AccountRecoveryScanScreen(
     AccountRecoveryScanContent(
         modifier = modifier,
         onBackClick = viewModel::onBackClick,
-        onMessageShown = {},
-        onScanMoreClick = viewModel::startRecoveryScan,
-        sharedState = state,
+        onScanMoreClick = viewModel::onScanMoreClick,
+        state = state,
         onAccountSelected = viewModel::onAccountSelected,
         onContinueClick = {
             viewModel.onContinueClick { context.biometricAuthenticateSuspend() }
         },
-        isRestoring = state.isRestoring
+        isScanningNetwork = state.isScanningNetwork
     )
-    AnimatedVisibility(visible = state.interactionState != null, enter = slideInVertically(), exit = slideOutVertically()) {
-        state.interactionState?.let {
-            FactorSourceInteractionBottomDialog(
-                modifier = Modifier.fillMaxHeight(0.6f),
-                onDismissDialogClick = viewModel::onDismissSigningStatusDialog,
-                interactionState = it
-            )
-        }
-    }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun AccountRecoveryScanContent(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    onMessageShown: () -> Unit,
     onScanMoreClick: () -> Unit,
-    sharedState: AccountRecoveryScanViewModel.State,
+    state: AccountRecoveryScanViewModel.State,
     onAccountSelected: (Selectable<Network.Account>) -> Unit,
     onContinueClick: () -> Unit,
-    isRestoring: Boolean
+    isScanningNetwork: Boolean
 ) {
     val pages = ScanCompletePages.entries.toTypedArray()
     val scope = rememberCoroutineScope()
@@ -158,14 +130,7 @@ private fun AccountRecoveryScanContent(
             onBackClick()
         }
     }
-    BackHandler(onBack = {
-        backHandler()
-    })
-    SnackbarUIMessage(
-        message = sharedState.uiMessage,
-        snackbarHostState = snackBarHostState,
-        onMessageShown = onMessageShown
-    )
+    BackHandler(onBack = { backHandler() })
 
     Scaffold(
         modifier = modifier.navigationBarsPadding(),
@@ -186,14 +151,14 @@ private fun AccountRecoveryScanContent(
         },
         containerColor = RadixTheme.colors.defaultBackground,
         bottomBar = {
-            if (sharedState.contentState == AccountRecoveryScanViewModel.State.ContentState.ScanComplete) {
+            if (state.contentState == AccountRecoveryScanViewModel.State.ContentState.ScanComplete) {
                 val activeAccountsShown = pagerState.currentPage == ScanCompletePages.ActiveAccounts.ordinal
                 Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                     if (activeAccountsShown) {
                         RadixTextButton(
                             text = stringResource(
                                 id = R.string.accountRecoveryScan_scanComplete_scanNextBatchButton,
-                                RecoverAccountsForFactorSourceUseCase.accountsPerScanPage
+                                ACCOUNTS_PER_SCAN
                             ),
                             onClick = onScanMoreClick
                         )
@@ -202,10 +167,10 @@ private fun AccountRecoveryScanContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(RadixTheme.dimensions.paddingDefault),
-                        text = stringResource(id = R.string.common_continue),
+                        text = stringResource(id = R.string.accountRecoveryScan_scanComplete_continueButton),
                         onClick = {
                             if (pagerState.currentPage == ScanCompletePages.ActiveAccounts.ordinal) {
-                                if (sharedState.inactiveAccounts.isNotEmpty()) {
+                                if (state.inactiveAccounts.isNotEmpty()) {
                                     scope.launch {
                                         pagerState.animateScrollToPage(ScanCompletePages.InactiveAccounts.ordinal)
                                     }
@@ -216,20 +181,25 @@ private fun AccountRecoveryScanContent(
                                 onContinueClick()
                             }
                         },
-                        enabled = isRestoring.not(),
-                        isLoading = isRestoring
+                        enabled = isScanningNetwork.not(),
+                        isLoading = isScanningNetwork
                     )
                 }
             }
         }
     ) { padding ->
-        when (sharedState.contentState) {
+        when (state.contentState) {
             AccountRecoveryScanViewModel.State.ContentState.ScanInProgress -> {
                 AnimatedVisibility(visible = true) {
                     ScanInProgressContent(
-                        Modifier
+                        modifier = Modifier
                             .fillMaxSize()
-                            .padding(padding)
+                            .padding(padding),
+                        isLedgerDevice = state.recoveryFactorSource?.let {
+                            it is LedgerHardwareWalletFactorSource
+                        } ?: false,
+                        isOlympiaSeedPhrase = state.isOlympiaSeedPhrase,
+                        isScanningNetwork = state.isScanningNetwork
                     )
                 }
             }
@@ -241,9 +211,9 @@ private fun AccountRecoveryScanContent(
                             .fillMaxSize()
                             .padding(padding),
                         pagerState = pagerState,
-                        activeAccounts = sharedState.activeAccounts,
-                        inactiveAccounts = sharedState.inactiveAccounts,
-                        allScannedAccountsSize = sharedState.recoveredAccounts.size,
+                        activeAccounts = state.activeAccounts,
+                        inactiveAccounts = state.inactiveAccounts,
+                        allScannedAccountsSize = state.recoveredAccounts.size,
                         onAccountSelected = onAccountSelected
                     )
                 }
@@ -252,6 +222,7 @@ private fun AccountRecoveryScanContent(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ScanCompleteContent(
     modifier: Modifier,
@@ -273,7 +244,11 @@ fun ScanCompleteContent(
             }
 
             ScanCompletePages.InactiveAccounts -> {
-                InactiveAccountsPage(modifier = modifier, inactiveAccounts = inactiveAccounts, onAccountSelected = onAccountSelected)
+                InactiveAccountsPage(
+                    modifier = modifier,
+                    inactiveAccounts = inactiveAccounts,
+                    onAccountSelected = onAccountSelected
+                )
             }
         }
     }
@@ -326,7 +301,7 @@ private fun ActiveAccountsPage(
                         .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                         .background(RadixTheme.colors.gray4, RadixTheme.shapes.roundedRectMedium)
                         .padding(RadixTheme.dimensions.paddingXXLarge),
-                    text = "No new accounts found.",
+                    text = stringResource(id = R.string.accountRecoveryScan_scanComplete_noAccounts),
                     color = RadixTheme.colors.gray2,
                     textAlign = TextAlign.Center,
                     style = RadixTheme.typography.secondaryHeader
@@ -357,7 +332,7 @@ private fun InactiveAccountsPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = "Add Inactive Accounts?",
+                text = stringResource(id = R.string.accountRecoveryScan_selectInactiveAccounts_header_title),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
@@ -367,7 +342,7 @@ private fun InactiveAccountsPage(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-                text = "These Accounts were never used, but you may have created them. Check any addresses that you wish to keep:",
+                text = stringResource(id = R.string.accountRecoveryScan_selectInactiveAccounts_header_subtitle),
                 textAlign = TextAlign.Center,
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
@@ -403,24 +378,42 @@ private fun InactiveAccountsPage(
 }
 
 @Composable
-private fun ScanInProgressContent(modifier: Modifier = Modifier) {
-    Column(modifier = modifier) {
+private fun ScanInProgressContent(
+    modifier: Modifier = Modifier,
+    isOlympiaSeedPhrase: Boolean,
+    isLedgerDevice: Boolean,
+    isScanningNetwork: Boolean
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-            text = "Scan in Progress",
+            text = stringResource(id = R.string.accountRecoveryScan_inProgress_headerTitle),
             textAlign = TextAlign.Center,
             style = RadixTheme.typography.title,
             color = RadixTheme.colors.gray1
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+
         val text = buildAnnotatedString {
-            append("Scanning for Accounts that have been included in at least one transaction, using:")
+            append(stringResource(id = R.string.accountRecoveryScan_inProgress_headerSubtitle))
             append("\n\n")
-            withStyle(style = RadixTheme.typography.body1Header.toSpanStyle()) {
-                append("Babylon Seed Phrase")
-            }
+            append(
+                if (isLedgerDevice) {
+                    stringResource(id = R.string.accountRecoveryScan_inProgress_factorSourceLedgerHardwareDevice)
+                        .formattedSpans(boldStyle = RadixTheme.typography.body1Header.toSpanStyle())
+                } else if (isOlympiaSeedPhrase) {
+                    stringResource(id = R.string.accountRecoveryScan_inProgress_factorSourceOlympiaSeedPhrase)
+                        .formattedSpans(boldStyle = RadixTheme.typography.body1Header.toSpanStyle())
+                } else {
+                    stringResource(id = R.string.accountRecoveryScan_inProgress_factorSourceBabylonSeedPhrase)
+                        .formattedSpans(boldStyle = RadixTheme.typography.body1Header.toSpanStyle())
+                }
+            )
         }
         Text(
             modifier = Modifier
@@ -431,6 +424,13 @@ private fun ScanInProgressContent(modifier: Modifier = Modifier) {
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.gray1
         )
+        Spacer(modifier = Modifier.height(64.dp))
+        if (isScanningNetwork) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(48.dp),
+                color = RadixTheme.colors.gray1
+            )
+        }
     }
 }
 
@@ -438,19 +438,14 @@ internal enum class ScanCompletePages {
     ActiveAccounts, InactiveAccounts
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
-fun RestoreMnemonicsSeedPhraseContent() {
+fun ScanInProgressContentPreview() {
     RadixWalletTheme {
-        val state = AccountRecoveryScanViewModel.State()
-        AccountRecoveryScanContent(
-            onBackClick = {},
-            onMessageShown = {},
-            onScanMoreClick = {},
-            sharedState = state,
-            onAccountSelected = {},
-            onContinueClick = {},
-            isRestoring = false
+        ScanInProgressContent(
+            isOlympiaSeedPhrase = false,
+            isLedgerDevice = false,
+            isScanningNetwork = true
         )
     }
 }

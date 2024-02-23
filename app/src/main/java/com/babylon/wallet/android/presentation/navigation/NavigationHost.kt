@@ -12,15 +12,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.presentation.accessfactorsources.accessFactorSources
+import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKey
 import com.babylon.wallet.android.presentation.account.AccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
-import com.babylon.wallet.android.presentation.account.recover.complete.recoveryScanComplete
-import com.babylon.wallet.android.presentation.account.recover.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
 import com.babylon.wallet.android.presentation.account.settings.accountSettings
 import com.babylon.wallet.android.presentation.account.settings.devsettings.devSettings
@@ -49,6 +48,8 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.rest
 import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
+import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scan.accountRecoveryScan
+import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scancomplete.recoveryScanComplete
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.ROUTE_REVEAL_SEED_PHRASE
 import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
@@ -139,7 +140,6 @@ fun NavigationHost(
             }
         )
         addSingleMnemonic(
-            navController = navController,
             onBackClick = {
                 navController.popBackStack()
             },
@@ -157,7 +157,6 @@ fun NavigationHost(
             }
         )
         accountRecoveryScan(
-            navController = navController,
             onBackClick = {
                 navController.popBackStack()
             },
@@ -241,7 +240,12 @@ fun NavigationHost(
                 }
             )
         }
-        accessFactorSources(
+        derivePublicKey(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        deriveAccounts(
             onDismiss = {
                 navController.popBackStack()
             }
@@ -268,7 +272,10 @@ fun NavigationHost(
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
             },
             onStartRecovery = { factorSource, isOlympia ->
-                navController.accountRecoveryScan(factorSource.identifier, isOlympia)
+                navController.accountRecoveryScan(
+                    factorSourceId = factorSource.identifier,
+                    isOlympia = isOlympia
+                )
             }
         )
         createAccountConfirmationScreen(

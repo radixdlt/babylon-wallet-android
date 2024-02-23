@@ -1,15 +1,12 @@
-package com.babylon.wallet.android.presentation.accessfactorsources
+package com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,9 +23,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesViewModel.AccessFactorSourcesUiState
+import com.babylon.wallet.android.presentation.accessfactorsources.composables.RoundLedgerItem
+import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.DerivePublicKeyViewModel.DerivePublicKeyUiState
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
@@ -36,9 +35,9 @@ import com.babylon.wallet.android.utils.formattedSpans
 import rdx.works.profile.domain.TestData.ledgerFactorSource
 
 @Composable
-fun AccessFactorSourcesDialog(
+fun DerivePublicKeyDialog(
     modifier: Modifier = Modifier,
-    viewModel: AccessFactorSourcesViewModel,
+    viewModel: DerivePublicKeyViewModel,
     onDismiss: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
@@ -47,39 +46,37 @@ fun AccessFactorSourcesDialog(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                AccessFactorSourcesViewModel.Event.RequestBiometricPrompt -> {
-                    context.biometricAuthenticate { result ->
-                        viewModel.biometricAuthenticationCompleted(result == BiometricAuthenticationResult.Succeeded)
-                        if (result != BiometricAuthenticationResult.Succeeded) {
-                            onDismiss()
+                DerivePublicKeyViewModel.Event.RequestBiometricPrompt -> {
+                    context.biometricAuthenticate { biometricAuthenticationResult ->
+                        when (biometricAuthenticationResult) {
+                            BiometricAuthenticationResult.Succeeded -> viewModel.biometricAuthenticationCompleted()
+                            BiometricAuthenticationResult.Error -> viewModel.onBiometricAuthenticationDismiss()
+                            BiometricAuthenticationResult.Failed -> { /* do nothing */ }
                         }
                     }
                 }
+                DerivePublicKeyViewModel.Event.AccessingFactorSourceCompleted -> onDismiss()
             }
         }
     }
 
-    AccessFactorSourcesBottomSheetContent(
+    DerivePublicKeyBottomSheetContent(
         modifier = modifier,
-        isAccessingFactorSourceInProgress = state.isAccessingFactorSourceInProgress,
-        isAccessingFactorSourceCompleted = state.isAccessingFactorSourceCompleted,
-        showContentForFactorSource = state.showContentFor,
-        onDismiss = onDismiss
+        showContentForFactorSource = state.showContentForFactorSource,
+        shouldShowRetryButton = state.shouldShowRetryButton,
+        onDismiss = onDismiss,
+        onRetryClick = viewModel::onRetryClick
     )
 }
 
 @Composable
-private fun AccessFactorSourcesBottomSheetContent(
+private fun DerivePublicKeyBottomSheetContent(
     modifier: Modifier = Modifier,
-    isAccessingFactorSourceInProgress: Boolean,
-    isAccessingFactorSourceCompleted: Boolean,
-    showContentForFactorSource: AccessFactorSourcesUiState.ShowContentFor,
-    onDismiss: () -> Unit
+    showContentForFactorSource: DerivePublicKeyUiState.ShowContentForFactorSource,
+    shouldShowRetryButton: Boolean,
+    onDismiss: () -> Unit,
+    onRetryClick: () -> Unit
 ) {
-    if (isAccessingFactorSourceCompleted) {
-        onDismiss()
-    }
-
     BottomSheetDialogWrapper(
         modifier = modifier,
         onDismiss = {
@@ -107,85 +104,70 @@ private fun AccessFactorSourcesBottomSheetContent(
                 style = RadixTheme.typography.title,
                 text = stringResource(id = R.string.derivePublicKeys_titleCreateAccount)
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSemiLarge))
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             when (showContentForFactorSource) {
-                AccessFactorSourcesUiState.ShowContentFor.Device -> {
+                DerivePublicKeyUiState.ShowContentForFactorSource.Device -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
                     )
+                    if (shouldShowRetryButton) {
+                        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                        RadixTextButton(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = stringResource(R.string.common_retry),
+                            onClick = onRetryClick
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.height(76.dp))
+                    }
                 }
 
-                is AccessFactorSourcesUiState.ShowContentFor.Ledger -> {
+                is DerivePublicKeyUiState.ShowContentForFactorSource.Ledger -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
                         text = stringResource(id = R.string.derivePublicKeys_subtitleLedger)
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-                    RoundLedgerItem(ledgerName = ledgerFactorSource.hint.name)
+                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.hint.name)
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                    RadixTextButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = stringResource(R.string.common_retry),
+                        onClick = onRetryClick
+                    )
                 }
-            }
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-            if (isAccessingFactorSourceInProgress) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = RadixTheme.colors.gray1
-                )
             }
             Spacer(Modifier.height(120.dp))
         }
     }
 }
 
+@Preview(showBackground = false)
 @Composable
-private fun RoundLedgerItem(ledgerName: String) {
-    Row(
-        modifier = Modifier
-            .background(RadixTheme.colors.gray5, RadixTheme.shapes.circle)
-            .padding(RadixTheme.dimensions.paddingDefault),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-    ) {
-        Icon(
-            painter = painterResource(
-                id = com.babylon.wallet.android.designsystem.R.drawable.ic_security_key
-            ),
-            contentDescription = null,
-            tint = RadixTheme.colors.gray3
-        )
-        Text(
-            text = ledgerName,
-            style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1
+fun DerivePublicKeyDialogDevicePreview() {
+    RadixWalletTheme {
+        DerivePublicKeyBottomSheetContent(
+            showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Device,
+            shouldShowRetryButton = false,
+            onDismiss = {},
+            onRetryClick = {}
         )
     }
 }
 
 @Preview(showBackground = false)
 @Composable
-fun AccessFactorSourcesDialogDevicePreview() {
+fun DerivePublicKeyDialogLedgerPreview() {
     RadixWalletTheme {
-        AccessFactorSourcesBottomSheetContent(
-            isAccessingFactorSourceInProgress = false,
-            isAccessingFactorSourceCompleted = false,
-            showContentForFactorSource = AccessFactorSourcesUiState.ShowContentFor.Device,
-            onDismiss = {}
-        )
-    }
-}
-
-@Preview(showBackground = false)
-@Composable
-fun AccessFactorSourcesDialogLedgerPreview() {
-    RadixWalletTheme {
-        AccessFactorSourcesBottomSheetContent(
-            isAccessingFactorSourceInProgress = false,
-            isAccessingFactorSourceCompleted = false,
-            showContentForFactorSource = AccessFactorSourcesUiState.ShowContentFor.Ledger(
+        DerivePublicKeyBottomSheetContent(
+            showContentForFactorSource = DerivePublicKeyUiState.ShowContentForFactorSource.Ledger(
                 selectedLedgerDevice = ledgerFactorSource
             ),
-            onDismiss = {}
+            shouldShowRetryButton = false,
+            onDismiss = {},
+            onRetryClick = {}
         )
     }
 }

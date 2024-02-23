@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.account.createaccount
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.usecases.CreateAccountUseCase
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
@@ -142,10 +141,6 @@ class CreateAccountViewModel @Inject constructor(
         sendEvent(CreateAccountEvent.Dismiss)
     }
 
-    fun onDismissSigningStatusDialog() {
-        _state.update { it.copy(interactionState = null) }
-    }
-
     fun onUseLedgerSelectionChanged(selected: Boolean) {
         _state.update { it.copy(isWithLedger = selected) }
     }
@@ -202,7 +197,6 @@ class CreateAccountViewModel @Inject constructor(
         val firstTime: Boolean = false,
         val isWithLedger: Boolean = false,
         val isCancelable: Boolean = true,
-        val interactionState: InteractionState? = null,
         val uiMessage: UiMessage? = null
     ) : UiState
 

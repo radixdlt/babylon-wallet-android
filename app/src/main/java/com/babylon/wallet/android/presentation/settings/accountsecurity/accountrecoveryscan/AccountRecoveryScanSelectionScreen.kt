@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.recovery
+package com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column

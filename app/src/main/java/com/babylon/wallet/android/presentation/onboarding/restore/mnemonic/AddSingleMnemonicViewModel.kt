@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.onboarding.restore.mnemonic
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesProxy
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -20,7 +21,8 @@ import javax.inject.Inject
 class AddSingleMnemonicViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val addOlympiaFactorSourceUseCase: AddOlympiaFactorSourceUseCase,
-    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase
+    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
+    private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
 ) : StateViewModel<AddSingleMnemonicViewModel.State>(),
     OneOffEventHandler<AddSingleMnemonicViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -88,6 +90,15 @@ class AddSingleMnemonicViewModel @Inject constructor(
         }
     }
 
+    fun onAddMainSeedPhrase() {
+        viewModelScope.launch {
+            accessFactorSourcesProxy.setTempMnemonicWithPassphrase(
+                mnemonicWithPassphrase = state.value.seedPhraseState.mnemonicWithPassphrase
+            )
+            sendEvent(Event.MainSeedPhraseCompleted)
+        }
+    }
+
     data class State(
         val seedPhraseState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
         val mnemonicType: MnemonicType = MnemonicType.Babylon,
@@ -97,5 +108,6 @@ class AddSingleMnemonicViewModel @Inject constructor(
     sealed interface Event : OneOffEvent {
         data object MoveToNextWord : Event
         data object FactorSourceAdded : Event
+        data object MainSeedPhraseCompleted : Event
     }
 }

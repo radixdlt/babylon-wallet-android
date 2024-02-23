@@ -4,11 +4,7 @@
 package rdx.works.profile.data.model.pernetwork
 
 import com.radixdlt.extensions.removeLeadingZero
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.OlympiaNetwork
 import com.radixdlt.ret.PublicKey
-import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
-import com.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
 import com.radixdlt.ret.deriveVirtualIdentityAddressFromPublicKey
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -17,7 +13,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonClassDiscriminator
 import rdx.works.core.Identified
 import rdx.works.core.IdentifiedArrayList
-import rdx.works.core.decodeHex
 import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
@@ -35,7 +30,6 @@ import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.EntityFlag
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
@@ -201,151 +195,6 @@ data class Network(
                         .transactionSigning.factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
                 }
             }
-
-        companion object {
-            @Suppress("LongParameterList")
-            fun initAccountWithBabylonDeviceFactorSource(
-                entityIndex: Int,
-                displayName: String,
-                mnemonicWithPassphrase: MnemonicWithPassphrase,
-                deviceFactorSource: DeviceFactorSource,
-                networkId: NetworkId,
-                appearanceID: Int,
-                onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init()
-            ): Account {
-                val derivationPath = DerivationPath.forAccount(
-                    networkId = networkId,
-                    accountIndex = entityIndex,
-                    keyType = KeyType.TRANSACTION_SIGNING
-                )
-
-                val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
-                val address = deriveAccountAddress(
-                    networkID = networkId,
-                    publicKey = PublicKey.Ed25519(compressedPublicKey)
-                )
-
-                val unsecuredSecurityState = SecurityState.unsecured(
-                    publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
-                    derivationPath = derivationPath,
-                    factorSourceId = deviceFactorSource.id
-                )
-
-                return Account(
-                    address = address,
-                    appearanceID = appearanceID,
-                    displayName = displayName,
-                    networkID = networkId.value,
-                    securityState = unsecuredSecurityState,
-                    onLedgerSettings = onLedgerSettings
-
-                )
-            }
-
-            @Suppress("LongParameterList")
-            fun initAccountWithOlympiaDeviceFactorSource(
-                entityIndex: Int,
-                displayName: String,
-                mnemonicWithPassphrase: MnemonicWithPassphrase,
-                deviceFactorSource: DeviceFactorSource,
-                networkId: NetworkId,
-                appearanceID: Int,
-                onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init()
-            ): Account {
-                val derivationPath = DerivationPath.forLegacyOlympia(entityIndex)
-                val publicKey = mnemonicWithPassphrase.compressedPublicKey(Slip10Curve.SECP_256K1, derivationPath)
-                val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
-                    publicKey = PublicKey.Secp256k1(publicKey),
-                    olympiaNetwork = OlympiaNetwork.MAINNET
-                )
-                val newBabylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
-                    olympiaAccountAddress = olympiaAddress,
-                    networkId = networkId.value.toUByte()
-                ).addressString()
-                return Account(
-                    displayName = displayName,
-                    address = newBabylonAddress,
-                    appearanceID = appearanceID,
-                    networkID = networkId.value,
-                    securityState = SecurityState.unsecured(
-                        publicKey = FactorInstance.PublicKey(publicKey.toHexString(), Slip10Curve.SECP_256K1),
-                        derivationPath = derivationPath,
-                        factorSourceId = deviceFactorSource.id
-                    ),
-                    onLedgerSettings = onLedgerSettings
-                )
-            }
-
-            @Suppress("LongParameterList")
-            fun initAccountWithLedgerFactorSource(
-                entityIndex: Int,
-                displayName: String,
-                derivedPublicKeyHex: String,
-                ledgerFactorSource: LedgerHardwareWalletFactorSource,
-                networkId: NetworkId,
-                derivationPath: DerivationPath,
-                appearanceID: Int,
-                onLedgerSettings: OnLedgerSettings = OnLedgerSettings.init(),
-                isOlympia: Boolean = false
-            ): Account {
-                val derivationPathToCheck = if (isOlympia) {
-                    DerivationPath.forLegacyOlympia(
-                        accountIndex = entityIndex,
-                    )
-                } else {
-                    DerivationPath.forAccount(
-                        networkId = networkId,
-                        accountIndex = entityIndex,
-                        keyType = KeyType.TRANSACTION_SIGNING
-                    )
-                }
-                require(derivationPathToCheck.path == derivationPath.path)
-
-                val address = if (isOlympia) {
-                    val pk = PublicKey.Secp256k1(derivedPublicKeyHex.decodeHex())
-                    val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
-                        publicKey = pk,
-                        olympiaNetwork = OlympiaNetwork.MAINNET
-                    )
-                    Address.virtualAccountAddressFromOlympiaAddress(
-                        olympiaAccountAddress = olympiaAddress,
-                        networkId = networkId.value.toUByte()
-                    ).addressString()
-                } else {
-                    deriveAccountAddress(
-                        networkID = networkId,
-                        publicKey = PublicKey.Ed25519(derivedPublicKeyHex.decodeHex())
-                    )
-                }
-
-                val unsecuredSecurityState = SecurityState.unsecured(
-                    publicKey = if (isOlympia) {
-                        FactorInstance.PublicKey(derivedPublicKeyHex, Slip10Curve.SECP_256K1)
-                    } else {
-                        FactorInstance.PublicKey(derivedPublicKeyHex, Slip10Curve.CURVE_25519)
-                    },
-                    derivationPath = derivationPath,
-                    factorSourceId = ledgerFactorSource.id
-                )
-
-                return Account(
-                    address = address,
-                    appearanceID = appearanceID,
-                    displayName = displayName,
-                    networkID = networkId.value,
-                    securityState = unsecuredSecurityState,
-                    onLedgerSettings = onLedgerSettings
-                )
-            }
-
-            private fun deriveAccountAddress(
-                networkID: NetworkId,
-                publicKey: PublicKey
-            ): String {
-                val response = deriveVirtualAccountAddressFromPublicKey(publicKey, networkID.value.toUByte())
-                return response.addressString()
-            }
-        }
 
         override val identifier: String
             get() = address
@@ -648,18 +497,6 @@ fun Profile.addNetworkIfDoesNotExist(
     } else {
         this
     }
-}
-
-fun Profile.usedAccountDerivationIndices(
-    derivationPathScheme: DerivationPathScheme,
-    forNetworkId: NetworkId? = null,
-    factorSourceID: FactorSource.FactorSourceID? = null
-): Set<Int> {
-    val network = networks.firstOrNull { it.networkID == forNetworkId?.value } ?: return emptySet()
-    val factorSource = factorSources.find { it.id == factorSourceID } ?: mainBabylonFactorSource()
-    return network.accounts.filter {
-        it.factorSourceId == factorSource?.id && it.derivationPathScheme == derivationPathScheme
-    }.map { it.derivationPathEntityIndex }.toSet()
 }
 
 fun Profile.nextPersonaIndex(

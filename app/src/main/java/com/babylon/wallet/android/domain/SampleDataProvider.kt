@@ -23,6 +23,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
+import com.radixdlt.extensions.removeLeadingZero
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.core.emptyIdentifiedArrayList
@@ -37,6 +38,8 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
+import rdx.works.profile.data.model.compressedPublicKey
+import rdx.works.profile.data.model.extensions.initializeAccount
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -476,13 +479,19 @@ class SampleDataProvider {
             ),
             networks = emptyList()
         )
-        val firstAccount = Network.Account.initAccountWithBabylonDeviceFactorSource(
-            entityIndex = 0,
-            displayName = "first account",
-            mnemonicWithPassphrase = mnemonicWithPassphrase,
-            deviceFactorSource = (profile.factorSources.first() as DeviceFactorSource),
+
+        val derivationPath = DerivationPath.forAccount(
             networkId = networkId,
-            appearanceID = 0
+            accountIndex = 0,
+            keyType = KeyType.TRANSACTION_SIGNING
+        )
+        val firstAccount = initializeAccount(
+            displayName = "first account",
+            onNetworkId = networkId,
+            compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero(),
+            derivationPath = derivationPath,
+            factorSource = (profile.factorSources.first() as DeviceFactorSource),
+            onLedgerSettings = Network.Account.OnLedgerSettings.init()
         )
         return profile.copy(networks = listOf(network.copy(accounts = identifiedArrayListOf(firstAccount))))
     }
