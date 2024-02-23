@@ -33,11 +33,11 @@ import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.PublicKeyHash
 import com.babylon.wallet.android.domain.model.resources.metadata.ownerKeyHashes
-import com.radixdlt.ret.Address
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
+import rdx.works.core.ret.RetBridge
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
@@ -486,10 +486,10 @@ class StateRepositoryImpl @Inject constructor(
     override suspend fun clearCachedState(): Result<Unit> = accountsStateCache.clear()
 
     private suspend fun getLatestCachedStateVersionInNetwork(): Long? {
-        val currentNetworkId = (getProfileUseCase.currentNetwork()?.networkID ?: Radix.Gateway.default.network.id).toUByte()
+        val currentNetworkId = getProfileUseCase.currentNetwork()?.networkID ?: Radix.Gateway.default.network.id
 
         return stateDao.getAccountStateVersions().filter {
-            Address(it.address).networkId() == currentNetworkId
+            RetBridge.Address.networkIdOrNull(it.address) == currentNetworkId
         }.maxByOrNull { it.stateVersion }?.stateVersion
     }
 }

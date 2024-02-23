@@ -3,7 +3,7 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.radixdlt.ret.Address
+import rdx.works.core.ret.RetBridge
 import javax.inject.Inject
 
 class GetDAppWithResourcesUseCase @Inject constructor(
@@ -18,7 +18,9 @@ class GetDAppWithResourcesUseCase @Inject constructor(
         isRefreshing = needMostRecentData
     ).mapCatching { dApps ->
         val dApp = dApps.first()
-        val claimedResources = dApp.claimedEntities.filter { Address(it).isGlobalResourceManager() }
+        val claimedResources = dApp.claimedEntities.filter {
+            RetBridge.Address.isResource(it)
+        }
         val resources = stateRepository.getResources(
             addresses = claimedResources.toSet(),
             underAccountAddress = null,
