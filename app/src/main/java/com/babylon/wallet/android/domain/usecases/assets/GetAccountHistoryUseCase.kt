@@ -6,6 +6,7 @@ import com.babylon.wallet.android.domain.model.TransactionHistoryData
 import com.babylon.wallet.android.domain.model.TransactionHistoryItem
 import com.babylon.wallet.android.domain.model.toDomainModel
 import com.babylon.wallet.android.domain.model.toTransactionClass
+import message
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -48,7 +49,8 @@ class GetAccountHistoryUseCase @Inject constructor(
                     feePaid = item.feePaid?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
                     balanceChanges = item.balanceChanges?.toDomainModel(assets = assets).orEmpty(),
                     transactionClass = item.manifestClasses?.firstOrNull()?.toTransactionClass(),
-                    timestamp = item.confirmedAt?.toInstant()
+                    timestamp = item.confirmedAt?.toInstant(),
+                    message = item.message?.message()
                 )
             }
             TransactionHistoryData(

@@ -6,13 +6,11 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,13 +58,11 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.TransactionClass
-import com.babylon.wallet.android.domain.model.TransactionHistoryItem
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.history.composables.FiltersDialog
 import com.babylon.wallet.android.presentation.history.composables.FiltersStrip
-import com.babylon.wallet.android.presentation.history.composables.HistoryTransactionItem
-import com.babylon.wallet.android.presentation.history.composables.TypeAndTimestampLabel
+import com.babylon.wallet.android.presentation.history.composables.TransactionHistoryItem
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
@@ -255,27 +251,13 @@ fun HistoryContent(
                             }
 
                             is HistoryItem.Transaction -> {
-                                when (item.transactionItem.transactionClass) {
-                                    TransactionClass.AccountDespositSettingsUpdate -> {
-                                        AccountDepositSettingsUpdateItem(
-                                            item.transactionItem,
-                                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                                            onClick = {
-                                                onOpenTransactionDetails(item.transactionItem.txId)
-                                            }
-                                        )
+                                TransactionHistoryItem(
+                                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                                    transactionItem = item.transactionItem,
+                                    onClick = {
+                                        onOpenTransactionDetails(item.transactionItem.txId)
                                     }
-
-                                    else -> {
-                                        HistoryTransactionItem(
-                                            modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-                                            transactionItem = item.transactionItem,
-                                            onClick = {
-                                                onOpenTransactionDetails(item.transactionItem.txId)
-                                            }
-                                        )
-                                    }
-                                }
+                                )
                                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                             }
                         }
@@ -404,45 +386,6 @@ private fun TimePicker(
             }
         }
     )
-}
-
-@Composable
-private fun AccountDepositSettingsUpdateItem(item: TransactionHistoryItem, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Column(
-        modifier = modifier
-            .clip(RadixTheme.shapes.roundedRectMedium)
-            .clickable {
-                onClick()
-            }
-            .fillMaxWidth()
-            .background(color = RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectMedium)
-            .padding(RadixTheme.dimensions.paddingMedium),
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-        ) {
-            Icon(painter = painterResource(id = DSR.ic_tx_account_settings), contentDescription = null, tint = Color.Unspecified)
-            Text(
-                modifier = Modifier.weight(1f),
-                text = "Settings", // TODO crowdin
-                style = RadixTheme.typography.body2Header,
-                color = RadixTheme.colors.gray1
-            )
-            TypeAndTimestampLabel(item = item)
-        }
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, RadixTheme.colors.gray4, shape = RadixTheme.shapes.roundedRectMedium)
-                .padding(RadixTheme.dimensions.paddingMedium),
-            text = "Updated Account Deposit Settings", // TODO crowding
-            style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray1
-        )
-    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

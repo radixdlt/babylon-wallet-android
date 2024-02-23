@@ -21,14 +21,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.bubbleShape
 import com.babylon.wallet.android.domain.model.BalanceChange
 import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.TransactionHistoryItem
@@ -40,6 +43,7 @@ import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.ExpandableText
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.name
 import com.babylon.wallet.android.utils.timestampHoursMinutes
@@ -48,7 +52,7 @@ import rdx.works.core.displayableQuantity
 import timber.log.Timber
 
 @Composable
-fun HistoryTransactionItem(modifier: Modifier = Modifier, transactionItem: TransactionHistoryItem, onClick: () -> Unit) {
+fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: TransactionHistoryItem, onClick: () -> Unit) {
     Column(
         modifier = modifier
             .clip(RadixTheme.shapes.roundedRectMedium)
@@ -61,17 +65,35 @@ fun HistoryTransactionItem(modifier: Modifier = Modifier, transactionItem: Trans
                 shape = RadixTheme.shapes.roundedRectMedium
             ),
     ) {
+        if (transactionItem.message != null) {
+            MessageContent(transactionItem.message)
+        }
         Column(
             modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
         ) {
+            val isAccountDepositSettingsUpdate = transactionItem.transactionClass == TransactionClass.AccountDespositSettingsUpdate
             val withdrawn = remember(transactionItem.withdrawn) {
                 transactionItem.withdrawn
             }
             val deposited = remember(transactionItem.deposited) {
                 transactionItem.deposited
             }
-            if (transactionItem.noBalanceChanges) {
+            if (isAccountDepositSettingsUpdate) {
+                LabelSection(text = "Settings", iconResource = DSR.ic_tx_account_settings) {
+                    TypeAndTimestampLabel(item = transactionItem)
+                }
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .border(1.dp, RadixTheme.colors.gray4, shape = RadixTheme.shapes.roundedRectMedium)
+                        .padding(RadixTheme.dimensions.paddingMedium),
+                    text = "Updated Account Deposit Settings", // TODO crowding
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+            if (transactionItem.noBalanceChanges && isAccountDepositSettingsUpdate.not()) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     TypeAndTimestampLabel(item = transactionItem)
                 }
@@ -87,18 +109,10 @@ fun HistoryTransactionItem(modifier: Modifier = Modifier, transactionItem: Trans
             } else {
                 val withdrawnShown = withdrawn.isNotEmpty()
                 if (withdrawnShown) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-                    ) {
-                        Icon(painter = painterResource(id = DSR.ic_tx_withdrawn), contentDescription = null, tint = Color.Unspecified)
-                        Text(
-                            text = "Withdrawn", // TODO crowdin
-                            style = RadixTheme.typography.body2Header,
-                            color = RadixTheme.colors.gray1
-                        )
-                        Spacer(modifier = Modifier.weight(1f))
-                        TypeAndTimestampLabel(item = transactionItem)
+                    LabelSection(text = "Withdrawn", iconResource = DSR.ic_tx_withdrawn) {
+                        if (isAccountDepositSettingsUpdate.not()) {
+                            TypeAndTimestampLabel(item = transactionItem)
+                        }
                     }
                     Column(
                         modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
@@ -114,18 +128,8 @@ fun HistoryTransactionItem(modifier: Modifier = Modifier, transactionItem: Trans
                     }
                 }
                 if (deposited.isNotEmpty()) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
-                    ) {
-                        Icon(painter = painterResource(id = DSR.ic_tx_deposited), contentDescription = null, tint = Color.Unspecified)
-                        Text(
-                            text = "Deposited", // TODO crowdin
-                            style = RadixTheme.typography.body2Header,
-                            color = RadixTheme.colors.green1
-                        )
+                    LabelSection(text = "Deposited", iconResource = DSR.ic_tx_deposited) {
                         if (withdrawnShown.not()) {
-                            Spacer(modifier = Modifier.weight(1f))
                             TypeAndTimestampLabel(item = transactionItem)
                         }
                     }
@@ -152,10 +156,56 @@ fun HistoryTransactionItem(modifier: Modifier = Modifier, transactionItem: Trans
                     .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
                     .padding(RadixTheme.dimensions.paddingMedium),
                 text = "This transaction cannot be summarized. Only the raw transaction manifest may be viewed.", // TODO crowding
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray2
             )
         }
+    }
+}
+
+@Composable
+private fun MessageContent(text: String, modifier: Modifier = Modifier) {
+    val density = LocalDensity.current
+    val bubbleShape = remember {
+        bubbleShape(
+            density = density,
+            cornerRadius = 12.dp,
+            onlyTopCorners = true
+        )
+    }
+    ExpandableText(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(1.dp)
+            .background(RadixTheme.colors.gray4, shape = bubbleShape)
+            .padding(RadixTheme.dimensions.paddingMedium),
+        text = text,
+        collapsedLines = 2,
+        style = RadixTheme.typography.body2Regular.copy(color = RadixTheme.colors.gray1),
+        toggleStyle = RadixTheme.typography.body2Header.copy(color = RadixTheme.colors.blue1, fontSize = 14.sp)
+    )
+}
+
+@Composable
+private fun LabelSection(
+    text: String,
+    iconResource: Int,
+    modifier: Modifier = Modifier,
+    trailingContent: (@Composable () -> Unit)? = null
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+    ) {
+        Icon(painter = painterResource(id = iconResource), contentDescription = null, tint = Color.Unspecified)
+        Text(
+            text = text,
+            style = RadixTheme.typography.body2Header,
+            color = RadixTheme.colors.gray1
+        )
+        Spacer(modifier = Modifier.weight(1f))
+        trailingContent?.invoke()
     }
 }
 

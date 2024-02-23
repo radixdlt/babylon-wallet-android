@@ -33,7 +33,8 @@ data class TransactionHistoryItem(
     val feePaid: BigDecimal,
     private val balanceChanges: List<BalanceChange>,
     val transactionClass: TransactionClass?,
-    val timestamp: Instant?
+    val timestamp: Instant?,
+    val message: String?
 ) {
     val deposited: List<BalanceChange>
         get() = balanceChanges.filter {

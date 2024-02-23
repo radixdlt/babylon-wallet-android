@@ -27,7 +27,7 @@ interface StreamRepository {
     suspend fun getAccountFirstTransaction(accountAddress: String): Result<StreamTransactionsResponse>
 
     companion object {
-        const val PAGE_SIZE = 40
+        const val PAGE_SIZE = 20
     }
 }
 
@@ -113,7 +113,8 @@ class StreamRepositoryImpl @Inject constructor(
             },
             manifestClassFilter = filters.transactionClass?.toManifestClass()?.let {
                 StreamTransactionsRequestAllOfManifestClassFilter(
-                    it
+                    propertyClass = it,
+                    matchOnlyMostSpecific = true
                 )
             },
             manifestResourcesFilter = if (filters.resources.isNotEmpty()) filters.resources.map { it.resourceAddress } else null,

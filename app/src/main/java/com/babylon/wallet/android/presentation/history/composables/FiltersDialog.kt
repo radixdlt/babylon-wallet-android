@@ -295,7 +295,7 @@ private fun FilterTypeSection(modifier: Modifier = Modifier, label: String, cont
                 modifier = Modifier.weight(1f),
                 text = label,
                 style = RadixTheme.typography.body1Header,
-                color = RadixTheme.colors.gray2,
+                color = RadixTheme.colors.gray1,
                 overflow = TextOverflow.Ellipsis,
             )
             val iconRes = if (expanded) {
@@ -305,7 +305,7 @@ private fun FilterTypeSection(modifier: Modifier = Modifier, label: String, cont
             }
             Icon(
                 painter = painterResource(id = iconRes),
-                tint = RadixTheme.colors.gray2,
+                tint = RadixTheme.colors.gray1,
                 contentDescription = "arrow"
             )
         }

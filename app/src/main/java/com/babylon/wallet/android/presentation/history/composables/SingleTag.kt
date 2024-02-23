@@ -40,13 +40,13 @@ fun SingleTag(
             .applyIf(onClick != null, Modifier.clickable { onClick?.invoke() })
             .applyIf(selected, tagSelectedModifier)
             .applyIf(!selected, tagBorderModifier),
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium),
+        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall),
         verticalAlignment = Alignment.CenterVertically
     ) {
         leadingIcon?.invoke()
         Text(
             text = text,
-            style = RadixTheme.typography.body2Header,
+            style = RadixTheme.typography.body1HighImportance,
             color = if (selected) RadixTheme.colors.white else RadixTheme.colors.gray1
         )
         if (selected) {
