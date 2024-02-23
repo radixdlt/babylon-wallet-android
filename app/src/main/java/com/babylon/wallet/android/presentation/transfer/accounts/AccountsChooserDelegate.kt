@@ -10,7 +10,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.AddressValidator
+import rdx.works.core.ret.RetBridge
 import rdx.works.profile.data.model.extensions.hasAcceptKnownDepositRule
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -47,7 +47,7 @@ class AccountsChooserDelegate @Inject constructor(
     fun addressTyped(address: String) {
         val currentNetworkId = _state.value.fromAccount?.networkID ?: return
         updateSheetState { sheetState ->
-            val validity = if (!AddressValidator.isValid(address = address, networkId = currentNetworkId)) {
+            val validity = if (!RetBridge.Address.isValid(address = address, checkNetworkId = currentNetworkId)) {
                 TargetAccount.Other.AddressValidity.INVALID
             } else {
                 val selectedAccountAddresses = _state.value.targetAccounts.map { it.address }

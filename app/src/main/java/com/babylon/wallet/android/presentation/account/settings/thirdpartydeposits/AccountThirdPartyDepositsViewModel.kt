@@ -13,7 +13,6 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.ret.Address
-import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.ManifestBuilderAddress
 import com.radixdlt.ret.ManifestBuilderValue
 import com.radixdlt.ret.NonFungibleGlobalId
@@ -26,10 +25,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.AddressValidator
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
 import rdx.works.core.ret.BabylonManifestBuilder
+import rdx.works.core.ret.RetBridge
 import rdx.works.core.ret.buildSafely
 import rdx.works.profile.data.model.extensions.toRETDepositRule
 import rdx.works.profile.data.model.extensions.toRETResourcePreference
@@ -307,10 +306,9 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun assetExceptionAddressTyped(address: String) {
         val currentNetworkId = state.value.account?.networkID ?: return
-        val valid = AddressValidator.isValidForTypes(
+        val valid = RetBridge.Address.isValidResource(
             address = address,
-            networkId = currentNetworkId,
-            allowedEntityTypes = setOf(EntityType.GLOBAL_FUNGIBLE_RESOURCE_MANAGER, EntityType.GLOBAL_NON_FUNGIBLE_RESOURCE_MANAGER)
+            networkId = currentNetworkId
         )
         val alreadyAdded = state.value.assetExceptionsUiModels?.any { it.assetException.address == address } == true
 
@@ -326,12 +324,11 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun depositorAddressTyped(address: String) {
         val currentNetworkId = state.value.account?.networkID ?: return
-        val validAddress = AddressValidator.isValidForTypes(
+        val validAddress = RetBridge.Address.isValidResource(
             address = address,
-            networkId = currentNetworkId,
-            allowedEntityTypes = setOf(EntityType.GLOBAL_FUNGIBLE_RESOURCE_MANAGER, EntityType.GLOBAL_NON_FUNGIBLE_RESOURCE_MANAGER)
+            networkId = currentNetworkId
         )
-        val validNft = AddressValidator.isValidNft(address)
+        val validNft = RetBridge.Address.isValidNFT(address)
         _state.update { state ->
             val updatedDepositor = state.depositorToAdd.copy(
                 depositorAddress = when {

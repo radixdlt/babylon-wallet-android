@@ -75,6 +75,7 @@ import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.StateFlow
+import rdx.works.core.ret.RetBridge
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.backup.BackupType
 
@@ -348,7 +349,7 @@ fun NavigationHost(
                 val resourcesWithAmount = when (asset) {
                     is TransferableAsset.Fungible.LSUAsset -> {
                         val xrdResourceAddress = runCatching {
-                            val networkId = Address(asset.resource.resourceAddress).networkId().toInt()
+                            val networkId = RetBridge.Address.networkId(asset.resourceAddress)
                             XrdResource.address(networkId = NetworkId.from(networkId))
                         }.getOrNull()
 

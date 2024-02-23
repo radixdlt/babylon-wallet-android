@@ -95,8 +95,4 @@ fun Signature.Ed25519.toHexString(): String = Hex.toHexString(value)
 fun PublicKey.Secp256k1.toHexString(): String = Hex.toHexString(value)
 fun PublicKey.Ed25519.toHexString(): String = Hex.toHexString(value)
 
-fun EntityType.isPool() = this == EntityType.GLOBAL_ONE_RESOURCE_POOL ||
-    this == EntityType.GLOBAL_TWO_RESOURCE_POOL ||
-    this == EntityType.GLOBAL_MULTI_RESOURCE_POOL
-
 fun EntityType.isGlobalComponent() = this == EntityType.GLOBAL_GENERIC_COMPONENT

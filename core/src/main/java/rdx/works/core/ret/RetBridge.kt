@@ -1,0 +1,60 @@
+package rdx.works.core.ret
+
+import android.util.Log
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.EntityType
+import com.radixdlt.ret.NonFungibleGlobalId
+import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
+
+object RetBridge {
+
+    private const val LOG_TAG = "RetBridge"
+
+    object Address {
+
+        fun networkIdOrNull(fromAddress: String): Int? = fromAddress.toAddressOrNull()?.networkId()?.toInt()
+
+        fun networkId(fromAddress: String): Int = Address(fromAddress).networkId().toInt()
+
+        fun isResource(address: String): Boolean = address.toAddressOrNull()?.isGlobalResourceManager() == true
+
+        fun isValidResource(address: String, networkId: Int) = isValid(address, networkId) && isResource(address)
+
+        fun isPool(address: String): Boolean {
+            val entityType = address.toAddressOrNull()?.entityType()
+
+            return entityType == EntityType.GLOBAL_ONE_RESOURCE_POOL ||
+                    entityType == EntityType.GLOBAL_TWO_RESOURCE_POOL ||
+                    entityType == EntityType.GLOBAL_MULTI_RESOURCE_POOL
+        }
+
+        fun isValidator(address: String): Boolean {
+            val entityType = address.toAddressOrNull()?.entityType()
+
+            return entityType == EntityType.GLOBAL_VALIDATOR
+        }
+
+        fun isValid(address: String, checkNetworkId: Int? = null): Boolean {
+            val retAddress = address.toAddressOrNull() ?: return false
+
+            return if (checkNetworkId != null) {
+                retAddress.networkId() == checkNetworkId.toUByte()
+            } else {
+                true
+            }
+        }
+
+        fun isValidNFT(address: String) = address.toNonFungibleGlobalId() != null
+
+        fun publicKeyHash(accountAddress: String) = accountAddress.toAddressOrNull()?.bytes()?.takeLast(PUBLIC_KEY_HASH_LENGTH)?.toByteArray()
+
+        private fun String.toAddressOrNull() = runCatching { Address(this) }
+            .onFailure { Log.w(LOG_TAG, it) }
+            .getOrNull()
+
+        private fun String.toNonFungibleGlobalId() = runCatching { NonFungibleGlobalId(this) }
+            .onFailure { Log.w(LOG_TAG, it) }
+            .getOrNull()
+    }
+
+}
