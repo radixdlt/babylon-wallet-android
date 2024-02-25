@@ -7,6 +7,7 @@ import android.view.animation.AnticipateInterpolator
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -23,6 +24,8 @@ import com.babylon.wallet.android.presentation.main.AppState
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.LocalActionableAddressViewEntryPoint
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -35,6 +38,9 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var linkConnectionStatusObserver: LinkConnectionStatusObserver
 
+    @Inject
+    lateinit var actionableAddressViewEntryPoint: ActionableAddressViewEntryPoint
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         splashScreen.setKeepOnScreenCondition {
@@ -46,28 +52,30 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             RadixWalletTheme {
-                val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsState(initial = true)
-                val devBannerState by remember(isDevBannerVisible) {
-                    derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }
-                }
-
-                var linkConnectionsStatus: LinkConnectionsStatus? = null
-                if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
-                    val isLinkConnectionsStatusEnabled by linkConnectionStatusObserver.isEnabled.collectAsState()
-                    if (isLinkConnectionsStatusEnabled) {
-                        linkConnectionsStatus = linkConnectionStatusObserver.currentStatus.collectAsState().value
+                CompositionLocalProvider(LocalActionableAddressViewEntryPoint.provides(actionableAddressViewEntryPoint)) {
+                    val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsState(initial = true)
+                    val devBannerState by remember(isDevBannerVisible) {
+                        derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }
                     }
-                }
 
-                DevelopmentPreviewWrapper(
-                    devBannerState = devBannerState,
-                    linkConnectionsStatus = linkConnectionsStatus
-                ) { padding ->
-                    WalletApp(
-                        modifier = Modifier.padding(padding),
-                        mainViewModel = viewModel,
-                        onCloseApp = { finish() }
-                    )
+                    var linkConnectionsStatus: LinkConnectionsStatus? = null
+                    if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
+                        val isLinkConnectionsStatusEnabled by linkConnectionStatusObserver.isEnabled.collectAsState()
+                        if (isLinkConnectionsStatusEnabled) {
+                            linkConnectionsStatus = linkConnectionStatusObserver.currentStatus.collectAsState().value
+                        }
+                    }
+
+                    DevelopmentPreviewWrapper(
+                        devBannerState = devBannerState,
+                        linkConnectionsStatus = linkConnectionsStatus
+                    ) { padding ->
+                        WalletApp(
+                            modifier = Modifier.padding(padding),
+                            mainViewModel = viewModel,
+                            onCloseApp = { finish() }
+                        )
+                    }
                 }
             }
         }
