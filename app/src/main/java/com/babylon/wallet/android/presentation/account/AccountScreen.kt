@@ -52,12 +52,9 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
@@ -441,18 +438,7 @@ fun AccountContentPreview() {
     RadixWalletTheme {
         with(SampleDataProvider()) {
             AccountScreenContent(
-                state = AccountUiState(
-                    accountWithAssets = AccountWithAssets(
-                        account = sampleAccount("acount_rdx_abcde"),
-                        assets = Assets(
-                            tokens = sampleFungibleResources().map { Token(it) },
-                            nonFungibles = listOf(),
-                            poolUnits = listOf(),
-                            liquidStakeUnits = emptyList(),
-                            stakeClaims = emptyList()
-                        ),
-                    )
-                ),
+                state = AccountUiState(accountWithAssets = sampleAccountWithoutResources()),
                 onAccountPreferenceClick = { _ -> },
                 onBackClick = {},
                 onRefresh = {},
