@@ -18,6 +18,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
