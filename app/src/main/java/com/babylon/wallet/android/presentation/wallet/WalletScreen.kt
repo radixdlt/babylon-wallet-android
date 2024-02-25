@@ -338,7 +338,7 @@ fun WalletContentPreview() {
         with(SampleDataProvider()) {
             WalletContent(
                 state = WalletUiState(
-                    accountsWithResources = listOf(sampleAccountWithResources(), sampleAccountWithResources()),
+                    accountsWithResources = listOf(sampleAccountWithoutResources(), sampleAccountWithoutResources()),
                     loading = false,
                     isBackupWarningVisible = true,
                     error = null

@@ -20,23 +20,16 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
-import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.toText
-import java.math.BigDecimal
 
 @Suppress("DestructuringDeclarationWithTooManyEntries")
 @Composable
@@ -198,26 +191,7 @@ fun AccountCardPreview() {
                 accountWithAssets = AccountWithAssets(
                     account = SampleDataProvider().sampleAccount(),
                     assets = Assets(
-                        tokens = listOf(
-                            Token(
-                                Resource.FungibleResource(
-                                    resourceAddress = "resource_address",
-                                    ownedAmount = BigDecimal.valueOf(237659),
-                                    metadata = listOf(
-                                        Metadata.Primitive(
-                                            key = ExplicitMetadataKey.NAME.key,
-                                            value = "Radix",
-                                            valueType = MetadataType.String
-                                        ),
-                                        Metadata.Primitive(
-                                            key = ExplicitMetadataKey.SYMBOL.key,
-                                            value = XrdResource.SYMBOL,
-                                            valueType = MetadataType.String
-                                        )
-                                    )
-                                )
-                            )
-                        ),
+                        tokens = emptyList(),
                         nonFungibles = listOf(),
                         poolUnits = emptyList(),
                         liquidStakeUnits = emptyList(),
