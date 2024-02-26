@@ -27,6 +27,7 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletPreviewTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Selectable
@@ -145,7 +146,7 @@ fun ChooseLedgerDeviceSection(
 @Preview(showBackground = true)
 @Composable
 fun FullscreenCircularProgressContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         ChooseLedgerDeviceSection(
             modifier = Modifier,
             ledgerDevices = SampleDataProvider()

@@ -124,7 +124,7 @@ fun LSUDialogContent(
 
         val xrdWorth = remember(args, lsu) {
             val xrdResourceAddress = runCatching {
-                val networkId = NetworkId.from(RetBridge.Address.networkId(args.resourceAddress))
+                val networkId = RetBridge.Address.networkId(args.resourceAddress)
                 XrdResource.address(networkId = networkId)
             }.getOrNull()
 
