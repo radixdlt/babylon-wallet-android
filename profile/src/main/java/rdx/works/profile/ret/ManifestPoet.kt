@@ -11,4 +11,10 @@ object ManifestPoet {
         .setOwnerKeys(entityAddress, publicKeyHashes)
         .buildSafely(RetBridge.Address.networkId(entityAddress))
 
+    fun buildFaucet(toAddress: String) = BabylonManifestBuilder()
+        .lockFee()
+        .freeXrd()
+        .accountTryDepositEntireWorktopOrAbort(toAddress = toAddress)
+        .buildSafely(RetBridge.Address.networkId(toAddress))
+
 }
