@@ -16,15 +16,13 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.ret.BabylonManifestBuilder
-import rdx.works.profile.ret.buildSafely
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateways
+import rdx.works.profile.ret.ManifestPoet
 import java.math.BigDecimal
 import javax.inject.Inject
-import kotlin.Result
 
 @Suppress("LongParameterList")
 class GetFreeXrdUseCase @Inject constructor(
@@ -40,11 +38,8 @@ class GetFreeXrdUseCase @Inject constructor(
     suspend operator fun invoke(address: String): Result<String> {
         return withContext(ioDispatcher) {
             val gateway = getProfileUseCase().map { it.currentGateway }.first()
-            val manifest = BabylonManifestBuilder()
-                .lockFee()
-                .freeXrd()
-                .accountTryDepositEntireWorktopOrAbort(toAddress = address)
-                .buildSafely(gateway.network.id)
+            val manifest = ManifestPoet
+                .buildFaucet(toAddress = address)
                 .getOrElse {
                     return@withContext Result.failure(it)
                 }
