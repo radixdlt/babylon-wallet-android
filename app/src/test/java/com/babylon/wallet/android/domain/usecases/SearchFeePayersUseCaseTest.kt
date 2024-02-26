@@ -10,13 +10,12 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.PublicKeyHash
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
-import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.TransactionManifest
-import com.radixdlt.ret.knownAddresses
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -92,9 +91,9 @@ class SearchFeePayersUseCaseTest {
             networkId: Int = Radix.Gateway.default.network.id
         ): TransactionManifest = BabylonManifestBuilder()
             .withdrawFromAccount(
-                fromAddress = Address(account.address),
-                fungible = knownAddresses(networkId = networkId.toUByte()).resourceAddresses.xrd,
-                amount = Decimal("10")
+                fromAddress = account.address,
+                fungibleAddress = XrdResource.address(networkId),
+                amount = BigDecimal.TEN
             ).build(networkId)
 
         private object ProfileRepositoryFake : ProfileRepository {
