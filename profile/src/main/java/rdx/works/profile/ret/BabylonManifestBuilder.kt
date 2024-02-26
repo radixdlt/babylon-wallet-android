@@ -1,6 +1,5 @@
 package rdx.works.profile.ret
 
-import com.radixdlt.ret.AccountDefaultDepositRule
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.ManifestBuilder
 import com.radixdlt.ret.ManifestBuilderAddress
@@ -10,8 +9,12 @@ import com.radixdlt.ret.MetadataValue
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.PublicKeyHash
-import com.radixdlt.ret.ResourcePreference
 import com.radixdlt.ret.TransactionManifest
+import rdx.works.core.compressedPublicKeyHashBytes
+import rdx.works.profile.data.model.extensions.toRETResourcePreference
+import rdx.works.profile.data.model.factorsources.Slip10Curve
+import rdx.works.profile.data.model.pernetwork.FactorInstance
+import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -118,14 +121,20 @@ class BabylonManifestBuilder {
     }
 
     fun setOwnerKeys(
-        address: String,
-        ownerKeyHashes: List<PublicKeyHash>
+        entityAddress: String,
+        ownerPublicKeys: List<FactorInstance.PublicKey>
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.metadataSet(
-            address = Address(address),
+            address = Address(entityAddress),
             key = "owner_keys",
             value = MetadataValue.PublicKeyHashArrayValue(
-                value = ownerKeyHashes
+                value = ownerPublicKeys.map { key ->
+                    val bytes = key.compressedData.compressedPublicKeyHashBytes()
+                    when (key.curve) {
+                        Slip10Curve.SECP_256K1 -> PublicKeyHash.Secp256k1(bytes)
+                        Slip10Curve.CURVE_25519 -> PublicKeyHash.Secp256k1(bytes)
+                    }
+                }
             )
         )
         return this
@@ -133,12 +142,12 @@ class BabylonManifestBuilder {
 
     fun setDefaultDepositRule(
         accountAddress: String,
-        accountDefaultDepositRule: AccountDefaultDepositRule
+        accountDefaultDepositRule: ThirdPartyDeposits.DepositRule
     ): BabylonManifestBuilder {
-        val value = when (accountDefaultDepositRule) {
-            AccountDefaultDepositRule.ACCEPT -> ManifestBuilderValue.EnumValue(0u, emptyList())
-            AccountDefaultDepositRule.REJECT -> ManifestBuilderValue.EnumValue(1u, emptyList())
-            AccountDefaultDepositRule.ALLOW_EXISTING -> ManifestBuilderValue.EnumValue(2u, emptyList())
+        val value = when(accountDefaultDepositRule) {
+            ThirdPartyDeposits.DepositRule.AcceptAll -> ManifestBuilderValue.EnumValue(0u, emptyList())
+            ThirdPartyDeposits.DepositRule.DenyAll -> ManifestBuilderValue.EnumValue(1u, emptyList())
+            ThirdPartyDeposits.DepositRule.AcceptKnown -> ManifestBuilderValue.EnumValue(2u, emptyList())
         }
         manifestBuilder = manifestBuilder.callMethod(
             address = ManifestBuilderAddress.Static(Address(accountAddress)),
@@ -150,24 +159,24 @@ class BabylonManifestBuilder {
 
     fun addAuthorizedDepositor(
         accountAddress: String,
-        depositorAddress: ManifestBuilderValue
+        depositorAddress: ThirdPartyDeposits.DepositorAddress
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.callMethod(
             address = ManifestBuilderAddress.Static(Address(accountAddress)),
             methodName = "add_authorized_depositor",
-            args = listOf(depositorAddress)
+            args = listOf(depositorAddress.toRETManifestBuilderValue())
         )
         return this
     }
 
     fun removeAuthorizedDepositor(
         accountAddress: String,
-        depositorAddress: ManifestBuilderValue
+        depositorAddress: ThirdPartyDeposits.DepositorAddress
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.callMethod(
             address = ManifestBuilderAddress.Static(Address(accountAddress)),
             methodName = "remove_authorized_depositor",
-            args = listOf(depositorAddress)
+            args = listOf(depositorAddress.toRETManifestBuilderValue())
         )
         return this
     }
@@ -175,11 +184,12 @@ class BabylonManifestBuilder {
     fun setResourcePreference(
         accountAddress: String,
         resourceAddress: String,
-        preference: ResourcePreference
+        exceptionRule: ThirdPartyDeposits.DepositAddressExceptionRule
     ): BabylonManifestBuilder {
-        val value = when (preference) {
-            ResourcePreference.ALLOWED -> ManifestBuilderValue.EnumValue(0u, emptyList())
-            ResourcePreference.DISALLOWED -> ManifestBuilderValue.EnumValue(1u, emptyList())
+        exceptionRule.toRETResourcePreference()
+        val value = when (exceptionRule) {
+            ThirdPartyDeposits.DepositAddressExceptionRule.Allow -> ManifestBuilderValue.EnumValue(0u, emptyList())
+            ThirdPartyDeposits.DepositAddressExceptionRule.Deny -> ManifestBuilderValue.EnumValue(1u, emptyList())
         }
         manifestBuilder = manifestBuilder.callMethod(
             address = ManifestBuilderAddress.Static(Address(accountAddress)),
@@ -217,6 +227,33 @@ class BabylonManifestBuilder {
         val retBucket: ManifestBuilderBucket
         init {
             retBucket = ManifestBuilderBucket(name = name)
+        }
+    }
+}
+
+private fun ThirdPartyDeposits.DepositorAddress.toRETManifestBuilderValue(): ManifestBuilderValue {
+    return when (this) {
+        is ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID -> {
+            val nonFungibleGlobalId = NonFungibleGlobalId(address)
+            ManifestBuilderValue.EnumValue(
+                0u,
+                listOf(
+                    ManifestBuilderValue.TupleValue(
+                        listOf(
+                            ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(nonFungibleGlobalId.resourceAddress())),
+                            ManifestBuilderValue.NonFungibleLocalIdValue(nonFungibleGlobalId.localId())
+                        )
+                    )
+                )
+            )
+        }
+
+        is ThirdPartyDeposits.DepositorAddress.ResourceAddress -> {
+            val retAddress = Address(address)
+            ManifestBuilderValue.EnumValue(
+                1u,
+                fields = listOf(ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(retAddress)))
+            )
         }
     }
 }
