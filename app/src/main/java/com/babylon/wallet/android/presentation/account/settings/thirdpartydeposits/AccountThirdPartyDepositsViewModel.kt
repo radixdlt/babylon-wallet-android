@@ -27,9 +27,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
-import rdx.works.core.ret.BabylonManifestBuilder
-import rdx.works.core.ret.RetBridge
-import rdx.works.core.ret.buildSafely
+import rdx.works.profile.ret.BabylonManifestBuilder
+import rdx.works.profile.ret.RetBridge
+import rdx.works.profile.ret.buildSafely
 import rdx.works.profile.data.model.extensions.toRETDepositRule
 import rdx.works.profile.data.model.extensions.toRETResourcePreference
 import rdx.works.profile.data.model.pernetwork.Network

@@ -6,8 +6,8 @@ import com.radixdlt.hex.extensions.hexToByteArray
 import com.radixdlt.hex.model.HexString
 import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.Signature
-import rdx.works.core.ret.crypto.PrivateKey
-import rdx.works.core.ret.toEnginePublicKeyModel
+import rdx.works.profile.ret.crypto.PrivateKey
+import rdx.works.profile.ret.toEnginePublicKeyModel
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance

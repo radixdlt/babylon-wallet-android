@@ -3,7 +3,7 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities
 import com.radixdlt.ret.ManifestSummary
-import rdx.works.core.ret.crypto.PrivateKey
+import rdx.works.profile.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork

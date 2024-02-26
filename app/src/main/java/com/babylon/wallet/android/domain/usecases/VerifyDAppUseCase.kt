@@ -12,7 +12,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRe
 import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.flow.first
-import rdx.works.core.ret.RetBridge
+import rdx.works.profile.ret.RetBridge
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.security

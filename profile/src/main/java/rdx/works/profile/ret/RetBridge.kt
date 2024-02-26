@@ -1,4 +1,4 @@
-package rdx.works.core.ret
+package rdx.works.profile.ret
 
 import android.util.Log
 import com.radixdlt.ret.Address

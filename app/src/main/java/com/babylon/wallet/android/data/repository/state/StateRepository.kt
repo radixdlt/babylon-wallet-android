@@ -37,7 +37,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
-import rdx.works.core.ret.RetBridge
+import rdx.works.profile.ret.RetBridge
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network

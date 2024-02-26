@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.core.multiplyWithDivisibility
-import rdx.works.core.ret.crypto.PrivateKey
+import rdx.works.profile.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.ProfileException
 import java.math.BigDecimal

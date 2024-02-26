@@ -1,6 +1,6 @@
 @file:Suppress("MagicNumber")
 
-package rdx.works.core.ret.crypto
+package rdx.works.profile.ret.crypto
 
 import com.radixdlt.ret.PublicKey
 import com.radixdlt.ret.Signature
@@ -170,8 +170,8 @@ sealed class PrivateKey {
             // of the signature
             return (
                 byteArrayOf(v.toByte()) +
-                    Bytes.bigIntegerToBytes(r, 32) +
-                    Bytes.bigIntegerToBytes(s, 32)
+                        Bytes.bigIntegerToBytes(r, 32) +
+                        Bytes.bigIntegerToBytes(s, 32)
                 )
         }
 

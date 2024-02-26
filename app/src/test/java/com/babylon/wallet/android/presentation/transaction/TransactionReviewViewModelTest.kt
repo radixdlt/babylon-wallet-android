@@ -84,7 +84,7 @@ import org.junit.runners.model.Statement
 import rdx.works.core.displayableQuantity
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.logNonFatalException
-import rdx.works.core.ret.crypto.PrivateKey
+import rdx.works.profile.ret.crypto.PrivateKey
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase

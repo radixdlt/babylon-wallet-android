@@ -39,7 +39,6 @@ android {
 dependencies {
     implementation libs.retAndroid
     implementation libs.slip10
-    implementation libs.crypto
     implementation libs.ktorCore
     implementation libs.zxing
     implementation libs.kotlinxSerialization

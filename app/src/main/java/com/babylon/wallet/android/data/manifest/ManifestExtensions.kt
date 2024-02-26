@@ -16,7 +16,7 @@ import com.radixdlt.ret.ManifestAddress
 import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
-import rdx.works.core.ret.ManifestMethod
+import rdx.works.profile.ret.ManifestMethod
 import rdx.works.core.toRETDecimal
 import java.math.BigDecimal
 import java.math.RoundingMode

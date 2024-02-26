@@ -9,7 +9,6 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
-import com.radixdlt.ret.Address
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -17,8 +16,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.ret.BabylonManifestBuilder
-import rdx.works.core.ret.buildSafely
+import rdx.works.profile.ret.BabylonManifestBuilder
+import rdx.works.profile.ret.buildSafely
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.domain.GetProfileUseCase
