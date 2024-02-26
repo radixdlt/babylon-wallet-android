@@ -2,7 +2,6 @@ package rdx.works.profile.ret
 
 import com.radixdlt.ret.AccountDefaultDepositRule
 import com.radixdlt.ret.Address
-import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.ManifestBuilder
 import com.radixdlt.ret.ManifestBuilderAddress
 import com.radixdlt.ret.ManifestBuilderBucket
@@ -220,9 +219,6 @@ class BabylonManifestBuilder {
             retBucket = ManifestBuilderBucket(name = name)
         }
     }
-
-    @Suppress("MagicNumber")
-    private fun BigDecimal.toRETDecimal(roundingMode: RoundingMode): Decimal = Decimal(setScale(18, roundingMode).toPlainString())
 }
 
 fun NonFungibleLocalId.asStr() = when (this) {
