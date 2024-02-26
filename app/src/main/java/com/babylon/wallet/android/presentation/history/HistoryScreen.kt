@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -70,7 +71,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.babylon.wallet.android.utils.dayMonthDateFormat
+import com.babylon.wallet.android.utils.dayMonthDateFull
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.filter
@@ -189,9 +190,9 @@ fun HistoryContent(
                         modifier = Modifier
                             .background(RadixTheme.colors.defaultBackground)
                             .fillMaxWidth()
+                            .heightIn(min = 50.dp)
                             .padding(
                                 horizontal = RadixTheme.dimensions.paddingMedium,
-                                vertical = RadixTheme.dimensions.paddingSmall
                             )
                     )
                 }
@@ -244,7 +245,7 @@ fun HistoryContent(
                                         .fillMaxWidth()
                                         .background(RadixTheme.colors.gray5)
                                         .padding(RadixTheme.dimensions.paddingMedium),
-                                    text = item.item.toInstant().dayMonthDateFormat(),
+                                    text = item.item.toInstant().dayMonthDateFull(),
                                     style = RadixTheme.typography.body2Header,
                                     color = RadixTheme.colors.gray2
                                 )

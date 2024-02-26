@@ -8,8 +8,10 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-const val LAST_USED_DATE_FORMAT = "d MMM yyyy"
-const val LAST_USED_DATE_FORMAT_THIS_YEAR = "d MMM"
+const val LAST_USED_DATE_FORMAT_SHORT_MONTH = "d MMM yyyy"
+const val LAST_USED_DATE_FORMAT_THIS_YEAR_SHORT_MONTH = "d MMM"
+const val LAST_USED_DATE_FORMAT = "d MMMM yyyy"
+const val LAST_USED_DATE_FORMAT_THIS_YEAR = "d MMMM"
 const val TIMESTAMP_HOURS_MINUTES = "hh:mm"
 const val TIMESTAMP_ONLY_MONTH = "MMM"
 const val TIMESTAMP_MONTH_AND_YEAR = "MMM YY"
@@ -37,7 +39,20 @@ fun String.fromISO8601String(): LocalDateTime? {
     }
 }
 
-fun Instant.dayMonthDateFormat(): String {
+fun Instant.dayMonthDateShort(): String {
+    val zoneId = ZoneId.systemDefault()
+    val currentYear = Instant.now().atZone(zoneId).year
+    val instantYear = atZone(zoneId).year
+    val format = if (currentYear == instantYear) {
+        LAST_USED_DATE_FORMAT_THIS_YEAR_SHORT_MONTH
+    } else {
+        LAST_USED_DATE_FORMAT_SHORT_MONTH
+    }
+    val formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.systemDefault())
+    return formatter.format(this)
+}
+
+fun Instant.dayMonthDateFull(): String {
     val zoneId = ZoneId.systemDefault()
     val currentYear = Instant.now().atZone(zoneId).year
     val instantYear = atZone(zoneId).year
@@ -56,7 +71,7 @@ fun Instant.timestampHoursMinutes(): String {
 }
 
 fun Instant.toDateString(): String {
-    val formatter = DateTimeFormatter.ofPattern(LAST_USED_DATE_FORMAT).withZone(ZoneId.systemDefault())
+    val formatter = DateTimeFormatter.ofPattern(LAST_USED_DATE_FORMAT_SHORT_MONTH).withZone(ZoneId.systemDefault())
     return formatter.format(this)
 }
 

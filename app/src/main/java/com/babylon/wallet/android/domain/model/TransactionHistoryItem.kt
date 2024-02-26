@@ -179,5 +179,5 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
 }
 
 enum class TransactionClass {
-    General, PoolContribution, PoolRedemption, Transfer, ValidatorClaim, ValidatorStake, ValidatorUnstake, AccountDespositSettingsUpdate
+    General, Transfer, ValidatorStake, ValidatorUnstake, ValidatorClaim, AccountDespositSettingsUpdate, PoolContribution, PoolRedemption
 }

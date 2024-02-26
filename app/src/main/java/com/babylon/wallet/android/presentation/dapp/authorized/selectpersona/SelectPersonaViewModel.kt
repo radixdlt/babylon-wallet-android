@@ -7,7 +7,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT
+import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT_SHORT_MONTH
 import com.babylon.wallet.android.utils.fromISO8601String
 import com.babylon.wallet.android.utils.toEpochMillis
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -93,7 +93,7 @@ class SelectPersonaViewModel @Inject constructor(
                 val localDateTime = matchingAuthorizedPersona.lastLogin.fromISO8601String()
                 personaUiModel.copy(
                     lastUsedOn = localDateTime
-                        ?.format(DateTimeFormatter.ofPattern(LAST_USED_DATE_FORMAT)),
+                        ?.format(DateTimeFormatter.ofPattern(LAST_USED_DATE_FORMAT_SHORT_MONTH)),
                     lastUsedOnTimestamp = localDateTime?.toEpochMillis() ?: 0
                 )
             } else {

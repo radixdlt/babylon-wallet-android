@@ -33,7 +33,11 @@ fun FiltersStrip(
             .background(RadixTheme.colors.defaultBackground)
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium),
-        contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
+        contentPadding = PaddingValues(
+            top = RadixTheme.dimensions.paddingMedium,
+            start = RadixTheme.dimensions.paddingMedium,
+            end = RadixTheme.dimensions.paddingMedium
+        ),
         userScrollEnabled = userInteractionEnabled,
         state = timeFilterScrollState
     ) {
