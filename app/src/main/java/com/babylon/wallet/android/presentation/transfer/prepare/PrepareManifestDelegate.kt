@@ -9,19 +9,14 @@ import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.ManifestBuilderBucket
-import com.radixdlt.ret.NonFungibleGlobalId
 import kotlinx.coroutines.flow.update
 import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.core.ret.buildSafely
-import rdx.works.core.toRETDecimal
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 
 class PrepareManifestDelegate @Inject constructor(
@@ -70,9 +65,9 @@ class PrepareManifestDelegate @Inject constructor(
         _state.value.withdrawingFungibles().forEach { (resource, amount) ->
             // Withdraw the total amount for each fungible
             withdrawFromAccount(
-                fromAddress = Address(fromAccount.address),
-                fungible = Address(resource.resourceAddress),
-                amount = amount.toRETDecimal(roundingMode = RoundingMode.HALF_UP)
+                fromAddress = fromAccount.address,
+                fungibleAddress = resource.resourceAddress,
+                amount = amount
             )
 
             // Deposit to each target account
@@ -87,8 +82,8 @@ class PrepareManifestDelegate @Inject constructor(
 
                     // First take the correct amount from worktop and pour it into bucket
                     takeFromWorktop(
-                        fungible = Address(resource.resourceAddress),
-                        amount = spendingFungibleAsset.amountDecimal.toRETDecimal(roundingMode = RoundingMode.HALF_UP),
+                        fungibleAddress = resource.resourceAddress,
+                        amount = spendingFungibleAsset.amountDecimal,
                         intoBucket = bucket
                     )
 
@@ -112,16 +107,12 @@ class PrepareManifestDelegate @Inject constructor(
             nonFungibleSpendingAssets.forEach { nft ->
                 val bucket = newBucket()
 
-                val globalId = NonFungibleGlobalId.fromParts(
-                    resourceAddress = Address(nft.item.collectionAddress),
-                    nonFungibleLocalId = nft.item.localId.toRetId()
-                )
                 withdrawNonFungiblesFromAccount(
-                    fromAddress = Address(fromAccount.address),
-                    nonFungible = globalId
+                    fromAddress = fromAccount.address,
+                    nonFungibleGlobalAddress = nft.item.globalAddress
                 )
                 takeNonFungiblesFromWorktop(
-                    nonFungible = globalId,
+                    nonFungibleGlobalAddress = nft.item.globalAddress,
                     intoBucket = bucket
                 )
 
@@ -136,7 +127,7 @@ class PrepareManifestDelegate @Inject constructor(
 
     private suspend fun BabylonManifestBuilder.deposit(
         targetAccount: TargetAccount,
-        bucket: ManifestBuilderBucket,
+        bucket: BabylonManifestBuilder.Bucket,
         spendingAsset: SpendingAsset
     ) = apply {
         val isAccountAbleToSign = targetAccount.factorSourceId?.let {
@@ -149,18 +140,18 @@ class PrepareManifestDelegate @Inject constructor(
                 // if for example account has deny all we don't want to prevent transfer between our OWN accounts
                 // therefore ask user to sign
                 accountDeposit(
-                    toAddress = Address(targetAccount.address),
+                    toAddress = targetAccount.address,
                     fromBucket = bucket
                 )
             } else {
                 accountTryDepositOrAbort(
-                    toAddress = Address(targetAccount.address),
+                    toAddress = targetAccount.address,
                     fromBucket = bucket
                 )
             }
         } else { // try_deposit_or_abort for account that we are not controlling and are not able to sign tx
             accountTryDepositOrAbort(
-                toAddress = Address(targetAccount.address),
+                toAddress = targetAccount.address,
                 fromBucket = bucket
             )
         }

@@ -5,7 +5,6 @@ import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUse
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
-import com.radixdlt.ret.Address
 import com.radixdlt.ret.PublicKeyHash
 import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.TransactionManifest
@@ -75,7 +74,7 @@ class ROLAClient @Inject constructor(
         ownerPublicKeys: List<FactorInstance.PublicKey>
     ): BabylonManifestBuilder {
         return setOwnerKeys(
-            address = Address(entityAddress),
+            address = entityAddress,
             ownerKeyHashes = ownerPublicKeys.map { key ->
                 val bytes = key.compressedData.compressedPublicKeyHashBytes()
                 when (key.curve) {

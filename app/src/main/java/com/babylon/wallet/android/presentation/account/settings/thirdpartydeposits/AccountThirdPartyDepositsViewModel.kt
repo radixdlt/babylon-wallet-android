@@ -118,7 +118,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             if (currentThirdPartyDeposits?.depositRule != state.value.updatedThirdPartyDepositSettings?.depositRule) {
                 val depositRule = checkNotNull(state.value.updatedThirdPartyDepositSettings?.depositRule?.toRETDepositRule())
                 manifestBuilder.setDefaultDepositRule(
-                    accountAddress = Address(args.address),
+                    accountAddress = args.address,
                     accountDefaultDepositRule = depositRule
                 )
             }
@@ -127,21 +127,21 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             val newAssetExceptions = state.value.updatedThirdPartyDepositSettings?.assetsExceptionList.orEmpty()
             val newDepositors = state.value.updatedThirdPartyDepositSettings?.depositorsAllowList.orEmpty()
             currentAssetExceptions.minus(newAssetExceptions.toSet()).forEach { deletedException ->
-                manifestBuilder.removeResourcePreference(Address(args.address), Address(deletedException.address))
+                manifestBuilder.removeResourcePreference(accountAddress = args.address, resourceAddress = deletedException.address)
             }
             newAssetExceptions.minus(currentAssetExceptions.toSet()).forEach { addedException ->
                 manifestBuilder.setResourcePreference(
-                    accountAddress = Address(args.address),
-                    resourceAddress = Address(addedException.address),
+                    accountAddress = args.address,
+                    resourceAddress = addedException.address,
                     preference = addedException.exceptionRule.toRETResourcePreference()
                 )
             }
             currentDepositors.minus(newDepositors.toSet()).forEach { deletedDepositor ->
-                manifestBuilder.removeAuthorizedDepositor(Address(args.address), deletedDepositor.toRETManifestBuilderValue())
+                manifestBuilder.removeAuthorizedDepositor(args.address, deletedDepositor.toRETManifestBuilderValue())
             }
             newDepositors.minus(currentDepositors.toSet()).forEach { addedDepositor ->
                 manifestBuilder.addAuthorizedDepositor(
-                    accountAddress = Address(args.address),
+                    accountAddress = args.address,
                     depositorAddress = addedDepositor.toRETManifestBuilderValue(),
                 )
             }
