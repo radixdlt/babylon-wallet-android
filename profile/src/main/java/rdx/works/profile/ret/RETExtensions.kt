@@ -1,6 +1,6 @@
 @file:Suppress("TooManyFunctions")
 
-package rdx.works.core.ret
+package rdx.works.profile.ret
 
 import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.getCompressedPublicKey
@@ -14,7 +14,6 @@ import com.radixdlt.ret.SignatureWithPublicKey
 import org.bouncycastle.math.ec.ECPoint
 import org.bouncycastle.util.encoders.Hex
 import rdx.works.core.blake2Hash
-import rdx.works.core.ret.crypto.ECKeyUtils
 import java.math.BigInteger
 
 fun ECKeyPair.toEnginePublicKeyModel(): PublicKey {
@@ -31,12 +30,12 @@ fun ECKeyPair.toEnginePublicKeyModel(): PublicKey {
     }
 }
 
-fun PrivateKey.toEngineModel(): rdx.works.core.ret.crypto.PrivateKey {
+fun PrivateKey.toEngineModel(): rdx.works.profile.ret.crypto.PrivateKey {
     return when (this.curveType) {
-        EllipticCurveType.Secp256k1 -> rdx.works.core.ret.crypto.PrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes(
+        EllipticCurveType.Secp256k1 -> rdx.works.profile.ret.crypto.PrivateKey.EcdsaSecp256k1.newFromPrivateKeyBytes(
             this.keyByteArray()
         )
-        EllipticCurveType.Ed25519 -> rdx.works.core.ret.crypto.PrivateKey.EddsaEd25519.newFromPrivateKeyBytes(this.keyByteArray())
+        EllipticCurveType.Ed25519 -> rdx.works.profile.ret.crypto.PrivateKey.EddsaEd25519.newFromPrivateKeyBytes(this.keyByteArray())
         EllipticCurveType.P256 -> error("Curve EllipticCurveType.P256 not supported")
     }
 }
@@ -77,7 +76,7 @@ fun SignatureWithPublicKey.Secp256k1.publicKey(message: ByteArray): PublicKey.Se
     // that can produce a valid ecPoint. It might be better to handle this with an exception
     // or not use `get` optimistically.
     val ecPoint: ECPoint =
-        ECKeyUtils.recoverFromSignature(v.toInt(), r, s, hashedMessage).get()
+        rdx.works.profile.ret.crypto.ECKeyUtils.recoverFromSignature(v.toInt(), r, s, hashedMessage).get()
 
     // Getting the bytes of the compressed public key (below, true = compress) and then
     // creating a new public key object.

@@ -10,8 +10,8 @@ import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import kotlinx.coroutines.flow.update
-import rdx.works.core.ret.BabylonManifestBuilder
-import rdx.works.core.ret.buildSafely
+import rdx.works.profile.ret.BabylonManifestBuilder
+import rdx.works.profile.ret.buildSafely
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository

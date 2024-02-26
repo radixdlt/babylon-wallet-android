@@ -2,14 +2,12 @@
 
 package rdx.works.profile.domain
 
-import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
-import rdx.works.core.ret.RetBridge
+import rdx.works.profile.ret.RetBridge
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.factorSourceId
