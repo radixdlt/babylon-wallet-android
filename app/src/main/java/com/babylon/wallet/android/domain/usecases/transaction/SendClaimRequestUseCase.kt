@@ -4,14 +4,9 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.ManifestBuilder
-import com.radixdlt.ret.ManifestBuilderBucket
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.ret.toRETDecimal
+import rdx.works.profile.ret.ManifestPoet
 import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 
 class SendClaimRequestUseCase @Inject constructor(
@@ -23,38 +18,25 @@ class SendClaimRequestUseCase @Inject constructor(
         claims: List<StakeClaim>,
         epoch: Long
     ) {
-        var builder = ManifestBuilder()
-        var bucketCounter = 0
+        ManifestPoet
+            .buildClaim(
+                fromAccount = account,
+                claims = claims.mapNotNull { claim ->
+                    val nfts = claim.nonFungibleResource.items.filter { it.isReadyToClaim(epoch) }
+                    if (nfts.isEmpty()) return@mapNotNull null
 
-        claims.forEach { claim ->
-            val claimNFTs = claim.nonFungibleResource.items.filter { it.isReadyToClaim(epoch) }
-            if (claimNFTs.isEmpty()) return@forEach
-
-            val claimBucket = ManifestBuilderBucket("bucket$bucketCounter").also {
-                bucketCounter += 1
+                    ManifestPoet.Claim(
+                        resourceAddress = claim.resourceAddress,
+                        validatorAddress = claim.validatorAddress,
+                        claimNFTs = nfts.associate { it.localId.code to (it.claimAmountXrd ?: BigDecimal.ZERO) }
+                    )
+                }
+            ).mapCatching { manifest ->
+                manifest.prepareInternalTransactionRequest(networkId = account.networkID)
             }
-
-            val depositBucket = ManifestBuilderBucket("bucket$bucketCounter").also {
-                bucketCounter += 1
+            .onSuccess { request ->
+                incomingRequestRepository.add(request)
             }
-
-            builder = builder.attachClaimInstructions(
-                account = account,
-                claim = claim,
-                claimNFTs = claimNFTs,
-                bucket = claimBucket
-            ).attachDepositInstructions(
-                account = account,
-                claimNFTs = claimNFTs,
-                bucket = depositBucket
-            )
-        }
-
-        val request = builder
-            .build(account.networkID.toUByte())
-            .prepareInternalTransactionRequest(networkId = account.networkID)
-
-        incomingRequestRepository.add(request)
     }
 
     suspend operator fun invoke(
@@ -65,56 +47,21 @@ class SendClaimRequestUseCase @Inject constructor(
     ) {
         if (!nft.isReadyToClaim(epoch)) return
 
-        val request = ManifestBuilder()
-            .attachClaimInstructions(
-                account = account,
-                claim = claim,
-                claimNFTs = listOf(nft),
-                bucket = ManifestBuilderBucket("bucket0")
-            )
-            .attachDepositInstructions(
-                account = account,
-                claimNFTs = listOf(nft),
-                bucket = ManifestBuilderBucket("bucket1")
-            )
-            .build(account.networkID.toUByte())
-            .prepareInternalTransactionRequest(networkId = account.networkID)
-
-        incomingRequestRepository.add(request)
-    }
-
-    private fun ManifestBuilder.attachClaimInstructions(
-        account: Network.Account,
-        claim: StakeClaim,
-        claimNFTs: List<Resource.NonFungibleResource.Item>,
-        bucket: ManifestBuilderBucket
-    ) = accountWithdrawNonFungibles(
-        address = Address(account.address),
-        resourceAddress = Address(claim.resourceAddress),
-        ids = claimNFTs.map { it.localId.toRetId() }
-    ).takeAllFromWorktop(
-        resourceAddress = Address(claim.resourceAddress),
-        intoBucket = bucket
-    ).validatorClaimXrd(
-        address = Address(claim.validatorAddress),
-        bucket = bucket
-    )
-
-    private fun ManifestBuilder.attachDepositInstructions(
-        account: Network.Account,
-        claimNFTs: List<Resource.NonFungibleResource.Item>,
-        bucket: ManifestBuilderBucket
-    ): ManifestBuilder {
-        val totalClaimValue = claimNFTs.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO }
-        val xrdAddress = XrdResource.address(networkId = account.networkID)
-
-        return takeFromWorktop(
-            resourceAddress = Address(xrdAddress),
-            amount = totalClaimValue.toRETDecimal(roundingMode = RoundingMode.HALF_DOWN),
-            intoBucket = bucket
-        ).accountDeposit(
-            address = Address(account.address),
-            bucket = bucket
-        )
+        ManifestPoet
+            .buildClaim(
+                fromAccount = account,
+                claims = listOf(
+                    ManifestPoet.Claim(
+                        resourceAddress = claim.resourceAddress,
+                        validatorAddress = claim.validatorAddress,
+                        claimNFTs = mapOf(nft.localId.code to (nft.claimAmountXrd ?: BigDecimal.ZERO))
+                    )
+                )
+            ).mapCatching { manifest ->
+                manifest.prepareInternalTransactionRequest(networkId = account.networkID)
+            }
+            .onSuccess { request ->
+                incomingRequestRepository.add(request)
+            }
     }
 }
