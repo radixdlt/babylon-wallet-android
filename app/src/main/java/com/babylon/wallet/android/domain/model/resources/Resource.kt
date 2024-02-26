@@ -4,7 +4,6 @@ import android.net.Uri
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
-import com.babylon.wallet.android.domain.model.resources.XrdResource.addressesPerNetwork
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.claimAmount
 import com.babylon.wallet.android.domain.model.resources.metadata.claimEpoch
@@ -18,11 +17,11 @@ import com.babylon.wallet.android.domain.model.resources.metadata.tags
 import com.babylon.wallet.android.domain.model.resources.metadata.validatorAddress
 import com.babylon.wallet.android.utils.truncate
 import com.radixdlt.ret.NonFungibleLocalId
-import com.radixdlt.ret.knownAddresses
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import rdx.works.core.ret.RetBridge
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
@@ -348,17 +347,17 @@ sealed class Resource {
 object XrdResource {
     const val SYMBOL = "XRD"
 
-    val addressesPerNetwork: Map<NetworkId, String> by lazy {
-        NetworkId.values().associateWith { id ->
-            knownAddresses(networkId = id.value.toUByte()).resourceAddresses.xrd.addressString()
-        }
+    fun address(networkId: Int = Radix.Gateway.default.network.networkId().value): String {
+        return RetBridge.Address.xrdAddress(forNetworkId = networkId)
     }
-
-    fun address(networkId: NetworkId = Radix.Gateway.default.network.networkId()) = addressesPerNetwork[networkId].orEmpty()
 }
 
 val Resource.FungibleResource.isXrd: Boolean
-    get() = addressesPerNetwork.containsValue(resourceAddress)
+    get() {
+        val networkIdValue = RetBridge.Address.networkIdOrNull(resourceAddress) ?: return false
+
+        return XrdResource.address(networkId = networkIdValue) == resourceAddress
+    }
 
 fun List<Resource>.findFungible(address: String) = find { it.resourceAddress == address } as? Resource.FungibleResource
 fun List<Resource>.findNonFungible(address: String) = find { it.resourceAddress == address } as? Resource.NonFungibleResource

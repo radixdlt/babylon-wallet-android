@@ -4,6 +4,7 @@ import android.util.Log
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.NonFungibleGlobalId
+import com.radixdlt.ret.knownAddresses
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
 
 object RetBridge {
@@ -46,7 +47,12 @@ object RetBridge {
 
         fun isValidNFT(address: String) = address.toNonFungibleGlobalId() != null
 
-        fun publicKeyHash(accountAddress: String) = accountAddress.toAddressOrNull()?.bytes()?.takeLast(PUBLIC_KEY_HASH_LENGTH)?.toByteArray()
+        fun publicKeyHash(accountAddress: String) =
+            accountAddress.toAddressOrNull()?.bytes()?.takeLast(PUBLIC_KEY_HASH_LENGTH)?.toByteArray()
+
+        fun xrdAddress(forNetworkId: Int): String = knownAddresses(
+            networkId = forNetworkId.toUByte()
+        ).resourceAddresses.xrd.addressString()
 
         private fun String.toAddressOrNull() = runCatching { Address(this) }
             .onFailure { Log.w(LOG_TAG, it) }

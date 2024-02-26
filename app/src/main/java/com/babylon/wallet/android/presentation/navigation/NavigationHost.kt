@@ -350,7 +350,7 @@ fun NavigationHost(
                     is TransferableAsset.Fungible.LSUAsset -> {
                         val xrdResourceAddress = runCatching {
                             val networkId = RetBridge.Address.networkId(asset.resourceAddress)
-                            XrdResource.address(networkId = NetworkId.from(networkId))
+                            XrdResource.address(networkId = networkId)
                         }.getOrNull()
 
                         mutableMapOf(
