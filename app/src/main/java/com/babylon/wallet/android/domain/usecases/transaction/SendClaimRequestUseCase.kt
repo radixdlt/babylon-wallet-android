@@ -107,7 +107,7 @@ class SendClaimRequestUseCase @Inject constructor(
         bucket: ManifestBuilderBucket
     ): ManifestBuilder {
         val totalClaimValue = claimNFTs.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO }
-        val xrdAddress = XrdResource.address(networkId = NetworkId.from(account.networkID))
+        val xrdAddress = XrdResource.address(networkId = account.networkID)
 
         return takeFromWorktop(
             resourceAddress = Address(xrdAddress),

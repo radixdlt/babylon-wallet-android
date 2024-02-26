@@ -131,8 +131,8 @@ class AccountsStateCache @Inject constructor(
 
     suspend fun getOwnedXRD(accounts: List<Network.Account>) = withContext(dispatcher) {
         if (accounts.isEmpty()) return@withContext Result.success(emptyMap())
-        val networkId = NetworkId.from(accounts.first().networkID)
-        val xrdAddress = XrdResource.address(networkId = networkId)
+
+        val xrdAddress = XrdResource.address(networkId = accounts.first().networkID)
 
         val accountsWithXRDVaults = accounts.associateWith { account ->
             dao.getAccountResourceJoin(accountAddress = account.address, resourceAddress = xrdAddress)?.vaultAddress
