@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.data.transaction
 
-import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
@@ -28,6 +27,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.ret.addLockFeeInstructionToManifest
 import java.math.BigDecimal
 
 internal class TransactionClientTest {
