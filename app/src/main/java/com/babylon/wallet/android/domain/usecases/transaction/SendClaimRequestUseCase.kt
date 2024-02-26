@@ -8,9 +8,8 @@ import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.ManifestBuilder
 import com.radixdlt.ret.ManifestBuilderBucket
-import rdx.works.core.toRETDecimal
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.ret.toRETDecimal
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject

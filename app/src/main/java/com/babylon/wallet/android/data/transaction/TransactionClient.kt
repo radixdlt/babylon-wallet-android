@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.gateway.extensions.asGatewayPublicKey
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
-import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -20,6 +19,7 @@ import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.then
+import rdx.works.profile.ret.addLockFeeInstructionToManifest
 import timber.log.Timber
 import java.math.BigDecimal
 import java.security.SecureRandom

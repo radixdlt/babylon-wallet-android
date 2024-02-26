@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.transaction.submit
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.addAssertions
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
@@ -10,6 +9,7 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
+import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.toConnectorExtensionError
@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.logNonFatalException
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import rdx.works.profile.ret.addGuaranteeInstructionToManifest
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -277,5 +278,33 @@ class TransactionSubmitDelegate @Inject constructor(
             }
         }
         approvalJob = null
+    }
+
+    private fun TransactionManifest.addAssertions(
+        depositing: List<Transferable.Depositing>
+    ): TransactionManifest {
+        var startIndex = 0
+        var manifest = this
+
+        depositing.forEach {
+            when (val assertion = it.guaranteeAssertion) {
+                is GuaranteeAssertion.ForAmount -> {
+                    manifest = manifest.addGuaranteeInstructionToManifest(
+                        address = it.transferable.resourceAddress,
+                        guaranteedAmount = assertion.amount,
+                        index = assertion.instructionIndex.toInt() + startIndex
+                    )
+                    startIndex++
+                }
+
+                is GuaranteeAssertion.ForNFT -> {
+                    // Will be implemented later
+                }
+
+                null -> {}
+            }
+        }
+
+        return manifest
     }
 }
