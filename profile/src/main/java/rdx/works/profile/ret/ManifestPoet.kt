@@ -1,8 +1,14 @@
 package rdx.works.profile.ret
 
+import com.radixdlt.ret.Address
+import com.radixdlt.ret.ManifestBuilder
+import com.radixdlt.ret.ManifestBuilderBucket
+import com.radixdlt.ret.TransactionManifest
+import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 object ManifestPoet {
 
@@ -34,6 +40,49 @@ object ManifestPoet {
         ).buildSafely(
             networkId = RetBridge.Address.networkId(fromAccount.address)
         )
+
+    fun buildClaim(
+        fromAccount: Network.Account,
+        claims: List<Claim>
+    ): Result<TransactionManifest> {
+        var builder = ManifestBuilder()
+        var bucketCounter = 0
+
+        claims.forEach { claim ->
+            val claimBucket = ManifestBuilderBucket("bucket$bucketCounter").also {
+                bucketCounter += 1
+            }
+
+            val depositBucket = ManifestBuilderBucket("bucket$bucketCounter").also {
+                bucketCounter += 1
+            }
+
+            val totalClaimValue = claim.claimNFTs.values.sumOf { it }
+            val xrdAddress = RetBridge.Address.xrdAddress(forNetworkId = fromAccount.networkID)
+
+            builder = builder
+                .accountWithdrawNonFungibles(
+                    address = Address(fromAccount.address),
+                    resourceAddress = Address(claim.resourceAddress),
+                    ids = claim.claimNFTs.keys.map { nonFungibleLocalIdFromStr(it) }
+                ).takeAllFromWorktop(
+                    resourceAddress = Address(claim.resourceAddress),
+                    intoBucket = claimBucket
+                ).validatorClaimXrd(
+                    address = Address(claim.validatorAddress),
+                    bucket = claimBucket
+                ).takeFromWorktop(
+                    resourceAddress = Address(xrdAddress),
+                    amount = totalClaimValue.toRETDecimal(roundingMode = RoundingMode.HALF_DOWN),
+                    intoBucket = depositBucket
+                ).accountDeposit(
+                    address = Address(fromAccount.address),
+                    bucket = depositBucket
+                )
+        }
+
+        return builder.buildSafely(fromAccount.networkID)
+    }
 
     private fun BabylonManifestBuilder.attachInstructions(
         fromAccount: Network.Account,
@@ -124,5 +173,11 @@ object ManifestPoet {
         val toAccountAddress: String,
         val globalId: String,
         val signatureRequired: Boolean
+    )
+
+    data class Claim(
+        val resourceAddress: String,
+        val validatorAddress: String,
+        val claimNFTs: Map<String, BigDecimal>
     )
 }
