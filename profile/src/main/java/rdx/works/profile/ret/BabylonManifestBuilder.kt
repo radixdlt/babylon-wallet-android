@@ -266,3 +266,4 @@ fun NonFungibleLocalId.asStr() = when (this) {
 }
 
 fun BabylonManifestBuilder.buildSafely(networkId: Int): Result<TransactionManifest> = runCatching { build(networkId) }
+fun ManifestBuilder.buildSafely(networkId: Int): Result<TransactionManifest> = runCatching { build(networkId.toUByte()) }
