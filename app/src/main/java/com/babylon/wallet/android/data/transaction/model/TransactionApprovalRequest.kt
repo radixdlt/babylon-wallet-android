@@ -4,7 +4,7 @@ import com.radixdlt.ret.Message
 import com.radixdlt.ret.MessageContent
 import com.radixdlt.ret.PlainTextMessage
 import com.radixdlt.ret.TransactionManifest
-import rdx.works.core.ret.crypto.PrivateKey
+import rdx.works.profile.ret.crypto.PrivateKey
 import rdx.works.profile.derivation.model.NetworkId
 
 data class TransactionApprovalRequest(

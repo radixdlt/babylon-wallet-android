@@ -73,10 +73,8 @@ import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
-import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.StateFlow
-import rdx.works.core.ret.RetBridge
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.ret.RetBridge
 import rdx.works.profile.domain.backup.BackupType
 
 @Suppress("CyclomaticComplexMethod")
