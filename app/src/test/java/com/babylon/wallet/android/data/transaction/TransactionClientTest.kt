@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.data.manifest.addLockFeeInstructionToManifest
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
+import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.mockdata.account
@@ -30,6 +31,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import java.math.BigDecimal
 
 internal class TransactionClientTest {
 
@@ -76,9 +78,9 @@ internal class TransactionClientTest {
             networkId: Int = Radix.Gateway.default.network.id
         ): TransactionManifest = BabylonManifestBuilder()
             .withdrawFromAccount(
-                fromAddress = Address(account.address),
-                fungible = knownAddresses(networkId = networkId.toUByte()).resourceAddresses.xrd,
-                amount = Decimal("10")
+                fromAddress = account.address,
+                fungibleAddress = XrdResource.address(networkId),
+                amount = BigDecimal.TEN
             ).build(networkId)
 
         private object ProfileRepositoryFake : ProfileRepository {

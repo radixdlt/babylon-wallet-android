@@ -2,7 +2,6 @@ package rdx.works.core.ret
 
 import com.radixdlt.ret.AccountDefaultDepositRule
 import com.radixdlt.ret.Address
-import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.ManifestBuilder
 import com.radixdlt.ret.ManifestBuilderAddress
 import com.radixdlt.ret.ManifestBuilderBucket
@@ -13,6 +12,9 @@ import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.PublicKeyHash
 import com.radixdlt.ret.ResourcePreference
 import com.radixdlt.ret.TransactionManifest
+import rdx.works.core.toRETDecimal
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Suppress("TooManyFunctions")
 class BabylonManifestBuilder {
@@ -30,98 +32,98 @@ class BabylonManifestBuilder {
     }
 
     fun accountTryDepositEntireWorktopOrAbort(
-        toAddress: Address,
+        toAddress: String,
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.accountTryDepositEntireWorktopOrAbort(
-            accountAddress = toAddress,
+            accountAddress = Address(toAddress),
             authorizedDepositorBadge = null
         )
         return this
     }
 
     fun accountTryDepositOrAbort(
-        toAddress: Address,
-        fromBucket: ManifestBuilderBucket
+        toAddress: String,
+        fromBucket: Bucket
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.accountTryDepositOrAbort(
-            address = toAddress,
+            address = Address(toAddress),
             authorizedDepositorBadge = null,
-            bucket = fromBucket
+            bucket = fromBucket.retBucket
         )
         return this
     }
 
     fun accountDeposit(
-        toAddress: Address,
-        fromBucket: ManifestBuilderBucket
+        toAddress: String,
+        fromBucket: Bucket
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.accountDeposit(
-            address = toAddress,
-            bucket = fromBucket
+            address = Address(toAddress),
+            bucket = fromBucket.retBucket
         )
         return this
     }
 
     fun takeNonFungiblesFromWorktop(
-        nonFungible: NonFungibleGlobalId,
-        intoBucket: ManifestBuilderBucket
+        nonFungibleGlobalAddress: String,
+        intoBucket: Bucket
     ): BabylonManifestBuilder {
+        val globalAddress = NonFungibleGlobalId(nonFungibleGlobalAddress)
+
         manifestBuilder = manifestBuilder.takeNonFungiblesFromWorktop(
-            resourceAddress = nonFungible.resourceAddress(),
-            ids = listOf(
-                nonFungible.localId()
-            ),
-            intoBucket = intoBucket
+            resourceAddress = globalAddress.resourceAddress(),
+            ids = listOf(globalAddress.localId()),
+            intoBucket = intoBucket.retBucket
         )
         return this
     }
 
     fun takeFromWorktop(
-        fungible: Address,
-        amount: Decimal,
-        intoBucket: ManifestBuilderBucket
+        fungibleAddress: String,
+        amount: BigDecimal,
+        intoBucket: Bucket
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.takeFromWorktop(
-            resourceAddress = fungible,
-            amount = amount,
-            intoBucket = intoBucket
+            resourceAddress = Address(fungibleAddress),
+            amount = amount.toRETDecimal(roundingMode = RoundingMode.HALF_UP),
+            intoBucket = intoBucket.retBucket
         )
         return this
     }
 
     fun withdrawFromAccount(
-        fromAddress: Address,
-        fungible: Address,
-        amount: Decimal
+        fromAddress: String,
+        fungibleAddress: String,
+        amount: BigDecimal
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.accountWithdraw(
-            address = fromAddress,
-            resourceAddress = fungible,
-            amount = amount
+            address = Address(fromAddress),
+            resourceAddress = Address(fungibleAddress),
+            amount = amount.toRETDecimal(roundingMode = RoundingMode.HALF_UP)
         )
         return this
     }
 
     fun withdrawNonFungiblesFromAccount(
-        fromAddress: Address,
-        nonFungible: NonFungibleGlobalId
+        fromAddress: String,
+        nonFungibleGlobalAddress: String
     ): BabylonManifestBuilder {
+        val globalId = NonFungibleGlobalId(nonFungibleGlobalAddress)
+
         manifestBuilder = manifestBuilder.accountWithdrawNonFungibles(
-            address = fromAddress,
-            resourceAddress = nonFungible.resourceAddress(),
-            ids = listOf(
-                nonFungible.localId()
-            )
+            address = Address(fromAddress),
+            resourceAddress = globalId.resourceAddress(),
+            ids = listOf(globalId.localId())
         )
         return this
     }
 
     fun setOwnerKeys(
-        address: Address,
+        address: String,
         ownerKeyHashes: List<PublicKeyHash>
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.metadataSet(
-            address = address,
+            address = Address(address),
             key = "owner_keys",
             value = MetadataValue.PublicKeyHashArrayValue(
                 value = ownerKeyHashes
@@ -131,7 +133,7 @@ class BabylonManifestBuilder {
     }
 
     fun setDefaultDepositRule(
-        accountAddress: Address,
+        accountAddress: String,
         accountDefaultDepositRule: AccountDefaultDepositRule
     ): BabylonManifestBuilder {
         val value = when (accountDefaultDepositRule) {
@@ -140,7 +142,7 @@ class BabylonManifestBuilder {
             AccountDefaultDepositRule.ALLOW_EXISTING -> ManifestBuilderValue.EnumValue(2u, emptyList())
         }
         manifestBuilder = manifestBuilder.callMethod(
-            address = ManifestBuilderAddress.Static(accountAddress),
+            address = ManifestBuilderAddress.Static(Address(accountAddress)),
             methodName = "set_default_deposit_rule",
             args = listOf(value)
         )
@@ -148,11 +150,11 @@ class BabylonManifestBuilder {
     }
 
     fun addAuthorizedDepositor(
-        accountAddress: Address,
+        accountAddress: String,
         depositorAddress: ManifestBuilderValue
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.callMethod(
-            address = ManifestBuilderAddress.Static(accountAddress),
+            address = ManifestBuilderAddress.Static(Address(accountAddress)),
             methodName = "add_authorized_depositor",
             args = listOf(depositorAddress)
         )
@@ -160,11 +162,11 @@ class BabylonManifestBuilder {
     }
 
     fun removeAuthorizedDepositor(
-        accountAddress: Address,
+        accountAddress: String,
         depositorAddress: ManifestBuilderValue
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.callMethod(
-            address = ManifestBuilderAddress.Static(accountAddress),
+            address = ManifestBuilderAddress.Static(Address(accountAddress)),
             methodName = "remove_authorized_depositor",
             args = listOf(depositorAddress)
         )
@@ -172,8 +174,8 @@ class BabylonManifestBuilder {
     }
 
     fun setResourcePreference(
-        accountAddress: Address,
-        resourceAddress: Address,
+        accountAddress: String,
+        resourceAddress: String,
         preference: ResourcePreference
     ): BabylonManifestBuilder {
         val value = when (preference) {
@@ -181,10 +183,10 @@ class BabylonManifestBuilder {
             ResourcePreference.DISALLOWED -> ManifestBuilderValue.EnumValue(1u, emptyList())
         }
         manifestBuilder = manifestBuilder.callMethod(
-            address = ManifestBuilderAddress.Static(accountAddress),
+            address = ManifestBuilderAddress.Static(Address(accountAddress)),
             methodName = "set_resource_preference",
             args = listOf(
-                ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(resourceAddress)),
+                ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(Address(resourceAddress))),
                 value
             )
         )
@@ -192,24 +194,32 @@ class BabylonManifestBuilder {
     }
 
     fun removeResourcePreference(
-        accountAddress: Address,
-        resourceAddress: Address
+        accountAddress: String,
+        resourceAddress: String
     ): BabylonManifestBuilder {
         manifestBuilder = manifestBuilder.callMethod(
-            address = ManifestBuilderAddress.Static(accountAddress),
+            address = ManifestBuilderAddress.Static(Address(accountAddress)),
             methodName = "remove_resource_preference",
             args = listOf(
-                ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(resourceAddress))
+                ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(Address(resourceAddress)))
             )
         )
+
         return this
     }
 
-    fun newBucket() = ManifestBuilderBucket(name = "bucket $latestBucketIndex").also {
+    fun newBucket() = Bucket("bucket $latestBucketIndex").also {
         latestBucketIndex += 1
     }
 
     fun build(networkId: Int): TransactionManifest = manifestBuilder.build(networkId.toUByte())
+
+    class Bucket(name: String) {
+        val retBucket: ManifestBuilderBucket
+        init {
+            retBucket = ManifestBuilderBucket(name = name)
+        }
+    }
 }
 
 fun NonFungibleLocalId.asStr() = when (this) {
