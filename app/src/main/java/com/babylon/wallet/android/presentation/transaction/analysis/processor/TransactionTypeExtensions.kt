@@ -28,7 +28,7 @@ import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
-import rdx.works.core.ret.asStr
+import rdx.works.profile.ret.asStr
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal

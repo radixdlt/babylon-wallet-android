@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalSerializationApi::class)
 
-package rdx.works.core.encryption
+package rdx.works.profile.ret.encryption
 
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.EncodeDefault
