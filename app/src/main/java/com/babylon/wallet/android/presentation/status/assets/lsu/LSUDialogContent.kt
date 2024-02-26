@@ -43,8 +43,7 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.AddressR
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import rdx.works.core.displayableQuantity
-import rdx.works.core.ret.RetBridge
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.ret.RetBridge
 import java.math.BigDecimal
 
 @Composable

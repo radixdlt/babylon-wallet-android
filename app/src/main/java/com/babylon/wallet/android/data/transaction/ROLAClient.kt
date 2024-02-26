@@ -11,8 +11,8 @@ import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.flow.merge
 import rdx.works.core.compressedPublicKeyHash
 import rdx.works.core.compressedPublicKeyHashBytes
-import rdx.works.core.ret.BabylonManifestBuilder
-import rdx.works.core.ret.buildSafely
+import rdx.works.profile.ret.BabylonManifestBuilder
+import rdx.works.profile.ret.buildSafely
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance

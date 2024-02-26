@@ -3,9 +3,9 @@ package com.babylon.wallet.android.data.dapp.model
 import com.radixdlt.ret.SignatureWithPublicKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.core.ret.publicKey
-import rdx.works.core.ret.signature
-import rdx.works.core.ret.toHexString
+import rdx.works.profile.ret.publicKey
+import rdx.works.profile.ret.signature
+import rdx.works.profile.ret.toHexString
 
 @Serializable
 data class Proof(
