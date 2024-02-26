@@ -12,10 +12,6 @@ import com.babylon.wallet.android.presentation.account.settings.specificassets.D
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.ManifestBuilderAddress
-import com.radixdlt.ret.ManifestBuilderValue
-import com.radixdlt.ret.NonFungibleGlobalId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -27,16 +23,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapWhen
-import rdx.works.profile.ret.BabylonManifestBuilder
-import rdx.works.profile.ret.RetBridge
-import rdx.works.profile.ret.buildSafely
-import rdx.works.profile.data.model.extensions.toRETDepositRule
-import rdx.works.profile.data.model.extensions.toRETResourcePreference
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
+import rdx.works.profile.ret.BabylonManifestBuilder
+import rdx.works.profile.ret.RetBridge
+import rdx.works.profile.ret.buildSafely
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -116,7 +110,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             val manifestBuilder = BabylonManifestBuilder()
             val currentThirdPartyDeposits = state.value.account?.onLedgerSettings?.thirdPartyDeposits
             if (currentThirdPartyDeposits?.depositRule != state.value.updatedThirdPartyDepositSettings?.depositRule) {
-                val depositRule = checkNotNull(state.value.updatedThirdPartyDepositSettings?.depositRule?.toRETDepositRule())
+                val depositRule = checkNotNull(state.value.updatedThirdPartyDepositSettings?.depositRule)
                 manifestBuilder.setDefaultDepositRule(
                     accountAddress = args.address,
                     accountDefaultDepositRule = depositRule
@@ -133,16 +127,16 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 manifestBuilder.setResourcePreference(
                     accountAddress = args.address,
                     resourceAddress = addedException.address,
-                    preference = addedException.exceptionRule.toRETResourcePreference()
+                    exceptionRule = addedException.exceptionRule
                 )
             }
             currentDepositors.minus(newDepositors.toSet()).forEach { deletedDepositor ->
-                manifestBuilder.removeAuthorizedDepositor(args.address, deletedDepositor.toRETManifestBuilderValue())
+                manifestBuilder.removeAuthorizedDepositor(args.address, deletedDepositor)
             }
             newDepositors.minus(currentDepositors.toSet()).forEach { addedDepositor ->
                 manifestBuilder.addAuthorizedDepositor(
                     accountAddress = args.address,
-                    depositorAddress = addedDepositor.toRETManifestBuilderValue(),
+                    depositorAddress = addedDepositor,
                 )
             }
             manifestBuilder.buildSafely(networkId).onSuccess { manifest ->
@@ -452,36 +446,9 @@ sealed interface SelectedDepositsSheetState {
     data object AddDepositor : SelectedDepositsSheetState
 }
 
-fun ThirdPartyDeposits.DepositorAddress.toRETManifestBuilderValue(): ManifestBuilderValue {
-    return when (this) {
-        is ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID -> {
-            val nonFungibleGlobalId = NonFungibleGlobalId(address)
-            ManifestBuilderValue.EnumValue(
-                0u,
-                listOf(
-                    ManifestBuilderValue.TupleValue(
-                        listOf(
-                            ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(nonFungibleGlobalId.resourceAddress())),
-                            ManifestBuilderValue.NonFungibleLocalIdValue(nonFungibleGlobalId.localId())
-                        )
-                    )
-                )
-            )
-        }
-
-        is ThirdPartyDeposits.DepositorAddress.ResourceAddress -> {
-            val retAddress = Address(address)
-            ManifestBuilderValue.EnumValue(
-                1u,
-                fields = listOf(ManifestBuilderValue.AddressValue(ManifestBuilderAddress.Static(retAddress)))
-            )
-        }
-    }
-}
-
 fun ThirdPartyDeposits.DepositorAddress.resourceAddress(): String {
     return when (this) {
-        is ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID -> NonFungibleGlobalId(address).resourceAddress().addressString()
+        is ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID -> RetBridge.Address.globalId(address)
         is ThirdPartyDeposits.DepositorAddress.ResourceAddress -> address
     }
 }

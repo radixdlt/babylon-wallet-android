@@ -47,6 +47,8 @@ object RetBridge {
 
         fun isValidNFT(address: String) = address.toNonFungibleGlobalId() != null
 
+        fun globalId(address: String) = NonFungibleGlobalId(address).resourceAddress().addressString()
+
         fun publicKeyHash(accountAddress: String) =
             accountAddress.toAddressOrNull()?.bytes()?.takeLast(PUBLIC_KEY_HASH_LENGTH)?.toByteArray()
 
