@@ -133,7 +133,6 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 val requestId = UUIDGenerator.uuid().toString()
                 incomingRequestRepository.add(
                     manifest.prepareInternalTransactionRequest(
-                        networkId,
                         requestId = requestId,
                         transactionType = TransactionType.UpdateThirdPartyDeposits(updatedThirdPartyDepositSettings),
                         blockUntilCompleted = true

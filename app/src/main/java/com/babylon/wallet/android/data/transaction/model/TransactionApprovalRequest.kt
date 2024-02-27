@@ -10,7 +10,6 @@ import rdx.works.profile.derivation.model.NetworkId
 data class TransactionApprovalRequest(
     val manifest: TransactionManifest,
     val networkId: NetworkId,
-    val hasLockFee: Boolean = false,
     val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
     val feePayerAddress: String? = null,
     val message: TransactionMessage = TransactionMessage.None
