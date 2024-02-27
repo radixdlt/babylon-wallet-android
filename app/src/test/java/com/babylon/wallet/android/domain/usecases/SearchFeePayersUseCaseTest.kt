@@ -10,7 +10,6 @@ import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Pool
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.PublicKeyHash
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
@@ -21,7 +20,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.identifiedArrayListOf
-import rdx.works.profile.ret.BabylonManifestBuilder
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -29,6 +27,7 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.ret.sampleXRDWithdraw
 import java.math.BigDecimal
 
 class SearchFeePayersUseCaseTest {
@@ -86,14 +85,11 @@ class SearchFeePayersUseCaseTest {
         private val account2 = account(name = "account2", address = "account_rdx12x20vgu94d96g3demdumxl6yjpvm0jy8dhrr03g75299ghxrwq73uh")
 
         private fun manifestWithAddress(
-            account: Network.Account,
-            networkId: Int = Radix.Gateway.default.network.id
-        ): TransactionManifest = BabylonManifestBuilder()
-            .withdrawFromAccount(
-                fromAddress = account.address,
-                fungibleAddress = XrdResource.address(networkId),
-                amount = BigDecimal.TEN
-            ).build(networkId)
+            account: Network.Account
+        ): TransactionManifest = sampleXRDWithdraw(
+            fromAddress = account.address,
+            value = BigDecimal.TEN
+        )
 
         private object ProfileRepositoryFake : ProfileRepository {
             private val profile = profile(accounts = identifiedArrayListOf(account1, account2))
