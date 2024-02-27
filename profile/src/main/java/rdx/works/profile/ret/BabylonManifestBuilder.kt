@@ -261,10 +261,3 @@ private fun ThirdPartyDeposits.DepositorAddress.toRETManifestBuilderValue(): Man
 }
 
 internal fun ManifestBuilder.buildSafely(networkId: Int): Result<TransactionManifest> = runCatching { build(networkId.toUByte()) }
-
-fun NonFungibleLocalId.asStr() = when (this) {
-    is NonFungibleLocalId.Bytes -> "[$value]"
-    is NonFungibleLocalId.Integer -> "#$value#"
-    is NonFungibleLocalId.Str -> "<$value>"
-    is NonFungibleLocalId.Ruid -> "{$value}"
-}

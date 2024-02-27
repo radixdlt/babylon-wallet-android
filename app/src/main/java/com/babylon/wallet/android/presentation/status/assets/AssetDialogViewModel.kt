@@ -9,6 +9,7 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.Token
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
@@ -49,7 +50,9 @@ class AssetDialogViewModel @Inject constructor(
                 },
                 nonFungibleIds = when (args) {
                     is AssetDialogArgs.Fungible -> mapOf()
-                    is AssetDialogArgs.NFT -> mapOf(args.resourceAddress to args.localId?.let { setOf(it) }.orEmpty())
+                    is AssetDialogArgs.NFT -> mapOf(args.resourceAddress to args.localId?.let {
+                        setOf(Resource.NonFungibleResource.Item.ID.from(it))
+                    }.orEmpty())
                 }
             ).mapCatching { assets ->
                 when (val asset = assets.first()) {

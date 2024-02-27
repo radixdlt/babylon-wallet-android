@@ -17,12 +17,11 @@ import com.babylon.wallet.android.domain.model.resources.metadata.tags
 import com.babylon.wallet.android.domain.model.resources.metadata.validatorAddress
 import com.babylon.wallet.android.utils.truncate
 import com.radixdlt.ret.NonFungibleLocalId
-import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import rdx.works.profile.ret.RetBridge
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.ret.RetBridge
 import java.math.BigDecimal
 
 sealed class Resource {
@@ -236,8 +235,6 @@ sealed class Resource {
 
                 abstract val displayable: String
 
-                abstract fun toRetId(): NonFungibleLocalId
-
                 val code: String
                     get() = "$prefix$displayable$suffix"
 
@@ -249,8 +246,6 @@ sealed class Resource {
 
                     override val displayable: String
                         get() = id
-
-                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Str(id)
 
                     override fun compareTo(other: StringType): Int = other.id.compareTo(id)
                 }
@@ -264,8 +259,6 @@ sealed class Resource {
                     override val displayable: String
                         get() = id.toString()
 
-                    override fun toRetId(): NonFungibleLocalId = NonFungibleLocalId.Integer(id)
-
                     override fun compareTo(other: IntegerType): Int = other.id.compareTo(id)
                 }
 
@@ -277,8 +270,6 @@ sealed class Resource {
                     override val displayable: String
                         get() = id
 
-                    override fun toRetId(): NonFungibleLocalId = nonFungibleLocalIdFromStr("$prefix$id$suffix")
-
                     override fun compareTo(other: BytesType): Int = other.id.compareTo(id)
                 }
 
@@ -289,8 +280,6 @@ sealed class Resource {
                     override val suffix: String = RUID_SUFFIX
                     override val displayable: String
                         get() = id
-
-                    override fun toRetId(): NonFungibleLocalId = nonFungibleLocalIdFromStr("$prefix$id$suffix")
 
                     override fun compareTo(other: RUIDType): Int = other.id.compareTo(id)
                 }
@@ -315,18 +304,6 @@ sealed class Resource {
                         is NonFungibleLocalId.Str -> StringType(id = id.value)
                         is NonFungibleLocalId.Bytes -> BytesType(id = value.removeSurrounding(BYTES_PREFIX, BYTES_SUFFIX))
                         is NonFungibleLocalId.Ruid -> RUIDType(id = value.removeSurrounding(RUID_PREFIX, RUID_SUFFIX))
-                    }
-
-                    fun from(id: NonFungibleLocalId): ID = when (id) {
-                        is NonFungibleLocalId.Integer -> IntegerType(id = id.value)
-                        is NonFungibleLocalId.Str -> StringType(id = id.value)
-                        is NonFungibleLocalId.Bytes -> BytesType(
-                            id = nonFungibleLocalIdAsStr(id).removeSurrounding(BYTES_PREFIX, BYTES_SUFFIX)
-                        )
-
-                        is NonFungibleLocalId.Ruid -> RUIDType(
-                            id = nonFungibleLocalIdAsStr(id).removeSurrounding(RUID_PREFIX, RUID_SUFFIX)
-                        )
                     }
                 }
             }
@@ -357,6 +334,3 @@ val Resource.FungibleResource.isXrd: Boolean
 
         return XrdResource.address(networkId = networkIdValue) == resourceAddress
     }
-
-fun List<Resource>.findFungible(address: String) = find { it.resourceAddress == address } as? Resource.FungibleResource
-fun List<Resource>.findNonFungible(address: String) = find { it.resourceAddress == address } as? Resource.NonFungibleResource

@@ -1,6 +1,5 @@
 package rdx.works.profile.ret
 
-import android.util.Log
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.NonFungibleGlobalId
