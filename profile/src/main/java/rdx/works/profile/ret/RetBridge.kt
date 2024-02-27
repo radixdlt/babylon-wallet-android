@@ -6,6 +6,7 @@ import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.knownAddresses
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
+import timber.log.Timber
 
 object RetBridge {
 
@@ -57,11 +58,11 @@ object RetBridge {
         ).resourceAddresses.xrd.addressString()
 
         private fun String.toAddressOrNull() = runCatching { Address(this) }
-            .onFailure { Log.w(LOG_TAG, it) }
+            .onFailure { Timber.tag(LOG_TAG).w(it) }
             .getOrNull()
 
         private fun String.toNonFungibleGlobalId() = runCatching { NonFungibleGlobalId(this) }
-            .onFailure { Log.w(LOG_TAG, it) }
+            .onFailure { Timber.tag(LOG_TAG).w(it) }
             .getOrNull()
     }
 
