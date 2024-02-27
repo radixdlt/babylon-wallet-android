@@ -47,9 +47,8 @@ class GetFreeXrdUseCase @Inject constructor(
             val epochResult = transactionRepository.getLedgerEpoch()
             epochResult.getOrNull()?.let { epoch ->
                 val request = TransactionApprovalRequest(
-                    manifest = manifest,
-                    networkId = gateway.network.networkId(),
-                    hasLockFee = true
+                    manifest = manifest.toTransactionManifest().getOrThrow(),
+                    networkId = gateway.network.networkId()
                 )
                 val lockFee = BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE)
 

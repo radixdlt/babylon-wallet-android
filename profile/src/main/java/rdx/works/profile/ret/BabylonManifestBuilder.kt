@@ -7,9 +7,7 @@ import com.radixdlt.ret.ManifestBuilderBucket
 import com.radixdlt.ret.ManifestBuilderValue
 import com.radixdlt.ret.MetadataValue
 import com.radixdlt.ret.NonFungibleGlobalId
-import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.PublicKeyHash
-import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.profile.data.model.extensions.toRETResourcePreference
 import rdx.works.profile.data.model.factorsources.Slip10Curve
@@ -221,9 +219,11 @@ internal class BabylonManifestBuilder {
         latestBucketIndex += 1
     }
 
-    fun build(networkId: Int): TransactionManifest = manifestBuilder.build(networkId.toUByte())
+    fun build(networkId: Int): TransactionManifestData = manifestBuilder.build(networkId.toUByte()).let {
+        TransactionManifestData.from(manifest = it)
+    }
 
-    fun buildSafely(networkId: Int): Result<TransactionManifest> = runCatching { build(networkId) }
+    fun buildSafely(networkId: Int): Result<TransactionManifestData> = runCatching { build(networkId) }
 
     class Bucket(name: String) {
         val retBucket: ManifestBuilderBucket
@@ -260,4 +260,6 @@ private fun ThirdPartyDeposits.DepositorAddress.toRETManifestBuilderValue(): Man
     }
 }
 
-internal fun ManifestBuilder.buildSafely(networkId: Int): Result<TransactionManifest> = runCatching { build(networkId.toUByte()) }
+internal fun ManifestBuilder.buildSafely(networkId: Int): Result<TransactionManifestData> = runCatching {
+    TransactionManifestData.from(manifest = build(networkId.toUByte()))
+}

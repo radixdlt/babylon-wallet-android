@@ -89,7 +89,7 @@ class SearchFeePayersUseCaseTest {
         ): TransactionManifest = sampleXRDWithdraw(
             fromAddress = account.address,
             value = BigDecimal.TEN
-        )
+        ).toTransactionManifest().getOrThrow()
 
         private object ProfileRepositoryFake : ProfileRepository {
             private val profile = profile(accounts = identifiedArrayListOf(account1, account2))

@@ -4,15 +4,13 @@ package com.babylon.wallet.android.data.manifest
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.TransactionManifestData
+import rdx.works.profile.ret.TransactionManifestData
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import java.util.UUID
 
-fun TransactionManifest.prepareInternalTransactionRequest(
-    networkId: Int,
+fun TransactionManifestData.prepareInternalTransactionRequest(
     requestId: String = UUID.randomUUID().toString(),
-    message: String? = null,
     blockUntilCompleted: Boolean = false,
     transactionType: TransactionType = TransactionType.Generic
 ) = MessageFromDataChannel.IncomingRequest.TransactionRequest(
@@ -20,11 +18,7 @@ fun TransactionManifest.prepareInternalTransactionRequest(
     // check if a request is not internal before sending message to the dApp
     remoteConnectorId = "",
     requestId = requestId,
-    transactionManifestData = TransactionManifestData.from(
-        manifest = this,
-        networkId = networkId,
-        message = message
-    ),
+    transactionManifestData = this,
     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(networkId, blockUntilCompleted),
     transactionType = transactionType
 )

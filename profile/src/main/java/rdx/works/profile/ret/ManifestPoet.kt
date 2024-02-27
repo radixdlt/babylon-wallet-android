@@ -3,7 +3,6 @@ package rdx.works.profile.ret
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.ManifestBuilder
 import com.radixdlt.ret.ManifestBuilderBucket
-import com.radixdlt.ret.TransactionManifest
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
@@ -44,7 +43,7 @@ object ManifestPoet {
     fun buildClaim(
         fromAccount: Network.Account,
         claims: List<Claim>
-    ): Result<TransactionManifest> {
+    ): Result<TransactionManifestData> {
         var builder = ManifestBuilder()
         var bucketCounter = 0
 
@@ -86,7 +85,7 @@ object ManifestPoet {
 
     fun buildThirdPartyDeposits(
         settings: ThirdPartyDepositSettings
-    ): Result<TransactionManifest> = BabylonManifestBuilder().apply {
+    ): Result<TransactionManifestData> = BabylonManifestBuilder().apply {
         if (settings.defaultDepositRule != null) {
             setDefaultDepositRule(
                 accountAddress = settings.accountAddress,

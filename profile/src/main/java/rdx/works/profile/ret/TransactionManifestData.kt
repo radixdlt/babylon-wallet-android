@@ -1,15 +1,14 @@
-package com.babylon.wallet.android.domain.model
+package rdx.works.profile.ret
 
-import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.radixdlt.ret.Instructions
 import com.radixdlt.ret.TransactionManifest
 
 data class TransactionManifestData(
     val instructions: String,
-    val version: Long,
     val networkId: Int,
+    val message: String? = null,
     val blobs: List<ByteArray> = emptyList(),
-    val message: String? = null
+    val version: Long = TransactionVersion.Default.value
 ) {
 
     fun toTransactionManifest() = runCatching {
@@ -25,14 +24,17 @@ data class TransactionManifestData(
     companion object {
         fun from(
             manifest: TransactionManifest,
-            networkId: Int,
-            message: String?
+            message: String? = null,
         ) = TransactionManifestData(
             instructions = manifest.instructions().asStr(),
-            version = TransactionVersion.Default.value,
-            networkId = networkId,
+            networkId = manifest.instructions().networkId().toInt(),
+            message = message,
             blobs = manifest.blobs(),
-            message = message
+            version = TransactionVersion.Default.value
         )
     }
+}
+
+enum class TransactionVersion(val value: Long) {
+    Default(1L)
 }

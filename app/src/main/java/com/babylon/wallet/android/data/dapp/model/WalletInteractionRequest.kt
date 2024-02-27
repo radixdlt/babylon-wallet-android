@@ -2,7 +2,7 @@ package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.TransactionManifestData
+import rdx.works.profile.ret.TransactionManifestData
 import com.radixdlt.hex.decode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -89,19 +89,18 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
     remoteConnectorId: String, // from which CE comes the message
     requestId: String,
     metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
-) =
-    MessageFromDataChannel.IncomingRequest.TransactionRequest(
-        remoteConnectorId = remoteConnectorId,
-        requestId = requestId,
-        transactionManifestData = TransactionManifestData(
-            transactionManifest,
-            version,
-            metadata.networkId,
-            blobs?.map { decode(it) }.orEmpty(),
-            message = message
-        ),
-        requestMetadata = metadata
-    )
+) = MessageFromDataChannel.IncomingRequest.TransactionRequest(
+    remoteConnectorId = remoteConnectorId,
+    requestId = requestId,
+    transactionManifestData = TransactionManifestData(
+        instructions = transactionManifest,
+        networkId = metadata.networkId,
+        message = message,
+        blobs = blobs?.map { decode(it) }.orEmpty(),
+        version = version
+    ),
+    requestMetadata = metadata
+)
 
 fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataChannel.IncomingRequest {
     try {
@@ -115,9 +114,11 @@ fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataC
             is WalletTransactionItems -> {
                 items.send.toDomainModel(remoteConnectorId, interactionId, metadata)
             }
+
             is WalletAuthorizedRequestItems -> {
                 items.parseAuthorizedRequest(remoteConnectorId, interactionId, metadata)
             }
+
             is WalletUnauthorizedRequestItems -> {
                 items.parseUnauthorizedRequest(remoteConnectorId, interactionId, metadata)
             }
