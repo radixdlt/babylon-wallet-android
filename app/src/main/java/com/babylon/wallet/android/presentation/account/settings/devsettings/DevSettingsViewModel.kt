@@ -73,7 +73,7 @@ class DevSettingsViewModel @Inject constructor(
                 _state.update { it.copy(isLoading = true) }
                 rolaClient.generateAuthSigningFactorInstance(account).onSuccess { authSigningFactorInstance ->
                     val manifest = rolaClient
-                        .createAuthKeyManifestWithStringInstructions(account, authSigningFactorInstance)
+                        .createAuthKeyManifest(account, authSigningFactorInstance)
                         .getOrElse {
                             _state.update { state ->
                                 state.copy(isLoading = false)
@@ -84,7 +84,6 @@ class DevSettingsViewModel @Inject constructor(
                     val interactionId = UUIDGenerator.uuid().toString()
                     incomingRequestRepository.add(
                         manifest.prepareInternalTransactionRequest(
-                            networkId = account.networkID,
                             requestId = interactionId,
                             blockUntilCompleted = true,
                             transactionType = TransactionType.CreateRolaKey(authSigningFactorInstance)

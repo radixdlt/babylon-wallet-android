@@ -5,7 +5,6 @@ import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUse
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
-import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.flow.merge
 import rdx.works.core.compressedPublicKeyHash
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -13,6 +12,7 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.ret.ManifestPoet
+import rdx.works.profile.ret.TransactionManifestData
 import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import javax.inject.Inject
 
@@ -31,10 +31,10 @@ class ROLAClient @Inject constructor(
         return generateAuthSigningFactorInstanceUseCase(entity)
     }
 
-    suspend fun createAuthKeyManifestWithStringInstructions(
+    suspend fun createAuthKeyManifest(
         entity: Entity,
         authSigningFactorInstance: FactorInstance
-    ): Result<TransactionManifest> {
+    ): Result<TransactionManifestData> {
         val transactionSigningPublicKey = when (val state = entity.securityState) {
             is SecurityState.Unsecured -> {
                 when (val badge = state.unsecuredEntityControl.transactionSigning.badge) {

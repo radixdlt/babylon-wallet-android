@@ -30,10 +30,7 @@ class PrepareManifestDelegate @Inject constructor(
                 depositNFTs = _state.value.toNonFungibleTransfers(accountsAbleToSign),
             )
             .map { manifest ->
-                manifest.prepareInternalTransactionRequest(
-                    networkId = fromAccount.networkID,
-                    message = _state.value.submittedMessage,
-                )
+                manifest.copy(message = _state.value.submittedMessage).prepareInternalTransactionRequest()
             }
             .onSuccess { request ->
                 _state.update { it.copy(transferRequestId = request.requestId) }
