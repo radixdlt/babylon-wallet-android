@@ -32,7 +32,7 @@ class SendClaimRequestUseCase @Inject constructor(
                     )
                 }
             ).mapCatching { manifest ->
-                manifest.prepareInternalTransactionRequest(networkId = account.networkID)
+                manifest.prepareInternalTransactionRequest()
             }
             .onSuccess { request ->
                 incomingRequestRepository.add(request)
@@ -58,7 +58,7 @@ class SendClaimRequestUseCase @Inject constructor(
                     )
                 )
             ).mapCatching { manifest ->
-                manifest.prepareInternalTransactionRequest(networkId = account.networkID)
+                manifest.prepareInternalTransactionRequest()
             }
             .onSuccess { request ->
                 incomingRequestRepository.add(request)
