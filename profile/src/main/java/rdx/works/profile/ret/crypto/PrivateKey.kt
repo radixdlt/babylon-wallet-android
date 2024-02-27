@@ -2,9 +2,6 @@
 
 package rdx.works.profile.ret.crypto
 
-import com.radixdlt.ret.PublicKey
-import com.radixdlt.ret.Signature
-import com.radixdlt.ret.SignatureWithPublicKey
 import org.bouncycastle.asn1.x9.X9ECParameters
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.digests.SHA256Digest
@@ -175,13 +172,21 @@ sealed class PrivateKey {
                 )
         }
 
-        override fun signToSignature(hashedData: ByteArray): Signature.Secp256k1 {
+        override fun signToSignature(hashedData: ByteArray): EngineSignatureSecp256k1 {
+            return EngineSignatureSecp256k1(sign(hashedData))
+        }
+
+        override fun signToSignatureWrapped(hashedData: ByteArray): Signature {
             return Signature.Secp256k1(sign(hashedData))
         }
 
         override fun signToSignatureWithPublicKey(
             hashedData: ByteArray
-        ): SignatureWithPublicKey.Secp256k1 {
+        ): EngineSignatureWithPublicKeySecp256k1 {
+            return EngineSignatureWithPublicKeySecp256k1(signToSignature(hashedData).value)
+        }
+
+        override fun signToSignatureWithPublicKeyWrapped(hashedData: ByteArray): SignatureWithPublicKey {
             return SignatureWithPublicKey.Secp256k1(signToSignature(hashedData).value)
         }
 
@@ -193,7 +198,11 @@ sealed class PrivateKey {
 
         // Public Key methods
 
-        override fun publicKey(): PublicKey.Secp256k1 {
+        override fun publicKey(): EnginePublicKeySecp256k1 {
+            return EnginePublicKeySecp256k1(publicKeyByteArray(true))
+        }
+
+        override fun publicKeyWrapped(): PublicKey.Secp256k1 {
             return PublicKey.Secp256k1(publicKeyByteArray(true))
         }
 
@@ -310,13 +319,21 @@ sealed class PrivateKey {
             return signer.generateSignature()
         }
 
-        override fun signToSignature(hashedData: ByteArray): Signature.Ed25519 {
+        override fun signToSignature(hashedData: ByteArray): EngineSignatureEd25519 {
+            return EngineSignatureEd25519(sign(hashedData))
+        }
+
+        override fun signToSignatureWrapped(hashedData: ByteArray): Signature {
             return Signature.Ed25519(sign(hashedData))
         }
 
         override fun signToSignatureWithPublicKey(
             hashedData: ByteArray
-        ): SignatureWithPublicKey.Ed25519 {
+        ): EngineSignatureWithPublicKeyEd25519 {
+            return EngineSignatureWithPublicKeyEd25519(signToSignature(hashedData).value, publicKey().value)
+        }
+
+        override fun signToSignatureWithPublicKeyWrapped(hashedData: ByteArray): SignatureWithPublicKey {
             return SignatureWithPublicKey.Ed25519(signToSignature(hashedData).value, publicKey().value)
         }
 
@@ -328,7 +345,11 @@ sealed class PrivateKey {
 
         // Public Key methods
 
-        override fun publicKey(): PublicKey.Ed25519 {
+        override fun publicKey(): EnginePublicKeyEd25519 {
+            return EnginePublicKeyEd25519(publicKey.encoded)
+        }
+
+        override fun publicKeyWrapped(): PublicKey {
             return PublicKey.Ed25519(publicKey.encoded)
         }
 
@@ -377,7 +398,15 @@ sealed class PrivateKey {
      * @param hashedData The hashed data to sign
      * @return A [Signature] object of the signature.
      */
-    abstract fun signToSignature(hashedData: ByteArray): Signature
+    abstract fun signToSignature(hashedData: ByteArray): EngineSignature
+
+    /**
+     * Signs raw data and returns a [Signature] object of the signature
+     *
+     * @param hashedData The hashed data to sign
+     * @return A [Signature] object of the signature.
+     */
+    abstract fun signToSignatureWrapped(hashedData: ByteArray): Signature
 
     /**
      * Signs raw data and returns a [SignatureWithPublicKey] object of the signature with the public
@@ -386,7 +415,16 @@ sealed class PrivateKey {
      * @param hashedData The hashed data to sign
      * @return A [SignatureWithPublicKey] object of the signature and the signer's public key.
      */
-    abstract fun signToSignatureWithPublicKey(hashedData: ByteArray): SignatureWithPublicKey
+    abstract fun signToSignatureWithPublicKey(hashedData: ByteArray): EngineSignatureWithPublicKey
+
+    /**
+     * Signs raw data and returns a [SignatureWithPublicKey] object of the signature with the public
+     * key of the signer
+     *
+     * @param hashedData The hashed data to sign
+     * @return A [SignatureWithPublicKey] object of the signature and the signer's public key.
+     */
+    abstract fun signToSignatureWithPublicKeyWrapped(hashedData: ByteArray): SignatureWithPublicKey
 
     // Private Key repr methods
 
@@ -413,7 +451,14 @@ sealed class PrivateKey {
      *
      * @return The [PublicKey] associated with this [PrivateKey].
      */
-    abstract fun publicKey(): PublicKey
+    abstract fun publicKey(): EnginePublicKey
+
+    /**
+     * A getter method for the [PublicKey]
+     *
+     * @return The [PublicKey] associated with this [PrivateKey].
+     */
+    abstract fun publicKeyWrapped(): PublicKey
 
     /**
      * The purpose of the following companion object is to have a static method that runs to ensure
