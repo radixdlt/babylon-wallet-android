@@ -1,8 +1,7 @@
 package com.babylon.wallet.android.data.dapp.model
-
-import com.radixdlt.ret.SignatureWithPublicKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import rdx.works.profile.ret.publicKey
 import rdx.works.profile.ret.signature
 import rdx.works.profile.ret.toHexString
@@ -23,15 +22,28 @@ data class Proof(
     }
 }
 
-fun SignatureWithPublicKey.toProof(signedMessage: ByteArray): Proof {
+fun SignatureWithPublicKey.toProof(signedMessage: ByteArray): Proof = when (this) {
+    is SignatureWithPublicKey.Secp256k1 -> Proof(
+        publicKey = publicKeyHex(signedMessage),
+        signature = signatureHex,
+        curve = Proof.Curve.Secp256k1
+    )
+    is SignatureWithPublicKey.Ed25519 -> Proof(
+        publicKey = publicKeyHex,
+        signature = signatureHex,
+        curve = Proof.Curve.Curve25519
+    )
+}
+
+fun com.radixdlt.ret.SignatureWithPublicKey.toProof(signedMessage: ByteArray): Proof {
     return when (val signatureWithPublicKey = this) {
-        is SignatureWithPublicKey.Secp256k1 -> Proof(
+        is com.radixdlt.ret.SignatureWithPublicKey.Secp256k1 -> Proof(
             signatureWithPublicKey.publicKey(signedMessage).toHexString(),
             signatureWithPublicKey.signature().toHexString(),
             Proof.Curve.Secp256k1
         )
 
-        is SignatureWithPublicKey.Ed25519 -> Proof(
+        is com.radixdlt.ret.SignatureWithPublicKey.Ed25519 -> Proof(
             signatureWithPublicKey.publicKey().toHexString(),
             signatureWithPublicKey.signature().toHexString(),
             Proof.Curve.Curve25519
