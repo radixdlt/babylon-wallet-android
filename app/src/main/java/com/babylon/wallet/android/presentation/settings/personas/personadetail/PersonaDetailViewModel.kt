@@ -119,7 +119,7 @@ class PersonaDetailViewModel @Inject constructor(
                 rolaClient.generateAuthSigningFactorInstance(persona).onSuccess { authSigningFactorInstance ->
                     this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance
                     val manifest = rolaClient
-                        .createAuthKeyManifestWithStringInstructions(persona, authSigningFactorInstance)
+                        .createAuthKeyManifest(persona, authSigningFactorInstance)
                         .getOrElse {
                             _state.update { state -> state.copy(loading = false) }
                             return@launch
@@ -127,7 +127,6 @@ class PersonaDetailViewModel @Inject constructor(
                     uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
                     incomingRequestRepository.add(
                         manifest.prepareInternalTransactionRequest(
-                            networkId = persona.networkID,
                             requestId = uploadAuthKeyRequestId
                         )
                     )

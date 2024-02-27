@@ -24,7 +24,6 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.ret.ManifestPoet
 import rdx.works.profile.ret.addLockFeeInstructionToManifest
 import rdx.works.profile.ret.crypto.PrivateKey
 import rdx.works.profile.ret.sampleXRDWithdraw
@@ -56,9 +55,8 @@ internal class TransactionClientTest {
     fun `when address exists, finds address involved & signing for set metadata manifest`() =
         runTest {
             val manifest = manifestWithAddress(account1)
-                .addLockFeeInstructionToManifest(account1.address, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()).summary(
-                    networkId = Radix.Gateway.default.network.id.toUByte()
-                )
+                .addLockFeeInstructionToManifest(account1.address, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal())
+                .summary(networkId = Radix.Gateway.default.network.id.toUByte())
 
             val notaryKey = PrivateKey.EddsaEd25519.newRandom()
             val notaryAndSigners = resolveNotaryAndSignersUseCase(manifest, notaryKey)
@@ -75,7 +73,7 @@ internal class TransactionClientTest {
         ): TransactionManifest = sampleXRDWithdraw(
             fromAddress = account.address,
             value = BigDecimal.TEN
-        )
+        ).toTransactionManifest().getOrThrow()
 
         private object ProfileRepositoryFake : ProfileRepository {
             private val profile = profile(accounts = identifiedArrayListOf(account1, account2))

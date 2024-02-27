@@ -3,11 +3,11 @@
 package com.babylon.wallet.android.domain
 
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.data.transaction.TransactionVersion
+import rdx.works.profile.ret.TransactionVersion
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.TransactionManifestData
+import rdx.works.profile.ret.TransactionManifestData
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
@@ -86,9 +86,9 @@ class SampleDataProvider {
         requestId = "7294770e-5aec-4e49-ada0-e6a2213fc8c8",
         transactionManifestData = TransactionManifestData(
             instructions = "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY",
-            version = TransactionVersion.Default.value,
             networkId = Radix.Gateway.default.network.id,
-            message = "Hello"
+            message = "Hello",
+            version = TransactionVersion.Default.value
         ),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
     )
