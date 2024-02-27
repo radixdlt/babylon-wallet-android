@@ -17,7 +17,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         fungibleAddresses: Set<String>,
-        nonFungibleIds: Map<String, Set<String>>
+        nonFungibleIds: Map<String, Set<Resource.NonFungibleResource.Item.ID>>
     ): Result<List<Asset>> = stateRepository
         .getResources(
             addresses = fungibleAddresses + nonFungibleIds.keys,
@@ -25,7 +25,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
             withDetails = true
         ).mapCatching { resources ->
             val nfts = nonFungibleIds.mapValues { entry ->
-                stateRepository.getNFTDetails(entry.key, entry.value.toSet()).getOrThrow()
+                stateRepository.getNFTDetails(entry.key, entry.value.map { it.code }.toSet()).getOrThrow()
             }
 
             val fungibles = resources.filterIsInstance<Resource.FungibleResource>()

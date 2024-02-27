@@ -17,6 +17,7 @@ import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.ResourceIndicator
+import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -65,15 +66,15 @@ class ValidatorUnstakeProcessor @Inject constructor(
             if (asset is StakeClaim) {
                 claimedResource as? ResourceIndicator.NonFungible
                     ?: error("No non-fungible indicator found")
-                val stakeClaimNftItems = claimedResource.indicator.nonFungibleLocalIds.map { localId ->
-                    val globalId = NonFungibleGlobalId.fromParts(claimedResource.resourceAddress, localId)
+                val stakeClaimNftItems = claimedResource.nonFungibleLocalIds.map { localId ->
+                    val globalId = NonFungibleGlobalId.fromParts(claimedResource.resourceAddress, nonFungibleLocalIdFromStr(localId.code))
                     val claimNFTData = claimsNonFungibleData.find { it.nonFungibleGlobalId.asStr() == globalId.asStr() }?.data
                         ?: error("No claim data found")
                     val claimAmount = claimNFTData.claimAmount.asStr().toBigDecimal()
                     val claimEpoch = claimNFTData.claimEpoch
                     Resource.NonFungibleResource.Item(
                         collectionAddress = resourceAddress,
-                        localId = Resource.NonFungibleResource.Item.ID.from(localId),
+                        localId = localId,
                         metadata = listOf(
                             Metadata.Primitive(
                                 ExplicitMetadataKey.CLAIM_AMOUNT.key,
