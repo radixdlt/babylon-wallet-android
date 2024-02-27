@@ -39,7 +39,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.babylon.wallet.android.utils.formattedSpans
-import com.radixdlt.ret.AccountDefaultDepositRule
+import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -64,15 +64,15 @@ fun AccountDepositSettingsTypeContent(
                 accountWithSettings.defaultDepositRule?.let { newRule ->
                     val ruleText = stringResource(
                         id = when (newRule) {
-                            AccountDefaultDepositRule.ACCEPT -> R.string.transactionReview_accountDepositSettings_acceptAllRule
-                            AccountDefaultDepositRule.REJECT -> R.string.transactionReview_accountDepositSettings_denyAllRule
-                            AccountDefaultDepositRule.ALLOW_EXISTING -> R.string.transactionReview_accountDepositSettings_acceptKnownRule
+                            ThirdPartyDeposits.DepositRule.AcceptAll -> R.string.transactionReview_accountDepositSettings_acceptAllRule
+                            ThirdPartyDeposits.DepositRule.DenyAll -> R.string.transactionReview_accountDepositSettings_denyAllRule
+                            ThirdPartyDeposits.DepositRule.AcceptKnown -> R.string.transactionReview_accountDepositSettings_acceptKnownRule
                         }
                     ).formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
                     val icon = when (newRule) {
-                        AccountDefaultDepositRule.ACCEPT -> com.babylon.wallet.android.designsystem.R.drawable.ic_accept_all
-                        AccountDefaultDepositRule.REJECT -> com.babylon.wallet.android.designsystem.R.drawable.ic_deny_all
-                        AccountDefaultDepositRule.ALLOW_EXISTING -> com.babylon.wallet.android.designsystem.R.drawable.ic_accept_known
+                        ThirdPartyDeposits.DepositRule.AcceptAll -> com.babylon.wallet.android.designsystem.R.drawable.ic_accept_all
+                        ThirdPartyDeposits.DepositRule.DenyAll -> com.babylon.wallet.android.designsystem.R.drawable.ic_deny_all
+                        ThirdPartyDeposits.DepositRule.AcceptKnown -> com.babylon.wallet.android.designsystem.R.drawable.ic_accept_known
                     }
                     val ruleBackgroundShape =
                         if (accountWithSettings.onlyDepositRuleChanged) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
@@ -283,7 +283,7 @@ fun AccountDepositSettingsTypeContentPreview() {
                     accountsWithDepositSettingsChanges = listOf(
                         AccountWithDepositSettingsChanges(
                             SampleDataProvider().sampleAccount(),
-                            defaultDepositRule = AccountDefaultDepositRule.ACCEPT,
+                            defaultDepositRule = ThirdPartyDeposits.DepositRule.AcceptAll,
                             assetChanges = listOf(
                                 AccountWithDepositSettingsChanges.AssetPreferenceChange(
                                     AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Allow,
@@ -326,7 +326,7 @@ fun AccountDepositSettingsTypeContentPreviewJustRule() {
                 accountsWithDepositSettingsChanges = listOf(
                     AccountWithDepositSettingsChanges(
                         SampleDataProvider().sampleAccount(),
-                        defaultDepositRule = AccountDefaultDepositRule.ACCEPT,
+                        defaultDepositRule = ThirdPartyDeposits.DepositRule.AcceptAll,
                         assetChanges = emptyList(),
                         depositorChanges = emptyList()
                     )
