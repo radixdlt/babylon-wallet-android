@@ -28,9 +28,8 @@ import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
-import rdx.works.profile.ret.BabylonManifestBuilder
+import rdx.works.profile.ret.ManifestPoet
 import rdx.works.profile.ret.RetBridge
-import rdx.works.profile.ret.buildSafely
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -107,39 +106,29 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     fun onUpdateThirdPartyDeposits() {
         viewModelScope.launch {
             val networkId = requireNotNull(state.value.account?.networkID)
-            val manifestBuilder = BabylonManifestBuilder()
             val currentThirdPartyDeposits = state.value.account?.onLedgerSettings?.thirdPartyDeposits
-            if (currentThirdPartyDeposits?.depositRule != state.value.updatedThirdPartyDepositSettings?.depositRule) {
-                val depositRule = checkNotNull(state.value.updatedThirdPartyDepositSettings?.depositRule)
-                manifestBuilder.setDefaultDepositRule(
-                    accountAddress = args.address,
-                    accountDefaultDepositRule = depositRule
-                )
-            }
+
             val currentAssetExceptions = currentThirdPartyDeposits?.assetsExceptionList.orEmpty()
             val currentDepositors = currentThirdPartyDeposits?.depositorsAllowList.orEmpty()
             val newAssetExceptions = state.value.updatedThirdPartyDepositSettings?.assetsExceptionList.orEmpty()
             val newDepositors = state.value.updatedThirdPartyDepositSettings?.depositorsAllowList.orEmpty()
-            currentAssetExceptions.minus(newAssetExceptions.toSet()).forEach { deletedException ->
-                manifestBuilder.removeResourcePreference(accountAddress = args.address, resourceAddress = deletedException.address)
+
+            val defaultRule = if (currentThirdPartyDeposits?.depositRule != state.value.updatedThirdPartyDepositSettings?.depositRule) {
+                checkNotNull(state.value.updatedThirdPartyDepositSettings?.depositRule)
+            } else {
+                null
             }
-            newAssetExceptions.minus(currentAssetExceptions.toSet()).forEach { addedException ->
-                manifestBuilder.setResourcePreference(
+
+            ManifestPoet.buildThirdPartyDeposits(
+                settings = ManifestPoet.ThirdPartyDepositSettings(
                     accountAddress = args.address,
-                    resourceAddress = addedException.address,
-                    exceptionRule = addedException.exceptionRule
+                    defaultDepositRule = defaultRule,
+                    removeAssetExceptions = currentAssetExceptions.minus(newAssetExceptions.toSet()),
+                    addAssetExceptions = newAssetExceptions.minus(currentAssetExceptions.toSet()),
+                    removeDepositors = currentDepositors.minus(newDepositors.toSet()),
+                    addedDepositors = newDepositors.minus(currentDepositors.toSet())
                 )
-            }
-            currentDepositors.minus(newDepositors.toSet()).forEach { deletedDepositor ->
-                manifestBuilder.removeAuthorizedDepositor(args.address, deletedDepositor)
-            }
-            newDepositors.minus(currentDepositors.toSet()).forEach { addedDepositor ->
-                manifestBuilder.addAuthorizedDepositor(
-                    accountAddress = args.address,
-                    depositorAddress = addedDepositor,
-                )
-            }
-            manifestBuilder.buildSafely(networkId).onSuccess { manifest ->
+            ).onSuccess { manifest ->
                 val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
                 val requestId = UUIDGenerator.uuid().toString()
                 incomingRequestRepository.add(
