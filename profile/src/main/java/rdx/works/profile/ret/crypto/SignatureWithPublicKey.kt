@@ -5,6 +5,9 @@ import org.bouncycastle.util.encoders.Hex
 import rdx.works.core.blake2Hash
 import java.math.BigInteger
 
+private typealias EngineEd25519 = com.radixdlt.ret.SignatureWithPublicKey.Ed25519
+private typealias EngineSecp256k1 = com.radixdlt.ret.SignatureWithPublicKey.Secp256k1
+
 sealed interface SignatureWithPublicKey {
 
     val signature: ByteArray
@@ -12,9 +15,16 @@ sealed interface SignatureWithPublicKey {
         get() = Hex.toHexString(signature)
 
     class Ed25519(
-        val publicKey: ByteArray,
-        override val signature: ByteArray
+        publicKey: ByteArray,
+        signature: ByteArray
     ): SignatureWithPublicKey {
+
+        private val engineKey = EngineEd25519(signature = signature, publicKey = publicKey)
+
+        override val signature: ByteArray
+            get() = engineKey.signature
+        val publicKey: ByteArray
+            get() = engineKey.publicKey
 
         val publicKeyHex: String
             get() = Hex.toHexString(publicKey)
@@ -22,8 +32,13 @@ sealed interface SignatureWithPublicKey {
     }
 
     class Secp256k1(
-        override val signature: ByteArray
+        signature: ByteArray
     ): SignatureWithPublicKey {
+
+        private val engineKey = EngineSecp256k1(signature = signature)
+
+        override val signature: ByteArray
+            get() = engineKey.signature
 
         /**
          * A getter method for the PublicKey [ByteArray].
@@ -59,8 +74,7 @@ sealed interface SignatureWithPublicKey {
             // the return of the below function assuming that the signature is a valid signature
             // that can produce a valid ecPoint. It might be better to handle this with an exception
             // or not use `get` optimistically.
-            val ecPoint: ECPoint =
-                rdx.works.profile.ret.crypto.ECKeyUtils.recoverFromSignature(v.toInt(), r, s, hashedMessage).get()
+            val ecPoint: ECPoint = ECKeyUtils.recoverFromSignature(v.toInt(), r, s, hashedMessage).get()
 
             // Getting the bytes of the compressed public key (below, true = compress) and then
             // creating a new public key object.
