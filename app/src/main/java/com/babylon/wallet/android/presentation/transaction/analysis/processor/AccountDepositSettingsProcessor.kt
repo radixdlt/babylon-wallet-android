@@ -4,12 +4,14 @@ import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.radixdlt.ret.AccountDefaultDepositRule
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourcePreference
 import com.radixdlt.ret.ResourcePreferenceUpdate
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
@@ -37,7 +39,12 @@ class AccountDepositSettingsProcessor @Inject constructor(
             val depositorChanges = classification.resolveDepositorChanges(involvedAccount, assets)
             AccountWithDepositSettingsChanges(
                 account = involvedAccount,
-                defaultDepositRule = defaultDepositRule,
+                defaultDepositRule = when (defaultDepositRule) {
+                    AccountDefaultDepositRule.ACCEPT -> ThirdPartyDeposits.DepositRule.AcceptAll
+                    AccountDefaultDepositRule.REJECT -> ThirdPartyDeposits.DepositRule.DenyAll
+                    AccountDefaultDepositRule.ALLOW_EXISTING -> ThirdPartyDeposits.DepositRule.AcceptKnown
+                    null -> null
+                },
                 assetChanges = assetChanges,
                 depositorChanges = depositorChanges
             )
