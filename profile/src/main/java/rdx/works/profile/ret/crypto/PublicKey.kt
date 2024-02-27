@@ -1,10 +1,15 @@
 package rdx.works.profile.ret.crypto
 
+import com.radixdlt.crypto.ec.EllipticCurveType
+import com.radixdlt.crypto.getCompressedPublicKey
+import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.model.ECKeyPair
+
 internal typealias EnginePublicKey = com.radixdlt.ret.PublicKey
 internal typealias EnginePublicKeyEd25519 = com.radixdlt.ret.PublicKey.Ed25519
 internal typealias EnginePublicKeySecp256k1 = com.radixdlt.ret.PublicKey.Secp256k1
 
-interface PublicKey {
+sealed interface PublicKey {
 
     class Ed25519(
         value: ByteArray
@@ -55,4 +60,19 @@ interface PublicKey {
 
     }
 
+    companion object {
+        fun ECKeyPair.toPublicKey(): PublicKey {
+            return when (publicKey.curveType) {
+                EllipticCurveType.Secp256k1 -> {
+                    // Required size 33 bytes
+                    Secp256k1(getCompressedPublicKey())
+                }
+                EllipticCurveType.Ed25519 -> {
+                    // Required size 32 bytes
+                    Ed25519(getCompressedPublicKey().removeLeadingZero())
+                }
+                EllipticCurveType.P256 -> error("Curve EllipticCurveType.P256 not supported")
+            }
+        }
+    }
 }

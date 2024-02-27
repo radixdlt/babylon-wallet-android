@@ -31,10 +31,10 @@ object ManifestPoet {
         depositFungibles: List<FungibleTransfer>,
         depositNFTs: List<NonFungibleTransfer>
     ) = BabylonManifestBuilder()
-        .attachInstructions(
+        .attachInstructionsForFungibles(
             fromAccount = fromAccount,
             depositFungibles = depositFungibles
-        ).attachInstructions(
+        ).attachInstructionsForNonFungibles(
             fromAccount = fromAccount,
             depositNFTs = depositNFTs
         ).buildSafely(
@@ -126,7 +126,7 @@ object ManifestPoet {
         RetBridge.Address.networkId(settings.accountAddress)
     )
 
-    private fun BabylonManifestBuilder.attachInstructions(
+    private fun BabylonManifestBuilder.attachInstructionsForFungibles(
         fromAccount: Network.Account,
         depositFungibles: List<FungibleTransfer>
     ): BabylonManifestBuilder = apply {
@@ -162,7 +162,7 @@ object ManifestPoet {
         }
     }
 
-    private fun BabylonManifestBuilder.attachInstructions(
+    private fun BabylonManifestBuilder.attachInstructionsForNonFungibles(
         fromAccount: Network.Account,
         depositNFTs: List<NonFungibleTransfer>
     ): BabylonManifestBuilder = apply {
