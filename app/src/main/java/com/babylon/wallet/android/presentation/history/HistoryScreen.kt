@@ -4,7 +4,6 @@ package com.babylon.wallet.android.presentation.history
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,6 +43,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -51,6 +51,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -237,7 +238,7 @@ fun HistoryContent(
                 }
 
                 is Content.Loaded -> {
-                    items(content.historyItems) { item ->
+                    items(content.historyItems, key = { item -> item.key }) { item ->
                         when (item) {
                             is HistoryItem.Date -> {
                                 Text(
@@ -253,7 +254,9 @@ fun HistoryContent(
 
                             is HistoryItem.Transaction -> {
                                 TransactionHistoryItem(
-                                    modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
+                                    modifier = Modifier
+                                        .padding(horizontal = RadixTheme.dimensions.paddingMedium)
+                                        .shadow(elevation = 6.dp, shape = RadixTheme.shapes.roundedRectMedium),
                                     transactionItem = item.transactionItem,
                                     onClick = {
                                         onOpenTransactionDetails(item.transactionItem.txId)
@@ -326,16 +329,11 @@ private fun EmptyContent(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingLarge)
     ) {
-        Image(
-            modifier = Modifier.height(130.dp),
-            painter = painterResource(id = R.drawable.ic_empty_fungibles),
-            contentDescription = null
-        )
-
+        Spacer(modifier = Modifier.height(50.dp))
         Text(
-            text = "There are not transactions for this account", // TODO crowdin
-            style = RadixTheme.typography.header,
-            color = RadixTheme.colors.gray1
+            text = "You have no\nTransactions", // TODO crowdin
+            style = RadixTheme.typography.secondaryHeader.copy(fontSize = 20.sp),
+            color = RadixTheme.colors.gray2
         )
     }
 }

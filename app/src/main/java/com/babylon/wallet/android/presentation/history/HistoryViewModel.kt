@@ -363,14 +363,19 @@ sealed class TimeFilterItem {
 sealed interface HistoryItem {
 
     val dateTime: ZonedDateTime?
+    val key: String
 
     data class Date(val item: ZonedDateTime) : HistoryItem {
         override val dateTime: ZonedDateTime
             get() = item
+
+        override val key: String = item.toEpochSecond().toString()
     }
 
     data class Transaction(val transactionItem: TransactionHistoryItem) : HistoryItem {
         override val dateTime: ZonedDateTime?
             get() = transactionItem.timestamp?.atZone(ZoneId.systemDefault())
+
+        override val key: String = transactionItem.txId
     }
 }
