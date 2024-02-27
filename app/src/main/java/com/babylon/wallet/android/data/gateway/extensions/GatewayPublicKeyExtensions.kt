@@ -2,7 +2,7 @@ package com.babylon.wallet.android.data.gateway.extensions
 
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyType
 import com.radixdlt.hex.extensions.toHexString
-import com.radixdlt.ret.PublicKey
+import rdx.works.profile.ret.crypto.PublicKey
 
 typealias GatewayPublicKey = com.babylon.wallet.android.data.gateway.generated.models.PublicKey
 typealias GatewayPublicKeyEddsaEd25519 = com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEddsaEd25519
