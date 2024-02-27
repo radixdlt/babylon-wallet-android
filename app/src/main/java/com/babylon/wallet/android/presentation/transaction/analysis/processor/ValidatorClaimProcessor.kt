@@ -71,14 +71,14 @@ class ValidatorClaimProcessor @Inject constructor(
                 val resourceAddress = resourceIndicator.resourceAddress
                 val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No asset found")
                 if (asset is StakeClaim) {
-                    resourceIndicator as? ResourceIndicator.NonFungible ?: error("No non-fungible resource claim found")
-                    val items = resourceIndicator.localIds.map { localId ->
+                    val nonFungibleIndicator = resourceIndicator as? ResourceIndicator.NonFungible ?: error("No non-fungible resource claim found")
+                    val items = nonFungibleIndicator.nonFungibleLocalIds.map { localId ->
                         val claimAmount = stakeClaimNfts.find {
-                            resourceAddress == it.collectionAddress && localId == nonFungibleLocalIdAsStr(it.localId.toRetId())
+                            resourceAddress == it.collectionAddress && localId == it.localId
                         }?.claimAmountXrd ?: BigDecimal.ZERO
                         Resource.NonFungibleResource.Item(
                             collectionAddress = resourceAddress,
-                            localId = Resource.NonFungibleResource.Item.ID.from(localId)
+                            localId = localId
                         ) to claimAmount
                     }
                     Transferable.Withdrawing(
