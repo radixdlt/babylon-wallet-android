@@ -31,16 +31,16 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
-import com.radixdlt.ret.AccountDefaultDepositRule
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.core.multiplyWithDivisibility
-import rdx.works.profile.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import rdx.works.profile.domain.ProfileException
+import rdx.works.profile.ret.crypto.PrivateKey
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -513,7 +513,7 @@ sealed interface PreviewType {
 
 data class AccountWithDepositSettingsChanges(
     val account: Network.Account,
-    val defaultDepositRule: AccountDefaultDepositRule? = null,
+    val defaultDepositRule: ThirdPartyDeposits.DepositRule? = null,
     val assetChanges: List<AssetPreferenceChange> = emptyList(),
     val depositorChanges: List<DepositorPreferenceChange> = emptyList()
 ) {
