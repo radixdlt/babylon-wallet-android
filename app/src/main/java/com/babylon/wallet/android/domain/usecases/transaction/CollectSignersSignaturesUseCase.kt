@@ -3,14 +3,12 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.hex.extensions.toHexString
-import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.hash
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
-import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -18,6 +16,7 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.domain.signing.GetSigningEntitiesByFactorSourceUseCase
 import rdx.works.profile.domain.signing.SignWithDeviceFactorSourceUseCase
+import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import javax.inject.Inject
 
 class CollectSignersSignaturesUseCase @Inject constructor(
