@@ -1,7 +1,8 @@
 package rdx.works.profile.ret.crypto
 
-private typealias EnginePublicKeyEd25519 = com.radixdlt.ret.PublicKey.Ed25519
-private typealias EnginePublicKeySecp256k1 = com.radixdlt.ret.PublicKey.Secp256k1
+internal typealias EnginePublicKey = com.radixdlt.ret.PublicKey
+internal typealias EnginePublicKeyEd25519 = com.radixdlt.ret.PublicKey.Ed25519
+internal typealias EnginePublicKeySecp256k1 = com.radixdlt.ret.PublicKey.Secp256k1
 
 interface PublicKey {
 
@@ -31,7 +32,7 @@ interface PublicKey {
 
     class Secp256k1(
         value: ByteArray
-    ) {
+    ): PublicKey {
 
         private val engineKey = EnginePublicKeySecp256k1(value)
 

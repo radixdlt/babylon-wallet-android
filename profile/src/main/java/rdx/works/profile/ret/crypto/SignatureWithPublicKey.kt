@@ -5,8 +5,9 @@ import org.bouncycastle.util.encoders.Hex
 import rdx.works.core.blake2Hash
 import java.math.BigInteger
 
-private typealias EngineSignatureWithPublicKeyEd25519 = com.radixdlt.ret.SignatureWithPublicKey.Ed25519
-private typealias EngineSignatureWithPublicKeySecp256k1 = com.radixdlt.ret.SignatureWithPublicKey.Secp256k1
+internal typealias EngineSignatureWithPublicKey = com.radixdlt.ret.SignatureWithPublicKey
+internal typealias EngineSignatureWithPublicKeyEd25519 = com.radixdlt.ret.SignatureWithPublicKey.Ed25519
+internal typealias EngineSignatureWithPublicKeySecp256k1 = com.radixdlt.ret.SignatureWithPublicKey.Secp256k1
 
 sealed interface SignatureWithPublicKey {
 
