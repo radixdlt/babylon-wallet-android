@@ -19,7 +19,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 @Suppress("TooManyFunctions")
-class BabylonManifestBuilder {
+internal class BabylonManifestBuilder {
     private var latestBucketIndex: Int = 0
     private var manifestBuilder = ManifestBuilder()
 
@@ -223,6 +223,8 @@ class BabylonManifestBuilder {
 
     fun build(networkId: Int): TransactionManifest = manifestBuilder.build(networkId.toUByte())
 
+    fun buildSafely(networkId: Int): Result<TransactionManifest> = runCatching { build(networkId) }
+
     class Bucket(name: String) {
         val retBucket: ManifestBuilderBucket
         init {
@@ -258,12 +260,11 @@ private fun ThirdPartyDeposits.DepositorAddress.toRETManifestBuilderValue(): Man
     }
 }
 
+internal fun ManifestBuilder.buildSafely(networkId: Int): Result<TransactionManifest> = runCatching { build(networkId.toUByte()) }
+
 fun NonFungibleLocalId.asStr() = when (this) {
     is NonFungibleLocalId.Bytes -> "[$value]"
     is NonFungibleLocalId.Integer -> "#$value#"
     is NonFungibleLocalId.Str -> "<$value>"
     is NonFungibleLocalId.Ruid -> "{$value}"
 }
-
-fun BabylonManifestBuilder.buildSafely(networkId: Int): Result<TransactionManifest> = runCatching { build(networkId) }
-fun ManifestBuilder.buildSafely(networkId: Int): Result<TransactionManifest> = runCatching { build(networkId.toUByte()) }

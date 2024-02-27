@@ -232,3 +232,16 @@ object ManifestPoet {
         val addedDepositors: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress>
     )
 }
+
+fun sampleXRDWithdraw(
+    fromAddress: String,
+    value: BigDecimal
+) = with(RetBridge.Address.networkId(fromAddress)) {
+    BabylonManifestBuilder()
+        .withdrawFromAccount(
+            fromAddress = fromAddress,
+            fungibleAddress = RetBridge.Address.xrdAddress(this),
+            amount = value
+        )
+        .build(this)
+}
