@@ -84,6 +84,48 @@ object ManifestPoet {
         return builder.buildSafely(fromAccount.networkID)
     }
 
+    fun buildThirdPartyDeposits(
+        settings: ThirdPartyDepositSettings
+    ): Result<TransactionManifest> = BabylonManifestBuilder().apply {
+        if (settings.defaultDepositRule != null) {
+            setDefaultDepositRule(
+                accountAddress = settings.accountAddress,
+                accountDefaultDepositRule = settings.defaultDepositRule
+            )
+        }
+
+        settings.removeAssetExceptions.forEach { assetException ->
+            removeResourcePreference(
+                accountAddress = settings.accountAddress,
+                resourceAddress = assetException.address
+            )
+        }
+
+        settings.addAssetExceptions.forEach { assetException ->
+            setResourcePreference(
+                accountAddress = settings.accountAddress,
+                resourceAddress = assetException.address,
+                exceptionRule = assetException.exceptionRule
+            )
+        }
+
+        settings.removeDepositors.forEach { depositorAddress ->
+            removeAuthorizedDepositor(
+                accountAddress = settings.accountAddress,
+                depositorAddress = depositorAddress
+            )
+        }
+
+        settings.addedDepositors.forEach { depositorAddress ->
+            addAuthorizedDepositor(
+                accountAddress = settings.accountAddress,
+                depositorAddress = depositorAddress
+            )
+        }
+    }.buildSafely(
+        RetBridge.Address.networkId(settings.accountAddress)
+    )
+
     private fun BabylonManifestBuilder.attachInstructions(
         fromAccount: Network.Account,
         depositFungibles: List<FungibleTransfer>
@@ -179,5 +221,14 @@ object ManifestPoet {
         val resourceAddress: String,
         val validatorAddress: String,
         val claimNFTs: Map<String, BigDecimal>
+    )
+
+    data class ThirdPartyDepositSettings(
+        val accountAddress: String,
+        val defaultDepositRule: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule?,
+        val removeAssetExceptions: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException>,
+        val addAssetExceptions: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException>,
+        val removeDepositors: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress>,
+        val addedDepositors: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress>
     )
 }
