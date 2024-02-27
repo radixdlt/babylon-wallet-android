@@ -4,14 +4,14 @@ import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.toECKeyPair
 import com.radixdlt.hex.extensions.hexToByteArray
 import com.radixdlt.hex.model.HexString
-import com.radixdlt.ret.PublicKey
-import com.radixdlt.ret.Signature
-import rdx.works.profile.ret.crypto.PrivateKey
-import rdx.works.profile.ret.toEnginePublicKeyModel
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.profile.ret.crypto.PrivateKey
+import rdx.works.profile.ret.crypto.PublicKey
+import rdx.works.profile.ret.crypto.PublicKey.Companion.toPublicKey
+import rdx.works.profile.ret.crypto.Signature
 import com.radixdlt.model.PrivateKey as SLIP10PrivateKey
 
 data class NotaryAndSigners(
@@ -24,7 +24,7 @@ data class NotaryAndSigners(
     fun notaryPublicKey(): PublicKey {
         return SLIP10PrivateKey(ephemeralNotaryPrivateKey.toByteArray(), EllipticCurveType.Ed25519)
             .toECKeyPair()
-            .toEnginePublicKeyModel()
+            .toPublicKey()
     }
 
     fun signersPublicKeys() = signers.map { signer ->
@@ -48,6 +48,6 @@ data class NotaryAndSigners(
     }
 
     fun signWithNotary(hashedData: ByteArray): Signature {
-        return ephemeralNotaryPrivateKey.signToSignature(hashedData)
+        return ephemeralNotaryPrivateKey.signToSignatureWrapped(hashedData)
     }
 }

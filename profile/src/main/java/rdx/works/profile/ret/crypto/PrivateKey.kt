@@ -2,6 +2,8 @@
 
 package rdx.works.profile.ret.crypto
 
+import com.radixdlt.crypto.ec.EllipticCurveType
+import com.radixdlt.model.ECKeyPair
 import org.bouncycastle.asn1.x9.X9ECParameters
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.digests.SHA256Digest
@@ -471,6 +473,14 @@ sealed class PrivateKey {
             // Load the Bouncy Castle Provider
             Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME)
             Security.addProvider(BouncyCastleProvider())
+        }
+
+        fun ECKeyPair.toPrivateKey(): PrivateKey {
+            return when (privateKey.curveType) {
+                EllipticCurveType.Secp256k1 -> EcdsaSecp256k1.newFromPrivateKeyBytes(privateKey.keyByteArray())
+                EllipticCurveType.Ed25519 -> EddsaEd25519.newFromPrivateKeyBytes(privateKey.keyByteArray())
+                EllipticCurveType.P256 -> error("Curve EllipticCurveType.P256 not supported")
+            }
         }
     }
 }
