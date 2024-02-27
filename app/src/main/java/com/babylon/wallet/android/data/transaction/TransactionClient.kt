@@ -20,6 +20,9 @@ import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.then
 import rdx.works.profile.ret.addLockFeeInstructionToManifest
+import rdx.works.profile.ret.crypto.PublicKey
+import rdx.works.profile.ret.crypto.Signature
+import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import timber.log.Timber
 import java.math.BigDecimal
 import java.security.SecureRandom
@@ -105,7 +108,12 @@ class TransactionClient @Inject constructor(
             val signedTransactionIntent = runCatching {
                 SignedIntent(
                     intent = transactionIntent,
-                    intentSignatures = signatures
+                    intentSignatures = signatures.map {
+                        when (it) {
+                            is SignatureWithPublicKey.Ed25519 -> com.radixdlt.ret.SignatureWithPublicKey.Ed25519(it.signature, it.publicKey)
+                            is SignatureWithPublicKey.Secp256k1 -> com.radixdlt.ret.SignatureWithPublicKey.Secp256k1(it.signature)
+                        }
+                    }
                 )
             }.getOrElse {
                 return Result.failure(RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent(it))
@@ -121,7 +129,10 @@ class TransactionClient @Inject constructor(
             val compiledNotarizedIntent = runCatching {
                 NotarizedTransaction(
                     signedIntent = signedTransactionIntent,
-                    notarySignature = notarySignature
+                    notarySignature = when (notarySignature) {
+                        is Signature.Ed25519 -> com.radixdlt.ret.Signature.Ed25519(notarySignature.value)
+                        is Signature.Secp256k1 -> com.radixdlt.ret.Signature.Secp256k1(notarySignature.value)
+                    }
                 ).compile()
             }.getOrElse { e ->
                 return Result.failure(RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction(e))
@@ -165,7 +176,10 @@ class TransactionClient @Inject constructor(
                         startEpochInclusive = epoch.toULong(),
                         endEpochExclusive = expiryEpoch,
                         nonce = generateNonce(),
-                        notaryPublicKey = notaryAndSigners.notaryPublicKey(),
+                        notaryPublicKey = when (val key = notaryAndSigners.notaryPublicKey()) {
+                            is PublicKey.Ed25519 -> com.radixdlt.ret.PublicKey.Ed25519(key.value)
+                            is PublicKey.Secp256k1 -> com.radixdlt.ret.PublicKey.Secp256k1(key.value)
+                        },
                         notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
                         tipPercentage = tipPercentage
                     )

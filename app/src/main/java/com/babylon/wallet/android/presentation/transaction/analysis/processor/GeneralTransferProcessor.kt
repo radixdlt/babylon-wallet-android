@@ -5,11 +5,11 @@ import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddres
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
+import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.ExecutionSummary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import rdx.works.profile.ret.isGlobalComponent
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.defaultDepositGuarantee
@@ -49,7 +49,7 @@ class GeneralTransferProcessor @Inject constructor(
     }
 
     private suspend fun ExecutionSummary.resolveDApps() = coroutineScope {
-        encounteredEntities.filter { it.entityType().isGlobalComponent() }
+        encounteredEntities.filter { it.entityType() == EntityType.GLOBAL_GENERIC_COMPONENT }
             .map { address ->
                 async {
                     resolveComponentAddressesUseCase.invoke(address.addressString())

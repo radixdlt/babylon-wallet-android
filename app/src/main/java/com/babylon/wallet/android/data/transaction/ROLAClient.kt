@@ -5,7 +5,6 @@ import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUse
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
-import com.radixdlt.ret.SignatureWithPublicKey
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.flow.merge
 import rdx.works.core.compressedPublicKeyHash
@@ -14,6 +13,7 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.ret.ManifestPoet
+import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import javax.inject.Inject
 
 class ROLAClient @Inject constructor(
