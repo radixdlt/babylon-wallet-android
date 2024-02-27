@@ -5,8 +5,8 @@ import org.bouncycastle.util.encoders.Hex
 import rdx.works.core.blake2Hash
 import java.math.BigInteger
 
-private typealias EngineEd25519 = com.radixdlt.ret.SignatureWithPublicKey.Ed25519
-private typealias EngineSecp256k1 = com.radixdlt.ret.SignatureWithPublicKey.Secp256k1
+private typealias EngineSignatureWithPublicKeyEd25519 = com.radixdlt.ret.SignatureWithPublicKey.Ed25519
+private typealias EngineSignatureWithPublicKeySecp256k1 = com.radixdlt.ret.SignatureWithPublicKey.Secp256k1
 
 sealed interface SignatureWithPublicKey {
 
@@ -19,7 +19,7 @@ sealed interface SignatureWithPublicKey {
         signature: ByteArray
     ): SignatureWithPublicKey {
 
-        private val engineKey = EngineEd25519(signature = signature, publicKey = publicKey)
+        private val engineKey = EngineSignatureWithPublicKeyEd25519(signature = signature, publicKey = publicKey)
 
         override val signature: ByteArray
             get() = engineKey.signature
@@ -29,13 +29,27 @@ sealed interface SignatureWithPublicKey {
         val publicKeyHex: String
             get() = Hex.toHexString(publicKey)
 
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Ed25519
+
+            return engineKey == other.engineKey
+        }
+
+        override fun hashCode(): Int {
+            return engineKey.hashCode()
+        }
+
+
     }
 
     class Secp256k1(
         signature: ByteArray
     ): SignatureWithPublicKey {
 
-        private val engineKey = EngineSecp256k1(signature = signature)
+        private val engineKey = EngineSignatureWithPublicKeySecp256k1(signature = signature)
 
         override val signature: ByteArray
             get() = engineKey.signature
@@ -82,6 +96,21 @@ sealed interface SignatureWithPublicKey {
         }
 
         fun publicKeyHex(message: ByteArray): String = Hex.toHexString(publicKey(message))
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Secp256k1
+
+            return engineKey == other.engineKey
+        }
+
+        override fun hashCode(): Int {
+            return engineKey.hashCode()
+        }
+
+
     }
 
 }
