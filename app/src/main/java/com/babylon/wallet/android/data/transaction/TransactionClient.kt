@@ -18,6 +18,7 @@ import com.radixdlt.ret.NotarizedTransaction
 import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
+import rdx.works.core.NonceGenerator
 import rdx.works.core.then
 import rdx.works.profile.ret.addLockFeeInstructionToManifest
 import rdx.works.profile.ret.crypto.PublicKey
@@ -25,7 +26,6 @@ import rdx.works.profile.ret.crypto.Signature
 import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import timber.log.Timber
 import java.math.BigDecimal
-import java.security.SecureRandom
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -41,6 +41,18 @@ class TransactionClient @Inject constructor(
     fun cancelSigning() {
         collectSignersSignaturesUseCase.cancel()
     }
+
+    suspend fun signTransaction(
+        request: TransactionApprovalRequest,
+        lockFee: BigDecimal,
+        tipPercentage: UShort,
+        deviceBiometricAuthenticationProvider: suspend () -> Boolean
+    ): Result<NotarizedTransactionResult> = prepareSignedTransactionIntent(
+        request = request,
+        lockFee = lockFee,
+        tipPercentage = tipPercentage,
+        deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+    )
 
     private suspend fun prepareSignedTransactionIntent(
         request: TransactionApprovalRequest,
@@ -149,18 +161,6 @@ class TransactionClient @Inject constructor(
         }
     }
 
-    suspend fun signTransaction(
-        request: TransactionApprovalRequest,
-        lockFee: BigDecimal,
-        tipPercentage: UShort,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ): Result<NotarizedTransactionResult> = prepareSignedTransactionIntent(
-        request = request,
-        lockFee = lockFee,
-        tipPercentage = tipPercentage,
-        deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-    )
-
     private suspend fun buildTransactionHeader(
         networkId: Int,
         notaryAndSigners: NotaryAndSigners,
@@ -175,7 +175,7 @@ class TransactionClient @Inject constructor(
                         networkId = networkId.toUByte(),
                         startEpochInclusive = epoch.toULong(),
                         endEpochExclusive = expiryEpoch,
-                        nonce = generateNonce(),
+                        nonce = NonceGenerator(),
                         notaryPublicKey = when (val key = notaryAndSigners.notaryPublicKey()) {
                             is PublicKey.Ed25519 -> com.radixdlt.ret.PublicKey.Ed25519(key.value)
                             is PublicKey.Secp256k1 -> com.radixdlt.ret.PublicKey.Secp256k1(key.value)
@@ -188,63 +188,6 @@ class TransactionClient @Inject constructor(
                 Result.failure(RadixWalletException.PrepareTransactionException.BuildTransactionHeader(cause = e))
             }
         } ?: Result.failure(RadixWalletException.DappRequestException.GetEpoch)
-    }
-
-    suspend fun getTransactionPreview(
-        manifest: TransactionManifest,
-        notaryAndSigners: NotaryAndSigners
-    ): Result<TransactionPreviewResponse> {
-        val (startEpochInclusive, endEpochExclusive) = with(transactionRepository.getLedgerEpoch()) {
-            val epoch = this.getOrNull() ?: return@with (0L to 0L)
-
-            (epoch to epoch + 1L)
-        }
-
-        return transactionRepository.getTransactionPreview(
-            TransactionPreviewRequest(
-                manifest = manifest.instructions().asStr(),
-                startEpochInclusive = startEpochInclusive,
-                endEpochExclusive = endEpochExclusive,
-                tipPercentage = 0,
-                nonce = generateNonce().toLong(),
-                signerPublicKeys = notaryAndSigners.signersPublicKeys().map { it.asGatewayPublicKey() },
-                flags = TransactionPreviewRequestFlags(
-                    useFreeCredit = true,
-                    assumeAllSignatureProofs = false,
-                    skipEpochCheck = false
-                ),
-                blobsHex = manifest.blobs().map { it.toHexString() },
-                notaryPublicKey = notaryAndSigners.notaryPublicKey().asGatewayPublicKey(),
-                notaryIsSignatory = notaryAndSigners.notaryIsSignatory
-            )
-        ).fold(
-            onSuccess = { preview ->
-                if (preview.receipt.isFailed) {
-                    val errorMessage = preview.receipt.errorMessage.orEmpty()
-                    val isFailureDueToDepositRules = errorMessage.contains("AccountError(DepositIsDisallowed") ||
-                        errorMessage.contains("AccountError(NotAllBucketsCouldBeDeposited")
-                    if (isFailureDueToDepositRules) {
-                        Result.failure(RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits)
-                    } else {
-                        Result.failure(Throwable(preview.receipt.errorMessage))
-                    }
-                } else {
-                    Result.success(preview)
-                }
-            },
-            onFailure = { Result.failure(it) }
-        )
-    }
-
-    @Suppress("MagicNumber")
-    private fun generateNonce(): UInt {
-        val nonceBytes = ByteArray(UInt.SIZE_BYTES)
-        SecureRandom().nextBytes(nonceBytes)
-        var nonce: UInt = 0u
-        nonceBytes.forEachIndexed { index, byte ->
-            nonce = nonce or (byte.toUInt() shl 8 * index)
-        }
-        return nonce
     }
 }
 
