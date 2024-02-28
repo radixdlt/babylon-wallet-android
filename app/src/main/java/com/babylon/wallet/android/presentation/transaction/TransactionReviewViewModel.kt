@@ -89,7 +89,7 @@ class TransactionReviewViewModel @Inject constructor(
                 }
             }
             viewModelScope.launch {
-                analysis.analyse(transactionClient = transactionClient)
+                analysis.analyse()
             }
 
             if (!request.isInternal) {
