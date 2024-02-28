@@ -277,7 +277,8 @@ class HistoryViewModel @Inject constructor(
         val selectedDate = date ?: return
         var scrollToIndex = -1
         _state.update { state ->
-            val toUpdate = state.timeFilterItems.first { selectedDate.isBefore(it.data.date) || it.data.date.isEqual(date) }
+            val toUpdate = state.timeFilterItems.firstOrNull { selectedDate.isBefore(it.data.date) || it.data.date.isEqual(date) }
+                ?: return@update state
             val updateItems = state.timeFilterItems.mapIndexed { index, filter ->
                 if (filter.data == toUpdate.data) {
                     scrollToIndex = index

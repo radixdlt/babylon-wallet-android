@@ -121,6 +121,7 @@ fun HistoryScreen(
                 is HistoryEvent.ScrollToItem -> {
                     listState.scrollToItem(event.index, if (event.index == 0) 0 else accountHeaderHeight + stickyHeaderHeight)
                 }
+
                 is HistoryEvent.ScrollToTimeFilter -> timeFilterScrollState.scrollToItem(event.index)
             }
         }
@@ -172,12 +173,12 @@ fun HistoryContent(
                 windowInsets = WindowInsets.statusBars,
                 containerColor = RadixTheme.colors.defaultBackground,
                 actions = {
-                    IconButton(onClick = { onShowFilters(true) }) {
+                    IconButton(onClick = { onShowFilters(true) }, enabled = state.content !is Content.Empty) {
                         Icon(
                             painterResource(
                                 id = DSR.ic_filter_list
                             ),
-                            tint = Color.Unspecified,
+                            tint = if (state.content is Content.Empty) RadixTheme.colors.gray3 else Color.Unspecified,
                             contentDescription = null
                         )
                     }

@@ -57,7 +57,7 @@ class StreamRepositoryImpl @Inject constructor(
                     StreamTransactionsRequest(
                         order = StreamTransactionsRequest.Order.asc,
                         fromLedgerState = LedgerStateSelector(stateVersion = 1),
-                        accountsWithManifestOwnerMethodCalls = listOf(accountAddress),
+                        affectedGlobalEntitiesFilter = listOf(accountAddress),
                         limitPerPage = 1
                     )
                 ).toResult().getOrThrow()
