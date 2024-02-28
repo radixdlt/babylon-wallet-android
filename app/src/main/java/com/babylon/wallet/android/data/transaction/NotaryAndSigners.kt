@@ -48,6 +48,6 @@ data class NotaryAndSigners(
     }
 
     fun signWithNotary(hashedData: ByteArray): Signature {
-        return ephemeralNotaryPrivateKey.signToSignatureWrapped(hashedData)
+        return ephemeralNotaryPrivateKey.signToSignature(hashedData)
     }
 }

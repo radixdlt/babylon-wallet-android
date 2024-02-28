@@ -5,9 +5,8 @@ import org.bouncycastle.util.encoders.Hex
 import rdx.works.core.blake2Hash
 import java.math.BigInteger
 
-internal typealias EngineSignatureWithPublicKey = com.radixdlt.ret.SignatureWithPublicKey
-internal typealias EngineSignatureWithPublicKeyEd25519 = com.radixdlt.ret.SignatureWithPublicKey.Ed25519
-internal typealias EngineSignatureWithPublicKeySecp256k1 = com.radixdlt.ret.SignatureWithPublicKey.Secp256k1
+private typealias EngineSignatureWithPublicKeyEd25519 = com.radixdlt.ret.SignatureWithPublicKey.Ed25519
+private typealias EngineSignatureWithPublicKeySecp256k1 = com.radixdlt.ret.SignatureWithPublicKey.Secp256k1
 
 sealed interface SignatureWithPublicKey {
 
@@ -16,8 +15,8 @@ sealed interface SignatureWithPublicKey {
         get() = Hex.toHexString(signature)
 
     class Ed25519(
-        publicKey: ByteArray,
-        signature: ByteArray
+        signature: ByteArray,
+        publicKey: ByteArray
     ): SignatureWithPublicKey {
 
         private val engineKey = EngineSignatureWithPublicKeyEd25519(signature = signature, publicKey = publicKey)
