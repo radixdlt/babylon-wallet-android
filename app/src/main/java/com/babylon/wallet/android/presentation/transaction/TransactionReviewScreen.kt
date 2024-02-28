@@ -33,12 +33,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.InteractionState
-import rdx.works.profile.ret.TransactionVersion
+import rdx.works.profile.ret.transaction.TransactionVersion
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import rdx.works.profile.ret.TransactionManifestData
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
@@ -69,6 +69,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.ret.transaction.TransactionManifestData.TransactionMessage
 
 @Composable
 fun TransactionReviewScreen(
@@ -486,7 +487,7 @@ fun TransactionPreviewContentPreview() {
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
                         networkId = Radix.Gateway.default.network.id,
-                        message = "Hello",
+                        message = TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
                     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)

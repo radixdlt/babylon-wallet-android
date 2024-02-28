@@ -7,66 +7,64 @@ import com.radixdlt.ret.Instructions
 import com.radixdlt.ret.ManifestAddress
 import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.TransactionManifest
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-fun TransactionManifest.addLockFeeInstructionToManifest(
-    addressToLockFee: String,
+fun TransactionManifestData.addLockFee(
+    feePayerAddress: String,
     fee: BigDecimal
-): TransactionManifest = TransactionManifest(
-    instructions = Instructions.fromInstructions(
-        instructions = listOf(lockFeeInstruction(addressToLockFee, fee)) + instructions().instructionsList(),
-        networkId = instructions().networkId()
-    ),
-    blobs = blobs()
-)
+): TransactionManifestData {
+    val manifest = toTransactionManifest().getOrThrow()
 
-private fun lockFeeInstruction(
-    addressToLockFee: String,
-    fee: BigDecimal
-): Instruction {
-    return Instruction.CallMethod(
-        address = ManifestAddress.Static(Address(addressToLockFee)),
-        methodName = ManifestMethod.LockFee.value,
-        args = ManifestValue.TupleValue(
-            fields = listOf(
-                ManifestValue.DecimalValue(fee.toRETDecimal(roundingMode = RoundingMode.HALF_UP))
-            )
-        )
+    return TransactionManifestData.from(
+        manifest = TransactionManifest(
+            instructions = Instructions.fromInstructions(
+                instructions = listOf(
+                    Instruction.CallMethod(
+                        address = ManifestAddress.Static(Address(feePayerAddress)),
+                        methodName = ManifestMethod.LockFee.value,
+                        args = ManifestValue.TupleValue(
+                            fields = listOf(
+                                ManifestValue.DecimalValue(fee.toRETDecimal(roundingMode = RoundingMode.HALF_UP))
+                            )
+                        )
+                    )
+                ) + manifest.instructions().instructionsList(),
+                networkId = manifest.instructions().networkId()
+            ),
+            blobs = manifest.blobs()
+        ),
+        message = message
     )
 }
 
-fun TransactionManifest.addGuaranteeInstructionToManifest(
+fun TransactionManifestData.addGuaranteeInstructionToManifest(
     address: String,
     guaranteedAmount: BigDecimal,
     index: Int
-): TransactionManifest = TransactionManifest(
-    instructions = Instructions.fromInstructions(
-        instructions = instructions().instructionsList().toMutableList().apply {
-            add(
-                index,
-                guaranteeInstruction(
-                    resourceAddress = address,
-                    guaranteedAmount = guaranteedAmount
-                )
-            )
-        }.toList(),
-        networkId = instructions().networkId()
-    ),
-    blobs = blobs()
-)
+): TransactionManifestData {
+    val manifest = toTransactionManifest().getOrThrow()
 
-private fun guaranteeInstruction(
-    resourceAddress: String,
-    guaranteedAmount: BigDecimal
-): Instruction {
-    return Instruction.AssertWorktopContains(
-        resourceAddress = Address(resourceAddress),
-        amount = guaranteedAmount.toRETDecimal(roundingMode = RoundingMode.HALF_UP)
+    return TransactionManifestData.from(
+        manifest = TransactionManifest(
+            instructions = Instructions.fromInstructions(
+                instructions = manifest.instructions().instructionsList().toMutableList().apply {
+                    add(
+                        index = index,
+                        element = Instruction.AssertWorktopContains(
+                            resourceAddress = Address(address),
+                            amount = guaranteedAmount.toRETDecimal(roundingMode = RoundingMode.HALF_UP)
+                        )
+                    )
+                }.toList(),
+                networkId = manifest.instructions().networkId()
+            ),
+            blobs = manifest.blobs()
+        ),
+        message = message
     )
 }
 
-
-// TODO make internal
 @Suppress("MagicNumber")
-fun BigDecimal.toRETDecimal(roundingMode: RoundingMode): Decimal = Decimal(setScale(18, roundingMode).toPlainString())
+internal fun BigDecimal.toRETDecimal(roundingMode: RoundingMode): Decimal = Decimal(setScale(18, roundingMode).toPlainString())

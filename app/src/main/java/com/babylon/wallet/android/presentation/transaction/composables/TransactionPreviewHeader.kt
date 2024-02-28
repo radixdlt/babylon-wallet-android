@@ -30,12 +30,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import rdx.works.profile.ret.TransactionVersion
+import rdx.works.profile.ret.transaction.TransactionVersion
 import com.babylon.wallet.android.designsystem.composable.TwoRowsTopAppBar
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import rdx.works.profile.ret.TransactionManifestData
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -181,7 +181,7 @@ fun TransactionPreviewHeaderPreview() {
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
                         networkId = Radix.Gateway.default.network.id,
-                        message = "Hello",
+                        message = TransactionManifestData.TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
                     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)

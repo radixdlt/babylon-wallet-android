@@ -62,7 +62,8 @@ class TransactionAnalysisDelegate @Inject constructor(
         val summary = manifest.summary(networkId.toUByte())
 
         resolveNotaryAndSignersUseCase(
-            summary = summary,
+            accountsRequiringAuth = summary.accountsRequiringAuth.map { it.addressString() },
+            personasRequiringAuth = summary.identitiesRequiringAuth.map { it.addressString() },
             notary = _state.value.ephemeralNotaryPrivateKey
         ).then { notaryAndSigners ->
             getTransactionPreview(

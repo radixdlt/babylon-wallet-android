@@ -3,11 +3,11 @@
 package com.babylon.wallet.android.domain
 
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import rdx.works.profile.ret.TransactionVersion
+import rdx.works.profile.ret.transaction.TransactionVersion
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import rdx.works.profile.ret.TransactionManifestData
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
@@ -53,6 +53,7 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.TestData
+import rdx.works.profile.ret.transaction.TransactionManifestData.TransactionMessage
 import java.math.BigDecimal
 
 class SampleDataProvider {
@@ -87,7 +88,7 @@ class SampleDataProvider {
         transactionManifestData = TransactionManifestData(
             instructions = "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY",
             networkId = Radix.Gateway.default.network.id,
-            message = "Hello",
+            message = TransactionMessage.Public("Hello"),
             version = TransactionVersion.Default.value
         ),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)

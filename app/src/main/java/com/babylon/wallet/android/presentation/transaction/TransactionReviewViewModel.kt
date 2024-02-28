@@ -9,7 +9,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.InteractionState
-import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.DApp
@@ -22,6 +21,7 @@ import com.babylon.wallet.android.domain.model.resources.Badge
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
+import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -48,7 +48,7 @@ import javax.inject.Inject
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
-    private val transactionClient: TransactionClient,
+    private val signTransactionUseCase: SignTransactionUseCase,
     private val analysis: TransactionAnalysisDelegate,
     private val guarantees: TransactionGuaranteesDelegate,
     private val fees: TransactionFeesDelegate,
@@ -82,7 +82,7 @@ class TransactionReviewViewModel @Inject constructor(
         } else {
             _state.update { it.copy(request = request) }
             viewModelScope.launch {
-                transactionClient.signingState.collect { signingState ->
+                signTransactionUseCase.signingState.collect { signingState ->
                     _state.update { state ->
                         state.copy(interactionState = signingState)
                     }
@@ -108,7 +108,7 @@ class TransactionReviewViewModel @Inject constructor(
         } else {
             viewModelScope.launch {
                 submit.onDismiss(
-                    transactionClient = transactionClient,
+                    signTransactionUseCase = signTransactionUseCase,
                     exception = RadixWalletException.DappRequestException.RejectedByUser
                 )
             }
@@ -125,8 +125,8 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun approveTransaction(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
         submit.onSubmit(
-            transactionClient = transactionClient,
-            deviceBiometricAuthenticationProvider
+            signTransactionUseCase = signTransactionUseCase,
+            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         )
     }
 
@@ -154,7 +154,7 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     fun onCancelSigningClick() {
-        transactionClient.cancelSigning()
+        signTransactionUseCase.cancelSigning()
     }
 
     fun onChangeFeePayerClick() = fees.onChangeFeePayerClick()
@@ -317,14 +317,7 @@ class TransactionReviewViewModel @Inject constructor(
             get() = sheetState != Sheet.None
 
         val message: String?
-            get() {
-                val message = request?.transactionManifestData?.message
-                return if (!message.isNullOrBlank()) {
-                    message
-                } else {
-                    null
-                }
-            }
+            get() = request?.transactionManifestData?.message?.messageOrNull
 
         val isSubmitEnabled: Boolean
             get() = previewType !is PreviewType.None && !isBalanceInsufficientToPayTheFee

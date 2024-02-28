@@ -4,7 +4,7 @@ package com.babylon.wallet.android.data.manifest
 
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import rdx.works.profile.ret.TransactionManifestData
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import java.util.UUID
