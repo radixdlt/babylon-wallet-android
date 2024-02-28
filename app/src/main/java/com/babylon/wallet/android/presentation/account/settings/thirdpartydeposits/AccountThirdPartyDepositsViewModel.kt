@@ -105,7 +105,6 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun onUpdateThirdPartyDeposits() {
         viewModelScope.launch {
-            val networkId = requireNotNull(state.value.account?.networkID)
             val currentThirdPartyDeposits = state.value.account?.onLedgerSettings?.thirdPartyDeposits
 
             val currentAssetExceptions = currentThirdPartyDeposits?.assetsExceptionList.orEmpty()
