@@ -50,7 +50,7 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                     val signatureWithPublicKey = extendedKey
                         .keyPair
                         .toPrivateKey()
-                        .signToSignatureWithPublicKeyWrapped(dataToSign)
+                        .signToSignatureWithPublicKey(dataToSign)
                     result.add(signatureWithPublicKey)
                     val profile = profileRepository.profile.first()
                     profileRepository.saveProfile(profile.updateLastUsed(deviceFactorSource.id))
