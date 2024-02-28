@@ -245,17 +245,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             Badge(address = "")
         )
         coEvery { transactionClient.signTransaction(any(), any(), any(), any()) } returns Result.success(
-            NotarizedTransactionResult(
-                "sampleTxId", "", TransactionHeader(
-                    11u,
-                    1U,
-                    5U,
-                    10u,
-                    com.radixdlt.ret.PublicKey.Ed25519(byteArrayOf()),
-                    false,
-                    10u
-                )
-            )
+            NotarizedTransactionResult(txIdHash = "sampleTxId", notarizedTransactionIntentHex = "",  endEpoch = 5U)
         )
         coEvery { resolveNotaryAndSignersUseCase(any(), any()) } returns Result.success(
             NotaryAndSigners(

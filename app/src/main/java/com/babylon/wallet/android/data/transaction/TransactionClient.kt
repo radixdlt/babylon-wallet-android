@@ -153,7 +153,7 @@ class TransactionClient @Inject constructor(
                 NotarizedTransactionResult(
                     txIdHash = transactionIntentHash.asStr(),
                     notarizedTransactionIntentHex = compiledNotarizedIntent.toHexString(),
-                    transactionHeader = header
+                    endEpoch = header.endEpochExclusive
                 )
             )
         }.onFailure {
@@ -194,8 +194,5 @@ class TransactionClient @Inject constructor(
 data class NotarizedTransactionResult(
     val txIdHash: String,
     val notarizedTransactionIntentHex: String,
-    val transactionHeader: TransactionHeader
-) {
     val endEpoch: ULong
-        get() = transactionHeader.endEpochExclusive
-}
+)
