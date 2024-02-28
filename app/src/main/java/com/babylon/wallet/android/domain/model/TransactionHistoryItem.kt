@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
+import com.babylon.wallet.android.data.gateway.generated.models.CommittedTransactionInfo
 import com.babylon.wallet.android.data.gateway.generated.models.ManifestClass
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
 import com.babylon.wallet.android.domain.model.assets.Asset
@@ -9,6 +10,7 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.Resource
+import message
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
@@ -16,15 +18,24 @@ import java.time.ZonedDateTime
 
 data class TransactionHistoryData(
     val stateVersion: Long,
-    val items: List<TransactionHistoryItem>,
+    val prevCursorId: String?,
     val nextCursorId: String?,
-    val currentFilters: HistoryFilters? = null
+    val filters: HistoryFilters,
+    val items: List<TransactionHistoryItem>
 ) {
     val groupedByDate: Map<String, List<TransactionHistoryItem>>
         get() = items.groupBy {
             val zonedDateTime = it.timestamp?.atZone(ZoneId.systemDefault()) ?: ZonedDateTime.now()
             zonedDateTime.year.toString() + zonedDateTime.dayOfYear
         }
+
+    fun addToCurrent(items: List<TransactionHistoryItem>, nextCursorId: String?, forwardInTime: Boolean): TransactionHistoryData {
+        return copy(
+            nextCursorId = if (forwardInTime) this.nextCursorId else nextCursorId,
+            prevCursorId = if (forwardInTime) nextCursorId else this.prevCursorId,
+            items = (this.items + items).sortedByDescending { it.timestamp }
+        )
+    }
 }
 
 data class TransactionHistoryItem(
@@ -62,22 +73,22 @@ data class TransactionHistoryItem(
 
 data class HistoryFilters(
     val start: ZonedDateTime? = null,
-    val end: ZonedDateTime? = null,
     val transactionType: TransactionType? = null,
     val resources: Set<Resource> = emptySet(),
     val transactionClass: TransactionClass? = null,
-    val submittedBy: SubmittedBy? = null
+    val sortOrder: SortOrder = SortOrder.Desc
 ) {
+
+    enum class SortOrder {
+        Asc, Desc
+    }
+
     enum class TransactionType {
         DEPOSIT, WITHDRAWAL
     }
 
-    enum class SubmittedBy {
-        Me, ThirdParty
-    }
-
     val isAnyFilterSet: Boolean
-        get() = transactionType != null || resources.isNotEmpty() || transactionClass != null || submittedBy != null
+        get() = transactionType != null || resources.isNotEmpty() || transactionClass != null
 }
 
 sealed interface BalanceChange {
@@ -180,4 +191,16 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
 
 enum class TransactionClass {
     General, Transfer, ValidatorStake, ValidatorUnstake, ValidatorClaim, AccountDespositSettingsUpdate, PoolContribution, PoolRedemption
+}
+
+fun CommittedTransactionInfo.toDomainModel(accountAddress: String, assets: List<Asset>): TransactionHistoryItem {
+    return TransactionHistoryItem(
+        accountAddress = accountAddress,
+        txId = intentHash.orEmpty(),
+        feePaid = feePaid?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+        balanceChanges = balanceChanges?.toDomainModel(assets = assets).orEmpty(),
+        transactionClass = manifestClasses?.firstOrNull()?.toTransactionClass(),
+        timestamp = confirmedAt?.toInstant(),
+        message = message?.message()
+    )
 }

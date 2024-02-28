@@ -24,7 +24,6 @@ fun FiltersStrip(
     onTransactionTypeFilterRemoved: () -> Unit,
     onTransactionClassFilterRemoved: () -> Unit,
     onResourceFilterRemoved: (Resource) -> Unit,
-    onSubmittedByFilterRemoved: () -> Unit,
     modifier: Modifier = Modifier,
     timeFilterScrollState: LazyListState,
 ) {
@@ -72,13 +71,6 @@ fun FiltersStrip(
             item {
                 SingleTag(selected = true, text = txClass.description(), onCloseClick = {
                     if (userInteractionEnabled) onTransactionClassFilterRemoved()
-                })
-            }
-        }
-        historyFilters?.submittedBy?.let { submittedBy ->
-            item {
-                SingleTag(selected = true, text = submittedBy.label(), onCloseClick = {
-                    if (userInteractionEnabled) onSubmittedByFilterRemoved()
                 })
             }
         }

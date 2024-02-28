@@ -57,8 +57,7 @@ fun FiltersDialog(
     onClearAllFilters: () -> Unit,
     onTransactionTypeFilterSelected: (HistoryFilters.TransactionType?) -> Unit,
     onTransactionClassFilterSelected: (TransactionClass?) -> Unit,
-    onResourceFilterSelected: (Resource) -> Unit,
-    onSubmittedByFilterChanged: (HistoryFilters.SubmittedBy?) -> Unit,
+    onResourceFilterSelected: (Resource) -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -129,25 +128,6 @@ fun FiltersDialog(
                         }, onCloseClick = {
                             onTransactionClassFilterSelected(null)
                         })
-                    }
-                }
-                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
-            }
-            HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
-            FilterTypeSection(label = "Submitted by") {
-                TagContainer {
-                    HistoryFilters.SubmittedBy.entries.forEach { entry ->
-                        val selected = state.filters.submittedBy == entry
-                        SingleTag(
-                            selected = selected,
-                            text = entry.label(),
-                            onClick = {
-                                onSubmittedByFilterChanged(entry)
-                            },
-                            onCloseClick = {
-                                onSubmittedByFilterChanged(null)
-                            }
-                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -329,14 +309,6 @@ fun HistoryFilters.TransactionType.label(): String {
     return when (this) {
         HistoryFilters.TransactionType.DEPOSIT -> "Deposits"
         HistoryFilters.TransactionType.WITHDRAWAL -> "Withdrawals"
-    }
-}
-
-@Composable
-fun HistoryFilters.SubmittedBy.label(): String {
-    return when (this) {
-        HistoryFilters.SubmittedBy.Me -> "Submitted By Me"
-        HistoryFilters.SubmittedBy.ThirdParty -> "Submitted By a Third-party"
     }
 }
 

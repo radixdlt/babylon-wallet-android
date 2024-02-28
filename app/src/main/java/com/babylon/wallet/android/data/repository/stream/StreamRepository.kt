@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionDetai
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.HistoryFilters
+import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.toManifestClass
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -27,7 +28,7 @@ interface StreamRepository {
     suspend fun getAccountFirstTransaction(accountAddress: String): Result<StreamTransactionsResponse>
 
     companion object {
-        const val PAGE_SIZE = 20
+        const val PAGE_SIZE = 10
     }
 }
 
@@ -71,7 +72,7 @@ class StreamRepositoryImpl @Inject constructor(
         filters: HistoryFilters,
         stateVersion: Long?
     ): StreamTransactionsRequest {
-        val fromLedgerState = if (filters.start != null || stateVersion != null) {
+        val ledgerState = if (stateVersion != null || filters.start != null) {
             LedgerStateSelector(
                 timestamp = filters.start?.toOffsetDateTime(),
                 stateVersion = stateVersion
@@ -79,20 +80,17 @@ class StreamRepositoryImpl @Inject constructor(
         } else {
             null
         }
-        val atLedgerState = if (filters.end != null || stateVersion != null) {
-            LedgerStateSelector(
-                timestamp = filters.end?.toOffsetDateTime(),
-                stateVersion = stateVersion
-            )
-        } else {
-            null
-        }
+        val ascending = filters.sortOrder == HistoryFilters.SortOrder.Asc
         return StreamTransactionsRequest(
             optIns = TransactionDetailsOptIns(balanceChanges = true, affectedGlobalEntities = true),
             cursor = cursor,
             limitPerPage = StreamRepository.PAGE_SIZE,
-            fromLedgerState = fromLedgerState,
-            atLedgerState = atLedgerState,
+            atLedgerState = if (ascending) null else ledgerState,
+            fromLedgerState = if (ascending) ledgerState else null,
+            order = when (filters.sortOrder) {
+                HistoryFilters.SortOrder.Asc -> StreamTransactionsRequest.Order.asc
+                HistoryFilters.SortOrder.Desc -> StreamTransactionsRequest.Order.desc
+            },
             eventsFilter = filters.transactionType?.let { type ->
                 when (type) {
                     HistoryFilters.TransactionType.DEPOSIT ->
@@ -102,6 +100,7 @@ class StreamRepositoryImpl @Inject constructor(
                                 emitterAddress = accountAddress
                             )
                         )
+
                     HistoryFilters.TransactionType.WITHDRAWAL ->
                         listOf(
                             StreamTransactionsRequestEventFilterItem(
@@ -114,21 +113,11 @@ class StreamRepositoryImpl @Inject constructor(
             manifestClassFilter = filters.transactionClass?.toManifestClass()?.let {
                 StreamTransactionsRequestAllOfManifestClassFilter(
                     propertyClass = it,
-                    matchOnlyMostSpecific = true
+                    matchOnlyMostSpecific = filters.transactionClass != TransactionClass.Transfer
                 )
             },
             manifestResourcesFilter = if (filters.resources.isNotEmpty()) filters.resources.map { it.resourceAddress } else null,
-            affectedGlobalEntitiesFilter = listOf(accountAddress),
-            accountsWithManifestOwnerMethodCalls = if (filters.submittedBy == HistoryFilters.SubmittedBy.Me) {
-                listOf(accountAddress)
-            } else {
-                null
-            },
-            accountsWithoutManifestOwnerMethodCalls = if (filters.submittedBy == HistoryFilters.SubmittedBy.ThirdParty) {
-                listOf(accountAddress)
-            } else {
-                null
-            }
+            affectedGlobalEntitiesFilter = listOf(accountAddress)
         )
     }
 }
