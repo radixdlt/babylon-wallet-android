@@ -265,9 +265,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         )
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { transactionClient.signingState } returns emptyFlow()
-        coEvery { transactionRepository.getTransactionPreview(any()) } returns Result.success(
-            previewResponse()
-        )
+        coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0L)
+        coEvery { transactionRepository.getTransactionPreview(any()) } returns Result.success(previewResponse())
         coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
