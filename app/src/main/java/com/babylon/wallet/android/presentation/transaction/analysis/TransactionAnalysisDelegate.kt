@@ -1,8 +1,12 @@
 package com.babylon.wallet.android.presentation.transaction.analysis
 
+import com.babylon.wallet.android.data.gateway.extensions.asGatewayPublicKey
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.manifest.toPrettyString
+import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
-import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
@@ -14,9 +18,11 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.guaranteesCount
+import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.flow.update
+import rdx.works.core.NonceGenerator
 import rdx.works.core.decodeHex
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
@@ -31,25 +37,25 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
-    private val searchFeePayersUseCase: SearchFeePayersUseCase
+    private val searchFeePayersUseCase: SearchFeePayersUseCase,
+    private val transactionRepository: TransactionRepository,
 ) : ViewModelDelegate<TransactionReviewViewModel.State>() {
 
     private val logger = Timber.tag("TransactionAnalysis")
 
-    suspend fun analyse(transactionClient: TransactionClient) {
+    suspend fun analyse() {
         _state.value.requestNonNull.transactionManifestData
             .toTransactionManifest()
             .then {
                 logger.v(it.toPrettyString())
-                startAnalysis(it, transactionClient)
+                startAnalysis(it)
             }.onFailure { error ->
                 reportFailure(error)
             }
     }
 
     private suspend fun startAnalysis(
-        manifest: TransactionManifest,
-        transactionClient: TransactionClient
+        manifest: TransactionManifest
     ): Result<Unit> = runCatching {
         getProfileUseCase.currentNetwork()?.networkID ?: error("No network found")
     }.then { networkId ->
@@ -59,7 +65,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             summary = summary,
             notary = _state.value.ephemeralNotaryPrivateKey
         ).then { notaryAndSigners ->
-            transactionClient.getTransactionPreview(
+            getTransactionPreview(
                 manifest = manifest,
                 notaryAndSigners = notaryAndSigners
             ).mapCatching { preview ->
@@ -86,6 +92,52 @@ class TransactionAnalysisDelegate @Inject constructor(
                 }
             }
         }
+    }
+
+    private suspend fun getTransactionPreview(
+        manifest: TransactionManifest,
+        notaryAndSigners: NotaryAndSigners
+    ): Result<TransactionPreviewResponse> {
+        val (startEpochInclusive, endEpochExclusive) = with(transactionRepository.getLedgerEpoch()) {
+            val epoch = this.getOrNull() ?: return@with (0L to 0L)
+
+            (epoch to epoch + 1L)
+        }
+
+        return transactionRepository.getTransactionPreview(
+            TransactionPreviewRequest(
+                manifest = manifest.instructions().asStr(),
+                startEpochInclusive = startEpochInclusive,
+                endEpochExclusive = endEpochExclusive,
+                tipPercentage = 0,
+                nonce = NonceGenerator().toLong(),
+                signerPublicKeys = notaryAndSigners.signersPublicKeys().map { it.asGatewayPublicKey() },
+                flags = TransactionPreviewRequestFlags(
+                    useFreeCredit = true,
+                    assumeAllSignatureProofs = false,
+                    skipEpochCheck = false
+                ),
+                blobsHex = manifest.blobs().map { it.toHexString() },
+                notaryPublicKey = notaryAndSigners.notaryPublicKey().asGatewayPublicKey(),
+                notaryIsSignatory = notaryAndSigners.notaryIsSignatory
+            )
+        ).fold(
+            onSuccess = { preview ->
+                if (preview.receipt.isFailed) {
+                    val errorMessage = preview.receipt.errorMessage.orEmpty()
+                    val isFailureDueToDepositRules = errorMessage.contains("AccountError(DepositIsDisallowed") ||
+                            errorMessage.contains("AccountError(NotAllBucketsCouldBeDeposited")
+                    if (isFailureDueToDepositRules) {
+                        Result.failure(RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits)
+                    } else {
+                        Result.failure(Throwable(preview.receipt.errorMessage))
+                    }
+                } else {
+                    Result.success(preview)
+                }
+            },
+            onFailure = { Result.failure(it) }
+        )
     }
 
     private suspend fun ExecutionSummary.resolvePreview(notaryAndSigners: NotaryAndSigners) = apply {
