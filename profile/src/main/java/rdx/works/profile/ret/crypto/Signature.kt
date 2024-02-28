@@ -1,8 +1,7 @@
 package rdx.works.profile.ret.crypto
 
-internal typealias EngineSignature = com.radixdlt.ret.Signature
-internal typealias EngineSignatureEd25519 = com.radixdlt.ret.Signature.Ed25519
-internal typealias EngineSignatureSecp256k1 = com.radixdlt.ret.Signature.Secp256k1
+private typealias EngineSignatureEd25519 = com.radixdlt.ret.Signature.Ed25519
+private typealias EngineSignatureSecp256k1 = com.radixdlt.ret.Signature.Secp256k1
 
 sealed interface Signature {
 

@@ -5,9 +5,8 @@ import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.model.ECKeyPair
 
-internal typealias EnginePublicKey = com.radixdlt.ret.PublicKey
-internal typealias EnginePublicKeyEd25519 = com.radixdlt.ret.PublicKey.Ed25519
-internal typealias EnginePublicKeySecp256k1 = com.radixdlt.ret.PublicKey.Secp256k1
+private typealias EnginePublicKeyEd25519 = com.radixdlt.ret.PublicKey.Ed25519
+private typealias EnginePublicKeySecp256k1 = com.radixdlt.ret.PublicKey.Secp256k1
 
 sealed interface PublicKey {
 
