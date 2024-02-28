@@ -8,9 +8,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.CoreApiTransacti
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.data.transaction.NotarizedTransactionResult
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
-import com.babylon.wallet.android.data.transaction.TransactionClient
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -23,6 +21,7 @@ import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
+import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
@@ -55,7 +54,6 @@ import com.radixdlt.ret.Instructions
 import com.radixdlt.ret.ManifestClass
 import com.radixdlt.ret.ManifestSummary
 import com.radixdlt.ret.NewEntities
-import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -85,11 +83,13 @@ import org.junit.runners.model.Statement
 import rdx.works.core.displayableQuantity
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.logNonFatalException
-import rdx.works.profile.ret.crypto.PrivateKey
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import rdx.works.profile.ret.crypto.PrivateKey
+import rdx.works.profile.ret.transaction.TransactionManifestData
+import rdx.works.profile.ret.transaction.TransactionSigner
 import java.math.BigDecimal
 import java.util.Locale
 
@@ -100,7 +100,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     val defaultLocaleTestRule = DefaultLocaleRule()
 
 
-    private val transactionClient = mockk<TransactionClient>()
+    private val signTransactionUseCase = mockk<SignTransactionUseCase>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getResourcesUseCase = mockk<GetResourcesUseCase>()
     private val resolveAssetsFromAddressUseCase = mockk<ResolveAssetsFromAddressUseCase>()
@@ -173,7 +173,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     }
     private val sampleTransactionManifestData = mockk<TransactionManifestData>().apply {
         every { networkId } returns Radix.Gateway.nebunet.network.id
-        every { message } returns ""
+        every { message } returns TransactionManifestData.TransactionMessage.None
     }
     private val manifest = mockk<TransactionManifest>().apply {
         every { instructions() } returns mockk<Instructions>().apply { every { asStr() } returns "" }
@@ -244,17 +244,11 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
             Badge(address = "")
         )
-        coEvery { transactionClient.signTransaction(any(), any(), any(), any()) } returns Result.success(
-            NotarizedTransactionResult(txIdHash = "sampleTxId", notarizedTransactionIntentHex = "",  endEpoch = 5U)
-        )
-        coEvery { resolveNotaryAndSignersUseCase(any(), any()) } returns Result.success(
-            NotaryAndSigners(
-                emptyList(),
-                PrivateKey.EddsaEd25519.newRandom()
-            )
+        coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(
+            TransactionSigner.Notarization(txIdHash = "sampleTxId", notarizedTransactionIntentHex = "",  endEpoch = 5U)
         )
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(FeePayerSearchResult("feePayer"))
-        coEvery { transactionClient.signingState } returns emptyFlow()
+        coEvery { signTransactionUseCase.signingState } returns emptyFlow()
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0L)
         coEvery { transactionRepository.getTransactionPreview(any()) } returns Result.success(previewResponse())
         coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
@@ -297,7 +291,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     override fun initVM(): TransactionReviewViewModel {
         return TransactionReviewViewModel(
-            transactionClient = transactionClient,
+            signTransactionUseCase = signTransactionUseCase,
             analysis = TransactionAnalysisDelegate(
                 previewTypeAnalyzer = previewTypeAnalyzer,
                 getProfileUseCase = getProfileUseCase,
@@ -363,7 +357,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { transactionClient.signTransaction(any(), any(), any(), any()) } returns Result.failure(
+        coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.failure(
             RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction()
         )
         val vm = vm.value
@@ -518,7 +512,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             reservedInstructions = emptyList()
         )
 
-        coEvery { resolveNotaryAndSignersUseCase(any(), any()) } returns Result.success(
+        coEvery { resolveNotaryAndSignersUseCase(any(), any(), any()) } returns Result.success(
             NotaryAndSigners(
                 listOf(
                     SampleDataProvider().sampleAccount(

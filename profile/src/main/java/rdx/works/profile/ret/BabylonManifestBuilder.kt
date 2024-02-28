@@ -13,6 +13,7 @@ import rdx.works.profile.data.model.extensions.toRETResourcePreference
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import java.math.BigDecimal
 import java.math.RoundingMode
 

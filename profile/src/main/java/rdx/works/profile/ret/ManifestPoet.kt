@@ -6,6 +6,7 @@ import com.radixdlt.ret.ManifestBuilderBucket
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import java.math.BigDecimal
 import java.math.RoundingMode
 
