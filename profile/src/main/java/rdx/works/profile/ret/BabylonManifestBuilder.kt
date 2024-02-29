@@ -9,7 +9,6 @@ import com.radixdlt.ret.MetadataValue
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.PublicKeyHash
 import rdx.works.core.compressedPublicKeyHashBytes
-import rdx.works.profile.data.model.extensions.toRETResourcePreference
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
@@ -185,7 +184,6 @@ internal class BabylonManifestBuilder {
         resourceAddress: String,
         exceptionRule: ThirdPartyDeposits.DepositAddressExceptionRule
     ): BabylonManifestBuilder {
-        exceptionRule.toRETResourcePreference()
         val value = when (exceptionRule) {
             ThirdPartyDeposits.DepositAddressExceptionRule.Allow -> ManifestBuilderValue.EnumValue(0u, emptyList())
             ThirdPartyDeposits.DepositAddressExceptionRule.Deny -> ManifestBuilderValue.EnumValue(1u, emptyList())

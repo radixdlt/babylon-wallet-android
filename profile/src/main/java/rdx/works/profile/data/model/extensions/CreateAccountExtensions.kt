@@ -1,11 +1,6 @@
 package rdx.works.profile.data.model.extensions
 
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.OlympiaNetwork
-import com.radixdlt.ret.PublicKey
-import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
-import com.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
@@ -17,6 +12,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.derivationPathEntityIndex
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.ret.crypto.PublicKey
 
 @Suppress("LongParameterList")
 fun Profile.createAccount(
@@ -30,19 +26,9 @@ fun Profile.createAccount(
     appearanceID: Int? = null // optional - used for account recovery
 ): Network.Account {
     val address = if (isForLegacyOlympia.not()) {
-        deriveVirtualAccountAddressFromPublicKey(
-            PublicKey.Ed25519(compressedPublicKey),
-            onNetworkId.value.toUByte()
-        ).addressString()
+        PublicKey.Ed25519(compressedPublicKey).deriveAccountAddress(onNetworkId.value)
     } else {
-        val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
-            publicKey = PublicKey.Secp256k1(compressedPublicKey),
-            olympiaNetwork = OlympiaNetwork.MAINNET
-        )
-        Address.virtualAccountAddressFromOlympiaAddress(
-            olympiaAccountAddress = olympiaAddress,
-            networkId = onNetworkId.value.toUByte()
-        ).addressString()
+        PublicKey.Secp256k1(compressedPublicKey).deriveOlympiaAccountAddress(networkId = onNetworkId.value)
     }
 
     val unsecuredSecurityState = SecurityState.unsecured(
@@ -79,10 +65,7 @@ fun initializeAccount(
     factorSource: FactorSource.CreatingEntity,
     onLedgerSettings: Network.Account.OnLedgerSettings
 ): Network.Account {
-    val address = deriveVirtualAccountAddressFromPublicKey(
-        PublicKey.Ed25519(compressedPublicKey),
-        onNetworkId.value.toUByte()
-    ).addressString()
+    val address = PublicKey.Ed25519(compressedPublicKey).deriveAccountAddress(networkId = onNetworkId.value)
 
     val unsecuredSecurityState = SecurityState.unsecured(
         publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),

@@ -1,6 +1,5 @@
 package rdx.works.profile.data.model.extensions
 
-import com.radixdlt.ret.ResourcePreference
 import rdx.works.core.mapWhen
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
@@ -45,13 +44,6 @@ fun Profile.renameAccountDisplayName(
             }
         )
     )
-}
-
-fun Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.toRETResourcePreference(): ResourcePreference {
-    return when (this) {
-        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow -> ResourcePreference.ALLOWED
-        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny -> ResourcePreference.DISALLOWED
-    }
 }
 
 fun Network.Account.hasAcceptKnownDepositRule(): Boolean {
