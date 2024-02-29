@@ -105,8 +105,8 @@ private fun AssetsContent(
     ConstraintLayout(
         modifier = modifier
     ) {
-        val (visibleFungibles, remainingFungiblesCount) = remember(assets.ownedFungibles, visibleFungiblesCount) {
-            val all = assets.ownedFungibles
+        val (visibleFungibles, remainingFungiblesCount) = remember(assets.ownedTokens, visibleFungiblesCount) {
+            val all = assets.ownedTokens
             all.take(visibleFungiblesCount) to (all.size - visibleFungiblesCount).coerceAtLeast(minimumValue = 0)
         }
         val nftsCount = remember(assets.nonFungibles) { assets.nonFungiblesSize() }

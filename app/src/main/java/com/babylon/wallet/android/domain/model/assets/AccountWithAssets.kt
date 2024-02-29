@@ -65,7 +65,7 @@ data class Assets(
     val ownedNonXrdTokens: List<Token> by lazy {
         tokens.filterNot { it.resource.isXrd || it.resource.ownedAmount == BigDecimal.ZERO }
     }
-    val ownedFungibles: List<Token> by lazy {
+    val ownedTokens: List<Token> by lazy {
         ownedXrd?.let { listOf(it) + ownedNonXrdTokens } ?: ownedNonXrdTokens
     }
 
@@ -122,7 +122,7 @@ data class Assets(
         }
     } == true
 
-    fun fungiblesSize(): Int = ownedFungibles.size
+    fun fungiblesSize(): Int = ownedTokens.size
 
     fun nonFungiblesSize(): Int = ownedNonFungibles.size
 
