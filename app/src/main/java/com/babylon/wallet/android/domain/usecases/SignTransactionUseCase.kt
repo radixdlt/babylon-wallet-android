@@ -4,9 +4,11 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionConfig.EPOCH_WINDOW
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import rdx.works.core.NonceGenerator
+import rdx.works.core.mapError
 import rdx.works.core.then
 import rdx.works.profile.ret.addLockFee
 import rdx.works.profile.ret.crypto.PrivateKey
@@ -68,7 +70,21 @@ class SignTransactionUseCase @Inject constructor(
                     deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider,
                     collectSignersSignaturesUseCase = collectSignersSignaturesUseCase
                 ),
-            )
+            ).mapError { error ->
+                when (error) {
+                    is TransactionSigner.Error -> {
+                        if (error.cause is RadixWalletException) {
+                            return@mapError error.cause as RadixWalletException
+                        }
+
+                        when (error) {
+                            is TransactionSigner.Error.Prepare -> PrepareTransactionException.PrepareNotarizedTransaction(error.cause)
+                            is TransactionSigner.Error.Sign -> PrepareTransactionException.SignCompiledTransactionIntent(error.cause)
+                        }
+                    }
+                    else -> error
+                }
+            }
         }
     }
 
