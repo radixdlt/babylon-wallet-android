@@ -39,7 +39,7 @@ class SignTransactionUseCase @Inject constructor(
         val manifestWithLockFee = request.manifestWithLockFee
 
         val entitiesRequiringAuth = manifestWithLockFee.entitiesRequiringAuth()
-        resolveNotaryAndSignersUseCase(
+        return resolveNotaryAndSignersUseCase(
             accountsRequiringAuth = entitiesRequiringAuth.accounts,
             personasRequiringAuth = entitiesRequiringAuth.identities,
             notary = request.ephemeralNotaryPrivateKey
@@ -70,8 +70,6 @@ class SignTransactionUseCase @Inject constructor(
                 ),
             )
         }
-
-        return Result.failure(RuntimeException(""))
     }
 
     data class Request(
