@@ -7,7 +7,7 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.DApp
+import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.utils.isValidHttpsUrl

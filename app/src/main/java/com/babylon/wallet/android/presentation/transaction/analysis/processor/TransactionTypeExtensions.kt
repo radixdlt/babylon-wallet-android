@@ -11,10 +11,10 @@ import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource.Item
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.FungibleResourceIndicator

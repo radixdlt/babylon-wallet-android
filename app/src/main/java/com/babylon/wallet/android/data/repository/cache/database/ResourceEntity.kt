@@ -14,12 +14,12 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
-import com.babylon.wallet.android.domain.model.resources.metadata.poolAddress
-import com.babylon.wallet.android.domain.model.resources.metadata.validatorAddress
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.metadata.poolAddress
+import rdx.works.core.domain.resources.metadata.validatorAddress
 import java.math.BigDecimal
 import java.time.Instant
 

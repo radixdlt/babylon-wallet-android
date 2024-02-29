@@ -28,8 +28,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
@@ -44,6 +44,7 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBal
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import rdx.works.core.displayableQuantity
 import rdx.works.core.AddressHelper
+import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
 
 @Composable
@@ -204,14 +205,10 @@ fun LSUDialogContent(
                     .radixPlaceholder(
                         visible = lsu?.fungibleResource?.currentSupply == null
                     ),
-                text = when {
-                    lsu?.fungibleResource?.currentSupply != null ->
-                        when (lsu.fungibleResource.currentSupply) {
-                            BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                            else -> lsu.fungibleResource.currentSupply.displayableQuantity()
-                        }
-
-                    else -> ""
+                text = when (val supply = lsu?.fungibleResource?.currentSupply) {
+                    null -> ""
+                    BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                    else -> supply.displayableQuantity()
                 },
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
@@ -252,7 +249,7 @@ private fun LSUResourceValue(
         Thumbnail.Fungible(
             modifier = Modifier.size(44.dp),
             token = Resource.FungibleResource(
-                resourceAddress = XrdResource.address(),
+                resourceAddress = XrdResource.address(Radix.Gateway.default.network.networkId().value),
                 ownedAmount = null
             )
         )

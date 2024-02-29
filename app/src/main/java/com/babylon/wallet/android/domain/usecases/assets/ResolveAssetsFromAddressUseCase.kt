@@ -8,8 +8,8 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
 import javax.inject.Inject
 
 class ResolveAssetsFromAddressUseCase @Inject constructor(

@@ -10,7 +10,7 @@ import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoin.Companion.asPoolResourceJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
-import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
+import rdx.works.core.domain.resources.metadata.poolUnit
 
 @Entity(
     foreignKeys = [

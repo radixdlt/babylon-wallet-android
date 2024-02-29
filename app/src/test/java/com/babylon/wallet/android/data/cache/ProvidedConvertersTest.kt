@@ -3,9 +3,9 @@ package com.babylon.wallet.android.data.cache
 import com.babylon.wallet.android.data.repository.cache.database.BehavioursColumn
 import com.babylon.wallet.android.data.repository.cache.database.MetadataColumn
 import com.babylon.wallet.android.data.repository.cache.database.StateDatabaseConverters
-import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import rdx.works.core.domain.assets.AssetBehaviour
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
