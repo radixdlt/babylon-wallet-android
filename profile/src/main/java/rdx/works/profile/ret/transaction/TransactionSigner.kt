@@ -9,6 +9,18 @@ import rdx.works.profile.ret.crypto.PublicKey
 import rdx.works.profile.ret.crypto.Signature
 import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import javax.inject.Inject
+import kotlin.Boolean
+import kotlin.ByteArray
+import kotlin.Result
+import kotlin.String
+import kotlin.Throwable
+import kotlin.UInt
+import kotlin.ULong
+import kotlin.UShort
+import kotlin.getOrElse
+import kotlin.getOrThrow
+import kotlin.runCatching
+import kotlin.toUByte
 
 interface TransactionSigner {
 
@@ -37,6 +49,11 @@ interface TransactionSigner {
         suspend fun gatherSignatures(dataToSign: ByteArray, hashedDataToSign: ByteArray): Result<List<SignatureWithPublicKey>>
 
         suspend fun notarise(signedIntentHash: ByteArray): Result<Signature>
+    }
+
+    sealed class Error: Throwable() {
+        data class Sign(override val cause: Throwable? = null): Error()
+        data class Prepare(override val cause: Throwable? = null): Error()
     }
 }
 
@@ -68,18 +85,15 @@ class TransactionSignerImpl @Inject constructor(): TransactionSigner {
                 message = request.manifest.engineMessage
             )
         }.getOrElse {
-            //return Result.failure(RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent())
-            return Result.failure(RuntimeException(""))
+            return Result.failure(TransactionSigner.Error.Sign())
         }
 
         val transactionIntentHash = runCatching { transactionIntent.intentHash() }.getOrElse {
-//            return Result.failure(RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent())
-            return Result.failure(RuntimeException(""))
+            return Result.failure(TransactionSigner.Error.Sign())
         }
 
         val compiledTransactionIntent = runCatching { transactionIntent.compile() }.getOrElse {
-//            return Result.failure(RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction())
-            return Result.failure(RuntimeException(""))
+            return Result.failure(TransactionSigner.Error.Prepare())
         }
 
         // Sign intent
@@ -87,12 +101,7 @@ class TransactionSignerImpl @Inject constructor(): TransactionSigner {
             dataToSign = compiledTransactionIntent,
             hashedDataToSign = transactionIntentHash.bytes()
         ).getOrElse { throwable ->
-//            return if (throwable is RadixWalletException) {
-//                Result.failure(throwable)
-//            } else {
-//                Result.failure(RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent(throwable))
-//            }
-            return Result.failure(RuntimeException(""))
+            return Result.failure(TransactionSigner.Error.Sign(throwable))
         }
         val signedTransactionIntent = runCatching {
             SignedIntent(
@@ -105,15 +114,13 @@ class TransactionSignerImpl @Inject constructor(): TransactionSigner {
                 }
             )
         }.getOrElse {
-//            return Result.failure(RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent(it))
-            return Result.failure(RuntimeException(""))
+            return Result.failure(TransactionSigner.Error.Sign(it))
         }
 
         val signedIntentHash = runCatching {
             signedTransactionIntent.signedIntentHash()
         }.getOrElse { error ->
-//            return Result.failure(RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction(error))
-            return Result.failure(RuntimeException(""))
+            return Result.failure(TransactionSigner.Error.Prepare(error))
         }
 
         // Notarise signed intent
@@ -130,8 +137,7 @@ class TransactionSignerImpl @Inject constructor(): TransactionSigner {
                 }
             ).compile()
         }.getOrElse { e ->
-//            return Result.failure(RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction(e))
-            return Result.failure(RuntimeException(""))
+            return Result.failure(TransactionSigner.Error.Prepare(e))
         }
 
         return Result.success(
