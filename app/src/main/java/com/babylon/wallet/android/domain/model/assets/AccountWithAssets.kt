@@ -1,14 +1,14 @@
 package com.babylon.wallet.android.domain.model.assets
 
 import android.net.Uri
-import com.babylon.wallet.android.domain.model.resources.AccountDetails
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.isXrd
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.description
-import com.babylon.wallet.android.domain.model.resources.metadata.iconUrl
-import com.babylon.wallet.android.domain.model.resources.metadata.name
+import rdx.works.core.domain.resources.AccountDetails
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.isXrd
+import rdx.works.core.domain.resources.metadata.AccountType
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.description
+import rdx.works.core.domain.resources.metadata.iconUrl
+import rdx.works.core.domain.resources.metadata.name
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 

@@ -46,7 +46,8 @@ import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
-import com.babylon.wallet.android.domain.model.resources.Resource
+import com.babylon.wallet.android.domain.model.assets.Token
+import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme

@@ -27,7 +27,7 @@ import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned

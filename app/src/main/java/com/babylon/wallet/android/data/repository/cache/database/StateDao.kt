@@ -9,7 +9,7 @@ import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
-import com.babylon.wallet.android.domain.model.resources.metadata.accountType
+import rdx.works.core.domain.resources.metadata.accountType
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
 import java.math.BigDecimal
