@@ -1,10 +1,10 @@
 @file:Suppress("TooManyFunctions")
 
-package com.babylon.wallet.android.domain.model.resources.metadata
+package rdx.works.core.domain.resources.metadata
 
 import android.net.Uri
 import androidx.core.net.toUri
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.AddressHelper
 import java.math.BigDecimal
 

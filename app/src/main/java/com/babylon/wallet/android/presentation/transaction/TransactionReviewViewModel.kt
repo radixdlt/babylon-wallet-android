@@ -10,15 +10,15 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.DApp
+import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Badge
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.isXrd
+import rdx.works.core.domain.resources.Badge
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.isXrd
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -480,7 +480,7 @@ sealed interface PreviewType {
                 Contribution, Redemption
             }
 
-            val poolsInvolved: Set<com.babylon.wallet.android.domain.model.resources.Pool>
+            val poolsInvolved: Set<rdx.works.core.domain.resources.Pool>
                 get() = (from + to).toSet().map { accountWithAssets ->
                     accountWithAssets.resources.mapNotNull {
                         (it.transferable as? TransferableAsset.Fungible.PoolUnitAsset)?.unit?.pool
