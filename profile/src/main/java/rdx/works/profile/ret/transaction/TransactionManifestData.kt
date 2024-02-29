@@ -1,5 +1,6 @@
 package rdx.works.profile.ret.transaction
 
+import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.Instructions
 import com.radixdlt.ret.Message
 import com.radixdlt.ret.MessageContent
@@ -14,16 +15,7 @@ data class TransactionManifestData(
     val version: Long = TransactionVersion.Default.value
 ) {
 
-    fun entitiesRequiringAuth(): EntitiesRequiringAuth {
-        val summary = toTransactionManifest().getOrThrow().summary(networkId = networkId.toUByte())
-
-        return EntitiesRequiringAuth(
-            accounts = summary.accountsRequiringAuth.map { it.addressString() },
-            identities = summary.identitiesRequiringAuth.map { it.addressString() }
-        )
-    }
-
-    fun toTransactionManifest() = runCatching {
+    internal val manifest: TransactionManifest by lazy {
         TransactionManifest(
             instructions = Instructions.fromString(
                 string = instructions,
@@ -32,6 +24,23 @@ data class TransactionManifestData(
             blobs = blobs
         )
     }
+
+    fun entitiesRequiringAuth(): EntitiesRequiringAuth {
+        val summary = manifest.summary(networkId = networkId.toUByte())
+
+        return EntitiesRequiringAuth(
+            accounts = summary.accountsRequiringAuth.map { it.addressString() },
+            identities = summary.identitiesRequiringAuth.map { it.addressString() }
+        )
+    }
+
+    fun feePayerCandidates(): List<String> {
+        val summary = manifest.summary(networkId.toUByte())
+        return (summary.accountsWithdrawnFrom + summary.accountsDepositedInto + summary.accountsRequiringAuth).map { it.addressString() }
+    }
+
+    // Currently the only method that exposes RET
+    fun executionSummary(encodedReceipt: ByteArray): ExecutionSummary = manifest.executionSummary(networkId.toUByte(), encodedReceipt)
 
     internal val engineMessage: Message = when (message) {
         is TransactionMessage.Public -> Message.PlainText(

@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.gateway.extensions.asGatewayPublicKey
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewRequestFlags
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
-import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -20,13 +19,11 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.guaranteesCount
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.TransactionManifest
 import kotlinx.coroutines.flow.update
 import rdx.works.core.NonceGenerator
 import rdx.works.core.decodeHex
 import rdx.works.core.then
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.currentNetwork
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -34,7 +31,6 @@ import javax.inject.Inject
 @Suppress("LongParameterList")
 class TransactionAnalysisDelegate @Inject constructor(
     private val previewTypeAnalyzer: PreviewTypeAnalyzer,
-    private val getProfileUseCase: GetProfileUseCase,
     private val cacheNewlyCreatedEntitiesUseCase: CacheNewlyCreatedEntitiesUseCase,
     private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
     private val searchFeePayersUseCase: SearchFeePayersUseCase,
@@ -44,43 +40,37 @@ class TransactionAnalysisDelegate @Inject constructor(
     private val logger = Timber.tag("TransactionAnalysis")
 
     suspend fun analyse() {
-        _state.value.requestNonNull.transactionManifestData
-            .toTransactionManifest()
-            .then {
-                logger.v(it.toPrettyString())
-                startAnalysis(it)
-            }.onFailure { error ->
-                reportFailure(error)
-            }
+        val manifestData = _state.value.requestNonNull.transactionManifestData.also {
+            logger.v(it.instructions)
+        }
+        startAnalysis(manifestData).onFailure { error ->
+            reportFailure(error)
+        }
     }
 
     private suspend fun startAnalysis(
-        manifest: TransactionManifest
+        manifestData: TransactionManifestData
     ): Result<Unit> = runCatching {
-        getProfileUseCase.currentNetwork()?.networkID ?: error("No network found")
-    }.then { networkId ->
-        val summary = manifest.summary(networkId.toUByte())
-
+        val entitiesRequiringAuth = manifestData.entitiesRequiringAuth()
         resolveNotaryAndSignersUseCase(
-            accountsRequiringAuth = summary.accountsRequiringAuth.map { it.addressString() },
-            personasRequiringAuth = summary.identitiesRequiringAuth.map { it.addressString() },
+            accountsRequiringAuth = entitiesRequiringAuth.accounts,
+            personasRequiringAuth = entitiesRequiringAuth.identities,
             notary = _state.value.ephemeralNotaryPrivateKey
         ).then { notaryAndSigners ->
             getTransactionPreview(
-                manifest = manifest,
+                manifestData = manifestData,
                 notaryAndSigners = notaryAndSigners
             ).mapCatching { preview ->
                 logger.v(preview.encodedReceipt)
-                manifest
+                manifestData
                     .executionSummary(
-                        networkId = networkId.toUByte(),
                         encodedReceipt = preview.encodedReceipt.decodeHex()
                     )
                     .resolvePreview(notaryAndSigners)
                     .resolveFees(notaryAndSigners)
             }.mapCatching { transactionFees ->
                 val feePayerResult = searchFeePayersUseCase(
-                    manifestSummary = summary,
+                    manifestData = manifestData,
                     lockFee = transactionFees.defaultTransactionFee
                 ).getOrThrow()
 
@@ -96,7 +86,7 @@ class TransactionAnalysisDelegate @Inject constructor(
     }
 
     private suspend fun getTransactionPreview(
-        manifest: TransactionManifest,
+        manifestData: TransactionManifestData,
         notaryAndSigners: NotaryAndSigners
     ): Result<TransactionPreviewResponse> {
         val (startEpochInclusive, endEpochExclusive) = with(transactionRepository.getLedgerEpoch()) {
@@ -107,7 +97,7 @@ class TransactionAnalysisDelegate @Inject constructor(
 
         return transactionRepository.getTransactionPreview(
             TransactionPreviewRequest(
-                manifest = manifest.instructions().asStr(),
+                manifest = manifestData.instructions,
                 startEpochInclusive = startEpochInclusive,
                 endEpochExclusive = endEpochExclusive,
                 tipPercentage = 0,
@@ -118,7 +108,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                     assumeAllSignatureProofs = false,
                     skipEpochCheck = false
                 ),
-                blobsHex = manifest.blobs().map { it.toHexString() },
+                blobsHex = manifestData.blobs.map { it.toHexString() },
                 notaryPublicKey = notaryAndSigners.notaryPublicKey().asGatewayPublicKey(),
                 notaryIsSignatory = notaryAndSigners.notaryIsSignatory
             )

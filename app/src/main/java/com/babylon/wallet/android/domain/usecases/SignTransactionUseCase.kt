@@ -57,7 +57,7 @@ class SignTransactionUseCase @Inject constructor(
         }.then { notarySignersAndEpoch ->
             transactionSigner.notarise(
                 request = TransactionSigner.Request(
-                    manifest = manifestWithLockFee,
+                    manifestData = manifestWithLockFee,
                     notaryPublicKey = notarySignersAndEpoch.first.notaryPublicKey(),
                     notaryIsSignatory = notarySignersAndEpoch.first.notaryIsSignatory,
                     startEpoch = notarySignersAndEpoch.second,

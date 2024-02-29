@@ -15,8 +15,6 @@ fun TransactionManifestData.addLockFee(
     feePayerAddress: String,
     fee: BigDecimal
 ): TransactionManifestData {
-    val manifest = toTransactionManifest().getOrThrow()
-
     return TransactionManifestData.from(
         manifest = TransactionManifest(
             instructions = Instructions.fromInstructions(
@@ -44,8 +42,6 @@ fun TransactionManifestData.addGuaranteeInstructionToManifest(
     guaranteedAmount: BigDecimal,
     index: Int
 ): TransactionManifestData {
-    val manifest = toTransactionManifest().getOrThrow()
-
     return TransactionManifestData.from(
         manifest = TransactionManifest(
             instructions = Instructions.fromInstructions(

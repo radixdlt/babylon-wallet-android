@@ -30,7 +30,7 @@ interface TransactionSigner {
     ): Result<Notarization>
 
     data class Request(
-        val manifest: TransactionManifestData,
+        val manifestData: TransactionManifestData,
         val notaryPublicKey: PublicKey,
         val notaryIsSignatory: Boolean,
         val startEpoch: ULong,
@@ -65,7 +65,7 @@ class TransactionSignerImpl @Inject constructor(): TransactionSigner {
     ): Result<TransactionSigner.Notarization> {
         // Build header
         val header = TransactionHeader(
-            networkId = request.manifest.networkId.toUByte(),
+            networkId = request.manifestData.networkId.toUByte(),
             startEpochInclusive = request.startEpoch,
             endEpochExclusive = request.endEpoch,
             nonce = request.nonce,
@@ -81,8 +81,8 @@ class TransactionSignerImpl @Inject constructor(): TransactionSigner {
         val transactionIntent = runCatching {
             Intent(
                 header = header,
-                manifest = request.manifest.toTransactionManifest().getOrThrow(),
-                message = request.manifest.engineMessage
+                manifest = request.manifestData.manifest,
+                message = request.manifestData.engineMessage
             )
         }.getOrElse {
             return Result.failure(TransactionSigner.Error.Sign())
