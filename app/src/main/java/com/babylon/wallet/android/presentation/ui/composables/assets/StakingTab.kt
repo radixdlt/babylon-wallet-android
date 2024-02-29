@@ -30,9 +30,9 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
+import rdx.works.core.domain.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
@@ -443,14 +443,15 @@ private fun LiquidStakeUnit(
                 color = RadixTheme.colors.gray1
             )
 
-            if (action is AssetsViewAction.Selection && validatorWithStakes.liquidStakeUnit != null) {
-                val isSelected = remember(validatorWithStakes.liquidStakeUnit.resourceAddress, action) {
-                    action.isSelected(validatorWithStakes.liquidStakeUnit.resourceAddress)
+            val lsu = validatorWithStakes.liquidStakeUnit
+            if (action is AssetsViewAction.Selection && lsu != null) {
+                val isSelected = remember(lsu.resourceAddress, action) {
+                    action.isSelected(lsu.resourceAddress)
                 }
                 AssetsViewCheckBox(
                     isSelected = isSelected,
                     onCheckChanged = { isChecked ->
-                        action.onFungibleCheckChanged(validatorWithStakes.liquidStakeUnit.fungibleResource, isChecked)
+                        action.onFungibleCheckChanged(lsu.fungibleResource, isChecked)
                     }
                 )
             }
@@ -529,7 +530,8 @@ private fun StakeClaims(
                 ?.unstakingNFTs(epoch).orEmpty() to validatorWithStakes.stakeClaimNft?.readyToClaimNFTs(epoch).orEmpty()
         }
 
-        if (unstakingItems.isNotEmpty() && validatorWithStakes.stakeClaimNft != null) {
+        val claim = validatorWithStakes.stakeClaimNft
+        if (unstakingItems.isNotEmpty() && claim != null) {
             Text(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -546,7 +548,7 @@ private fun StakeClaims(
             unstakingItems.forEachIndexed { index, item ->
                 ClaimWorth(
                     modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingSmall else 0.dp),
-                    claimCollection = validatorWithStakes.stakeClaimNft.nonFungibleResource,
+                    claimCollection = claim.nonFungibleResource,
                     claimNft = item,
                     stakeClaimPrice = stakeClaimPrice,
                     isLoadingBalance = isLoadingBalance,
@@ -555,7 +557,7 @@ private fun StakeClaims(
             }
         }
 
-        if (claimItems.isNotEmpty() && validatorWithStakes.stakeClaimNft != null) {
+        if (claimItems.isNotEmpty() && claim != null) {
             Row(
                 modifier = Modifier.padding(
                     top = if (action is AssetsViewAction.Selection) {
@@ -579,18 +581,18 @@ private fun StakeClaims(
                     RadixTextButton(
                         text = stringResource(id = R.string.account_staking_claim),
                         onClick = {
-                            action.onClaimClick(listOf(validatorWithStakes.stakeClaimNft))
+                            action.onClaimClick(listOf(claim))
                         },
                         textStyle = RadixTheme.typography.body2Link
                     )
                 }
             }
 
-            val stakeClaimPrice = assetsViewData.prices?.get(validatorWithStakes.stakeClaimNft) as? AssetPrice.StakeClaimPrice
+            val stakeClaimPrice = assetsViewData.prices?.get(claim) as? AssetPrice.StakeClaimPrice
             claimItems.forEachIndexed { index, item ->
                 ClaimWorth(
                     modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingSmall else 0.dp),
-                    claimCollection = validatorWithStakes.stakeClaimNft.nonFungibleResource,
+                    claimCollection = claim.nonFungibleResource,
                     claimNft = item,
                     stakeClaimPrice = stakeClaimPrice,
                     isLoadingBalance = isLoadingBalance,

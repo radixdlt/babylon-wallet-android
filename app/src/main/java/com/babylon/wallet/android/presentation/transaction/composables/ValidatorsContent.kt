@@ -33,7 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import rdx.works.core.domain.assets.ValidatorDetail
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder

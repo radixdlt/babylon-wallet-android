@@ -25,10 +25,10 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
@@ -166,7 +166,10 @@ class StateRepositoryImpl @Inject constructor(
 
             val lsuEntities = mutableMapOf<String, ResourceEntity>()
             val lsuAddresses = result
-                .filter { it.liquidStakeUnit != null && it.liquidStakeUnit.fungibleResource.isDetailsAvailable.not() }
+                .filter {
+                    val lsu = it.liquidStakeUnit
+                    lsu != null && lsu.fungibleResource.isDetailsAvailable.not()
+                }
                 .map { it.liquidStakeUnit!!.resourceAddress }
                 .toSet()
             if (lsuAddresses.isNotEmpty()) {
@@ -181,10 +184,11 @@ class StateRepositoryImpl @Inject constructor(
                 )
 
                 result = result.map { item ->
+                    val lsu = item.liquidStakeUnit
                     item.copy(
-                        liquidStakeUnit = if (item.liquidStakeUnit != null && !item.liquidStakeUnit.fungibleResource.isDetailsAvailable) {
-                            val newLsu = lsuEntities[item.liquidStakeUnit.resourceAddress]?.toResource(
-                                item.liquidStakeUnit.fungibleResource.ownedAmount
+                        liquidStakeUnit = if (lsu != null && !lsu.fungibleResource.isDetailsAvailable) {
+                            val newLsu = lsuEntities[lsu.resourceAddress]?.toResource(
+                                lsu.fungibleResource.ownedAmount
                             ) as? Resource.FungibleResource
 
                             if (newLsu != null) {
