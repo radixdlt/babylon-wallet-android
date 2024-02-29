@@ -1,27 +1,25 @@
-package com.babylon.wallet.android.domain.model.resources
+package rdx.works.core.domain.resources
 
 import android.net.Uri
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
-import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.claimAmount
-import com.babylon.wallet.android.domain.model.resources.metadata.claimEpoch
-import com.babylon.wallet.android.domain.model.resources.metadata.description
-import com.babylon.wallet.android.domain.model.resources.metadata.iconUrl
-import com.babylon.wallet.android.domain.model.resources.metadata.keyImageUrl
-import com.babylon.wallet.android.domain.model.resources.metadata.name
-import com.babylon.wallet.android.domain.model.resources.metadata.poolAddress
-import com.babylon.wallet.android.domain.model.resources.metadata.symbol
-import com.babylon.wallet.android.domain.model.resources.metadata.tags
-import com.babylon.wallet.android.domain.model.resources.metadata.validatorAddress
-import com.babylon.wallet.android.utils.truncate
 import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.core.AddressHelper
+import rdx.works.core.domain.assets.AssetBehaviour
+import rdx.works.core.domain.assets.AssetBehaviours
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.claimAmount
+import rdx.works.core.domain.resources.metadata.claimEpoch
+import rdx.works.core.domain.resources.metadata.description
+import rdx.works.core.domain.resources.metadata.iconUrl
+import rdx.works.core.domain.resources.metadata.keyImageUrl
+import rdx.works.core.domain.resources.metadata.name
+import rdx.works.core.domain.resources.metadata.poolAddress
+import rdx.works.core.domain.resources.metadata.symbol
+import rdx.works.core.domain.resources.metadata.tags
+import rdx.works.core.domain.resources.metadata.validatorAddress
+import rdx.works.core.truncate
 import java.math.BigDecimal
 
 sealed class Resource {
@@ -323,7 +321,7 @@ sealed class Resource {
 object XrdResource {
     const val SYMBOL = "XRD"
 
-    fun address(networkId: Int = Radix.Gateway.default.network.networkId().value): String {
+    fun address(networkId: Int): String {
         return AddressHelper.xrdAddress(forNetworkId = networkId)
     }
 }

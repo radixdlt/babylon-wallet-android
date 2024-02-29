@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.model.DApp
+import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage

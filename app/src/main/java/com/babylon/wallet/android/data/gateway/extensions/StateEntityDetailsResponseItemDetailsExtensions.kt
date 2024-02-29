@@ -8,8 +8,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
-import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
-import com.babylon.wallet.android.domain.model.resources.XrdResource
+import rdx.works.core.domain.assets.AssetBehaviours
+import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.AddressHelper
 import java.math.BigDecimal
 

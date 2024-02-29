@@ -24,9 +24,9 @@ import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScry
 import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScryptoSborValueU64
 import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScryptoSborValueU8
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import com.babylon.wallet.android.utils.isValidUrl
 import rdx.works.core.AddressHelper
 

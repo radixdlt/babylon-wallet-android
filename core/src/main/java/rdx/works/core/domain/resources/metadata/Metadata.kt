@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model.resources.metadata
+package rdx.works.core.domain.resources.metadata
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

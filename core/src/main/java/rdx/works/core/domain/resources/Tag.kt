@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model.resources
+package rdx.works.core.domain.resources
 
 sealed interface Tag {
     data object Official : Tag

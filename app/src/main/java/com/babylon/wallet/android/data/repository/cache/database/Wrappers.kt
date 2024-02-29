@@ -2,8 +2,8 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
-import com.babylon.wallet.android.domain.model.resources.AccountDetails
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
+import rdx.works.core.domain.resources.AccountDetails
+import rdx.works.core.domain.resources.metadata.AccountType
 import java.math.BigDecimal
 import java.time.Instant
 

@@ -6,8 +6,8 @@ import com.babylon.wallet.android.data.repository.cache.database.AccountNFTJoin.
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.InstantGenerator
 
 @Suppress("UnsafeCallOnNullableType")

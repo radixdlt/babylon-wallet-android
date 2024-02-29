@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
@@ -27,13 +27,14 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
+import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
 
 @Suppress("LongParameterList", "MagicNumber")
@@ -212,7 +213,7 @@ fun AssetsViewWithAssets() {
                 tokens = listOf(
                     Token(
                         Resource.FungibleResource(
-                            resourceAddress = XrdResource.address(),
+                            resourceAddress = XrdResource.address(Radix.Gateway.default.network.networkId().value),
                             ownedAmount = BigDecimal(1000),
                             metadata = listOf(
                                 Metadata.Primitive(
@@ -290,7 +291,7 @@ fun AssetsViewWithAssets() {
                             ),
                             resources = listOf(
                                 Resource.FungibleResource(
-                                    resourceAddress = XrdResource.address(),
+                                    resourceAddress = XrdResource.address(Radix.Gateway.default.network.networkId().value),
                                     ownedAmount = BigDecimal(1000),
                                     metadata = listOf(
                                         Metadata.Primitive(

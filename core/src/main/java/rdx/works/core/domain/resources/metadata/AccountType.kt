@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model.resources.metadata
+package rdx.works.core.domain.resources.metadata
 
 enum class AccountType(val asString: String) {
     DAPP_DEFINITION("dapp definition");

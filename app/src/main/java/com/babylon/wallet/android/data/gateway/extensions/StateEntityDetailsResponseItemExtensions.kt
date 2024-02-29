@@ -3,8 +3,8 @@ package com.babylon.wallet.android.data.gateway.extensions
 import com.babylon.wallet.android.data.gateway.generated.models.DefaultDepositRule
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseComponentDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
-import com.babylon.wallet.android.domain.model.resources.metadata.ownerBadge
-import com.babylon.wallet.android.domain.model.resources.metadata.ownerKeyHashes
+import rdx.works.core.domain.resources.metadata.ownerBadge
+import rdx.works.core.domain.resources.metadata.ownerKeyHashes
 import rdx.works.profile.data.model.pernetwork.Network
 
 val StateEntityDetailsResponseItem.isEntityActive: Boolean

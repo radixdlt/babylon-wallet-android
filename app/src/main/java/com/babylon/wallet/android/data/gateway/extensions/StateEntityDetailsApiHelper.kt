@@ -21,11 +21,11 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFu
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.toResult
-import com.babylon.wallet.android.domain.model.resources.metadata.claimedEntities
-import com.babylon.wallet.android.domain.model.resources.metadata.dAppDefinition
-import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
+import rdx.works.core.domain.resources.metadata.claimedEntities
+import rdx.works.core.domain.resources.metadata.dAppDefinition
+import rdx.works.core.domain.resources.metadata.poolUnit
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope

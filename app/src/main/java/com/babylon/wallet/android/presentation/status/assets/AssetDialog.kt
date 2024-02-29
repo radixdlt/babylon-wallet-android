@@ -21,12 +21,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.resources.Tag
+import rdx.works.core.domain.assets.AssetBehaviours
+import rdx.works.core.domain.resources.Tag
 import com.babylon.wallet.android.presentation.status.assets.fungible.FungibleDialogContent
 import com.babylon.wallet.android.presentation.status.assets.lsu.LSUDialogContent
 import com.babylon.wallet.android.presentation.status.assets.nonfungible.NonFungibleAssetDialogContent

@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.domain.model
 
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.Resource.NonFungibleResource.Item
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.assets.AssetBehaviour
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import junit.framework.TestCase.assertEquals
 import org.junit.Assert
 import org.junit.Test

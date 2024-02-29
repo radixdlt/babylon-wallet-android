@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.model.DApp
+import rdx.works.core.domain.DApp
 import rdx.works.core.then
 import javax.inject.Inject
 

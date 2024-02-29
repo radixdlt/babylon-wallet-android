@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.model
 
-import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.domain.resources.Resource
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith

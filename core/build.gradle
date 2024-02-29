@@ -43,6 +43,7 @@ dependencies {
     implementation libs.zxing
     implementation libs.kotlinxSerialization
     implementation libs.firebaseCrashlytics
+    implementation libs.immutableCollections
 
     // Datastore
     implementation libs.datastorePreferences

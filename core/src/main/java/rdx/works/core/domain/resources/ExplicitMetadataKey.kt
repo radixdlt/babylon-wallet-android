@@ -1,6 +1,6 @@
 @file:Suppress("LongMethod, CyclomaticComplexity")
 
-package com.babylon.wallet.android.data.gateway.model
+package rdx.works.core.domain.resources
 
 /**
  * Common metadata keys used in the wallet app and defined
