@@ -11,6 +11,7 @@ import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
+import rdx.works.core.AddressHelper
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.ret.transaction.TransactionManifestData
