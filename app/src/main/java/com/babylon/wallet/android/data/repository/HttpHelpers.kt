@@ -4,11 +4,17 @@ import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializ
 import com.babylon.wallet.android.data.gateway.generated.models.ErrorResponse
 import com.babylon.wallet.android.domain.RadixWalletException
 import kotlinx.coroutines.CancellationException
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.awaitResponse
 
 @Suppress("SwallowedException")
-suspend inline fun <T> Call<T>.toResult(): Result<T> {
+suspend inline fun <T> Call<T>.toResult(
+    mapError: ResponseBody?.() -> RadixWalletException.GatewayException = {
+        val error = Serializer.kotlinxSerializationJson.decodeFromString<ErrorResponse>(this?.string().orEmpty())
+        RadixWalletException.GatewayException.HttpError(code = error.code, message = error.message)
+    }
+): Result<T> {
     return try {
         val response = awaitResponse()
         val responseBody = response.body()
@@ -16,8 +22,7 @@ suspend inline fun <T> Call<T>.toResult(): Result<T> {
             Result.success(responseBody)
         } else {
             try {
-                val error = Serializer.kotlinxSerializationJson.decodeFromString<ErrorResponse>(response.errorBody()?.string().orEmpty())
-                Result.failure(RadixWalletException.GatewayException.HttpError(code = error.code, message = error.message))
+                Result.failure(response.errorBody().mapError())
             } catch (e: Exception) {
                 Result.failure(RadixWalletException.GatewayException.ClientError(cause = e))
             }
