@@ -17,14 +17,17 @@ import androidx.room.TypeConverters
         ValidatorEntity::class,
         PoolResourceJoin::class,
         DAppEntity::class,
-        PoolDAppJoin::class
+        PoolDAppJoin::class,
+        TokenPriceEntity::class
     ],
-    version = StateDatabase.VERSION_6
+    version = StateDatabase.VERSION_7
 )
 @TypeConverters(StateDatabaseConverters::class)
 abstract class StateDatabase : RoomDatabase() {
 
     abstract fun stateDao(): StateDao
+
+    abstract fun tokenPriceDao(): TokenPriceDao
 
     companion object {
         @Deprecated("Initial schema version")
@@ -42,8 +45,11 @@ abstract class StateDatabase : RoomDatabase() {
         @Deprecated("Add PoolDAppJoin to schema")
         const val VERSION_5 = 5
 
-        // add first tx timestamp to account details
+        @Deprecated("Add first tx timestamp to account details")
         const val VERSION_6 = 6
+
+        // Add TokenPriceEntity to schema
+        const val VERSION_7 = 7
 
         private const val NAME = "STATE_DATABASE"
 
