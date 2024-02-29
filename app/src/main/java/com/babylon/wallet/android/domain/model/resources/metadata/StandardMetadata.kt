@@ -5,7 +5,7 @@ package com.babylon.wallet.android.domain.model.resources.metadata
 import android.net.Uri
 import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import rdx.works.profile.ret.RetBridge
+import rdx.works.profile.ret.AddressHelper
 import java.math.BigDecimal
 
 private fun List<Metadata>.findPrimitive(key: ExplicitMetadataKey, type: MetadataType): Metadata.Primitive? = find {
@@ -55,14 +55,14 @@ fun List<Metadata>.validatorAddress(): String? = findPrimitive(
     key = ExplicitMetadataKey.VALIDATOR,
     type = MetadataType.Address
 )?.value?.takeIf { value ->
-    RetBridge.Address.isValidator(value)
+    AddressHelper.isValidator(value)
 }
 
 fun List<Metadata>.poolAddress(): String? = findPrimitive(
     key = ExplicitMetadataKey.POOL,
     type = MetadataType.Address
 )?.value?.takeIf { value ->
-    RetBridge.Address.isPool(value)
+    AddressHelper.isPool(value)
 }
 
 fun List<Metadata>.ownerBadge(): OwnerBadge? = findPrimitive(
