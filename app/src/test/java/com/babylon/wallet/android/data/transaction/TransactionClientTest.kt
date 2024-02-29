@@ -24,7 +24,6 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.ret.addLockFeeInstructionToManifest
 import rdx.works.profile.ret.crypto.PrivateKey
 import rdx.works.profile.ret.sampleXRDWithdraw
 import java.math.BigDecimal
