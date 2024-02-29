@@ -6,7 +6,6 @@ import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSign
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.TestDispatcherRule
-import com.radixdlt.ret.TransactionManifest
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.flow.Flow

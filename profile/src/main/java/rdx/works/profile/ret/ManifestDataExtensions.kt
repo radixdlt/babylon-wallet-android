@@ -6,6 +6,7 @@ import com.radixdlt.ret.Instruction
 import com.radixdlt.ret.Instructions
 import com.radixdlt.ret.ManifestAddress
 import com.radixdlt.ret.ManifestValue
+import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.profile.ret.transaction.TransactionManifestData
 import java.math.BigDecimal
@@ -64,3 +65,32 @@ fun TransactionManifestData.addGuaranteeInstructionToManifest(
 
 @Suppress("MagicNumber")
 internal fun BigDecimal.toRETDecimal(roundingMode: RoundingMode): Decimal = Decimal(setScale(18, roundingMode).toPlainString())
+
+internal fun TransactionHeader.toPrettyString(): String = StringBuilder()
+    .appendLine("[Start Epoch]         => $startEpochInclusive")
+    .appendLine("[End Epoch]           => $endEpochExclusive")
+    .appendLine("[Network id]          => $networkId")
+    .appendLine("[Nonce]               => $nonce")
+    .appendLine("[Notary is signatory] => $notaryIsSignatory")
+    .appendLine("[Tip %]               => $tipPercentage")
+    .toString()
+
+internal fun TransactionManifest.toPrettyString(): String {
+    val blobSeparator = "\n"
+    val blobPreamble = "BLOBS\n"
+    val blobLabel = "BLOB\n"
+
+    val instructionsFormatted = instructions().asStr()
+
+    val blobsByByteCount = blobs().mapIndexed { index, bytes ->
+        "$blobLabel[$index]: #${bytes.size} bytes"
+    }.joinToString(blobSeparator)
+
+    val blobsString = if (blobsByByteCount.isNotEmpty()) {
+        listOf(blobPreamble, blobsByByteCount).joinToString(separator = blobSeparator)
+    } else {
+        ""
+    }
+
+    return "$instructionsFormatted$blobsString"
+}
