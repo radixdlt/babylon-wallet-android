@@ -77,20 +77,6 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
             }
         }
 
-//        mapOfAccountWithAssetsAndPrices.map { entry ->
-//            println("-----> for account = ${entry.key.account.displayName}")
-//            println(
-//                "-----> ${entry.key.assets?.tokens?.map {
-//                    it.resource.name
-//                }} and ${entry.value.map {
-//                    it.asset.resource.name
-//                }}"
-//            )
-//            entry.value.map { assetPrice ->
-//                println("   -----> asset: ${assetPrice.asset.resource.name} has ${assetPrice.price}")
-//            }
-//        }
-
         return mapOfAccountWithAssetsAndPrices
     }
 
