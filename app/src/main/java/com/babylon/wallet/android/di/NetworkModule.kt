@@ -1,26 +1,18 @@
 package com.babylon.wallet.android.di
 
 import com.babylon.wallet.android.BuildConfig
-import com.babylon.wallet.android.data.dapp.PeerdroidClient
-import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
-import com.babylon.wallet.android.data.gateway.apis.StateApi
-import com.babylon.wallet.android.data.gateway.apis.StreamApi
-import com.babylon.wallet.android.data.gateway.apis.TransactionApi
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
-import rdx.works.peerdroid.data.PeerdroidConnector
-import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.repository.ProfileRepository
@@ -28,7 +20,6 @@ import retrofit2.Converter.Factory
 import retrofit2.Retrofit
 import timber.log.Timber
 import java.net.URL
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -115,33 +106,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    @CurrentGatewayHttpClient
-    fun provideCurrentGatewayHttpClient(
-        baseUrlInterceptor: BaseUrlInterceptor,
-        httpLoggingInterceptor: HttpLoggingInterceptor
-    ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(baseUrlInterceptor)
-            .addInterceptor(httpLoggingInterceptor)
-            .build()
-    }
-
-    @Provides
-    @Singleton
-    @ShortTimeoutGatewayHttpClient
-    fun provideShortTimeoutGatewayHttpClient(
-        baseUrlInterceptor: BaseUrlInterceptor,
-        httpLoggingInterceptor: HttpLoggingInterceptor
-    ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .callTimeout(SHORT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            .addInterceptor(baseUrlInterceptor)
-            .addInterceptor(httpLoggingInterceptor)
-            .build()
-    }
-
-    @Provides
-    @Singleton
     fun provideJsonDeserializer(): Json {
         return Serializer.kotlinxSerializationJson
     }
@@ -151,61 +115,6 @@ object NetworkModule {
     fun provideJsonConverterFactory(json: Json): Factory {
         return json.asConverterFactory(Serializer.MIME_TYPE.toMediaType())
     }
-
-    @Provides
-    @Singleton
-    fun providePeerdroidClient(
-        peerdroidConnector: PeerdroidConnector,
-        @IoDispatcher ioDispatcher: CoroutineDispatcher
-    ): PeerdroidClient = PeerdroidClientImpl(
-        peerdroidConnector = peerdroidConnector,
-        ioDispatcher = ioDispatcher
-    )
-
-    @Provides
-    fun provideStateApi(
-        @CurrentGatewayHttpClient okHttpClient: OkHttpClient,
-        @JsonConverterFactory jsonConverterFactory: Factory,
-        profileRepository: ProfileRepository
-    ): StateApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
-        okHttpClient = okHttpClient,
-        jsonConverterFactory = jsonConverterFactory
-    )
-
-    @Provides
-    @ShortTimeoutStateApi
-    fun provideStateApiWithShortTimeout(
-        @ShortTimeoutGatewayHttpClient okHttpClient: OkHttpClient,
-        @JsonConverterFactory jsonConverterFactory: Factory,
-        profileRepository: ProfileRepository
-    ): StateApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
-        okHttpClient = okHttpClient,
-        jsonConverterFactory = jsonConverterFactory
-    )
-
-    @Provides
-    fun provideTransactionApi(
-        @CurrentGatewayHttpClient okHttpClient: OkHttpClient,
-        @JsonConverterFactory jsonConverterFactory: Factory,
-        profileRepository: ProfileRepository
-    ): TransactionApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
-        okHttpClient = okHttpClient,
-        jsonConverterFactory = jsonConverterFactory
-    )
-
-    @Provides
-    fun provideStreamApi(
-        @CurrentGatewayHttpClient okHttpClient: OkHttpClient,
-        @JsonConverterFactory jsonConverterFactory: Factory,
-        profileRepository: ProfileRepository
-    ): StreamApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
-        okHttpClient = okHttpClient,
-        jsonConverterFactory = jsonConverterFactory
-    )
 
     class BaseUrlInterceptor @Inject constructor(
         private val profileRepository: ProfileRepository
@@ -227,5 +136,3 @@ object NetworkModule {
         }
     }
 }
-
-private const val SHORT_TIMEOUT_SECONDS = 5L
