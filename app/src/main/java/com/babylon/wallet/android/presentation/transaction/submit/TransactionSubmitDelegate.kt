@@ -70,23 +70,21 @@ class TransactionSubmitDelegate @Inject constructor(
                 return@launch
             }
 
-            _state.update { it.copy(isSubmitting = true) }
-
-            val request = _state.value.requestNonNull
-            val requestWithGuarantees = request.copy(
-                transactionManifestData = request.transactionManifestData.attachGuarantees(currentState.previewType)
-            )
-            _state.value.feePayerSearchResult?.let { feePayerResult ->
-                _state.update { it.copy(isSubmitting = false) }
-
-                if (feePayerResult.feePayerAddress != null) {
-                    signAndSubmit(
-                        transactionRequest = requestWithGuarantees,
-                        signTransactionUseCase = signTransactionUseCase,
-                        feePayerAddress = feePayerResult.feePayerAddress,
-                        deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-                    )
+            if (currentState.feePayerSearchResult?.feePayerAddress != null) {
+                val transactionManifestWithGuarantees = try {
+                    currentState.requestNonNull.transactionManifestData.attachGuarantees(currentState.previewType)
+                } catch (exception: Exception) {
+                    return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
                 }
+
+                signAndSubmit(
+                    transactionRequest = currentState.requestNonNull.copy(
+                        transactionManifestData = transactionManifestWithGuarantees
+                    ),
+                    signTransactionUseCase = signTransactionUseCase,
+                    feePayerAddress = currentState.feePayerSearchResult.feePayerAddress,
+                    deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+                )
             }
         }
     }
@@ -128,11 +126,7 @@ class TransactionSubmitDelegate @Inject constructor(
         feePayerAddress: String,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ) {
-        _state.update {
-            it.copy(
-                isSubmitting = true,
-            )
-        }
+        _state.update { it.copy(isSubmitting = true) }
 
         signTransactionUseCase.sign(
             request = SignTransactionUseCase.Request(

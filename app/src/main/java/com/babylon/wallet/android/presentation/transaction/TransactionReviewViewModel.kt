@@ -7,7 +7,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -184,14 +183,9 @@ class TransactionReviewViewModel @Inject constructor(
         )
 
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
-        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData
-            ?.toTransactionManifest()
-            ?.getOrNull()
-            ?.let { manifest ->
-                val summary = manifest.summary(selectedFeePayer.networkID.toUByte())
-                summary.accountsWithdrawnFrom + summary.accountsDepositedInto + summary.accountsRequiringAuth
-            }.orEmpty().any { accountAddress ->
-                accountAddress.addressString() == selectedFeePayer.address
+        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.feePayerCandidates()
+            .orEmpty().any { accountAddress ->
+                accountAddress == selectedFeePayer.address
             }
 
         val updatedSignersCount = if (selectedFeePayerInvolvedInTransaction) signersCount else signersCount + 1
@@ -310,8 +304,7 @@ class TransactionReviewViewModel @Inject constructor(
 
         val rawManifest: String = request
             ?.transactionManifestData
-            ?.toTransactionManifest()
-            ?.getOrNull()?.toPrettyString().orEmpty()
+            ?.instructions.orEmpty()
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None
