@@ -3,11 +3,11 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.hex.extensions.toHexString
-import com.radixdlt.ret.hash
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
+import rdx.works.core.blake2Hash
 import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -131,7 +131,7 @@ sealed interface SignRequest {
             get() = dataToSign.toHexString()
 
         override val hashedDataToSign: ByteArray
-            get() = hash(dataToSign).bytes()
+            get() = dataToSign.blake2Hash()
 
         companion object {
             const val ROLA_PAYLOAD_PREFIX = 0x52
