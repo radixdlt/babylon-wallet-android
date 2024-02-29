@@ -12,10 +12,10 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRe
 import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.flow.first
-import rdx.works.profile.ret.RetBridge
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.security
+import rdx.works.profile.ret.AddressHelper
 import javax.inject.Inject
 
 class VerifyDAppUseCase @Inject constructor(
@@ -26,7 +26,7 @@ class VerifyDAppUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(request: IncomingRequest): Result<Boolean> {
-        if (!RetBridge.Address.isValid(address = request.metadata.dAppDefinitionAddress)) {
+        if (!AddressHelper.isValid(address = request.metadata.dAppDefinitionAddress)) {
             dAppMessenger.sendWalletInteractionResponseFailure(
                 remoteConnectorId = request.remoteConnectorId,
                 requestId = request.id,
