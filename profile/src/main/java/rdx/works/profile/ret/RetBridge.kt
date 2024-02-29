@@ -3,9 +3,12 @@ package rdx.works.profile.ret
 import com.radixdlt.ret.Address
 import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.NonFungibleGlobalId
+import com.radixdlt.ret.OlympiaAddress
 import com.radixdlt.ret.knownAddresses
 import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
 import timber.log.Timber
+
+private typealias EngineAddress = Address
 
 object RetBridge {
 
@@ -15,7 +18,7 @@ object RetBridge {
 
         fun networkIdOrNull(fromAddress: String): Int? = fromAddress.toAddressOrNull()?.networkId()?.toInt()
 
-        fun networkId(fromAddress: String): Int = Address(fromAddress).networkId().toInt()
+        fun networkId(fromAddress: String): Int = EngineAddress(fromAddress).networkId().toInt()
 
         fun isResource(address: String): Boolean = address.toAddressOrNull()?.isGlobalResourceManager() == true
 
@@ -56,7 +59,12 @@ object RetBridge {
             networkId = forNetworkId.toUByte()
         ).resourceAddresses.xrd.addressString()
 
-        private fun String.toAddressOrNull() = runCatching { Address(this) }
+        fun accountAddressFromOlympia(olympiaAddress: String, forNetworkId: Int) = EngineAddress.virtualAccountAddressFromOlympiaAddress(
+            olympiaAccountAddress = OlympiaAddress(olympiaAddress),
+            networkId = forNetworkId.toUByte()
+        ).addressString()
+
+        private fun String.toAddressOrNull() = runCatching { EngineAddress(this) }
             .onFailure { Timber.tag(LOG_TAG).w(it) }
             .getOrNull()
 
