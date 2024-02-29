@@ -1,8 +1,6 @@
 package rdx.works.profile.domain.account
 
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.OlympiaAddress
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -20,6 +18,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
+import rdx.works.profile.ret.RetBridge
 import javax.inject.Inject
 
 class MigrateOlympiaAccountsUseCase @Inject constructor(
@@ -35,10 +34,10 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
             val networkId = profile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val appearanceIdOffset = profile.nextAppearanceId(forNetworkId = networkId)
             val migratedAccounts = olympiaAccounts.mapIndexed { index, olympiaAccount ->
-                val babylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
-                    olympiaAccountAddress = OlympiaAddress(olympiaAccount.address),
-                    networkId = networkId.value.toUByte()
-                ).addressString()
+                val babylonAddress = RetBridge.Address.accountAddressFromOlympia(
+                    olympiaAddress = olympiaAccount.address,
+                    forNetworkId = networkId.value
+                )
                 val nextAppearanceId = (appearanceIdOffset + index) % AccountGradientList.size
                 Network.Account(
                     displayName = olympiaAccount.accountName.ifEmpty { "Unnamed olympia account ${olympiaAccount.index}" },

@@ -4,7 +4,6 @@ import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.getCompressedPublicKey
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.model.ECKeyPair
-import com.radixdlt.ret.Address
 import com.radixdlt.ret.OlympiaNetwork
 import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
 import com.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
@@ -18,7 +17,7 @@ sealed interface PublicKey {
 
     class Ed25519(
         value: ByteArray
-    ): PublicKey {
+    ) : PublicKey {
 
         private val engineKey = EnginePublicKeyEd25519(value)
 
@@ -50,17 +49,14 @@ sealed interface PublicKey {
 
     class Secp256k1(
         value: ByteArray
-    ): PublicKey {
+    ) : PublicKey {
 
         private val engineKey = EnginePublicKeySecp256k1(value)
 
-        fun deriveOlympiaAccountAddress(networkId: Int): String {
-            val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(publicKey = engineKey, olympiaNetwork = OlympiaNetwork.MAINNET)
-            return Address.virtualAccountAddressFromOlympiaAddress(
-                olympiaAccountAddress = olympiaAddress,
-                networkId = networkId.toUByte()
-            ).addressString()
-        }
+        fun deriveOlympiaAccountAddress(): String = deriveOlympiaAccountAddressFromPublicKey(
+            publicKey = engineKey,
+            olympiaNetwork = OlympiaNetwork.MAINNET
+        ).asStr()
 
         val value: ByteArray
             get() = engineKey.value
@@ -88,10 +84,12 @@ sealed interface PublicKey {
                     // Required size 33 bytes
                     Secp256k1(getCompressedPublicKey())
                 }
+
                 EllipticCurveType.Ed25519 -> {
                     // Required size 32 bytes
                     Ed25519(getCompressedPublicKey().removeLeadingZero())
                 }
+
                 EllipticCurveType.P256 -> error("Curve EllipticCurveType.P256 not supported")
             }
         }
