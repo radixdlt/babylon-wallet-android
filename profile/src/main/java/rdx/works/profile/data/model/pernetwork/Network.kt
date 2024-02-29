@@ -4,8 +4,6 @@
 package rdx.works.profile.data.model.pernetwork
 
 import com.radixdlt.extensions.removeLeadingZero
-import com.radixdlt.ret.PublicKey
-import com.radixdlt.ret.deriveVirtualIdentityAddressFromPublicKey
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -33,6 +31,7 @@ import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.ret.crypto.PublicKey
 
 @Serializable
 data class Network(
@@ -250,10 +249,7 @@ data class Network(
 
                 val compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
 
-                val address = deriveIdentityAddress(
-                    networkID = networkId,
-                    publicKey = PublicKey.Ed25519(compressedPublicKey)
-                )
+                val address = PublicKey.Ed25519(compressedPublicKey).deriveIdentityAddress(networkId = networkId.value)
 
                 val unsecuredSecurityState = SecurityState.unsecured(
                     publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
@@ -268,13 +264,6 @@ data class Network(
                     securityState = unsecuredSecurityState,
                     personaData = personaData
                 )
-            }
-
-            private fun deriveIdentityAddress(
-                networkID: NetworkId,
-                publicKey: PublicKey
-            ): String {
-                return deriveVirtualIdentityAddressFromPublicKey(publicKey, networkID.value.toUByte()).addressString()
             }
         }
 
