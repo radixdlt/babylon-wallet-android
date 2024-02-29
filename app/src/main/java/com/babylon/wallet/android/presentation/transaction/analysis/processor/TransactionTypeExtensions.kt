@@ -26,6 +26,7 @@ import com.radixdlt.ret.PublicKeyHash
 import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
+import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.pernetwork.Network
@@ -289,8 +290,8 @@ val ResourceIndicator.NonFungible.nonFungibleLocalIds: List<Item.ID>
         is NonFungibleResourceIndicator.ByAll -> indicator.predictedIds.value
         is NonFungibleResourceIndicator.ByAmount -> indicator.predictedIds.value
         is NonFungibleResourceIndicator.ByIds -> indicator.ids
-    }.let { stringIds ->
-        stringIds.map { Item.ID.from(it.asStr()) }
+    }.let { retIds ->
+        retIds.map { Item.ID.from(it.asStr()) }
     }
 
 fun Map<String, MetadataValue?>.toMetadata(): List<Metadata> = mapNotNull { it.toMetadata() }
@@ -699,9 +700,4 @@ fun ExecutionSummary.toDepositingAccountsWithTransferableAssets(
     )
 }.sortedWith(AccountWithTransferableResources.Companion.Sorter(allOwnedAccounts))
 
-private fun NonFungibleLocalId.asStr() = when (this) {
-    is NonFungibleLocalId.Bytes -> "[$value]"
-    is NonFungibleLocalId.Integer -> "#$value#"
-    is NonFungibleLocalId.Str -> "<$value>"
-    is NonFungibleLocalId.Ruid -> "{$value}"
-}
+private fun NonFungibleLocalId.asStr() = nonFungibleLocalIdAsStr(this)
