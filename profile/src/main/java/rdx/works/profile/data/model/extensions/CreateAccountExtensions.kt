@@ -12,6 +12,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.derivationPathEntityIndex
 import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.ret.RetBridge
 import rdx.works.profile.ret.crypto.PublicKey
 
 @Suppress("LongParameterList")
@@ -28,7 +29,10 @@ fun Profile.createAccount(
     val address = if (isForLegacyOlympia.not()) {
         PublicKey.Ed25519(compressedPublicKey).deriveAccountAddress(onNetworkId.value)
     } else {
-        PublicKey.Secp256k1(compressedPublicKey).deriveOlympiaAccountAddress(networkId = onNetworkId.value)
+        RetBridge.Address.accountAddressFromOlympia(
+            olympiaAddress = PublicKey.Secp256k1(compressedPublicKey).deriveOlympiaAccountAddress(),
+            forNetworkId = onNetworkId.value
+        )
     }
 
     val unsecuredSecurityState = SecurityState.unsecured(

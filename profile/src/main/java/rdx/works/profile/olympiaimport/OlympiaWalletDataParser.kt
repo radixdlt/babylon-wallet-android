@@ -3,10 +3,6 @@
 package rdx.works.profile.olympiaimport
 
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.OlympiaNetwork
-import com.radixdlt.ret.PublicKey
-import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
 import okio.ByteString.Companion.decodeBase64
 import rdx.works.core.Identified
 import rdx.works.core.compressedPublicKeyHashBytes
@@ -14,6 +10,8 @@ import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
+import rdx.works.profile.ret.RetBridge
+import rdx.works.profile.ret.crypto.PublicKey
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -79,19 +77,16 @@ class OlympiaWalletDataParser @Inject constructor(
             ""
         }.ifEmpty { "Unnamed Olympia account $parsedIndex" }
 
-        val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
-            publicKey = publicKey,
-            olympiaNetwork = OlympiaNetwork.MAINNET
+        val olympiaAddress = publicKey.deriveOlympiaAccountAddress()
+        val newBabylonAddress = RetBridge.Address.accountAddressFromOlympia(
+            olympiaAddress = olympiaAddress,
+            forNetworkId = currentNetworkId.value
         )
-        val newBabylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
-            olympiaAccountAddress = olympiaAddress,
-            networkId = currentNetworkId.value.toUByte()
-        ).addressString()
 
         return OlympiaAccountDetails(
             index = parsedIndex,
             type = type,
-            address = olympiaAddress.asStr(),
+            address = olympiaAddress,
             publicKey = publicKeyHex,
             accountName = name,
             derivationPath = DerivationPath.forLegacyOlympia(accountIndex = parsedIndex),
