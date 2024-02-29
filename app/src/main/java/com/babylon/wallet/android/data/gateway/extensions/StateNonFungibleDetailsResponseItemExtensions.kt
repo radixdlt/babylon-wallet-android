@@ -28,7 +28,7 @@ import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.utils.isValidUrl
-import rdx.works.profile.ret.RetBridge
+import rdx.works.profile.ret.AddressHelper
 
 private enum class SborTypeName(val code: String) {
     INSTANT("Instant")
@@ -63,7 +63,7 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
             } else {
                 if (sborValue.value.isValidUrl()) {
                     MetadataType.Url
-                } else if (RetBridge.Address.isValid(sborValue.value)) {
+                } else if (AddressHelper.isValid(sborValue.value)) {
                     MetadataType.Address
                 } else {
                     MetadataType.String
@@ -189,7 +189,7 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
             values = sborValue.fields.mapNotNull { it.toMetadata(isCollection = true) }
         )
 
-        is ProgrammaticScryptoSborValueReference -> if (RetBridge.Address.isValid(sborValue.value)) {
+        is ProgrammaticScryptoSborValueReference -> if (AddressHelper.isValid(sborValue.value)) {
             Metadata.Primitive(
                 key = key,
                 value = sborValue.value,
@@ -199,7 +199,7 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
             null
         }
 
-        is ProgrammaticScryptoSborValueOwn -> if (RetBridge.Address.isValid(sborValue.value)) {
+        is ProgrammaticScryptoSborValueOwn -> if (AddressHelper.isValid(sborValue.value)) {
             Metadata.Primitive(
                 key = key,
                 value = sborValue.value,

@@ -21,7 +21,7 @@ import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.ret.RetBridge
+import rdx.works.profile.ret.AddressHelper
 import java.math.BigDecimal
 
 sealed class Resource {
@@ -324,13 +324,13 @@ object XrdResource {
     const val SYMBOL = "XRD"
 
     fun address(networkId: Int = Radix.Gateway.default.network.networkId().value): String {
-        return RetBridge.Address.xrdAddress(forNetworkId = networkId)
+        return AddressHelper.xrdAddress(forNetworkId = networkId)
     }
 }
 
 val Resource.FungibleResource.isXrd: Boolean
     get() {
-        val networkIdValue = RetBridge.Address.networkIdOrNull(resourceAddress) ?: return false
+        val networkIdValue = AddressHelper.networkIdOrNull(resourceAddress) ?: return false
 
         return XrdResource.address(networkId = networkIdValue) == resourceAddress
     }
