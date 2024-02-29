@@ -13,6 +13,7 @@ import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import rdx.works.core.domain.assets.ValidatorDetail
 import rdx.works.profile.ret.TransactionManifestData
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.DApp

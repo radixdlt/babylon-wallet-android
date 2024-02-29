@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import rdx.works.core.domain.assets.ValidatorDetail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 
 @Composable

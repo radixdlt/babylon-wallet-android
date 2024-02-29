@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
-import com.babylon.wallet.android.domain.model.assets.Asset
+import rdx.works.core.domain.assets.Asset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.PreviewType

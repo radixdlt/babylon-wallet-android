@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
-import com.babylon.wallet.android.domain.model.assets.Assets
+import rdx.works.core.domain.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase

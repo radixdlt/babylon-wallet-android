@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
