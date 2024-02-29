@@ -42,7 +42,7 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.currentNetwork
-import rdx.works.profile.ret.AddressHelper
+import rdx.works.core.AddressHelper
 import java.math.BigDecimal
 import javax.inject.Inject
 

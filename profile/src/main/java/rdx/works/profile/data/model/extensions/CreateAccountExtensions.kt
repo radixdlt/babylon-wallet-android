@@ -12,7 +12,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.derivationPathEntityIndex
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.ret.AddressHelper
+import rdx.works.core.AddressHelper
 import rdx.works.profile.ret.crypto.PublicKey
 
 @Suppress("LongParameterList")
