@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.first
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.security
-import rdx.works.profile.ret.AddressHelper
+import rdx.works.core.AddressHelper
 import javax.inject.Inject
 
 class VerifyDAppUseCase @Inject constructor(

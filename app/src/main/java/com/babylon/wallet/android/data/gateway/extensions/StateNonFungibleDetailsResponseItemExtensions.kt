@@ -28,7 +28,7 @@ import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.utils.isValidUrl
-import rdx.works.profile.ret.AddressHelper
+import rdx.works.core.AddressHelper
 
 private enum class SborTypeName(val code: String) {
     INSTANT("Instant")

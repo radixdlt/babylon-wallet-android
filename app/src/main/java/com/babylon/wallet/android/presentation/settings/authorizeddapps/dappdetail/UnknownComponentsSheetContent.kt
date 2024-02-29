@@ -26,7 +26,7 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.profile.ret.AddressHelper
+import rdx.works.core.AddressHelper
 
 @Composable
 fun UnknownComponentsSheetContent(

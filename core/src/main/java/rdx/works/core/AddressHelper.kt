@@ -1,11 +1,10 @@
-package rdx.works.profile.ret
+package rdx.works.core
 
+import android.util.Log
 import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.OlympiaAddress
 import com.radixdlt.ret.knownAddresses
-import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
-import timber.log.Timber
 
 private typealias EngineAddress = com.radixdlt.ret.Address
 
@@ -62,10 +61,10 @@ object AddressHelper {
     ).addressString()
 
     private fun String.toAddressOrNull() = runCatching { EngineAddress(this) }
-        .onFailure { Timber.tag(LOG_TAG).w(it) }
+        .onFailure { Log.w(LOG_TAG, it) }
         .getOrNull()
 
     private fun String.toNonFungibleGlobalId() = runCatching { NonFungibleGlobalId(this) }
-        .onFailure { Timber.tag(LOG_TAG).w(it) }
+        .onFailure { Log.w(LOG_TAG, it) }
         .getOrNull()
 }

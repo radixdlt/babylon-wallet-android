@@ -75,7 +75,7 @@ import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.profile.domain.backup.BackupType
-import rdx.works.profile.ret.AddressHelper
+import rdx.works.core.AddressHelper
 
 @Suppress("CyclomaticComplexMethod")
 @Composable

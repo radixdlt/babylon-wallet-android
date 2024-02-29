@@ -10,7 +10,7 @@ import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.ret.AddressHelper
+import rdx.works.core.AddressHelper
 import rdx.works.profile.ret.crypto.PublicKey
 import timber.log.Timber
 import javax.inject.Inject

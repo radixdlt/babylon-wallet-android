@@ -18,7 +18,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
-import rdx.works.profile.ret.AddressHelper
+import rdx.works.core.AddressHelper
 import javax.inject.Inject
 
 class MigrateOlympiaAccountsUseCase @Inject constructor(

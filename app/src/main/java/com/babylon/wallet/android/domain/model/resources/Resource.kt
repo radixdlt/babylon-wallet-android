@@ -21,7 +21,7 @@ import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.ret.AddressHelper
+import rdx.works.core.AddressHelper
 import java.math.BigDecimal
 
 sealed class Resource {
