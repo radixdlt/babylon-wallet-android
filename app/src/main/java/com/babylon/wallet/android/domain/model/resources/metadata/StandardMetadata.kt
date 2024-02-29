@@ -5,7 +5,7 @@ package com.babylon.wallet.android.domain.model.resources.metadata
 import android.net.Uri
 import androidx.core.net.toUri
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import rdx.works.profile.ret.AddressHelper
+import rdx.works.core.AddressHelper
 import java.math.BigDecimal
 
 private fun List<Metadata>.findPrimitive(key: ExplicitMetadataKey, type: MetadataType): Metadata.Primitive? = find {

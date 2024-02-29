@@ -28,7 +28,7 @@ import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
-import rdx.works.profile.ret.AddressHelper
+import rdx.works.core.AddressHelper
 import rdx.works.profile.ret.ManifestPoet
 import javax.inject.Inject
 
