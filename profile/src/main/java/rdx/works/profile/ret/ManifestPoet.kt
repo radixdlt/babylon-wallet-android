@@ -24,13 +24,13 @@ object ManifestPoet {
         publicKeyHashes: List<FactorInstance.PublicKey>
     ) = BabylonManifestBuilder()
         .setOwnerKeys(entityAddress, publicKeyHashes)
-        .buildSafely(RetBridge.Address.networkId(entityAddress))
+        .buildSafely(AddressHelper.networkId(entityAddress))
 
     fun buildFaucet(toAddress: String) = BabylonManifestBuilder()
         .lockFee()
         .freeXrd()
         .accountTryDepositEntireWorktopOrAbort(toAddress = toAddress)
-        .buildSafely(RetBridge.Address.networkId(toAddress))
+        .buildSafely(AddressHelper.networkId(toAddress))
 
 
     fun buildTransfer(
@@ -45,7 +45,7 @@ object ManifestPoet {
             fromAccount = fromAccount,
             depositNFTs = depositNFTs
         ).buildSafely(
-            networkId = RetBridge.Address.networkId(fromAccount.address)
+            networkId = AddressHelper.networkId(fromAccount.address)
         )
 
     fun buildClaim(
@@ -65,7 +65,7 @@ object ManifestPoet {
             }
 
             val totalClaimValue = claim.claimNFTs.values.sumOf { it }
-            val xrdAddress = RetBridge.Address.xrdAddress(forNetworkId = fromAccount.networkID)
+            val xrdAddress = AddressHelper.xrdAddress(forNetworkId = fromAccount.networkID)
 
             builder = builder
                 .accountWithdrawNonFungibles(
@@ -130,7 +130,7 @@ object ManifestPoet {
             )
         }
     }.buildSafely(
-        RetBridge.Address.networkId(settings.accountAddress)
+        AddressHelper.networkId(settings.accountAddress)
     )
 
     private fun BabylonManifestBuilder.attachInstructionsForFungibles(
@@ -243,11 +243,11 @@ object ManifestPoet {
 fun sampleXRDWithdraw(
     fromAddress: String,
     value: BigDecimal
-) = with(RetBridge.Address.networkId(fromAddress)) {
+) = with(AddressHelper.networkId(fromAddress)) {
     BabylonManifestBuilder()
         .withdrawFromAccount(
             fromAddress = fromAddress,
-            fungibleAddress = RetBridge.Address.xrdAddress(this),
+            fungibleAddress = AddressHelper.xrdAddress(this),
             amount = value
         )
         .build(this)
