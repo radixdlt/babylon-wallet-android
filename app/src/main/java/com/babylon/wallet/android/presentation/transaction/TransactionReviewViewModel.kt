@@ -15,7 +15,7 @@ import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import rdx.works.core.domain.assets.ValidatorDetail
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.isXrd
