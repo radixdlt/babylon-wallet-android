@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.update
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.ret.ManifestPoet
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -30,7 +31,13 @@ class PrepareManifestDelegate @Inject constructor(
                 depositNFTs = _state.value.toNonFungibleTransfers(accountsAbleToSign),
             )
             .map { manifest ->
-                manifest.copy(message = _state.value.submittedMessage).prepareInternalTransactionRequest()
+                val message = when (val messageState = _state.value.messageState) {
+                    is TransferViewModel.State.Message.Added -> TransactionManifestData.TransactionMessage.Public(
+                        message = messageState.message
+                    )
+                    is TransferViewModel.State.Message.None -> TransactionManifestData.TransactionMessage.None
+                }
+                manifest.copy(message = message).prepareInternalTransactionRequest()
             }
             .onSuccess { request ->
                 _state.update { it.copy(transferRequestId = request.requestId) }
