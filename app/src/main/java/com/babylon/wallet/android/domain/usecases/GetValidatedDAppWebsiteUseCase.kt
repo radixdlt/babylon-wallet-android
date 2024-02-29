@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
-import com.babylon.wallet.android.domain.model.DApp
+import rdx.works.core.domain.DApp
 import javax.inject.Inject
 
 class GetValidatedDAppWebsiteUseCase @Inject constructor(

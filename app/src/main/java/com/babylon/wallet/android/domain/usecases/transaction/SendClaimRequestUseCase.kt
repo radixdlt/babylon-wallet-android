@@ -3,7 +3,7 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.ret.ManifestPoet
 import java.math.BigDecimal

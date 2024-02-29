@@ -36,11 +36,11 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import rdx.works.profile.ret.transaction.TransactionVersion
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DApp
+import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import rdx.works.profile.ret.transaction.TransactionManifestData
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.UnknownComponentsSheetContent

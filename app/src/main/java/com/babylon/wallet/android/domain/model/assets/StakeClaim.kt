@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.model.assets
 
 import android.net.Uri
-import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.domain.resources.Resource
 
 data class StakeClaim(
     val nonFungibleResource: Resource.NonFungibleResource,

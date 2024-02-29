@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -51,9 +51,9 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder

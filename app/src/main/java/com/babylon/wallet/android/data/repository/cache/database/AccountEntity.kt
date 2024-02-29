@@ -2,7 +2,7 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
+import rdx.works.core.domain.resources.metadata.AccountType
 import java.time.Instant
 
 @Entity(primaryKeys = ["address"])

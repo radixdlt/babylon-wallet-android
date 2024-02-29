@@ -182,13 +182,10 @@ fun PoolUnitDialogContent(
                     .padding(start = RadixTheme.dimensions.paddingDefault)
                     .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(visible = poolUnit?.stake?.currentSupply == null),
-                text = when {
-                    poolUnit?.stake?.currentSupply != null -> when (poolUnit.stake.currentSupply) {
-                        BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                        else -> poolUnit.stake.currentSupply.displayableQuantity()
-                    }
-
-                    else -> ""
+                text = when (val supply = poolUnit?.stake?.currentSupply) {
+                    null -> ""
+                    BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                    else -> supply.displayableQuantity()
                 },
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,

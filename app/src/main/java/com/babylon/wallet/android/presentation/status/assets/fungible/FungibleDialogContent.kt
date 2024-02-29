@@ -25,7 +25,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.resources.isXrd
+import rdx.works.core.domain.resources.isXrd
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
@@ -139,13 +139,10 @@ fun FungibleDialogContent(
                         .padding(start = RadixTheme.dimensions.paddingDefault)
                         .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                         .radixPlaceholder(visible = token?.resource?.currentSupply == null),
-                    text = when {
-                        token?.resource?.currentSupply != null -> when (token.resource.currentSupply) {
-                            BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                            else -> token.resource.currentSupply.displayableQuantity()
-                        }
-
-                        else -> ""
+                    text = when (val supply = token?.resource?.currentSupply) {
+                        null -> ""
+                        BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                        else -> supply.displayableQuantity()
                     },
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,

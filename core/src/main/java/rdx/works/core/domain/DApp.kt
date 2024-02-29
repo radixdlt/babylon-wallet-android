@@ -1,15 +1,15 @@
-package com.babylon.wallet.android.domain.model
+package rdx.works.core.domain
 
 import android.net.Uri
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.accountType
-import com.babylon.wallet.android.domain.model.resources.metadata.claimedEntities
-import com.babylon.wallet.android.domain.model.resources.metadata.claimedWebsites
-import com.babylon.wallet.android.domain.model.resources.metadata.dAppDefinition
-import com.babylon.wallet.android.domain.model.resources.metadata.description
-import com.babylon.wallet.android.domain.model.resources.metadata.iconUrl
-import com.babylon.wallet.android.domain.model.resources.metadata.name
+import rdx.works.core.domain.resources.metadata.AccountType
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.accountType
+import rdx.works.core.domain.resources.metadata.claimedEntities
+import rdx.works.core.domain.resources.metadata.claimedWebsites
+import rdx.works.core.domain.resources.metadata.dAppDefinition
+import rdx.works.core.domain.resources.metadata.description
+import rdx.works.core.domain.resources.metadata.iconUrl
+import rdx.works.core.domain.resources.metadata.name
 
 data class DApp(
     val dAppAddress: String,
