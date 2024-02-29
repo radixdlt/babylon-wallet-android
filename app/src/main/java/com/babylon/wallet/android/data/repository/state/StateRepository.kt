@@ -37,12 +37,12 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
-import rdx.works.profile.ret.RetBridge
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.currentNetwork
+import rdx.works.profile.ret.AddressHelper
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -489,7 +489,7 @@ class StateRepositoryImpl @Inject constructor(
         val currentNetworkId = getProfileUseCase.currentNetwork()?.networkID ?: Radix.Gateway.default.network.id
 
         return stateDao.getAccountStateVersions().filter {
-            RetBridge.Address.networkIdOrNull(it.address) == currentNetworkId
+            AddressHelper.networkIdOrNull(it.address) == currentNetworkId
         }.maxByOrNull { it.stateVersion }?.stateVersion
     }
 }

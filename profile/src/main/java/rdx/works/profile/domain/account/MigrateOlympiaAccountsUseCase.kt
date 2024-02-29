@@ -18,7 +18,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
-import rdx.works.profile.ret.RetBridge
+import rdx.works.profile.ret.AddressHelper
 import javax.inject.Inject
 
 class MigrateOlympiaAccountsUseCase @Inject constructor(
@@ -34,7 +34,7 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
             val networkId = profile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val appearanceIdOffset = profile.nextAppearanceId(forNetworkId = networkId)
             val migratedAccounts = olympiaAccounts.mapIndexed { index, olympiaAccount ->
-                val babylonAddress = RetBridge.Address.accountAddressFromOlympia(
+                val babylonAddress = AddressHelper.accountAddressFromOlympia(
                     olympiaAddress = olympiaAccount.address,
                     forNetworkId = networkId.value
                 )

@@ -26,7 +26,7 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.profile.ret.RetBridge
+import rdx.works.profile.ret.AddressHelper
 
 @Composable
 fun UnknownComponentsSheetContent(
@@ -35,7 +35,7 @@ fun UnknownComponentsSheetContent(
     unknownComponentAddresses: ImmutableList<String>
 ) {
     val isPools = remember(unknownComponentAddresses) {
-        unknownComponentAddresses.all { RetBridge.Address.isPool(it) }
+        unknownComponentAddresses.all { AddressHelper.isPool(it) }
     }
 
     Column(modifier = modifier) {
@@ -68,7 +68,7 @@ fun UnknownComponentsSheetContent(
 
                         Column {
                             val isPool = remember(unknownComponentAddress) {
-                                RetBridge.Address.isPool(unknownComponentAddress)
+                                AddressHelper.isPool(unknownComponentAddress)
                             }
                             Text(
                                 text = if (isPool) {

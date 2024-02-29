@@ -28,8 +28,8 @@ import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
+import rdx.works.profile.ret.AddressHelper
 import rdx.works.profile.ret.ManifestPoet
-import rdx.works.profile.ret.RetBridge
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -287,7 +287,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun assetExceptionAddressTyped(address: String) {
         val currentNetworkId = state.value.account?.networkID ?: return
-        val valid = RetBridge.Address.isValidResource(
+        val valid = AddressHelper.isValidResource(
             address = address,
             networkId = currentNetworkId
         )
@@ -305,11 +305,11 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun depositorAddressTyped(address: String) {
         val currentNetworkId = state.value.account?.networkID ?: return
-        val validAddress = RetBridge.Address.isValidResource(
+        val validAddress = AddressHelper.isValidResource(
             address = address,
             networkId = currentNetworkId
         )
-        val validNft = RetBridge.Address.isValidNFT(address)
+        val validNft = AddressHelper.isValidNFT(address)
         _state.update { state ->
             val updatedDepositor = state.depositorToAdd.copy(
                 depositorAddress = when {
@@ -435,7 +435,7 @@ sealed interface SelectedDepositsSheetState {
 
 fun ThirdPartyDeposits.DepositorAddress.resourceAddress(): String {
     return when (this) {
-        is ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID -> RetBridge.Address.globalId(address)
+        is ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID -> AddressHelper.globalId(address)
         is ThirdPartyDeposits.DepositorAddress.ResourceAddress -> address
     }
 }

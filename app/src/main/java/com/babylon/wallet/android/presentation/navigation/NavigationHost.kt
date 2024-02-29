@@ -74,8 +74,8 @@ import com.babylon.wallet.android.presentation.transaction.transactionReviewScre
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import kotlinx.coroutines.flow.StateFlow
-import rdx.works.profile.ret.RetBridge
 import rdx.works.profile.domain.backup.BackupType
+import rdx.works.profile.ret.AddressHelper
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -347,7 +347,7 @@ fun NavigationHost(
                 val resourcesWithAmount = when (asset) {
                     is TransferableAsset.Fungible.LSUAsset -> {
                         val xrdResourceAddress = runCatching {
-                            val networkId = RetBridge.Address.networkId(asset.resourceAddress)
+                            val networkId = AddressHelper.networkId(asset.resourceAddress)
                             XrdResource.address(networkId = networkId)
                         }.getOrNull()
 

@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import rdx.works.profile.ret.RetBridge
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.factorSourceId
@@ -22,6 +21,7 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
+import rdx.works.profile.ret.AddressHelper
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {
@@ -134,7 +134,7 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
 
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
     return accountsOnCurrentNetwork().mapNotNull {
-        RetBridge.Address.publicKeyHash(it.address)
+        AddressHelper.publicKeyHash(it.address)
     }.toSet()
 }
 

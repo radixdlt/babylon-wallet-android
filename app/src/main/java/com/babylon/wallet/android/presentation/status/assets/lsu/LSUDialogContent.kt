@@ -43,7 +43,7 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.AddressR
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import rdx.works.core.displayableQuantity
-import rdx.works.profile.ret.RetBridge
+import rdx.works.profile.ret.AddressHelper
 import java.math.BigDecimal
 
 @Composable
@@ -123,7 +123,7 @@ fun LSUDialogContent(
 
         val xrdWorth = remember(args, lsu) {
             val xrdResourceAddress = runCatching {
-                val networkId = RetBridge.Address.networkId(args.resourceAddress)
+                val networkId = AddressHelper.networkId(args.resourceAddress)
                 XrdResource.address(networkId = networkId)
             }.getOrNull()
 
