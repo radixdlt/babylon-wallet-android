@@ -2,7 +2,7 @@ package com.babylon.wallet.android.data.repository.tokenprice
 
 import com.babylon.wallet.android.data.gateway.apis.TokenPriceApi
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
-import com.babylon.wallet.android.data.gateway.model.TokenPriceResponse.Companion.asEntity
+import com.babylon.wallet.android.data.gateway.model.TokenPriceResponse.Companion.asEntities
 import com.babylon.wallet.android.data.gateway.model.TokensAndLsusPricesRequest
 import com.babylon.wallet.android.data.gateway.model.TokensAndLsusPricesResponse.Companion.asEntity
 import com.babylon.wallet.android.data.gateway.model.TokensPricesErrorResponse
@@ -53,7 +53,7 @@ class TokenPriceRepositoryImpl @Inject constructor(
                 )
                 .onSuccess { tokensPrices ->
                     tokenPriceDao.insertTokensPrice(
-                        tokensPrices = tokensPrices.asEntity()
+                        tokensPrices = tokensPrices.asEntities()
                     )
                 }.onFailure {
                     Timber.e("failed to fetch tokens prices with exception: ${it.message}")
