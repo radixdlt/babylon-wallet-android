@@ -98,7 +98,11 @@ fun FiltersDialog(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(RadixTheme.dimensions.paddingLarge),
+                    .padding(
+                        start = RadixTheme.dimensions.paddingLarge,
+                        end = RadixTheme.dimensions.paddingLarge,
+                        bottom = RadixTheme.dimensions.paddingDefault
+                    ),
                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
             ) {
                 TagContainer {
@@ -171,7 +175,9 @@ private fun ResourcesSection(
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Start
             )
-            TagContainer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSmall).animateContentSize()) {
+            TagContainer(modifier = Modifier
+                .padding(vertical = RadixTheme.dimensions.paddingSmall)
+                .animateContentSize()) {
                 fungibles.take(
                     if (showingAllFungibles) {
                         fungibles.size
@@ -179,7 +185,7 @@ private fun ResourcesSection(
                         maxFungiblesInCollapsedState
                     }
                 ).forEach { fungible ->
-                    val selected = state.filters.resources.any { it.resourceAddress == fungible.resourceAddress }
+                    val selected = state.filters.resource?.resourceAddress == fungible.resourceAddress
                     SingleTag(
                         selected = selected,
                         text = fungible.displayTitle.ifEmpty { fungible.resourceAddress.truncatedHash() },
@@ -210,7 +216,9 @@ private fun ResourcesSection(
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Start
             )
-            TagContainer(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingSmall).animateContentSize()) {
+            TagContainer(modifier = Modifier
+                .padding(vertical = RadixTheme.dimensions.paddingSmall)
+                .animateContentSize()) {
                 nonFungibles.take(
                     if (showingAllNonFungibleResource) {
                         nonFungibles.size
@@ -218,7 +226,7 @@ private fun ResourcesSection(
                         maxNonFungiblesInCollapsedState
                     }
                 ).forEach { nonFungible ->
-                    val selected = state.filters.resources.any { it.resourceAddress == nonFungible.resourceAddress }
+                    val selected = state.filters.resource?.resourceAddress == nonFungible.resourceAddress
                     SingleTag(
                         selected = selected,
                         text = nonFungible.name.ifEmpty { nonFungible.resourceAddress.truncatedHash() },

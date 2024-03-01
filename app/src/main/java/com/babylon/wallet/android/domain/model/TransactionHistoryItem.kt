@@ -3,6 +3,7 @@ package com.babylon.wallet.android.domain.model
 import com.babylon.wallet.android.data.gateway.generated.models.CommittedTransactionInfo
 import com.babylon.wallet.android.data.gateway.generated.models.ManifestClass
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
@@ -21,7 +22,8 @@ data class TransactionHistoryData(
     val prevCursorId: String?,
     val nextCursorId: String?,
     val filters: HistoryFilters,
-    val items: List<TransactionHistoryItem>
+    val items: List<TransactionHistoryItem>,
+    val lastPrependedIds: Set<String> = emptySet()
 ) {
     val groupedByDate: Map<String, List<TransactionHistoryItem>>
         get() = items.groupBy {
@@ -29,11 +31,19 @@ data class TransactionHistoryData(
             zonedDateTime.year.toString() + zonedDateTime.dayOfYear
         }
 
-    fun addToCurrent(items: List<TransactionHistoryItem>, nextCursorId: String?, forwardInTime: Boolean): TransactionHistoryData {
+    fun append(items: List<TransactionHistoryItem>, nextCursorId: String?): TransactionHistoryData {
         return copy(
-            nextCursorId = if (forwardInTime) this.nextCursorId else nextCursorId,
-            prevCursorId = if (forwardInTime) nextCursorId else this.prevCursorId,
-            items = (this.items + items).sortedByDescending { it.timestamp }
+            nextCursorId = nextCursorId,
+            items = (this.items + items).distinctBy { it.txId }.sortedByDescending { it.timestamp },
+            lastPrependedIds = emptySet()
+        )
+    }
+
+    fun prepend(items: List<TransactionHistoryItem>, prevCursorId: String?): TransactionHistoryData {
+        return copy(
+            prevCursorId = prevCursorId,
+            items = (items + this.items).distinctBy { it.txId }.sortedByDescending { it.timestamp },
+            lastPrependedIds = items.map { it.txId }.toSet()
         )
     }
 }
@@ -45,7 +55,8 @@ data class TransactionHistoryItem(
     private val balanceChanges: List<BalanceChange>,
     val transactionClass: TransactionClass?,
     val timestamp: Instant?,
-    val message: String?
+    val message: String?,
+    val isFailedTransaction: Boolean
 ) {
     val deposited: List<BalanceChange>
         get() = balanceChanges.filter {
@@ -74,7 +85,7 @@ data class TransactionHistoryItem(
 data class HistoryFilters(
     val start: ZonedDateTime? = null,
     val transactionType: TransactionType? = null,
-    val resources: Set<Resource> = emptySet(),
+    val resource: Resource? = null,
     val transactionClass: TransactionClass? = null,
     val sortOrder: SortOrder = SortOrder.Desc
 ) {
@@ -88,7 +99,7 @@ data class HistoryFilters(
     }
 
     val isAnyFilterSet: Boolean
-        get() = transactionType != null || resources.isNotEmpty() || transactionClass != null
+        get() = transactionType != null || resource != null || transactionClass != null
 }
 
 sealed interface BalanceChange {
@@ -201,6 +212,7 @@ fun CommittedTransactionInfo.toDomainModel(accountAddress: String, assets: List<
         balanceChanges = balanceChanges?.toDomainModel(assets = assets).orEmpty(),
         transactionClass = manifestClasses?.firstOrNull()?.toTransactionClass(),
         timestamp = confirmedAt?.toInstant(),
-        message = message?.message()
+        message = message?.message(),
+        isFailedTransaction = transactionStatus == TransactionStatus.committedFailure || transactionStatus == TransactionStatus.rejected
     )
 }

@@ -107,7 +107,7 @@ class GetAccountHistoryUseCase @Inject constructor(
                 item.balanceChanges?.nonFungibleBalanceChanges?.forEach { balanceChange ->
                     val nftCollectionAddress = balanceChange.resourceAddress
                     val nftLocalIds = balanceChange.added.toSet() + balanceChange.removed
-                    if (containsKey(balanceChange.resourceAddress)) {
+                    if (containsKey(nftCollectionAddress)) {
                         this[nftCollectionAddress] = this[nftCollectionAddress].orEmpty() + nftLocalIds
                     } else {
                         this[nftCollectionAddress] = nftLocalIds
@@ -121,10 +121,10 @@ class GetAccountHistoryUseCase @Inject constructor(
     suspend fun loadMore(
         accountAddress: String,
         transactionHistoryData: TransactionHistoryData,
-        forwardInTime: Boolean = false
+        prepend: Boolean = false
     ): Result<TransactionHistoryData> {
-        val nextCursor = if (forwardInTime) transactionHistoryData.prevCursorId else transactionHistoryData.nextCursorId
-        val filters = if (forwardInTime) {
+        val nextCursor = if (prepend) transactionHistoryData.prevCursorId else transactionHistoryData.nextCursorId
+        val filters = if (prepend) {
             transactionHistoryData.filters.copy(sortOrder = HistoryFilters.SortOrder.Asc)
         } else {
             transactionHistoryData.filters
@@ -133,7 +133,11 @@ class GetAccountHistoryUseCase @Inject constructor(
             val assetsAddresses = resolveResponseAssetAddresses(response)
             val assets = resolveAssetsFromAddressUseCase(assetsAddresses.first, assetsAddresses.second).getOrThrow()
             val items = response.items.map { item -> item.toDomainModel(accountAddress, assets) }
-            transactionHistoryData.addToCurrent(items, response.nextCursor, forwardInTime)
+            if (prepend) {
+                transactionHistoryData.prepend(items, response.nextCursor)
+            } else {
+                transactionHistoryData.append(items, response.nextCursor)
+            }
         }
     }
 }

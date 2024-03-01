@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.presentation.history.composables
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,13 +17,14 @@ import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.utils.truncatedHash
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun FiltersStrip(
     historyFilters: HistoryFilters?,
     userInteractionEnabled: Boolean,
     onTransactionTypeFilterRemoved: () -> Unit,
     onTransactionClassFilterRemoved: () -> Unit,
-    onResourceFilterRemoved: (Resource) -> Unit,
+    onResourceFilterRemoved: () -> Unit,
     modifier: Modifier = Modifier,
     timeFilterScrollState: LazyListState,
 ) {
@@ -33,16 +34,17 @@ fun FiltersStrip(
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium),
         contentPadding = PaddingValues(
-            top = RadixTheme.dimensions.paddingMedium,
             start = RadixTheme.dimensions.paddingMedium,
-            end = RadixTheme.dimensions.paddingMedium
+            end = RadixTheme.dimensions.paddingMedium,
+            bottom = RadixTheme.dimensions.paddingMedium
         ),
         userScrollEnabled = userInteractionEnabled,
         state = timeFilterScrollState
     ) {
         historyFilters?.transactionType?.let { transactionType ->
-            item {
+            item(key = transactionType.name) {
                 SingleTag(
+                    modifier = Modifier.animateItemPlacement(),
                     selected = true,
                     text = transactionType.label(),
                     leadingIcon = {
@@ -54,22 +56,25 @@ fun FiltersStrip(
                 )
             }
         }
-        items(historyFilters?.resources.orEmpty().toList()) { resource ->
+        historyFilters?.resource?.let { resource ->
             val name = when (resource) {
                 is Resource.FungibleResource -> resource.displayTitle
                 is Resource.NonFungibleResource -> resource.name
             }
-            SingleTag(
-                selected = true,
-                text = name.ifEmpty { resource.resourceAddress.truncatedHash() },
-                onCloseClick = {
-                    onResourceFilterRemoved(resource)
-                }
-            )
+            item(key = resource.resourceAddress) {
+                SingleTag(
+                    modifier = Modifier.animateItemPlacement(),
+                    selected = true,
+                    text = name.ifEmpty { resource.resourceAddress.truncatedHash() },
+                    onCloseClick = {
+                        onResourceFilterRemoved()
+                    }
+                )
+            }
         }
         historyFilters?.transactionClass?.let { txClass ->
-            item {
-                SingleTag(selected = true, text = txClass.description(), onCloseClick = {
+            item(key = txClass.name) {
+                SingleTag(modifier = Modifier.animateItemPlacement(), selected = true, text = txClass.description(), onCloseClick = {
                     if (userInteractionEnabled) onTransactionClassFilterRemoved()
                 })
             }

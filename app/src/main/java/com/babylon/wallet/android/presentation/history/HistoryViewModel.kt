@@ -138,10 +138,11 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun onTimeFilterSelected(timeFilterItem: MonthFilter) {
-        val existingHistoryItem = _state.value.historyItems?.indexOfFirst {
-            it.dateTime?.isBefore(timeFilterItem.date) == true
+        val existingIndex = _state.value.historyItems?.indexOfFirst {
+            it is HistoryItem.Transaction && it.dateTime?.isBefore(timeFilterItem.date) == true
         }
-        if (existingHistoryItem == null || existingHistoryItem == -1) {
+        val item = existingIndex?.let { _state.value.historyItems?.getOrNull(it) }
+        if (existingIndex == null || existingIndex == -1) {
             _state.update { it.copy(loadMoreState = LoadingMoreState.NewRange) }
             viewModelScope.launch {
                 getAccountHistoryUseCase.getHistoryChunk(
@@ -153,7 +154,7 @@ class HistoryViewModel @Inject constructor(
                         it.dateTime?.isBefore(timeFilterItem.date) == true
                     }
                     if (scrollTo != null && scrollTo != -1) {
-                        delay(500)
+                        delay(SCROLL_DELAY_AFTER_LOAD)
                         sendEvent(HistoryEvent.ScrollToItem(scrollTo))
                     }
                     _state.update { it.copy(loadMoreState = null) }
@@ -161,9 +162,19 @@ class HistoryViewModel @Inject constructor(
             }
         } else {
             viewModelScope.launch {
-                sendEvent(HistoryEvent.ScrollToItem(existingHistoryItem))
+                blockScrollHandlingAndExecute {
+                    sendEvent(HistoryEvent.ScrollToItem(existingIndex))
+                    selectDate(item?.dateTime)
+                }
             }
         }
+    }
+
+    private suspend fun blockScrollHandlingAndExecute(block: suspend () -> Unit) {
+        _state.update { it.copy(ignoreScrollEvents = true) }
+        block()
+        delay(SCROLL_DELAY_AFTER_LOAD)
+        _state.update { it.copy(ignoreScrollEvents = false) }
     }
 
     fun onOpenTransactionDetails(txId: String) {
@@ -179,35 +190,36 @@ class HistoryViewModel @Inject constructor(
         when (direction) {
             ScrollInfo.Direction.UP -> {
                 if (_state.value.canLoadMoreUp.not() || _state.value.loadMoreState != null) {
-                    Timber.d("History: Can't load more up")
+                    Timber.d("History: Nothing to load at the top")
                     return
                 }
-                Timber.d("History: Loading more up")
+                Timber.d("History: Loading data at the top, cursor: ${_state.value.historyData?.prevCursorId}")
                 _state.update { it.copy(loadMoreState = LoadingMoreState.Up) }
-//                val currentFirstTxId =
-//                    _state.value.historyItems?.filterIsInstance<HistoryItem.Transaction>()?.firstOrNull()?.transactionItem?.txId
+                val currentFirstTxId =
+                    _state.value.historyItems?.filterIsInstance<HistoryItem.Transaction>()?.firstOrNull()?.transactionItem?.txId
                 viewModelScope.launch {
                     _state.value.historyData?.let { currentData ->
-//                        delay(500)
-                        getAccountHistoryUseCase.loadMore(args.accountAddress, currentData, forwardInTime = true)
+                        getAccountHistoryUseCase.loadMore(args.accountAddress, currentData, prepend = true)
                             .onSuccess { historyData ->
-                                updateStateWith(historyData, resetLoadingMoreState = false)
-//                                val scrollTo = _state.value.historyItems?.indexOfFirst {
-//                                    it.key == currentFirstTxId
-//                                }
-//                                if (scrollTo != null && scrollTo != -1) {
-//                                    delay(300)
-//                                    sendEvent(HistoryEvent.ScrollToItem(scrollTo))
-//                                }
-                                _state.update { it.copy(loadMoreState = null) }
+                                if (_state.value.firstVisibleIndex == 0) {
+                                    Timber.d("History: Will execute scroll to item after prepend")
+                                    updateStateWith(historyData, resetLoadingMoreState = false)
+                                    val scrollTo = _state.value.historyItems?.indexOfFirst {
+                                        it.key == currentFirstTxId
+                                    }
+                                    if (scrollTo != null && scrollTo != -1) {
+                                        delay(SCROLL_DELAY_AFTER_LOAD) // delay so the list is updated
+                                        sendEvent(HistoryEvent.ScrollToItem(scrollTo))
+                                    }
+                                }
+                                updateStateWith(historyData.copy(lastPrependedIds = emptySet()))
                             }
                     }
                 }
             }
 
             ScrollInfo.Direction.DOWN -> {
-                if (_state.value.canLoadMoreDown.not() && _state.value.loadMoreState != null) {
-                    Timber.d("History: Can't load more down")
+                if (_state.value.canLoadMoreDown.not() || _state.value.loadMoreState != null) {
                     return
                 }
                 _state.update { it.copy(loadMoreState = LoadingMoreState.Down) }
@@ -224,9 +236,13 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun onScrollEvent(event: ScrollInfo) {
+        if (_state.value.ignoreScrollEvents) {
+            return
+        }
         val items = _state.value.historyItems ?: return
         val firstVisibleItemDate = event.firstVisible?.let { items.getOrNull(it) }?.dateTime ?: return
         val lastVisibleItemDate = event.lastVisible?.let { items.getOrNull(it) }?.dateTime ?: return
+        _state.update { it.copy(firstVisibleIndex = event.firstVisible, lastVisibleIndex = event.lastVisible) }
         when (event.direction) {
             ScrollInfo.Direction.UP -> {
                 selectDate(firstVisibleItemDate)
@@ -258,16 +274,10 @@ class HistoryViewModel @Inject constructor(
         }
     }
 
-    fun onResourceFilterSelected(resource: Resource) {
+    fun onResourceFilterSelected(resource: Resource?) {
         _state.update { state ->
-            val addresses = state.filters.resources.map { it.resourceAddress }
-            val containsFilter = addresses.contains(resource.resourceAddress)
             val updatedFilters = state.filters.copy(
-                resources = if (containsFilter) {
-                    state.filters.resources - resource
-                } else {
-                    state.filters.resources + resource
-                }
+                resource = resource
             )
             state.copy(filters = updatedFilters)
         }
@@ -298,13 +308,14 @@ class HistoryViewModel @Inject constructor(
     }
 
     private fun updateStateWith(historyData: TransactionHistoryData, resetLoadingMoreState: Boolean = true) {
-        val historyItems = mutableListOf<HistoryItem>()
-        historyData.groupedByDate.forEach { (_, transactionItems) ->
-            val date = transactionItems.first().timestamp?.atZone(ZonedDateTime.now().zone) ?: ZonedDateTime.now()
-            historyItems.add(HistoryItem.Date(date))
-            transactionItems.forEach { historyItems.add(HistoryItem.Transaction(it)) }
-        }
         _state.update {
+            val historyItems = mutableListOf<HistoryItem>()
+            historyData.groupedByDate.forEach { (_, transactionItems) ->
+                val firstTx = transactionItems.first()
+                val date = firstTx.timestamp?.atZone(ZonedDateTime.now().zone) ?: ZonedDateTime.now()
+                historyItems.add(HistoryItem.Date(date, historyData.lastPrependedIds.contains(firstTx.txId)))
+                transactionItems.forEach { historyItems.add(HistoryItem.Transaction(it, historyData.lastPrependedIds.contains(it.txId))) }
+            }
             it.copy(
                 content = if (historyItems.isEmpty()) {
                     Content.Empty
@@ -317,6 +328,10 @@ class HistoryViewModel @Inject constructor(
                 loadMoreState = if (resetLoadingMoreState) null else it.loadMoreState
             )
         }
+    }
+
+    companion object {
+        private const val SCROLL_DELAY_AFTER_LOAD = 300L
     }
 }
 
@@ -333,7 +348,10 @@ data class State(
     val showFiltersSheet: Boolean = false,
     val filters: HistoryFilters = HistoryFilters(),
     val timeFilterItems: ImmutableList<Selectable<MonthFilter>> = persistentListOf(),
-    val loadMoreState: LoadingMoreState? = null
+    val loadMoreState: LoadingMoreState? = null,
+    val firstVisibleIndex: Int? = null,
+    val lastVisibleIndex: Int? = null,
+    val ignoreScrollEvents: Boolean = false
 ) : UiState {
 
     val historyData
@@ -341,6 +359,12 @@ data class State(
             is Content.Loaded -> content.historyData
             else -> null
         }
+
+    val shouldShowFiltersButton: Boolean
+        get() = content is Content.Loaded || filters.isAnyFilterSet
+
+    val shouldEnableUserInteraction: Boolean
+        get() = content !is Content.Loading && loadMoreState == null
 
     val historyItems
         get() = when (content) {
@@ -390,14 +414,14 @@ sealed interface HistoryItem {
     val dateTime: ZonedDateTime?
     val key: String
 
-    data class Date(val item: ZonedDateTime) : HistoryItem {
+    data class Date(val item: ZonedDateTime, val showAsPlaceholder: Boolean = false) : HistoryItem {
         override val dateTime: ZonedDateTime
             get() = item
 
         override val key: String = item.year.toString() + item.dayOfYear
     }
 
-    data class Transaction(val transactionItem: TransactionHistoryItem) : HistoryItem {
+    data class Transaction(val transactionItem: TransactionHistoryItem, val showAsPlaceholder: Boolean = false) : HistoryItem {
         override val dateTime: ZonedDateTime?
             get() = transactionItem.timestamp?.atZone(ZoneId.systemDefault())
 

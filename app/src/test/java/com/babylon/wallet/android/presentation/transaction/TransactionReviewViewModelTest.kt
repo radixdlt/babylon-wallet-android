@@ -23,7 +23,6 @@ import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCa
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
-import com.babylon.wallet.android.domain.usecases.assets.GetNFTDetailsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
@@ -111,7 +110,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
-    private val getNFTDetailsUseCase = mockk<GetNFTDetailsUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()
@@ -240,7 +238,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(
             SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, 50u)
         )
-        coEvery { getNFTDetailsUseCase(any(), any()) } returns Result.success(emptyList())
         coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
             Badge(address = "")
         )

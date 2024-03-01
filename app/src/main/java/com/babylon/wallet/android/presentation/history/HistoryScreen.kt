@@ -3,6 +3,9 @@
 package com.babylon.wallet.android.presentation.history
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,6 +26,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -76,8 +80,9 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.utils.dayMonthDateFull
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+
+private const val FIXED_LIST_ELEMENTS = 2
 
 @Composable
 fun HistoryScreen(
@@ -119,9 +124,8 @@ fun HistoryScreen(
             when (event) {
                 is HistoryEvent.OnTransactionItemClick -> context.openUrl(event.url)
                 is HistoryEvent.ScrollToItem -> {
-                    listState.scrollToItem(event.index, if (event.index == 0) 0 else accountHeaderHeight + stickyHeaderHeight)
+                    listState.scrollToItem(event.index, if (event.index <= 1) 0 else accountHeaderHeight + stickyHeaderHeight)
                 }
-
                 is HistoryEvent.ScrollToTimeFilter -> timeFilterScrollState.scrollToItem(event.index)
             }
         }
@@ -144,7 +148,7 @@ fun HistoryContent(
     onScrollEvent: (ScrollInfo) -> Unit,
     onTransactionTypeFilterSelected: (HistoryFilters.TransactionType?) -> Unit,
     onTransactionClassFilterSelected: (TransactionClass?) -> Unit,
-    onResourceFilterRemoved: (Resource) -> Unit,
+    onResourceFilterRemoved: (Resource?) -> Unit,
     listState: LazyListState,
     timeFilterScrollState: LazyListState,
     onAccountCardHeaderHeightChanged: (Int) -> Unit,
@@ -154,7 +158,7 @@ fun HistoryContent(
         skipPartiallyExpanded = true
     )
     SyncSheetState(sheetState = bottomSheetState, isSheetVisible = state.showFiltersSheet, onSheetClosed = { onShowFilters(false) })
-    MonitorListScroll(state = listState, fixedListElements = 2, onLoadMoreDown = {
+    MonitorListScroll(state = listState, fixedListElements = FIXED_LIST_ELEMENTS, onLoadMoreDown = {
         if (state.loadMoreState != null) return@MonitorListScroll
         onLoadMore(ScrollInfo.Direction.DOWN)
     }, onScrollEvent = {
@@ -173,14 +177,16 @@ fun HistoryContent(
                 windowInsets = WindowInsets.statusBars,
                 containerColor = RadixTheme.colors.defaultBackground,
                 actions = {
-                    IconButton(onClick = { onShowFilters(true) }, enabled = state.content !is Content.Empty) {
-                        Icon(
-                            painterResource(
-                                id = DSR.ic_filter_list
-                            ),
-                            tint = if (state.content is Content.Empty) RadixTheme.colors.gray3 else Color.Unspecified,
-                            contentDescription = null
-                        )
+                    AnimatedVisibility(visible = state.shouldShowFiltersButton, enter = fadeIn(), exit = fadeOut()) {
+                        IconButton(onClick = { onShowFilters(true) }) {
+                            Icon(
+                                painterResource(
+                                    id = DSR.ic_filter_list
+                                ),
+                                tint = Color.Unspecified,
+                                contentDescription = null
+                            )
+                        }
                     }
                 }
             )
@@ -191,7 +197,8 @@ fun HistoryContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(padding),
-            state = listState
+            state = listState,
+            userScrollEnabled = state.loadMoreState != LoadingMoreState.NewRange
         ) {
             state.accountWithAssets?.let {
                 item(key = it.account.address) {
@@ -202,7 +209,9 @@ fun HistoryContent(
                             .fillMaxWidth()
                             .heightIn(min = 50.dp)
                             .padding(
-                                horizontal = RadixTheme.dimensions.paddingMedium,
+                                start = RadixTheme.dimensions.paddingMedium,
+                                end = RadixTheme.dimensions.paddingMedium,
+                                bottom = RadixTheme.dimensions.paddingMedium
                             )
                             .onSizeChanged { size ->
                                 onAccountCardHeaderHeightChanged(size.height)
@@ -216,11 +225,12 @@ fun HistoryContent(
                         .fillMaxWidth()
                         .onSizeChanged { size ->
                             onStickyHeaderHeightChanged(size.height)
-                        }) {
+                        }
+                ) {
                     if (state.filters.isAnyFilterSet) {
                         FiltersStrip(
                             historyFilters = state.filters,
-                            userInteractionEnabled = state.content !is Content.Loading && state.loadMoreState == null,
+                            userInteractionEnabled = state.shouldEnableUserInteraction,
                             onTransactionTypeFilterRemoved = {
                                 onTransactionTypeFilterSelected(null)
                                 onShowResults()
@@ -229,8 +239,8 @@ fun HistoryContent(
                                 onTransactionClassFilterSelected(null)
                                 onShowResults()
                             },
-                            onResourceFilterRemoved = { resource ->
-                                onResourceFilterRemoved(resource)
+                            onResourceFilterRemoved = {
+                                onResourceFilterRemoved(null)
                                 onShowResults()
                             },
                             timeFilterScrollState = timeFilterScrollState
@@ -245,11 +255,6 @@ fun HistoryContent(
                     }
                 }
             }
-            if (state.loadMoreState == LoadingMoreState.Up) {
-                item(key = "loaderUp") {
-                    LoadingItemPlaceholder(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingMedium))
-                }
-            }
             when (val content = state.content) {
                 Content.Empty -> {
                     item {
@@ -258,7 +263,10 @@ fun HistoryContent(
                 }
 
                 is Content.Loaded -> {
-                    items(content.historyItems, key = { item -> item.key }) { item ->
+                    itemsIndexed(content.historyItems, key = { _, item -> item.key }) { index, item ->
+                        if (index == 0 && state.loadMoreState == LoadingMoreState.Up) {
+                            LoadingItemPlaceholder(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingMedium))
+                        }
                         when (item) {
                             is HistoryItem.Date -> {
                                 Text(
@@ -266,7 +274,9 @@ fun HistoryContent(
                                         .fillMaxWidth()
                                         .background(RadixTheme.colors.gray5)
                                         .padding(RadixTheme.dimensions.paddingMedium)
-                                        .radixPlaceholder(visible = state.loadMoreState == LoadingMoreState.NewRange),
+                                        .radixPlaceholder(
+                                            visible = state.loadMoreState == LoadingMoreState.NewRange || item.showAsPlaceholder
+                                        ),
                                     text = item.item.toInstant().dayMonthDateFull(),
                                     style = RadixTheme.typography.body2Header,
                                     color = RadixTheme.colors.gray2
@@ -277,7 +287,9 @@ fun HistoryContent(
                                 TransactionHistoryItem(
                                     modifier = Modifier
                                         .padding(horizontal = RadixTheme.dimensions.paddingMedium)
-                                        .radixPlaceholder(visible = state.loadMoreState == LoadingMoreState.NewRange)
+                                        .radixPlaceholder(
+                                            visible = state.loadMoreState == LoadingMoreState.NewRange || item.showAsPlaceholder
+                                        )
                                         .shadow(elevation = 6.dp, shape = RadixTheme.shapes.roundedRectMedium),
                                     transactionItem = item.transactionItem,
                                     onClick = {
@@ -372,7 +384,11 @@ private fun TimePicker(
             .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall),
         state = timeFilterState,
-        contentPadding = PaddingValues(RadixTheme.dimensions.paddingMedium),
+        contentPadding = PaddingValues(
+            start = RadixTheme.dimensions.paddingMedium,
+            end = RadixTheme.dimensions.paddingMedium,
+            bottom = RadixTheme.dimensions.paddingMedium
+        ),
         content = {
             items(timeFilterItems) { item ->
                 Text(
@@ -435,7 +451,7 @@ private fun MonitorListScroll(
     onScrollEvent: (ScrollInfo) -> Unit,
     onLoadMoreDown: () -> Unit,
     onLoadMoreUp: () -> Unit,
-    loadThreshold: Int = 5,
+    loadThreshold: Int = 6
 ) {
     var previousIndex by remember(state) { mutableIntStateOf(state.firstVisibleItemIndex) }
     var previousScrollOffset by remember(state) { mutableIntStateOf(state.firstVisibleItemScrollOffset) }
@@ -454,7 +470,11 @@ private fun MonitorListScroll(
     val loadMoreDown by remember(state) {
         derivedStateOf {
             val lastItem = state.layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
-            state.layoutInfo.totalItemsCount > fixedListElements && lastItem.index == state.layoutInfo.totalItemsCount - loadThreshold - 1
+            val threshold = state.layoutInfo.totalItemsCount - loadThreshold - 1
+            if (threshold <= fixedListElements) {
+                return@derivedStateOf false
+            }
+            state.layoutInfo.totalItemsCount > fixedListElements && lastItem.index >= threshold
         }
     }
     val loadMoreUp by remember(state) {
@@ -465,8 +485,8 @@ private fun MonitorListScroll(
                 } else {
                     it.index > fixedListElements - 1
                 }
-            }
-            state.layoutInfo.totalItemsCount > fixedListElements && firstItem?.index == fixedListElements + loadThreshold
+            } ?: return@derivedStateOf false
+            state.layoutInfo.totalItemsCount > fixedListElements && firstItem.index <= fixedListElements + loadThreshold
         }
     }
     val scrollInfo by remember(state) {
@@ -498,12 +518,12 @@ private fun MonitorListScroll(
     }
 
     LaunchedEffect(loadMoreDown) {
-        snapshotFlow { loadMoreDown }.filter { it }.collect {
+        if (loadMoreDown) {
             onLoadMoreDown()
         }
     }
     LaunchedEffect(loadMoreUp) {
-        snapshotFlow { loadMoreUp }.filter { it }.collect {
+        if (loadMoreUp) {
             onLoadMoreUp()
         }
     }
