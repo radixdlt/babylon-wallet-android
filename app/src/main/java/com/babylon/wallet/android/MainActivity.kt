@@ -38,6 +38,8 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var linkConnectionStatusObserver: LinkConnectionStatusObserver
 
+    // The actual ActionableAddressViewEntryPoint that is used in the app.
+    // During development we use a mock ActionableAddressViewEntryPoint in order to have previews.
     @Inject
     lateinit var actionableAddressViewEntryPoint: ActionableAddressViewEntryPoint
 
@@ -52,7 +54,7 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             RadixWalletTheme {
-                CompositionLocalProvider(LocalActionableAddressViewEntryPoint.provides(actionableAddressViewEntryPoint)) {
+                CompositionLocalProvider(LocalActionableAddressViewEntryPoint provides actionableAddressViewEntryPoint) {
                     val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsState(initial = true)
                     val devBannerState by remember(isDevBannerVisible) {
                         derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }

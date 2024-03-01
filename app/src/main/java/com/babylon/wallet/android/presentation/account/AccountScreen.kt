@@ -50,7 +50,6 @@ import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
@@ -58,6 +57,7 @@ import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -435,7 +435,7 @@ private fun HistoryButton(
 @Preview
 @Composable
 fun AccountContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         with(SampleDataProvider()) {
             AccountScreenContent(
                 state = AccountUiState(accountWithAssets = sampleAccountWithoutResources()),

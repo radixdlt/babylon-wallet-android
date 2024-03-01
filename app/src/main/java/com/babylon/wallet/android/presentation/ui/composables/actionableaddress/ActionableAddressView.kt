@@ -44,9 +44,9 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.core.content.getSystemService
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.VerifyAddressOnLedgerUseCase
 import com.babylon.wallet.android.presentation.model.ActionableAddress
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
 import com.babylon.wallet.android.utils.openUrl
@@ -70,8 +70,7 @@ fun ActionableAddressView(
     visitableInDashboard: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
-    iconColor: Color = textColor,
-    useCaseProvider: ActionableAddressViewEntryPointI = ActionableAddressViewEntryPointMock()
+    iconColor: Color = textColor
 ) {
     val actionableAddress = remember(address, truncateAddress, visitableInDashboard) {
         ActionableAddress(
@@ -82,6 +81,7 @@ fun ActionableAddressView(
     }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val useCaseProvider = LocalActionableAddressViewEntryPoint.current
 
     var actions: PopupActions? by remember(actionableAddress) {
         mutableStateOf(null)
@@ -416,7 +416,7 @@ private sealed interface OnAction {
 @Preview(showBackground = true)
 @Composable
 fun ActionableAddressViewPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         ActionableAddressView(address = "address")
     }
 }

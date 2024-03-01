@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.ui.composables.actionableaddress
 
 import android.content.Context
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.VerifyAddressOnLedgerUseCase
@@ -49,7 +51,7 @@ class ActionableAddressViewEntryPoint @Inject constructor(
     }
 }
 
-class ActionableAddressViewEntryPointMock : ActionableAddressViewEntryPointI {
+val actionableAddressViewEntryPointMock = object : ActionableAddressViewEntryPointI {
     override fun profileUseCase(): GetProfileUseCase {
         return fakeGetProfileUseCase()
     }
@@ -65,5 +67,15 @@ class ActionableAddressViewEntryPointMock : ActionableAddressViewEntryPointI {
 
 @Suppress("CompositionLocalAllowlist")
 val LocalActionableAddressViewEntryPoint = compositionLocalOf<ActionableAddressViewEntryPointI> {
-    ActionableAddressViewEntryPointMock()
+    error("No ActionableAddressViewEntryPoint provided")
+}
+
+@Composable
+fun ProvideMockActionableAddressViewEntryPoint(
+    entryPoint: ActionableAddressViewEntryPointI = actionableAddressViewEntryPointMock,
+    content: @Composable () -> Unit
+) {
+    CompositionLocalProvider(LocalActionableAddressViewEntryPoint provides entryPoint) {
+        content()
+    }
 }
