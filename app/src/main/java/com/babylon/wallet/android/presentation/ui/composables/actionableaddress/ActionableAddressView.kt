@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.ui.composables
+package com.babylon.wallet.android.presentation.ui.composables.actionableaddress
 
 import android.content.ClipData
 import android.content.Context
@@ -13,11 +13,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
-import androidx.compose.material.LocalTextStyle
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -36,6 +36,7 @@ import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -43,21 +44,18 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.core.content.getSystemService
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.VerifyAddressOnLedgerUseCase
 import com.babylon.wallet.android.presentation.model.ActionableAddress
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
+import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
 import com.babylon.wallet.android.utils.openUrl
-import dagger.hilt.EntryPoint
-import dagger.hilt.EntryPoints
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateways
 import timber.log.Timber
@@ -83,13 +81,10 @@ fun ActionableAddressView(
     }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val useCaseProvider = LocalActionableAddressViewEntryPoint.current
 
     var actions: PopupActions? by remember(actionableAddress) {
         mutableStateOf(null)
-    }
-
-    val useCaseProvider = remember(context) {
-        EntryPoints.get(context.applicationContext, ActionableAddressViewEntryPoint::class.java)
     }
 
     LaunchedEffect(actionableAddress) {
@@ -418,13 +413,10 @@ private sealed interface OnAction {
     }
 }
 
-@EntryPoint
-@InstallIn(SingletonComponent::class)
-private interface ActionableAddressViewEntryPoint {
-    fun profileUseCase(): GetProfileUseCase
-
-    fun verifyAddressOnLedgerUseCase(): VerifyAddressOnLedgerUseCase
-
-    @ApplicationScope
-    fun applicationScope(): CoroutineScope
+@Preview(showBackground = true)
+@Composable
+fun ActionableAddressViewPreview() {
+    RadixWalletPreviewTheme {
+        ActionableAddressView(address = "address")
+    }
 }

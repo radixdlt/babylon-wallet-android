@@ -452,6 +452,21 @@ class SampleDataProvider {
         )
     }
 
+    fun sampleAccountWithoutResources(
+        address: String = randomAddress()
+    ): AccountWithAssets {
+        return AccountWithAssets(
+            account = sampleAccount(address = address),
+            assets = Assets(
+                tokens = emptyList(),
+                nonFungibles = emptyList(),
+                poolUnits = emptyList(),
+                liquidStakeUnits = emptyList(),
+                stakeClaims = emptyList()
+            )
+        )
+    }
+
     fun sampleProfile(
         mnemonicWithPassphrase: MnemonicWithPassphrase = MnemonicWithPassphrase(
             mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",

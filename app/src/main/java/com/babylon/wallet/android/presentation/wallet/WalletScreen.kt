@@ -49,10 +49,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -334,11 +334,11 @@ private fun RadixBanner(
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun WalletContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         with(SampleDataProvider()) {
             WalletContent(
                 state = WalletUiState(
-                    accountsWithResources = listOf(sampleAccountWithResources(), sampleAccountWithResources()),
+                    accountsWithResources = listOf(sampleAccountWithoutResources(), sampleAccountWithoutResources()),
                     loading = false,
                     isBackupWarningVisible = true,
                     error = null

@@ -50,24 +50,21 @@ import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
-import com.babylon.wallet.android.presentation.ui.composables.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
@@ -438,21 +435,10 @@ private fun HistoryButton(
 @Preview
 @Composable
 fun AccountContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         with(SampleDataProvider()) {
             AccountScreenContent(
-                state = AccountUiState(
-                    accountWithAssets = AccountWithAssets(
-                        account = sampleAccount("acount_rdx_abcde"),
-                        assets = Assets(
-                            tokens = sampleFungibleResources().map { Token(it) },
-                            nonFungibles = listOf(),
-                            poolUnits = listOf(),
-                            liquidStakeUnits = emptyList(),
-                            stakeClaims = emptyList()
-                        ),
-                    )
-                ),
+                state = AccountUiState(accountWithAssets = sampleAccountWithoutResources()),
                 onAccountPreferenceClick = { _ -> },
                 onBackClick = {},
                 onRefresh = {},
