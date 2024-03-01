@@ -190,14 +190,22 @@ fun HistoryContent(
         skipPartiallyExpanded = true
     )
     SyncSheetState(sheetState = bottomSheetState, isSheetVisible = state.showFiltersSheet, onSheetClosed = { onShowFilters(false) })
-    MonitorListScroll(state = listState, fixedListElements = FIXED_LIST_ELEMENTS, onLoadMoreDown = {
-        if (state.loadMoreState != null) return@MonitorListScroll
-        onLoadMore(ScrollInfo.Direction.DOWN)
+    MonitorListScroll(state = listState, fixedListElements = FIXED_LIST_ELEMENTS, onLoadMore = { direction ->
+        when (direction) {
+            ScrollInfo.Direction.UP -> {
+                if (state.canLoadMoreUp) {
+                    onLoadMore(ScrollInfo.Direction.UP)
+                }
+            }
+
+            ScrollInfo.Direction.DOWN -> {
+                if (state.canLoadMoreDown) {
+                    onLoadMore(ScrollInfo.Direction.DOWN)
+                }
+            }
+        }
     }, onScrollEvent = {
         onScrollEvent(it)
-    }, onLoadMoreUp = {
-        if (state.loadMoreState != null) return@MonitorListScroll
-        onLoadMore(ScrollInfo.Direction.UP)
     })
     Scaffold(
         modifier = modifier.imePadding(),
@@ -502,8 +510,7 @@ private fun MonitorListScroll(
     state: LazyListState,
     fixedListElements: Int,
     onScrollEvent: (ScrollInfo) -> Unit,
-    onLoadMoreDown: () -> Unit,
-    onLoadMoreUp: () -> Unit,
+    onLoadMore: (ScrollInfo.Direction) -> Unit,
     loadThreshold: Int = 6
 ) {
     var previousIndex by remember(state) { mutableIntStateOf(state.firstVisibleItemIndex) }
@@ -572,12 +579,12 @@ private fun MonitorListScroll(
 
     LaunchedEffect(loadMoreDown) {
         if (loadMoreDown) {
-            onLoadMoreDown()
+            onLoadMore(ScrollInfo.Direction.DOWN)
         }
     }
     LaunchedEffect(loadMoreUp) {
         if (loadMoreUp) {
-            onLoadMoreUp()
+            onLoadMore(ScrollInfo.Direction.UP)
         }
     }
 }

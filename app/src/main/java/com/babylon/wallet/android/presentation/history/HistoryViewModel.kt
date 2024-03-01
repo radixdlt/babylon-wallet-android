@@ -189,7 +189,7 @@ class HistoryViewModel @Inject constructor(
     fun onLoadMore(direction: ScrollInfo.Direction) {
         when (direction) {
             ScrollInfo.Direction.UP -> {
-                if (_state.value.canLoadMoreUp.not() || _state.value.loadMoreState != null) {
+                if (_state.value.canLoadMoreUp.not()) {
                     Timber.d("History: Nothing to load at the top")
                     return
                 }
@@ -206,7 +206,7 @@ class HistoryViewModel @Inject constructor(
             }
 
             ScrollInfo.Direction.DOWN -> {
-                if (_state.value.canLoadMoreDown.not() || _state.value.loadMoreState != null) {
+                if (_state.value.canLoadMoreDown.not()) {
                     return
                 }
                 _state.update { it.copy(loadMoreState = LoadingMoreState.Down) }
@@ -371,10 +371,10 @@ data class State(
         get() = accountWithAssets?.assets?.knownNonFungibles.orEmpty()
 
     val canLoadMoreUp: Boolean
-        get() = content is Content.Loaded && content.historyData.prevCursorId != null
+        get() = content is Content.Loaded && loadMoreState == null && content.historyData.prevCursorId != null
 
     val canLoadMoreDown: Boolean
-        get() = content is Content.Loaded && content.historyData.nextCursorId != null
+        get() = content is Content.Loaded && loadMoreState == null && content.historyData.nextCursorId != null
 
     val filtersChanged: Boolean
         get() = filters != currentFilters
