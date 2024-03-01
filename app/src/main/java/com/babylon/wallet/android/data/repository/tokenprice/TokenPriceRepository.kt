@@ -47,18 +47,18 @@ class TokenPriceRepositoryImpl @Inject constructor(
 
     override suspend fun updateTokensPrices(): Result<Unit> = withContext(ioDispatcher) {
         runCatching {
-            val tokensPrices = tokenPriceApi.tokens()
+            tokenPriceApi.tokens()
                 .toResult(
                     mapError = { mapTokenPriceApiError(this) }
                 )
-                .getOrElse {
+                .onSuccess { tokensPrices ->
+                    tokenPriceDao.insertTokensPrice(
+                        tokensPrices = tokensPrices.asEntity()
+                    )
+                }.onFailure {
                     Timber.e("failed to fetch tokens prices with exception: ${it.message}")
-                    return@withContext Result.failure(it)
                 }
-
-            tokenPriceDao.insertTokensPrice(
-                tokensPrices = tokensPrices.asEntity()
-            )
+         Unit
         }
     }
 
