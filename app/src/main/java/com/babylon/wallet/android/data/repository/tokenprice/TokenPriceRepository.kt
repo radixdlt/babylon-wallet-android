@@ -58,7 +58,7 @@ class TokenPriceRepositoryImpl @Inject constructor(
                 }.onFailure {
                     Timber.e("failed to fetch tokens prices with exception: ${it.message}")
                 }
-         Unit
+            Unit
         }
     }
 
