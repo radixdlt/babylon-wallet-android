@@ -13,7 +13,7 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
     suspend operator fun invoke(accountsWithAssets: List<AccountWithAssets>): Map<AccountWithAssets, List<AssetPrice>> {
         tokenPriceRepository.updateTokensPrices()
 
-        val mapOfAccountWithAssetsAndPrices = accountsWithAssets.associateWith { accountWithAssets ->
+        val mapOfAccountsWithAssetsAndPrices = accountsWithAssets.associateWith { accountWithAssets ->
             val accountPrice = mutableMapOf<Asset, BigDecimal>()
 
             val tokenAddressesWithAmounts = accountWithAssets.assets
@@ -77,7 +77,7 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
             }
         }
 
-        return mapOfAccountWithAssetsAndPrices
+        return mapOfAccountsWithAssetsAndPrices
     }
 
     data class AssetPrice(
