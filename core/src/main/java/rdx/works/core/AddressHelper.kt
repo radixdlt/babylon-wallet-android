@@ -1,6 +1,5 @@
 package rdx.works.core
 
-import android.util.Log
 import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.NonFungibleLocalId
@@ -12,8 +11,6 @@ import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item.ID
 private typealias EngineAddress = com.radixdlt.ret.Address
 
 object AddressHelper {
-
-    private const val LOG_TAG = "AddressHelper"
 
     fun networkIdOrNull(fromAddress: String): Int? = fromAddress.toAddressOrNull()?.networkId()?.toInt()
 
@@ -71,10 +68,8 @@ object AddressHelper {
     ).addressString()
 
     private fun String.toAddressOrNull() = runCatching { EngineAddress(this) }
-        .onFailure { Log.w(LOG_TAG, it) }
         .getOrNull()
 
     private fun String.toNonFungibleGlobalId() = runCatching { NonFungibleGlobalId(this) }
-        .onFailure { Log.w(LOG_TAG, it) }
         .getOrNull()
 }
