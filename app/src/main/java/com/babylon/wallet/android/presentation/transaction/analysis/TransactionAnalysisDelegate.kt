@@ -66,7 +66,6 @@ class TransactionAnalysisDelegate @Inject constructor(
                     .executionSummary(
                         encodedReceipt = preview.encodedReceipt.decodeHex()
                     )
-                    .resolvePreview(notaryAndSigners)
                     .resolveFees(notaryAndSigners)
             }.mapCatching { transactionFees ->
                 val feePayerResult = searchFeePayersUseCase(
@@ -162,24 +161,11 @@ class TransactionAnalysisDelegate @Inject constructor(
         }
     }
 
-    private fun ExecutionSummary.resolveFees(notaryAndSigners: NotaryAndSigners) = TransactionFees(
-        nonContingentFeeLock = feeLocks.lock.asStr().toBigDecimal(),
-        networkExecution = feeSummary.executionCost.asStr().toBigDecimal(),
-        networkFinalization = feeSummary.finalizationCost.asStr().toBigDecimal(),
-        networkStorage = feeSummary.storageExpansionCost.asStr().toBigDecimal(),
-        royalties = feeSummary.royaltyCost.asStr().toBigDecimal(),
-        guaranteesCount = (_state.value.previewType as? PreviewType.Transfer)?.to?.guaranteesCount() ?: 0,
-        notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
-        includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet
-        signersCount = notaryAndSigners.signers.count()
-    ).let { fees ->
-        if (fees.defaultTransactionFee > BigDecimal.ZERO) {
-            // There will be a lock fee so update lock fee cost
-            fees.copy(includeLockFee = true)
-        } else {
-            fees
-        }
-    }
+    private fun ExecutionSummary.resolveFees(notaryAndSigners: NotaryAndSigners) = FeesResolver.resolve(
+        summary = this,
+        notaryAndSigners = notaryAndSigners,
+        previewType = _state.value.previewType
+    )
 
     private fun reportFailure(error: Throwable) {
         logger.w(error)

@@ -399,11 +399,15 @@ class SampleDataProvider {
         return sb.toString()
     }
 
-    fun samplePersona(personaAddress: String = "1", personaName: String = "Test Persona"): Network.Persona {
+    fun samplePersona(
+        personaAddress: String = "1",
+        personaName: String = "Test Persona",
+        networkId: Int = NetworkId.Nebunet.value
+    ): Network.Persona {
         return Network.Persona(
             address = personaAddress,
             displayName = personaName,
-            networkID = NetworkId.Nebunet.value,
+            networkID = networkId,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     transactionSigning = FactorInstance(

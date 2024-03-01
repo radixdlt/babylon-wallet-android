@@ -6,8 +6,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import javax.inject.Inject
 
 class SubmitTransactionUseCase @Inject constructor(
-    private val transactionRepository: TransactionRepository,
-    private val cache: HttpCache
+    private val transactionRepository: TransactionRepository
 ) {
 
     suspend operator fun invoke(
@@ -19,10 +18,6 @@ class SubmitTransactionUseCase @Inject constructor(
             notarizedTransaction = notarizedTransactionHex
         )
         return submitResult.getOrNull()?.let { result ->
-            // Invalidate all cached information stored, since a transaction may mutate
-            // some resource information
-            cache.invalidate()
-
             if (result.duplicate) {
                 Result.failure(
                     RadixWalletException.TransactionSubmitException.InvalidTXDuplicate(
