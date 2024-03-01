@@ -1,8 +1,6 @@
 package rdx.works.core.domain.resources
 
 import android.net.Uri
-import com.radixdlt.ret.NonFungibleLocalId
-import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import rdx.works.core.AddressHelper
@@ -19,7 +17,6 @@ import rdx.works.core.domain.resources.metadata.poolAddress
 import rdx.works.core.domain.resources.metadata.symbol
 import rdx.works.core.domain.resources.metadata.tags
 import rdx.works.core.domain.resources.metadata.validatorAddress
-import rdx.works.core.truncate
 import java.math.BigDecimal
 
 sealed class Resource {
@@ -239,70 +236,77 @@ sealed class Resource {
                 data class StringType(
                     private val id: String
                 ) : ID(), Comparable<StringType> {
-                    override val prefix: String = STRING_PREFIX
-                    override val suffix: String = STRING_SUFFIX
+                    override val prefix: String = PREFIX
+                    override val suffix: String = SUFFIX
 
                     override val displayable: String
                         get() = id
 
                     override fun compareTo(other: StringType): Int = other.id.compareTo(id)
+
+                    companion object {
+                        const val PREFIX = "<"
+                        const val SUFFIX = ">"
+                    }
                 }
 
                 data class IntegerType(
                     private val id: ULong
                 ) : ID(), Comparable<IntegerType> {
-                    override val prefix: String = INT_DELIMITER
-                    override val suffix: String = prefix
+                    override val prefix: String = PREFIX
+                    override val suffix: String = SUFFIX
 
                     override val displayable: String
                         get() = id.toString()
 
                     override fun compareTo(other: IntegerType): Int = other.id.compareTo(id)
+
+                    companion object {
+                        const val PREFIX = "#"
+                        const val SUFFIX = "#"
+                    }
                 }
 
                 data class BytesType(
                     private val id: String
                 ) : ID(), Comparable<BytesType> {
-                    override val prefix: String = BYTES_PREFIX
-                    override val suffix: String = BYTES_SUFFIX
+                    override val prefix: String = PREFIX
+                    override val suffix: String = SUFFIX
                     override val displayable: String
                         get() = id
 
                     override fun compareTo(other: BytesType): Int = other.id.compareTo(id)
+
+                    companion object {
+                        const val PREFIX = "["
+                        const val SUFFIX = "]"
+                    }
                 }
 
                 data class RUIDType(
                     private val id: String
                 ) : ID(), Comparable<RUIDType> {
-                    override val prefix: String = RUID_PREFIX
-                    override val suffix: String = RUID_SUFFIX
+                    override val prefix: String = PREFIX
+                    override val suffix: String = SUFFIX
                     override val displayable: String
                         get() = id
 
                     override fun compareTo(other: RUIDType): Int = other.id.compareTo(id)
+
+                    companion object {
+                        const val PREFIX = "{"
+                        const val SUFFIX = "}"
+                    }
                 }
 
                 companion object {
-                    private const val STRING_PREFIX = "<"
-                    private const val STRING_SUFFIX = ">"
-                    private const val INT_DELIMITER = "#"
-                    private const val BYTES_PREFIX = "["
-                    private const val BYTES_SUFFIX = "]"
-                    private const val RUID_PREFIX = "{"
-                    private const val RUID_SUFFIX = "}"
-
                     /**
                      * Infers the type of the [Item].[ID] from its surrounding delimiter
                      *
                      * More info https://docs-babylon.radixdlt.com/main/reference-materials/resource-addressing.html
                      * #_non_fungibles_individual_units_of_non_fungible_resources
                      */
-                    fun from(value: String): ID = when (val id = nonFungibleLocalIdFromStr(value)) {
-                        is NonFungibleLocalId.Integer -> IntegerType(id = id.value)
-                        is NonFungibleLocalId.Str -> StringType(id = id.value)
-                        is NonFungibleLocalId.Bytes -> BytesType(id = value.removeSurrounding(BYTES_PREFIX, BYTES_SUFFIX))
-                        is NonFungibleLocalId.Ruid -> RUIDType(id = value.removeSurrounding(RUID_PREFIX, RUID_SUFFIX))
-                    }
+                    fun from(value: String): ID = AddressHelper.localId(value)
                 }
             }
         }
@@ -316,6 +320,11 @@ sealed class Resource {
         private const val TAG_MAX_CHARS = 16
         private const val TAGS_MAX = 100
     }
+}
+
+private fun String.truncate(maxNumberOfCharacters: Int, addEllipsis: Boolean = true): String {
+    val ellipsis = if (addEllipsis && length > maxNumberOfCharacters) "…" else ""
+    return take(maxNumberOfCharacters) + ellipsis
 }
 
 object XrdResource {
