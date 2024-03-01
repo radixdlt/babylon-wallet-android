@@ -33,6 +33,7 @@ import org.junit.Test
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.BackupState
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -56,7 +57,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
     private val sampleProfile = profile(accounts = identifiedArrayListOf(account(address = "adr_1", name = "primary")))
     private val sampleXrdResource = Resource.FungibleResource(
-        resourceAddress = XrdResource.address(),
+        resourceAddress = XrdResource.address(networkId = Radix.Network.mainnet.id),
         ownedAmount = BigDecimal.TEN,
         metadata = listOf(
             Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = XrdResource.SYMBOL, valueType = MetadataType.String)

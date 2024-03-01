@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model
+package com.babylon.wallet.core.domain.resources
 
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.assets.AssetBehaviour
@@ -178,7 +178,7 @@ class ResourceTests {
     @Test
     fun `verify that xrd resource shows only supply flexible`() {
         val resource = fungibleResource(
-            address = XrdResource.address(),
+            address = XrdResource.address(networkId = 1),
             name = "Radix fungible token",
             symbol = "XRD"
         )
