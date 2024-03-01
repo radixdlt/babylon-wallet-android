@@ -7,7 +7,9 @@ import rdx.works.core.InstantGenerator
 
 @Serializable
 data class TokensAndLsusPricesResponse(
+    @SerialName(value = "tokens")
     val tokens: List<TokenPrice>,
+    @SerialName(value = "lsus")
     val lsus: List<LsuPrice>
 ) {
 
