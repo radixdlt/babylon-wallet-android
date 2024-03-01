@@ -1,7 +1,4 @@
 <network-security-config>
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">token-price-service.radixdlt.com</domain>
-    </domain-config>
     <debug-overrides>
         <trust-anchors>
             <!-- Trust user added CAs while debuggable only -->
