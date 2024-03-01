@@ -175,9 +175,11 @@ private fun ResourcesSection(
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Start
             )
-            TagContainer(modifier = Modifier
-                .padding(vertical = RadixTheme.dimensions.paddingSmall)
-                .animateContentSize()) {
+            TagContainer(
+                modifier = Modifier
+                    .padding(vertical = RadixTheme.dimensions.paddingSmall)
+                    .animateContentSize()
+            ) {
                 fungibles.take(
                     if (showingAllFungibles) {
                         fungibles.size
@@ -216,9 +218,11 @@ private fun ResourcesSection(
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Start
             )
-            TagContainer(modifier = Modifier
-                .padding(vertical = RadixTheme.dimensions.paddingSmall)
-                .animateContentSize()) {
+            TagContainer(
+                modifier = Modifier
+                    .padding(vertical = RadixTheme.dimensions.paddingSmall)
+                    .animateContentSize()
+            ) {
                 nonFungibles.take(
                     if (showingAllNonFungibleResource) {
                         nonFungibles.size

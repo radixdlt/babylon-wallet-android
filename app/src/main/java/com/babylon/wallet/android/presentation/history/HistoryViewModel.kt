@@ -236,23 +236,22 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun onScrollEvent(event: ScrollInfo) {
-        if (_state.value.ignoreScrollEvents) {
-            return
-        }
-        val items = _state.value.historyItems ?: return
-        val firstVisibleItemDate = event.firstVisible?.let { items.getOrNull(it) }?.dateTime ?: return
-        val lastVisibleItemDate = event.lastVisible?.let { items.getOrNull(it) }?.dateTime ?: return
-        _state.update { it.copy(firstVisibleIndex = event.firstVisible, lastVisibleIndex = event.lastVisible) }
-        when (event.direction) {
-            ScrollInfo.Direction.UP -> {
-                selectDate(firstVisibleItemDate)
-            }
+        if (_state.value.ignoreScrollEvents.not()) {
+            val items = _state.value.historyItems ?: return
+            val firstVisibleItemDate = event.firstVisible?.let { items.getOrNull(it) }?.dateTime ?: return
+            val lastVisibleItemDate = event.lastVisible?.let { items.getOrNull(it) }?.dateTime ?: return
+            _state.update { it.copy(firstVisibleIndex = event.firstVisible, lastVisibleIndex = event.lastVisible) }
+            when (event.direction) {
+                ScrollInfo.Direction.UP -> {
+                    selectDate(firstVisibleItemDate)
+                }
 
-            ScrollInfo.Direction.DOWN -> {
-                selectDate(lastVisibleItemDate)
-            }
+                ScrollInfo.Direction.DOWN -> {
+                    selectDate(lastVisibleItemDate)
+                }
 
-            else -> {}
+                else -> {}
+            }
         }
     }
 
