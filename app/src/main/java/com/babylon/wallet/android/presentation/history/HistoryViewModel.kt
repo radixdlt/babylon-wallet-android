@@ -139,9 +139,9 @@ class HistoryViewModel @Inject constructor(
 
     fun onTimeFilterSelected(timeFilterItem: MonthFilter) {
         val existingIndex = _state.value.historyItems?.indexOfFirst {
-            it is HistoryItem.Transaction && it.dateTime?.isBefore(timeFilterItem.date) == true
+            it.dateTime?.isBefore(timeFilterItem.date) == true
         }
-        val item = existingIndex?.let { _state.value.historyItems?.getOrNull(it) }
+        var item = existingIndex?.let { _state.value.historyItems?.getOrNull(it) }
         if (existingIndex == null || existingIndex == -1) {
             _state.update { it.copy(loadMoreState = LoadingMoreState.NewRange) }
             viewModelScope.launch {
@@ -154,8 +154,12 @@ class HistoryViewModel @Inject constructor(
                         it.dateTime?.isBefore(timeFilterItem.date) == true
                     }
                     if (scrollTo != null && scrollTo != -1) {
+                        item = _state.value.historyItems?.getOrNull(scrollTo)
                         delay(SCROLL_DELAY_AFTER_LOAD)
-                        sendEvent(HistoryEvent.ScrollToItem(scrollTo))
+                        blockScrollHandlingAndExecute {
+                            sendEvent(HistoryEvent.ScrollToItem(scrollTo))
+                            selectDate(item?.dateTime)
+                        }
                     }
                     _state.update { it.copy(loadMoreState = null) }
                 }
