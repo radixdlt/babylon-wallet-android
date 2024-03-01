@@ -22,8 +22,7 @@ data class TransactionHistoryData(
     val prevCursorId: String?,
     val nextCursorId: String?,
     val filters: HistoryFilters,
-    val items: List<TransactionHistoryItem>,
-    val lastPrependedIds: Set<String> = emptySet()
+    val items: List<TransactionHistoryItem>
 ) {
     val groupedByDate: Map<String, List<TransactionHistoryItem>>
         get() = items.groupBy {
@@ -34,16 +33,14 @@ data class TransactionHistoryData(
     fun append(items: List<TransactionHistoryItem>, nextCursorId: String?): TransactionHistoryData {
         return copy(
             nextCursorId = nextCursorId,
-            items = (this.items + items).distinctBy { it.txId }.sortedByDescending { it.timestamp },
-            lastPrependedIds = emptySet()
+            items = (this.items + items).distinctBy { it.txId }.sortedByDescending { it.timestamp }
         )
     }
 
     fun prepend(items: List<TransactionHistoryItem>, prevCursorId: String?): TransactionHistoryData {
         return copy(
             prevCursorId = prevCursorId,
-            items = (items + this.items).distinctBy { it.txId }.sortedByDescending { it.timestamp },
-            lastPrependedIds = items.map { it.txId }.toSet()
+            items = (items + this.items).distinctBy { it.txId }.sortedByDescending { it.timestamp }
         )
     }
 }

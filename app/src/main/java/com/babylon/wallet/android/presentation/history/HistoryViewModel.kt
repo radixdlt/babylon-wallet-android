@@ -195,24 +195,11 @@ class HistoryViewModel @Inject constructor(
                 }
                 Timber.d("History: Loading data at the top, cursor: ${_state.value.historyData?.prevCursorId}")
                 _state.update { it.copy(loadMoreState = LoadingMoreState.Up) }
-                val currentFirstTxId =
-                    _state.value.historyItems?.filterIsInstance<HistoryItem.Transaction>()?.firstOrNull()?.transactionItem?.txId
                 viewModelScope.launch {
                     _state.value.historyData?.let { currentData ->
                         getAccountHistoryUseCase.loadMore(args.accountAddress, currentData, prepend = true)
                             .onSuccess { historyData ->
-                                if (_state.value.firstVisibleIndex == 0) {
-                                    Timber.d("History: Will execute scroll to item after prepend")
-                                    updateStateWith(historyData, resetLoadingMoreState = false)
-                                    val scrollTo = _state.value.historyItems?.indexOfFirst {
-                                        it.key == currentFirstTxId
-                                    }
-                                    if (scrollTo != null && scrollTo != -1) {
-                                        delay(SCROLL_DELAY_AFTER_LOAD) // delay so the list is updated
-                                        sendEvent(HistoryEvent.ScrollToItem(scrollTo))
-                                    }
-                                }
-                                updateStateWith(historyData.copy(lastPrependedIds = emptySet()))
+                                updateStateWith(historyData)
                             }
                     }
                 }
@@ -312,8 +299,8 @@ class HistoryViewModel @Inject constructor(
             historyData.groupedByDate.forEach { (_, transactionItems) ->
                 val firstTx = transactionItems.first()
                 val date = firstTx.timestamp?.atZone(ZonedDateTime.now().zone) ?: ZonedDateTime.now()
-                historyItems.add(HistoryItem.Date(date, historyData.lastPrependedIds.contains(firstTx.txId)))
-                transactionItems.forEach { historyItems.add(HistoryItem.Transaction(it, historyData.lastPrependedIds.contains(it.txId))) }
+                historyItems.add(HistoryItem.Date(date))
+                transactionItems.forEach { historyItems.add(HistoryItem.Transaction(it)) }
             }
             it.copy(
                 content = if (historyItems.isEmpty()) {
@@ -336,7 +323,7 @@ class HistoryViewModel @Inject constructor(
 
 internal sealed interface HistoryEvent : OneOffEvent {
     data class OnTransactionItemClick(val url: String) : HistoryEvent
-    data class ScrollToItem(val index: Int) : HistoryEvent
+    data class ScrollToItem(val index: Int, val loadingOffset: Boolean = false) : HistoryEvent
     data class ScrollToTimeFilter(val index: Int) : HistoryEvent
 }
 
@@ -413,14 +400,14 @@ sealed interface HistoryItem {
     val dateTime: ZonedDateTime?
     val key: String
 
-    data class Date(val item: ZonedDateTime, val showAsPlaceholder: Boolean = false) : HistoryItem {
+    data class Date(val item: ZonedDateTime) : HistoryItem {
         override val dateTime: ZonedDateTime
             get() = item
 
         override val key: String = item.year.toString() + item.dayOfYear
     }
 
-    data class Transaction(val transactionItem: TransactionHistoryItem, val showAsPlaceholder: Boolean = false) : HistoryItem {
+    data class Transaction(val transactionItem: TransactionHistoryItem) : HistoryItem {
         override val dateTime: ZonedDateTime?
             get() = transactionItem.timestamp?.atZone(ZoneId.systemDefault())
 
