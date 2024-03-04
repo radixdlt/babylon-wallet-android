@@ -9,14 +9,9 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
-import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
+import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import rdx.works.core.domain.assets.ValidatorDetail
-import rdx.works.profile.ret.TransactionManifestData
-import rdx.works.core.domain.resources.Badge
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
@@ -69,16 +64,17 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Badge
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.logNonFatalException
 import rdx.works.core.toIdentifiedArrayList
@@ -157,18 +153,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     )
     private val sampleTxId = "txId1"
     private val sampleRequestId = "requestId1"
-    private val sampleRequest = mockk<MessageFromDataChannel.IncomingRequest.TransactionRequest>().apply {
-        every { remoteConnectorId } returns "remoteConnectorId"
-        every { requestId } returns sampleRequestId
-        every { blockUntilComplete } returns false
-        every { transactionType } returns com.babylon.wallet.android.data.dapp.model.TransactionType.Generic
-        every { requestMetadata } returns MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            networkId = Radix.Gateway.nebunet.network.id,
-            origin = "https://test.origin.com",
-            dAppDefinitionAddress = "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa",
-            isInternal = false
-        )
-    }
     private val sampleTransactionManifestData = mockk<TransactionManifestData>().apply {
         every { networkId } returns Radix.Gateway.nebunet.network.id
         every { instructions } returns ""
@@ -179,6 +163,18 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             identities = emptyList()
         )
     }
+    private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionRequest(
+        remoteConnectorId = "remoteConnectorId",
+        requestId = sampleRequestId,
+        transactionManifestData = sampleTransactionManifestData,
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+            networkId = Radix.Gateway.nebunet.network.id,
+            origin = "https://test.origin.com",
+            dAppDefinitionAddress = "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa",
+            isInternal = false
+        ),
+        transactionType = com.babylon.wallet.android.data.dapp.model.TransactionType.Generic
+    )
     private val fromAccount = account(
         address = "account_tdx_19jd32jd3928jd3892jd329",
         name = "From Account"
@@ -245,10 +241,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             Badge(address = "")
         )
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(
-            TransactionSigner.Notarization(txIdHash = "sampleTxId", notarizedTransactionIntentHex = "",  endEpoch = 5U)
+            TransactionSigner.Notarization(txIdHash = sampleTxId, notarizedTransactionIntentHex = "",  endEpoch = 50u)
         )
-        coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(FeePayerSearchResult("feePayer"))
         coEvery { signTransactionUseCase.signingState } returns emptyFlow()
+        coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers("feePayer"))
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0L)
         coEvery { transactionRepository.getTransactionPreview(any()) } returns Result.success(previewResponse())
         coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
@@ -268,9 +264,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             )
         } returns Result.success(Unit)
         coEvery { appEventBus.sendEvent(any()) } returns Unit
-        every { sampleRequest.isInternal } returns false
-        every { sampleRequest.id } returns sampleRequestId
-        every { sampleRequest.transactionManifestData } returns sampleTransactionManifestData
         incomingRequestRepository.add(sampleRequest)
         every { getProfileUseCase() } returns flowOf(profile(accounts = (identifiedArrayListOf(fromAccount) + otherAccounts).toIdentifiedArrayList()))
         coEvery { resolveNotaryAndSignersUseCase(any(), any(), any()) } returns Result.success(
@@ -279,6 +272,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 PrivateKey.EddsaEd25519.newRandom()
             )
         )
+        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary
         coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
         coEvery { resolveAssetsFromAddressUseCase(any(), any()) } returns Result.success(listOf())
     }
@@ -312,7 +306,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             getDAppsUseCase = getDAppsUseCase
         )
     }
-    @Ignore("Not working")
+//    @Ignore("Not working")
     @Test
     fun `transaction approval success`() = runTest {
         val vm = vm.value
@@ -348,7 +342,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         assertTrue(vm.state.value.isTransactionDismissed)
     }
 
-    @Ignore("Not working")
+//    @Ignore("Not working")
     @Test
     fun `transaction approval sign and submit error`() = runTest {
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.failure(

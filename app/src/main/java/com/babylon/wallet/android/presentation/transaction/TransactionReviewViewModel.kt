@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
-import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
+import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
@@ -173,12 +173,12 @@ class TransactionReviewViewModel @Inject constructor(
     fun onViewAdvancedModeClick() = fees.onViewAdvancedModeClick()
 
     fun onPayerSelected(selectedFeePayer: Network.Account) {
-        val feePayerSearchResult = state.value.feePayerSearchResult
+        val feePayerSearchResult = state.value.feePayers
         val transactionFees = state.value.transactionFees
         val signersCount = state.value.defaultSignersCount
 
         val updatedFeePayerResult = feePayerSearchResult?.copy(
-            feePayerAddress = selectedFeePayer.address,
+            selected = selectedFeePayer.address,
             candidates = feePayerSearchResult.candidates
         )
 
@@ -195,7 +195,7 @@ class TransactionReviewViewModel @Inject constructor(
                 transactionFees = transactionFees.copy(
                     signersCount = updatedSignersCount
                 ),
-                feePayerSearchResult = updatedFeePayerResult,
+                feePayers = updatedFeePayerResult,
                 sheetState = customizeFeesSheet.copy(
                     feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
                         feePayerCandidate = selectedFeePayer
@@ -231,7 +231,7 @@ class TransactionReviewViewModel @Inject constructor(
         val showRawTransactionWarning: Boolean = false,
         val previewType: PreviewType,
         val transactionFees: TransactionFees = TransactionFees(),
-        val feePayerSearchResult: FeePayerSearchResult? = null,
+        val feePayers: TransactionFeePayers? = null,
         val defaultSignersCount: Int = 0,
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
@@ -263,7 +263,7 @@ class TransactionReviewViewModel @Inject constructor(
         fun noCandidateSelectedState(): State = copy(
             sheetState = Sheet.CustomizeFees(
                 feePayerMode = Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected(
-                    candidates = feePayerSearchResult?.candidates.orEmpty()
+                    candidates = feePayers?.candidates.orEmpty()
                 ),
                 feesMode = latestFeesMode
             )
@@ -273,7 +273,7 @@ class TransactionReviewViewModel @Inject constructor(
             transactionFees = transactionFees,
             sheetState = Sheet.CustomizeFees(
                 feePayerMode = Sheet.CustomizeFees.FeePayerMode.SelectFeePayer(
-                    candidates = feePayerSearchResult?.candidates.orEmpty()
+                    candidates = feePayers?.candidates.orEmpty()
                 ),
                 feesMode = latestFeesMode
             )
@@ -316,14 +316,14 @@ class TransactionReviewViewModel @Inject constructor(
             get() = previewType !is PreviewType.None && !isBalanceInsufficientToPayTheFee
 
         val noFeePayerSelected: Boolean
-            get() = feePayerSearchResult?.feePayerAddress == null
+            get() = feePayers?.selected == null
 
         val isBalanceInsufficientToPayTheFee: Boolean
             get() {
-                if (feePayerSearchResult == null) return true
-                val candidateAddress = feePayerSearchResult.feePayerAddress ?: return true
+                if (feePayers == null) return true
+                val candidateAddress = feePayers.selected ?: return true
 
-                val xrdInCandidateAccount = feePayerSearchResult.candidates.find {
+                val xrdInCandidateAccount = feePayers.candidates.find {
                     it.account.address == candidateAddress
                 }?.xrdAmount ?: BigDecimal.ZERO
 
@@ -385,11 +385,11 @@ class TransactionReviewViewModel @Inject constructor(
                     ) : FeePayerMode
 
                     data class NoFeePayerSelected(
-                        val candidates: List<FeePayerSearchResult.FeePayerCandidate>
+                        val candidates: List<TransactionFeePayers.FeePayerCandidate>
                     ) : FeePayerMode
 
                     data class SelectFeePayer(
-                        val candidates: List<FeePayerSearchResult.FeePayerCandidate>
+                        val candidates: List<TransactionFeePayers.FeePayerCandidate>
                     ) : FeePayerMode
                 }
 

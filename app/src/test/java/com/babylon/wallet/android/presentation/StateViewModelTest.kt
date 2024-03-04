@@ -7,9 +7,9 @@ import org.junit.Before
 import org.junit.Rule
 
 @OptIn(ExperimentalCoroutinesApi::class)
-abstract class StateViewModelTest<T : ViewModel> {
+abstract class StateViewModelTest<T : ViewModel>(testDispatcherRule: TestDispatcherRule = TestDispatcherRule()) {
     @get:Rule
-    val coroutineRule = TestDispatcherRule()
+    val coroutineRule = testDispatcherRule
 
     protected lateinit var vm: Lazy<T>
 

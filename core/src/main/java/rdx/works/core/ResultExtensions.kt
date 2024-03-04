@@ -4,7 +4,11 @@ inline fun <FirstResult, SecondResult> Result<FirstResult>.then(
     other: (FirstResult) -> Result<SecondResult>
 ): Result<SecondResult> = fold(
     onSuccess = { receivedValue ->
-        other(receivedValue)
+        try {
+            other(receivedValue)
+        } catch (exception: Exception) {
+            Result.failure(exception)
+        }
     },
     onFailure = {
         Result.failure(it)

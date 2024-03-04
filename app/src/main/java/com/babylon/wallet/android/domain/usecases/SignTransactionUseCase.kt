@@ -96,11 +96,12 @@ class SignTransactionUseCase @Inject constructor(
         val feePayerAddress: String? = null
     ) {
 
-        val manifestWithLockFee: TransactionManifestData = if (feePayerAddress == null) {
-            manifest
-        } else {
-            manifest.addLockFee(feePayerAddress, lockFee)
-        }
+        val manifestWithLockFee: TransactionManifestData
+            get() = if (feePayerAddress == null) {
+                manifest
+            } else {
+                manifest.addLockFee(feePayerAddress, lockFee)
+            }
     }
 
     /**

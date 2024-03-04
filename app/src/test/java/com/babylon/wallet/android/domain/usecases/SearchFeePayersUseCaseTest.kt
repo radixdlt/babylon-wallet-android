@@ -2,7 +2,7 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.TransactionConfig
-import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
+import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
@@ -44,11 +44,11 @@ class SearchFeePayersUseCaseTest {
             val result = useCase(manifestData, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()).getOrThrow()
 
             assertEquals(
-                FeePayerSearchResult(
-                    feePayerAddress = account1.address,
+                TransactionFeePayers(
+                    selected = account1.address,
                     candidates = listOf(
-                        FeePayerSearchResult.FeePayerCandidate(account1, BigDecimal(100)),
-                        FeePayerSearchResult.FeePayerCandidate(account2, BigDecimal.ZERO)
+                        TransactionFeePayers.FeePayerCandidate(account1, BigDecimal(100)),
+                        TransactionFeePayers.FeePayerCandidate(account2, BigDecimal.ZERO)
                     )
                 ),
                 result
@@ -63,11 +63,11 @@ class SearchFeePayersUseCaseTest {
             val result = useCase(manifestData, BigDecimal(200)).getOrThrow()
 
             assertEquals(
-                FeePayerSearchResult(
-                    feePayerAddress = null,
+                TransactionFeePayers(
+                    selected = null,
                     candidates = listOf(
-                        FeePayerSearchResult.FeePayerCandidate(account1, BigDecimal(100)),
-                        FeePayerSearchResult.FeePayerCandidate(account2, BigDecimal.ZERO)
+                        TransactionFeePayers.FeePayerCandidate(account1, BigDecimal(100)),
+                        TransactionFeePayers.FeePayerCandidate(account2, BigDecimal.ZERO)
                     )
                 ),
                 result

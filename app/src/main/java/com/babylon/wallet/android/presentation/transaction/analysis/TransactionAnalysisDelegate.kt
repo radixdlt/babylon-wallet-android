@@ -40,45 +40,40 @@ class TransactionAnalysisDelegate @Inject constructor(
         val manifestData = _state.value.requestNonNull.transactionManifestData.also {
             logger.v(it.instructions)
         }
-        startAnalysis(manifestData).onFailure { error ->
-            reportFailure(error)
-        }
+        startAnalysis(manifestData)
     }
 
-    private suspend fun startAnalysis(
-        manifestData: TransactionManifestData
-    ): Result<Unit> = runCatching {
-        val entitiesRequiringAuth = manifestData.entitiesRequiringAuth()
-        resolveNotaryAndSignersUseCase(
-            accountsRequiringAuth = entitiesRequiringAuth.accounts,
-            personasRequiringAuth = entitiesRequiringAuth.identities,
-            notary = _state.value.ephemeralNotaryPrivateKey
-        ).then { notaryAndSigners ->
+    private suspend fun startAnalysis(manifestData: TransactionManifestData) {
+        runCatching {
+            manifestData.entitiesRequiringAuth()
+        }.then { entitiesRequiringAuth ->
+            resolveNotaryAndSignersUseCase(
+                accountsRequiringAuth = entitiesRequiringAuth.accounts,
+                personasRequiringAuth = entitiesRequiringAuth.identities,
+                notary = _state.value.ephemeralNotaryPrivateKey
+            )
+        }.then { notaryAndSigners ->
             getTransactionPreview(
                 manifestData = manifestData,
                 notaryAndSigners = notaryAndSigners
             ).mapCatching { preview ->
                 logger.v(preview.encodedReceipt)
                 manifestData
-                    .executionSummary(
-                        encodedReceipt = preview.encodedReceipt.decodeHex()
-                    )
+                    .executionSummary(encodedReceipt = preview.encodedReceipt.decodeHex())
                     .resolvePreview(notaryAndSigners)
                     .resolveFees(notaryAndSigners)
-            }.mapCatching { transactionFees ->
-                val feePayerResult = searchFeePayersUseCase(
-                    manifestData = manifestData,
-                    lockFee = transactionFees.defaultTransactionFee
-                ).getOrThrow()
-
-                _state.update {
-                    it.copy(
-                        isNetworkFeeLoading = false,
-                        transactionFees = transactionFees,
-                        feePayerSearchResult = feePayerResult
-                    )
-                }
             }
+        }.then { transactionFees ->
+            _state.update { it.copy(transactionFees = transactionFees) }
+
+            searchFeePayersUseCase(
+                manifestData = manifestData,
+                lockFee = transactionFees.defaultTransactionFee
+            )
+        }.onSuccess { feePayers ->
+            _state.update { it.copy(isNetworkFeeLoading = false, feePayers = feePayers) }
+        }.onFailure { error ->
+            reportFailure(error)
         }
     }
 
