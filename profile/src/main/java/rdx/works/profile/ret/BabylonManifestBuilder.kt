@@ -142,7 +142,7 @@ internal class BabylonManifestBuilder {
         accountAddress: String,
         accountDefaultDepositRule: ThirdPartyDeposits.DepositRule
     ): BabylonManifestBuilder {
-        val value = when(accountDefaultDepositRule) {
+        val value = when (accountDefaultDepositRule) {
             ThirdPartyDeposits.DepositRule.AcceptAll -> ManifestBuilderValue.EnumValue(0u, emptyList())
             ThirdPartyDeposits.DepositRule.DenyAll -> ManifestBuilderValue.EnumValue(1u, emptyList())
             ThirdPartyDeposits.DepositRule.AcceptKnown -> ManifestBuilderValue.EnumValue(2u, emptyList())

@@ -7,15 +7,15 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import kotlinx.coroutines.flow.first
+import rdx.works.core.AddressHelper
+import rdx.works.core.domain.DApp
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.security
-import rdx.works.core.AddressHelper
 import javax.inject.Inject
 
 class VerifyDAppUseCase @Inject constructor(

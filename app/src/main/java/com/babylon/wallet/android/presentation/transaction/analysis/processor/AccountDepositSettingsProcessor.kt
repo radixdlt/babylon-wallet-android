@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
-import rdx.works.core.domain.assets.Asset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -10,6 +9,7 @@ import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourcePreference
 import com.radixdlt.ret.ResourcePreferenceUpdate
+import rdx.works.core.domain.assets.Asset
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import rdx.works.profile.domain.GetProfileUseCase

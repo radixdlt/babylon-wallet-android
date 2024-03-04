@@ -3,13 +3,6 @@ package com.babylon.wallet.android.presentation.status.assets
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
-import rdx.works.core.domain.assets.Asset
-import rdx.works.core.domain.assets.AssetPrice
-import rdx.works.core.domain.assets.LiquidStakeUnit
-import rdx.works.core.domain.assets.PoolUnit
-import rdx.works.core.domain.assets.StakeClaim
-import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
@@ -20,6 +13,12 @@ import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
@@ -50,9 +49,11 @@ class AssetDialogViewModel @Inject constructor(
                 },
                 nonFungibleIds = when (args) {
                     is AssetDialogArgs.Fungible -> mapOf()
-                    is AssetDialogArgs.NFT -> mapOf(args.resourceAddress to args.localId?.let {
-                        setOf(Resource.NonFungibleResource.Item.ID.from(it))
-                    }.orEmpty())
+                    is AssetDialogArgs.NFT -> mapOf(
+                        args.resourceAddress to args.localId?.let {
+                            setOf(Resource.NonFungibleResource.Item.ID.from(it))
+                        }.orEmpty()
+                    )
                 }
             ).mapCatching { assets ->
                 when (val asset = assets.first()) {

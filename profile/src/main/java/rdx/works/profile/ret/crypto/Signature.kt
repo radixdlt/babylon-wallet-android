@@ -7,7 +7,7 @@ sealed interface Signature {
 
     class Ed25519(
         value: ByteArray
-    ): Signature {
+    ) : Signature {
 
         private val signature = EngineSignatureEd25519(value)
 
@@ -30,7 +30,7 @@ sealed interface Signature {
 
     class Secp256k1(
         value: ByteArray
-    ): Signature {
+    ) : Signature {
 
         private val signature = EngineSignatureSecp256k1(value)
 
@@ -50,5 +50,4 @@ sealed interface Signature {
             return signature.hashCode()
         }
     }
-
 }

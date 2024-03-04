@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import rdx.works.core.AddressHelper
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.factorSourceId
@@ -21,7 +22,6 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.core.AddressHelper
 import javax.inject.Inject
 
 class GetProfileUseCase @Inject constructor(private val profileRepository: ProfileRepository) {

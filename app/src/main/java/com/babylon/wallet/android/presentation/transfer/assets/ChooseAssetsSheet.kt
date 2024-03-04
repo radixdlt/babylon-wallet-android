@@ -19,7 +19,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAssets
@@ -29,6 +28,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewData
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
+import rdx.works.core.domain.resources.Resource
 
 @Suppress("CyclomaticComplexMethod")
 @Composable

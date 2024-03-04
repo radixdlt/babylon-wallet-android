@@ -2,11 +2,6 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import rdx.works.core.domain.assets.Asset
-import rdx.works.core.domain.assets.LiquidStakeUnit
-import rdx.works.core.domain.assets.StakeClaim
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -14,6 +9,11 @@ import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
 import kotlinx.coroutines.flow.first
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -70,7 +70,8 @@ class ValidatorClaimProcessor @Inject constructor(
                 val resourceAddress = resourceIndicator.resourceAddress
                 val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No asset found")
                 if (asset is StakeClaim) {
-                    val nonFungibleIndicator = resourceIndicator as? ResourceIndicator.NonFungible ?: error("No non-fungible resource claim found")
+                    val nonFungibleIndicator = resourceIndicator as? ResourceIndicator.NonFungible
+                        ?: error("No non-fungible resource claim found")
                     val items = nonFungibleIndicator.nonFungibleLocalIds.map { localId ->
                         val claimAmount = stakeClaimNfts.find {
                             resourceAddress == it.collectionAddress && localId == it.localId

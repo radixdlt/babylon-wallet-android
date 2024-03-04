@@ -14,7 +14,6 @@ private typealias EnginePublicKeySecp256k1 = com.radixdlt.ret.PublicKey.Secp256k
 
 sealed interface PublicKey {
 
-
     class Ed25519(
         value: ByteArray
     ) : PublicKey {
@@ -44,7 +43,6 @@ sealed interface PublicKey {
         override fun hashCode(): Int {
             return engineKey.hashCode()
         }
-
     }
 
     class Secp256k1(
@@ -73,8 +71,6 @@ sealed interface PublicKey {
         override fun hashCode(): Int {
             return engineKey.hashCode()
         }
-
-
     }
 
     companion object {

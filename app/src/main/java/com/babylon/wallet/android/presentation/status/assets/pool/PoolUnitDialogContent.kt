@@ -25,8 +25,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import rdx.works.core.domain.assets.PoolUnit
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
@@ -39,6 +37,7 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBal
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import kotlinx.collections.immutable.toImmutableMap
 import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.assets.PoolUnit
 import java.math.BigDecimal
 
 @Composable

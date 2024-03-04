@@ -8,9 +8,9 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
+import rdx.works.core.AddressHelper
 import rdx.works.core.domain.assets.AssetBehaviours
 import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.AddressHelper
 import java.math.BigDecimal
 
 fun StateEntityDetailsResponseItemDetails.totalSupply(): String? {

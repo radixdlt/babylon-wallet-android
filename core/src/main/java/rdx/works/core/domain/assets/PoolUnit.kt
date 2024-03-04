@@ -1,8 +1,8 @@
 package rdx.works.core.domain.assets
 
+import rdx.works.core.divideWithDivisibility
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
-import rdx.works.core.divideWithDivisibility
 import java.math.BigDecimal
 
 data class PoolUnit(

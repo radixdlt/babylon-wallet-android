@@ -18,7 +18,6 @@ import kotlin.UInt
 import kotlin.ULong
 import kotlin.UShort
 import kotlin.getOrElse
-import kotlin.getOrThrow
 import kotlin.runCatching
 import kotlin.toUByte
 
@@ -51,14 +50,15 @@ interface TransactionSigner {
         suspend fun notarise(signedIntentHash: ByteArray): Result<Signature>
     }
 
-    sealed class Error: Throwable() {
-        data class Sign(override val cause: Throwable? = null): Error()
-        data class Prepare(override val cause: Throwable? = null): Error()
+    sealed class Error : Throwable() {
+        data class Sign(override val cause: Throwable? = null) : Error()
+        data class Prepare(override val cause: Throwable? = null) : Error()
     }
 }
 
-class TransactionSignerImpl @Inject constructor(): TransactionSigner {
+class TransactionSignerImpl @Inject constructor() : TransactionSigner {
 
+    @Suppress("ReturnCount", "LongMethod")
     override suspend fun notarise(
         request: TransactionSigner.Request,
         signatureGatherer: TransactionSigner.SignatureGatherer
@@ -148,5 +148,4 @@ class TransactionSignerImpl @Inject constructor(): TransactionSigner {
             )
         )
     }
-
 }

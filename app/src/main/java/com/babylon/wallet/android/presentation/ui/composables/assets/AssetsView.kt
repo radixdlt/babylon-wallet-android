@@ -16,10 +16,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
+import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -27,13 +28,12 @@ import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
-import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
-import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
 import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
 

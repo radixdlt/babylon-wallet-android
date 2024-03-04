@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation.model
 
-import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.truncatedHash
+import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.derivation.model.NetworkId
 

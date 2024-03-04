@@ -6,7 +6,6 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -21,14 +20,15 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.AddressHelper
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
-import rdx.works.core.AddressHelper
 import rdx.works.profile.ret.ManifestPoet
 import javax.inject.Inject
 

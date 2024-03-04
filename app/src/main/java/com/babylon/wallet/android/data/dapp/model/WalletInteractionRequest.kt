@@ -2,10 +2,10 @@ package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import com.radixdlt.hex.decode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.ret.transaction.TransactionManifestData.TransactionMessage
 
 @Serializable

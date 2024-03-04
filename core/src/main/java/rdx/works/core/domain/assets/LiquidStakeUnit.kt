@@ -1,8 +1,8 @@
 package rdx.works.core.domain.assets
 
 import android.net.Uri
-import rdx.works.core.domain.resources.Resource
 import rdx.works.core.divideWithDivisibility
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.multiplyWithDivisibility
 import java.math.BigDecimal
 

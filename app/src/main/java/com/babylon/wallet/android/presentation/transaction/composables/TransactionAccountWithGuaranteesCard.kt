@@ -37,13 +37,13 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Owned
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.resources.Resource
 import java.math.BigDecimal
 
 @Composable

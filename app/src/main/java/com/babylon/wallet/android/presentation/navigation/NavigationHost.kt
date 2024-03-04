@@ -11,7 +11,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import rdx.works.core.domain.resources.XrdResource
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKey
 import com.babylon.wallet.android.presentation.account.AccountScreen
@@ -74,8 +73,9 @@ import com.babylon.wallet.android.presentation.transaction.transactionReviewScre
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import kotlinx.coroutines.flow.StateFlow
-import rdx.works.profile.domain.backup.BackupType
 import rdx.works.core.AddressHelper
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.profile.domain.backup.BackupType
 
 @Suppress("CyclomaticComplexMethod")
 @Composable

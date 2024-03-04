@@ -11,12 +11,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
@@ -28,6 +24,10 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.persistentListOf
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 
 @Composable
 fun OneTimeChooseAccountsScreen(

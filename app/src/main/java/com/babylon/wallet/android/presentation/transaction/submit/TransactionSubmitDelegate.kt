@@ -48,6 +48,7 @@ class TransactionSubmitDelegate @Inject constructor(
 
     private var approvalJob: Job? = null
 
+    @Suppress("SwallowedException")
     fun onSubmit(
         signTransactionUseCase: SignTransactionUseCase,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean

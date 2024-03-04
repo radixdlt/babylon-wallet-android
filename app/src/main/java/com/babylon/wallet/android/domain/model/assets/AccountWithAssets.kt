@@ -14,4 +14,3 @@ data class AccountWithAssets(
     val isDappDefinitionAccountType: Boolean
         get() = details?.accountType == AccountType.DAPP_DEFINITION
 }
-

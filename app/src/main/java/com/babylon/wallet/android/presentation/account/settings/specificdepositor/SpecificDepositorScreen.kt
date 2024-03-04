@@ -47,7 +47,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.UnknownDepositRulesStateInfo
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
@@ -65,6 +64,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.resources.Resource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

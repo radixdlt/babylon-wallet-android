@@ -2,8 +2,8 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.model.DAppWithResources
-import rdx.works.core.domain.resources.Resource
 import rdx.works.core.AddressHelper
+import rdx.works.core.domain.resources.Resource
 import javax.inject.Inject
 
 class GetDAppWithResourcesUseCase @Inject constructor(

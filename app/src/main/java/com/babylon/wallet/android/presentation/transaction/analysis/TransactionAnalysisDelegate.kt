@@ -15,8 +15,6 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionErrorMessage
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
-import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
-import com.babylon.wallet.android.presentation.transaction.guaranteesCount
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.ExecutionSummary
 import kotlinx.coroutines.flow.update
@@ -25,7 +23,6 @@ import rdx.works.core.decodeHex
 import rdx.works.core.then
 import rdx.works.profile.ret.transaction.TransactionManifestData
 import timber.log.Timber
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -66,6 +63,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                     .executionSummary(
                         encodedReceipt = preview.encodedReceipt.decodeHex()
                     )
+                    .resolvePreview(notaryAndSigners)
                     .resolveFees(notaryAndSigners)
             }.mapCatching { transactionFees ->
                 val feePayerResult = searchFeePayersUseCase(
@@ -116,7 +114,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                 if (preview.receipt.isFailed) {
                     val errorMessage = preview.receipt.errorMessage.orEmpty()
                     val isFailureDueToDepositRules = errorMessage.contains("AccountError(DepositIsDisallowed") ||
-                            errorMessage.contains("AccountError(NotAllBucketsCouldBeDeposited")
+                        errorMessage.contains("AccountError(NotAllBucketsCouldBeDeposited")
                     if (isFailureDueToDepositRules) {
                         Result.failure(RadixWalletException.PrepareTransactionException.ReceivingAccountDoesNotAllowDeposits)
                     } else {

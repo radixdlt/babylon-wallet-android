@@ -33,7 +33,6 @@ object ManifestPoet {
         .accountTryDepositEntireWorktopOrAbort(toAddress = toAddress)
         .buildSafely(AddressHelper.networkId(toAddress))
 
-
     fun buildTransfer(
         fromAccount: Network.Account,
         depositFungibles: List<FungibleTransfer>,
