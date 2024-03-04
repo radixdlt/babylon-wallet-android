@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.lifecycle.SavedStateHandle
+import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.gateway.generated.models.CoreApiTransactionReceipt
@@ -13,20 +14,20 @@ import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.fakes.fakeProfileDataSource
 import com.babylon.wallet.android.mockdata.createProfile
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.transaction.vectors.requestMetadata
 import com.babylon.wallet.android.presentation.transaction.vectors.sampleManifest
 import com.babylon.wallet.android.presentation.transaction.vectors.testViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Ignore
 import org.junit.Rule
@@ -46,7 +47,9 @@ import java.util.Locale
 import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<TransactionReviewViewModel>() {
+internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<TransactionReviewViewModel>(
+    testDispatcherRule = TestDispatcherRule(dispatcher = UnconfinedTestDispatcher())
+) {
 
     @get:Rule
     val defaultLocaleTestRule = DefaultLocaleRule()
@@ -97,38 +100,38 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     fun `given transaction id, when this id does not exist in the queue, then dismiss the transaction`() = runTest {
         every { incomingRequestRepository.getTransactionWriteRequest(transactionId) } returns null
 
-        val viewModel = vm.value
-        advanceUntilIdle()
-
-        assertTrue("The transaction should be dismissed, but didn't", viewModel.state.value.isTransactionDismissed)
+        vm.value.state.test {
+            assertTrue("The transaction should be dismissed, but didn't", awaitItem().isTransactionDismissed)
+        }
     }
 
-    @Ignore("Not ready")
+    @Ignore("Not ready yet")
     @Test
     fun `transaction approval success`() = runTest {
         mockManifestInput(manifestData = simpleXRDTransfer(testProfile))
         coEvery { stateRepository.getOwnedXRD(testProfile.networks.first().accounts) } returns Result.success(
             testProfile.networks.first().accounts.associateWith { BigDecimal.TEN }
         )
-
-        vm.value
-        advanceUntilIdle()
-
         val notarisation = TransactionSigner.Notarization(txIdHash = "tx_id", notarizedTransactionIntentHex = "intent_hash", endEpoch = 0u)
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(notarisation)
         coEvery { transactionRepository.submitTransaction(any()) } returns Result.success(TransactionSubmitResponse(duplicate = false))
-        vm.value.onPayerSelected(selectedFeePayer = testProfile.networks.first().accounts.first())
-        advanceUntilIdle()
 
-        vm.value.approveTransaction { true }
-        advanceUntilIdle()
 
-        coVerify(exactly = 1) {
-            dAppMessenger.sendTransactionWriteResponseSuccess(
-                remoteConnectorId = "remoteConnectorId",
-                requestId = transactionId,
-                txId = notarisation.txIdHash
-            )
+        vm.value.state.test {
+            println("---------> ${awaitItem()}")
+
+            //vm.value.onPayerSelected(selectedFeePayer = testProfile.networks.first().accounts.first())
+            //println("---------> ${awaitItem()}")
+            //ensureAllEventsConsumed()
+            //vm.value.approveTransaction { true }
+
+//            coVerify(exactly = 1) {
+//                dAppMessenger.sendTransactionWriteResponseSuccess(
+//                    remoteConnectorId = "remoteConnectorId",
+//                    requestId = transactionId,
+//                    txId = notarisation.txIdHash
+//                )
+//            }
         }
     }
 
@@ -149,7 +152,9 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
             requestId = transactionId,
             transactionManifestData = manifestData,
             requestMetadata = requestMetadata(manifestData = manifestData)
-        )
+        ).also {
+            println(it.transactionManifestData.instructions)
+        }
         coEvery { incomingRequestRepository.getTransactionWriteRequest(transactionId) } returns transactionRequest
     }
 
@@ -165,5 +170,4 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         ),
         depositNFTs = emptyList()
     ).getOrThrow()
-
 }
