@@ -1,15 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
-import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import rdx.works.core.domain.assets.Asset
-import rdx.works.core.domain.assets.LiquidStakeUnit
-import rdx.works.core.domain.assets.StakeClaim
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -19,6 +11,14 @@ import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import kotlinx.coroutines.flow.first
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork

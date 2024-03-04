@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import androidx.lifecycle.viewModelScope
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -12,6 +11,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.DApp
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import javax.inject.Inject
 

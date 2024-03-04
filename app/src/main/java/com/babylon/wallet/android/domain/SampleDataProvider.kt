@@ -2,30 +2,28 @@
 
 package com.babylon.wallet.android.domain
 
-import rdx.works.core.domain.resources.ExplicitMetadataKey
-import rdx.works.profile.ret.transaction.TransactionVersion
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import rdx.works.core.domain.assets.Assets
-import rdx.works.core.domain.assets.LiquidStakeUnit
-import rdx.works.core.domain.assets.PoolUnit
-import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.assets.ValidatorDetail
-import rdx.works.core.domain.resources.Pool
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.radixdlt.extensions.removeLeadingZero
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Header
@@ -53,7 +51,9 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.TestData
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.ret.transaction.TransactionManifestData.TransactionMessage
+import rdx.works.profile.ret.transaction.TransactionVersion
 import java.math.BigDecimal
 
 class SampleDataProvider {

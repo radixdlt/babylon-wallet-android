@@ -4,8 +4,8 @@ package rdx.works.core.domain.resources.metadata
 
 import android.net.Uri
 import androidx.core.net.toUri
-import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.AddressHelper
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import java.math.BigDecimal
 
 private fun List<Metadata>.findPrimitive(key: ExplicitMetadataKey, type: MetadataType): Metadata.Primitive? = find {

@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import rdx.works.core.domain.assets.ValidatorDetail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import rdx.works.core.domain.assets.ValidatorDetail
 
 @Composable
 fun ValidatorDetailsItem(validator: ValidatorDetail, modifier: Modifier = Modifier, iconSize: Dp = 24.dp) {

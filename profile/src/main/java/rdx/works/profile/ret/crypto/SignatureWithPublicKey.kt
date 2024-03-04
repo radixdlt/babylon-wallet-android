@@ -17,7 +17,7 @@ sealed interface SignatureWithPublicKey {
     class Ed25519(
         signature: ByteArray,
         publicKey: ByteArray
-    ): SignatureWithPublicKey {
+    ) : SignatureWithPublicKey {
 
         private val engineKey = EngineSignatureWithPublicKeyEd25519(signature = signature, publicKey = publicKey)
 
@@ -41,13 +41,11 @@ sealed interface SignatureWithPublicKey {
         override fun hashCode(): Int {
             return engineKey.hashCode()
         }
-
-
     }
 
     class Secp256k1(
         signature: ByteArray
-    ): SignatureWithPublicKey {
+    ) : SignatureWithPublicKey {
 
         private val engineKey = EngineSignatureWithPublicKeySecp256k1(signature = signature)
 
@@ -72,6 +70,7 @@ sealed interface SignatureWithPublicKey {
          *   actual message and not a hash of the message.
          * @return The public key associated with the signature
          */
+        @Suppress("MagicNumber")
         fun publicKey(message: ByteArray): ByteArray {
             // Extracting the v, r, and s parameters from the 65-byte long signature.
             val signatureBytes: ByteArray = signature
@@ -109,8 +108,5 @@ sealed interface SignatureWithPublicKey {
         override fun hashCode(): Int {
             return engineKey.hashCode()
         }
-
-
     }
-
 }

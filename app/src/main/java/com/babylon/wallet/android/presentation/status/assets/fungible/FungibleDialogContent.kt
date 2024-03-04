@@ -37,6 +37,8 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.AddressR
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.isXrd
 import java.math.BigDecimal
 
 @Composable

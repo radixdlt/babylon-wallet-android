@@ -10,6 +10,7 @@ import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item.ID
 
 private typealias EngineAddress = com.radixdlt.ret.Address
 
+@Suppress("TooManyFunctions")
 object AddressHelper {
 
     fun networkIdOrNull(fromAddress: String): Int? = fromAddress.toAddressOrNull()?.networkId()?.toInt()
@@ -24,8 +25,8 @@ object AddressHelper {
         val entityType = address.toAddressOrNull()?.entityType()
 
         return entityType == EntityType.GLOBAL_ONE_RESOURCE_POOL ||
-                entityType == EntityType.GLOBAL_TWO_RESOURCE_POOL ||
-                entityType == EntityType.GLOBAL_MULTI_RESOURCE_POOL
+            entityType == EntityType.GLOBAL_TWO_RESOURCE_POOL ||
+            entityType == EntityType.GLOBAL_MULTI_RESOURCE_POOL
     }
 
     fun isValidator(address: String): Boolean {

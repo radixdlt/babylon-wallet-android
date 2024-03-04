@@ -31,5 +31,4 @@ class ResolveNotaryAndSignersUseCase @Inject constructor(
             ephemeralNotaryPrivateKey = notary
         )
     }
-
 }

@@ -9,12 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.ui.composables.assets.strokeLine
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.collections.immutable.toPersistentList
+import rdx.works.core.domain.resources.Resource
 
 @Composable
 fun CommonTransferContent(

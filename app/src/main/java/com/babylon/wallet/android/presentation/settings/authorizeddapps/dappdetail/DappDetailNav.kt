@@ -11,8 +11,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
-import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.ROUTE_EDIT_PERSONA
+import rdx.works.core.domain.resources.Resource
 
 @VisibleForTesting
 internal const val ARG_DAPP_ADDRESS = "dapp_definition_address"
