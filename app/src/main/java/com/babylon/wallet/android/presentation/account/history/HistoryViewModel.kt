@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.history
+package com.babylon.wallet.android.presentation.account.history
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -9,9 +9,9 @@ import com.babylon.wallet.android.domain.model.TransactionHistoryData
 import com.babylon.wallet.android.domain.model.TransactionHistoryItem
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.usecases.assets.GetAccountFirstTransactionDateUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetAccountHistoryUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.UpdateAccountFirstTransactionDateUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -40,12 +40,12 @@ import java.time.ZonedDateTime
 import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 
-@Suppress("LongParameterList", "TooManyFunctions")
+@Suppress("TooManyFunctions")
 @HiltViewModel
 class HistoryViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val getAccountHistoryUseCase: GetAccountHistoryUseCase,
-    private val getAccountFirstTransactionDateUseCase: GetAccountFirstTransactionDateUseCase,
+    private val updateAccountFirstTransactionDateUseCase: UpdateAccountFirstTransactionDateUseCase,
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<State>(), OneOffEventHandler<HistoryEvent> by OneOffEventHandlerImpl() {
@@ -70,7 +70,7 @@ class HistoryViewModel @Inject constructor(
                         )
                     }
                     if (accountWithAssets.details?.firstTransactionDate == null) {
-                        getAccountFirstTransactionDateUseCase(args.accountAddress)
+                        updateAccountFirstTransactionDateUseCase(args.accountAddress)
                     } else {
                         computeTimeFilters(accountWithAssets.details.firstTransactionDate)
                     }
@@ -84,26 +84,36 @@ class HistoryViewModel @Inject constructor(
         viewModelScope.launch {
             getAccountHistoryUseCase.getHistory(args.accountAddress, _state.value.filters).onSuccess { historyData ->
                 updateStateWith(historyData)
-            }.onFailure {}
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        uiMessage = UiMessage.ErrorMessage(error = error),
+                        isRefreshing = false
+                    )
+                }
+            }
         }
     }
 
     @Suppress("MagicNumber")
     private fun computeTimeFilters(firstTransaction: Instant) {
-        val result = mutableListOf<MonthFilter>()
+        val result = mutableListOf<State.MonthFilter>()
         val now = ZonedDateTime.now()
-        var firstTransactionDate = ZonedDateTime.ofInstant(firstTransaction, now.zone)
-        while (firstTransactionDate.isBefore(now)) {
-            val temp = firstTransactionDate.with(TemporalAdjusters.lastDayOfMonth())
-            var anchor = ZonedDateTime.of(temp.year, temp.monthValue, temp.dayOfMonth, 23, 59, 59, 999, now.zone)
-            if (anchor.isAfter(now)) anchor = now
+        var rangeStart = ZonedDateTime.ofInstant(firstTransaction, now.zone)
+        while (rangeStart.isBefore(now)) {
+            val temp = rangeStart.with(TemporalAdjusters.lastDayOfMonth())
+            var rangeEnd = ZonedDateTime.of(temp.year, temp.monthValue, temp.dayOfMonth, 23, 59, 59, 999, now.zone)
+            if (rangeEnd.isAfter(now)) rangeEnd = now
             result.add(
-                MonthFilter(
-                    anchor.toMonthString().uppercase(),
-                    anchor
+                State.MonthFilter(
+                    rangeEnd.toMonthString().uppercase(),
+                    rangeStart,
+                    rangeEnd
                 )
             )
-            firstTransactionDate = firstTransactionDate.plusMonths(1)
+            var newDate = rangeStart.plusMonths(1)
+            newDate = ZonedDateTime.of(newDate.year, newDate.monthValue, 1, 0, 0, 0, 0, now.zone)
+            rangeStart = newDate
         }
         _state.update { state ->
             state.copy(
@@ -118,8 +128,13 @@ class HistoryViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
+    fun onRefresh() {
+        _state.update { it.copy(isRefreshing = true, content = State.Content.Loading) }
+        loadHistory()
+    }
+
     fun onShowFiltersDialog(visible: Boolean) {
-        _state.update { it.copy(showFiltersSheet = visible) }
+        _state.update { it.copy(shouldShowFiltersSheet = visible) }
     }
 
     fun onClearAllFilters() {
@@ -133,25 +148,26 @@ class HistoryViewModel @Inject constructor(
             Timber.d("History: Filters are the same, skipping load")
             return
         }
-        _state.update { it.copy(showFiltersSheet = false, content = Content.Loading) }
+        _state.update { it.copy(shouldShowFiltersSheet = false, content = State.Content.Loading) }
         loadHistory()
     }
 
-    fun onTimeFilterSelected(timeFilterItem: MonthFilter) {
+    fun onTimeFilterSelected(timeFilterItem: State.MonthFilter) {
         val existingIndex = _state.value.historyItems?.indexOfFirst {
-            it.dateTime?.isBefore(timeFilterItem.date) == true
+            it.dateTime?.isAfter(timeFilterItem.start) == true &&
+                    it.dateTime?.isBefore(timeFilterItem.end) == true
         }
         var item = existingIndex?.let { _state.value.historyItems?.getOrNull(it) }
         if (existingIndex == null || existingIndex == -1) {
-            _state.update { it.copy(loadMoreState = LoadingMoreState.NewRange) }
+            _state.update { it.copy(loadMoreState = State.LoadingMoreState.NewRange, areScrollEventsIgnored = true) }
             viewModelScope.launch {
                 getAccountHistoryUseCase.getHistoryChunk(
                     args.accountAddress,
-                    _state.value.filters.copy(start = timeFilterItem.date)
+                    _state.value.filters.copy(start = timeFilterItem.end)
                 ).onSuccess { historyData ->
                     updateStateWith(historyData, false)
                     val scrollTo = _state.value.historyItems?.indexOfFirst {
-                        it.dateTime?.isBefore(timeFilterItem.date) == true
+                        it.dateTime?.isBefore(timeFilterItem.end) == true
                     }
                     if (scrollTo != null && scrollTo != -1) {
                         item = _state.value.historyItems?.getOrNull(scrollTo)
@@ -161,7 +177,15 @@ class HistoryViewModel @Inject constructor(
                             selectDate(item?.dateTime)
                         }
                     }
-                    _state.update { it.copy(loadMoreState = null) }
+                    _state.update { it.copy(loadMoreState = null, areScrollEventsIgnored = false) }
+                }.onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            loadMoreState = null,
+                            areScrollEventsIgnored = false,
+                            uiMessage = UiMessage.ErrorMessage(error = error)
+                        )
+                    }
                 }
             }
         } else {
@@ -175,10 +199,10 @@ class HistoryViewModel @Inject constructor(
     }
 
     private suspend fun blockScrollHandlingAndExecute(block: suspend () -> Unit) {
-        _state.update { it.copy(ignoreScrollEvents = true) }
+        _state.update { it.copy(areScrollEventsIgnored = true) }
         block()
         delay(SCROLL_DELAY_AFTER_LOAD)
-        _state.update { it.copy(ignoreScrollEvents = false) }
+        _state.update { it.copy(areScrollEventsIgnored = false) }
     }
 
     fun onOpenTransactionDetails(txId: String) {
@@ -198,12 +222,14 @@ class HistoryViewModel @Inject constructor(
                     return
                 }
                 Timber.d("History: Loading data at the top, cursor: ${_state.value.historyData?.prevCursorId}")
-                _state.update { it.copy(loadMoreState = LoadingMoreState.Up) }
+                _state.update { it.copy(loadMoreState = State.LoadingMoreState.Up) }
                 viewModelScope.launch {
                     _state.value.historyData?.let { currentData ->
                         getAccountHistoryUseCase.loadMore(args.accountAddress, currentData, prepend = true)
                             .onSuccess { historyData ->
                                 updateStateWith(historyData)
+                            }.onFailure { error ->
+                                _state.update { it.copy(loadMoreState = null, uiMessage = UiMessage.ErrorMessage(error)) }
                             }
                     }
                 }
@@ -213,12 +239,14 @@ class HistoryViewModel @Inject constructor(
                 if (_state.value.canLoadMoreDown.not()) {
                     return
                 }
-                _state.update { it.copy(loadMoreState = LoadingMoreState.Down) }
+                _state.update { it.copy(loadMoreState = State.LoadingMoreState.Down) }
                 viewModelScope.launch {
                     _state.value.historyData?.let { currentData ->
                         getAccountHistoryUseCase.loadMore(args.accountAddress, currentData)
                             .onSuccess { historyData ->
                                 updateStateWith(historyData)
+                            }.onFailure { error ->
+                                _state.update { it.copy(loadMoreState = null, uiMessage = UiMessage.ErrorMessage(error)) }
                             }
                     }
                 }
@@ -227,7 +255,7 @@ class HistoryViewModel @Inject constructor(
     }
 
     fun onScrollEvent(event: ScrollInfo) {
-        if (_state.value.ignoreScrollEvents.not()) {
+        if (_state.value.areScrollEventsIgnored.not()) {
             val items = _state.value.historyItems ?: return
             val firstVisibleItemDate = event.firstVisible?.let { items.getOrNull(it) }?.dateTime ?: return
             val lastVisibleItemDate = event.lastVisible?.let { items.getOrNull(it) }?.dateTime ?: return
@@ -277,7 +305,7 @@ class HistoryViewModel @Inject constructor(
         val selectedDate = date ?: return
         var scrollToIndex = -1
         _state.update { state ->
-            val toUpdate = state.timeFilterItems.firstOrNull { selectedDate.isBefore(it.data.date) || it.data.date.isEqual(date) }
+            val toUpdate = state.timeFilterItems.firstOrNull { selectedDate.isBefore(it.data.end) || it.data.end.isEqual(date) }
                 ?: return@update state
             val updateItems = state.timeFilterItems.mapIndexed { index, filter ->
                 if (filter.data == toUpdate.data) {
@@ -308,14 +336,15 @@ class HistoryViewModel @Inject constructor(
             }
             it.copy(
                 content = if (historyItems.isEmpty()) {
-                    Content.Empty
+                    State.Content.Empty
                 } else {
-                    Content.Loaded(
+                    State.Content.Loaded(
                         historyData = historyData,
                         historyItems = historyItems.toPersistentList()
                     )
                 },
-                loadMoreState = if (resetLoadingMoreState) null else it.loadMoreState
+                loadMoreState = if (resetLoadingMoreState) null else it.loadMoreState,
+                isRefreshing = false
             )
         }
     }
@@ -335,13 +364,14 @@ data class State(
     val accountWithAssets: AccountWithAssets? = null,
     val content: Content = Content.Loading,
     val uiMessage: UiMessage? = null,
-    val showFiltersSheet: Boolean = false,
+    val shouldShowFiltersSheet: Boolean = false,
     val filters: HistoryFilters = HistoryFilters(),
     val timeFilterItems: ImmutableList<Selectable<MonthFilter>> = persistentListOf(),
     val loadMoreState: LoadingMoreState? = null,
     val firstVisibleIndex: Int? = null,
     val lastVisibleIndex: Int? = null,
-    val ignoreScrollEvents: Boolean = false
+    val areScrollEventsIgnored: Boolean = false,
+    val isRefreshing: Boolean = false
 ) : UiState {
 
     val historyData
@@ -382,22 +412,23 @@ data class State(
 
     val filtersChanged: Boolean
         get() = filters != currentFilters
+
+    sealed class Content {
+        data object Loading : Content()
+        data object Empty : Content()
+        data class Loaded(
+            val historyData: TransactionHistoryData,
+            val historyItems: ImmutableList<HistoryItem>
+        ) : Content()
+    }
+
+    enum class LoadingMoreState {
+        Up, Down, NewRange
+    }
+
+    data class MonthFilter(val month: String, val start: ZonedDateTime, val end: ZonedDateTime)
 }
 
-sealed class Content {
-    data object Loading : Content()
-    data object Empty : Content()
-    data class Loaded(
-        val historyData: TransactionHistoryData,
-        val historyItems: ImmutableList<HistoryItem>
-    ) : Content()
-}
-
-enum class LoadingMoreState {
-    Up, Down, NewRange
-}
-
-data class MonthFilter(val month: String, val date: ZonedDateTime)
 
 sealed interface HistoryItem {
 

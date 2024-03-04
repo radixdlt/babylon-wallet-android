@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalLayoutApi::class)
 
-package com.babylon.wallet.android.presentation.history.composables
+package com.babylon.wallet.android.presentation.account.composable
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -43,7 +43,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.presentation.history.State
+import com.babylon.wallet.android.presentation.account.history.State
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -108,7 +108,7 @@ fun FiltersDialog(
                 TagContainer {
                     HistoryFilters.TransactionType.entries.forEach { entry ->
                         val selected = state.filters.transactionType == entry
-                        SingleTag(selected = selected, text = entry.label(), leadingIcon = {
+                        HistoryFilterTag(selected = selected, text = entry.label(), leadingIcon = {
                             Icon(painter = painterResource(id = entry.icon()), contentDescription = null, tint = Color.Unspecified)
                         }, onClick = {
                             onTransactionTypeFilterSelected(entry)
@@ -127,7 +127,7 @@ fun FiltersDialog(
                 TagContainer {
                     TransactionClass.entries.forEach { entry ->
                         val selected = state.filters.transactionClass == entry
-                        SingleTag(selected = selected, text = entry.description(), onClick = {
+                        HistoryFilterTag(selected = selected, text = entry.description(), onClick = {
                             onTransactionClassFilterSelected(entry)
                         }, onCloseClick = {
                             onTransactionClassFilterSelected(null)
@@ -188,7 +188,7 @@ private fun ResourcesSection(
                     }
                 ).forEach { fungible ->
                     val selected = state.filters.resource?.resourceAddress == fungible.resourceAddress
-                    SingleTag(
+                    HistoryFilterTag(
                         selected = selected,
                         text = fungible.displayTitle.ifEmpty { fungible.resourceAddress.truncatedHash() },
                         onClick = {
@@ -231,7 +231,7 @@ private fun ResourcesSection(
                     }
                 ).forEach { nonFungible ->
                     val selected = state.filters.resource?.resourceAddress == nonFungible.resourceAddress
-                    SingleTag(
+                    HistoryFilterTag(
                         selected = selected,
                         text = nonFungible.name.ifEmpty { nonFungible.resourceAddress.truncatedHash() },
                         onClick = {

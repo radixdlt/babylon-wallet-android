@@ -8,7 +8,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StreamTransactio
 import com.babylon.wallet.android.data.gateway.generated.models.StreamTransactionsResponse
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionDetailsOptIns
 import com.babylon.wallet.android.data.repository.toResult
-import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
+import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.toManifestClass
@@ -25,7 +25,7 @@ interface StreamRepository {
         stateVersion: Long? = null
     ): Result<StreamTransactionsResponse>
 
-    suspend fun getAccountFirstTransaction(accountAddress: String): Result<StreamTransactionsResponse>
+    suspend fun updateAccountFirstTransactionDate(accountAddress: String): Result<StreamTransactionsResponse>
 
     companion object {
         const val PAGE_SIZE = 20
@@ -34,7 +34,7 @@ interface StreamRepository {
 
 class StreamRepositoryImpl @Inject constructor(
     private val streamApi: StreamApi,
-    @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
+    @IoDispatcher private val dispatcher: CoroutineDispatcher,
 ) : StreamRepository {
     override suspend fun getAccountHistory(
         accountAddress: String,
@@ -50,7 +50,7 @@ class StreamRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAccountFirstTransaction(accountAddress: String): Result<StreamTransactionsResponse> {
+    override suspend fun updateAccountFirstTransactionDate(accountAddress: String): Result<StreamTransactionsResponse> {
         return withContext(dispatcher) {
             runCatching {
                 streamApi.streamTransactions(

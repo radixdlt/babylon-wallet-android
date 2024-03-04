@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.history.composables
+package com.babylon.wallet.android.presentation.account.composable
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,7 +20,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 
 @Composable
-fun SingleTag(
+fun HistoryFilterTag(
     modifier: Modifier = Modifier,
     selected: Boolean,
     text: String,

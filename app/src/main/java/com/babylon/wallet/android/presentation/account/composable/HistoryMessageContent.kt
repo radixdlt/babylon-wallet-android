@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.history.composables
+package com.babylon.wallet.android.presentation.account.composable
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth

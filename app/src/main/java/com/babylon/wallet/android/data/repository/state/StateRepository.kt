@@ -352,21 +352,23 @@ class StateRepositoryImpl @Inject constructor(
         resourceAddress: String,
         localIds: Set<String>
     ): Result<List<Resource.NonFungibleResource.Item>> = withContext(dispatcher) {
-        val cachedItems = stateDao.getNFTDetails(resourceAddress, localIds, resourcesCacheValidity())
+        runCatching {
+            val cachedItems = stateDao.getNFTDetails(resourceAddress, localIds, resourcesCacheValidity())
 
-        if (cachedItems != null && cachedItems.size == localIds.size) {
-            return@withContext Result.success(cachedItems.map { it.toItem() })
+            if (cachedItems != null && cachedItems.size == localIds.size) {
+                return@withContext Result.success(cachedItems.map { it.toItem() })
+            }
+            val unknownIds = localIds - cachedItems?.map { it.localId }.orEmpty().toSet()
+
+            val result = mutableListOf<Resource.NonFungibleResource.Item>()
+            stateApi.paginateNonFungibles(resourceAddress, nonFungibleIds = unknownIds.toList(), onPage = { response ->
+                val item = response.nonFungibleIds
+                val entities = item.map { it.asEntity(resourceAddress, InstantGenerator()) }
+                stateDao.insertNFTs(entities)
+                result.addAll(entities.map { it.toItem() })
+            })
+            result.toList()
         }
-        val unknownIds = localIds - cachedItems?.map { it.localId }.orEmpty().toSet()
-
-        val result = mutableListOf<Resource.NonFungibleResource.Item>()
-        stateApi.paginateNonFungibles(resourceAddress, nonFungibleIds = unknownIds.toList(), onPage = { response ->
-            val item = response.nonFungibleIds
-            val entities = item.map { it.asEntity(resourceAddress, InstantGenerator()) }
-            stateDao.insertNFTs(entities)
-            result.addAll(entities.map { it.toItem() })
-        })
-        Result.success(result.toList())
     }
 
     override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> =

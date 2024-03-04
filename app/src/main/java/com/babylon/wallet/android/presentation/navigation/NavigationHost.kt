@@ -20,6 +20,7 @@ import com.babylon.wallet.android.presentation.account.createaccount.confirmatio
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
+import com.babylon.wallet.android.presentation.account.history.history
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
 import com.babylon.wallet.android.presentation.account.settings.accountSettings
 import com.babylon.wallet.android.presentation.account.settings.devsettings.devSettings
@@ -29,7 +30,6 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.dapp.authorized.dappLoginAuthorizedNavGraph
 import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCompletionScreen
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
-import com.babylon.wallet.android.presentation.history.history
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE

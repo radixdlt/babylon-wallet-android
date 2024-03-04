@@ -72,11 +72,14 @@ class GetAccountHistoryUseCase @Inject constructor(
                         }
                     }
                     val assets = resolveAssetsFromAddressUseCase(fungibleAddresses, nonFungibleAddresses).getOrThrow()
-                    val items = (forwardResponse.items + backResponse.items).distinctBy {
-                        it.intentHash
-                    }.map { item -> item.toDomainModel(accountAddress, assets) }.sortedByDescending {
-                        it.timestamp
-                    }
+                    val items = (forwardResponse.items + backResponse.items)
+                        .distinctBy {
+                            it.intentHash
+                        }.map { committedTransactionInfo ->
+                            committedTransactionInfo.toDomainModel(accountAddress, assets)
+                        }.sortedByDescending {
+                            it.timestamp
+                        }
                     Result.success(
                         TransactionHistoryData(
                             stateVersion = backResponse.ledgerState.stateVersion,

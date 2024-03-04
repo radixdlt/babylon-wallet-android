@@ -13,17 +13,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -58,6 +53,7 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.presentation.ui.composables.DefaultPullToRefreshContainer
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -160,18 +156,11 @@ private fun AccountScreenContent(
         onMessageShown = onMessageShown
     )
 
-    val pullToRefreshState = rememberPullRefreshState(
-        refreshing = state.isRefreshing,
-        onRefresh = onRefresh,
-        refreshingOffset = 116.dp
-    )
     val lazyListState = rememberLazyListState()
-    Box(
-        modifier = modifier
-            .pullRefresh(pullToRefreshState)
-            .navigationBarsPadding()
-            .background(Brush.horizontalGradient(gradient))
-            .statusBarsPadding()
+    DefaultPullToRefreshContainer(
+        isRefreshing = state.isRefreshing,
+        onRefresh = onRefresh,
+        modifier = modifier.background(Brush.horizontalGradient(gradient))
     ) {
         Scaffold(
             modifier = Modifier,
@@ -237,14 +226,6 @@ private fun AccountScreenContent(
                 onCollectionClick = onCollectionClick,
             )
         }
-
-        PullRefreshIndicator(
-            modifier = Modifier.align(Alignment.TopCenter),
-            refreshing = state.isRefreshing,
-            state = pullToRefreshState,
-            contentColor = RadixTheme.colors.gray1,
-            backgroundColor = RadixTheme.colors.defaultBackground,
-        )
     }
 }
 

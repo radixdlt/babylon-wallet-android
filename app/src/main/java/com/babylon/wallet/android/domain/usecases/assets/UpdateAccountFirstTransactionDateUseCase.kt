@@ -7,7 +7,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class GetAccountFirstTransactionDateUseCase @Inject constructor(
+class UpdateAccountFirstTransactionDateUseCase @Inject constructor(
     private val streamRepository: StreamRepository,
     private val stateDao: StateDao,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher
@@ -15,7 +15,7 @@ class GetAccountFirstTransactionDateUseCase @Inject constructor(
     suspend operator fun invoke(
         accountAddress: String
     ) {
-        streamRepository.getAccountFirstTransaction(accountAddress).mapCatching { response ->
+        streamRepository.updateAccountFirstTransactionDate(accountAddress).mapCatching { response ->
             response.items.firstOrNull()?.confirmedAt?.toInstant()
         }.onSuccess { firstTransactionDate ->
             withContext(dispatcher) {

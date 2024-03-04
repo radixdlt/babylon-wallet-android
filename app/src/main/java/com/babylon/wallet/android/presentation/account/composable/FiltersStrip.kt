@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.history.composables
+package com.babylon.wallet.android.presentation.account.composable
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -43,7 +43,7 @@ fun FiltersStrip(
     ) {
         historyFilters?.transactionType?.let { transactionType ->
             item(key = transactionType.name) {
-                SingleTag(
+                HistoryFilterTag(
                     modifier = Modifier.animateItemPlacement(),
                     selected = true,
                     text = transactionType.label(),
@@ -62,7 +62,7 @@ fun FiltersStrip(
                 is Resource.NonFungibleResource -> resource.name
             }
             item(key = resource.resourceAddress) {
-                SingleTag(
+                HistoryFilterTag(
                     modifier = Modifier.animateItemPlacement(),
                     selected = true,
                     text = name.ifEmpty { resource.resourceAddress.truncatedHash() },
@@ -74,7 +74,7 @@ fun FiltersStrip(
         }
         historyFilters?.transactionClass?.let { txClass ->
             item(key = txClass.name) {
-                SingleTag(modifier = Modifier.animateItemPlacement(), selected = true, text = txClass.description(), onCloseClick = {
+                HistoryFilterTag(modifier = Modifier.animateItemPlacement(), selected = true, text = txClass.description(), onCloseClick = {
                     if (userInteractionEnabled) onTransactionClassFilterRemoved()
                 })
             }

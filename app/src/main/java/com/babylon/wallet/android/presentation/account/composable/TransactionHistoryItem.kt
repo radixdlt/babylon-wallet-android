@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.history.composables
+package com.babylon.wallet.android.presentation.account.composable
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -113,7 +113,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                             color = RadixTheme.colors.gray1
                         )
                     }
-                    if (transactionItem.noBalanceChanges && isAccountDepositSettingsUpdate.not()) {
+                    if (transactionItem.hasNoBalanceChanges && isAccountDepositSettingsUpdate.not()) {
                         LabelSection(text = stringResource(id = R.string.empty))
                         Text(
                             modifier = borderModifier,
@@ -155,7 +155,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                     }
                 }
             }
-            if (transactionItem.unknownTransaction) {
+            if (transactionItem.isUnknownTransaction) {
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()

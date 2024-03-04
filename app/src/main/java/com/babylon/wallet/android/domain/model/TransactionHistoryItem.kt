@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.model
 
+import com.babylon.wallet.android.data.gateway.extensions.decode
 import com.babylon.wallet.android.data.gateway.generated.models.CommittedTransactionInfo
 import com.babylon.wallet.android.data.gateway.generated.models.ManifestClass
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
@@ -11,7 +12,6 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.Resource
-import message
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
@@ -72,10 +72,10 @@ data class TransactionHistoryItem(
             }
         }
 
-    val unknownTransaction: Boolean
+    val isUnknownTransaction: Boolean
         get() = transactionClass == null
 
-    val noBalanceChanges: Boolean
+    val hasNoBalanceChanges: Boolean
         get() = deposited.isEmpty() && withdrawn.isEmpty()
 }
 
@@ -198,7 +198,14 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
 }
 
 enum class TransactionClass {
-    General, Transfer, ValidatorStake, ValidatorUnstake, ValidatorClaim, AccountDespositSettingsUpdate, PoolContribution, PoolRedemption
+    General,
+    Transfer,
+    ValidatorStake,
+    ValidatorUnstake,
+    ValidatorClaim,
+    AccountDespositSettingsUpdate,
+    PoolContribution,
+    PoolRedemption
 }
 
 fun CommittedTransactionInfo.toDomainModel(accountAddress: String, assets: List<Asset>): TransactionHistoryItem {
@@ -209,7 +216,7 @@ fun CommittedTransactionInfo.toDomainModel(accountAddress: String, assets: List<
         balanceChanges = balanceChanges?.toDomainModel(assets = assets).orEmpty(),
         transactionClass = manifestClasses?.firstOrNull()?.toTransactionClass(),
         timestamp = confirmedAt?.toInstant(),
-        message = message?.message(),
+        message = message?.decode(),
         isFailedTransaction = transactionStatus == TransactionStatus.committedFailure || transactionStatus == TransactionStatus.rejected
     )
 }

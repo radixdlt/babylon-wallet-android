@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.history
+package com.babylon.wallet.android.presentation.account.history
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.hilt.navigation.compose.hiltViewModel
