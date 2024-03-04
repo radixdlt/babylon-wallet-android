@@ -106,7 +106,7 @@ class HistoryViewModel @Inject constructor(
             if (rangeEnd.isAfter(now)) rangeEnd = now
             result.add(
                 State.MonthFilter(
-                    rangeEnd.toMonthString().uppercase(),
+                    rangeStart.toMonthString().uppercase(),
                     rangeStart,
                     rangeEnd
                 )
