@@ -16,6 +16,8 @@ data class TokenPriceEntity(
 ) {
     companion object {
 
+        const val CURRENCY_USD = "USD"
+
         fun List<TokenPriceEntity>.toTokenPrice(): List<TokenPrice> {
             return map { tokenPriceEntity ->
                 TokenPrice(
