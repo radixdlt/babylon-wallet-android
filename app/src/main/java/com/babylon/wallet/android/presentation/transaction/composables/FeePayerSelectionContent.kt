@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
+import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
@@ -22,7 +22,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.profile.data.model.pernetwork.Network
 
 fun LazyListScope.feePayerSelectionContent(
-    candidates: List<FeePayerSearchResult.FeePayerCandidate>,
+    candidates: List<TransactionFeePayers.FeePayerCandidate>,
     onPayerSelected: (Network.Account) -> Unit
 ) {
     item {
