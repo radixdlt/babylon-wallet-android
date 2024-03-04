@@ -29,9 +29,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import rdx.works.core.domain.assets.Asset
-import rdx.works.core.domain.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.account.composable.View
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogViewModel
@@ -43,6 +40,8 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.WorthXRD
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Suppress("CyclomaticComplexMethod")

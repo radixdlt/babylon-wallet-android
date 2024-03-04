@@ -10,15 +10,10 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.RadixWalletException
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import rdx.works.core.domain.assets.ValidatorDetail
-import rdx.works.core.domain.resources.Badge
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.isXrd
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
@@ -34,6 +29,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Badge
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.isXrd
 import rdx.works.core.mapWhen
 import rdx.works.core.multiplyWithDivisibility
 import rdx.works.profile.data.model.pernetwork.Network

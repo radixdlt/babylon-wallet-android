@@ -110,7 +110,7 @@ class SignTransactionUseCase @Inject constructor(
         private val notaryAndSigners: NotaryAndSigners,
         private val deviceBiometricAuthenticationProvider: suspend () -> Boolean,
         private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
-    ): TransactionSigner.SignatureGatherer {
+    ) : TransactionSigner.SignatureGatherer {
         override suspend fun gatherSignatures(dataToSign: ByteArray, hashedDataToSign: ByteArray): Result<List<SignatureWithPublicKey>> {
             return collectSignersSignaturesUseCase(
                 signers = notaryAndSigners.signers,
@@ -125,6 +125,5 @@ class SignTransactionUseCase @Inject constructor(
         override suspend fun notarise(signedIntentHash: ByteArray): Result<Signature> = runCatching {
             notaryAndSigners.signWithNotary(hashedData = signedIntentHash)
         }
-
     }
 }

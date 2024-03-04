@@ -9,7 +9,6 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
@@ -38,6 +37,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import rdx.works.core.domain.DApp
 import rdx.works.core.logNonFatalException
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple

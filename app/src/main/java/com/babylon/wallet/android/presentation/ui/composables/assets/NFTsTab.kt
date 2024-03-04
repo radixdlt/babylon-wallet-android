@@ -24,8 +24,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import rdx.works.core.domain.assets.Assets
-import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
@@ -33,6 +31,8 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.nftsTab(
     assetsViewData: AssetsViewData,

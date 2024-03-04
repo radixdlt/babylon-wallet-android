@@ -10,14 +10,14 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import rdx.works.core.domain.resources.Pool
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.resources.Pool
 
 @Composable
 fun PoolTypeContent(

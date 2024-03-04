@@ -27,12 +27,12 @@ import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable

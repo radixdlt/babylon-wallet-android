@@ -33,14 +33,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.InteractionState
-import rdx.works.profile.ret.transaction.TransactionVersion
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import rdx.works.core.domain.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.UnknownComponentsSheetContent
@@ -67,9 +63,13 @@ import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.ret.transaction.TransactionManifestData.TransactionMessage
+import rdx.works.profile.ret.transaction.TransactionVersion
 
 @Composable
 fun TransactionReviewScreen(
