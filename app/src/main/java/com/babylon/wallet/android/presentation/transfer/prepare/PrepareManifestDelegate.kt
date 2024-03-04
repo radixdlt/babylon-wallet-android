@@ -57,7 +57,7 @@ class PrepareManifestDelegate @Inject constructor(
                 resourceAddress = spendingFungible.address,
                 amount = spendingFungible.amountDecimal,
                 signatureRequired = targetAccount in accountsAbleToSign &&
-                        targetAccount.isSignatureRequiredForTransfer(spendingFungible)
+                    targetAccount.isSignatureRequiredForTransfer(spendingFungible)
             )
         }
     }.flatten()
@@ -70,7 +70,7 @@ class PrepareManifestDelegate @Inject constructor(
                 toAccountAddress = targetAccount.address,
                 globalId = spendingNonFungible.address,
                 signatureRequired = targetAccount in accountsAbleToSign &&
-                        targetAccount.isSignatureRequiredForTransfer(spendingNonFungible)
+                    targetAccount.isSignatureRequiredForTransfer(spendingNonFungible)
             )
         }
     }.flatten()
@@ -80,7 +80,7 @@ class PrepareManifestDelegate @Inject constructor(
             val factorSourceId = it.factorSourceId ?: return@filter false
 
             factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET || (
-                    factorSourceId.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(factorSourceId)
-                    )
+                factorSourceId.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(factorSourceId)
+                )
         }
 }

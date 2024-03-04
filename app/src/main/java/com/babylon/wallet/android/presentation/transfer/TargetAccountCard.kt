@@ -29,20 +29,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
-import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import kotlinx.collections.immutable.persistentSetOf
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import java.math.BigDecimal
 
 @Composable

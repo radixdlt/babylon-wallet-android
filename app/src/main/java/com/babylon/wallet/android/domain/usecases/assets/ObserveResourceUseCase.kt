@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import rdx.works.core.domain.resources.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import rdx.works.core.domain.resources.Resource
 import javax.inject.Inject
 
 /**

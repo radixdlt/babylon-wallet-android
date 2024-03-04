@@ -30,11 +30,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import rdx.works.core.domain.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import rdx.works.core.domain.assets.ValidatorWithStakes
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -44,6 +39,10 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
 import java.math.BigDecimal
 
 fun LazyListScope.stakingTab(

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
-import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import javax.inject.Inject

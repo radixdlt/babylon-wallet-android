@@ -4,6 +4,7 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.core.AddressHelper
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.nextAppearanceId
@@ -18,7 +19,6 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
-import rdx.works.core.AddressHelper
 import javax.inject.Inject
 
 class MigrateOlympiaAccountsUseCase @Inject constructor(
