@@ -1,6 +1,7 @@
 package rdx.works.profile.data.model.extensions
 
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
+import rdx.works.core.AddressHelper
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
@@ -12,7 +13,6 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.derivationPathEntityIndex
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.core.AddressHelper
 import rdx.works.profile.ret.crypto.PublicKey
 
 @Suppress("LongParameterList")

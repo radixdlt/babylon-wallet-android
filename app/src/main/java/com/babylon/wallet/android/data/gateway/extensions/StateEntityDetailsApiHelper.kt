@@ -21,14 +21,14 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFu
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
-import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.toResult
-import rdx.works.core.domain.resources.metadata.claimedEntities
-import rdx.works.core.domain.resources.metadata.dAppDefinition
-import rdx.works.core.domain.resources.metadata.poolUnit
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.metadata.claimedEntities
+import rdx.works.core.domain.resources.metadata.dAppDefinition
+import rdx.works.core.domain.resources.metadata.poolUnit
 import java.math.BigDecimal
 
 const val ENTITY_DETAILS_PAGE_LIMIT = 20

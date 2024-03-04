@@ -10,11 +10,11 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.AddressHelper
 import rdx.works.profile.data.model.extensions.hasAcceptKnownDepositRule
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
-import rdx.works.core.AddressHelper
 import javax.inject.Inject
 
 class AccountsChooserDelegate @Inject constructor(

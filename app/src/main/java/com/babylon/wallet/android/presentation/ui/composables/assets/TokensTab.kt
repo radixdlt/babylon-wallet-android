@@ -25,6 +25,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.tokensTab(

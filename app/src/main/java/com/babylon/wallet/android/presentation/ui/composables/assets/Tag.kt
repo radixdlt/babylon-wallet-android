@@ -10,8 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import rdx.works.core.domain.resources.Tag
 import com.babylon.wallet.android.presentation.ui.composables.name
+import rdx.works.core.domain.resources.Tag
 
 @Composable
 fun Tag(

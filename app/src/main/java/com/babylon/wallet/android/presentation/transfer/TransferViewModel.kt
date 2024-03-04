@@ -2,13 +2,6 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import rdx.works.core.domain.assets.Assets
-import rdx.works.core.domain.assets.NonFungibleCollection
-import rdx.works.core.domain.assets.ValidatorWithStakes
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.isXrd
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -28,6 +21,11 @@ import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.isXrd
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules

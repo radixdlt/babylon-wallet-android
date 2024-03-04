@@ -12,8 +12,8 @@ import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.ret.ManifestPoet
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.ret.crypto.SignatureWithPublicKey
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import javax.inject.Inject
 
 class ROLAClient @Inject constructor(
