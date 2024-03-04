@@ -41,7 +41,7 @@ data class TokensAndLsusPricesResponse(
                 TokenPriceEntity(
                     resourceAddress = lsuPrice.resourceAddress,
                     price = lsuPrice.usdPrice.toBigDecimal(),
-                    currency = "USD",
+                    currency = TokenPriceEntity.CURRENCY_USD,
                     synced = instantGenerator
                 )
             }
@@ -49,7 +49,7 @@ data class TokensAndLsusPricesResponse(
                 TokenPriceEntity(
                     resourceAddress = tokenPrice.resourceAddress,
                     price = tokenPrice.usdPrice.toBigDecimal(),
-                    currency = "USD",
+                    currency = TokenPriceEntity.CURRENCY_USD,
                     synced = instantGenerator
                 )
             }
