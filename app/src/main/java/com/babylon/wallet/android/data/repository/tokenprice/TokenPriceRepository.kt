@@ -80,7 +80,7 @@ class TokenPriceRepositoryImpl @Inject constructor(
             if (remainingResourcesAddresses.isNotEmpty() || remainingLsusAddresses.isNotEmpty()) {
                 tokenPriceApi.priceTokens(
                     tokensAndLsusPricesRequest = TokensAndLsusPricesRequest(
-                        currency = "USD",
+                        currency = TokenPrice.CURRENCY_USD,
                         lsus = remainingLsusAddresses.toList(),
                         tokens = remainingResourcesAddresses.toList()
                     )
