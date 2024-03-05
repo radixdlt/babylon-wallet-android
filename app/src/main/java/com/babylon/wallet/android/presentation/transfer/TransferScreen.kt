@@ -350,6 +350,9 @@ fun TransferContent(
     }
 
     if (state.isSheetVisible) {
+        // here we use a BottomSheetDialogWrapper instead of ModalBottomSheetLayout because TextField
+        // inside ModalBottomSheetLayout is not properly displaying contextual text editing options like copy/paste.
+        // See here https://issuetracker.google.com/issues/327085717
         BottomSheetDialogWrapper(
             addScrim = true,
             showDragHandle = true,
