@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -51,7 +52,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.assets.ChooseAssetsSheet
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
-import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import kotlinx.coroutines.launch
@@ -349,49 +350,87 @@ fun TransferContent(
     }
 
     if (state.isSheetVisible) {
-        DefaultModalSheetLayout(
-            modifier = Modifier.imePadding(),
-            sheetState = bottomSheetState,
-            sheetContent = {
-                when (val sheetState = state.sheet) {
-                    is State.Sheet.ChooseAccounts -> {
-                        ChooseAccountSheet(
-                            onCloseClick = onSheetClosed,
-                            state = sheetState,
-                            onOwnedAccountSelected = onOwnedAccountSelected,
-                            onChooseAccountSubmitted = onChooseAccountSubmitted,
-                            onAddressDecoded = onAddressDecoded,
-                            onQrCodeIconClick = onQrCodeIconClick,
-                            cancelQrScan = cancelQrScan,
-                            onAddressChanged = onAddressTyped
-                        )
-                    }
-
-                    is State.Sheet.ChooseAssets -> {
-                        ChooseAssetsSheet(
-                            state = sheetState,
-                            onTabClick = onChooseAssetTabClick,
-                            onCollectionClick = onChooseAssetCollectionClick,
-                            onCloseClick = onSheetClosed,
-                            onAssetSelectionChanged = onAssetSelectionChanged,
-                            onNextNFtsPageRequest = onNextNFTsPageRequest,
-                            onStakesRequest = onStakesRequest,
-                            onUiMessageShown = onUiMessageShown,
-                            onChooseAssetsSubmitted = onChooseAssetsSubmitted
-                        )
-                    }
-
-                    is State.Sheet.None -> {}
-                }
-            },
+        BottomSheetDialogWrapper(
+            addScrim = true,
             showDragHandle = true,
-            containerColor = if (state.sheet is State.Sheet.ChooseAccounts) {
-                RadixTheme.colors.defaultBackground
-            } else {
-                RadixTheme.colors.gray5
-            },
-            onDismissRequest = onSheetClosed
-        )
+            onDismiss = onSheetClosed
+        ) {
+            when (val sheetState = state.sheet) {
+                is State.Sheet.ChooseAccounts -> {
+                    ChooseAccountSheet(
+                        modifier = Modifier.fillMaxHeight(0.9f).imePadding(),
+                        onCloseClick = onSheetClosed,
+                        state = sheetState,
+                        onOwnedAccountSelected = onOwnedAccountSelected,
+                        onChooseAccountSubmitted = onChooseAccountSubmitted,
+                        onAddressDecoded = onAddressDecoded,
+                        onQrCodeIconClick = onQrCodeIconClick,
+                        cancelQrScan = cancelQrScan,
+                        onAddressChanged = onAddressTyped
+                    )
+                }
+
+                is State.Sheet.ChooseAssets -> {
+                    ChooseAssetsSheet(
+                        modifier = Modifier.fillMaxHeight(0.9f).imePadding(),
+                        state = sheetState,
+                        onTabClick = onChooseAssetTabClick,
+                        onCollectionClick = onChooseAssetCollectionClick,
+                        onCloseClick = onSheetClosed,
+                        onAssetSelectionChanged = onAssetSelectionChanged,
+                        onNextNFtsPageRequest = onNextNFTsPageRequest,
+                        onStakesRequest = onStakesRequest,
+                        onUiMessageShown = onUiMessageShown,
+                        onChooseAssetsSubmitted = onChooseAssetsSubmitted
+                    )
+                }
+
+                is State.Sheet.None -> {}
+            }
+        }
+//        DefaultModalSheetLayout(
+//            modifier = Modifier.imePadding(),
+//            sheetState = bottomSheetState,
+//            sheetContent = {
+//                when (val sheetState = state.sheet) {
+//                    is State.Sheet.ChooseAccounts -> {
+//                        ChooseAccountSheet(
+//                            onCloseClick = onSheetClosed,
+//                            state = sheetState,
+//                            onOwnedAccountSelected = onOwnedAccountSelected,
+//                            onChooseAccountSubmitted = onChooseAccountSubmitted,
+//                            onAddressDecoded = onAddressDecoded,
+//                            onQrCodeIconClick = onQrCodeIconClick,
+//                            cancelQrScan = cancelQrScan,
+//                            onAddressChanged = onAddressTyped
+//                        )
+//                    }
+//
+//                    is State.Sheet.ChooseAssets -> {
+//                        ChooseAssetsSheet(
+//                            state = sheetState,
+//                            onTabClick = onChooseAssetTabClick,
+//                            onCollectionClick = onChooseAssetCollectionClick,
+//                            onCloseClick = onSheetClosed,
+//                            onAssetSelectionChanged = onAssetSelectionChanged,
+//                            onNextNFtsPageRequest = onNextNFTsPageRequest,
+//                            onStakesRequest = onStakesRequest,
+//                            onUiMessageShown = onUiMessageShown,
+//                            onChooseAssetsSubmitted = onChooseAssetsSubmitted
+//                        )
+//                    }
+//
+//                    is State.Sheet.None -> {}
+//                }
+//            },
+//            showDragHandle = true,
+//            containerColor = if (state.sheet is State.Sheet.ChooseAccounts) {
+//                RadixTheme.colors.defaultBackground
+//            } else {
+//                RadixTheme.colors.gray5
+//            },
+//            onDismissRequest = onSheetClosed
+//        )
     }
 }
 

@@ -340,7 +340,8 @@ fun ScanQRContent(
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                .clip(RadixTheme.shapes.roundedRectMedium)
+                .clip(RadixTheme.shapes.roundedRectMedium),
+            disableBackHandler = false
         ) {
             onAddressDecoded(it)
         }

@@ -67,7 +67,7 @@ fun DefaultModalSheetLayout(
 }
 
 @Composable
-private fun DefaultModalSheetDragHandle(
+fun DefaultModalSheetDragHandle(
     modifier: Modifier = Modifier
 ) {
     Box(
