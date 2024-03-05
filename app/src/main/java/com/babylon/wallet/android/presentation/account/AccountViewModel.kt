@@ -276,7 +276,7 @@ data class AccountUiState(
     val accountWithAssets: AccountWithAssets? = null,
     val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
     val pendingStakeUnits: Boolean = false,
-    private val securityPromptType: SecurityPromptType? = null,
+    val securityPromptType: SecurityPromptType? = null,
     val assetsViewState: AssetsViewState = AssetsViewState.from(assets = null),
     val epoch: Long? = null,
     val isRefreshing: Boolean = false,
