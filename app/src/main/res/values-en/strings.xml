@@ -619,7 +619,7 @@ Or you can clear this wallet from this phone and start fresh.</string>
   <string name="importMnemonic_seedPhraseImported">Imported Seed Phrase</string>
   <string name="importMnemonic_backedUpAlert_title">Confirm Seed Phrase Saved</string>
   <string name="importMnemonic_backedUpAlert_message">Are you sure you have securely written down this seed phrase? You will need it to recover access if you lose your phone.</string>
-  <string name="importMnemonic_backedUpAlert_confirmAction">Yes, I have backed it up</string>
+  <string name="importMnemonic_backedUpAlert_confirmAction">Yes, I have written it down</string>
   <string name="importMnemonic_backedUpAlert_noAction">No, not yet</string>
   <string name="importMnemonic_failedToValidateAllAccounts">Failed to validate all accounts against mnemonic</string>
   <string name="importMnemonic_wrongMnemonicHUD">Wrong mnemmonic</string>
