@@ -63,12 +63,12 @@ fun FiltersDialog(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(id = R.string.history_filter_title),
+                title = stringResource(id = R.string.accountHistory_filters_title),
                 onBackClick = onDismiss,
                 backIconType = BackIconType.Close,
                 containerColor = RadixTheme.colors.defaultBackground,
                 actions = {
-                    RadixTextButton(text = stringResource(id = R.string.history_filter_clearAll), onClick = onClearAllFilters)
+                    RadixTextButton(text = stringResource(id = R.string.accountHistory_filters_clearAll), onClick = onClearAllFilters)
                 }
             )
         },
@@ -79,7 +79,7 @@ fun FiltersDialog(
                 HorizontalDivider(color = RadixTheme.colors.gray5)
 
                 RadixPrimaryButton(
-                    text = "Show Results", // TODO crowdin
+                    text = stringResource(id = R.string.accountHistory_filters_showResultsButton),
                     onClick = onDismiss,
                     modifier = Modifier
                         .padding(RadixTheme.dimensions.paddingDefault)
@@ -119,11 +119,11 @@ fun FiltersDialog(
                 }
             }
             HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
-            FilterTypeSection(label = "Type of Asset") {
+            FilterTypeSection(label = stringResource(id = R.string.accountHistory_filters_assetTypeLabel)) {
                 ResourcesSection(state, onResourceFilterSelected)
             }
             HorizontalDivider(color = RadixTheme.colors.gray4, modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge))
-            FilterTypeSection(label = "Type of Transaction") {
+            FilterTypeSection(label = stringResource(id = R.string.accountHistory_filters_transactionTypeLabel)) {
                 TagContainer {
                     TransactionClass.entries.forEach { entry ->
                         val selected = state.filters.transactionClass == entry
@@ -170,7 +170,7 @@ private fun ResourcesSection(
         if (fungibles.isNotEmpty()) {
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "Tokens", // TODO crowdin
+                text = stringResource(id = R.string.accountHistory_filters_assetTypeTokensLabel),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Start
@@ -203,9 +203,18 @@ private fun ResourcesSection(
                 }
             }
             if (showMoreFungiblesButton) {
-                RadixTextButton(text = if (showingAllFungibles) "- Show Less Tokens" else "+ Show All Tokens", onClick = { // TODO crowdin
-                    showingAllFungibles = !showingAllFungibles
-                })
+                RadixTextButton(
+                    text = stringResource(
+                        id = if (showingAllFungibles) {
+                            R.string.accountHistory_filters_assetTypeTokenShowLess
+                        } else {
+                            R.string.accountHistory_filters_assetTypeTokenShowAll
+                        }
+                    ),
+                    onClick = {
+                        showingAllFungibles = !showingAllFungibles
+                    }
+                )
             }
         }
         if (nonFungibles.isNotEmpty()) {
@@ -213,7 +222,7 @@ private fun ResourcesSection(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = "NFTs", // TODO crowdin
+                text = stringResource(id = R.string.accountHistory_filters_assetTypeNFTsLabel),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Start
@@ -247,8 +256,14 @@ private fun ResourcesSection(
             }
             if (showMoreNonFungiblesButton) {
                 RadixTextButton(
-                    text = if (showingAllNonFungibleResource) "- Show Less NFTs" else "+ Show All NFTs",
-                    onClick = { // TODO crowdin
+                    text = stringResource(
+                        id = if (showingAllNonFungibleResource) {
+                            R.string.accountHistory_filters_assetTypeNFTShowLess
+                        } else {
+                            R.string.accountHistory_filters_assetTypeNFTShowAll
+                        }
+                    ),
+                    onClick = {
                         showingAllNonFungibleResource = !showingAllNonFungibleResource
                     }
                 )
@@ -319,8 +334,8 @@ private fun FilterTypeSection(modifier: Modifier = Modifier, label: String, cont
 @Composable
 fun HistoryFilters.TransactionType.label(): String {
     return when (this) {
-        HistoryFilters.TransactionType.DEPOSIT -> "Deposits"
-        HistoryFilters.TransactionType.WITHDRAWAL -> "Withdrawals"
+        HistoryFilters.TransactionType.DEPOSIT -> stringResource(id = R.string.accountHistory_filters_depositsType)
+        HistoryFilters.TransactionType.WITHDRAWAL -> stringResource(id = R.string.accountHistory_filters_withdrawalsType)
     }
 }
 

@@ -7,6 +7,4 @@ data class NonFungibleCollection(
 ) : Asset.NonFungible {
     override val resource: Resource.NonFungibleResource
         get() = collection
-    override val assetOrder: Int
-        get() = 1
 }

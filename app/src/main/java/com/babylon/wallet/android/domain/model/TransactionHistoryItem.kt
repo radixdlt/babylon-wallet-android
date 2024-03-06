@@ -12,7 +12,6 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.isXrd
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
@@ -100,7 +99,7 @@ data class HistoryFilters(
         get() = transactionType != null || resource != null || transactionClass != null
 }
 
-sealed interface BalanceChange {
+sealed interface BalanceChange : Comparable<BalanceChange> {
 
     val asset: Asset?
     val entityAddress: String
@@ -109,52 +108,42 @@ sealed interface BalanceChange {
         val balanceChange: BigDecimal,
         override val entityAddress: String,
         override val asset: Asset.Fungible? = null
-    ) : BalanceChange
+    ) : BalanceChange {
+        @Suppress("UnsafeCallOnNullableType", "ReturnCount", "MagicNumber")
+        override fun compareTo(other: BalanceChange): Int {
+            val currentAsset = asset
+            val otherAsset = other.asset
+            if (currentAsset == null && otherAsset == null) return 0
+            if (currentAsset == null) return -1
+            if (other.asset == null) return 1
+            val assetOrderComparison = currentAsset.assetHistoryDisplayOrder().compareTo(otherAsset!!.assetHistoryDisplayOrder())
+            if (assetOrderComparison == 0) {
+                val otherResource = otherAsset.resource as Resource.FungibleResource
+                return currentAsset.resource.compareTo(otherResource)
+            }
+            return assetOrderComparison
+        }
+    }
 
     data class NonFungibleBalanceChange(
         val removedIds: List<String>,
         val addedIds: List<String>,
         override val entityAddress: String,
         override val asset: Asset.NonFungible? = null
-    ) : BalanceChange
-
-    companion object {
-        class BalanceChangeComparator : Comparator<BalanceChange> {
-            override fun compare(current: BalanceChange?, other: BalanceChange?): Int {
-                if (current == null && other == null) return 0
-                if (current == null) return 1
-                if (other == null) return -1
-
-                if (current.asset == null && other.asset == null) return 0
-                if (current.asset == null) return 1
-                if (other.asset == null) return -1
-
-                val currentAsset = current.asset!!
-                val otherAsset = current.asset!!
-
-                val assetOrderComparison = currentAsset.assetOrder.compareTo(otherAsset.assetOrder)
-                if (assetOrderComparison == 0) {
-                    val currentResource = currentAsset.resource
-                    val otherResource = currentAsset.resource
-                    if (currentResource is Resource.FungibleResource && otherResource is Resource.FungibleResource) {
-                        if (currentResource.isXrd && otherResource.isXrd) {
-                            return 0
-                        } else if (currentResource.isXrd) {
-                            return 1
-                        } else if (otherResource.isXrd) {
-                            return -1
-                        }
-                        val symbolComparison = currentResource.symbol.compareTo(otherResource.symbol)
-                        if (symbolComparison == 0) {
-                            return currentResource.name.compareTo(otherResource.name)
-                        }
-                        return currentResource.name.compareTo(otherResource.name)
-                    } else if (currentResource is Resource.NonFungibleResource && otherResource is Resource.NonFungibleResource) {
-                        return currentResource.name.compareTo(otherResource.name)
-                    }
-                }
-                return assetOrderComparison
+    ) : BalanceChange {
+        @Suppress("UnsafeCallOnNullableType", "ReturnCount", "MagicNumber")
+        override fun compareTo(other: BalanceChange): Int {
+            val currentAsset = asset
+            val otherAsset = other.asset
+            if (currentAsset == null && otherAsset == null) return 0
+            if (currentAsset == null) return -1
+            if (other.asset == null) return 1
+            val assetOrderComparison = currentAsset.assetHistoryDisplayOrder().compareTo(otherAsset!!.assetHistoryDisplayOrder())
+            if (assetOrderComparison == 0) {
+                val otherResource = otherAsset.resource as Resource.NonFungibleResource
+                return currentAsset.resource.compareTo(otherResource)
             }
+            return assetOrderComparison
         }
     }
 }
@@ -235,7 +224,7 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
             relatedAsset
         )
     }
-    return (fungibleFungibleBalanceChanges + nonFungibleFungibleBalanceChanges).sortedWith(BalanceChange.Companion.BalanceChangeComparator())
+    return (fungibleFungibleBalanceChanges + nonFungibleFungibleBalanceChanges).sorted()
 }
 
 enum class TransactionClass {
@@ -260,4 +249,15 @@ fun CommittedTransactionInfo.toDomainModel(accountAddress: String, assets: List<
         message = message?.decode(),
         isFailedTransaction = transactionStatus == TransactionStatus.committedFailure || transactionStatus == TransactionStatus.rejected
     )
+}
+
+@Suppress("MagicNumber")
+private fun Asset.assetHistoryDisplayOrder(): Int {
+    return when (this) {
+        is LiquidStakeUnit -> 2
+        is PoolUnit -> 4
+        is Token -> 0
+        is NonFungibleCollection -> 1
+        is StakeClaim -> 3
+    }
 }

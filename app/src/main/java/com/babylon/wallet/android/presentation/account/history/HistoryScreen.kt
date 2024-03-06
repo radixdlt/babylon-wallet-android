@@ -231,7 +231,7 @@ fun HistoryContent(
             modifier = modifier.imePadding(),
             topBar = {
                 RadixCenteredTopAppBar(
-                    title = stringResource(id = R.string.history_title),
+                    title = stringResource(id = R.string.accountHistory_title),
                     onBackClick = onBackClick,
                     backIconType = BackIconType.Close,
                     windowInsets = WindowInsets.statusBars,
@@ -452,7 +452,7 @@ private fun EmptyContent(modifier: Modifier = Modifier) {
     ) {
         Spacer(modifier = Modifier.height(50.dp))
         Text(
-            text = "You have no\nTransactions", // TODO crowdin
+            text = stringResource(id = R.string.accountHistory_empty),
             style = RadixTheme.typography.secondaryHeader.copy(fontSize = 20.sp),
             color = RadixTheme.colors.gray2
         )

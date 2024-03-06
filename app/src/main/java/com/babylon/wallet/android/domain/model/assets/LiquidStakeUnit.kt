@@ -13,8 +13,6 @@ data class LiquidStakeUnit(
 
     override val resource: Resource.FungibleResource
         get() = fungibleResource
-    override val assetOrder: Int
-        get() = 2
 
     val validatorAddress: String
         get() = fungibleResource.validatorAddress.orEmpty()

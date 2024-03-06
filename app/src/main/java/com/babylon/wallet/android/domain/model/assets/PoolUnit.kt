@@ -12,9 +12,6 @@ data class PoolUnit(
 
     override val resource: Resource.FungibleResource
         get() = stake
-    override val assetOrder: Int
-        get() = 4
-
     val resourceAddress: String
         get() = stake.resourceAddress
 

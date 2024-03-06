@@ -4,7 +4,4 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 
 data class Token(
     override val resource: Resource.FungibleResource
-) : Asset.Fungible {
-    override val assetOrder: Int
-        get() = 0
-}
+) : Asset.Fungible

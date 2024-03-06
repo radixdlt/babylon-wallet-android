@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PlatformImeOptions
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
@@ -255,7 +256,8 @@ private fun ChooseAccountContent(
                     unfocusedContainerColor = RadixTheme.colors.gray5
                 ),
                 keyboardOptions = KeyboardOptions(
-                    imeAction = ImeAction.Done
+                    imeAction = ImeAction.Done,
+                    platformImeOptions = PlatformImeOptions()
                 ),
                 keyboardActions = KeyboardActions(
                     onDone = {

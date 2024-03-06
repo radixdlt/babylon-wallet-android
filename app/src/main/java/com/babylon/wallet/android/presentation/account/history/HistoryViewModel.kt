@@ -448,4 +448,3 @@ sealed interface HistoryItem {
         override val key: String = transactionItem.txId
     }
 }
-

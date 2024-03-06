@@ -38,7 +38,6 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.name
@@ -105,10 +104,13 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                     FailedTransactionWarning(borderModifier)
                 } else {
                     if (isAccountDepositSettingsUpdate) {
-                        LabelSection(text = "Settings", iconResource = DSR.ic_tx_account_settings)
+                        LabelSection(
+                            text = stringResource(id = R.string.accountHistory_settingsSection),
+                            iconResource = DSR.ic_tx_account_settings
+                        )
                         Text(
                             modifier = borderModifier,
-                            text = "Updated Account Deposit Settings", // TODO crowdin
+                            text = stringResource(id = R.string.accountHistory_settings_info),
                             style = RadixTheme.typography.body2HighImportance,
                             color = RadixTheme.colors.gray1
                         )
@@ -117,13 +119,16 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                         LabelSection(text = stringResource(id = R.string.empty))
                         Text(
                             modifier = borderModifier,
-                            text = "No deposits or withdrawals from this account in this transaction.", // TODO crowdin
+                            text = stringResource(id = R.string.accountHistory_noBalanceChanges),
                             style = RadixTheme.typography.body2HighImportance,
                             color = RadixTheme.colors.gray1
                         )
                     } else {
                         if (withdrawn.isNotEmpty()) {
-                            LabelSection(text = "Withdrawn", iconResource = DSR.ic_tx_withdrawn)
+                            LabelSection(
+                                text = stringResource(id = R.string.accountHistory_withdrawnSection),
+                                iconResource = DSR.ic_tx_withdrawn
+                            )
                             Column(
                                 modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
                             ) {
@@ -138,7 +143,11 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                             }
                         }
                         if (deposited.isNotEmpty()) {
-                            LabelSection(text = "Deposited", iconResource = DSR.ic_tx_deposited, textColor = RadixTheme.colors.green1)
+                            LabelSection(
+                                text = stringResource(id = R.string.accountHistory_depositedSection),
+                                iconResource = DSR.ic_tx_deposited,
+                                textColor = RadixTheme.colors.green1
+                            )
                             Column(
                                 modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)
                             ) {
@@ -162,7 +171,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                         .padding(1.dp)
                         .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
                         .padding(RadixTheme.dimensions.paddingMedium),
-                    text = "This transaction cannot be summarized. Only the raw transaction manifest may be viewed.", // TODO crowding
+                    text = stringResource(id = R.string.accountHistory_unknownTransactionInfo),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2
                 )
@@ -193,7 +202,7 @@ private fun FailedTransactionWarning(modifier: Modifier = Modifier) {
     ) {
         Icon(painter = painterResource(id = DSR.ic_warning_error), contentDescription = null, tint = RadixTheme.colors.red1)
         Text(
-            text = "Failed Transaction", // TODO crowdin
+            text = stringResource(id = R.string.accountHistory_failedTransaction),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.red1
         )
@@ -229,7 +238,7 @@ private fun BalanceChangeItem(balanceChange: BalanceChange) {
         is BalanceChange.FungibleBalanceChange -> {
             when (val asset = balanceChange.asset) {
                 is LiquidStakeUnit -> {
-                    LiquidStakeUnitBalanceChange(asset)
+                    LiquidStakeUnitBalanceChange(asset, balanceChange)
                 }
 
                 is PoolUnit -> {
@@ -280,9 +289,6 @@ private fun StakeClaimBalanceChange(asset: StakeClaim, modifier: Modifier = Modi
             .height(IntrinsicSize.Min)
             .padding(vertical = RadixTheme.dimensions.paddingMedium)
     ) {
-        val hasAtLeastOneClaimWithAmount = remember(asset) {
-            asset.resource.items.any { it.claimAmountXrd != null }
-        }
         Column(modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -296,7 +302,7 @@ private fun StakeClaimBalanceChange(asset: StakeClaim, modifier: Modifier = Modi
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = asset.resource.name.ifEmpty { stringResource(id = R.string.transactionReview_unknown) },
+                        text = asset.resource.name.ifEmpty { stringResource(id = R.string.accountHistory_unknown) },
                         style = RadixTheme.typography.body1Header,
                         color = RadixTheme.colors.gray1,
                         maxLines = 1,
@@ -310,61 +316,6 @@ private fun StakeClaimBalanceChange(asset: StakeClaim, modifier: Modifier = Modi
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-            }
-            if (hasAtLeastOneClaimWithAmount) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = RadixTheme.dimensions.paddingSmall),
-                    text = stringResource(id = R.string.transactionReview_worth).uppercase(), // TODO crowdin
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray2,
-                    maxLines = 1
-                )
-            }
-        }
-        if (hasAtLeastOneClaimWithAmount) {
-            HorizontalDivider(color = RadixTheme.colors.gray3)
-        }
-        asset.resource.items.filter { it.claimAmountXrd != null }.forEachIndexed { index, item ->
-            val lastItem = index == asset.resource.items.lastIndex
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = RadixTheme.dimensions.paddingMedium,
-                        end = RadixTheme.dimensions.paddingMedium,
-                        top = RadixTheme.dimensions.paddingMedium,
-                        bottom = if (lastItem) 0.dp else RadixTheme.dimensions.paddingMedium
-                    ),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-            ) {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(18.dp)
-                        .clip(RadixTheme.shapes.circle),
-                    tint = Color.Unspecified
-                )
-                Text(
-                    text = XrdResource.SYMBOL,
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 2
-                )
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = item.claimAmountXrd?.displayableQuantity().orEmpty(),
-                    style = RadixTheme.typography.body1HighImportance,
-                    color = RadixTheme.colors.gray1,
-                    textAlign = TextAlign.End,
-                    maxLines = 2
-                )
-            }
-            if (!lastItem) {
-                HorizontalDivider(color = RadixTheme.colors.gray3)
             }
         }
     }
@@ -394,7 +345,7 @@ private fun PoolUnitBalanceChange(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = asset.name().ifEmpty { stringResource(id = R.string.account_poolUnits)},
+                    text = asset.name().ifEmpty { stringResource(id = R.string.accountHistory_poolUnits) },
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
@@ -415,7 +366,6 @@ private fun PoolUnitBalanceChange(
                 }
             }
             Text(
-                modifier = Modifier,
                 text = balanceChange.balanceChange.abs().displayableQuantity(),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1,
@@ -424,59 +374,13 @@ private fun PoolUnitBalanceChange(
                 textAlign = TextAlign.End
             )
         }
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = RadixTheme.dimensions.paddingSmall),
-            text = stringResource(id = R.string.transactionReview_worth).uppercase(),
-            style = RadixTheme.typography.body2HighImportance,
-            color = RadixTheme.colors.gray2,
-            maxLines = 1
-        )
-        val poolResources = asset.pool?.resources.orEmpty()
-        Column(modifier = Modifier.border(1.dp, RadixTheme.colors.gray3, shape = RadixTheme.shapes.roundedRectSmall)) {
-            poolResources.forEachIndexed { index, item ->
-                val addDivider = index != poolResources.lastIndex
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            horizontal = RadixTheme.dimensions.paddingDefault,
-                            vertical = RadixTheme.dimensions.paddingMedium
-                        ),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-                ) {
-                    Thumbnail.Fungible(
-                        modifier = Modifier.size(18.dp),
-                        token = item,
-                    )
-                    Text(
-                        text = item.displayTitle,
-                        style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.gray1,
-                        maxLines = 2
-                    )
-                    Text(
-                        modifier = Modifier.weight(1f),
-                        text = asset.resourceRedemptionValue(item)?.displayableQuantity().orEmpty(),
-                        style = RadixTheme.typography.body1HighImportance,
-                        color = RadixTheme.colors.gray1,
-                        textAlign = TextAlign.End,
-                        maxLines = 2
-                    )
-                }
-                if (addDivider) {
-                    HorizontalDivider(color = RadixTheme.colors.gray3)
-                }
-            }
-        }
     }
 }
 
 @Composable
 private fun LiquidStakeUnitBalanceChange(
     asset: LiquidStakeUnit,
+    balanceChange: BalanceChange.FungibleBalanceChange,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -500,12 +404,12 @@ private fun LiquidStakeUnitBalanceChange(
                         modifier = Modifier.fillMaxWidth(),
                         text = asset.fungibleResource.displayTitle.ifEmpty {
                             stringResource(
-                                id = R.string.transactionReview_unknown
+                                id = R.string.accountHistory_unknown
                             )
                         },
                         style = RadixTheme.typography.body1Header,
                         color = RadixTheme.colors.gray1,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
@@ -516,51 +420,15 @@ private fun LiquidStakeUnitBalanceChange(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
+                Text(
+                    text = balanceChange.balanceChange.abs().displayableQuantity(),
+                    style = RadixTheme.typography.body1HighImportance,
+                    color = RadixTheme.colors.gray1,
+                    textAlign = TextAlign.End,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = RadixTheme.dimensions.paddingSmall),
-                text = stringResource(id = R.string.transactionReview_worth).uppercase(),
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2,
-                maxLines = 1
-            )
-        }
-        HorizontalDivider(color = RadixTheme.colors.gray3)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    start = RadixTheme.dimensions.paddingMedium,
-                    end = RadixTheme.dimensions.paddingMedium,
-                    top = RadixTheme.dimensions.paddingMedium
-                ),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-        ) {
-            Icon(
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(18.dp)
-                    .clip(RadixTheme.shapes.circle),
-                tint = Color.Unspecified
-            )
-            Text(
-                text = XrdResource.SYMBOL,
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray1,
-                maxLines = 2
-            )
-            Text(
-                modifier = Modifier.weight(1f),
-                text = asset.stakeValue()?.displayableQuantity().orEmpty(),
-                style = RadixTheme.typography.body1HighImportance,
-                color = RadixTheme.colors.gray1,
-                textAlign = TextAlign.End,
-                maxLines = 2
-            )
         }
     }
 }
@@ -640,7 +508,9 @@ fun TypeAndTimestampLabel(modifier: Modifier = Modifier, item: TransactionHistor
     val text = buildAnnotatedString {
         append(item.transactionClass.description())
         item.timestamp?.timestampHoursMinutes()?.let {
-            append(" \u2022 ")
+            append(" ")
+            append(stringResource(id = R.string.accountHistory_bullet))
+            append(" ")
             append(it)
         }
     }
@@ -656,14 +526,14 @@ fun TypeAndTimestampLabel(modifier: Modifier = Modifier, item: TransactionHistor
 @Composable
 fun TransactionClass?.description(): String {
     return when (this) {
-        TransactionClass.General -> stringResource(id = R.string.history_transactionClassGeneral)
-        TransactionClass.Transfer -> stringResource(id = R.string.history_transactionClassTransfer)
-        TransactionClass.PoolContribution -> stringResource(id = R.string.history_transactionClassContribute)
-        TransactionClass.PoolRedemption -> stringResource(id = R.string.history_transactionClassRedeem)
-        TransactionClass.ValidatorStake -> stringResource(id = R.string.history_transactionClassStaking)
-        TransactionClass.ValidatorUnstake -> stringResource(id = R.string.history_transactionClassUnstaking)
-        TransactionClass.ValidatorClaim -> stringResource(id = R.string.history_transactionClassClaim)
-        TransactionClass.AccountDespositSettingsUpdate -> stringResource(id = R.string.history_transactionClassAccountSettings)
-        else -> stringResource(id = R.string.history_transactionClassOther)
+        TransactionClass.General -> stringResource(id = R.string.accountHistory_transactionClassGeneral)
+        TransactionClass.Transfer -> stringResource(id = R.string.accountHistory_transactionClassTransfer)
+        TransactionClass.PoolContribution -> stringResource(id = R.string.accountHistory_transactionClassContribute)
+        TransactionClass.PoolRedemption -> stringResource(id = R.string.accountHistory_transactionClassRedeem)
+        TransactionClass.ValidatorStake -> stringResource(id = R.string.accountHistory_transactionClassStaking)
+        TransactionClass.ValidatorUnstake -> stringResource(id = R.string.accountHistory_transactionClassUnstaking)
+        TransactionClass.ValidatorClaim -> stringResource(id = R.string.accountHistory_transactionClassClaim)
+        TransactionClass.AccountDespositSettingsUpdate -> stringResource(id = R.string.accountHistory_transactionClassAccountSettings)
+        else -> stringResource(id = R.string.accountHistory_transactionClassOther)
     }
 }

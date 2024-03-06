@@ -24,8 +24,6 @@ data class AccountWithAssets(
 
 sealed interface Asset {
 
-    val assetOrder: Int
-
     val resource: Resource
 
     // Asset that can have an amount like
@@ -42,7 +40,6 @@ sealed interface Asset {
     sealed interface NonFungible : Asset {
         override val resource: Resource.NonFungibleResource
     }
-
 }
 
 data class Assets(
