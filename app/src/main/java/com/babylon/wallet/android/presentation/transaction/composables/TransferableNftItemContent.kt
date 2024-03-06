@@ -18,15 +18,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 
 @Composable
 fun TransferableNftItemContent(
     modifier: Modifier = Modifier,
-    transferable: TransferableAsset.NonFungible.NFTAssets,
     shape: Shape,
+    resource: Resource.NonFungibleResource,
     nftItem: Resource.NonFungibleResource.Item
 ) {
     Row(
@@ -45,7 +44,7 @@ fun TransferableNftItemContent(
     ) {
         Thumbnail.NonFungible(
             modifier = Modifier.size(44.dp),
-            collection = transferable.resource
+            collection = resource
         )
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(
@@ -56,7 +55,7 @@ fun TransferableNftItemContent(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = (nftItem.name ?: transferable.resource.name).ifEmpty {
+                text = (nftItem.name ?: resource.name).ifEmpty {
                     stringResource(id = R.string.transactionReview_unknown)
                 },
                 style = RadixTheme.typography.body2HighImportance,

@@ -23,6 +23,7 @@ data class AccountWithAssets(
 }
 
 sealed interface Asset {
+
     val resource: Resource
 
     // Asset that can have an amount like
@@ -95,6 +96,13 @@ data class Assets(
                 stakeClaimNft = claimCollection
             )
         }
+    }
+
+    val knownFungibles: List<Resource.FungibleResource> by lazy {
+        knownResources.filterIsInstance<Resource.FungibleResource>()
+    }
+    val knownNonFungibles: List<Resource.NonFungibleResource> by lazy {
+        knownResources.filterIsInstance<Resource.NonFungibleResource>()
     }
 
     // knownResources of an account is when

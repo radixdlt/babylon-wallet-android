@@ -10,7 +10,6 @@ data class StakeClaim(
 
     override val resource: Resource.NonFungibleResource
         get() = nonFungibleResource
-
     val validatorAddress: String
         get() = nonFungibleResource.validatorAddress.orEmpty()
 

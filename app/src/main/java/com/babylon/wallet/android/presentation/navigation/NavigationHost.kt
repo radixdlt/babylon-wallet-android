@@ -20,6 +20,7 @@ import com.babylon.wallet.android.presentation.account.createaccount.confirmatio
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.createAccountConfirmationScreen
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
+import com.babylon.wallet.android.presentation.account.history.history
 import com.babylon.wallet.android.presentation.account.settings.AccountSettingItem
 import com.babylon.wallet.android.presentation.account.settings.accountSettings
 import com.babylon.wallet.android.presentation.account.settings.devsettings.devSettings
@@ -237,6 +238,9 @@ fun NavigationHost(
                 },
                 onTransferClick = { accountId ->
                     navController.transfer(accountId = accountId)
+                },
+                onHistoryClick = { accountAddress ->
+                    navController.history(accountAddress)
                 }
             )
         }
@@ -248,6 +252,11 @@ fun NavigationHost(
         deriveAccounts(
             onDismiss = {
                 navController.popBackStack()
+            }
+        )
+        history(
+            onBackClick = {
+                navController.navigateUp()
             }
         )
         createAccountScreen(

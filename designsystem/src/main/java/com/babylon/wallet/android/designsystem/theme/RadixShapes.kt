@@ -31,12 +31,14 @@ data class RadixShapes(
     )
 )
 
+@Suppress("LongParameterList")
 fun bubbleShape(
     density: Density,
     cornerRadius: Dp = 16.dp,
     arrowWidth: Dp = 19.dp,
     arrowHeight: Dp = 11.dp,
     arrowOffset: Dp = 40.dp,
+    onlyTopCorners: Boolean = false
 ): GenericShape {
     val cornerRadiusPx: Float
     val arrowWidthPx: Float
@@ -61,6 +63,9 @@ fun bubbleShape(
                 cornerRadius = CornerRadius(cornerRadiusPx, cornerRadiusPx)
             )
         )
+        if (onlyTopCorners) {
+            addRect(Rect(Offset(0f, size.height / 2), Offset(size.width, size.height)))
+        }
 
         val arrowXPoint = size.width - arrowOffsetPx
 

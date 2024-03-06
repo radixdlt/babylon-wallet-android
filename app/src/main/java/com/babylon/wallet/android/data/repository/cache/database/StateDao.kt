@@ -13,6 +13,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.accountType
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
 import java.math.BigDecimal
+import java.time.Instant
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -26,6 +27,7 @@ interface StateDao {
             A.address AS account_address, 
             A.account_type AS account_type,
             A.synced AS account_synced,
+            A.first_transaction_date AS first_transaction_date,
             A.state_version,
             AR.amount AS amount,
             R.*
@@ -130,6 +132,15 @@ interface StateDao {
         onConflict = OnConflictStrategy.REPLACE
     )
     fun insertAccountDetails(details: AccountEntity)
+
+    @Query(
+        """
+        UPDATE AccountEntity SET
+        first_transaction_date = :firstTransactionDate
+        WHERE address = :accountAddress
+    """
+    )
+    fun updateAccountFirstTransactionDate(accountAddress: String, firstTransactionDate: Instant?)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPoolDetails(pools: List<PoolEntity>)

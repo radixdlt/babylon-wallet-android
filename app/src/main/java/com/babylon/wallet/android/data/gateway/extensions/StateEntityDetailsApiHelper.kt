@@ -19,6 +19,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFu
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequest
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityNonFungiblesPageRequestOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
+import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.toResult
@@ -31,6 +32,7 @@ import kotlinx.coroutines.coroutineScope
 import java.math.BigDecimal
 
 const val ENTITY_DETAILS_PAGE_LIMIT = 20
+const val NFT_DETAILS_PAGE_LIMIT = 50
 
 suspend fun StateApi.fetchAccountGatewayDetails(
     accountsToRequest: Set<String>,
@@ -352,5 +354,21 @@ suspend fun StateApi.paginateNonFungibles(
 
         onPage(pageResponse.items)
         nextCursor = pageResponse.nextCursor
+    }
+}
+
+suspend fun StateApi.paginateNonFungibles(
+    resourceAddress: String,
+    nonFungibleIds: List<String>,
+    onPage: (StateNonFungibleDataResponse) -> Unit
+) {
+    nonFungibleIds.chunked(NFT_DETAILS_PAGE_LIMIT).forEach { idsChunk ->
+        val response = nonFungibleData(
+            StateNonFungibleDataRequest(
+                resourceAddress = resourceAddress,
+                nonFungibleIds = idsChunk
+            )
+        ).toResult().getOrThrow()
+        onPage(response)
     }
 }

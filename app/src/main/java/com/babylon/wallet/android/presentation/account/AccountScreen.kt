@@ -13,17 +13,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -38,7 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -59,6 +53,7 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
+import com.babylon.wallet.android.presentation.ui.composables.DefaultPullToRefreshContainer
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -68,7 +63,6 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
-import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -84,7 +78,8 @@ fun AccountScreen(
     onNavigateToMnemonicRestore: () -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Network.Account) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Network.Account) -> Unit,
-    onTransferClick: (String) -> Unit
+    onTransferClick: (String) -> Unit,
+    onHistoryClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -122,7 +117,8 @@ fun AccountScreen(
         onStakesRequest = viewModel::onStakesRequest,
         onClaimClick = viewModel::onClaimClick,
         onTabClick = viewModel::onTabSelected,
-        onCollectionClick = viewModel::onCollectionToggle
+        onCollectionClick = viewModel::onCollectionToggle,
+        onHistoryClick = onHistoryClick
     )
 }
 
@@ -145,10 +141,9 @@ private fun AccountScreenContent(
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
-    onClaimClick: (List<StakeClaim>) -> Unit
+    onClaimClick: (List<StakeClaim>) -> Unit,
+    onHistoryClick: (String) -> Unit
 ) {
-    val context = LocalContext.current
-
     val gradient = remember(state.accountWithAssets) {
         val appearanceId = state.accountWithAssets?.account?.appearanceID ?: 0
         AccountGradientList[appearanceId % AccountGradientList.size]
@@ -161,18 +156,11 @@ private fun AccountScreenContent(
         onMessageShown = onMessageShown
     )
 
-    val pullToRefreshState = rememberPullRefreshState(
-        refreshing = state.isRefreshing,
-        onRefresh = onRefresh,
-        refreshingOffset = 116.dp
-    )
     val lazyListState = rememberLazyListState()
-    Box(
-        modifier = modifier
-            .pullRefresh(pullToRefreshState)
-            .navigationBarsPadding()
-            .background(Brush.horizontalGradient(gradient))
-            .statusBarsPadding()
+    DefaultPullToRefreshContainer(
+        isRefreshing = state.isRefreshing,
+        onRefresh = onRefresh,
+        modifier = modifier.background(Brush.horizontalGradient(gradient))
     ) {
         Scaffold(
             modifier = Modifier,
@@ -223,11 +211,7 @@ private fun AccountScreenContent(
                 },
                 gradient = gradient,
                 onTransferClick = onTransferClick,
-                onHistoryClick = {
-                    state.historyDashboardUrl?.let { url ->
-                        context.openUrl(url)
-                    }
-                },
+                onHistoryClick = onHistoryClick,
                 onApplySecuritySettings = onApplySecuritySettings,
                 onPoolUnitClick = {
                     onPoolUnitClick(it)
@@ -242,14 +226,6 @@ private fun AccountScreenContent(
                 onCollectionClick = onCollectionClick,
             )
         }
-
-        PullRefreshIndicator(
-            modifier = Modifier.align(Alignment.TopCenter),
-            refreshing = state.isRefreshing,
-            state = pullToRefreshState,
-            contentColor = RadixTheme.colors.gray1,
-            backgroundColor = RadixTheme.colors.defaultBackground,
-        )
     }
 }
 
@@ -265,7 +241,7 @@ fun AssetsContent(
     onPoolUnitClick: (PoolUnit) -> Unit,
     gradient: ImmutableList<Color>,
     onTransferClick: (String) -> Unit,
-    onHistoryClick: () -> Unit,
+    onHistoryClick: (String) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
@@ -318,7 +294,9 @@ fun AssetsContent(
                             ) {
                                 HistoryButton(
                                     modifier = Modifier.weight(1f),
-                                    onHistoryClick = onHistoryClick
+                                    onHistoryClick = {
+                                        onHistoryClick(accountAddress)
+                                    }
                                 )
                                 TransferButton(
                                     modifier = Modifier.weight(1f),
@@ -444,6 +422,8 @@ fun AccountContentPreview() {
                 onRefresh = {},
                 onTransferClick = {},
                 onMessageShown = {},
+                onTabClick = {},
+                onCollectionClick = {},
                 onFungibleItemClicked = {},
                 onNonFungibleItemClicked = { _, _ -> },
                 onApplySecuritySettings = {},
@@ -451,10 +431,8 @@ fun AccountContentPreview() {
                 onLSUUnitClicked = {},
                 onNextNFTsPageRequest = {},
                 onStakesRequest = {},
-                onClaimClick = {},
-                onTabClick = {},
-                onCollectionClick = {}
-            )
+                onClaimClick = {}
+            ) {}
         }
     }
 }

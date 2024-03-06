@@ -16,7 +16,8 @@ data class AccountPortfolioResponse(
     val accountSynced: Instant?,
     @ColumnInfo("state_version")
     val stateVersion: Long?,
-
+    @ColumnInfo("first_transaction_date")
+    val firstTransactionDate: Instant?,
     // From AccountResourceJoin
     val amount: BigDecimal?,
 
@@ -40,7 +41,8 @@ data class AccountPortfolioResponse(
     val details: AccountDetails? = stateVersion?.let { version ->
         AccountDetails(
             stateVersion = version,
-            accountType = accountType
+            accountType = accountType,
+            firstTransactionDate = firstTransactionDate
         )
     }
 

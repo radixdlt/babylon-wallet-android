@@ -203,6 +203,7 @@ class AccountsStateCache @Inject constructor(
             val cachedDetails = AccountCachedData(
                 stateVersion = cache.stateVersion,
                 accountType = cache.accountType,
+                firstTransactionDate = cache.firstTransactionDate
             )
 
             // Compile all resources owned by this account
@@ -294,6 +295,7 @@ class AccountsStateCache @Inject constructor(
     private data class AccountCachedData(
         val stateVersion: Long?,
         val accountType: AccountType?,
+        val firstTransactionDate: Instant?,
         val fungibles: MutableList<Resource.FungibleResource> = mutableListOf(),
         val nonFungibles: MutableList<Resource.NonFungibleResource> = mutableListOf(),
     ) {
@@ -378,7 +380,8 @@ class AccountsStateCache @Inject constructor(
                 address = accountAddress,
                 details = AccountDetails(
                     stateVersion = stateVersion,
-                    accountType = accountType
+                    accountType = accountType,
+                    firstTransactionDate = firstTransactionDate
                 ),
                 assets = Assets(
                     tokens = resultingFungibles.sorted().map { Token(it) },

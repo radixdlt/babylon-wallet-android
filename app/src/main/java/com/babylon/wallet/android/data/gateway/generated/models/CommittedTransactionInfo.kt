@@ -15,10 +15,12 @@
 
 package com.babylon.wallet.android.data.gateway.generated.models
 
+import com.babylon.wallet.android.data.gateway.coreapi.TransactionMessage
 import com.babylon.wallet.android.data.gateway.generated.models.ManifestClass
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
+import com.babylon.wallet.android.data.gateway.serialisers.StateEntityDetailsResponseItemDetailsSerializer
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
@@ -101,11 +103,10 @@ data class CommittedTransactionInfo (
     val manifestClasses: kotlin.collections.List<@Contextual ManifestClass>? = null,
 
     /* The optional transaction message. This type is defined in the Core API as `TransactionMessage`. See the Core API documentation for more details.  */
-//    @Contextual @SerialName(value = "message")
-//    val message: kotlin.Any? = null,
+    @Contextual @SerialName(value = "message")
+    val message: TransactionMessage? = null,
 
     @SerialName(value = "balance_changes")
     val balanceChanges: TransactionBalanceChanges? = null
 
 )
-

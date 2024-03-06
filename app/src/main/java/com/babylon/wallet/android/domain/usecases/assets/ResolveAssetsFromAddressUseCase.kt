@@ -15,7 +15,6 @@ import javax.inject.Inject
 class ResolveAssetsFromAddressUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
-
     suspend operator fun invoke(
         fungibleAddresses: Set<String>,
         nonFungibleIds: Map<String, Set<String>>

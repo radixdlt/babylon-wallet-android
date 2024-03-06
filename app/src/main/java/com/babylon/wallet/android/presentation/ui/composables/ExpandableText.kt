@@ -7,6 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -50,8 +51,8 @@ fun ExpandableText(
     onClick: (Int) -> Unit = {}
 ) {
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-    var isExpanded by remember { mutableStateOf(false) }
-    var canExpand by remember { mutableStateOf(false) }
+    var isExpanded by rememberSaveable { mutableStateOf(false) }
+    var canExpand by rememberSaveable { mutableStateOf(false) }
 
     var resultText by remember { mutableStateOf(text) }
     val expandText = "…${stringResource(id = R.string.common_showMore)}"
