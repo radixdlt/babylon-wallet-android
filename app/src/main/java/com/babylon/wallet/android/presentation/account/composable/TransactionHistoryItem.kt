@@ -280,6 +280,9 @@ private fun StakeClaimBalanceChange(asset: StakeClaim, modifier: Modifier = Modi
             .height(IntrinsicSize.Min)
             .padding(vertical = RadixTheme.dimensions.paddingMedium)
     ) {
+        val hasAtLeastOneClaimWithAmount = remember(asset) {
+            asset.resource.items.any { it.claimAmountXrd != null }
+        }
         Column(modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -308,18 +311,22 @@ private fun StakeClaimBalanceChange(asset: StakeClaim, modifier: Modifier = Modi
                     )
                 }
             }
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = RadixTheme.dimensions.paddingSmall),
-                text = stringResource(id = R.string.transactionReview_worth).uppercase(), // TODO crowdin
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2,
-                maxLines = 1
-            )
+            if (hasAtLeastOneClaimWithAmount) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                    text = stringResource(id = R.string.transactionReview_worth).uppercase(), // TODO crowdin
+                    style = RadixTheme.typography.body2HighImportance,
+                    color = RadixTheme.colors.gray2,
+                    maxLines = 1
+                )
+            }
         }
-        HorizontalDivider(color = RadixTheme.colors.gray3)
-        asset.resource.items.forEachIndexed { index, item ->
+        if (hasAtLeastOneClaimWithAmount) {
+            HorizontalDivider(color = RadixTheme.colors.gray3)
+        }
+        asset.resource.items.filter { it.claimAmountXrd != null }.forEachIndexed { index, item ->
             val lastItem = index == asset.resource.items.lastIndex
             Row(
                 modifier = Modifier
@@ -387,7 +394,7 @@ private fun PoolUnitBalanceChange(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = asset.name(),
+                    text = asset.name().ifEmpty { stringResource(id = R.string.account_poolUnits)},
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,

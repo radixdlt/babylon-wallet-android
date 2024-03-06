@@ -155,7 +155,7 @@ class HistoryViewModel @Inject constructor(
     fun onTimeFilterSelected(timeFilterItem: State.MonthFilter) {
         val existingIndex = _state.value.historyItems?.indexOfFirst {
             it.dateTime?.isAfter(timeFilterItem.start) == true &&
-                    it.dateTime?.isBefore(timeFilterItem.end) == true
+                it.dateTime?.isBefore(timeFilterItem.end) == true
         }
         var item = existingIndex?.let { _state.value.historyItems?.getOrNull(it) }
         if (existingIndex == null || existingIndex == -1) {
@@ -429,7 +429,6 @@ data class State(
     data class MonthFilter(val month: String, val start: ZonedDateTime, val end: ZonedDateTime)
 }
 
-
 sealed interface HistoryItem {
 
     val dateTime: ZonedDateTime?
@@ -449,3 +448,4 @@ sealed interface HistoryItem {
         override val key: String = transactionItem.txId
     }
 }
+
