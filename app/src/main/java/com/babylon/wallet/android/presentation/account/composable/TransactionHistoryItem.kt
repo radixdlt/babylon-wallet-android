@@ -62,7 +62,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
             )
     ) {
         val (content, label, message) = createRefs()
-        if (transactionItem.message != null) {
+        if (!transactionItem.message.isNullOrEmpty()) {
             HistoryMessageContent(
                 transactionItem.message,
                 Modifier.constrainAs(message) {
@@ -303,7 +303,7 @@ private fun StakeClaimBalanceChange(asset: StakeClaim, modifier: Modifier = Modi
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = asset.resource.name.ifEmpty { stringResource(id = R.string.accountHistory_unknown) },
-                        style = RadixTheme.typography.body1Header,
+                        style = RadixTheme.typography.body2HighImportance,
                         color = RadixTheme.colors.gray1,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -346,7 +346,7 @@ private fun PoolUnitBalanceChange(
                 Text(
                     modifier = Modifier.fillMaxWidth(),
                     text = asset.name().ifEmpty { stringResource(id = R.string.accountHistory_poolUnits) },
-                    style = RadixTheme.typography.body1Header,
+                    style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -407,7 +407,7 @@ private fun LiquidStakeUnitBalanceChange(
                                 id = R.string.accountHistory_unknown
                             )
                         },
-                        style = RadixTheme.typography.body1Header,
+                        style = RadixTheme.typography.body2HighImportance,
                         color = RadixTheme.colors.gray1,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
@@ -508,10 +508,7 @@ fun TypeAndTimestampLabel(modifier: Modifier = Modifier, item: TransactionHistor
     val text = buildAnnotatedString {
         append(item.transactionClass.description())
         item.timestamp?.timestampHoursMinutes()?.let {
-            append(" ")
-            append(stringResource(id = R.string.accountHistory_bullet))
-            append(" ")
-            append(it)
+            append(" \u2022 $it")
         }
     }
     Text(

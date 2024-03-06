@@ -170,7 +170,7 @@ private fun ResourcesSection(
         if (fungibles.isNotEmpty()) {
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = stringResource(id = R.string.accountHistory_filters_assetTypeTokensLabel),
+                text = stringResource(id = R.string.accountHistory_filters_tokensLabel),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2,
                 textAlign = TextAlign.Start
@@ -204,13 +204,11 @@ private fun ResourcesSection(
             }
             if (showMoreFungiblesButton) {
                 RadixTextButton(
-                    text = stringResource(
-                        id = if (showingAllFungibles) {
-                            R.string.accountHistory_filters_assetTypeTokenShowLess
-                        } else {
-                            R.string.accountHistory_filters_assetTypeTokenShowAll
-                        }
-                    ),
+                    text = if (showingAllFungibles) {
+                        "- " + stringResource(id = R.string.accountHistory_filters_tokenShowLess)
+                    } else {
+                        "+ " + stringResource(id = R.string.accountHistory_filters_tokenShowAll)
+                    },
                     onClick = {
                         showingAllFungibles = !showingAllFungibles
                     }
@@ -256,13 +254,11 @@ private fun ResourcesSection(
             }
             if (showMoreNonFungiblesButton) {
                 RadixTextButton(
-                    text = stringResource(
-                        id = if (showingAllNonFungibleResource) {
-                            R.string.accountHistory_filters_assetTypeNFTShowLess
-                        } else {
-                            R.string.accountHistory_filters_assetTypeNFTShowAll
-                        }
-                    ),
+                    text = if (showingAllNonFungibleResource) {
+                        "- " + stringResource(id = R.string.accountHistory_filters_nftShowLess)
+                    } else {
+                        "+ " + stringResource(id = R.string.accountHistory_filters_nftShowAll)
+                    },
                     onClick = {
                         showingAllNonFungibleResource = !showingAllNonFungibleResource
                     }
