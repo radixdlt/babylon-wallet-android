@@ -997,4 +997,38 @@ You will be asked to enter your main seed phrase. This is a set of **24 words** 
 
 If you have any “Legacy” Accounts (created on the Olympia network) to import - or any Accounts using a Ledger hardware wallet device - please continue and then use the **Account Recovery Scan** option in your Radix Wallet settings under **Account Security**.</string>
   <string name="recoverWalletWithoutProfile_complete_continueButton">Continue</string>
+  <string name="accountHistory_title">History</string>
+  <string name="accountHistory_transactionClassGeneral">General</string>
+  <string name="accountHistory_transactionClassTransfer">Transfer</string>
+  <string name="accountHistory_transactionClassStaking">Stake</string>
+  <string name="accountHistory_transactionClassUnstaking">Request Unstake</string>
+  <string name="accountHistory_transactionClassClaim">Claim Stake</string>
+  <string name="accountHistory_transactionClassContribute">Contribute</string>
+  <string name="accountHistory_transactionClassRedeem">Redeem</string>
+  <string name="accountHistory_transactionClassAccountSettings">Deposit Settings</string>
+  <string name="accountHistory_transactionClassOther">Other</string>
+  <string name="accountHistory_filters_title">Filter</string>
+  <string name="accountHistory_filters_clearAll">Clear All</string>
+  <string name="accountHistory_filters_showResultsButton">Show Results</string>
+  <string name="accountHistory_filters_assetTypeLabel">Type of Asset</string>
+  <string name="accountHistory_filters_tokenShowAll">Show All Tokens</string>
+  <string name="accountHistory_filters_tokenShowLess">Show Less Tokens</string>
+  <string name="accountHistory_filters_nftShowAll">Show All NFTs</string>
+  <string name="accountHistory_filters_nftShowLess">Show Less NFTs</string>
+  <string name="accountHistory_filters_tokensLabel">Tokens</string>
+  <string name="accountHistory_filters_depositsType">Deposits</string>
+  <string name="accountHistory_filters_withdrawalsType">Withdrawals</string>
+  <string name="accountHistory_filters_assetTypeNFTsLabel">NFTs</string>
+  <string name="accountHistory_filters_transactionTypeLabel">Type of Transaction</string>
+  <string name="accountHistory_settingsSection">Settings</string>
+  <string name="accountHistory_settings_info">Updated Account Deposit Settings</string>
+  <string name="accountHistory_noBalanceChanges">No deposits or withdrawals from this account in this transaction.</string>
+  <string name="accountHistory_withdrawnSection">Withdrawn</string>
+  <string name="accountHistory_depositedSection">Deposited</string>
+  <string name="accountHistory_unknownTransactionInfo">This transaction cannot be summarized. Only the raw transaction manifest may be viewed.</string>
+  <string name="accountHistory_failedTransaction">Failed Transaction</string>
+  <string name="accountHistory_empty">You have no Transactions.</string>
+  <string name="accountHistory_worth">Worth</string>
+  <string name="accountHistory_unknown">Unknown</string>
+  <string name="accountHistory_poolUnits">Pool Units</string>
 </resources>
