@@ -3,24 +3,20 @@ package com.babylon.wallet.android.domain.usecases.assets
 import com.babylon.wallet.android.data.repository.tokenprice.TokenPriceRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Asset
+import com.babylon.wallet.android.domain.model.assets.TokenPrice
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 import javax.inject.Inject
 
-class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
-    private val tokenPriceRepository: TokenPriceRepository
-) {
+class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(private val tokenPriceRepository: TokenPriceRepository) {
 
     suspend operator fun invoke(accountsWithAssets: List<AccountWithAssets>): Map<AccountWithAssets, List<AssetPrice>> {
         tokenPriceRepository.updateTokensPrices()
 
-        val mapOfAccountsWithAssetsAndPrices = accountsWithAssets.associateWith { accountWithAssets ->
+        val mapOfAccountsWithAssetsAndFiatValue = accountsWithAssets.associateWith { accountWithAssets ->
             val tokenAddressesWithAmounts = accountWithAssets.assets
                 ?.ownedTokens
-                ?.filterNot {
-                    it.resource.ownedAmount == null || it.resource.ownedAmount == BigDecimal.ZERO
-                }
                 ?.associate { token ->
                     token.resource.resourceAddress to (token.resource.ownedAmount)
                 }.orEmpty()
@@ -36,33 +32,24 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
                 liquidStakeUnit.resourceAddress to liquidStakeUnit.resource.ownedAmount
             }.orEmpty()
 
-            val poolItemsAddresses = poolUnitAddressesWithTokenAmounts.values.flatMap { itemAddressAndAmount ->
-                itemAddressAndAmount.keys
+            val poolItemsAddresses = poolUnitAddressesWithTokenAmounts.values.flatMap { poolItemAddressAndAmount ->
+                poolItemAddressAndAmount.keys
             }
             // build a list of resources addresses which consists of token and pool items addresses
             val resourcesAddresses = tokenAddressesWithAmounts.keys + poolItemsAddresses
             // and pass this as an argument to the getTokensPrices along with the lsus addresses
-            val priceResult = tokenPriceRepository
-                .getTokensPrices(resourcesAddresses, lsuAddressesWithAmounts.keys)
-                .getOrThrow()
-                .associateBy { tokenPrice ->
-                    tokenPrice.resourceAddress
-                }
+            val priceResult = getTokensPricesForResources(resourcesAddresses, lsuAddressesWithAmounts.keys)
 
-            val accountAssetsPrice = mutableMapOf<Asset, BigDecimal>()
+            val accountAssetsWithFiatValue = mutableMapOf<Asset, BigDecimal>()
 
             val tokensWithFiatValue = accountWithAssets.assets
                 ?.ownedTokens
-                ?.filterNot {
-                    it.resource.ownedAmount == null || it.resource.ownedAmount == BigDecimal.ZERO
-                }
                 ?.associateWith { token ->
                     val priceForResource = priceResult[token.resource.resourceAddress]?.price ?: BigDecimal.ZERO
                     priceForResource.multiply(token.resource.ownedAmount ?: BigDecimal.ZERO)
                 }.orEmpty()
-            accountAssetsPrice.putAll(tokensWithFiatValue)
 
-            val poolsWithFiatValue = accountWithAssets.assets?.poolUnits?.associateWith { poolUnit ->
+            val poolUnitsWithFiatValue = accountWithAssets.assets?.poolUnits?.associateWith { poolUnit ->
                 val itemsPrices = poolUnitAddressesWithTokenAmounts[poolUnit]?.map { poolItemAddressAndAmountMap ->
                     val priceForResource = priceResult[poolItemAddressAndAmountMap.key]?.price ?: BigDecimal.ZERO
                     priceForResource.multiply(poolItemAddressAndAmountMap.value)
@@ -70,13 +57,11 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
                 val poolUnitTotalPrice = itemsPrices?.sumOf { it } ?: BigDecimal.ZERO
                 poolUnitTotalPrice
             }.orEmpty()
-            accountAssetsPrice.putAll(poolsWithFiatValue)
 
             val lsusWithFiatValue = accountWithAssets.assets?.liquidStakeUnits?.associateWith { lsu ->
                 val priceForLSU = priceResult[lsu.resourceAddress]?.price ?: BigDecimal.ZERO
                 priceForLSU.multiply(lsu.fungibleResource.ownedAmount ?: BigDecimal.ZERO)
             }.orEmpty()
-            accountAssetsPrice.putAll(lsusWithFiatValue)
 
             val xrdAddress = XrdResource.address(networkId = NetworkId.from(accountWithAssets.account.networkID))
             val claimsWithFiatValue = accountWithAssets.assets?.stakeClaims?.associateWith { stakeClaim ->
@@ -85,9 +70,10 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
                 }
                 totalItemXRD * (priceResult[xrdAddress]?.price ?: BigDecimal.ZERO)
             }.orEmpty()
-            accountAssetsPrice.putAll(claimsWithFiatValue)
 
-            accountAssetsPrice.map {
+            accountAssetsWithFiatValue.putAll(tokensWithFiatValue + lsusWithFiatValue + poolUnitsWithFiatValue + claimsWithFiatValue)
+
+            accountAssetsWithFiatValue.map {
                 AssetPrice(
                     asset = it.key,
                     price = it.value
@@ -95,7 +81,19 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
             }
         }
 
-        return mapOfAccountsWithAssetsAndPrices
+        return mapOfAccountsWithAssetsAndFiatValue
+    }
+
+    private suspend fun getTokensPricesForResources(
+        resourcesAddresses: Set<String>,
+        lsuAddresses: Set<String>
+    ): Map<String, TokenPrice> {
+        return tokenPriceRepository
+            .getTokensPrices(resourcesAddresses, lsuAddresses)
+            .getOrThrow()
+            .associateBy { tokenPrice ->
+                tokenPrice.resourceAddress
+            }
     }
 
     data class AssetPrice(
