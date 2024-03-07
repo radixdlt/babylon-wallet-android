@@ -24,6 +24,7 @@ fun HistoryFilterTag(
     modifier: Modifier = Modifier,
     selected: Boolean,
     text: String,
+    showCloseIcon: Boolean = true,
     leadingIcon: @Composable (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     onCloseClick: (() -> Unit)? = null
@@ -37,7 +38,12 @@ fun HistoryFilterTag(
     Row(
         modifier = modifier
             .clip(RadixTheme.shapes.circle)
-            .applyIf(onClick != null, Modifier.clickable { onClick?.invoke() })
+            .applyIf(
+                onClick != null,
+                Modifier.clickable {
+                    onClick?.invoke()
+                }
+            )
             .applyIf(selected, tagSelectedModifier)
             .applyIf(!selected, tagBorderModifier),
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall),
@@ -49,7 +55,7 @@ fun HistoryFilterTag(
             style = RadixTheme.typography.body1HighImportance,
             color = if (selected) RadixTheme.colors.white else RadixTheme.colors.gray1
         )
-        if (selected) {
+        if (showCloseIcon) {
             Icon(
                 modifier = Modifier
                     .applyIf(

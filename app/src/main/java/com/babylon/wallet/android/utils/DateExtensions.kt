@@ -55,14 +55,21 @@ fun Instant.dayMonthDateShort(): String {
 fun Instant.dayMonthDateFull(): String {
     val zoneId = ZoneId.systemDefault()
     val currentYear = Instant.now().atZone(zoneId).year
+    val currentDay = Instant.now().atZone(zoneId).dayOfYear
     val instantYear = atZone(zoneId).year
+    val instantDay = atZone(zoneId).dayOfYear
     val format = if (currentYear == instantYear) {
         LAST_USED_DATE_FORMAT_THIS_YEAR
     } else {
         LAST_USED_DATE_FORMAT
     }
+    val prefix = when {
+        currentDay == instantDay -> "Today, "
+        currentDay - instantDay == 1 -> "Yesterday, "
+        else -> ""
+    }
     val formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.systemDefault())
-    return formatter.format(this)
+    return prefix + formatter.format(this)
 }
 
 fun Instant.timestampHoursMinutes(): String {

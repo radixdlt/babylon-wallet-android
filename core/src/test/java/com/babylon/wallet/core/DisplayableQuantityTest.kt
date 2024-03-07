@@ -391,6 +391,24 @@ class TokenQuantityToDisplayTest {
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
     }
+
+    @Test
+    fun zeroExample() {
+        val expectedTokenQuantityToDisplay = "0"
+
+        val actual = BigDecimal(0.000000000000083616).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
+
+    @Test
+    fun zeroExample2() {
+        val expectedTokenQuantityToDisplay = "0"
+
+        val actual = BigDecimal(0.000000000000000001).displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
 }
 
 class DefaultLocaleRule : TestRule {

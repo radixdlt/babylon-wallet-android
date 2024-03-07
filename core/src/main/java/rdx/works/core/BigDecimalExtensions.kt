@@ -25,7 +25,7 @@ private const val SCIENTIFIC_NOTATION_THRESHOLD = 20
 fun BigDecimal.displayableQuantity(): String {
     val integralPart: BigInteger = this.toBigInteger()
     val integralPartLength = if (integralPart.signum() == 0) 0 else integralPart.toString().length
-    val tokenQuantityString = this.toString()
+    val tokenQuantityString = this.toPlainString()
     val decimalPartLength = if (tokenQuantityString.contains(".") &&
         (tokenQuantityString.substringAfter(".") == "0").not()
     ) {

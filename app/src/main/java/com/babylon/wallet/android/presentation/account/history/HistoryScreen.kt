@@ -118,7 +118,7 @@ fun HistoryScreen(
         onScrollEvent = viewModel::onScrollEvent,
         onTransactionTypeFilterSelected = viewModel::onTransactionTypeFilterSelected,
         onTransactionClassFilterSelected = viewModel::onTransactionClassFilterSelected,
-        onResourceFilterRemoved = viewModel::onResourceFilterSelected,
+        onResourceFilterSelected = viewModel::onResourceFilterSelected,
         listState = listState,
         timeFilterScrollState = timeFilterScrollState,
         onMessageShown = viewModel::onMessageShown,
@@ -188,7 +188,7 @@ fun HistoryContent(
     onScrollEvent: (ScrollInfo) -> Unit,
     onTransactionTypeFilterSelected: (HistoryFilters.TransactionType?) -> Unit,
     onTransactionClassFilterSelected: (TransactionClass?) -> Unit,
-    onResourceFilterRemoved: (Resource?) -> Unit,
+    onResourceFilterSelected: (Resource?) -> Unit,
     listState: LazyListState,
     timeFilterScrollState: LazyListState,
     onMessageShown: () -> Unit,
@@ -388,7 +388,7 @@ fun HistoryContent(
                                 onShowResults()
                             },
                             onResourceFilterRemoved = {
-                                onResourceFilterRemoved(null)
+                                onResourceFilterSelected(null)
                                 onShowResults()
                             },
                             timeFilterScrollState = timeFilterScrollState
@@ -417,7 +417,7 @@ fun HistoryContent(
                 onClearAllFilters = onClearAllFilters,
                 onTransactionTypeFilterSelected = onTransactionTypeFilterSelected,
                 onTransactionClassFilterSelected = onTransactionClassFilterSelected,
-                onResourceFilterSelected = onResourceFilterRemoved,
+                onResourceFilterSelected = onResourceFilterSelected,
             )
         }, showDragHandle = true, containerColor = RadixTheme.colors.defaultBackground, onDismissRequest = {
             onShowFilters(false)
@@ -662,7 +662,7 @@ fun HistoryContentPreview() {
             onScrollEvent = {},
             onTransactionTypeFilterSelected = {},
             onTransactionClassFilterSelected = {},
-            onResourceFilterRemoved = {},
+            onResourceFilterSelected = {},
             listState = rememberLazyListState(),
             timeFilterScrollState = rememberLazyListState(),
             onMessageShown = {},
