@@ -2,7 +2,6 @@ package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.model.resources.Badge
-import com.radixdlt.ret.Address
 import javax.inject.Inject
 
 class GetTransactionBadgesUseCase @Inject constructor(
@@ -10,9 +9,9 @@ class GetTransactionBadgesUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        accountProofs: List<Address>
+        accountProofs: Set<String>
     ): List<Badge> = stateRepository.getDAppsDetails(
-        definitionAddresses = accountProofs.map { it.addressString() },
+        definitionAddresses = accountProofs.toList(),
         isRefreshing = false
     ).map { dApps ->
         dApps.map {
