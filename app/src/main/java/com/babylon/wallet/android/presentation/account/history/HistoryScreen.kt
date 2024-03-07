@@ -390,8 +390,7 @@ fun HistoryContent(
                             onResourceFilterRemoved = {
                                 onResourceFilterSelected(null)
                                 onShowResults()
-                            },
-                            timeFilterScrollState = timeFilterScrollState
+                            }
                         )
                     }
                     if (state.timeFilterItems.isNotEmpty()) {
