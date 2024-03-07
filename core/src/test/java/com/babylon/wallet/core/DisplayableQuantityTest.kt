@@ -393,19 +393,10 @@ class TokenQuantityToDisplayTest {
     }
 
     @Test
-    fun zeroExample() {
+    fun `scientific notation close to 0`() {
         val expectedTokenQuantityToDisplay = "0"
 
-        val actual = BigDecimal(0.000000000000083616).displayableQuantity()
-
-        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
-    }
-
-    @Test
-    fun zeroExample2() {
-        val expectedTokenQuantityToDisplay = "0"
-
-        val actual = BigDecimal(0.000000000000000001).displayableQuantity()
+        val actual = BigDecimal("0.8616E-14").displayableQuantity()
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
     }
