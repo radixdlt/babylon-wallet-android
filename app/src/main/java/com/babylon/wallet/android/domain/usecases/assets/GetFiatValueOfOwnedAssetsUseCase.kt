@@ -3,6 +3,8 @@ package com.babylon.wallet.android.domain.usecases.assets
 import com.babylon.wallet.android.data.repository.tokenprice.TokenPriceRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Asset
+import com.babylon.wallet.android.domain.model.resources.XrdResource
+import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -14,8 +16,6 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
         tokenPriceRepository.updateTokensPrices()
 
         val mapOfAccountsWithAssetsAndPrices = accountsWithAssets.associateWith { accountWithAssets ->
-            val accountPrice = mutableMapOf<Asset, BigDecimal>()
-
             val tokenAddressesWithAmounts = accountWithAssets.assets
                 ?.ownedTokens
                 ?.filterNot {
@@ -36,40 +36,58 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
                 liquidStakeUnit.resourceAddress to liquidStakeUnit.resource.ownedAmount
             }.orEmpty()
 
-            val resourcesAddresses = tokenAddressesWithAmounts.keys + poolUnitAddressesWithTokenAmounts.keys.map {
-                    poolUnit ->
-                poolUnit.resourceAddress
+            val poolItemsAddresses = poolUnitAddressesWithTokenAmounts.values.flatMap { itemAddressAndAmount ->
+                itemAddressAndAmount.keys
             }
-
-            val priceResult = tokenPriceRepository.getTokensPrices(resourcesAddresses, lsuAddressesWithAmounts.keys)
+            // build a list of resources addresses which consists of token and pool items addresses
+            val resourcesAddresses = tokenAddressesWithAmounts.keys + poolItemsAddresses
+            // and pass this as an argument to the getTokensPrices along with the lsus addresses
+            val priceResult = tokenPriceRepository
+                .getTokensPrices(resourcesAddresses, lsuAddressesWithAmounts.keys)
                 .getOrThrow()
                 .associateBy { tokenPrice ->
                     tokenPrice.resourceAddress
                 }
 
-            val tokensWithPrices = accountWithAssets.assets
+            val accountAssetsPrice = mutableMapOf<Asset, BigDecimal>()
+
+            val tokensWithFiatValue = accountWithAssets.assets
                 ?.ownedTokens
                 ?.filterNot {
                     it.resource.ownedAmount == null || it.resource.ownedAmount == BigDecimal.ZERO
                 }
                 ?.associateWith { token ->
-                    priceResult[token.resource.resourceAddress]?.price ?: BigDecimal.ZERO
+                    val priceForResource = priceResult[token.resource.resourceAddress]?.price ?: BigDecimal.ZERO
+                    priceForResource.multiply(token.resource.ownedAmount ?: BigDecimal.ZERO)
                 }.orEmpty()
-            accountPrice.putAll(tokensWithPrices)
+            accountAssetsPrice.putAll(tokensWithFiatValue)
 
-            val poolsWithPrices = accountWithAssets.assets?.poolUnits?.associateWith { poolUnit ->
-                poolUnit.pool?.resources.orEmpty().sumOf { poolItem ->
-                    priceResult[poolItem.resourceAddress]?.price ?: BigDecimal.ZERO
+            val poolsWithFiatValue = accountWithAssets.assets?.poolUnits?.associateWith { poolUnit ->
+                val itemsPrices = poolUnitAddressesWithTokenAmounts[poolUnit]?.map { poolItemAddressAndAmountMap ->
+                    val priceForResource = priceResult[poolItemAddressAndAmountMap.key]?.price ?: BigDecimal.ZERO
+                    priceForResource.multiply(poolItemAddressAndAmountMap.value)
                 }
+                val poolUnitTotalPrice = itemsPrices?.sumOf { it } ?: BigDecimal.ZERO
+                poolUnitTotalPrice
             }.orEmpty()
-            accountPrice.putAll(poolsWithPrices)
+            accountAssetsPrice.putAll(poolsWithFiatValue)
 
-            val lsusWithPrices = accountWithAssets.assets?.liquidStakeUnits?.associateWith { lsu ->
-                priceResult[lsu.resourceAddress]?.price ?: BigDecimal.ZERO
+            val lsusWithFiatValue = accountWithAssets.assets?.liquidStakeUnits?.associateWith { lsu ->
+                val priceForLSU = priceResult[lsu.resourceAddress]?.price ?: BigDecimal.ZERO
+                priceForLSU.multiply(lsu.fungibleResource.ownedAmount ?: BigDecimal.ZERO)
             }.orEmpty()
-            accountPrice.putAll(lsusWithPrices)
+            accountAssetsPrice.putAll(lsusWithFiatValue)
 
-            accountPrice.map {
+            val xrdAddress = XrdResource.address(networkId = NetworkId.from(accountWithAssets.account.networkID))
+            val claimsWithFiatValue = accountWithAssets.assets?.stakeClaims?.associateWith { stakeClaim ->
+                val totalItemXRD = stakeClaim.nonFungibleResource.items.sumOf {
+                    it.claimAmountXrd ?: BigDecimal.ZERO
+                }
+                totalItemXRD * (priceResult[xrdAddress]?.price ?: BigDecimal.ZERO)
+            }.orEmpty()
+            accountAssetsPrice.putAll(claimsWithFiatValue)
+
+            accountAssetsPrice.map {
                 AssetPrice(
                     asset = it.key,
                     price = it.value
