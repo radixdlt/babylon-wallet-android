@@ -398,11 +398,16 @@ data class State(
             else -> null
         }
 
-    val fungibleResources: List<Resource.FungibleResource>
-        get() = accountWithAssets?.assets?.knownFungibles.orEmpty()
+    // we use this to show  for now we filter out LSU -
+    val fungibleResourcesUsedInFilters: List<Resource.FungibleResource>
+        get() = accountWithAssets?.assets?.tokens?.map {
+            it.resource
+        }.orEmpty() + accountWithAssets?.assets?.poolUnits?.map {
+            it.stake
+        }.orEmpty()
 
-    val nonFungibleResources: List<Resource.NonFungibleResource>
-        get() = accountWithAssets?.assets?.knownNonFungibles.orEmpty()
+    val nonFungibleResourcesUsedInFilters: List<Resource.NonFungibleResource>
+        get() = accountWithAssets?.assets?.nonFungibles?.map { it.collection }.orEmpty()
 
     val canLoadMoreUp: Boolean
         get() = content is Content.Loaded && loadMoreState == null && content.historyData.prevCursorId != null

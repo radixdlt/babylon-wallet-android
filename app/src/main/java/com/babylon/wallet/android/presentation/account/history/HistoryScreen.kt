@@ -93,6 +93,7 @@ import com.babylon.wallet.android.utils.dayMonthDateFull
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 private const val FIXED_LIST_ELEMENTS = 2
 
@@ -206,6 +207,7 @@ fun HistoryContent(
     )
     LaunchedEffect(state.timeFilterItems.size) {
         if (state.timeFilterItems.isNotEmpty()) {
+            Timber.d("History: Scrolling to last item")
             timeFilterScrollState.scrollToItem(state.timeFilterItems.lastIndex)
         }
     }
@@ -397,7 +399,8 @@ fun HistoryContent(
                         TimePicker(
                             timeFilterState = timeFilterScrollState,
                             timeFilterItems = state.timeFilterItems,
-                            onTimeFilterSelected = onTimeFilterSelected
+                            onTimeFilterSelected = onTimeFilterSelected,
+                            userInteractionEnabled = state.shouldEnableUserInteraction
                         )
                     }
                 }
@@ -463,7 +466,8 @@ private fun TimePicker(
     modifier: Modifier = Modifier,
     timeFilterState: LazyListState,
     timeFilterItems: ImmutableList<Selectable<State.MonthFilter>>,
-    onTimeFilterSelected: (State.MonthFilter) -> Unit
+    onTimeFilterSelected: (State.MonthFilter) -> Unit,
+    userInteractionEnabled: Boolean
 ) {
     LazyRow(
         modifier = modifier
@@ -476,15 +480,13 @@ private fun TimePicker(
             end = RadixTheme.dimensions.paddingMedium,
             bottom = RadixTheme.dimensions.paddingMedium
         ),
+        userScrollEnabled = userInteractionEnabled,
         content = {
             items(timeFilterItems) { item ->
                 Text(
                     modifier = Modifier
                         .clip(RadixTheme.shapes.circle)
-                        .clickable {
-                            item.data
-                            onTimeFilterSelected(item.data)
-                        }
+                        .applyIf(userInteractionEnabled, Modifier.clickable { onTimeFilterSelected(item.data) })
                         .applyIf(
                             item.selected,
                             Modifier.background(RadixTheme.colors.gray4, RadixTheme.shapes.circle)

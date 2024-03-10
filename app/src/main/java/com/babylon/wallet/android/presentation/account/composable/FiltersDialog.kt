@@ -148,11 +148,11 @@ private fun ResourcesSection(
 ) {
     val maxFungiblesInCollapsedState = 12
     val maxNonFungiblesInCollapsedState = 6
-    val fungibles = remember(state.fungibleResources) {
-        state.fungibleResources
+    val fungibles = remember(state.fungibleResourcesUsedInFilters) {
+        state.fungibleResourcesUsedInFilters
     }
-    val nonFungibles = remember(state.nonFungibleResources) {
-        state.nonFungibleResources
+    val nonFungibles = remember(state.nonFungibleResourcesUsedInFilters) {
+        state.nonFungibleResourcesUsedInFilters
     }
     val showMoreFungiblesButton by remember {
         derivedStateOf {
@@ -244,7 +244,8 @@ private fun ResourcesSection(
                         },
                         onCloseClick = {
                             onResourceFilterSelected(nonFungible)
-                        }
+                        },
+                        showCloseIcon = false
                     )
                 }
             }
