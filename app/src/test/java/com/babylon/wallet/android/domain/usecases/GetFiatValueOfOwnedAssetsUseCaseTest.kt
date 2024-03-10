@@ -1,16 +1,22 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.domain.model.NetworkInfo
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueOfOwnedAssetsUseCase
+import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.babylon.wallet.android.fakes.TokenPriceRepositoryFake
 import com.babylon.wallet.android.mockdata.mockAccountsWithMockAssets
+import io.mockk.coEvery
+import io.mockk.mockk
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
+import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -19,8 +25,20 @@ class GetFiatValueOfOwnedAssetsUseCaseTest {
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
+    private val getNetworkInfoUseCase = mockk<GetNetworkInfoUseCase>()
     private val tokenPriceRepositoryFake = TokenPriceRepositoryFake()
-    private val getFiatValueOfOwnedAssetsUseCase: GetFiatValueOfOwnedAssetsUseCase = GetFiatValueOfOwnedAssetsUseCase(tokenPriceRepositoryFake)
+    private val getFiatValueOfOwnedAssetsUseCase = GetFiatValueOfOwnedAssetsUseCase(
+        tokenPriceRepository = tokenPriceRepositoryFake,
+        stateRepository = StateRepositoryFake(),
+        getNetworkInfoUseCase = getNetworkInfoUseCase
+    )
+
+    @Before
+    fun setUp() = runTest {
+        coEvery { getNetworkInfoUseCase() } returns Result.success(
+            NetworkInfo(Radix.Network.mainnet, 0L)
+        )
+    }
 
     @Test
     fun `assert that all the tokens of the given accounts have their prices`() {

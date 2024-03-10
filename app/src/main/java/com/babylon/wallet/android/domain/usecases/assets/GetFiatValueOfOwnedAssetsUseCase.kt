@@ -1,17 +1,24 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
+import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.tokenprice.TokenPriceRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.TokenPrice
 import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 import javax.inject.Inject
 
-class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(private val tokenPriceRepository: TokenPriceRepository) {
+class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
+    private val tokenPriceRepository: TokenPriceRepository,
+    private val stateRepository: StateRepository,
+    private val getNetworkInfoUseCase: GetNetworkInfoUseCase
+) {
 
     suspend operator fun invoke(accountsWithAssets: List<AccountWithAssets>): Map<AccountWithAssets, List<AssetPrice>> {
+        fetchClaimStakesForAccounts(accountsWithAssets)
         tokenPriceRepository.updateTokensPrices()
 
         val mapOfAccountsWithAssetsAndFiatValue = accountsWithAssets.associateWith { accountWithAssets ->
@@ -21,7 +28,7 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(private val tokenPric
                     token.resource.resourceAddress to (token.resource.ownedAmount)
                 }.orEmpty()
 
-            val poolUnitAddressesWithTokenAmounts = accountWithAssets.assets
+            val poolUnitAndItemsAddressesWithAmounts = accountWithAssets.assets
                 ?.ownedPoolUnits?.associateWith { poolUnit ->
                     poolUnit.pool?.resources.orEmpty().associate { poolItem ->
                         poolItem.resourceAddress to (poolUnit.resourceRedemptionValue(poolItem) ?: BigDecimal.ZERO)
@@ -32,7 +39,7 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(private val tokenPric
                 liquidStakeUnit.resourceAddress to liquidStakeUnit.resource.ownedAmount
             }.orEmpty()
 
-            val poolItemsAddresses = poolUnitAddressesWithTokenAmounts.values.flatMap { poolItemAddressAndAmount ->
+            val poolItemsAddresses = poolUnitAndItemsAddressesWithAmounts.values.flatMap { poolItemAddressAndAmount ->
                 poolItemAddressAndAmount.keys
             }
             // build a list of resources addresses which consists of token and pool items addresses
@@ -50,7 +57,7 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(private val tokenPric
                 }.orEmpty()
 
             val poolUnitsWithFiatValue = accountWithAssets.assets?.poolUnits?.associateWith { poolUnit ->
-                val itemsPrices = poolUnitAddressesWithTokenAmounts[poolUnit]?.map { poolItemAddressAndAmountMap ->
+                val itemsPrices = poolUnitAndItemsAddressesWithAmounts[poolUnit]?.map { poolItemAddressAndAmountMap ->
                     val priceForResource = priceResult[poolItemAddressAndAmountMap.key]?.price ?: BigDecimal.ZERO
                     priceForResource.multiply(poolItemAddressAndAmountMap.value)
                 }
@@ -88,12 +95,32 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(private val tokenPric
         resourcesAddresses: Set<String>,
         lsuAddresses: Set<String>
     ): Map<String, TokenPrice> {
-        return tokenPriceRepository
-            .getTokensPrices(resourcesAddresses, lsuAddresses)
+        return tokenPriceRepository.getTokensPrices(
+            resourcesAddresses = resourcesAddresses,
+            lsusAddresses = lsuAddresses
+        )
             .getOrThrow()
             .associateBy { tokenPrice ->
                 tokenPrice.resourceAddress
             }
+    }
+
+    private suspend fun fetchClaimStakesForAccounts(accountsWithAssets: List<AccountWithAssets>) {
+        getNetworkInfoUseCase()
+        accountsWithAssets.map { accountWithAssets ->
+            val account = accountWithAssets.account
+            val ownedValidatorsWithStakes = accountWithAssets.assets?.ownedValidatorsWithStakes ?: return
+            val areAnyUnknownLSUs = ownedValidatorsWithStakes.any {
+                    validatorWithStakes ->
+                !validatorWithStakes.isDetailsAvailable
+            }
+            if (areAnyUnknownLSUs) {
+                stateRepository.updateLSUsInfo(
+                    account = account,
+                    validatorsWithStakes = ownedValidatorsWithStakes
+                )
+            }
+        }
     }
 
     data class AssetPrice(
