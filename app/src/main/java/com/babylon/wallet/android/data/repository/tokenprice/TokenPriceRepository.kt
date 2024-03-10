@@ -12,10 +12,13 @@ import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntit
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.assets.TokenPrice
+import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.radixdlt.ret.Address
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import rdx.works.peerdroid.di.IoDispatcher
+import rdx.works.profile.derivation.model.NetworkId
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -74,7 +77,10 @@ class TokenPriceRepositoryImpl @Inject constructor(
                 minValidity = tokenPriceCacheValidity()
             )
 
-            val remainingResourcesAddresses = resourcesAddresses subtract tokensPrices.map { it.resourceAddress }.toSet()
+            val xrdAddress = resolveXrdAddress(resourcesAddresses = allResourcesAddresses)
+            // always add XRD address to ensure that we have the latest price
+            val remainingResourcesAddresses = (resourcesAddresses subtract (tokensPrices.map { it.resourceAddress }.toSet())) + xrdAddress
+
             val remainingLsusAddresses = lsusAddresses subtract tokensPrices.map { it.resourceAddress }.toSet()
 
             if (remainingResourcesAddresses.isNotEmpty() || remainingLsusAddresses.isNotEmpty()) {
@@ -109,5 +115,15 @@ class TokenPriceRepositoryImpl @Inject constructor(
             responseBody?.string().orEmpty()
         )
         return RadixWalletException.GatewayException.HttpError(code = 500, message = error.detail ?: "no message")
+    }
+
+    private fun resolveXrdAddress(resourcesAddresses: Set<String>): String {
+        return if (resourcesAddresses.isEmpty()) {
+            XrdResource.address()
+        } else {
+            val resourceAddressToFindNetworkId = resourcesAddresses.first()
+            val networkId = Address(resourceAddressToFindNetworkId).networkId().toInt()
+            XrdResource.address(networkId = NetworkId.from(networkId))
+        }
     }
 }
