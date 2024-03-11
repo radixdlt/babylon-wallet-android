@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -65,7 +66,7 @@ class GetFiatValueOfOwnedAssetsUseCaseTest {
     }
 
     @Test
-    fun `assert that a token that is not included in the token price server it has zero fiat value`() {
+    fun `given a token when it is not included in the result of the prices then it does not have fiat value`() {
         val accountsWithAssets = mockAccountsWithMockAssets
 
         testScope.runTest {
@@ -75,8 +76,8 @@ class GetFiatValueOfOwnedAssetsUseCaseTest {
             val otherToken = assetsPricesList.find {
                 it.asset.resource.name == "OtherToken"
             }
-            assertNotNull(otherToken)
-            assertTrue(otherToken!!.price == BigDecimal.ZERO)
+            assertNotNull(otherToken?.asset)
+            assertNull(otherToken?.price)
         }
     }
 
@@ -96,7 +97,7 @@ class GetFiatValueOfOwnedAssetsUseCaseTest {
 
             val assetPricesForAccount = mapOfAccountsWithAssetsAndPrices[accountWithAssets]!!
             val pricesPerAsset: Map<Asset, BigDecimal> = assetPricesForAccount.associate { assetPrice ->
-                assetPrice.asset to assetPrice.price
+                assetPrice.asset to (assetPrice.price ?: BigDecimal.ZERO)
             }
 
             val allTokensOfTheAccount = accountWithAssets.assets?.tokens
@@ -148,7 +149,7 @@ class GetFiatValueOfOwnedAssetsUseCaseTest {
 
             val assetPricesForAccount = mapOfAccountsWithAssetsAndPrices[accountWithAssets]!!
             val pricesPerAsset: Map<Asset, BigDecimal> = assetPricesForAccount.associate { assetPrice ->
-                assetPrice.asset to assetPrice.price
+                assetPrice.asset to (assetPrice.price ?: BigDecimal.ZERO)
             }
 
             val allTokensOfTheAccount = accountWithAssets.assets?.tokens
@@ -195,7 +196,9 @@ class GetFiatValueOfOwnedAssetsUseCaseTest {
 
             accountsWithAssets.map { accountWithAssets ->
                 val assetPricesForAccount = result[accountWithAssets]!!
-                val pricesPerAsset: Map<Asset, BigDecimal> = assetPricesForAccount.associate { it.asset to it.price }
+                val pricesPerAsset: Map<Asset, BigDecimal> = assetPricesForAccount.associate { assetPrice ->
+                    assetPrice.asset to (assetPrice.price ?: BigDecimal.ZERO)
+                }
 
                 val accountTotalFiatValue = pricesPerAsset.values.sumOf { it }.setScale(5, RoundingMode.FLOOR)
 
