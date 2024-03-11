@@ -3,13 +3,8 @@ package com.babylon.wallet.android.domain.usecases.assets
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.tokenprice.TokenPriceRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.Token
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.TokenPrice
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import rdx.works.profile.derivation.model.NetworkId
@@ -137,44 +132,6 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
                     validatorsWithStakes = ownedValidatorsWithStakes
                 )
             }
-        }
-    }
-
-    sealed interface AssetPrice {
-        val asset: Asset
-        val price: BigDecimal?
-
-        data class TokenPrice(
-            override val asset: Token,
-            override val price: BigDecimal?
-        ) : AssetPrice
-
-        data class LSUPrice(
-            override val asset: LiquidStakeUnit,
-            override val price: BigDecimal?
-        ) : AssetPrice
-
-        data class StakeClaimPrice(
-            override val asset: StakeClaim,
-            override val price: BigDecimal?
-        ) : AssetPrice
-
-        data class PoolUnitPrice(
-            override val asset: PoolUnit,
-            val prices: Map<Resource.FungibleResource, BigDecimal?>
-        ) : AssetPrice {
-            override val price: BigDecimal?
-                get() {
-                    val areAllNull = prices.values.all {
-                        it == null
-                    }
-                    if (areAllNull) {
-                        return null
-                    }
-                    return prices.values.sumOf {
-                        it ?: BigDecimal.ZERO
-                    }
-                }
         }
     }
 }
