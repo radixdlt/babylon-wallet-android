@@ -89,11 +89,15 @@ import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.babylon.wallet.android.utils.dayMonthDateFull
+import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT
+import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT_THIS_YEAR
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 private const val FIXED_LIST_ELEMENTS = 2
 
@@ -426,6 +430,28 @@ fun HistoryContent(
             onShowResults()
         })
     }
+}
+
+@Composable
+private fun Instant.dayMonthDateFull(): String {
+    val zoneId = ZoneId.systemDefault()
+    val currentYear = Instant.now().atZone(zoneId).year
+    val currentDay = Instant.now().atZone(zoneId).dayOfYear
+    val instantYear = atZone(zoneId).year
+    val instantDay = atZone(zoneId).dayOfYear
+    val isSameYear = currentYear == instantYear
+    val format = if (isSameYear) {
+        LAST_USED_DATE_FORMAT_THIS_YEAR
+    } else {
+        LAST_USED_DATE_FORMAT
+    }
+    val prefix = when {
+        isSameYear && currentDay == instantDay -> stringResource(id = R.string.transactionHistory_today) + ", "
+        isSameYear && currentDay - instantDay == 1 -> stringResource(id = R.string.transactionHistory_yesterday) + ", "
+        else -> stringResource(id = R.string.empty)
+    }
+    val formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.systemDefault())
+    return prefix + formatter.format(this)
 }
 
 @Composable
