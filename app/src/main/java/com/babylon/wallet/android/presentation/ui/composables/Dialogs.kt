@@ -98,6 +98,7 @@ fun BottomSheetDialogWrapper(
     modifier: Modifier = Modifier,
     dragToDismissEnabled: Boolean = true,
     addScrim: Boolean = false,
+    showDragHandle: Boolean = false,
     title: String? = null,
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
@@ -157,10 +158,13 @@ fun BottomSheetDialogWrapper(
                     )
                     .animateContentSize()
                     .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopMedium)
-                    .clip(RadixTheme.shapes.roundedRectTopMedium)
-
+                    .clip(RadixTheme.shapes.roundedRectTopMedium),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (dragToDismissEnabled) {
+                if (showDragHandle) {
+                    DefaultModalSheetDragHandle()
+                }
+                if (dragToDismissEnabled && title != null) {
                     BottomDialogHeader(
                         modifier = Modifier
                             .fillMaxWidth()

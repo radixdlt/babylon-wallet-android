@@ -13,7 +13,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
@@ -59,8 +58,7 @@ fun ChooseAssetsSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = Color.Transparent,
-                        shape = RadixTheme.shapes.roundedRectTopDefault
+                        color = RadixTheme.colors.defaultBackground,
                     ),
                 title = stringResource(id = R.string.assetTransfer_addAssets_navigationTitle),
                 onDismissRequest = onCloseClick
