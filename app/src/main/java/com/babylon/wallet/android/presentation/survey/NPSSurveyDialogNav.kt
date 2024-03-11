@@ -18,7 +18,7 @@ fun NavGraphBuilder.npsSurveyDialog(
 ) {
     dialog(
         route = ROUTE,
-        dialogProperties = DialogProperties(usePlatformDefaultWidth = false)
+        dialogProperties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
     ) {
         NPSSurveyDialog(
             onDismiss = onDismiss

@@ -56,6 +56,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import kotlinx.coroutines.flow.distinctUntilChanged
+import timber.log.Timber
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -114,6 +115,7 @@ fun BottomSheetDialogWrapper(
             val maxHeight = with(LocalDensity.current) {
                 maxHeight.toPx()
             }
+            Timber.d("Max height: $maxHeight")
             val density = LocalDensity.current
             val draggableState = remember {
                 AnchoredDraggableState(

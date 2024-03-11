@@ -1,7 +1,9 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.babylon.wallet.android.presentation.survey
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.activity.compose.BackHandler
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -25,25 +27,22 @@ fun NPSSurveyDialog(
             }
         }
     }
+    BackHandler {
+        viewModel.onBackPress()
+    }
 
     BottomSheetDialogWrapper(
         modifier = modifier,
-        title = "",
         onDismiss = onDismiss
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxHeight(fraction = 0.9f)
-        ) {
-            NPSSurveySheet(
-                reason = state.reason,
-                onReasonChanged = viewModel::onReasonChanged,
-                onScoreClick = viewModel::onScoreClick,
-                isLoading = state.isLoading,
-                isSubmitButtonEnabled = state.isSubmitButtonEnabled,
-                scores = state.scores,
-                onSubmitClick = viewModel::onSubmitClick
-            )
-        }
+        NPSSurveySheet(
+            reason = state.reason,
+            onReasonChanged = viewModel::onReasonChanged,
+            onScoreClick = viewModel::onScoreClick,
+            isLoading = state.isLoading,
+            isSubmitButtonEnabled = state.isSubmitButtonEnabled,
+            scores = state.scores,
+            onSubmitClick = viewModel::onSubmitClick
+        )
     }
 }

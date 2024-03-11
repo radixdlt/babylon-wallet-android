@@ -24,6 +24,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.preferences.PreferencesManagerImpl
 import javax.inject.Singleton
 
 @Module
@@ -81,4 +83,10 @@ interface DataModule {
     fun bindHttpCache(
         cache: HttpCacheImpl
     ): HttpCache
+
+    @Binds
+    @Singleton
+    fun bindPreferenceManager(
+        preferencesManager: PreferencesManagerImpl
+    ): PreferencesManager
 }

@@ -439,7 +439,7 @@ fun TransferContent(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SyncSheetState(
+fun SyncSheetState(
     sheetState: SheetState,
     isSheetVisible: Boolean,
     onSheetClosed: () -> Unit,

@@ -2,17 +2,21 @@ package com.babylon.wallet.android.presentation.survey
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.NPSSurveyRepository
+import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.InstantGenerator
@@ -22,7 +26,9 @@ import javax.inject.Inject
 @HiltViewModel
 class NPSSurveyViewModel @Inject constructor(
     private val nPSSurveyRepository: NPSSurveyRepository,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    @ApplicationScope private val appScope: CoroutineScope,
+    private val appEventBus: AppEventBus
 ) : StateViewModel<NPSSurveyViewModel.State>(), OneOffEventHandler<NPSSurveyEvent> by OneOffEventHandlerImpl() {
 
     init {
@@ -59,14 +65,24 @@ class NPSSurveyViewModel @Inject constructor(
         _state.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             nPSSurveyRepository.submitSurveyResponse(state.value.scoreSelected, state.value.reason.orEmpty())
-                .onSuccess { finish() }
-                .onFailure { finish() }
+            appEventBus.sendEvent(AppEvent.NPSSurveySubmitted)
+            finish()
         }
     }
 
     private suspend fun finish() {
         _state.update { it.copy(isLoading = false) }
         sendEvent(NPSSurveyEvent.Close)
+    }
+
+    fun onBackPress() {
+        appScope.launch {
+            nPSSurveyRepository.submitSurveyResponse("", "")
+            appEventBus.sendEvent(AppEvent.NPSSurveySubmitted)
+        }
+        viewModelScope.launch {
+            finish()
+        }
     }
 
     data class State(

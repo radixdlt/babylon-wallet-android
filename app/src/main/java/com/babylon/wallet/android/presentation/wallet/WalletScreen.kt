@@ -2,6 +2,7 @@
 
 package com.babylon.wallet.android.presentation.wallet
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -15,11 +16,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Badge
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Badge
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,10 +31,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -49,9 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.usecases.NPSSurveyState
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -60,6 +61,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.Constants.RADIX_START_PAGE_URL
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.openUrl
+import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -76,6 +78,21 @@ fun WalletScreen(
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+    val scope = rememberCoroutineScope()
+    BackHandler(enabled = walletState.isNpsSurveyShown) {
+        viewModel.dismissNpsSurvey()
+    }
+
+    LaunchedEffect(walletState.isNpsSurveyShown) {
+        if (walletState.isNpsSurveyShown) {
+            scope.launch { bottomSheetState.show() }
+        } else {
+            scope.launch { bottomSheetState.hide() }
+        }
+    }
 
     WalletContent(
         modifier = modifier,
@@ -104,13 +121,31 @@ fun WalletScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.npsSurveyState.collect { npsSurveyState ->
-            when (npsSurveyState) {
-                is NPSSurveyState.Active -> showNPSSurvey()
-                else -> {}
-            }
-        }
+    if (walletState.isNpsSurveyShown) {
+        showNPSSurvey()
+        viewModel.dismissNpsSurvey()
+//        DefaultModalSheetLayout(
+//            sheetState = bottomSheetState,
+//            wrapContent = true,
+//            enableImePadding = true,
+//            sheetContent = {
+//                NPSSurveyDialog(
+//                    onDismiss = {
+//                        scope.launch {
+//                            bottomSheetState.hide()
+//                        }
+//                        viewModel.dismissNpsSurvey()
+//                    }
+//                )
+//            },
+//            showDragHandle = true,
+//            onDismissRequest = {
+//                scope.launch {
+//                    bottomSheetState.hide()
+//                }
+//                viewModel.dismissNpsSurvey()
+//            }
+//        )
     }
 }
 
@@ -130,7 +165,7 @@ private fun WalletContent(
     val snackBarHostState = remember { SnackbarHostState() }
 
     SnackbarUIMessage(
-        message = state.error,
+        message = state.uiMessage,
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
     )
@@ -168,7 +203,7 @@ private fun WalletContent(
                                         top = RadixTheme.dimensions.paddingSmall,
                                         end = RadixTheme.dimensions.paddingSmall
                                     ),
-                                backgroundColor = Red1
+                                containerColor = RadixTheme.colors.red1
                             )
                         }
                     }
@@ -352,7 +387,7 @@ fun WalletContentPreview() {
                     accountsWithResources = listOf(sampleAccountWithoutResources(), sampleAccountWithoutResources()),
                     loading = false,
                     isBackupWarningVisible = true,
-                    error = null
+                    uiMessage = null
                 ),
                 onMenuClick = {},
                 onAccountClick = {},

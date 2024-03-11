@@ -3,11 +3,11 @@ package com.babylon.wallet.android.di
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
-import com.babylon.wallet.android.data.gateway.survey.NPSSurveyApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.apis.StreamApi
 import com.babylon.wallet.android.data.gateway.apis.TransactionApi
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
+import com.babylon.wallet.android.data.gateway.survey.NPSSurveyApi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -85,6 +85,7 @@ inline fun <reified T> buildApi(
     .build()
     .create(T::class.java)
 
+@Suppress("TooManyFunctions")
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
@@ -213,7 +214,7 @@ object NetworkModule {
         @SimpleHttpClient okHttpClient: OkHttpClient,
         @JsonConverterFactory jsonConverterFactory: Factory
     ): NPSSurveyApi = buildApi(
-        baseUrl = "https://api.refiner.io/v1/",
+        baseUrl = BuildConfig.NPS_SURVEY_URL,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )

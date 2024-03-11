@@ -10,16 +10,18 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -50,38 +52,18 @@ fun NPSSurveySheet(
     isLoading: Boolean,
     onSubmitClick: () -> Unit
 ) {
-    Scaffold(
+    Column(
         modifier = modifier
-            .fillMaxSize()
-            .navigationBarsPadding(),
-        bottomBar = {
-            Column(
-                modifier = Modifier.background(RadixTheme.colors.defaultBackground)
-            ) {
-                HorizontalDivider(
-                    modifier = Modifier
-                        .padding(bottom = RadixTheme.dimensions.paddingMedium),
-                    color = RadixTheme.colors.gray4
-                )
-                RadixPrimaryButton(
-                    text = stringResource(id = R.string.survey_submitButton),
-                    onClick = onSubmitClick,
-                    modifier = Modifier
-                        .padding(RadixTheme.dimensions.paddingDefault)
-                        .fillMaxWidth(),
-                    enabled = isSubmitButtonEnabled,
-                    isLoading = isLoading
-                )
-            }
-        }
-    ) { padding ->
+            .navigationBarsPadding()
+            .fillMaxWidth()
+            .background(RadixTheme.colors.defaultBackground)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .background(RadixTheme.colors.defaultBackground)
-                .verticalScroll(rememberScrollState())
-                .padding(padding)
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingXLarge),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
@@ -93,12 +75,11 @@ fun NPSSurveySheet(
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.Center
             )
-
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 modifier = Modifier
                     .padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
+                        horizontal = RadixTheme.dimensions.paddingLarge
                     ),
                 text = stringResource(id = R.string.survey_subtitle),
                 style = RadixTheme.typography.body1Regular,
@@ -112,35 +93,30 @@ fun NPSSurveySheet(
             )
 
             Row(
-                modifier = Modifier
-                    .padding(vertical = RadixTheme.dimensions.paddingLarge)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = stringResource(id = R.string.survey_lowestScoreLabel),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                 )
-                Spacer(modifier = Modifier.weight(1f))
                 Text(
                     text = stringResource(id = R.string.survey_highestScoreLabel),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2,
                 )
             }
-
-            HorizontalDivider(
-                modifier = Modifier
-                    .padding(vertical = RadixTheme.dimensions.paddingDefault),
-                color = RadixTheme.colors.gray4
-            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            HorizontalDivider(color = RadixTheme.colors.gray4)
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 
             Text(
-                modifier = Modifier
-                    .padding(vertical = RadixTheme.dimensions.paddingDefault),
                 text = stringResource(id = R.string.survey_reason_heading),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1,
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
             Text(
                 text = stringResource(id = R.string.common_optional),
@@ -159,6 +135,21 @@ fun NPSSurveySheet(
                 singleLine = true
             )
         }
+        HorizontalDivider(
+            modifier = Modifier
+                .padding(vertical = RadixTheme.dimensions.paddingMedium),
+            color = RadixTheme.colors.gray4
+        )
+        RadixPrimaryButton(
+            text = stringResource(id = R.string.survey_submitButton),
+            onClick = onSubmitClick,
+            modifier = Modifier
+                .padding(RadixTheme.dimensions.paddingDefault)
+                .fillMaxWidth(),
+            enabled = isSubmitButtonEnabled,
+            isLoading = isLoading
+        )
+        Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.ime))
     }
 }
 
@@ -177,6 +168,7 @@ fun RatingContainer(
     ) {
         FlowRow(
             horizontalArrangement = Arrangement.Center,
+            maxItemsInEachRow = 6
         ) {
             scores.forEach { selectableScore ->
                 val backgroundColor = if (selectableScore.selected) Color.Black else RadixTheme.colors.white

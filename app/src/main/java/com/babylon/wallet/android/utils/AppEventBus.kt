@@ -13,7 +13,7 @@ import javax.inject.Singleton
 @Singleton
 class AppEventBus @Inject constructor() {
 
-    private val _events = MutableSharedFlow<AppEvent>()
+    private val _events = MutableSharedFlow<AppEvent>(replay = 1)
     val events: Flow<AppEvent> = _events.asSharedFlow()
 
     suspend fun sendEvent(event: AppEvent, delayMs: Long = 0L) {
@@ -27,6 +27,7 @@ sealed interface AppEvent {
     data object RefreshResourcesNeeded : AppEvent
     data object RestoredMnemonic : AppEvent
     data object BabylonFactorSourceDoesNotExist : AppEvent
+    data object NPSSurveySubmitted : AppEvent
     data class BabylonFactorSourceNeedsRecovery(val factorSourceID: FactorSource.FactorSourceID.FromHash) : AppEvent
 
     sealed interface AccessFactorSources : AppEvent {
