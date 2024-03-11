@@ -216,11 +216,9 @@ data class WalletUiState(
     val isRefreshing: Boolean
         get() = refreshing
 
-    fun securityPrompt(forAccount: Network.Account): SecurityPromptType? {
-        return entitiesWithSecurityPrompt.find {
-            it.entity.address == forAccount.address
-        }?.prompt ?: return null
-    }
+    fun securityPrompt(forAccount: Network.Account) = entitiesWithSecurityPrompt.find {
+        it.entity.address == forAccount.address
+    }?.prompt
 
     val isSettingsWarningVisible: Boolean
         get() = isBackupWarningVisible || entitiesWithSecurityPrompt.any {
