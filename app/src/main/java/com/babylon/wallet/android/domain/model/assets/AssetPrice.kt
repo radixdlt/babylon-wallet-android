@@ -28,14 +28,12 @@ sealed interface AssetPrice {
     ) : AssetPrice {
         override val price: BigDecimal?
             get() {
-                val areAllNull = prices.values.all {
-                    it == null
-                }
-                if (areAllNull) {
+                val areAllPricesNull = prices.values.all { price -> price == null }
+                if (areAllPricesNull) {
                     return null
                 }
-                return prices.values.sumOf {
-                    it ?: BigDecimal.ZERO
+                return prices.values.sumOf { price ->
+                    price ?: BigDecimal.ZERO
                 }
             }
     }
