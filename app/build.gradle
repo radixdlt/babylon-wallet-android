@@ -64,7 +64,7 @@ android {
         buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service-dev.extratools.works"'
         buildConfigField "String", "NPS_SURVEY_URL", '"https://dev-wallet-net-promoter-score.radixdlt.com/"'
         buildConfigField "String", "REFINER_USER_ID", getPropertyByName('REFINER_USER_ID')
-        buildConfigField "String", "REFINER_FORM_UUID", getPropertyByName('REFINER_FORM_UUID')
+        buildConfigField "String", "REFINER_FORM_UUID", getPropertyByName('REFINER_FORM_UUID_DEV')
         resValue "string", "app_name", "Radix Wallet"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -105,6 +105,7 @@ android {
             buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "true"
             buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "false"
             buildConfigField "String", "NPS_SURVEY_URL", '"https://wallet-net-promoter-score.radixdlt.com/"'
+            buildConfigField "String", "REFINER_FORM_UUID", getPropertyByName('REFINER_FORM_UUID_PROD')
             buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
