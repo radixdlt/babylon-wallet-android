@@ -2,7 +2,6 @@
 
 package com.babylon.wallet.android.presentation.wallet
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -31,12 +30,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -61,7 +58,6 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.Constants.RADIX_START_PAGE_URL
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.openUrl
-import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -78,22 +74,6 @@ fun WalletScreen(
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
-    val bottomSheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
-    val scope = rememberCoroutineScope()
-    BackHandler(enabled = walletState.isNpsSurveyShown) {
-        viewModel.dismissNpsSurvey()
-    }
-
-    LaunchedEffect(walletState.isNpsSurveyShown) {
-        if (walletState.isNpsSurveyShown) {
-            scope.launch { bottomSheetState.show() }
-        } else {
-            scope.launch { bottomSheetState.hide() }
-        }
-    }
-
     WalletContent(
         modifier = modifier,
         state = walletState,
@@ -123,29 +103,7 @@ fun WalletScreen(
 
     if (walletState.isNpsSurveyShown) {
         showNPSSurvey()
-        viewModel.dismissNpsSurvey()
-//        DefaultModalSheetLayout(
-//            sheetState = bottomSheetState,
-//            wrapContent = true,
-//            enableImePadding = true,
-//            sheetContent = {
-//                NPSSurveyDialog(
-//                    onDismiss = {
-//                        scope.launch {
-//                            bottomSheetState.hide()
-//                        }
-//                        viewModel.dismissNpsSurvey()
-//                    }
-//                )
-//            },
-//            showDragHandle = true,
-//            onDismissRequest = {
-//                scope.launch {
-//                    bottomSheetState.hide()
-//                }
-//                viewModel.dismissNpsSurvey()
-//            }
-//        )
+        viewModel.npsSurveyShown()
     }
 }
 

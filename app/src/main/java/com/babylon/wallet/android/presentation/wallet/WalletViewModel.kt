@@ -97,7 +97,7 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    fun dismissNpsSurvey() {
+    fun npsSurveyShown() {
         viewModelScope.launch {
             _state.update { it.copy(isNpsSurveyShown = false) }
         }
