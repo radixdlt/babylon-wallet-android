@@ -4,7 +4,9 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.tokenprice.TokenPriceRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
+import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.TokenPrice
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import rdx.works.profile.derivation.model.NetworkId
@@ -30,8 +32,8 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
 
             val poolUnitAndItemsWithAmounts = accountWithAssets.assets
                 ?.ownedPoolUnits?.associateWith { poolUnit ->
-                    poolUnit.pool?.resources.orEmpty().associate { poolItem ->
-                        poolItem to (poolUnit.resourceRedemptionValue(poolItem) ?: BigDecimal.ZERO)
+                    poolUnit.pool?.resources.orEmpty().associateWith { poolItem ->
+                        (poolUnit.resourceRedemptionValue(poolItem) ?: BigDecimal.ZERO)
                     }
                 }.orEmpty()
 
@@ -51,50 +53,13 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
 
             val accountAssetsWithFiatValue = mutableListOf<AssetPrice>()
 
-            val tokensWithFiatValue = accountWithAssets.assets
-                ?.ownedTokens
-                ?.map { token ->
-                    val priceForResource = priceResult[token.resource.resourceAddress]?.price
-                    val totalPrice = priceForResource?.multiply(token.resource.ownedAmount ?: BigDecimal.ZERO)
-                    AssetPrice.TokenPrice(
-                        asset = token,
-                        price = totalPrice
-                    )
-                }.orEmpty()
+            val tokensWithFiatValue = resolveTokensWithFiatValue(accountWithAssets, priceResult)
 
-            val poolUnitsWithFiatValue = accountWithAssets.assets?.poolUnits?.map { poolUnit ->
-                val itemsPrices = poolUnitAndItemsWithAmounts[poolUnit]?.map { poolItemAndAmountMap ->
-                    val priceForResource = priceResult[poolItemAndAmountMap.key.resourceAddress]?.price ?: BigDecimal.ZERO
-                    poolItemAndAmountMap.key to priceForResource.multiply(poolItemAndAmountMap.value)
-                }
-                AssetPrice.PoolUnitPrice(
-                    asset = poolUnit,
-                    prices = itemsPrices?.associate {
-                        it
-                    }.orEmpty()
-                )
-            }.orEmpty()
+            val poolUnitsWithFiatValue = resolvePoolUnitsWithFiatValue(accountWithAssets, priceResult, poolUnitAndItemsWithAmounts)
 
-            val lsusWithFiatValue = accountWithAssets.assets?.liquidStakeUnits?.map { lsu ->
-                val priceForLSU = priceResult[lsu.resourceAddress]?.price ?: BigDecimal.ZERO
-                val totalPrice = priceForLSU.multiply(lsu.fungibleResource.ownedAmount ?: BigDecimal.ZERO)
-                AssetPrice.LSUPrice(
-                    asset = lsu,
-                    price = totalPrice
-                )
-            }.orEmpty()
+            val lsusWithFiatValue = resolveLSUsWithFiatValue(accountWithAssets, priceResult)
 
-            val xrdAddress = XrdResource.address(networkId = NetworkId.from(accountWithAssets.account.networkID))
-            val claimsWithFiatValue = accountWithAssets.assets?.stakeClaims?.map { stakeClaim ->
-                val totalItemXRD = stakeClaim.nonFungibleResource.items.sumOf {
-                    it.claimAmountXrd ?: BigDecimal.ZERO
-                }
-                val totalPrice = totalItemXRD * (priceResult[xrdAddress]?.price ?: BigDecimal.ZERO)
-                AssetPrice.StakeClaimPrice(
-                    asset = stakeClaim,
-                    price = totalPrice
-                )
-            }.orEmpty()
+            val claimsWithFiatValue = resolveStakeClaimsWithFiatValue(accountWithAssets, priceResult)
 
             accountAssetsWithFiatValue.addAll(tokensWithFiatValue + lsusWithFiatValue + poolUnitsWithFiatValue + claimsWithFiatValue)
             accountAssetsWithFiatValue
@@ -133,5 +98,71 @@ class GetFiatValueOfOwnedAssetsUseCase @Inject constructor(
                 )
             }
         }
+    }
+
+    private fun resolveTokensWithFiatValue(
+        accountWithAssets: AccountWithAssets,
+        priceResult: Map<String, TokenPrice>
+    ): List<AssetPrice.TokenPrice> {
+        return accountWithAssets.assets
+            ?.ownedTokens
+            ?.map { token ->
+                val priceForResource = priceResult[token.resource.resourceAddress]?.price
+                val totalPrice = priceForResource?.multiply(token.resource.ownedAmount ?: BigDecimal.ZERO)
+                AssetPrice.TokenPrice(
+                    asset = token,
+                    price = totalPrice
+                )
+            }.orEmpty()
+    }
+
+    private fun resolvePoolUnitsWithFiatValue(
+        accountWithAssets: AccountWithAssets,
+        priceResult: Map<String, TokenPrice>,
+        poolUnitAndItemsWithAmounts: Map<PoolUnit, Map<Resource.FungibleResource, BigDecimal>>
+    ): List<AssetPrice.PoolUnitPrice> {
+        return accountWithAssets.assets?.poolUnits?.map { poolUnit ->
+            val itemsPrices = poolUnitAndItemsWithAmounts[poolUnit]?.map { poolItemAndAmountMap ->
+                val priceForResource = priceResult[poolItemAndAmountMap.key.resourceAddress]?.price ?: BigDecimal.ZERO
+                poolItemAndAmountMap.key to priceForResource.multiply(poolItemAndAmountMap.value)
+            }
+            AssetPrice.PoolUnitPrice(
+                asset = poolUnit,
+                prices = itemsPrices?.associate {
+                    it
+                }.orEmpty()
+            )
+        }.orEmpty()
+    }
+
+    private fun resolveLSUsWithFiatValue(
+        accountWithAssets: AccountWithAssets,
+        priceResult: Map<String, TokenPrice>
+    ): List<AssetPrice.LSUPrice> {
+        return accountWithAssets.assets?.liquidStakeUnits?.map { lsu ->
+            val priceForLSU = priceResult[lsu.resourceAddress]?.price ?: BigDecimal.ZERO
+            val totalPrice = priceForLSU.multiply(lsu.fungibleResource.ownedAmount ?: BigDecimal.ZERO)
+            AssetPrice.LSUPrice(
+                asset = lsu,
+                price = totalPrice
+            )
+        }.orEmpty()
+    }
+
+    private fun resolveStakeClaimsWithFiatValue(
+        accountWithAssets: AccountWithAssets,
+        priceResult: Map<String, TokenPrice>
+    ): List<AssetPrice.StakeClaimPrice> {
+        val xrdAddress = XrdResource.address(networkId = NetworkId.from(accountWithAssets.account.networkID))
+        return accountWithAssets.assets?.stakeClaims?.map { stakeClaim ->
+            val totalItemXRD = stakeClaim.nonFungibleResource.items.sumOf {
+                it.claimAmountXrd ?: BigDecimal.ZERO
+            }
+            val totalPrice = totalItemXRD * (priceResult[xrdAddress]?.price ?: BigDecimal.ZERO)
+            AssetPrice.StakeClaimPrice(
+                asset = stakeClaim,
+                price = totalPrice
+            )
+        }.orEmpty()
     }
 }
