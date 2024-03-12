@@ -19,7 +19,7 @@ class NPSSurveyStateObserver @Inject constructor(
             if (lastNPSSurveyInstant != null) {
                 // Survey has been shown already, check last show time and compare with 3 months gap
                 val duration = Duration.between(lastNPSSurveyInstant, InstantGenerator())
-                if (duration.toMillis() < OUTSTANDING_TIME_DAYS) {
+                if (duration.toDays() < OUTSTANDING_TIME_DAYS) {
                     NPSSurveyState.InActive
                 } else {
                     NPSSurveyState.Active
