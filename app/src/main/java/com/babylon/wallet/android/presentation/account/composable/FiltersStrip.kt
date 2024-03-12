@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -25,8 +24,7 @@ fun FiltersStrip(
     onTransactionTypeFilterRemoved: () -> Unit,
     onTransactionClassFilterRemoved: () -> Unit,
     onResourceFilterRemoved: () -> Unit,
-    modifier: Modifier = Modifier,
-    timeFilterScrollState: LazyListState,
+    modifier: Modifier = Modifier
 ) {
     LazyRow(
         modifier = modifier
@@ -38,8 +36,7 @@ fun FiltersStrip(
             end = RadixTheme.dimensions.paddingMedium,
             bottom = RadixTheme.dimensions.paddingMedium
         ),
-        userScrollEnabled = userInteractionEnabled,
-        state = timeFilterScrollState
+        userScrollEnabled = userInteractionEnabled
     ) {
         historyFilters?.transactionType?.let { transactionType ->
             item(key = transactionType.name) {

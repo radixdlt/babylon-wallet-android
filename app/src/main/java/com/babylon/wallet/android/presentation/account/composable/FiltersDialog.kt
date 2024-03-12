@@ -57,7 +57,7 @@ fun FiltersDialog(
     onClearAllFilters: () -> Unit,
     onTransactionTypeFilterSelected: (HistoryFilters.TransactionType?) -> Unit,
     onTransactionClassFilterSelected: (TransactionClass?) -> Unit,
-    onResourceFilterSelected: (Resource) -> Unit
+    onResourceFilterSelected: (Resource?) -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -114,7 +114,7 @@ fun FiltersDialog(
                             onTransactionTypeFilterSelected(entry)
                         }, onCloseClick = {
                             onTransactionTypeFilterSelected(null)
-                        })
+                        }, showCloseIcon = false)
                     }
                 }
             }
@@ -131,7 +131,7 @@ fun FiltersDialog(
                             onTransactionClassFilterSelected(entry)
                         }, onCloseClick = {
                             onTransactionClassFilterSelected(null)
-                        })
+                        }, showCloseIcon = false)
                     }
                 }
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -144,15 +144,15 @@ fun FiltersDialog(
 @Composable
 private fun ResourcesSection(
     state: State,
-    onResourceFilterSelected: (Resource) -> Unit,
+    onResourceFilterSelected: (Resource?) -> Unit,
 ) {
     val maxFungiblesInCollapsedState = 12
     val maxNonFungiblesInCollapsedState = 6
-    val fungibles = remember(state.fungibleResources) {
-        state.fungibleResources
+    val fungibles = remember(state.fungibleResourcesUsedInFilters) {
+        state.fungibleResourcesUsedInFilters
     }
-    val nonFungibles = remember(state.nonFungibleResources) {
-        state.nonFungibleResources
+    val nonFungibles = remember(state.nonFungibleResourcesUsedInFilters) {
+        state.nonFungibleResourcesUsedInFilters
     }
     val showMoreFungiblesButton by remember {
         derivedStateOf {
@@ -192,13 +192,9 @@ private fun ResourcesSection(
                         selected = selected,
                         text = fungible.displayTitle.ifEmpty { fungible.resourceAddress.truncatedHash() },
                         onClick = {
-                            if (selected.not()) {
-                                onResourceFilterSelected(fungible)
-                            }
+                            onResourceFilterSelected(if (selected) null else fungible)
                         },
-                        onCloseClick = {
-                            onResourceFilterSelected(fungible)
-                        }
+                        showCloseIcon = false
                     )
                 }
             }
@@ -248,7 +244,8 @@ private fun ResourcesSection(
                         },
                         onCloseClick = {
                             onResourceFilterSelected(nonFungible)
-                        }
+                        },
+                        showCloseIcon = false
                     )
                 }
             }

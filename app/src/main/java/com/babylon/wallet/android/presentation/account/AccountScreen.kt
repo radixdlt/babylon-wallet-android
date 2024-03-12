@@ -396,14 +396,6 @@ private fun HistoryButton(
                 tint = RadixTheme.colors.white,
                 contentDescription = null
             )
-        },
-        trailingContent = {
-            Icon(
-                modifier = Modifier.size(16.dp),
-                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_link_out),
-                tint = RadixTheme.colors.white.copy(alpha = 0.5f),
-                contentDescription = null
-            )
         }
     )
 }

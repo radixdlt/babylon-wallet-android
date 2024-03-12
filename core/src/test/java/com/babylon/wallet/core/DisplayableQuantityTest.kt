@@ -391,6 +391,15 @@ class TokenQuantityToDisplayTest {
 
         Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
     }
+
+    @Test
+    fun `scientific notation close to 0`() {
+        val expectedTokenQuantityToDisplay = "0"
+
+        val actual = BigDecimal("0.8616E-14").displayableQuantity()
+
+        Assert.assertEquals(expectedTokenQuantityToDisplay, actual)
+    }
 }
 
 class DefaultLocaleRule : TestRule {
