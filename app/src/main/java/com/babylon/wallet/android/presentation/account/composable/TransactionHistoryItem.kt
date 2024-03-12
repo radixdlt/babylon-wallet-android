@@ -105,12 +105,12 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                 } else {
                     if (isAccountDepositSettingsUpdate) {
                         LabelSection(
-                            text = stringResource(id = R.string.accountHistory_settingsSection),
+                            text = stringResource(id = R.string.transactionHistory_settingsSection),
                             iconResource = DSR.ic_tx_account_settings
                         )
                         Text(
                             modifier = borderModifier,
-                            text = stringResource(id = R.string.accountHistory_settings_info),
+                            text = stringResource(id = R.string.transactionHistory_updatedDepositSettings),
                             style = RadixTheme.typography.body2HighImportance,
                             color = RadixTheme.colors.gray1
                         )
@@ -119,14 +119,14 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                         LabelSection(text = stringResource(id = R.string.empty))
                         Text(
                             modifier = borderModifier,
-                            text = stringResource(id = R.string.accountHistory_noBalanceChanges),
+                            text = stringResource(id = R.string.transactionHistory_noBalanceChanges),
                             style = RadixTheme.typography.body2HighImportance,
                             color = RadixTheme.colors.gray1
                         )
                     } else {
                         if (withdrawn.isNotEmpty()) {
                             LabelSection(
-                                text = stringResource(id = R.string.accountHistory_withdrawnSection),
+                                text = stringResource(id = R.string.transactionHistory_withdrawnSection),
                                 iconResource = DSR.ic_tx_withdrawn
                             )
                             Column(
@@ -144,7 +144,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                         }
                         if (deposited.isNotEmpty()) {
                             LabelSection(
-                                text = stringResource(id = R.string.accountHistory_depositedSection),
+                                text = stringResource(id = R.string.transactionHistory_depositedSection),
                                 iconResource = DSR.ic_tx_deposited,
                                 textColor = RadixTheme.colors.green1
                             )
@@ -171,7 +171,7 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                         .padding(1.dp)
                         .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
                         .padding(RadixTheme.dimensions.paddingMedium),
-                    text = stringResource(id = R.string.accountHistory_unknownTransactionInfo),
+                    text = stringResource(id = R.string.transactionHistory_complexTransaction),
                     style = RadixTheme.typography.body2Regular,
                     color = RadixTheme.colors.gray2
                 )
@@ -202,7 +202,7 @@ private fun FailedTransactionWarning(modifier: Modifier = Modifier) {
     ) {
         Icon(painter = painterResource(id = DSR.ic_warning_error), contentDescription = null, tint = RadixTheme.colors.red1)
         Text(
-            text = stringResource(id = R.string.accountHistory_failedTransaction),
+            text = stringResource(id = R.string.transactionHistory_failedTransaction),
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.red1
         )
@@ -302,7 +302,7 @@ private fun StakeClaimBalanceChange(asset: StakeClaim, modifier: Modifier = Modi
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = asset.resource.name.ifEmpty { stringResource(id = R.string.accountHistory_unknown) },
+                        text = asset.resource.name.ifEmpty { stringResource(id = R.string.account_staking_worth) },
                         style = RadixTheme.typography.body2HighImportance,
                         color = RadixTheme.colors.gray1,
                         maxLines = 1,
@@ -345,7 +345,7 @@ private fun PoolUnitBalanceChange(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = asset.name().ifEmpty { stringResource(id = R.string.accountHistory_poolUnits) },
+                    text = asset.name().ifEmpty { stringResource(id = R.string.account_poolUnits) },
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
@@ -404,7 +404,7 @@ private fun LiquidStakeUnitBalanceChange(
                         modifier = Modifier.fillMaxWidth(),
                         text = asset.fungibleResource.displayTitle.ifEmpty {
                             stringResource(
-                                id = R.string.accountHistory_unknown
+                                id = R.string.account_poolUnits_unknownPoolUnitName
                             )
                         },
                         style = RadixTheme.typography.body2HighImportance,
@@ -523,14 +523,14 @@ fun TypeAndTimestampLabel(modifier: Modifier = Modifier, item: TransactionHistor
 @Composable
 fun TransactionClass?.description(): String {
     return when (this) {
-        TransactionClass.General -> stringResource(id = R.string.accountHistory_transactionClassGeneral)
-        TransactionClass.Transfer -> stringResource(id = R.string.accountHistory_transactionClassTransfer)
-        TransactionClass.PoolContribution -> stringResource(id = R.string.accountHistory_transactionClassContribute)
-        TransactionClass.PoolRedemption -> stringResource(id = R.string.accountHistory_transactionClassRedeem)
-        TransactionClass.ValidatorStake -> stringResource(id = R.string.accountHistory_transactionClassStaking)
-        TransactionClass.ValidatorUnstake -> stringResource(id = R.string.accountHistory_transactionClassUnstaking)
-        TransactionClass.ValidatorClaim -> stringResource(id = R.string.accountHistory_transactionClassClaim)
-        TransactionClass.AccountDespositSettingsUpdate -> stringResource(id = R.string.accountHistory_transactionClassAccountSettings)
-        else -> stringResource(id = R.string.accountHistory_transactionClassOther)
+        TransactionClass.General -> stringResource(id = R.string.transactionHistory_manifestClass_General)
+        TransactionClass.Transfer -> stringResource(id = R.string.transactionHistory_manifestClass_Transfer)
+        TransactionClass.PoolContribution -> stringResource(id = R.string.transactionHistory_manifestClass_Contribute)
+        TransactionClass.PoolRedemption -> stringResource(id = R.string.transactionHistory_manifestClass_Redeem)
+        TransactionClass.ValidatorStake -> stringResource(id = R.string.transactionHistory_manifestClass_Staking)
+        TransactionClass.ValidatorUnstake -> stringResource(id = R.string.transactionHistory_manifestClass_Unstaking)
+        TransactionClass.ValidatorClaim -> stringResource(id = R.string.transactionHistory_manifestClass_Claim)
+        TransactionClass.AccountDespositSettingsUpdate -> stringResource(id = R.string.transactionHistory_manifestClass_AccountSettings)
+        else -> stringResource(id = R.string.transactionHistory_manifestClass_Other)
     }
 }
