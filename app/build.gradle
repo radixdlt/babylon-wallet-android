@@ -63,7 +63,7 @@ android {
         buildConfigField "String", "WELL_KNOWN_URL_SUFFIX", '".well-known/radix.json"'
         buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service-dev.extratools.works"'
         buildConfigField "String", "NPS_SURVEY_URL", '"https://dev-wallet-net-promoter-score.radixdlt.com/"'
-        buildConfigField "String", "REFINER_FORM_UUID", getPropertyByName('REFINER_FORM_UUID_DEV')
+        buildConfigField "String", "REFINER_FORM_UUID", '"281622a0-dc6b-11ee-8fd1-23c96056fbd2"'
         resValue "string", "app_name", "Radix Wallet"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -104,7 +104,7 @@ android {
             buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "true"
             buildConfigField "boolean", "EXPERIMENTAL_FEATURES_ENABLED", "false"
             buildConfigField "String", "NPS_SURVEY_URL", '"https://wallet-net-promoter-score.radixdlt.com/"'
-            buildConfigField "String", "REFINER_FORM_UUID", getPropertyByName('REFINER_FORM_UUID_PROD')
+            buildConfigField "String", "REFINER_FORM_UUID", '"3432b6e0-dfad-11ee-a53c-95167f067d9c"'
             buildConfigField "String", "IMAGE_HOST_BASE_URL", '"https://image-service.radixdlt.com"'
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -256,17 +256,6 @@ jacoco {
 tasks.withType(Test.class).configureEach {
     jacoco {
         excludes = ["*"]
-    }
-}
-
-def getPropertyByName(String propName) {
-    def propsFile = rootProject.file('local.properties')
-    if (propsFile.exists()) {
-        def props = new Properties()
-        props.load(new FileInputStream(propsFile))
-        return props[propName]
-    } else {
-        return "";
     }
 }
 
