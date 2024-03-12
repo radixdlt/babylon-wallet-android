@@ -61,21 +61,24 @@ class GetFiatValueUseCase @Inject constructor(
 
     private fun Asset.price(tokenPrices: Map<String, TokenPrice>, networkId: NetworkId): AssetPrice? = when (this) {
         is Token -> {
-            val priceForResource = tokenPrices[resource.resourceAddress]?.price
-            val totalPrice = priceForResource?.multiply(resource.ownedAmount ?: BigDecimal.ZERO)
+            val tokenPrice = tokenPrices[resource.resourceAddress]
+            val totalPrice = tokenPrice?.price?.multiply(resource.ownedAmount ?: BigDecimal.ZERO)
 
             AssetPrice.TokenPrice(
                 asset = this,
-                price = totalPrice
+                price = totalPrice,
+                currencyCode = tokenPrice?.currency
             )
         }
 
         is LiquidStakeUnit -> {
-            val priceForLSU = tokenPrices[resourceAddress]?.price ?: BigDecimal.ZERO
+            val tokenPrice = tokenPrices[resourceAddress]
+            val priceForLSU = tokenPrice?.price ?: BigDecimal.ZERO
             val totalPrice = priceForLSU.multiply(fungibleResource.ownedAmount ?: BigDecimal.ZERO)
             AssetPrice.LSUPrice(
                 asset = this,
-                price = totalPrice
+                price = totalPrice,
+                currencyCode = tokenPrice?.currency
             )
         }
 
@@ -85,9 +88,14 @@ class GetFiatValueUseCase @Inject constructor(
                 priceForResource?.multiply(resourceRedemptionValue(poolItem))
             }.orEmpty()
 
+            val currencyIndicator = pool?.resources?.firstOrNull()?.let { firstResource ->
+                tokenPrices[firstResource.resourceAddress]?.currency
+            }
+
             AssetPrice.PoolUnitPrice(
                 asset = this,
-                prices = poolItemPrices
+                prices = poolItemPrices,
+                currencyCode = currencyIndicator
             )
         }
 
@@ -98,7 +106,8 @@ class GetFiatValueUseCase @Inject constructor(
             val totalPrice = totalItemXRD * (tokenPrices[xrdAddress]?.price ?: BigDecimal.ZERO)
             AssetPrice.StakeClaimPrice(
                 asset = this,
-                price = totalPrice
+                price = totalPrice,
+                currencyCode = tokenPrices[xrdAddress]?.currency
             )
         }
 
