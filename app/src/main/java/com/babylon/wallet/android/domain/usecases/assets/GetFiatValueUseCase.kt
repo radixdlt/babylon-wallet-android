@@ -36,6 +36,16 @@ class GetFiatValueUseCase @Inject constructor(
                 tokenPrices.associateBy { it.resourceAddress }
             }
         }.mapCatching { prices ->
+            // ensure that all claims are fetched
+            val claims = if (accountWithAssets.assets?.ownedStakeClaims?.isNotEmpty() == true) {
+                stateRepository.updateStakeClaims(
+                    account = accountWithAssets.account,
+                    claims = accountWithAssets.assets.ownedStakeClaims
+                ).getOrThrow()
+            } else {
+                accountWithAssets.assets?.ownedStakeClaims
+            }
+
             accountWithAssets.assets
                 ?.ownedTokens
                 ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
@@ -45,9 +55,7 @@ class GetFiatValueUseCase @Inject constructor(
                     accountWithAssets.assets
                         ?.ownedPoolUnits
                         ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
-                    accountWithAssets.assets
-                        ?.ownedStakeClaims
-                        ?.mapNotNull { it.price(prices, networkId) }.orEmpty()
+                    claims?.mapNotNull { it.price(prices, networkId) }.orEmpty()
         }
     }
 
@@ -61,7 +69,17 @@ class GetFiatValueUseCase @Inject constructor(
         }.mapCatching { tokenPrices ->
             tokenPrices.associateBy { it.resourceAddress }
         }.mapCatching { prices ->
-            asset.price(prices, networkId)
+            // ensure that all claims are fetched
+            val ensured = if (asset is StakeClaim) {
+                stateRepository.updateStakeClaims(
+                    account = account,
+                    claims = listOf(asset)
+                ).getOrThrow().first()
+            } else {
+                asset
+            }
+
+            ensured.price(prices, networkId)
         }
     }
 
