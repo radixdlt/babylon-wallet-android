@@ -76,9 +76,13 @@ class AssetDialogViewModel @Inject constructor(
                 _state.update { it.copy(asset = asset) }
 
                 args.underAccountAddress?.let { accountAddress ->
-                    val networkId = NetworkId.from(Address(accountAddress).networkId().toInt())
-                    val assetPrice = getFiatValueUseCase.forAsset(asset = asset, networkId = networkId).getOrThrow()
-                    _state.update { it.copy(assetPrice = assetPrice) }
+                    val account = getProfileUseCase.accountOnCurrentNetwork(accountAddress)
+                    _state.update { it.copy(accountContext = account) }
+
+                    if (account != null) {
+                        val assetPrice = getFiatValueUseCase.forAsset(asset = asset, account = account).getOrThrow()
+                        _state.update { it.copy(assetPrice = assetPrice) }
+                    }
                 }
 
                 asset
@@ -94,13 +98,6 @@ class AssetDialogViewModel @Inject constructor(
             }.onFailure { error ->
                 Timber.w(error)
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
-            }
-        }
-
-        args.underAccountAddress?.let { accountAddress ->
-            viewModelScope.launch {
-                val account = getProfileUseCase.accountOnCurrentNetwork(accountAddress)
-                _state.update { it.copy(accountContext = account) }
             }
         }
     }
