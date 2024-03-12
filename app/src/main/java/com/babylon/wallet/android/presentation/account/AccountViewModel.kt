@@ -283,17 +283,6 @@ data class AccountUiState(
     val uiMessage: UiMessage? = null
 ) : UiState {
 
-    val visiblePrompt: SecurityPromptType?
-        get() = when (securityPromptType) {
-            SecurityPromptType.NEEDS_RESTORE -> securityPromptType
-            SecurityPromptType.NEEDS_BACKUP -> if (accountWithAssets?.assets?.hasXrd() == true) {
-                SecurityPromptType.NEEDS_BACKUP
-            } else {
-                null
-            }
-            else -> null
-        }
-
     val isTransferEnabled: Boolean
         get() = accountWithAssets?.assets != null
 
