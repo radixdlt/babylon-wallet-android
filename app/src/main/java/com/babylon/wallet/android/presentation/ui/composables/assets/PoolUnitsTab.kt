@@ -201,7 +201,6 @@ fun PoolResourcesValues(
                         )
                     }
                 }
-
             }
             if (index != itemsSize - 1) {
                 HorizontalDivider(color = RadixTheme.colors.gray4)
