@@ -1,9 +1,12 @@
 package com.babylon.wallet.android.domain.model.assets
 
+import android.icu.number.NumberFormatter
+import android.icu.text.NumberFormat
+import android.icu.util.Currency
+import android.os.Build
 import com.babylon.wallet.android.domain.model.resources.Resource
 import java.math.BigDecimal
-import java.text.NumberFormat
-import java.util.Currency
+import java.util.Locale
 
 sealed class AssetPrice {
     abstract val asset: Asset
@@ -11,13 +14,19 @@ sealed class AssetPrice {
     abstract val currencyCode: String?
 
     protected fun priceWithCurrency(price: BigDecimal?): String? {
-        if (price == null) return null
+        if (price == null || currencyCode == null) return null
 
-        return NumberFormat.getCurrencyInstance().apply {
-            if (currencyCode != null) {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            NumberFormatter.with()
+                .unit(Currency.getInstance(currencyCode))
+                .locale(Locale.getDefault())
+                .format(price.toDouble())
+                .toString()
+        } else {
+            NumberFormat.getCurrencyInstance().apply {
                 currency = Currency.getInstance(currencyCode)
-            }
-        }.format(price.toDouble())
+            }.format(price.toDouble())
+        }
     }
 
     data class TokenPrice(
