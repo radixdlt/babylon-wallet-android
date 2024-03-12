@@ -21,10 +21,9 @@ class TokenPriceRepositoryFake : TokenPriceRepository {
     }
 
     override suspend fun getTokensPrices(
-        resourcesAddresses: Set<String>,
-        lsusAddresses: Set<String>
+        addresses: Set<TokenPriceRepository.PriceRequestAddress>
     ): Result<List<TokenPrice>> {
-        val all = resourcesAddresses + lsusAddresses
+        val all = addresses.map { it.address }
         val results = tokensPrices.filter {
             all.contains(it.resourceAddress)
         }
