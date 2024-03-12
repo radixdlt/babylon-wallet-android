@@ -73,21 +73,25 @@ data class Assets(
         nonFungibles.filterNot { it.collection.amount == 0L }
     }
 
+    val ownedLiquidStakeUnits: List<LiquidStakeUnit> by lazy {
+        liquidStakeUnits.filter { it.fungibleResource.ownedAmount != BigDecimal.ZERO }
+    }
+
+    val ownedStakeClaims: List<StakeClaim> by lazy {
+        stakeClaims.filter { it.nonFungibleResource.amount > 0L }
+    }
+
     val ownedPoolUnits: List<PoolUnit> by lazy {
         poolUnits.filterNot { it.stake.ownedAmount == BigDecimal.ZERO }
     }
 
     val ownedValidatorsWithStakes: List<ValidatorWithStakes> by lazy {
         // TODO sort
-        val validators = (liquidStakeUnits.map { it.validator } + stakeClaims.map { it.validator }).toSet()
+        val validators = (ownedLiquidStakeUnits.map { it.validator } + ownedStakeClaims.map { it.validator }).toSet()
 
         validators.mapNotNull { validator ->
-            val lsu = liquidStakeUnits.find {
-                it.validator == validator && it.fungibleResource.ownedAmount != BigDecimal.ZERO
-            }
-            val claimCollection = stakeClaims.find { claim ->
-                claim.validator == validator && claim.nonFungibleResource.amount > 0
-            }
+            val lsu = ownedLiquidStakeUnits.find { it.validator == validator }
+            val claimCollection = ownedStakeClaims.find { it.validator == validator }
             if (lsu == null && claimCollection == null) return@mapNotNull null
 
             ValidatorWithStakes(
