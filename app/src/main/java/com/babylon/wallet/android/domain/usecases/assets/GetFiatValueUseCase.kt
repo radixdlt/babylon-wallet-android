@@ -28,9 +28,9 @@ class GetFiatValueUseCase @Inject constructor(
         val networkId = NetworkId.from(accountWithAssets.account.networkID)
         return runCatching {
             accountWithAssets.assets?.ownedTokens?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
-                    accountWithAssets.assets?.ownedLiquidStakeUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
-                    accountWithAssets.assets?.ownedPoolUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
-                    accountWithAssets.assets?.ownedStakeClaims?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty()
+                accountWithAssets.assets?.ownedLiquidStakeUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
+                accountWithAssets.assets?.ownedPoolUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
+                accountWithAssets.assets?.ownedStakeClaims?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty()
         }.then { addresses ->
             tokenPriceRepository.getTokensPrices(addresses = addresses.toSet()).mapCatching { tokenPrices ->
                 tokenPrices.associateBy { it.resourceAddress }
@@ -49,13 +49,13 @@ class GetFiatValueUseCase @Inject constructor(
             accountWithAssets.assets
                 ?.ownedTokens
                 ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
-                    accountWithAssets.assets
-                        ?.ownedLiquidStakeUnits
-                        ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
-                    accountWithAssets.assets
-                        ?.ownedPoolUnits
-                        ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
-                    claims?.mapNotNull { it.price(prices, networkId) }.orEmpty()
+                accountWithAssets.assets
+                    ?.ownedLiquidStakeUnits
+                    ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
+                accountWithAssets.assets
+                    ?.ownedPoolUnits
+                    ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
+                claims?.mapNotNull { it.price(prices, networkId) }.orEmpty()
         }
     }
 
