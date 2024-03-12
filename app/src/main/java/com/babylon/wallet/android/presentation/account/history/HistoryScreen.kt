@@ -446,8 +446,8 @@ private fun Instant.dayMonthDateFull(): String {
         LAST_USED_DATE_FORMAT
     }
     val prefix = when {
-        isSameYear && currentDay == instantDay -> stringResource(id = R.string.transactionHistory_today) + ", "
-        isSameYear && currentDay - instantDay == 1 -> stringResource(id = R.string.transactionHistory_yesterday) + ", "
+        isSameYear && currentDay == instantDay -> stringResource(id = R.string.transactionHistory_datePrefix_today) + ", "
+        isSameYear && currentDay - instantDay == 1 -> stringResource(id = R.string.transactionHistory_datePrefix_yesterday) + ", "
         else -> stringResource(id = R.string.empty)
     }
     val formatter = DateTimeFormatter.ofPattern(format).withZone(ZoneId.systemDefault())
