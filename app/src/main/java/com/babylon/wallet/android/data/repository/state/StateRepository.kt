@@ -26,6 +26,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Pool
@@ -53,6 +54,8 @@ interface StateRepository {
     suspend fun getNextNFTsPage(account: Network.Account, resource: Resource.NonFungibleResource): Result<Resource.NonFungibleResource>
 
     suspend fun updateLSUsInfo(account: Network.Account, validatorsWithStakes: List<ValidatorWithStakes>): Result<List<ValidatorWithStakes>>
+
+    suspend fun updateStakeClaims(account: Network.Account, claims: List<StakeClaim>): Result<List<StakeClaim>>
 
     suspend fun getResources(addresses: Set<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>>
 
@@ -245,6 +248,49 @@ class StateRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override suspend fun updateStakeClaims(account: Network.Account, claims: List<StakeClaim>): Result<List<StakeClaim>> =
+        withContext(dispatcher) {
+            runCatching {
+                val stateVersion = stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
+
+                claims.map { claim ->
+                    val claimNFTs = if (claim.nonFungibleResource.amount > claim.nonFungibleResource.items.size) {
+                        val resourcesInAccount = stateDao.getAccountResourceJoin(
+                            resourceAddress = claim.resourceAddress,
+                            accountAddress = account.address
+                        )
+
+                        if (resourcesInAccount?.vaultAddress != null) {
+                            val nftsOnLedger = stateApi.getNextNftItems(
+                                accountAddress = account.address,
+                                resourceAddress = claim.resourceAddress,
+                                vaultAddress = resourcesInAccount.vaultAddress,
+                                nextCursor = null,
+                                stateVersion = stateVersion
+                            ).second
+
+                            val syncedAt = InstantGenerator()
+                            val nftEntities = nftsOnLedger.map { it.asEntity(claim.resourceAddress, syncedAt) }
+
+                            stateDao.storeStakeClaims(
+                                accountAddress = account.address,
+                                stateVersion = stateVersion,
+                                claims = nftEntities
+                            )
+
+                            nftEntities.map { it.toItem() }
+                        } else {
+                            claim.nonFungibleResource.items
+                        }
+                    } else {
+                        claim.nonFungibleResource.items
+                    }
+
+                    claim.copy(nonFungibleResource = claim.nonFungibleResource.copy(items = claimNFTs))
+                }
+            }
+        }
 
     override suspend fun getResources(
         addresses: Set<String>,

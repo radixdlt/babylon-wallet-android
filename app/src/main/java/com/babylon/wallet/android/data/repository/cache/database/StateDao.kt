@@ -296,6 +296,27 @@ interface StateDao {
         )
     }
 
+    @Transaction
+    fun storeStakeClaims(
+        accountAddress: String,
+        stateVersion: Long,
+        claims: List<NFTEntity>
+    ) {
+        // Update NFT details
+        insertNFTs(nfts = claims)
+        // Update joins
+        insertAccountNFTsJoin(
+            claims.map { nft ->
+                AccountNFTJoin(
+                    accountAddress = accountAddress,
+                    resourceAddress = nft.address,
+                    localId = nft.localId,
+                    stateVersion = stateVersion
+                )
+            }
+        )
+    }
+
     @Query(
         """
         SELECT * FROM DAppEntity 
