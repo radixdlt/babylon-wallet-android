@@ -10,15 +10,13 @@ import com.babylon.wallet.android.data.repository.cache.database.TokenPriceDao
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceDao.Companion.tokenPriceCacheValidity
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntity.Companion.toTokenPrice
 import com.babylon.wallet.android.data.repository.toResult
+import com.babylon.wallet.android.data.repository.tokenprice.TokenPriceRepository.PriceRequestAddress
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.assets.TokenPrice
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.radixdlt.ret.Address
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import rdx.works.peerdroid.di.IoDispatcher
-import rdx.works.profile.derivation.model.NetworkId
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -37,9 +35,15 @@ interface TokenPriceRepository {
      *
      */
     suspend fun getTokensPrices(
-        resourcesAddresses: Set<String>,
-        lsusAddresses: Set<String>
+        addresses: Set<PriceRequestAddress>
     ): Result<List<TokenPrice>>
+
+    // This will not be needed when using sargon's Address types
+    sealed interface PriceRequestAddress {
+        val address: String
+        data class Regular(override val address: String) : PriceRequestAddress
+        data class LSU(override val address: String) : PriceRequestAddress
+    }
 }
 
 class TokenPriceRepositoryImpl @Inject constructor(
@@ -66,22 +70,21 @@ class TokenPriceRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getTokensPrices(
-        resourcesAddresses: Set<String>,
-        lsusAddresses: Set<String>
+        addresses: Set<PriceRequestAddress>
     ): Result<List<TokenPrice>> = withContext(ioDispatcher) {
         runCatching {
-            val allResourcesAddresses = resourcesAddresses + lsusAddresses
-
+            val allAddresses = addresses.map { it.address }.toSet()
+            val regularResourceAddresses = allAddresses.filterIsInstance<PriceRequestAddress.Regular>().map { it.address }.toSet()
+            val lsuResourceAddresses = allAddresses.filterIsInstance<PriceRequestAddress.LSU>().map { it.address }.toSet()
             val tokensPrices = tokenPriceDao.getTokensPrices(
-                addresses = allResourcesAddresses,
+                addresses = allAddresses,
                 minValidity = tokenPriceCacheValidity()
             )
 
-            val xrdAddress = resolveXrdAddress(resourcesAddresses = allResourcesAddresses)
             // always add XRD address to ensure that we have the latest price
-            val remainingResourcesAddresses = (resourcesAddresses subtract (tokensPrices.map { it.resourceAddress }.toSet())) + xrdAddress
+            val remainingResourcesAddresses = (regularResourceAddresses subtract (tokensPrices.map { it.resourceAddress }.toSet()))
 
-            val remainingLsusAddresses = lsusAddresses subtract tokensPrices.map { it.resourceAddress }.toSet()
+            val remainingLsusAddresses = lsuResourceAddresses subtract tokensPrices.map { it.resourceAddress }.toSet()
 
             if (remainingResourcesAddresses.isNotEmpty() || remainingLsusAddresses.isNotEmpty()) {
                 tokenPriceApi.priceTokens(
@@ -97,7 +100,7 @@ class TokenPriceRepositoryImpl @Inject constructor(
                     tokenPriceDao.insertTokensPrice(tokensPrices = currentTokensAndLsusPrices.asEntity())
                     // return all tokens prices from database
                     tokenPriceDao.getTokensPrices(
-                        addresses = allResourcesAddresses,
+                        addresses = allAddresses,
                         minValidity = tokenPriceCacheValidity()
                     ).toTokenPrice()
                 }.getOrElse {
@@ -115,15 +118,5 @@ class TokenPriceRepositoryImpl @Inject constructor(
             responseBody?.string().orEmpty()
         )
         return RadixWalletException.GatewayException.HttpError(code = 500, message = error.detail ?: "no message")
-    }
-
-    private fun resolveXrdAddress(resourcesAddresses: Set<String>): String {
-        return if (resourcesAddresses.isEmpty()) {
-            XrdResource.address()
-        } else {
-            val resourceAddressToFindNetworkId = resourcesAddresses.first()
-            val networkId = Address(resourceAddressToFindNetworkId).networkId().toInt()
-            XrdResource.address(networkId = NetworkId.from(networkId))
-        }
     }
 }
