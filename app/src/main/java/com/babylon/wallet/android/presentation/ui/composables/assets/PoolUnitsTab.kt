@@ -191,7 +191,7 @@ fun PoolResourcesValues(
                     )
 
                     val fiatPriceFormatted = remember(fiatPrice, resourceWithAmount) {
-                        fiatPrice?.priceFormatted(resourceWithAmount.key)
+                        fiatPrice?.xrdPriceFormatted(resourceWithAmount.key)
                     }
 
                     if (fiatPriceFormatted != null) {

@@ -131,7 +131,7 @@ fun LSUDialogContent(
         LSUResourceValue(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
             amount = xrdWorth,
-            priceFormatted = price?.priceFormatted
+            price = price
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
@@ -234,7 +234,7 @@ fun LSUDialogContent(
 private fun LSUResourceValue(
     modifier: Modifier = Modifier,
     amount: BigDecimal?,
-    priceFormatted: String?
+    price: AssetPrice.LSUPrice?
 ) {
     Row(
         modifier = modifier
@@ -273,10 +273,16 @@ private fun LSUResourceValue(
                 maxLines = 1
             )
 
-            if (priceFormatted != null) {
+            val xrdPriceFormatted = remember(price, amount) {
+                if (amount != null) {
+                    price?.xrdPriceFormatted(amount)
+                } else {
+                    null
+                }
+            }
+            if (xrdPriceFormatted != null) {
                 FiatBalance(
-                    modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall),
-                    fiatPriceFormatted = priceFormatted,
+                    fiatPriceFormatted = xrdPriceFormatted,
                     style = RadixTheme.typography.body2HighImportance
                 )
             }
