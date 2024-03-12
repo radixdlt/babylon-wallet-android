@@ -3,6 +3,7 @@ package com.babylon.wallet.android.domain.model.assets
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.utils.toLocaleNumberFormat
 import java.math.BigDecimal
+import java.text.NumberFormat
 import java.util.Currency
 
 sealed class AssetPrice {
@@ -10,15 +11,14 @@ sealed class AssetPrice {
     abstract val price: BigDecimal?
     abstract val currencyCode: String?
 
-    val currency: Currency?
-        get() = currencyCode?.let { Currency.getInstance(currencyCode) }
-
     protected fun priceWithCurrency(price: BigDecimal?): String? {
-        val symbol = currency?.symbol
+        if (price == null) return null
 
-        return price?.let { amount ->
-            "${symbol.orEmpty()}${amount.toLocaleNumberFormat()}"
-        }
+        return NumberFormat.getCurrencyInstance().apply {
+            if (currencyCode != null) {
+                currency = Currency.getInstance(currencyCode)
+            }
+        }.format(price.toDouble())
     }
 
     data class TokenPrice(
