@@ -24,7 +24,7 @@ class NPSSurveyUseCase @Inject constructor(
             if (lastNPSSurveyInstant != null) {
                 // Survey has been shown already, check last show time and compare with 3 months gap
                 val duration = Duration.between(lastNPSSurveyInstant, InstantGenerator())
-                if (duration.toMillis() < OUTSTANDING_TIME_DAYS) {
+                if (duration.toDays() < OUTSTANDING_TIME_DAYS) {
                     NPSSurveyState.InActive
                 } else {
                     NPSSurveyState.Active
@@ -40,8 +40,8 @@ class NPSSurveyUseCase @Inject constructor(
         }
 
     companion object {
-        private const val OUTSTANDING_TIME_DAYS = 5000 // Approximately 3 months
-        private const val TRANSACTION_COMPLETE_COUNTER = 1
+        private const val OUTSTANDING_TIME_DAYS = 90 // Approximately 3 months
+        private const val TRANSACTION_COMPLETE_COUNTER = 10
     }
 }
 

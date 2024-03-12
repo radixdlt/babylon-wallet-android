@@ -171,7 +171,7 @@ fun RatingContainer(
             maxItemsInEachRow = 6
         ) {
             scores.forEach { selectableScore ->
-                val backgroundColor = if (selectableScore.selected) Color.Black else RadixTheme.colors.white
+                val backgroundColor = if (selectableScore.selected) RadixTheme.colors.gray1 else RadixTheme.colors.white
                 val contentColor = if (selectableScore.selected) RadixTheme.colors.white else Color.Black
 
                 Box(
