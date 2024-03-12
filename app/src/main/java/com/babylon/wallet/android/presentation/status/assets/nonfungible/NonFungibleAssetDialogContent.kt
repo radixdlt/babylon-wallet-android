@@ -29,6 +29,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Asset
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.account.composable.View
@@ -50,6 +51,7 @@ fun NonFungibleAssetDialogContent(
     resourceAddress: String,
     localId: String?,
     asset: Asset.NonFungible?,
+    price: AssetPrice.StakeClaimPrice?,
     isNewlyCreated: Boolean = false,
     accountContext: Network.Account? = null,
     claimState: AssetDialogViewModel.State.ClaimState? = null,
