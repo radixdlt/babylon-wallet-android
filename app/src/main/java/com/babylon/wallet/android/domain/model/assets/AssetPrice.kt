@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.model.assets
 
 import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.utils.toLocaleNumberFormat
 import java.math.BigDecimal
 import java.text.NumberFormat
 import java.util.Currency
