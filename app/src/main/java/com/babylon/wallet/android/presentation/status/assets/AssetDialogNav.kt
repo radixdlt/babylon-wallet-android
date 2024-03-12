@@ -99,12 +99,14 @@ sealed interface AssetDialogArgs {
                         amounts = fungibleAmounts.amounts
                     )
                 }
+
                 ARG_RESOURCE_TYPE_VALUE_NFT -> NFT(
                     resourceAddress = requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS]),
                     isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
                     underAccountAddress = savedStateHandle[ARG_UNDER_ACCOUNT_ADDRESS],
                     localId = savedStateHandle[ARG_LOCAL_ID]
                 )
+
                 else -> error("No type specified.")
             }
         }

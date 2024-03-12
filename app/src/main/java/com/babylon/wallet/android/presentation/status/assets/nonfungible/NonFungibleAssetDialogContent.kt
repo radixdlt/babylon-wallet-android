@@ -20,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,7 +30,9 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Asset
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.account.composable.View
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogViewModel
@@ -50,6 +53,7 @@ fun NonFungibleAssetDialogContent(
     resourceAddress: String,
     localId: String?,
     asset: Asset.NonFungible?,
+    price: AssetPrice.StakeClaimPrice?,
     isNewlyCreated: Boolean = false,
     accountContext: Network.Account? = null,
     claimState: AssetDialogViewModel.State.ClaimState? = null,
@@ -126,7 +130,9 @@ fun NonFungibleAssetDialogContent(
             if (asset is StakeClaim && item?.claimEpoch != null && item.claimAmountXrd != null) {
                 ClaimNFTInfo(
                     claimState = claimState,
+                    item = item,
                     accountContextMissing = accountContext == null,
+                    price = price,
                     onClaimClick = onClaimClick
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -273,7 +279,9 @@ fun NonFungibleAssetDialogContent(
 private fun ClaimNFTInfo(
     modifier: Modifier = Modifier,
     claimState: AssetDialogViewModel.State.ClaimState?,
+    item: Resource.NonFungibleResource.Item,
     accountContextMissing: Boolean,
+    price: AssetPrice.StakeClaimPrice? = null,
     onClaimClick: () -> Unit
 ) {
     val showClaimButton = claimState is AssetDialogViewModel.State.ClaimState.ReadyToClaim && !accountContextMissing
@@ -314,8 +322,12 @@ private fun ClaimNFTInfo(
             }
         }
 
+        val priceFormatted = remember(price, item) {
+            price?.xrdPriceFormatted(item)
+        }
         WorthXRD(
-            amount = claimState?.amount
+            amount = claimState?.amount,
+            fiatPriceFormatted = priceFormatted
         )
 
         if (claimState is AssetDialogViewModel.State.ClaimState.Unstaking) {

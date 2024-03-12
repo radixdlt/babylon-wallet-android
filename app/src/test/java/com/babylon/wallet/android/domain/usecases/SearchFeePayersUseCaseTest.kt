@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Pool
@@ -137,6 +138,10 @@ class SearchFeePayersUseCaseTest {
                 account: Network.Account,
                 validatorsWithStakes: List<ValidatorWithStakes>
             ): Result<List<ValidatorWithStakes>> {
+                error("Not needed")
+            }
+
+            override suspend fun updateStakeClaims(account: Network.Account, claims: List<StakeClaim>): Result<List<StakeClaim>> {
                 error("Not needed")
             }
 

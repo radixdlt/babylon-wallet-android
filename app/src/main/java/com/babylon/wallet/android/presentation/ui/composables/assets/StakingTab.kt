@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -37,6 +38,7 @@ import com.babylon.wallet.android.presentation.account.composable.EmptyResources
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.resources.FiatBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
@@ -385,7 +387,8 @@ private fun LiquidStakeUnit(
         )
 
         WorthXRD(
-            amount = remember(validatorWithStakes) { validatorWithStakes.stakeValue() }
+            amount = remember(validatorWithStakes) { validatorWithStakes.stakeValue() },
+            fiatPriceFormatted = null // TODO change that
         )
     }
 }
@@ -451,6 +454,7 @@ private fun StakeClaims(
                     modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingSmall else 0.dp),
                     claimCollection = validatorWithStakes.stakeClaimNft.nonFungibleResource,
                     claimNft = item,
+                    price = null, // TODO change that
                     action = action
                 )
             }
@@ -492,6 +496,7 @@ private fun StakeClaims(
                     modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingSmall else 0.dp),
                     claimCollection = validatorWithStakes.stakeClaimNft.nonFungibleResource,
                     claimNft = item,
+                    price = null, // TODO change that
                     action = action
                 )
             }
@@ -551,8 +556,12 @@ private fun ClaimWorth(
     modifier: Modifier = Modifier,
     claimCollection: Resource.NonFungibleResource,
     claimNft: Resource.NonFungibleResource.Item,
+    price: AssetPrice.StakeClaimPrice?,
     action: AssetsViewAction
 ) {
+    val fiatPriceFormatted = remember(price, claimNft) {
+        price?.xrdPriceFormatted(claimNft)
+    }
     WorthXRD(
         modifier = modifier.throttleClickable {
             when (action) {
@@ -570,6 +579,7 @@ private fun ClaimWorth(
             }
         },
         amount = remember(claimNft) { claimNft.claimAmountXrd },
+        fiatPriceFormatted = fiatPriceFormatted,
         trailingContent = if (action is AssetsViewAction.Selection) {
             {
                 val isSelected = remember(claimNft, action) {
@@ -596,6 +606,7 @@ private fun ClaimWorth(
 fun WorthXRD(
     modifier: Modifier = Modifier,
     amount: BigDecimal?,
+    fiatPriceFormatted: String?,
     trailingContent: @Composable (() -> Unit)? = null
 ) {
     Row(
@@ -628,19 +639,31 @@ fun WorthXRD(
             maxLines = 1
         )
 
-        Text(
+        Column(
             modifier = Modifier
                 .weight(1f)
                 .padding(
                     end = if (trailingContent == null || amount == null) RadixTheme.dimensions.paddingDefault else 0.dp
                 )
                 .assetPlaceholder(visible = amount == null),
-            text = amount?.displayableQuantity().orEmpty(),
-            style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.End,
-            maxLines = 2
-        )
+            horizontalAlignment = Alignment.End
+        ) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = amount?.displayableQuantity().orEmpty(),
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.End,
+                maxLines = 2
+            )
+
+            if (fiatPriceFormatted != null) {
+                FiatBalance(
+                    fiatPriceFormatted = fiatPriceFormatted,
+                    style = RadixTheme.typography.body2HighImportance
+                )
+            }
+        }
 
         trailingContent?.invoke()
     }

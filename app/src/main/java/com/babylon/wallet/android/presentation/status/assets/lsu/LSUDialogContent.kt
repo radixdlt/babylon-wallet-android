@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
@@ -37,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
+import com.babylon.wallet.android.presentation.ui.composables.resources.FiatBalance
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.ret.Address
@@ -48,6 +50,7 @@ import java.math.BigDecimal
 fun LSUDialogContent(
     modifier: Modifier = Modifier,
     lsu: LiquidStakeUnit?,
+    price: AssetPrice.LSUPrice?,
     args: AssetDialogArgs.Fungible
 ) {
     val resourceAddress = args.resourceAddress
@@ -127,7 +130,8 @@ fun LSUDialogContent(
         }
         LSUResourceValue(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            amount = xrdWorth
+            amount = xrdWorth,
+            price = price
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
@@ -229,7 +233,8 @@ fun LSUDialogContent(
 @Composable
 private fun LSUResourceValue(
     modifier: Modifier = Modifier,
-    amount: BigDecimal?
+    amount: BigDecimal?,
+    price: AssetPrice.LSUPrice?
 ) {
     Row(
         modifier = modifier
@@ -256,16 +261,32 @@ private fun LSUResourceValue(
             maxLines = 2
         )
 
-        Text(
-            modifier = Modifier
-                .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
-                .radixPlaceholder(visible = amount == null),
-            text = amount?.displayableQuantity().orEmpty(),
-            style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.End,
-            maxLines = 1
-        )
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                modifier = Modifier
+                    .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
+                    .radixPlaceholder(visible = amount == null),
+                text = amount?.displayableQuantity().orEmpty(),
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.End,
+                maxLines = 1
+            )
+
+            val xrdPriceFormatted = remember(price, amount) {
+                if (amount != null) {
+                    price?.xrdPriceFormatted(amount)
+                } else {
+                    null
+                }
+            }
+            if (xrdPriceFormatted != null) {
+                FiatBalance(
+                    fiatPriceFormatted = xrdPriceFormatted,
+                    style = RadixTheme.typography.body2HighImportance
+                )
+            }
+        }
     }
 }
 

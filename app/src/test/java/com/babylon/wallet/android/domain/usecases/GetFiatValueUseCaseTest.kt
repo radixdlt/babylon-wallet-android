@@ -1,13 +1,10 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.domain.model.NetworkInfo
 import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueOfOwnedAssetsUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.babylon.wallet.android.fakes.TokenPriceRepositoryFake
 import com.babylon.wallet.android.mockdata.mockAccountsWithMockAssets
-import io.mockk.coEvery
-import io.mockk.mockk
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -15,70 +12,40 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class GetFiatValueOfOwnedAssetsUseCaseTest {
+class GetFiatValueUseCaseTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
-    private val getNetworkInfoUseCase = mockk<GetNetworkInfoUseCase>()
     private val tokenPriceRepositoryFake = TokenPriceRepositoryFake()
-    private val getFiatValueOfOwnedAssetsUseCase = GetFiatValueOfOwnedAssetsUseCase(
+    private val getFiatValueUseCase = GetFiatValueUseCase(
         tokenPriceRepository = tokenPriceRepositoryFake,
-        stateRepository = StateRepositoryFake(),
-        getNetworkInfoUseCase = getNetworkInfoUseCase
+        stateRepository = StateRepositoryFake()
     )
 
-    @Before
-    fun setUp() = runTest {
-        coEvery { getNetworkInfoUseCase() } returns Result.success(
-            NetworkInfo(Radix.Network.mainnet, 0L)
-        )
-    }
-
     @Test
-    fun `assert that all the tokens of the given accounts have their prices`() {
-        val accountsWithAssets = mockAccountsWithMockAssets
+    fun `assert that all the tokens of the given accounts have their prices`() = testScope.runTest {
+        mockAccountsWithMockAssets.forEach { accountWithAssets ->
+            val assetPriceAddresses = getFiatValueUseCase.forAccount(accountWithAssets).getOrThrow().map {
+                it.asset.resource.resourceAddress
+            }.toSet()
 
-        testScope.runTest {
-            val result = getFiatValueOfOwnedAssetsUseCase(accountsWithAssets = accountsWithAssets)
-
-            result.map { mapOfAccountWithAssetsAndPrices ->
-                val accountWithAssets = mapOfAccountWithAssetsAndPrices.key
-                val tokensPrices = mapOfAccountWithAssetsAndPrices.value
-
-                val ownedTokensNames = accountWithAssets.assets?.ownedTokens?.map {
-                    it.resource.name
-                } ?: emptyList()
-
-                val tokensPricesNames = tokensPrices.map {
-                    it.asset.resource.name
-                }
-
-                assertTrue(tokensPricesNames.containsAll(ownedTokensNames))
-            }
+            val ownedTokenAddresses = accountWithAssets.assets?.ownedTokens.orEmpty().map { it.resource.resourceAddress }.toSet()
+            assertTrue(assetPriceAddresses.containsAll(ownedTokenAddresses))
         }
     }
 
     @Test
-    fun `given a token when it is not included in the result of the prices then it does not have fiat value`() {
-        val accountsWithAssets = mockAccountsWithMockAssets
+    fun `given a token when it is not included in the result of the prices then it does not have fiat value`() = testScope.runTest {
+        val assetPrices = getFiatValueUseCase.forAccount(mockAccountsWithMockAssets[0]).getOrThrow()
 
-        testScope.runTest {
-            val result = getFiatValueOfOwnedAssetsUseCase(accountsWithAssets = accountsWithAssets)
-
-            val assetsPricesList = result.values.first()
-            val otherToken = assetsPricesList.find {
-                it.asset.resource.name == "OtherToken"
-            }
-            assertNotNull(otherToken?.asset)
-            assertNull(otherToken?.price)
-        }
+        val assetPrice = assetPrices.find { it.asset.resource.name == "OtherToken" }
+        assertNotNull(assetPrice?.asset)
+        assertNull(assetPrice?.price)
     }
 
     @Test
@@ -93,9 +60,8 @@ class GetFiatValueOfOwnedAssetsUseCaseTest {
         val accountWithAssets = accountsWithAssets[0]
 
         testScope.runTest {
-            val mapOfAccountsWithAssetsAndPrices = getFiatValueOfOwnedAssetsUseCase(accountsWithAssets = listOf(accountWithAssets))
+            val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets).getOrThrow()
 
-            val assetPricesForAccount = mapOfAccountsWithAssetsAndPrices[accountWithAssets]!!
             val pricesPerAsset: Map<Asset, BigDecimal> = assetPricesForAccount.associate { assetPrice ->
                 assetPrice.asset to (assetPrice.price ?: BigDecimal.ZERO)
             }
@@ -118,7 +84,7 @@ class GetFiatValueOfOwnedAssetsUseCaseTest {
             val poolUnitsTotalFiatValue = allPoolUnitsOfTheAccount?.sumOf {
                 pricesPerAsset[it] ?: BigDecimal.ZERO
             } ?: BigDecimal.ZERO
-            val actualPoolUnitsTotalFiatValue =  poolUnitsTotalFiatValue.setScale(5, RoundingMode.FLOOR)
+            val actualPoolUnitsTotalFiatValue = poolUnitsTotalFiatValue.setScale(5, RoundingMode.FLOOR)
             assertEquals(expectedTotalFiatValueOfPoolUnits, actualPoolUnitsTotalFiatValue)
 
             val allStakeClaimsOfTheAccount = accountWithAssets.assets?.stakeClaims
@@ -145,9 +111,8 @@ class GetFiatValueOfOwnedAssetsUseCaseTest {
         val accountWithAssets = accountsWithAssets[1]
 
         testScope.runTest {
-            val mapOfAccountsWithAssetsAndPrices = getFiatValueOfOwnedAssetsUseCase(accountsWithAssets = listOf(accountWithAssets))
+            val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets).getOrThrow()
 
-            val assetPricesForAccount = mapOfAccountsWithAssetsAndPrices[accountWithAssets]!!
             val pricesPerAsset: Map<Asset, BigDecimal> = assetPricesForAccount.associate { assetPrice ->
                 assetPrice.asset to (assetPrice.price ?: BigDecimal.ZERO)
             }
@@ -192,10 +157,9 @@ class GetFiatValueOfOwnedAssetsUseCaseTest {
         var actualTotalFiatValueOfWallet = BigDecimal.ZERO
 
         testScope.runTest {
-            val result = getFiatValueOfOwnedAssetsUseCase(accountsWithAssets = accountsWithAssets)
+            accountsWithAssets.forEach { accountWithAssets ->
+                val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets).getOrThrow()
 
-            accountsWithAssets.map { accountWithAssets ->
-                val assetPricesForAccount = result[accountWithAssets]!!
                 val pricesPerAsset: Map<Asset, BigDecimal> = assetPricesForAccount.associate { assetPrice ->
                     assetPrice.asset to (assetPrice.price ?: BigDecimal.ZERO)
                 }
@@ -204,6 +168,7 @@ class GetFiatValueOfOwnedAssetsUseCaseTest {
 
                 actualTotalFiatValueOfWallet += accountTotalFiatValue
             }
+
             assertEquals(expectedTotalFiatValueOfWallet, actualTotalFiatValueOfWallet.setScale(3, RoundingMode.CEILING))
         }
     }
