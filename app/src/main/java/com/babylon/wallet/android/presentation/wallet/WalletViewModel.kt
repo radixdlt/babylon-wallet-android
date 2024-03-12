@@ -216,20 +216,9 @@ data class WalletUiState(
     val isRefreshing: Boolean
         get() = refreshing
 
-    fun securityPrompt(forAccount: Network.Account): SecurityPromptType? {
-        val assetsForAccount = accountsWithResources?.find {
-            it.account.address == forAccount.address
-        }?.assets ?: return null
-
-        val accountWithSecurityPrompt = entitiesWithSecurityPrompt.find {
-            it.entity.address == forAccount.address
-        } ?: return null
-        return if (accountWithSecurityPrompt.prompt == SecurityPromptType.NEEDS_BACKUP) {
-            if (assetsForAccount.hasXrd()) SecurityPromptType.NEEDS_BACKUP else null
-        } else {
-            accountWithSecurityPrompt.prompt
-        }
-    }
+    fun securityPrompt(forAccount: Network.Account) = entitiesWithSecurityPrompt.find {
+        it.entity.address == forAccount.address
+    }?.prompt
 
     val isSettingsWarningVisible: Boolean
         get() = isBackupWarningVisible || entitiesWithSecurityPrompt.any {

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterialApi::class)
-
 package com.babylon.wallet.android.presentation.account
 
 import androidx.compose.animation.fadeIn
@@ -308,16 +306,16 @@ fun AssetsContent(
 
                         androidx.compose.animation.AnimatedVisibility(
                             modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
-                            visible = state.visiblePrompt != null,
+                            visible = state.securityPromptType != null,
                             enter = fadeIn(),
                             exit = fadeOut()
                         ) {
                             ApplySecuritySettingsLabel(
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = {
-                                    state.visiblePrompt?.let(onApplySecuritySettings)
+                                    state.securityPromptType?.let(onApplySecuritySettings)
                                 },
-                                text = state.visiblePrompt?.toText().orEmpty()
+                                text = state.securityPromptType?.toText().orEmpty()
                             )
                         }
                     }

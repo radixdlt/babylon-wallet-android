@@ -276,23 +276,12 @@ data class AccountUiState(
     val accountWithAssets: AccountWithAssets? = null,
     val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
     val pendingStakeUnits: Boolean = false,
-    private val securityPromptType: SecurityPromptType? = null,
+    val securityPromptType: SecurityPromptType? = null,
     val assetsViewState: AssetsViewState = AssetsViewState.from(assets = null),
     val epoch: Long? = null,
     val isRefreshing: Boolean = false,
     val uiMessage: UiMessage? = null
 ) : UiState {
-
-    val visiblePrompt: SecurityPromptType?
-        get() = when (securityPromptType) {
-            SecurityPromptType.NEEDS_RESTORE -> securityPromptType
-            SecurityPromptType.NEEDS_BACKUP -> if (accountWithAssets?.assets?.hasXrd() == true) {
-                SecurityPromptType.NEEDS_BACKUP
-            } else {
-                null
-            }
-            else -> null
-        }
 
     val isTransferEnabled: Boolean
         get() = accountWithAssets?.assets != null
