@@ -33,19 +33,37 @@ sealed class AssetPrice {
     data class LSUPrice(
         override val asset: LiquidStakeUnit,
         override val price: BigDecimal?,
-        override val currencyCode: String?
+        override val currencyCode: String?,
+        val xrdPrice: BigDecimal?
     ) : AssetPrice() {
-        val priceFormatted: String?
+        val lsuPriceFormatted: String?
             get() = priceWithCurrency(price)
+
+        fun xrdPriceFormatted(xrdBalance: BigDecimal): String? = xrdPrice?.let {
+            priceWithCurrency(xrdBalance * it)
+        }
     }
 
     data class StakeClaimPrice(
         override val asset: StakeClaim,
-        override val price: BigDecimal?,
+        val prices: Map<Resource.NonFungibleResource.Item, BigDecimal?>,
         override val currencyCode: String?
     ) : AssetPrice() {
-        val priceFormatted: String?
-            get() = priceWithCurrency(price)
+        override val price: BigDecimal?
+            get() {
+                val areAllPricesNull = prices.values.all { price -> price == null }
+                if (areAllPricesNull) {
+                    return null
+                }
+                return prices.values.sumOf { price ->
+                    price ?: BigDecimal.ZERO
+                }
+            }
+
+        fun xrdPriceFormatted(item: Resource.NonFungibleResource.Item): String? {
+            val fiatPrice = prices[item]
+            return priceWithCurrency(fiatPrice)
+        }
     }
 
     data class PoolUnitPrice(
@@ -64,7 +82,7 @@ sealed class AssetPrice {
                 }
             }
 
-        fun priceFormatted(resource: Resource.FungibleResource): String? {
+        fun xrdPriceFormatted(resource: Resource.FungibleResource): String? {
             val fiatPrice = prices[resource]
             return priceWithCurrency(fiatPrice)
         }

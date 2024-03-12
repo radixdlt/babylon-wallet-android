@@ -75,10 +75,14 @@ class GetFiatValueUseCase @Inject constructor(
             val tokenPrice = tokenPrices[resourceAddress]
             val priceForLSU = tokenPrice?.price ?: BigDecimal.ZERO
             val totalPrice = priceForLSU.multiply(fungibleResource.ownedAmount ?: BigDecimal.ZERO)
+
+            // Currently all prices are calculated in USD. This code will need to be changed once we can change currencies
+            val xrdPriceInSameCurrency = tokenPrices[XrdResource.address(networkId = networkId)]?.price
             AssetPrice.LSUPrice(
                 asset = this,
                 price = totalPrice,
-                currencyCode = tokenPrice?.currency
+                currencyCode = tokenPrice?.currency,
+                xrdPrice = xrdPriceInSameCurrency
             )
         }
 
@@ -101,12 +105,18 @@ class GetFiatValueUseCase @Inject constructor(
 
         is StakeClaim -> {
             val xrdAddress = XrdResource.address(networkId = networkId)
+            val xrdPrice = tokenPrices[xrdAddress]?.price ?: BigDecimal.ZERO
 
-            val totalItemXRD = nonFungibleResource.items.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO }
-            val totalPrice = totalItemXRD * (tokenPrices[xrdAddress]?.price ?: BigDecimal.ZERO)
+            val prices = nonFungibleResource.items.associateWith {
+                if (it.claimAmountXrd != null) {
+                    it.claimAmountXrd?.multiply(xrdPrice)
+                } else {
+                    null
+                }
+            }
             AssetPrice.StakeClaimPrice(
                 asset = this,
-                price = totalPrice,
+                prices = prices,
                 currencyCode = tokenPrices[xrdAddress]?.currency
             )
         }
@@ -116,7 +126,10 @@ class GetFiatValueUseCase @Inject constructor(
 
     private fun Asset.priceRequestAddresses(networkId: NetworkId): List<PriceRequestAddress> = when (this) {
         is NonFungibleCollection -> emptyList()
-        is LiquidStakeUnit -> listOf(PriceRequestAddress.LSU(address = resourceAddress))
+        is LiquidStakeUnit -> listOf(
+            PriceRequestAddress.LSU(address = resourceAddress),
+            PriceRequestAddress.Regular(XrdResource.address(networkId = networkId))
+        )
         is StakeClaim -> {
             listOf(PriceRequestAddress.Regular(XrdResource.address(networkId = networkId)))
         }
