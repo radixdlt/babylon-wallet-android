@@ -28,7 +28,7 @@ class GetFiatValueUseCase @Inject constructor(
         accountWithAssets.assets?.ownedTokens?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
             accountWithAssets.assets?.ownedLiquidStakeUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
             accountWithAssets.assets?.ownedPoolUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
-            accountWithAssets.assets?.stakeClaims?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty()
+            accountWithAssets.assets?.ownedStakeClaims?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty()
     }.then { addresses ->
         tokenPriceRepository.getTokensPrices(addresses = addresses.toSet())
     }.mapCatching { tokenPrices ->
