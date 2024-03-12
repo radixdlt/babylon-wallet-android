@@ -14,6 +14,7 @@ import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.assets.TokenPrice
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import rdx.works.core.then
+import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -23,40 +24,45 @@ class GetFiatValueUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
-    suspend fun forAccount(accountWithAssets: AccountWithAssets): Result<List<AssetPrice>> = runCatching {
+    suspend fun forAccount(accountWithAssets: AccountWithAssets): Result<List<AssetPrice>> {
         val networkId = NetworkId.from(accountWithAssets.account.networkID)
-        accountWithAssets.assets?.ownedTokens?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
-            accountWithAssets.assets?.ownedLiquidStakeUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
-            accountWithAssets.assets?.ownedPoolUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
-            accountWithAssets.assets?.ownedStakeClaims?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty()
-    }.then { addresses ->
-        tokenPriceRepository.getTokensPrices(addresses = addresses.toSet())
-    }.mapCatching { tokenPrices ->
-        tokenPrices.associateBy { it.resourceAddress }
-    }.mapCatching { prices ->
-        val networkId = NetworkId.from(accountWithAssets.account.networkID)
-        accountWithAssets.assets
-            ?.ownedTokens
-            ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
+        return runCatching {
+            accountWithAssets.assets?.ownedTokens?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
+                    accountWithAssets.assets?.ownedLiquidStakeUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
+                    accountWithAssets.assets?.ownedPoolUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
+                    accountWithAssets.assets?.ownedStakeClaims?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty()
+        }.then { addresses ->
+            tokenPriceRepository.getTokensPrices(addresses = addresses.toSet()).mapCatching { tokenPrices ->
+                tokenPrices.associateBy { it.resourceAddress }
+            }
+        }.mapCatching { prices ->
             accountWithAssets.assets
-                ?.ownedLiquidStakeUnits
+                ?.ownedTokens
                 ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
-            accountWithAssets.assets
-                ?.ownedPoolUnits
-                ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
-            accountWithAssets.assets
-                ?.ownedStakeClaims
-                ?.mapNotNull { it.price(prices, networkId) }.orEmpty()
+                    accountWithAssets.assets
+                        ?.ownedLiquidStakeUnits
+                        ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
+                    accountWithAssets.assets
+                        ?.ownedPoolUnits
+                        ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
+                    accountWithAssets.assets
+                        ?.ownedStakeClaims
+                        ?.mapNotNull { it.price(prices, networkId) }.orEmpty()
+        }
     }
 
-    suspend fun forAsset(asset: Asset, networkId: NetworkId): Result<AssetPrice?> = runCatching {
-        asset.priceRequestAddresses(networkId)
-    }.then { addresses ->
-        tokenPriceRepository.getTokensPrices(addresses = addresses.toSet())
-    }.mapCatching { tokenPrices ->
-        tokenPrices.associateBy { it.resourceAddress }
-    }.mapCatching { prices ->
-        asset.price(prices, networkId)
+    suspend fun forAsset(asset: Asset, account: Network.Account): Result<AssetPrice?> {
+        val networkId = NetworkId.from(account.networkID)
+
+        return runCatching {
+            asset.priceRequestAddresses(networkId)
+        }.then { addresses ->
+            tokenPriceRepository.getTokensPrices(addresses = addresses.toSet())
+        }.mapCatching { tokenPrices ->
+            tokenPrices.associateBy { it.resourceAddress }
+        }.mapCatching { prices ->
+            asset.price(prices, networkId)
+        }
     }
 
     private fun Asset.price(tokenPrices: Map<String, TokenPrice>, networkId: NetworkId): AssetPrice? = when (this) {
