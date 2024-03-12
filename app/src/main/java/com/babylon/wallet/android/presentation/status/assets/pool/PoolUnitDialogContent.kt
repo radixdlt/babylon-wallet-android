@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
@@ -44,7 +45,8 @@ import java.math.BigDecimal
 fun PoolUnitDialogContent(
     modifier: Modifier = Modifier,
     args: AssetDialogArgs.Fungible,
-    poolUnit: PoolUnit?
+    poolUnit: PoolUnit?,
+    price: AssetPrice.PoolUnitPrice?
 ) {
     val resourceAddress = args.resourceAddress
     val amount = args.fungibleAmountOf(resourceAddress) ?: poolUnit?.stake?.ownedAmount
@@ -106,7 +108,8 @@ fun PoolUnitDialogContent(
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingMedium),
                 resources = resourcesWithAmount,
-                isCompact = false
+                isCompact = false,
+                fiatPrice = price
             )
         } else {
             Column(

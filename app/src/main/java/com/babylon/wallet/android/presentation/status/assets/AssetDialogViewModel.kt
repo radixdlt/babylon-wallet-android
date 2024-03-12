@@ -3,20 +3,24 @@ package com.babylon.wallet.android.presentation.status.assets
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.Asset
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.ret.Address
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import timber.log.Timber
@@ -29,7 +33,8 @@ class AssetDialogViewModel @Inject constructor(
     resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val sendClaimRequestUseCase: SendClaimRequestUseCase,
-    private val getNetworkInfoUseCase: GetNetworkInfoUseCase
+    private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
+    private val getFiatValueUseCase: GetFiatValueUseCase
 ) : StateViewModel<AssetDialogViewModel.State>() {
 
     private val args = AssetDialogArgs.from(savedStateHandle)
@@ -67,9 +72,17 @@ class AssetDialogViewModel @Inject constructor(
                         asset
                     }
                 }
-            }.onSuccess { asset ->
+            }.mapCatching { asset ->
                 _state.update { it.copy(asset = asset) }
 
+                args.underAccountAddress?.let { accountAddress ->
+                    val networkId = NetworkId.from(Address(accountAddress).networkId().toInt())
+                    val assetPrice = getFiatValueUseCase.forAsset(asset = asset, networkId = networkId).getOrThrow()
+                    _state.update { it.copy(assetPrice = assetPrice) }
+                }
+
+                asset
+            }.onSuccess { asset ->
                 if (asset is StakeClaim) {
                     // Need to get the current epoch so as to resolve the state of the claim
                     getNetworkInfoUseCase().onSuccess { info ->
@@ -118,6 +131,7 @@ class AssetDialogViewModel @Inject constructor(
         val args: AssetDialogArgs,
         val asset: Asset? = null,
         val epoch: Long? = null,
+        val assetPrice: AssetPrice? = null,
         val uiMessage: UiMessage? = null,
         val accountContext: Network.Account? = null,
     ) : UiState {

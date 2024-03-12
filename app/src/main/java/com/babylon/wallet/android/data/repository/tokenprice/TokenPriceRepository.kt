@@ -74,8 +74,8 @@ class TokenPriceRepositoryImpl @Inject constructor(
     ): Result<List<TokenPrice>> = withContext(ioDispatcher) {
         runCatching {
             val allAddresses = addresses.map { it.address }.toSet()
-            val regularResourceAddresses = allAddresses.filterIsInstance<PriceRequestAddress.Regular>().map { it.address }.toSet()
-            val lsuResourceAddresses = allAddresses.filterIsInstance<PriceRequestAddress.LSU>().map { it.address }.toSet()
+            val regularResourceAddresses = addresses.filterIsInstance<PriceRequestAddress.Regular>().map { it.address }.toSet()
+            val lsuResourceAddresses = addresses.filterIsInstance<PriceRequestAddress.LSU>().map { it.address }.toSet()
             val tokensPrices = tokenPriceDao.getTokensPrices(
                 addresses = allAddresses,
                 minValidity = tokenPriceCacheValidity()

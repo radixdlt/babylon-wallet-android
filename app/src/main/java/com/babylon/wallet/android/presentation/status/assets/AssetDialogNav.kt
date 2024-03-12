@@ -35,10 +35,10 @@ fun NavController.fungibleAssetDialog(
     val fungibleAmounts = Serializer.kotlinxSerializationJson.encodeToString(FungibleAmounts(amounts))
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_FUNGIBLE" +
-            "?${ARG_RESOURCE_ADDRESS}=$resourceAddress" +
-            "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
-            "&$ARG_AMOUNTS=$fungibleAmounts" +
-            underAccountAddressParam
+                "?${ARG_RESOURCE_ADDRESS}=$resourceAddress" +
+                "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
+                "&$ARG_AMOUNTS=$fungibleAmounts" +
+                underAccountAddressParam
     )
 }
 
@@ -52,10 +52,10 @@ fun NavController.nftAssetDialog(
     val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=$underAccountAddress" else ""
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_NFT" +
-            "?${ARG_RESOURCE_ADDRESS}=$resourceAddress" +
-            "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
-            localIdParam +
-            underAccountAddressParam
+                "?${ARG_RESOURCE_ADDRESS}=$resourceAddress" +
+                "&${ARG_NEWLY_CREATED}=$isNewlyCreated" +
+                localIdParam +
+                underAccountAddressParam
     )
 }
 
@@ -99,12 +99,14 @@ sealed interface AssetDialogArgs {
                         amounts = fungibleAmounts.amounts
                     )
                 }
+
                 ARG_RESOURCE_TYPE_VALUE_NFT -> NFT(
                     resourceAddress = requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS]),
                     isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
                     underAccountAddress = savedStateHandle[ARG_UNDER_ACCOUNT_ADDRESS],
                     localId = savedStateHandle[ARG_LOCAL_ID]
                 )
+
                 else -> error("No type specified.")
             }
         }
@@ -116,11 +118,11 @@ fun NavGraphBuilder.assetDialog(
 ) {
     dialog(
         route = "$ROUTE/{$ARG_RESOURCE_TYPE}" +
-            "?$ARG_RESOURCE_ADDRESS={$ARG_RESOURCE_ADDRESS}" +
-            "&$ARG_NEWLY_CREATED={$ARG_NEWLY_CREATED}" +
-            "&$ARG_AMOUNTS={$ARG_AMOUNTS}" +
-            "&$ARG_LOCAL_ID={$ARG_LOCAL_ID}" +
-            "&$ARG_UNDER_ACCOUNT_ADDRESS={$ARG_UNDER_ACCOUNT_ADDRESS}",
+                "?$ARG_RESOURCE_ADDRESS={$ARG_RESOURCE_ADDRESS}" +
+                "&$ARG_NEWLY_CREATED={$ARG_NEWLY_CREATED}" +
+                "&$ARG_AMOUNTS={$ARG_AMOUNTS}" +
+                "&$ARG_LOCAL_ID={$ARG_LOCAL_ID}" +
+                "&$ARG_UNDER_ACCOUNT_ADDRESS={$ARG_UNDER_ACCOUNT_ADDRESS}",
         arguments = listOf(
             navArgument(ARG_RESOURCE_TYPE) {
                 type = NavType.StringType

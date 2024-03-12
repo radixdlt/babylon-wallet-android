@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
@@ -31,6 +33,7 @@ import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
+import com.babylon.wallet.android.presentation.ui.composables.resources.FiatBalance
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import rdx.works.core.displayableQuantity
@@ -40,6 +43,7 @@ import java.math.BigDecimal
 fun FungibleDialogContent(
     modifier: Modifier = Modifier,
     token: Token?,
+    tokenPrice: AssetPrice.TokenPrice?,
     args: AssetDialogArgs.Fungible,
 ) {
     val resourceAddress = args.resourceAddress
@@ -80,6 +84,17 @@ fun FungibleDialogContent(
                 amount = amount,
                 symbol = token?.resource?.symbol.orEmpty(),
             )
+
+            val priceFormatted = remember(tokenPrice) {
+                tokenPrice?.priceFormatted
+            }
+            if (priceFormatted != null) {
+                FiatBalance(
+                    modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+                    fiatPriceFormatted = priceFormatted,
+                    style = RadixTheme.typography.body2HighImportance
+                )
+            }
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 

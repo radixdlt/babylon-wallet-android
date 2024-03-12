@@ -21,12 +21,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.resources.FiatBalance
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
@@ -144,7 +146,8 @@ private fun PoolUnitItem(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                 .padding(bottom = RadixTheme.dimensions.paddingLarge),
-            resources = resourcesWithAmounts
+            resources = resourcesWithAmounts,
+            fiatPrice = null // TODO change that
         )
     }
 }
@@ -153,6 +156,7 @@ private fun PoolUnitItem(
 fun PoolResourcesValues(
     modifier: Modifier = Modifier,
     resources: ImmutableMap<Resource.FungibleResource, BigDecimal?>,
+    fiatPrice: AssetPrice.PoolUnitPrice?,
     isCompact: Boolean = true
 ) {
     Column(modifier = modifier.assetOutlineBorder()) {
@@ -177,12 +181,27 @@ fun PoolResourcesValues(
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
                 )
-                Text(
-                    text = resourceWithAmount.value?.displayableQuantity().orEmpty(),
-                    style = if (isCompact) RadixTheme.typography.body1HighImportance else RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 1
-                )
+
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = resourceWithAmount.value?.displayableQuantity().orEmpty(),
+                        style = if (isCompact) RadixTheme.typography.body1HighImportance else RadixTheme.typography.secondaryHeader,
+                        color = RadixTheme.colors.gray1,
+                        maxLines = 1
+                    )
+
+                    val fiatPriceFormatted = remember(fiatPrice, resourceWithAmount) {
+                        fiatPrice?.priceFormatted(resourceWithAmount.key)
+                    }
+
+                    if (fiatPriceFormatted != null) {
+                        FiatBalance(
+                            fiatPriceFormatted = fiatPriceFormatted,
+                            style = RadixTheme.typography.body2HighImportance
+                        )
+                    }
+                }
+
             }
             if (index != itemsSize - 1) {
                 HorizontalDivider(color = RadixTheme.colors.gray4)
