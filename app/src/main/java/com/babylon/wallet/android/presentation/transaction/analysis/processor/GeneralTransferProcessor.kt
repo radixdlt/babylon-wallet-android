@@ -22,7 +22,10 @@ class GeneralTransferProcessor @Inject constructor(
     private val resolveComponentAddressesUseCase: ResolveComponentAddressesUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.General> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
-        val badges = getTransactionBadgesUseCase(accountProofs = summary.presentedProofs)
+        val badgesAddresses = summary.presentedProofs.map { entry ->
+            entry.value.map { it.resourceAddress }
+        }.flatten().toSet()
+        val badges = getTransactionBadgesUseCase(accountProofs = badgesAddresses)
         val dApps = summary.resolveDApps()
         val allOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
         val assets = resolveAssetsFromAddressUseCase(

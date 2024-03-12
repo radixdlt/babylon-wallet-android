@@ -219,7 +219,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             packageAddresses = listOf(),
             metadata = mapOf()
         ),
-        presentedProofs = listOf(),
+        presentedProofs = mapOf(),
         newlyCreatedNonFungibles = listOf()
     )
 
@@ -292,7 +292,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             accountsDepositedInto = emptyList(),
             accountsRequiringAuth = emptyList(),
             accountsWithdrawnFrom = emptyList(),
-            presentedProofs = emptyList(),
+            presentedProofs = emptyMap(),
             identitiesRequiringAuth = emptyList(),
             encounteredEntities = emptyList(),
             classification = listOf(ManifestClass.GENERAL),
