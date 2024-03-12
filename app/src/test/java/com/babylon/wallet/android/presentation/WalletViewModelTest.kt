@@ -10,8 +10,8 @@ import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
-import com.babylon.wallet.android.domain.usecases.NPSSurveyState
-import com.babylon.wallet.android.domain.usecases.NPSSurveyUseCase
+import com.babylon.wallet.android.NPSSurveyState
+import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
@@ -46,7 +46,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsForSecurityPromptUseCase = mockk<GetEntitiesWithSecurityPromptUseCase>()
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
-    private val npsSurveyUseCase = mockk<NPSSurveyUseCase>()
+    private val npsSurveyStateObserver = mockk<NPSSurveyStateObserver>()
     private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
 
@@ -66,7 +66,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         appEventBus,
         ensureBabylonFactorSourceExistUseCase,
         preferencesManager,
-        npsSurveyUseCase,
+        npsSurveyStateObserver,
         getBackupStateUseCase,
     )
 
@@ -78,7 +78,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         every { getProfileUseCase() } returns flowOf(sampleProfile)
         every { appEventBus.events } returns MutableSharedFlow()
         every { preferencesManager.isRadixBannerVisible } returns flowOf(false)
-        every { npsSurveyUseCase.npsSurveyState() } returns flowOf(NPSSurveyState.InActive)
+        every { npsSurveyStateObserver.npsSurveyState() } returns flowOf(NPSSurveyState.InActive)
     }
 
     @Test

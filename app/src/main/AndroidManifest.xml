@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>
 
     <application
-        android:name=".BabylonApplication"
+        android:name=".RadixApplication"
         android:allowBackup="true"
         android:backupAgent=".WalletBackupAgent"
         android:icon="@mipmap/ic_launcher"

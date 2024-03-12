@@ -3,12 +3,12 @@
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.NPSSurveyState
+import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
-import com.babylon.wallet.android.domain.usecases.NPSSurveyState
-import com.babylon.wallet.android.domain.usecases.NPSSurveyUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -60,7 +60,7 @@ class WalletViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val preferencesManager: PreferencesManager,
-    private val npsSurveyUseCase: NPSSurveyUseCase,
+    private val npsSurveyStateObserver: NPSSurveyStateObserver,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -90,8 +90,12 @@ class WalletViewModel @Inject constructor(
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
         loadResources(withRefresh = false)
+        observeNpsSurveyState()
+    }
+
+    private fun observeNpsSurveyState() {
         viewModelScope.launch {
-            npsSurveyUseCase.npsSurveyState().filter { it is NPSSurveyState.Active }.collectLatest { state ->
+            npsSurveyStateObserver.npsSurveyState().filter { it is NPSSurveyState.Active }.collectLatest { state ->
                 _state.update { it.copy(isNpsSurveyShown = state == NPSSurveyState.Active) }
             }
         }

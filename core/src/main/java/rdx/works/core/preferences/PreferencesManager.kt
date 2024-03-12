@@ -7,14 +7,19 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import rdx.works.core.UUIDGenerator
 import java.time.Instant
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
 interface PreferencesManager {
+    val uuid: Flow<String>
     val lastBackupInstant: Flow<Instant?>
     val firstPersonaCreated: Flow<Boolean>
     val isImportFromOlympiaSettingDismissed: Flow<Boolean>
@@ -23,6 +28,7 @@ interface PreferencesManager {
     val isRadixBannerVisible: Flow<Boolean>
     val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean>
     val lastNPSSurveyInstant: Flow<Instant?>
+
     suspend fun updateLastBackupInstant(backupInstant: Instant)
 
     suspend fun removeLastBackupInstant()
@@ -57,6 +63,18 @@ interface PreferencesManager {
 class PreferencesManagerImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>
 ) : PreferencesManager {
+
+    override val uuid: Flow<String>
+        get() = dataStore.data.map { preferences ->
+            preferences[KEY_UUID]
+        }.onStart {
+            val existingUUID = dataStore.data.map { it[KEY_UUID] }.firstOrNull()
+            if (existingUUID.isNullOrEmpty()) {
+                dataStore.edit { preferences ->
+                    preferences[KEY_UUID] = UUIDGenerator.uuid().toString()
+                }
+            }
+        }.filterNotNull()
 
     override val lastBackupInstant: Flow<Instant?> = dataStore.data
         .map { preferences ->
@@ -220,5 +238,6 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_LINK_CONNECTION_STATUS_INDICATOR = booleanPreferencesKey("link_connection_status_indicator")
         val KEY_TRANSACTIONS_COMPLETE_COUNT = intPreferencesKey("transaction_complete_count")
         val KEY_SHOW_NPS_SURVEY_INSTANT = stringPreferencesKey("show_nps_survey_instant")
+        val KEY_UUID = stringPreferencesKey("uuid")
     }
 }

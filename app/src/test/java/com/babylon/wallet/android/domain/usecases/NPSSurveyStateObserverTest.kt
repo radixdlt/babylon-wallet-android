@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.NPSSurveyState
+import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.fakes.FakePreferenceManager
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import kotlinx.coroutines.CoroutineScope
@@ -17,17 +19,17 @@ import rdx.works.core.InstantGenerator
 import java.time.Period
 
 @ExperimentalCoroutinesApi
-class NPSSurveyUseCaseTest {
+class NPSSurveyStateObserverTest {
 
     @get:Rule
     val coroutineRule = TestDispatcherRule()
 
     private val preferencesManager = FakePreferenceManager()
-    private lateinit var useCase: NPSSurveyUseCase
+    private lateinit var useCase: NPSSurveyStateObserver
 
     @Before
     fun setUp() {
-        useCase = NPSSurveyUseCase(preferencesManager)
+        useCase = NPSSurveyStateObserver(preferencesManager)
     }
 
     @Test
@@ -45,14 +47,14 @@ class NPSSurveyUseCaseTest {
 
     @Test
     fun `given survey has never been shown and 10 transactions performed, verify survey shown`() = runTest {
-        val useCase = NPSSurveyUseCase(preferencesManager)
+        val useCase = NPSSurveyStateObserver(preferencesManager)
         val event = mutableListOf<NPSSurveyState>()
         useCase.npsSurveyState().onEach {
             event.add(it)
         }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         repeat(10) {
-            useCase.incrementTransactionCompleteCounter()
+            preferencesManager.incrementTransactionCompleteCounter()
         }
         advanceUntilIdle()
 
@@ -61,7 +63,7 @@ class NPSSurveyUseCaseTest {
 
     @Test
     fun `given survey has already been shown and less than 90 days passed, verify survey not shown`() = runTest {
-        val useCase = NPSSurveyUseCase(preferencesManager)
+        val useCase = NPSSurveyStateObserver(preferencesManager)
 
         val instant = InstantGenerator().minus(Period.ofDays(12))
         preferencesManager.updateLastNPSSurveyInstant(instant)
@@ -73,7 +75,7 @@ class NPSSurveyUseCaseTest {
         }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         repeat(10) {
-            useCase.incrementTransactionCompleteCounter()
+            preferencesManager.incrementTransactionCompleteCounter()
         }
 
         advanceUntilIdle()
@@ -83,7 +85,7 @@ class NPSSurveyUseCaseTest {
 
     @Test
     fun `given survey has already been shown and 90 days passed, verify survey is shown`() = runTest {
-        val useCase = NPSSurveyUseCase(preferencesManager)
+        val useCase = NPSSurveyStateObserver(preferencesManager)
 
         val event = mutableListOf<NPSSurveyState>()
         useCase.npsSurveyState().onEach {
@@ -91,18 +93,18 @@ class NPSSurveyUseCaseTest {
         }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
         repeat(10) {
-            useCase.incrementTransactionCompleteCounter()
+            preferencesManager.incrementTransactionCompleteCounter()
         }
 
         advanceUntilIdle()
 
         Assert.assertEquals(NPSSurveyState.Active, event.last())
         preferencesManager.updateLastNPSSurveyInstant(InstantGenerator().minus(Period.ofDays(89)))
-        useCase.incrementTransactionCompleteCounter()
+        preferencesManager.incrementTransactionCompleteCounter()
         advanceUntilIdle()
         Assert.assertEquals(NPSSurveyState.InActive, event.last())
         preferencesManager.updateLastNPSSurveyInstant(InstantGenerator().minus(Period.ofDays(90)))
-        useCase.incrementTransactionCompleteCounter()
+        preferencesManager.incrementTransactionCompleteCounter()
         advanceUntilIdle()
         Assert.assertEquals(NPSSurveyState.Active, event.last())
         Assert.assertEquals(2, event.filterIsInstance<NPSSurveyState.Active>().size)

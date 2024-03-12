@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.usecases
+package com.babylon.wallet.android
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.drop
@@ -9,14 +9,9 @@ import rdx.works.core.preferences.PreferencesManager
 import java.time.Duration
 import javax.inject.Inject
 
-class NPSSurveyUseCase @Inject constructor(
+class NPSSurveyStateObserver @Inject constructor(
     private val preferencesManager: PreferencesManager,
 ) {
-
-    suspend fun incrementTransactionCompleteCounter() {
-        preferencesManager.incrementTransactionCompleteCounter()
-    }
-
     fun npsSurveyState(): Flow<NPSSurveyState> =
         preferencesManager.transactionCompleteCounter().drop(1).map { transactionCompleteCounter ->
             // we always want to react after transaction was submitted, so we drop initial value when app starts
@@ -24,7 +19,7 @@ class NPSSurveyUseCase @Inject constructor(
             if (lastNPSSurveyInstant != null) {
                 // Survey has been shown already, check last show time and compare with 3 months gap
                 val duration = Duration.between(lastNPSSurveyInstant, InstantGenerator())
-                if (duration.toDays() < OUTSTANDING_TIME_DAYS) {
+                if (duration.toMillis() < OUTSTANDING_TIME_DAYS) {
                     NPSSurveyState.InActive
                 } else {
                     NPSSurveyState.Active
