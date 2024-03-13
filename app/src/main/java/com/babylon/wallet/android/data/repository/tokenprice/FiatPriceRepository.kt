@@ -8,11 +8,12 @@ import com.babylon.wallet.android.data.gateway.model.TokensAndLsusPricesResponse
 import com.babylon.wallet.android.data.gateway.model.TokensPricesErrorResponse
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceDao
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceDao.Companion.tokenPriceCacheValidity
-import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntity.Companion.toTokenPrice
+import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntity.Companion.toFiatPrices
 import com.babylon.wallet.android.data.repository.toResult
-import com.babylon.wallet.android.data.repository.tokenprice.TokenPriceRepository.PriceRequestAddress
+import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository.PriceRequestAddress
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.assets.TokenPrice
+import com.babylon.wallet.android.domain.model.assets.FiatPrice
+import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
@@ -20,13 +21,13 @@ import rdx.works.peerdroid.di.IoDispatcher
 import timber.log.Timber
 import javax.inject.Inject
 
-interface TokenPriceRepository {
+interface FiatPriceRepository {
 
     /**
      * It fetches the prices of tokens and updates the database.
      *
      */
-    suspend fun updateTokensPrices(): Result<Unit>
+    suspend fun updateFiatPrices(currency: SupportedCurrency): Result<Unit>
 
     /**
      * It takes two parameters:
@@ -34,9 +35,10 @@ interface TokenPriceRepository {
      *  - the lsusAddresses of stake units
      *
      */
-    suspend fun getTokensPrices(
-        addresses: Set<PriceRequestAddress>
-    ): Result<List<TokenPrice>>
+    suspend fun getFiatPrices(
+        addresses: Set<PriceRequestAddress>,
+        currency: SupportedCurrency
+    ): Result<Map<String, FiatPrice>>
 
     // This will not be needed when using sargon's Address types
     sealed interface PriceRequestAddress {
@@ -46,13 +48,15 @@ interface TokenPriceRepository {
     }
 }
 
-class TokenPriceRepositoryImpl @Inject constructor(
+class FiatPriceRepositoryImpl @Inject constructor(
     private val tokenPriceDao: TokenPriceDao,
     private val tokenPriceApi: TokenPriceApi,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
-) : TokenPriceRepository {
+) : FiatPriceRepository {
 
-    override suspend fun updateTokensPrices(): Result<Unit> = withContext(ioDispatcher) {
+    override suspend fun updateFiatPrices(
+        currency: SupportedCurrency
+    ): Result<Unit> = withContext(ioDispatcher) {
         runCatching {
             tokenPriceApi.tokens()
                 .toResult(
@@ -69,9 +73,10 @@ class TokenPriceRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getTokensPrices(
-        addresses: Set<PriceRequestAddress>
-    ): Result<List<TokenPrice>> = withContext(ioDispatcher) {
+    override suspend fun getFiatPrices(
+        addresses: Set<PriceRequestAddress>,
+        currency: SupportedCurrency
+    ): Result<Map<String, FiatPrice>> = withContext(ioDispatcher) {
         runCatching {
             val allAddresses = addresses.map { it.address }.toSet()
             val regularResourceAddresses = addresses.filterIsInstance<PriceRequestAddress.Regular>().map { it.address }.toSet()
@@ -89,7 +94,7 @@ class TokenPriceRepositoryImpl @Inject constructor(
             if (remainingResourcesAddresses.isNotEmpty() || remainingLsusAddresses.isNotEmpty()) {
                 tokenPriceApi.priceTokens(
                     tokensAndLsusPricesRequest = TokensAndLsusPricesRequest(
-                        currency = TokenPrice.CURRENCY_USD,
+                        currency = currency.name,
                         lsus = remainingLsusAddresses.toList(),
                         tokens = remainingResourcesAddresses.toList()
                     )
@@ -102,13 +107,13 @@ class TokenPriceRepositoryImpl @Inject constructor(
                     tokenPriceDao.getTokensPrices(
                         addresses = allAddresses,
                         minValidity = tokenPriceCacheValidity()
-                    ).toTokenPrice()
+                    ).toFiatPrices()
                 }.getOrElse {
                     Timber.e("failed to fetch tokens prices with exception: ${it.message}")
-                    emptyList()
+                    emptyMap()
                 }
             } else {
-                tokensPrices.toTokenPrice()
+                tokensPrices.toFiatPrices()
             }
         }
     }

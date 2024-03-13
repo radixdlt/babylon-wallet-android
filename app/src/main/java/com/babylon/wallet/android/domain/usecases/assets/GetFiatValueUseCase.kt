@@ -1,17 +1,18 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.data.repository.tokenprice.TokenPriceRepository
-import com.babylon.wallet.android.data.repository.tokenprice.TokenPriceRepository.PriceRequestAddress
+import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
+import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository.PriceRequestAddress
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
+import com.babylon.wallet.android.domain.model.assets.FiatPrice
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.assets.TokenPrice
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import rdx.works.core.then
 import rdx.works.profile.data.model.pernetwork.Network
@@ -20,11 +21,14 @@ import java.math.BigDecimal
 import javax.inject.Inject
 
 class GetFiatValueUseCase @Inject constructor(
-    private val tokenPriceRepository: TokenPriceRepository,
+    private val fiatPriceRepository: FiatPriceRepository,
     private val stateRepository: StateRepository
 ) {
 
-    suspend fun forAccount(accountWithAssets: AccountWithAssets): Result<List<AssetPrice>> {
+    suspend fun forAccount(
+        accountWithAssets: AccountWithAssets,
+        currency: SupportedCurrency = SupportedCurrency.USD
+    ): Result<List<AssetPrice>> {
         val networkId = NetworkId.from(accountWithAssets.account.networkID)
         return runCatching {
             accountWithAssets.assets?.ownedTokens?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
@@ -32,9 +36,7 @@ class GetFiatValueUseCase @Inject constructor(
                 accountWithAssets.assets?.ownedPoolUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
                 accountWithAssets.assets?.ownedStakeClaims?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty()
         }.then { addresses ->
-            tokenPriceRepository.getTokensPrices(addresses = addresses.toSet()).mapCatching { tokenPrices ->
-                tokenPrices.associateBy { it.resourceAddress }
-            }
+            fiatPriceRepository.getFiatPrices(addresses = addresses.toSet(), currency = currency)
         }.mapCatching { prices ->
             // ensure that all claims are fetched
             val claims = if (accountWithAssets.assets?.ownedStakeClaims?.isNotEmpty() == true) {
@@ -48,26 +50,28 @@ class GetFiatValueUseCase @Inject constructor(
 
             accountWithAssets.assets
                 ?.ownedTokens
-                ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
+                ?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
                 accountWithAssets.assets
                     ?.ownedLiquidStakeUnits
-                    ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
+                    ?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
                 accountWithAssets.assets
                     ?.ownedPoolUnits
-                    ?.mapNotNull { it.price(prices, networkId) }.orEmpty() +
-                claims?.mapNotNull { it.price(prices, networkId) }.orEmpty()
+                    ?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty() +
+                claims?.mapNotNull { it.price(prices, networkId, currency) }.orEmpty()
         }
     }
 
-    suspend fun forAsset(asset: Asset, account: Network.Account): Result<AssetPrice?> {
+    suspend fun forAsset(
+        asset: Asset,
+        account: Network.Account,
+        currency: SupportedCurrency = SupportedCurrency.USD
+    ): Result<AssetPrice?> {
         val networkId = NetworkId.from(account.networkID)
 
         return runCatching {
             asset.priceRequestAddresses(networkId)
         }.then { addresses ->
-            tokenPriceRepository.getTokensPrices(addresses = addresses.toSet())
-        }.mapCatching { tokenPrices ->
-            tokenPrices.associateBy { it.resourceAddress }
+            fiatPriceRepository.getFiatPrices(addresses = addresses.toSet(), currency = currency)
         }.mapCatching { prices ->
             // ensure that all claims are fetched
             val ensured = if (asset is StakeClaim) {
@@ -79,61 +83,83 @@ class GetFiatValueUseCase @Inject constructor(
                 asset
             }
 
-            ensured.price(prices, networkId)
+            ensured.price(prices, networkId, currency)
         }
     }
 
-    private fun Asset.price(tokenPrices: Map<String, TokenPrice>, networkId: NetworkId): AssetPrice? = when (this) {
+    private fun Asset.price(
+        fiatPrices: Map<String, FiatPrice>,
+        networkId: NetworkId,
+        currency: SupportedCurrency
+    ): AssetPrice? = when (this) {
         is Token -> {
-            val tokenPrice = tokenPrices[resource.resourceAddress]
-            val totalPrice = tokenPrice?.price?.multiply(resource.ownedAmount ?: BigDecimal.ZERO)
+            val tokenPrice = fiatPrices[resource.resourceAddress]
 
             AssetPrice.TokenPrice(
                 asset = this,
-                price = totalPrice,
-                currencyCode = tokenPrice?.currency
+                price = tokenPrice?.let {
+                    FiatPrice(
+                        price = it.price.toBigDecimal().multiply(resource.ownedAmount ?: BigDecimal.ZERO).toDouble(),
+                        currency = it.currency
+                    )
+                }
             )
         }
 
         is LiquidStakeUnit -> {
-            val tokenPrice = tokenPrices[resourceAddress]
-            val priceForLSU = tokenPrice?.price ?: BigDecimal.ZERO
+            val tokenPrice = fiatPrices[resourceAddress]
+            val priceForLSU = tokenPrice?.price?.toBigDecimal() ?: BigDecimal.ZERO
             val totalPrice = priceForLSU.multiply(fungibleResource.ownedAmount ?: BigDecimal.ZERO)
+            val xrdPrice = fiatPrices[XrdResource.address(networkId = networkId)]?.price
 
-            // Currently all prices are calculated in USD. This code will need to be changed once we can change currencies
-            val xrdPriceInSameCurrency = tokenPrices[XrdResource.address(networkId = networkId)]?.price
             AssetPrice.LSUPrice(
                 asset = this,
-                price = totalPrice,
-                currencyCode = tokenPrice?.currency,
-                xrdPrice = xrdPriceInSameCurrency
+                price = FiatPrice(
+                    price = totalPrice.toDouble(),
+                    currency = currency
+                ),
+                oneXrdPrice = xrdPrice?.let {
+                    FiatPrice(
+                        price = it,
+                        currency = currency
+                    )
+                }
             )
         }
 
         is PoolUnit -> {
             val poolItemPrices = pool?.resources?.associateWith { poolItem ->
-                val priceForResource = tokenPrices[poolItem.resourceAddress]?.price
-                priceForResource?.multiply(resourceRedemptionValue(poolItem))
-            }.orEmpty()
+                val poolItemFiatPrice = fiatPrices[poolItem.resourceAddress]
+                val poolItemRedemptionValue = resourceRedemptionValue(poolItem)
 
-            val currencyIndicator = pool?.resources?.firstOrNull()?.let { firstResource ->
-                tokenPrices[firstResource.resourceAddress]?.currency
-            }
+                if (poolItemFiatPrice != null && poolItemRedemptionValue != null) {
+                    FiatPrice(
+                        price = (poolItemFiatPrice.price.toBigDecimal() * poolItemRedemptionValue).toDouble(),
+                        currency = poolItemFiatPrice.currency
+                    )
+                } else {
+                    null
+                }
+            }.orEmpty()
 
             AssetPrice.PoolUnitPrice(
                 asset = this,
                 prices = poolItemPrices,
-                currencyCode = currencyIndicator
+                currency = currency
             )
         }
 
         is StakeClaim -> {
             val xrdAddress = XrdResource.address(networkId = networkId)
-            val xrdPrice = tokenPrices[xrdAddress]?.price ?: BigDecimal.ZERO
+            val xrdPrice = fiatPrices[xrdAddress]
 
             val prices = nonFungibleResource.items.associateWith {
-                if (it.claimAmountXrd != null) {
-                    it.claimAmountXrd?.multiply(xrdPrice)
+                val claimAmountXrd = it.claimAmountXrd
+                if (claimAmountXrd != null && xrdPrice != null) {
+                    FiatPrice(
+                        price = claimAmountXrd.multiply(xrdPrice.price.toBigDecimal()).toDouble(),
+                        currency = xrdPrice.currency
+                    )
                 } else {
                     null
                 }
@@ -141,7 +167,7 @@ class GetFiatValueUseCase @Inject constructor(
             AssetPrice.StakeClaimPrice(
                 asset = this,
                 prices = prices,
-                currencyCode = tokenPrices[xrdAddress]?.currency
+                currency = currency
             )
         }
 
