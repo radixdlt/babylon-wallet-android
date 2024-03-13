@@ -147,6 +147,8 @@ data class Assets(
             }
         )
     }
+
+    fun ownedNonXrdTokensSorted(prices: Map<Asset, AssetPrice?>?) = ownedNonXrdTokens.sortedWith(TokensPriceSorter(prices))
 }
 
 data class ValidatorDetail(
