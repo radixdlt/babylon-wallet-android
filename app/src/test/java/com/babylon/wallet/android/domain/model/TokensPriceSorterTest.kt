@@ -2,6 +2,8 @@ package com.babylon.wallet.android.domain.model
 
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
+import com.babylon.wallet.android.domain.model.assets.FiatPrice
+import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.assets.TokensPriceSorter
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -71,10 +73,10 @@ class TokensPriceSorterTest {
     @Test
     fun `given some prices, the tokens are sorted based on prices first`() {
         val pricesPerAsset = mapOf<Asset, AssetPrice>(
-            xrdToken to AssetPrice.TokenPrice(xrdToken, 1.toBigDecimal(), "USD"),
-            otherToken1 to AssetPrice.TokenPrice(otherToken1, null, null),
-            otherToken2 to AssetPrice.TokenPrice(otherToken2, 20.toBigDecimal(), "USD"),
-            otherToken3 to AssetPrice.TokenPrice(otherToken3, 10.toBigDecimal(), "USD"),
+            xrdToken to AssetPrice.TokenPrice(xrdToken, FiatPrice(1.0, SupportedCurrency.USD)),
+            otherToken1 to AssetPrice.TokenPrice(otherToken1, null),
+            otherToken2 to AssetPrice.TokenPrice(otherToken2, FiatPrice(20.0, SupportedCurrency.USD)),
+            otherToken3 to AssetPrice.TokenPrice(otherToken3, FiatPrice(10.0, SupportedCurrency.USD)),
         )
         val sut = TokensPriceSorter(pricesPerAsset = pricesPerAsset)
 
