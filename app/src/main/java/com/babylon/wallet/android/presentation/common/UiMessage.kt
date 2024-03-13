@@ -51,6 +51,10 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
         @SerialName("wallet_exported")
         data object WalletExported : InfoMessage()
 
+        @Serializable
+        @SerialName("nps_survey_submitted")
+        data object NpsSurveySubmitted : InfoMessage()
+
         @Composable
         override fun getMessage(): String = when (this) {
             InvalidMnemonic -> stringResource(id = R.string.importOlympiaAccounts_invalidMnemonic)
@@ -63,6 +67,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
             WalletExported -> stringResource(id = R.string.profileBackup_manualBackups_successMessage)
             InvalidSnapshot -> stringResource(id = R.string.recoverProfileBackup_incompatibleWalletDataLabel)
             InvalidPassword -> stringResource(id = R.string.recoverProfileBackup_passwordWrong)
+            NpsSurveySubmitted -> "Thank you!"
         }
     }
 

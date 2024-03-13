@@ -15,11 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Badge
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Badge
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -49,7 +49,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -70,11 +69,11 @@ fun WalletScreen(
     onAccountClick: (Network.Account) -> Unit = { },
     onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
     onNavigateToMnemonicRestore: () -> Unit,
-    onAccountCreationClick: () -> Unit
+    onAccountCreationClick: () -> Unit,
+    showNPSSurvey: () -> Unit
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
-
     WalletContent(
         modifier = modifier,
         state = walletState,
@@ -101,6 +100,11 @@ fun WalletScreen(
             }
         }
     }
+
+    if (walletState.isNpsSurveyShown) {
+        showNPSSurvey()
+        viewModel.npsSurveyShown()
+    }
 }
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
@@ -119,7 +123,7 @@ private fun WalletContent(
     val snackBarHostState = remember { SnackbarHostState() }
 
     SnackbarUIMessage(
-        message = state.error,
+        message = state.uiMessage,
         snackbarHostState = snackBarHostState,
         onMessageShown = onMessageShown
     )
@@ -157,7 +161,7 @@ private fun WalletContent(
                                         top = RadixTheme.dimensions.paddingSmall,
                                         end = RadixTheme.dimensions.paddingSmall
                                     ),
-                                backgroundColor = Red1
+                                containerColor = RadixTheme.colors.red1
                             )
                         }
                     }
@@ -341,7 +345,7 @@ fun WalletContentPreview() {
                     accountsWithResources = listOf(sampleAccountWithoutResources(), sampleAccountWithoutResources()),
                     loading = false,
                     isBackupWarningVisible = true,
-                    error = null
+                    uiMessage = null
                 ),
                 onMenuClick = {},
                 onAccountClick = {},

@@ -4,79 +4,137 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import rdx.works.core.UUIDGenerator
 import java.time.Instant
 import javax.inject.Inject
-import javax.inject.Singleton
 
 @Suppress("TooManyFunctions")
-@Singleton
-class PreferencesManager @Inject constructor(
-    private val dataStore: DataStore<Preferences>
-) {
+interface PreferencesManager {
+    val uuid: Flow<String>
+    val lastBackupInstant: Flow<Instant?>
+    val firstPersonaCreated: Flow<Boolean>
+    val isImportFromOlympiaSettingDismissed: Flow<Boolean>
+    val isDeviceRootedDialogShown: Flow<Boolean>
+    val isCrashReportingEnabled: Flow<Boolean>
+    val isRadixBannerVisible: Flow<Boolean>
+    val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean>
+    val lastNPSSurveyInstant: Flow<Instant?>
 
-    val lastBackupInstant: Flow<Instant?> = dataStore.data
+    suspend fun updateLastBackupInstant(backupInstant: Instant)
+
+    suspend fun removeLastBackupInstant()
+
+    suspend fun markFirstPersonaCreated()
+
+    suspend fun markImportFromOlympiaComplete()
+
+    fun getBackedUpFactorSourceIds(): Flow<Set<String>>
+
+    suspend fun markFactorSourceBackedUp(id: String)
+
+    suspend fun enableCrashReporting(enabled: Boolean)
+
+    suspend fun setRadixBannerVisibility(isVisible: Boolean)
+    fun getLastUsedEpochFlow(address: String): Flow<Long?>
+
+    suspend fun updateEpoch(account: String, epoch: Long)
+
+    suspend fun markDeviceRootedDialogShown()
+
+    suspend fun setLinkConnectionStatusIndicator(isEnabled: Boolean)
+    fun transactionCompleteCounter(): Flow<Int>
+
+    suspend fun incrementTransactionCompleteCounter()
+
+    suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant)
+
+    suspend fun clear(): Preferences
+}
+
+@Suppress("TooManyFunctions")
+class PreferencesManagerImpl @Inject constructor(
+    private val dataStore: DataStore<Preferences>
+) : PreferencesManager {
+
+    override val uuid: Flow<String>
+        get() = dataStore.data.map { preferences ->
+            preferences[KEY_UUID]
+        }.onStart {
+            val existingUUID = dataStore.data.map { it[KEY_UUID] }.firstOrNull()
+            if (existingUUID.isNullOrEmpty()) {
+                dataStore.edit { preferences ->
+                    preferences[KEY_UUID] = UUIDGenerator.uuid().toString()
+                }
+            }
+        }.filterNotNull()
+
+    override val lastBackupInstant: Flow<Instant?> = dataStore.data
         .map { preferences ->
             preferences[KEY_LAST_BACKUP_INSTANT]?.let {
                 Instant.parse(it)
             }
         }
 
-    suspend fun updateLastBackupInstant(backupInstant: Instant) {
+    override suspend fun updateLastBackupInstant(backupInstant: Instant) {
         dataStore.edit { preferences ->
             preferences[KEY_LAST_BACKUP_INSTANT] = backupInstant.toString()
         }
     }
 
-    suspend fun removeLastBackupInstant() {
+    override suspend fun removeLastBackupInstant() {
         dataStore.edit { preferences ->
             preferences.remove(KEY_LAST_BACKUP_INSTANT)
         }
     }
 
-    val firstPersonaCreated: Flow<Boolean> = dataStore.data
+    override val firstPersonaCreated: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_FIRST_PERSONA_CREATED] ?: false
         }
 
-    suspend fun markFirstPersonaCreated() {
+    override suspend fun markFirstPersonaCreated() {
         dataStore.edit { preferences ->
             preferences[KEY_FIRST_PERSONA_CREATED] = true
         }
     }
 
-    val isImportFromOlympiaSettingDismissed: Flow<Boolean> = dataStore.data
+    override val isImportFromOlympiaSettingDismissed: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED] ?: false
         }
 
-    val isDeviceRootedDialogShown: Flow<Boolean> = dataStore.data
+    override val isDeviceRootedDialogShown: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_DEVICE_ROOTED_DIALOG_SHOWN] ?: false
         }
 
-    suspend fun markImportFromOlympiaComplete() {
+    override suspend fun markImportFromOlympiaComplete() {
         dataStore.edit { preferences ->
             preferences[KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED] = true
         }
     }
 
-    fun getBackedUpFactorSourceIds(): Flow<Set<String>> {
+    override fun getBackedUpFactorSourceIds(): Flow<Set<String>> {
         return dataStore.data.map { preferences ->
             preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS]?.split(",").orEmpty().toSet()
         }
     }
 
-    val isCrashReportingEnabled: Flow<Boolean> = dataStore.data
+    override val isCrashReportingEnabled: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_CRASH_REPORTING_ENABLED] ?: false
         }
 
-    suspend fun markFactorSourceBackedUp(id: String) {
+    override suspend fun markFactorSourceBackedUp(id: String) {
         dataStore.edit { preferences ->
             val current = preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS]
             if (current == null) {
@@ -87,24 +145,24 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    suspend fun enableCrashReporting(enabled: Boolean) {
+    override suspend fun enableCrashReporting(enabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[KEY_CRASH_REPORTING_ENABLED] = enabled
         }
     }
 
-    val isRadixBannerVisible: Flow<Boolean> = dataStore.data
+    override val isRadixBannerVisible: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_RADIX_BANNER_VISIBLE] ?: false
         }
 
-    suspend fun setRadixBannerVisibility(isVisible: Boolean) {
+    override suspend fun setRadixBannerVisibility(isVisible: Boolean) {
         dataStore.edit { preferences ->
             preferences[KEY_RADIX_BANNER_VISIBLE] = isVisible
         }
     }
 
-    fun getLastUsedEpochFlow(address: String): Flow<Long?> {
+    override fun getLastUsedEpochFlow(address: String): Flow<Long?> {
         return dataStore.data
             .map { preferences ->
                 val mapString = preferences[KEY_ACCOUNT_TO_EPOCH_MAP]
@@ -115,7 +173,7 @@ class PreferencesManager @Inject constructor(
             }
     }
 
-    suspend fun updateEpoch(account: String, epoch: Long) {
+    override suspend fun updateEpoch(account: String, epoch: Long) {
         dataStore.edit { preferences ->
             val mapString = preferences[KEY_ACCOUNT_TO_EPOCH_MAP]
             val map = mapString?.let {
@@ -126,35 +184,61 @@ class PreferencesManager @Inject constructor(
         }
     }
 
-    suspend fun markDeviceRootedDialogShown() {
+    override suspend fun markDeviceRootedDialogShown() {
         dataStore.edit { preferences ->
             preferences[KEY_DEVICE_ROOTED_DIALOG_SHOWN] = true
         }
     }
 
-    val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean> = dataStore.data
+    override val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_LINK_CONNECTION_STATUS_INDICATOR] ?: false
         }
 
-    suspend fun setLinkConnectionStatusIndicator(isEnabled: Boolean) {
+    override suspend fun setLinkConnectionStatusIndicator(isEnabled: Boolean) {
         dataStore.edit { preferences ->
             preferences[KEY_LINK_CONNECTION_STATUS_INDICATOR] = isEnabled
         }
     }
 
-    suspend fun clear() = dataStore.edit { it.clear() }
+    override fun transactionCompleteCounter(): Flow<Int> = dataStore.data.map { preferences ->
+        preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] ?: 0
+    }
+
+    override suspend fun incrementTransactionCompleteCounter() {
+        dataStore.edit { preferences ->
+            val oldValue = preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] ?: 0
+            preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] = oldValue + 1
+        }
+    }
+
+    override val lastNPSSurveyInstant: Flow<Instant?> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_SHOW_NPS_SURVEY_INSTANT]?.let {
+                Instant.parse(it)
+            }
+        }
+
+    override suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant) {
+        dataStore.edit { preferences ->
+            preferences[KEY_SHOW_NPS_SURVEY_INSTANT] = npsSurveyInstant.toString()
+        }
+    }
+
+    override suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
-        private val KEY_CRASH_REPORTING_ENABLED = booleanPreferencesKey("crash_reporting_enabled")
-        private val KEY_FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
-        private val KEY_RADIX_BANNER_VISIBLE = booleanPreferencesKey("radix_banner_visible")
-        private val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
-        private val KEY_LAST_BACKUP_INSTANT = stringPreferencesKey("last_backup_instant")
-        private val KEY_BACKED_UP_FACTOR_SOURCE_IDS = stringPreferencesKey("backed_up_factor_source_ids")
-        private val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED =
-            booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
-        private val KEY_DEVICE_ROOTED_DIALOG_SHOWN = booleanPreferencesKey("device_rooted_dialog_shown")
-        private val KEY_LINK_CONNECTION_STATUS_INDICATOR = booleanPreferencesKey("link_connection_status_indicator")
+        val KEY_CRASH_REPORTING_ENABLED = booleanPreferencesKey("crash_reporting_enabled")
+        val KEY_FIRST_PERSONA_CREATED = booleanPreferencesKey("first_persona_created")
+        val KEY_RADIX_BANNER_VISIBLE = booleanPreferencesKey("radix_banner_visible")
+        val KEY_ACCOUNT_TO_EPOCH_MAP = stringPreferencesKey("account_to_epoch_map")
+        val KEY_LAST_BACKUP_INSTANT = stringPreferencesKey("last_backup_instant")
+        val KEY_BACKED_UP_FACTOR_SOURCE_IDS = stringPreferencesKey("backed_up_factor_source_ids")
+        val KEY_IMPORT_OLYMPIA_WALLET_SETTING_DISMISSED = booleanPreferencesKey("import_olympia_wallet_setting_dismissed")
+        val KEY_DEVICE_ROOTED_DIALOG_SHOWN = booleanPreferencesKey("device_rooted_dialog_shown")
+        val KEY_LINK_CONNECTION_STATUS_INDICATOR = booleanPreferencesKey("link_connection_status_indicator")
+        val KEY_TRANSACTIONS_COMPLETE_COUNT = intPreferencesKey("transaction_complete_count")
+        val KEY_SHOW_NPS_SURVEY_INSTANT = stringPreferencesKey("show_nps_survey_instant")
+        val KEY_UUID = stringPreferencesKey("uuid")
     }
 }

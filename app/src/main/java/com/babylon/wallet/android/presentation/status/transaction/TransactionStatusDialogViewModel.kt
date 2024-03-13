@@ -22,8 +22,10 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
 
+@Suppress("LongParameterList")
 @HiltViewModel
 class TransactionStatusDialogViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
@@ -31,6 +33,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
     private val dAppMessenger: DappMessenger,
     private val appEventBus: AppEventBus,
     private val exceptionMessageProvider: ExceptionMessageProvider,
+    private val preferencesManager: PreferencesManager,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<TransactionStatusDialogViewModel.State>(),
     OneOffEventHandler<TransactionStatusDialogViewModel.Event> by OneOffEventHandlerImpl() {
@@ -76,6 +79,7 @@ class TransactionStatusDialogViewModel @Inject constructor(
         viewModelScope.launch {
             transactionStatusClient.listenForPollStatus(status.transactionId).collect { pollResult ->
                 pollResult.result.onSuccess {
+                    preferencesManager.incrementTransactionCompleteCounter()
                     // Notify the system and this particular dialog that the transaction is completed
                     appEventBus.sendEvent(
                         AppEvent.Status.Transaction.Success(

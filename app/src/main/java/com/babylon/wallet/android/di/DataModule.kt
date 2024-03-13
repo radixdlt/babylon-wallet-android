@@ -6,6 +6,8 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.LedgerMessengerImpl
+import com.babylon.wallet.android.data.repository.NPSSurveyRepository
+import com.babylon.wallet.android.data.repository.NPSSurveyRepositoryImpl
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
@@ -22,6 +24,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.preferences.PreferencesManagerImpl
 import javax.inject.Singleton
 
 @Module
@@ -49,6 +53,11 @@ interface DataModule {
     ): TransactionRepository
 
     @Binds
+    fun bindNPSSurveyRepository(
+        nPSSurveyRepositoryImpl: NPSSurveyRepositoryImpl
+    ): NPSSurveyRepository
+
+    @Binds
     fun bindNetworkInfoRepository(
         networkInfoRepository: NetworkInfoRepositoryImpl
     ): NetworkInfoRepository
@@ -74,4 +83,10 @@ interface DataModule {
     fun bindHttpCache(
         cache: HttpCacheImpl
     ): HttpCache
+
+    @Binds
+    @Singleton
+    fun bindPreferenceManager(
+        preferencesManager: PreferencesManagerImpl
+    ): PreferencesManager
 }

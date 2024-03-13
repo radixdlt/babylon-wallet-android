@@ -69,6 +69,7 @@ import com.babylon.wallet.android.presentation.status.assets.nftAssetDialog
 import com.babylon.wallet.android.presentation.status.dapp.dAppDetailsDialog
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
+import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
@@ -193,10 +194,14 @@ fun NavigationHost(
             },
             onNavigateToOnBoarding = {
                 navController.navigate(Screen.OnboardingDestination.route)
+            },
+            onNavigateToIncompatibleProfile = {
+                navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
+            },
+            showNPSSurvey = {
+                navController.npsSurveyDialog()
             }
-        ) {
-            navController.navigate(ROUTE_INCOMPATIBLE_PROFILE)
-        }
+        )
         composable(
             route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ADDRESS}",
             arguments = listOf(
@@ -474,6 +479,11 @@ fun NavigationHost(
             }
         )
         assetDialog(
+            onDismiss = {
+                navController.popBackStack()
+            }
+        )
+        npsSurveyDialog(
             onDismiss = {
                 navController.popBackStack()
             }

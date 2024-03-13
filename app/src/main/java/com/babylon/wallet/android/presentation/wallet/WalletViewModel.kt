@@ -3,6 +3,8 @@
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.NPSSurveyState
+import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
@@ -23,6 +25,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -57,6 +60,7 @@ class WalletViewModel @Inject constructor(
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val preferencesManager: PreferencesManager,
+    private val npsSurveyStateObserver: NPSSurveyStateObserver,
     getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
 
@@ -86,6 +90,21 @@ class WalletViewModel @Inject constructor(
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
         loadResources(withRefresh = false)
+        observeNpsSurveyState()
+    }
+
+    private fun observeNpsSurveyState() {
+        viewModelScope.launch {
+            npsSurveyStateObserver.npsSurveyState().filter { it is NPSSurveyState.Active }.collectLatest { state ->
+                _state.update { it.copy(isNpsSurveyShown = state == NPSSurveyState.Active) }
+            }
+        }
+    }
+
+    fun npsSurveyShown() {
+        viewModelScope.launch {
+            _state.update { it.copy(isNpsSurveyShown = false) }
+        }
     }
 
     suspend fun createBabylonFactorSource(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
@@ -147,10 +166,19 @@ class WalletViewModel @Inject constructor(
 
     private fun observeGlobalAppEvents() {
         viewModelScope.launch {
-            appEventBus.events.filter { event ->
-                event is AppEvent.RefreshResourcesNeeded || event is RestoredMnemonic
-            }.collect {
-                loadResources(withRefresh = it !is RestoredMnemonic)
+            appEventBus.events.collect { event ->
+                when (event) {
+                    AppEvent.RefreshResourcesNeeded,
+                    RestoredMnemonic -> {
+                        loadResources(withRefresh = event !is RestoredMnemonic)
+                    }
+
+                    AppEvent.NPSSurveySubmitted -> {
+                        _state.update { it.copy(uiMessage = UiMessage.InfoMessage.NpsSurveySubmitted) }
+                    }
+
+                    else -> {}
+                }
             }
         }
     }
@@ -165,7 +193,7 @@ class WalletViewModel @Inject constructor(
     }
 
     fun onMessageShown() {
-        _state.update { it.copy(error = null) }
+        _state.update { it.copy(uiMessage = null) }
     }
 
     fun onApplySecuritySettings(account: Network.Account, securityPromptType: SecurityPromptType) {
@@ -198,7 +226,8 @@ data class WalletUiState(
     private val factorSources: List<FactorSource> = emptyList(),
     val isRadixBannerVisible: Boolean = false,
     val isBackupWarningVisible: Boolean = false,
-    val error: UiMessage? = null,
+    val uiMessage: UiMessage? = null,
+    val isNpsSurveyShown: Boolean = false
 ) : UiState {
 
     val accountResources: List<AccountWithAssets>
@@ -272,7 +301,7 @@ data class WalletUiState(
     )
 
     fun onResourcesError(error: Throwable?): WalletUiState = copy(
-        error = UiMessage.ErrorMessage(error),
+        uiMessage = UiMessage.ErrorMessage(error),
         accountsWithResources = accountsWithResources?.map { account ->
             if (account.assets == null) {
                 // If assets don't exist leave them empty

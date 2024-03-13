@@ -7,6 +7,7 @@ import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.apis.StreamApi
 import com.babylon.wallet.android.data.gateway.apis.TransactionApi
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
+import com.babylon.wallet.android.data.gateway.survey.NPSSurveyApi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -84,6 +85,7 @@ inline fun <reified T> buildApi(
     .build()
     .create(T::class.java)
 
+@Suppress("TooManyFunctions")
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
@@ -203,6 +205,16 @@ object NetworkModule {
         profileRepository: ProfileRepository
     ): StreamApi = buildApi(
         baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
+        okHttpClient = okHttpClient,
+        jsonConverterFactory = jsonConverterFactory
+    )
+
+    @Provides
+    fun provideNPSSurveyApi(
+        @SimpleHttpClient okHttpClient: OkHttpClient,
+        @JsonConverterFactory jsonConverterFactory: Factory
+    ): NPSSurveyApi = buildApi(
+        baseUrl = BuildConfig.NPS_SURVEY_URL,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )
