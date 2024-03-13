@@ -6,11 +6,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import rdx.works.core.preferences.PreferencesManager
 import java.time.Instant
 
-// implement fake preference manager
 class FakePreferenceManager : PreferencesManager {
 
     private val _transactionCompleteCounter = MutableStateFlow(0)
+
     private val _lastNPSSurveyInstant = MutableStateFlow<Instant?>(null)
+    override val uuid: Flow<String>
+        get() = TODO("Not yet implemented")
     override val lastBackupInstant: Flow<Instant?>
         get() = TODO("Not yet implemented")
     override val firstPersonaCreated: Flow<Boolean>
