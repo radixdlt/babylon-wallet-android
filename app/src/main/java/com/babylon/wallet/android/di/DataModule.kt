@@ -30,9 +30,9 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.preferences.PreferencesManagerImpl
 import javax.inject.Singleton
 
+@Suppress("TooManyFunctions")
 @Module
 @InstallIn(SingletonComponent::class)
-@Suppress("TooManyFunctions")
 interface DataModule {
 
     @Binds
