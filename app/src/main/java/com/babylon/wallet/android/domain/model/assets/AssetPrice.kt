@@ -26,7 +26,6 @@ data class FiatPrice(
                 currency = javaCurrency
             }.format(price)
         }
-
 }
 
 sealed class AssetPrice {
