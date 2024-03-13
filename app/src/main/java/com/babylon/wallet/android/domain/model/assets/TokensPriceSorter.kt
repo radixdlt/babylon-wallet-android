@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.model.resources.isXrd
 class TokensPriceSorter(
     private val pricesPerAsset: Map<Asset, AssetPrice?>?
 ) : Comparator<Token> {
+    @Suppress("CyclomaticComplexMethod", "ReturnCount")
     override fun compare(thisToken: Token?, otherToken: Token?): Int {
         return when {
             thisToken == null && otherToken == null -> 0
@@ -27,7 +28,7 @@ class TokensPriceSorter(
                 val thisPrice = pricesPerAsset[thisToken]?.price
                 val otherPrice = pricesPerAsset[otherToken]?.price
 
-                when  {
+                when {
                     thisPrice == null && otherPrice == null -> thisToken.resource.compareTo(otherToken.resource)
                     thisPrice != null && otherPrice == null -> -1
                     thisPrice == null && otherPrice != null -> 1
@@ -42,5 +43,4 @@ class TokensPriceSorter(
             }
         }
     }
-
 }
