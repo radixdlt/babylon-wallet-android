@@ -87,6 +87,7 @@ class GetFiatValueUseCase @Inject constructor(
         }
     }
 
+    @Suppress("LongMethod", "CyclomaticComplexMethod")
     private fun Asset.price(
         fiatPrices: Map<String, FiatPrice>,
         networkId: NetworkId,
