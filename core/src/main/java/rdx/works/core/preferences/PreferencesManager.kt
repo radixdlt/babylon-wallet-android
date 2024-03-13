@@ -36,6 +36,7 @@ interface PreferencesManager {
     suspend fun markFirstPersonaCreated()
 
     suspend fun markImportFromOlympiaComplete()
+
     fun getBackedUpFactorSourceIds(): Flow<Set<String>>
 
     suspend fun markFactorSourceBackedUp(id: String)
