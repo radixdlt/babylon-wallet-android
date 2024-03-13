@@ -2,7 +2,6 @@ package com.babylon.wallet.android.di
 
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
-import com.babylon.wallet.android.data.gateway.survey.NPSSurveyApi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -104,16 +103,6 @@ object NetworkModule {
             .addInterceptor(httpLoggingInterceptor)
             .build()
     }
-
-    @Provides
-    fun provideNPSSurveyApi(
-        @SimpleHttpClient okHttpClient: OkHttpClient,
-        @JsonConverterFactory jsonConverterFactory: Factory
-    ): NPSSurveyApi = buildApi(
-        baseUrl = BuildConfig.NPS_SURVEY_URL,
-        okHttpClient = okHttpClient,
-        jsonConverterFactory = jsonConverterFactory
-    )
 
     @Provides
     @Singleton
