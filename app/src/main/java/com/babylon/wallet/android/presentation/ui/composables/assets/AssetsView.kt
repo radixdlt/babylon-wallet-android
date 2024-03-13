@@ -38,8 +38,7 @@ import java.math.BigDecimal
 
 @Suppress("LongParameterList", "MagicNumber")
 fun LazyListScope.assetsView(
-    assets: Assets?,
-    epoch: Long?,
+    data: AssetsViewData?,
     state: AssetsViewState,
     action: AssetsViewAction
 ) {
@@ -50,30 +49,29 @@ fun LazyListScope.assetsView(
         )
     }
 
-    if (assets == null) {
+    if (data == null) {
         loadingAssets()
     } else {
         when (state.selectedTab) {
             AssetsTab.Tokens -> tokensTab(
-                assets = assets,
+                data = data,
                 action = action
             )
 
             AssetsTab.Nfts -> nftsTab(
-                assets = assets,
+                data = data,
                 state = state,
                 action = action
             )
 
             AssetsTab.Staking -> stakingTab(
-                assets = assets,
-                epoch = epoch,
+                data = data,
                 state = state,
                 action = action
             )
 
             AssetsTab.PoolUnits -> poolUnitsTab(
-                assets = assets,
+                data = data,
                 action = action
             )
         }
@@ -109,16 +107,10 @@ data class AssetsViewState(
         return copy(collapsedCollections = collapsedCollections)
     }
     companion object {
-        fun from(selectedTab: AssetsTab = AssetsTab.Tokens, assets: Assets?): AssetsViewState {
-            val collectionAddresses = assets?.nonFungibles?.map {
-                it.collection.resourceAddress
-            }.orEmpty() + assets?.ownedValidatorsWithStakes?.map {
-                it.validatorDetail.address
-            }.orEmpty()
-
+        fun init(selectedTab: AssetsTab = AssetsTab.Tokens): AssetsViewState {
             return AssetsViewState(
                 selectedTab = selectedTab,
-                collapsedCollections = collectionAddresses.associateWith { true }
+                collapsedCollections = emptyMap()
             )
         }
     }
@@ -163,9 +155,8 @@ fun AssetsViewWithLoadingAssets() {
     RadixWalletTheme {
         LazyColumn {
             assetsView(
-                assets = null,
-                epoch = null,
-                state = AssetsViewState.from(assets = null),
+                data = null,
+                state = AssetsViewState.init(),
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
@@ -188,9 +179,8 @@ fun AssetsViewWithEmptyAssets() {
     RadixWalletTheme {
         LazyColumn {
             assetsView(
-                assets = null,
-                epoch = null,
-                state = AssetsViewState.from(assets = null),
+                data = null,
+                state = AssetsViewState.init(),
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
@@ -381,14 +371,13 @@ fun AssetsViewWithAssets() {
         )
     }
     var state by remember(assets) {
-        mutableStateOf(AssetsViewState.from(assets = assets))
+        mutableStateOf(AssetsViewState.init())
     }
 
     RadixWalletTheme {
         LazyColumn(modifier = Modifier.background(RadixTheme.colors.gray5)) {
             assetsView(
-                assets = assets,
-                epoch = null,
+                data = null,
                 state = state,
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},

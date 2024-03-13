@@ -27,6 +27,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
+import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewData
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 
 @Suppress("CyclomaticComplexMethod")
@@ -96,6 +97,14 @@ fun ChooseAssetsSheet(
         val selectedAssets = remember(state.targetAccount.spendingAssets) {
             state.targetAccount.spendingAssets.map { it.address }
         }
+
+        val assetsViewData = remember(state.assets, state.epoch) {
+            AssetsViewData.from(
+                assets = state.assets,
+                prices = null, // TODO will be added here
+                epoch = state.epoch
+            )
+        }
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -103,8 +112,7 @@ fun ChooseAssetsSheet(
             contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingSemiLarge)
         ) {
             assetsView(
-                assets = state.assets,
-                epoch = state.epoch,
+                data = assetsViewData,
                 state = state.assetsViewState,
                 action = AssetsViewAction.Selection(
                     selectedResources = selectedAssets,
