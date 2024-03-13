@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
@@ -36,10 +35,10 @@ import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
 fun LazyListScope.poolUnitsTab(
-    assets: Assets,
+    data: AssetsViewData,
     action: AssetsViewAction
 ) {
-    if (assets.ownedPoolUnits.isEmpty()) {
+    if (data.isPoolUnitsEmpty) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
@@ -48,19 +47,17 @@ fun LazyListScope.poolUnitsTab(
         }
     }
 
-    if (assets.ownedPoolUnits.isNotEmpty()) {
-        items(
-            items = assets.ownedPoolUnits,
-            key = { item -> item.resourceAddress }
-        ) { item ->
-            PoolUnitItem(
-                modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault)
-                    .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-                poolUnit = item,
-                action = action
-            )
-        }
+    items(
+        items = data.poolUnits,
+        key = { item -> item.resourceAddress }
+    ) { item ->
+        PoolUnitItem(
+            modifier = Modifier
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                .padding(top = RadixTheme.dimensions.paddingSemiLarge),
+            poolUnit = item,
+            action = action
+        )
     }
 }
 

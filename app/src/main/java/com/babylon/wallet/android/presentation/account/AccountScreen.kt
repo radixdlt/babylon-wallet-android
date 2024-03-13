@@ -59,6 +59,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
+import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewData
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import kotlinx.collections.immutable.ImmutableList
@@ -254,6 +255,14 @@ fun AssetsContent(
             state.accountWithAssets?.account?.address.orEmpty()
         }
 
+        val assetsViewData = remember(state.accountWithAssets?.assets, state.epoch) {
+            AssetsViewData.from(
+                assets = state.accountWithAssets?.assets,
+                prices = null, // TODO will be added here
+                epoch = state.epoch
+            )
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = lazyListState,
@@ -334,8 +343,7 @@ fun AssetsContent(
             }
 
             assetsView(
-                assets = state.accountWithAssets?.assets,
-                epoch = state.epoch,
+                data = assetsViewData,
                 state = state.assetsViewState,
                 action = AssetsViewAction.Click(
                     onFungibleClick = onFungibleTokenClick,
