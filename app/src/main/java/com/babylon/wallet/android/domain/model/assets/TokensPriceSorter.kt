@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.model.assets
 
 import com.babylon.wallet.android.domain.model.resources.isXrd
-import java.lang.RuntimeException
 
 class TokensPriceSorter(
     private val pricesPerAsset: Map<Asset, AssetPrice?>?
@@ -38,9 +37,7 @@ class TokensPriceSorter(
                         requireNotNull(otherPrice)
 
                         if (thisPrice.currency != otherPrice.currency) {
-                            throw RuntimeException(
-                                "Cannot compare different currencies. Comparison of ${thisPrice.currency} with ${otherPrice.currency}"
-                            )
+                            error("Cannot compare different currencies. Comparison of ${thisPrice.currency} with ${otherPrice.currency}")
                         }
 
                         // Comparison between amounts is done in descending order
