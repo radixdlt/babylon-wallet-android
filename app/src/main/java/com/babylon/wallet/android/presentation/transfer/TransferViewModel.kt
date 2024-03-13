@@ -387,7 +387,7 @@ class TransferViewModel @Inject constructor(
                 val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
                 val pendingStakeUnits: Boolean = false,
                 val targetAccount: TargetAccount,
-                val assetsViewState: AssetsViewState = AssetsViewState.from(assets = null),
+                val assetsViewState: AssetsViewState = AssetsViewState.init(),
                 val epoch: Long? = null,
                 val uiMessage: UiMessage? = null
             ) : Sheet {

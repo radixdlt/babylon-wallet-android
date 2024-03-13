@@ -50,6 +50,7 @@ import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
@@ -109,12 +110,12 @@ private fun AssetsContent(
             val all = assets.ownedTokens
             all.take(visibleFungiblesCount) to (all.size - visibleFungiblesCount).coerceAtLeast(minimumValue = 0)
         }
-        val nftsCount = remember(assets.nonFungibles) { assets.nonFungiblesSize() }
-        val lsusCount = remember(assets.ownedValidatorsWithStakes) {
-            assets.validatorsWithStakesSize()
+        val nftsCount = remember(assets.ownedNonFungibles) { assets.ownedNonFungibles.size }
+        val lsusCount = remember(assets.ownedLiquidStakeUnits, assets.ownedStakeClaims) {
+            ValidatorWithStakes.from(assets.ownedLiquidStakeUnits, assets.ownedStakeClaims).size
         }
-        val poolUnitCount = remember(assets.poolUnits) {
-            assets.poolUnitsSize()
+        val poolUnitCount = remember(assets.ownedPoolUnits) {
+            assets.ownedPoolUnits.size
         }
 
         val fungibleRefs = visibleFungibles.map { createRef() }

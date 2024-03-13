@@ -30,7 +30,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
@@ -45,12 +44,11 @@ import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
 fun LazyListScope.stakingTab(
-    assets: Assets,
-    epoch: Long?,
+    data: AssetsViewData,
     state: AssetsViewState,
     action: AssetsViewAction
 ) {
-    if (assets.ownedValidatorsWithStakes.isEmpty()) {
+    if (data.validatorsWithStakes.isEmpty()) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
@@ -60,17 +58,16 @@ fun LazyListScope.stakingTab(
     } else {
         item {
             StakingSummary(
-                assets = assets,
-                epoch = epoch,
+                data = data,
                 action = action
             )
         }
 
         item {
-            ValidatorsSize(assets = assets)
+            ValidatorsSize(data = data)
         }
 
-        assets.ownedValidatorsWithStakes.forEachIndexed { index, validatorWithStakes ->
+        data.validatorsWithStakes.forEachIndexed { index, validatorWithStakes ->
             item(
                 key = validatorWithStakes.validatorDetail.address,
                 contentType = { "validator-header" }
@@ -79,7 +76,7 @@ fun LazyListScope.stakingTab(
                     modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingDefault else 0.dp),
                     validatorWithStakes = validatorWithStakes,
                     state = state,
-                    epoch = epoch,
+                    epoch = data.epoch,
                     action = action
                 )
             }
@@ -90,10 +87,10 @@ fun LazyListScope.stakingTab(
 @Composable
 private fun StakingSummary(
     modifier: Modifier = Modifier,
-    epoch: Long?,
-    assets: Assets,
+    data: AssetsViewData,
     action: AssetsViewAction
 ) {
+    val summary = data.stakeSummary
     AssetCard(
         modifier = modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
@@ -125,10 +122,6 @@ private fun StakingSummary(
             )
         }
 
-        val summary = remember(assets.ownedValidatorsWithStakes, epoch) {
-            assets.stakeSummary(epoch)
-        }
-
         LaunchedEffect(summary) {
             if (summary == null) {
                 action.onStakesRequest()
@@ -140,7 +133,7 @@ private fun StakingSummary(
             label = stringResource(id = R.string.account_staking_staked),
             amount = summary?.staked,
             amountStyle = RadixTheme.typography.body2HighImportance.copy(
-                color = if (summary?.hasStakedValue == true) RadixTheme.colors.gray1 else RadixTheme.colors.gray2
+                color = if (data.stakeSummary?.hasStakedValue == true) RadixTheme.colors.gray1 else RadixTheme.colors.gray2
             )
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
@@ -155,10 +148,8 @@ private fun StakingSummary(
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                 .clickable(enabled = summary?.hasReadyToClaimValue == true && action is AssetsViewAction.Click) {
                     if (action is AssetsViewAction.Click) {
-                        val claims = assets.ownedValidatorsWithStakes
-                            .filter {
-                                it.hasClaims
-                            }
+                        val claims = data.validatorsWithStakes
+                            .filter { it.hasClaims }
                             .mapNotNull { it.stakeClaimNft }
 
                         action.onClaimClick(claims)
@@ -214,7 +205,7 @@ private fun StakeAmount(
 @Composable
 fun ValidatorsSize(
     modifier: Modifier = Modifier,
-    assets: Assets
+    data: AssetsViewData
 ) {
     Row(
         modifier = modifier
@@ -238,7 +229,7 @@ fun ValidatorsSize(
 
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(id = R.string.account_staking_stakedValidators, assets.validatorsWithStakesSize()),
+            text = stringResource(id = R.string.account_staking_stakedValidators, data.validatorsWithStakes.size),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray2
         )

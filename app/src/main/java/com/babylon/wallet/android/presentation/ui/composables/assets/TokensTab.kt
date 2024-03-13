@@ -16,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
@@ -25,10 +24,10 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 
 fun LazyListScope.tokensTab(
-    assets: Assets,
+    data: AssetsViewData,
     action: AssetsViewAction
 ) {
-    if (assets.fungiblesSize() == 0) {
+    if (data.isTokensEmpty) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
@@ -38,15 +37,14 @@ fun LazyListScope.tokensTab(
     }
 
     item {
-        val xrdToken = remember(assets.ownedXrd) { assets.ownedXrd }
-        if (xrdToken != null) {
+        if (data.xrd != null) {
             AssetCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge)
             ) {
                 FungibleResourceItem(
-                    resource = xrdToken.resource,
+                    resource = data.xrd.resource,
                     action = action
                 )
             }
@@ -54,7 +52,7 @@ fun LazyListScope.tokensTab(
     }
 
     itemsIndexed(
-        items = assets.ownedNonXrdTokens,
+        items = data.nonXrdTokens,
         key = { _, token -> token.resource.resourceAddress },
         itemContent = { index, token ->
             AssetCard(
@@ -64,14 +62,14 @@ fun LazyListScope.tokensTab(
                     )
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 itemIndex = index,
-                allItemsSize = assets.ownedNonXrdTokens.size
+                allItemsSize = data.nonXrdTokens.size
             ) {
                 FungibleResourceItem(
                     resource = token.resource,
                     action = action
                 )
 
-                if (index != assets.ownedNonXrdTokens.lastIndex) {
+                if (index != data.nonXrdTokens.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 20.dp),
                         color = RadixTheme.colors.gray4

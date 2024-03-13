@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
@@ -107,13 +108,14 @@ class AssetsChooserDelegate @Inject constructor(
     fun onStakesRequest() {
         val sheet = _state.value.sheet as? Sheet.ChooseAssets ?: return
         val account = _state.value.fromAccount ?: return
-        val stakes = sheet.assets?.ownedValidatorsWithStakes ?: return
-        val unknownLSUs = stakes.any { !it.isDetailsAvailable }
+        val lsus = sheet.assets?.ownedLiquidStakeUnits ?: return
+        val validatorsWithStakes = ValidatorWithStakes.from(lsus, sheet.assets.ownedStakeClaims)
+        val unknownLSUs = validatorsWithStakes.any { !it.isDetailsAvailable }
 
         if (!sheet.pendingStakeUnits && unknownLSUs) {
             updateSheetState { state -> state.copy(pendingStakeUnits = true) }
             viewModelScope.launch {
-                updateLSUsInfo(account, stakes).onSuccess {
+                updateLSUsInfo(account, validatorsWithStakes).onSuccess {
                     updateSheetState { state -> state.onValidatorsReceived(it) }
                 }.onFailure { error ->
                     updateSheetState { state -> state.copy(pendingStakeUnits = false, uiMessage = UiMessage.ErrorMessage(error)) }

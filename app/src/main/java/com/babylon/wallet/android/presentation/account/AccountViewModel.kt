@@ -213,13 +213,15 @@ class AccountViewModel @Inject constructor(
 
     fun onStakesRequest() {
         val account = state.value.accountWithAssets?.account ?: return
-        val stakes = state.value.accountWithAssets?.assets?.ownedValidatorsWithStakes ?: return
-        val unknownLSUs = stakes.any { !it.isDetailsAvailable }
+        val lsus = state.value.accountWithAssets?.assets?.ownedLiquidStakeUnits ?: return
+        val stakeClaims = state.value.accountWithAssets?.assets?.ownedStakeClaims ?: return
+        val validatorsWithStakes = ValidatorWithStakes.from(lsus, stakeClaims)
+        val unknownLSUs = validatorsWithStakes.any { !it.isDetailsAvailable }
         onLatestEpochRequest()
         if (!state.value.isRefreshing && !state.value.pendingStakeUnits && unknownLSUs) {
             _state.update { state -> state.copy(pendingStakeUnits = true) }
             viewModelScope.launch {
-                updateLSUsInfo(account, stakes).onSuccess {
+                updateLSUsInfo(account, validatorsWithStakes).onSuccess {
                     _state.update { state -> state.onValidatorsReceived(it) }
                 }.onFailure { error ->
                     _state.update { state -> state.copy(pendingStakeUnits = false, uiMessage = UiMessage.ErrorMessage(error)) }
@@ -277,7 +279,7 @@ data class AccountUiState(
     val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
     val pendingStakeUnits: Boolean = false,
     val securityPromptType: SecurityPromptType? = null,
-    val assetsViewState: AssetsViewState = AssetsViewState.from(assets = null),
+    val assetsViewState: AssetsViewState = AssetsViewState.init(),
     val epoch: Long? = null,
     val isRefreshing: Boolean = false,
     val uiMessage: UiMessage? = null
