@@ -33,7 +33,6 @@ import javax.inject.Singleton
 @Suppress("TooManyFunctions")
 @Module
 @InstallIn(SingletonComponent::class)
-@Suppress("TooManyFunctions")
 interface DataModule {
 
     @Binds
