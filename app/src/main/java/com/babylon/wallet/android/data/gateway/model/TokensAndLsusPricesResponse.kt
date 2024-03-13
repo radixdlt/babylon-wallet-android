@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.data.gateway.model
 
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntity
+import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
@@ -41,7 +42,7 @@ data class TokensAndLsusPricesResponse(
                 TokenPriceEntity(
                     resourceAddress = lsuPrice.resourceAddress,
                     price = lsuPrice.usdPrice.toBigDecimal(),
-                    currency = TokenPriceEntity.CURRENCY_USD,
+                    currency = SupportedCurrency.USD.code,
                     synced = instantGenerator
                 )
             }
@@ -49,7 +50,7 @@ data class TokensAndLsusPricesResponse(
                 TokenPriceEntity(
                     resourceAddress = tokenPrice.resourceAddress,
                     price = tokenPrice.usdPrice.toBigDecimal(),
-                    currency = TokenPriceEntity.CURRENCY_USD,
+                    currency = SupportedCurrency.USD.code,
                     synced = instantGenerator
                 )
             }

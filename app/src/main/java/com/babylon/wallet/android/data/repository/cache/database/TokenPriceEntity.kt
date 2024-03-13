@@ -2,7 +2,8 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import com.babylon.wallet.android.domain.model.assets.TokenPrice
+import com.babylon.wallet.android.domain.model.assets.FiatPrice
+import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -15,17 +16,11 @@ data class TokenPriceEntity(
     val synced: Instant
 ) {
     companion object {
-
-        const val CURRENCY_USD = "USD"
-
-        fun List<TokenPriceEntity>.toTokenPrice(): List<TokenPrice> {
-            return map { tokenPriceEntity ->
-                TokenPrice(
-                    resourceAddress = tokenPriceEntity.resourceAddress,
-                    price = tokenPriceEntity.price,
-                    currency = tokenPriceEntity.currency
-                )
-            }
+        fun List<TokenPriceEntity>.toFiatPrices(): Map<String, FiatPrice> = associate {
+            it.resourceAddress to FiatPrice(
+                price = it.price.toDouble(),
+                currency = SupportedCurrency.fromCode(it.currency) ?: SupportedCurrency.USD
+            )
         }
     }
 }
