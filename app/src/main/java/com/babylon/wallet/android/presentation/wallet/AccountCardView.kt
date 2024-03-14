@@ -62,10 +62,15 @@ fun AccountCardView(
             )
     ) {
         val (nameLabel, fiatTotalValueLabel, legacyLabel, addressLabel, spacer, assetsContainer, promptsContainer) = createRefs()
+        val isFiatBalanceVisible = accountWithAssets.assets == null || accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
 
         Text(
             modifier = Modifier.constrainAs(nameLabel) {
-                linkTo(start = parent.start, end = fiatTotalValueLabel.start, bias = 0f)
+                linkTo(
+                    start = parent.start,
+                    end = if (isFiatBalanceVisible) fiatTotalValueLabel.start else parent.end,
+                    bias = 0f
+                )
                 width = Dimension.fillToConstraints
             },
             text = accountWithAssets.account.displayName,
@@ -75,19 +80,21 @@ fun AccountCardView(
             overflow = TextOverflow.Ellipsis
         )
 
-        TotalFiatBalanceView(
-            modifier = Modifier.constrainAs(fiatTotalValueLabel) {
-                start.linkTo(nameLabel.end, margin = 10.dp)
-                end.linkTo(parent.end)
-                top.linkTo(parent.top)
-            },
-            fiatPrice = fiatTotalValue,
-            currency = SupportedCurrency.USD,
-            isLoading = isLoadingBalance,
-            contentColor = RadixTheme.colors.white,
-            hiddenContentColor = RadixTheme.colors.white.copy(alpha = 0.6f),
-            contentStyle = RadixTheme.typography.body1Header
-        )
+        if (isFiatBalanceVisible) {
+            TotalFiatBalanceView(
+                modifier = Modifier.constrainAs(fiatTotalValueLabel) {
+                    start.linkTo(nameLabel.end, margin = 10.dp)
+                    end.linkTo(parent.end)
+                    top.linkTo(parent.top)
+                },
+                fiatPrice = fiatTotalValue,
+                currency = SupportedCurrency.USD,
+                isLoading = isLoadingBalance,
+                contentColor = RadixTheme.colors.white,
+                hiddenContentColor = RadixTheme.colors.white.copy(alpha = 0.6f),
+                contentStyle = RadixTheme.typography.body1Header
+            )
+        }
 
         ActionableAddressView(
             address = accountWithAssets.account.address,

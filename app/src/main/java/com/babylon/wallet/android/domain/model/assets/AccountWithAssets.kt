@@ -59,10 +59,6 @@ data class Assets(
     // so we can apply the correct deposit rule warnings in transfer screen when the rule
     // is "Only accept known"
 
-    val hasAnyAssets: Boolean by lazy {
-        tokens.isNotEmpty() || poolUnits.isNotEmpty() || liquidStakeUnits.isNotEmpty() || stakeClaims.isNotEmpty()
-    }
-
     val ownedXrd: Token? by lazy {
         tokens.find { it.resource.isXrd && it.resource.ownedAmount != BigDecimal.ZERO }
     }
@@ -98,6 +94,10 @@ data class Assets(
             poolUnits.map { it.stake } +
             liquidStakeUnits.map { it.fungibleResource } +
             stakeClaims.map { it.nonFungibleResource }
+    }
+
+    val ownsAnyAssetsThatContributeToBalance: Boolean by lazy {
+        ownedTokens.isNotEmpty() || ownedPoolUnits.isNotEmpty() || ownedLiquidStakeUnits.isNotEmpty() || ownedLiquidStakeUnits.isNotEmpty()
     }
 }
 
