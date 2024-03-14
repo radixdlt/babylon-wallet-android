@@ -171,7 +171,13 @@ class GetFiatValueUseCase @Inject constructor(
             AssetPrice.StakeClaimPrice(
                 asset = this,
                 prices = prices,
-                currency = currency
+                currency = currency,
+                oneXrdPrice = xrdPrice?.let {
+                    FiatPrice(
+                        price = it.price,
+                        currency = currency
+                    )
+                }
             )
         }
 
