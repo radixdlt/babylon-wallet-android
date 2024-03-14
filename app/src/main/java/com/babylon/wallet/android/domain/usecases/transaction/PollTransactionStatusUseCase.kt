@@ -42,14 +42,20 @@ class PollTransactionStatusUseCase @Inject constructor(
 
                     TransactionPayloadStatus.committedFailure -> {
                         // Stop Polling: MESSAGE 2
+                        val isAssertionFailure = statusCheckResult.errorMessage?.contains("AssertionFailed") == true
+                        val exception = if (isAssertionFailure) {
+                            RadixWalletException.TransactionSubmitException.TransactionCommitted.AssertionFailed(
+                                txID
+                            )
+                        } else {
+                            RadixWalletException.TransactionSubmitException.TransactionCommitted.Failure(
+                                txID
+                            )
+                        }
                         return TransactionStatusData(
                             txId = txID,
                             requestId = requestId,
-                            result = Result.failure(
-                                RadixWalletException.TransactionSubmitException.TransactionCommitted.Failure(
-                                    txID
-                                )
-                            ),
+                            result = Result.failure(exception),
                             transactionType = transactionType
                         )
                     }

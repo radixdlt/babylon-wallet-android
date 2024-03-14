@@ -90,7 +90,7 @@ android {
         debugAlpha {
             initWith debug
             applicationIdSuffix ".alpha"
-            buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "false"
+            buildConfigField "boolean", "CRASH_REPORTING_AVAILABLE", "true"
             minifyEnabled true
             debuggable false
             resValue "string", "app_name", "Radix Wallet Alpha"

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import rdx.works.core.BuildConfig
 import rdx.works.core.UUIDGenerator
 import java.time.Instant
 import javax.inject.Inject
@@ -131,7 +132,7 @@ class PreferencesManagerImpl @Inject constructor(
 
     override val isCrashReportingEnabled: Flow<Boolean> = dataStore.data
         .map { preferences ->
-            preferences[KEY_CRASH_REPORTING_ENABLED] ?: false
+            preferences[KEY_CRASH_REPORTING_ENABLED] ?: BuildConfig.CRASH_REPORTING_ENABLED
         }
 
     override suspend fun markFactorSourceBackedUp(id: String) {

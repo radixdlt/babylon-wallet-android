@@ -12,7 +12,7 @@ data class Transaction(
 ) {
     companion object {
         val default = Transaction(
-            defaultDepositGuarantee = 1.0
+            defaultDepositGuarantee = 0.99
         )
     }
 }

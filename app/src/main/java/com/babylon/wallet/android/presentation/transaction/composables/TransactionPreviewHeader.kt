@@ -17,14 +17,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.TransactionVersion
@@ -61,13 +64,20 @@ fun TransactionPreviewHeader(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            modifier = Modifier.weight(1.5f),
-                            text = stringResource(R.string.transactionReview_title),
-                            color = RadixTheme.colors.gray1,
-                            textAlign = TextAlign.Start,
-                            maxLines = 2,
-                        )
+                        CompositionLocalProvider(
+                            value = LocalDensity provides Density(
+                                density = LocalDensity.current.density,
+                                fontScale = 1f
+                            )
+                        ) {
+                            Text(
+                                modifier = Modifier.weight(1.5f),
+                                text = stringResource(R.string.transactionReview_title),
+                                color = RadixTheme.colors.gray1,
+                                textAlign = TextAlign.Start,
+                                maxLines = 2,
+                            )
+                        }
                         if (state.proposingDApp?.iconUrl != null) {
                             Thumbnail.DApp(
                                 modifier = Modifier

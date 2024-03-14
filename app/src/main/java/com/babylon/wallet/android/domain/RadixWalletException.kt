@@ -125,6 +125,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
         sealed class TransactionCommitted : TransactionSubmitException() {
             data class Failure(val txId: String) : TransactionCommitted()
+            data class AssertionFailed(val txId: String) : TransactionCommitted()
         }
 
         fun getDappMessage(): String? {
@@ -151,6 +152,7 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 is TransactionCommitted.Failure -> WalletErrorType.SubmittedTransactionHasFailedTransactionStatus
                 is TransactionRejected.Permanently -> WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus
                 is TransactionRejected.Temporary -> WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus
+                is TransactionCommitted.AssertionFailed -> WalletErrorType.SubmittedTransactionHasFailedTransactionStatus
             }
     }
 
@@ -319,6 +321,10 @@ fun RadixWalletException.TransactionSubmitException.toUserFriendlyMessage(contex
                 txProcessingTime
             )
         }
+
+        is RadixWalletException.TransactionSubmitException.TransactionCommitted.AssertionFailed -> {
+            context.getString(R.string.transactionStatus_assertionFailure_text)
+        }
     }
 }
 
@@ -334,6 +340,7 @@ fun RadixWalletException.PrepareTransactionException.toUserFriendlyMessage(conte
             is RadixWalletException.PrepareTransactionException.ConvertManifest -> R.string.error_transactionFailure_manifest
             is RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities ->
                 R.string.error_transactionFailure_missingSigners
+
             is RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction -> R.string.error_transactionFailure_prepare
             is RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction -> R.string.error_transactionFailure_submit
             is RadixWalletException.PrepareTransactionException.FailedToFindAccountWithEnoughFundsToLockFee ->
