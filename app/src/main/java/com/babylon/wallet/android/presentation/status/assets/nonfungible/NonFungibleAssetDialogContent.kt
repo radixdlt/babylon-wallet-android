@@ -322,12 +322,14 @@ private fun ClaimNFTInfo(
             }
         }
 
-        val priceFormatted = remember(price, item) {
-            price?.xrdPriceFormatted(item)
+        val (priceFormatted, currency) = remember(price, item) {
+            price?.xrdPriceFormatted(item) to price?.price?.currency
         }
         WorthXRD(
             amount = claimState?.amount,
-            fiatPriceFormatted = priceFormatted
+            fiatPriceFormatted = priceFormatted,
+            currency = currency,
+            isLoadingBalance = false // TODO
         )
 
         if (claimState is AssetDialogViewModel.State.ClaimState.Unstaking) {
