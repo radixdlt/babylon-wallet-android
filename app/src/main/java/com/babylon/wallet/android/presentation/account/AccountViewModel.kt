@@ -5,15 +5,20 @@ package com.babylon.wallet.android.presentation.account
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.Asset
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
+import com.babylon.wallet.android.domain.model.assets.FiatPrice
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
@@ -49,17 +54,20 @@ import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
+import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
-    private val getProfileUseCase: GetProfileUseCase,
+    private val getFiatValueUseCase: GetFiatValueUseCase,
+    getProfileUseCase: GetProfileUseCase,
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val getNextNFTsPageUseCase: GetNextNFTsPageUseCase,
     private val updateLSUsInfo: UpdateLSUsInfo,
+    private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
     private val sendClaimRequestUseCase: SendClaimRequestUseCase,
     savedStateHandle: SavedStateHandle
@@ -104,6 +112,18 @@ class AccountViewModel @Inject constructor(
                             isRefreshing = false
                         )
                     }
+
+                    getFiatValueUseCase.forAccount(accountWithAssets)
+                        .onSuccess { assetsPrices ->
+                            _state.update { state ->
+                                state.copy(assetsWithAssetsPrices = assetsPrices.associateBy { it.asset })
+                            }
+                        }
+                        .onFailure {
+                            _state.update { state ->
+                                state.copy(assetsWithAssetsPrices = emptyMap())
+                            }
+                        }
                 }
         }
 
@@ -133,6 +153,12 @@ class AccountViewModel @Inject constructor(
 
     fun refresh() {
         loadAccountDetails(withRefresh = true)
+    }
+
+    fun onShowHideBalanceClick(isVisible: Boolean) {
+        viewModelScope.launch {
+            changeBalanceVisibilityUseCase(isVisible = isVisible)
+        }
     }
 
     fun onFungibleResourceClicked(resource: Resource.FungibleResource) {
@@ -276,6 +302,7 @@ internal sealed interface AccountEvent : OneOffEvent {
 
 data class AccountUiState(
     val accountWithAssets: AccountWithAssets? = null,
+    val assetsWithAssetsPrices: Map<Asset, AssetPrice?>? = null,
     val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
     val pendingStakeUnits: Boolean = false,
     val securityPromptType: SecurityPromptType? = null,
@@ -284,6 +311,30 @@ data class AccountUiState(
     val isRefreshing: Boolean = false,
     val uiMessage: UiMessage? = null
 ) : UiState {
+
+    val isAccountBalanceLoading: Boolean
+        get() = assetsWithAssetsPrices == null
+
+    val totalFiatValueOfAccount: FiatPrice
+        get() {
+            val hasAnyAssetPriceFailed = assetsWithAssetsPrices?.any { assetWithAssetPrice ->
+                assetWithAssetPrice.value == null
+            } ?: false
+            if (hasAnyAssetPriceFailed) return FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
+
+            var total = 0.0
+            var currency = SupportedCurrency.USD
+            assetsWithAssetsPrices?.let { assetsWithAssetsPrices ->
+                assetsWithAssetsPrices.values
+                    .mapNotNull { it }
+                    .forEach { assetPrice ->
+                        total += assetPrice.price?.price ?: 0.0
+                        currency = assetPrice.price?.currency ?: SupportedCurrency.USD
+                    }
+            } ?: return FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
+
+            return FiatPrice(price = total, currency = currency)
+        }
 
     val isTransferEnabled: Boolean
         get() = accountWithAssets?.assets != null
