@@ -453,10 +453,14 @@ class SampleDataProvider {
     }
 
     fun sampleAccountWithoutResources(
+        name: String = "my account",
         address: String = randomAddress()
     ): AccountWithAssets {
         return AccountWithAssets(
-            account = sampleAccount(address = address),
+            account = sampleAccount(
+                address = address,
+                name = name
+            ),
             assets = Assets(
                 tokens = emptyList(),
                 nonFungibles = emptyList(),
