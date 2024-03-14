@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.model.assets
 
 import android.icu.number.NumberFormatter
+import android.icu.number.Precision
 import android.icu.text.NumberFormat
 import android.icu.util.Currency
 import android.os.Build
@@ -13,18 +14,37 @@ data class FiatPrice(
     val currency: SupportedCurrency
 ) {
 
+    operator fun times(value: BigDecimal): FiatPrice = times(value.toDouble())
+
+    operator fun times(value: Double): FiatPrice = FiatPrice(
+        price = price * value,
+        currency = currency
+    )
+
     val formatted: String
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            NumberFormatter.with()
-                .unit(Currency.getInstance(currency.name))
-                .locale(Locale.getDefault())
-                .format(price)
-                .toString()
-        } else {
-            val javaCurrency = Currency.getInstance(currency.name)
-            NumberFormat.getCurrencyInstance().apply {
-                currency = javaCurrency
-            }.format(price)
+        get() {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                NumberFormatter.with()
+                    .unit(Currency.getInstance(currency.name))
+                    .locale(Locale.getDefault())
+                    .let {
+                        if (price < 1.0) {
+                            it.precision(Precision.fixedFraction(5))
+                        } else {
+                            it
+                        }
+                    }
+                    .format(price)
+                    .toString()
+            } else {
+                val javaCurrency = Currency.getInstance(currency.name)
+                NumberFormat.getCurrencyInstance().apply {
+                    currency = javaCurrency
+                    if (price < 1.0) {
+                        maximumFractionDigits = 5
+                    }
+                }.format(price)
+            }
         }
 
     val formattedWithoutCurrency: String
@@ -45,22 +65,14 @@ sealed class AssetPrice {
     data class TokenPrice(
         override val asset: Token,
         override val price: FiatPrice?,
-    ) : AssetPrice() {
-        val priceFormatted: String?
-            get() = price?.formatted
-    }
+    ) : AssetPrice()
 
     data class LSUPrice(
         override val asset: LiquidStakeUnit,
         override val price: FiatPrice?,
         val oneXrdPrice: FiatPrice?
     ) : AssetPrice() {
-        val lsuPriceFormatted: String?
-            get() = price?.formatted
-
-        fun xrdPriceFormatted(xrdBalance: BigDecimal): String? = oneXrdPrice?.let {
-            it.copy(price = (it.price.toBigDecimal() * xrdBalance).toDouble()).formatted
-        }
+        fun xrdPrice(xrdBalance: BigDecimal): FiatPrice? = oneXrdPrice?.let { it * xrdBalance }
     }
 
     data class StakeClaimPrice(
@@ -84,7 +96,7 @@ sealed class AssetPrice {
                 )
             }
 
-        fun xrdPriceFormatted(item: Resource.NonFungibleResource.Item): String? = prices[item]?.formatted
+        fun xrdPrice(item: Resource.NonFungibleResource.Item): FiatPrice? = prices[item]
     }
 
     data class PoolUnitPrice(
@@ -107,6 +119,6 @@ sealed class AssetPrice {
                 )
             }
 
-        fun xrdPriceFormatted(resource: Resource.FungibleResource): String? = prices[resource]?.formatted
+        fun xrdPrice(resource: Resource.FungibleResource): FiatPrice? = prices[resource]
     }
 }

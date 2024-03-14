@@ -32,7 +32,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
@@ -266,10 +265,14 @@ private fun StakeAmount(
                 style = amountStyle,
                 textAlign = TextAlign.End
             )
-            FiatBalanceText(
-                fiatPrice = fiatPrice,
-                isLoading = isLoadingBalance,
-            )
+
+            if (fiatPrice != null) {
+                FiatBalance(
+                    fiatPrice = fiatPrice,
+                    isLoading = isLoadingBalance,
+                    textStyle = amountStyle
+                )
+            }
         }
     }
 }
@@ -457,18 +460,17 @@ private fun LiquidStakeUnit(
             color = RadixTheme.colors.gray2
         )
 
-        val (fiatPriceFormatted, currency) = remember(validatorWithStakes) {
+        val fiatPrice = remember(validatorWithStakes) {
             val lsuPrice = validatorWithStakes.liquidStakeUnit?.let {
                 assetsViewData.prices?.get(it)
             } as? AssetPrice.LSUPrice
 
-            validatorWithStakes.stakeValue()?.let { lsuPrice?.xrdPriceFormatted(it) } to lsuPrice?.price?.currency
+            validatorWithStakes.stakeValue()?.let { lsuPrice?.xrdPrice(it) }
         }
 
         WorthXRD(
             amount = remember(validatorWithStakes) { validatorWithStakes.stakeValue() },
-            fiatPriceFormatted = fiatPriceFormatted,
-            currency = currency,
+            fiatPrice = fiatPrice,
             isLoadingBalance = isLoadingBalance
         )
     }
@@ -647,8 +649,8 @@ private fun ClaimWorth(
     isLoadingBalance: Boolean,
     action: AssetsViewAction
 ) {
-    val (fiatPriceFormatted, currency) = remember(stakeClaimPrice, claimNft) {
-        stakeClaimPrice?.xrdPriceFormatted(claimNft) to stakeClaimPrice?.price?.currency
+    val fiatPrice = remember(stakeClaimPrice, claimNft) {
+        stakeClaimPrice?.xrdPrice(claimNft)
     }
     WorthXRD(
         modifier = modifier.throttleClickable {
@@ -667,7 +669,7 @@ private fun ClaimWorth(
             }
         },
         amount = remember(claimNft) { claimNft.claimAmountXrd },
-        fiatPriceFormatted = fiatPriceFormatted,
+        fiatPrice = fiatPrice,
         trailingContent = if (action is AssetsViewAction.Selection) {
             {
                 val isSelected = remember(claimNft, action) {
@@ -687,7 +689,6 @@ private fun ClaimWorth(
         } else {
             null
         },
-        currency = currency,
         isLoadingBalance = isLoadingBalance
     )
 }
@@ -696,8 +697,7 @@ private fun ClaimWorth(
 fun WorthXRD(
     modifier: Modifier = Modifier,
     amount: BigDecimal?,
-    fiatPriceFormatted: String?,
-    currency: SupportedCurrency?,
+    fiatPrice: FiatPrice?,
     isLoadingBalance: Boolean,
     trailingContent: @Composable (() -> Unit)? = null
 ) {
@@ -749,10 +749,9 @@ fun WorthXRD(
                 maxLines = 2
             )
 
-            if (fiatPriceFormatted != null) {
-                FiatBalanceText(
-                    fiatPriceFormatted = fiatPriceFormatted,
-                    currency = currency,
+            if (fiatPrice != null) {
+                FiatBalance(
+                    fiatPrice = fiatPrice,
                     textStyle = RadixTheme.typography.body2HighImportance,
                     isLoading = isLoadingBalance
                 )
@@ -769,8 +768,7 @@ fun WorthXRDPreview() {
     RadixWalletPreviewTheme {
         WorthXRD(
             amount = BigDecimal.valueOf(4362.67),
-            fiatPriceFormatted = null,
-            currency = SupportedCurrency.USD,
+            fiatPrice = null,
             isLoadingBalance = true,
         )
     }

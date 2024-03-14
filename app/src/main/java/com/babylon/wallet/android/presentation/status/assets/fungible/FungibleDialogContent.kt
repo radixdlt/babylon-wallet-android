@@ -16,7 +16,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,7 +31,7 @@ import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceText
+import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalance
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
@@ -85,14 +84,10 @@ fun FungibleDialogContent(
                 symbol = token?.resource?.symbol.orEmpty(),
             )
 
-            val priceFormatted = remember(tokenPrice) {
-                tokenPrice?.priceFormatted
-            }
-            if (priceFormatted != null) {
-                FiatBalanceText(
+            if (tokenPrice?.price != null) {
+                FiatBalance(
                     modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
-                    fiatPriceFormatted = priceFormatted,
-                    currency = tokenPrice?.price?.currency,
+                    fiatPrice = tokenPrice.price,
                     textStyle = RadixTheme.typography.body2HighImportance,
                     isLoading = false // TODO
                 )

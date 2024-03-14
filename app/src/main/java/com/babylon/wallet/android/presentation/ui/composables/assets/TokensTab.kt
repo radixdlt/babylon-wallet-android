@@ -136,10 +136,13 @@ private fun FungibleResourceItem(
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
                 )
-                FiatBalanceText(
-                    isLoading = isLoadingBalance,
-                    fiatPrice = fiatPrice
-                )
+
+                if (fiatPrice != null) {
+                    FiatBalance(
+                        isLoading = isLoadingBalance,
+                        fiatPrice = fiatPrice
+                    )
+                }
             }
         }
 
