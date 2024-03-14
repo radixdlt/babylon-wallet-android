@@ -14,7 +14,6 @@ import org.apache.commons.validator.routines.InetAddressValidator
 import org.apache.commons.validator.routines.UrlValidator
 import java.net.URLDecoder
 import java.net.URLEncoder
-import java.text.DecimalFormat
 
 fun String.truncatedHash(): String {
     if (length <= 9) {
@@ -59,17 +58,6 @@ fun String.formattedSpans(
             }
         }
         append(inputText.substring(startIndex, inputText.length))
-    }
-}
-
-fun String.formatDecimalSeparator(): String {
-    if (isEmpty()) return this
-    val formatter = DecimalFormat("#,###.##")
-    val amount = replace(",", "")
-    return try {
-        formatter.format(amount.toDouble())
-    } catch (e: NumberFormatException) {
-        ""
     }
 }
 
