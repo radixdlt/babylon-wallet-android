@@ -34,11 +34,11 @@ import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 
 fun LazyListScope.nftsTab(
-    data: AssetsViewData,
+    assetsViewData: AssetsViewData,
     state: AssetsViewState,
     action: AssetsViewAction
 ) {
-    if (data.isNonFungibleCollectionsEmpty) {
+    if (assetsViewData.isNonFungibleCollectionsEmpty) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
@@ -47,7 +47,7 @@ fun LazyListScope.nftsTab(
         }
     }
 
-    data.nonFungibleCollections.forEach { nonFungible ->
+    assetsViewData.nonFungibleCollections.forEach { nonFungible ->
         item(
             key = nonFungible.collection.resourceAddress,
             contentType = { "collection" }
