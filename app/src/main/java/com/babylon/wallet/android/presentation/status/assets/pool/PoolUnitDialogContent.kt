@@ -46,7 +46,7 @@ fun PoolUnitDialogContent(
     modifier: Modifier = Modifier,
     args: AssetDialogArgs.Fungible,
     poolUnit: PoolUnit?,
-    price: AssetPrice.PoolUnitPrice?
+    poolUnitPrice: AssetPrice.PoolUnitPrice?
 ) {
     val resourceAddress = args.resourceAddress
     val amount = args.fungibleAmountOf(resourceAddress) ?: poolUnit?.stake?.ownedAmount
@@ -109,7 +109,8 @@ fun PoolUnitDialogContent(
                     .padding(horizontal = RadixTheme.dimensions.paddingMedium),
                 resources = resourcesWithAmount,
                 isCompact = false,
-                fiatPrice = price
+                poolUnitPrice = poolUnitPrice,
+                isLoadingBalance = false, // TODO
             )
         } else {
             Column(

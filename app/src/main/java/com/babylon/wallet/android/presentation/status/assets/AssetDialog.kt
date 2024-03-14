@@ -69,7 +69,7 @@ fun AssetDialog(
                 is PoolUnit -> PoolUnitDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
                     poolUnit = asset,
-                    price = state.assetPrice as? AssetPrice.PoolUnitPrice
+                    poolUnitPrice = state.assetPrice as? AssetPrice.PoolUnitPrice
                 )
                 // Includes NFTs and stake claims
                 is Asset.NonFungible -> {

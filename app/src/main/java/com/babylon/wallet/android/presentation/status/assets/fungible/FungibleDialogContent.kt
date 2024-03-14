@@ -32,8 +32,8 @@ import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceText
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
-import com.babylon.wallet.android.presentation.ui.composables.resources.FiatBalance
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import rdx.works.core.displayableQuantity
@@ -89,10 +89,12 @@ fun FungibleDialogContent(
                 tokenPrice?.priceFormatted
             }
             if (priceFormatted != null) {
-                FiatBalance(
+                FiatBalanceText(
                     modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
                     fiatPriceFormatted = priceFormatted,
-                    style = RadixTheme.typography.body2HighImportance
+                    currency = tokenPrice?.price?.currency,
+                    textStyle = RadixTheme.typography.body2HighImportance,
+                    isLoading = false // TODO
                 )
             }
         }
