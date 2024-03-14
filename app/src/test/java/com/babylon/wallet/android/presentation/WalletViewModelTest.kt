@@ -12,6 +12,7 @@ import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
@@ -36,6 +37,7 @@ import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import java.math.BigDecimal
 
 @ExperimentalCoroutinesApi
@@ -43,9 +45,11 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
     private val getBackupStateUseCase = mockk<GetBackupStateUseCase>()
     private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()
+    private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getAccountsForSecurityPromptUseCase = mockk<GetEntitiesWithSecurityPromptUseCase>()
     private val ensureBabylonFactorSourceExistUseCase = mockk<EnsureBabylonFactorSourceExistUseCase>()
+    private val changeBalanceVisibilityUseCase = mockk<ChangeBalanceVisibilityUseCase>()
     private val npsSurveyStateObserver = mockk<NPSSurveyStateObserver>()
     private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
@@ -61,8 +65,10 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
     override fun initVM(): WalletViewModel = WalletViewModel(
         getWalletAssetsUseCase,
+        getFiatValueUseCase,
         getProfileUseCase,
         getAccountsForSecurityPromptUseCase,
+        changeBalanceVisibilityUseCase,
         appEventBus,
         ensureBabylonFactorSourceExistUseCase,
         preferencesManager,
