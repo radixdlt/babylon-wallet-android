@@ -20,6 +20,8 @@ import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.BalanceVisibilityObserver
+import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.main.AppState
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
@@ -38,6 +40,9 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var linkConnectionStatusObserver: LinkConnectionStatusObserver
 
+    @Inject
+    lateinit var balanceVisibilityObserver: BalanceVisibilityObserver
+
     // The actual ActionableAddressViewEntryPoint that is used in the app.
     // During development we use a mock ActionableAddressViewEntryPoint in order to have previews.
     @Inject
@@ -54,29 +59,32 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             RadixWalletTheme {
-                CompositionLocalProvider(LocalActionableAddressViewEntryPoint provides actionableAddressViewEntryPoint) {
-                    val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsState(initial = true)
-                    val devBannerState by remember(isDevBannerVisible) {
-                        derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }
-                    }
-
-                    var linkConnectionsStatus: LinkConnectionsStatus? = null
-                    if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
-                        val isLinkConnectionsStatusEnabled by linkConnectionStatusObserver.isEnabled.collectAsState()
-                        if (isLinkConnectionsStatusEnabled) {
-                            linkConnectionsStatus = linkConnectionStatusObserver.currentStatus.collectAsState().value
+                val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
+                CompositionLocalProvider(LocalBalanceVisibility provides isVisible) {
+                    CompositionLocalProvider(LocalActionableAddressViewEntryPoint provides actionableAddressViewEntryPoint) {
+                        val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsState(initial = true)
+                        val devBannerState by remember(isDevBannerVisible) {
+                            derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }
                         }
-                    }
 
-                    DevelopmentPreviewWrapper(
-                        devBannerState = devBannerState,
-                        linkConnectionsStatus = linkConnectionsStatus
-                    ) { padding ->
-                        WalletApp(
-                            modifier = Modifier.padding(padding),
-                            mainViewModel = viewModel,
-                            onCloseApp = { finish() }
-                        )
+                        var linkConnectionsStatus: LinkConnectionsStatus? = null
+                        if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
+                            val isLinkConnectionsStatusEnabled by linkConnectionStatusObserver.isEnabled.collectAsState()
+                            if (isLinkConnectionsStatusEnabled) {
+                                linkConnectionsStatus = linkConnectionStatusObserver.currentStatus.collectAsState().value
+                            }
+                        }
+
+                        DevelopmentPreviewWrapper(
+                            devBannerState = devBannerState,
+                            linkConnectionsStatus = linkConnectionsStatus
+                        ) { padding ->
+                            WalletApp(
+                                modifier = Modifier.padding(padding),
+                                mainViewModel = viewModel,
+                                onCloseApp = { finish() }
+                            )
+                        }
                     }
                 }
             }
