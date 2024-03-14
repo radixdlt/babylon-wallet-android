@@ -3,6 +3,8 @@ package com.babylon.wallet.android.domain.usecases.assets
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository.PriceRequestAddress
+import com.babylon.wallet.android.data.repository.tokenprice.Mainnet
+import com.babylon.wallet.android.data.repository.tokenprice.Testnet
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
@@ -21,7 +23,8 @@ import java.math.BigDecimal
 import javax.inject.Inject
 
 class GetFiatValueUseCase @Inject constructor(
-    private val fiatPriceRepository: FiatPriceRepository,
+    @Mainnet private val mainnetFiatPriceRepository: FiatPriceRepository,
+    @Testnet private val testnetFiatPriceRepository: FiatPriceRepository,
     private val stateRepository: StateRepository
 ) {
 
@@ -36,7 +39,7 @@ class GetFiatValueUseCase @Inject constructor(
                 accountWithAssets.assets?.ownedPoolUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
                 accountWithAssets.assets?.ownedStakeClaims?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty()
         }.then { addresses ->
-            fiatPriceRepository.getFiatPrices(addresses = addresses.toSet(), currency = currency)
+            getFiatPrices(networkId = networkId, addresses = addresses.toSet(), currency = currency)
         }.mapCatching { prices ->
             // ensure that all claims are fetched
             val claims = if (accountWithAssets.assets?.ownedStakeClaims?.isNotEmpty() == true) {
@@ -71,7 +74,7 @@ class GetFiatValueUseCase @Inject constructor(
         return runCatching {
             asset.priceRequestAddresses(networkId)
         }.then { addresses ->
-            fiatPriceRepository.getFiatPrices(addresses = addresses.toSet(), currency = currency)
+            getFiatPrices(networkId = networkId, addresses = addresses.toSet(), currency = currency)
         }.mapCatching { prices ->
             // ensure that all claims are fetched
             val ensured = if (asset is StakeClaim) {
@@ -181,11 +184,22 @@ class GetFiatValueUseCase @Inject constructor(
             PriceRequestAddress.LSU(address = resourceAddress),
             PriceRequestAddress.Regular(XrdResource.address(networkId = networkId))
         )
+
         is StakeClaim -> {
             listOf(PriceRequestAddress.Regular(XrdResource.address(networkId = networkId)))
         }
 
         is PoolUnit -> pool?.resources?.map { PriceRequestAddress.Regular(it.resourceAddress) }.orEmpty()
         is Token -> listOf(PriceRequestAddress.Regular(address = resource.resourceAddress))
+    }
+
+    private suspend fun getFiatPrices(
+        networkId: NetworkId,
+        addresses: Set<PriceRequestAddress>,
+        currency: SupportedCurrency
+    ): Result<Map<String, FiatPrice>> = if (networkId == NetworkId.Mainnet) {
+        mainnetFiatPriceRepository.getFiatPrices(addresses = addresses, currency = currency)
+    } else {
+        testnetFiatPriceRepository.getFiatPrices(addresses = addresses, currency = currency)
     }
 }
