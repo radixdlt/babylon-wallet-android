@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.compose.animation.AnimatedVisibility
@@ -54,6 +52,7 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.presentation.ui.composables.TotalBalanceView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.Constants.RADIX_START_PAGE_URL
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -74,10 +73,12 @@ fun WalletScreen(
 ) {
     val context = LocalContext.current
     val walletState by viewModel.state.collectAsStateWithLifecycle()
+
     WalletContent(
         modifier = modifier,
         state = walletState,
         onMenuClick = onMenuClick,
+        onShowHideBalanceClick = viewModel::onShowHideBalanceClick,
         onAccountClick = onAccountClick,
         onAccountCreationClick = onAccountCreationClick,
         onRefresh = viewModel::onRefresh,
@@ -115,6 +116,7 @@ private fun WalletContent(
     modifier: Modifier = Modifier,
     state: WalletUiState,
     onMenuClick: () -> Unit,
+    onShowHideBalanceClick: (isVisible: Boolean) -> Unit,
     onAccountClick: (Network.Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onRefresh: () -> Unit,
@@ -185,6 +187,7 @@ private fun WalletContent(
             WalletAccountList(
                 modifier = Modifier.pullRefresh(pullRefreshState),
                 state = state,
+                onShowHideBalanceClick = onShowHideBalanceClick,
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
                 onApplySecuritySettings = onApplySecuritySettings,
@@ -210,6 +213,7 @@ private fun WalletContent(
 private fun WalletAccountList(
     modifier: Modifier = Modifier,
     state: WalletUiState,
+    onShowHideBalanceClick: (isVisible: Boolean) -> Unit,
     onAccountClick: (Network.Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onRadixBannerDismiss: () -> Unit,
@@ -226,6 +230,20 @@ private fun WalletAccountList(
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            Text(
+                text = stringResource(R.string.homePage_totalValue).uppercase(),
+                style = RadixTheme.typography.body2Header,
+                color = RadixTheme.colors.gray2
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
+            TotalBalanceView(
+                fiatPrice = state.totalFiatValueOfWallet,
+                isLoading = state.isWalletBalanceLoading,
+                isHidden = false,
+                onShowHideClick = onShowHideBalanceClick
+            )
+            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
         }
         itemsIndexed(state.accountResources) { _, accountWithResources ->
             AccountCardView(
@@ -235,8 +253,10 @@ private fun WalletAccountList(
                         onAccountClick(accountWithResources.account)
                     },
                 accountWithAssets = accountWithResources,
+                fiatTotalValue = state.totalFiatValueForAccount(accountWithResources),
                 accountTag = state.getTag(accountWithResources.account),
                 isLoadingResources = accountWithResources.assets == null,
+                isLoadingBalance = state.isBalanceLoadingForAccount(accountWithResources),
                 securityPromptType = state.securityPrompt(accountWithResources.account),
                 onApplySecuritySettings = {
                     onApplySecuritySettings(accountWithResources.account, it)
@@ -344,12 +364,16 @@ fun WalletContentPreview() {
         with(SampleDataProvider()) {
             WalletContent(
                 state = WalletUiState(
-                    accountsWithResources = listOf(sampleAccountWithoutResources(), sampleAccountWithoutResources()),
+                    accountsWithResources = listOf(
+                        sampleAccountWithoutResources(),
+                        sampleAccountWithoutResources(name = "my account with a way too much long name")
+                    ),
                     loading = false,
                     isBackupWarningVisible = true,
                     uiMessage = null
                 ),
                 onMenuClick = {},
+                onShowHideBalanceClick = {},
                 onAccountClick = {},
                 onAccountCreationClick = { },
                 onRefresh = { },
