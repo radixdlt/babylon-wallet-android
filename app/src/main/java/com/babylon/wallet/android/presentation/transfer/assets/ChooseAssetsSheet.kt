@@ -98,10 +98,10 @@ fun ChooseAssetsSheet(
             state.targetAccount.spendingAssets.map { it.address }
         }
 
-        val assetsViewData = remember(state.assets, state.epoch) {
+        val assetsViewData = remember(state.assets, state.assetsWithAssetsPrices, state.epoch) {
             AssetsViewData.from(
                 assets = state.assets,
-                prices = null, // TODO will be added here
+                prices = state.assetsWithAssetsPrices,
                 epoch = state.epoch
             )
         }
@@ -113,7 +113,7 @@ fun ChooseAssetsSheet(
         ) {
             assetsView(
                 assetsViewData = assetsViewData,
-                isLoadingBalance = false, // TODO
+                isLoadingBalance = state.isAccountBalanceLoading,
                 state = state.assetsViewState,
                 action = AssetsViewAction.Selection(
                     selectedResources = selectedAssets,

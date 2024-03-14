@@ -2,6 +2,8 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.domain.model.assets.Asset
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
@@ -383,6 +385,7 @@ class TransferViewModel @Inject constructor(
 
             data class ChooseAssets(
                 val assets: Assets? = null,
+                val assetsWithAssetsPrices: Map<Asset, AssetPrice?>? = null,
                 private val initialAssetAddress: ImmutableSet<String>, // Used to compute the difference between chosen assets
                 val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
                 val pendingStakeUnits: Boolean = false,
@@ -391,6 +394,9 @@ class TransferViewModel @Inject constructor(
                 val epoch: Long? = null,
                 val uiMessage: UiMessage? = null
             ) : Sheet {
+
+                val isAccountBalanceLoading: Boolean
+                    get() = assetsWithAssetsPrices == null
 
                 val isSubmitEnabled: Boolean
                     get() {
