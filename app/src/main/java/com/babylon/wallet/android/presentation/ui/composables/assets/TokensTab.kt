@@ -138,7 +138,7 @@ private fun FungibleResourceItem(
                 )
 
                 if (fiatPrice != null) {
-                    FiatBalance(
+                    FiatBalanceView(
                         isLoading = isLoadingBalance,
                         fiatPrice = fiatPrice
                     )

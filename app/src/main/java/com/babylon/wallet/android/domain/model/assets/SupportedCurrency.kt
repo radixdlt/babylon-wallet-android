@@ -5,16 +5,32 @@ import java.util.Currency
 enum class SupportedCurrency(val code: String) {
     USD("USD");
 
+    private val nativeCurrency: Currency
+        get() = Currency.getInstance(code)
+
+    val symbol: String
+        get() = nativeCurrency.symbol
+
     val hiddenBalance: String
         get() {
-            val currency = Currency.getInstance(code)
-            val hiddenPriceCharacters = "• • • •"
+            val hiddenPriceCharacters = " • • • • "
 
-            val symbolEscaped = Regex.escape(currency.symbol)
+            val symbolEscaped = Regex.escape(symbol)
             return FiatPrice(
                 price = 1.0,
                 currency = this
             ).formatted.replace("[^$symbolEscaped]+".toRegex(), hiddenPriceCharacters)
+        }
+
+    val errorBalance: String
+        get() {
+            val errorPriceCharacter = " - "
+
+            val symbolEscaped = Regex.escape(symbol)
+            return FiatPrice(
+                price = 1.0,
+                currency = this
+            ).formatted.replace("[^$symbolEscaped]+".toRegex(), errorPriceCharacter)
         }
 
     companion object {
