@@ -84,6 +84,7 @@ class HistoryViewModel @Inject constructor(
         viewModelScope.launch {
             getAccountHistoryUseCase.getHistory(args.accountAddress, _state.value.filters).onSuccess { historyData ->
                 updateStateWith(historyData)
+                _state.value.historyItems?.firstOrNull()?.dateTime?.let { selectDate(it) }
             }.onFailure { error ->
                 _state.update {
                     it.copy(
@@ -118,7 +119,7 @@ class HistoryViewModel @Inject constructor(
         _state.update { state ->
             state.copy(
                 timeFilterItems = result.mapIndexed { index, monthFilter ->
-                    Selectable(monthFilter, index == result.lastIndex)
+                    Selectable(monthFilter)
                 }.toPersistentList()
             )
         }
