@@ -4,9 +4,7 @@ import rdx.works.core.InstantGenerator
 import rdx.works.core.mapWhen
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSource
@@ -22,20 +20,6 @@ fun Profile.updateLastUsed(id: FactorSource.FactorSourceID): Profile {
             factorSource.common.lastUsedOn = InstantGenerator()
             factorSource
         }.toIdentifiedArrayList()
-    )
-}
-
-fun Profile.changeDefaultDepositGuarantee(
-    defaultDepositGuarantee: Double
-): Profile {
-    return copy(
-        appPreferences = AppPreferences(
-            transaction = Transaction(defaultDepositGuarantee = defaultDepositGuarantee),
-            display = appPreferences.display,
-            security = appPreferences.security,
-            gateways = appPreferences.gateways,
-            p2pLinks = appPreferences.p2pLinks
-        )
     )
 }
 
