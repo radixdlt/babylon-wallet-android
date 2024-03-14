@@ -54,6 +54,7 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
+import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.Constants.RADIX_START_PAGE_URL
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -240,7 +241,10 @@ private fun WalletAccountList(
                 fiatPrice = state.totalFiatValueOfWallet,
                 isLoading = state.isWalletBalanceLoading,
                 currency = SupportedCurrency.USD,
-                onShowHideClick = onShowHideBalanceClick
+                formattedContentStyle = RadixTheme.typography.header,
+                trailingContent = {
+                    TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceClick)
+                }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
         }
