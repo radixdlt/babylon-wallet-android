@@ -3,9 +3,12 @@ package com.babylon.wallet.android.presentation.wallet
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -35,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySetti
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.toText
+import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 
 @Suppress("DestructuringDeclarationWithTooManyEntries")
 @Composable
@@ -61,14 +65,32 @@ fun AccountCardView(
                 horizontal = RadixTheme.dimensions.paddingLarge
             )
     ) {
-        val (nameLabel, fiatTotalValueLabel, legacyLabel, addressLabel, spacer, assetsContainer, promptsContainer) = createRefs()
-        val isFiatBalanceVisible = accountWithAssets.assets == null || accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
+        val (
+            nameLabel,
+            fiatTotalValueLabel,
+            fiatTotalLoading,
+            legacyLabel,
+            addressLabel,
+            spacer,
+            assetsContainer,
+            promptsContainer
+        ) = createRefs()
+        val isFiatBalanceVisible = accountWithAssets.assets == null ||
+            accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
 
         Text(
             modifier = Modifier.constrainAs(nameLabel) {
                 linkTo(
                     start = parent.start,
-                    end = if (isFiatBalanceVisible) fiatTotalValueLabel.start else parent.end,
+                    end = if (isFiatBalanceVisible) {
+                        if (isLoadingBalance) {
+                            fiatTotalLoading.start
+                        } else {
+                            fiatTotalValueLabel.start
+                        }
+                    } else {
+                        parent.end
+                    },
                     bias = 0f
                 )
                 width = Dimension.fillToConstraints
@@ -81,19 +103,40 @@ fun AccountCardView(
         )
 
         if (isFiatBalanceVisible) {
-            TotalFiatBalanceView(
-                modifier = Modifier.constrainAs(fiatTotalValueLabel) {
-                    start.linkTo(nameLabel.end, margin = 10.dp)
-                    end.linkTo(parent.end)
-                    top.linkTo(parent.top)
-                },
-                fiatPrice = fiatTotalValue,
-                currency = SupportedCurrency.USD,
-                isLoading = isLoadingBalance,
-                contentColor = RadixTheme.colors.white,
-                hiddenContentColor = RadixTheme.colors.white.copy(alpha = 0.6f),
-                contentStyle = RadixTheme.typography.body1Header
-            )
+            if (isLoadingBalance) {
+                Row(
+                    modifier = Modifier.constrainAs(fiatTotalLoading) {
+                        start.linkTo(nameLabel.end, margin = 10.dp)
+                        end.linkTo(parent.end)
+                        top.linkTo(parent.top)
+                    }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .height(20.dp)
+                            .fillMaxWidth(0.4f)
+                            .radixPlaceholder(
+                                visible = true,
+                                color = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
+                                shape = RadixTheme.shapes.roundedRectSmall,
+                            ),
+                    )
+                }
+            } else {
+                TotalFiatBalanceView(
+                    modifier = Modifier.constrainAs(fiatTotalValueLabel) {
+                        start.linkTo(nameLabel.end, margin = 10.dp)
+                        end.linkTo(parent.end)
+                        top.linkTo(parent.top)
+                    },
+                    fiatPrice = fiatTotalValue,
+                    currency = SupportedCurrency.USD,
+                    isLoading = false,
+                    contentColor = RadixTheme.colors.white,
+                    hiddenContentColor = RadixTheme.colors.white.copy(alpha = 0.6f),
+                    contentStyle = RadixTheme.typography.body1Header
+                )
+            }
         }
 
         ActionableAddressView(
@@ -183,6 +226,7 @@ private fun WalletUiState.AccountTag.toLabel(context: Context): String {
                 .append(context.resources.getString(R.string.homePage_accountsTag_ledgerBabylon))
                 .toString()
         }
+
         WalletUiState.AccountTag.LEDGER_LEGACY -> {
             StringBuilder()
                 .append(" ")
@@ -191,6 +235,7 @@ private fun WalletUiState.AccountTag.toLabel(context: Context): String {
                 .append(context.resources.getString(R.string.homePage_accountsTag_ledgerLegacy))
                 .toString()
         }
+
         WalletUiState.AccountTag.LEGACY_SOFTWARE -> {
             StringBuilder()
                 .append(" ")
@@ -199,6 +244,7 @@ private fun WalletUiState.AccountTag.toLabel(context: Context): String {
                 .append(context.resources.getString(R.string.homePage_accountsTag_legacySoftware))
                 .toString()
         }
+
         WalletUiState.AccountTag.DAPP_DEFINITION -> {
             StringBuilder()
                 .append(" ")
