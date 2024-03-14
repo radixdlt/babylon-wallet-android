@@ -4,6 +4,7 @@ import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
@@ -21,6 +22,7 @@ import javax.inject.Inject
 
 class AssetsChooserDelegate @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
+    private val getFiatValueUseCase: GetFiatValueUseCase,
     private val getNextNFTsPageUseCase: GetNextNFTsPageUseCase,
     private val updateLSUsInfo: UpdateLSUsInfo,
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
@@ -50,7 +52,23 @@ class AssetsChooserDelegate @Inject constructor(
                 }
             }
             .collect { accountsWithAssets ->
-                val assets = accountsWithAssets.firstOrNull()?.assets
+                val accountWithAssets = accountsWithAssets.firstOrNull()
+                val assets = accountWithAssets?.assets
+
+                accountWithAssets?.let {
+                    getFiatValueUseCase.forAccount(accountWithAssets = it)
+                        .onSuccess { assetsPrices ->
+                            updateSheetState { state ->
+                                state.copy(assetsWithAssetsPrices = assetsPrices.associateBy { assetPrice -> assetPrice.asset })
+                            }
+                        }
+                        .onFailure {
+                            updateSheetState { state ->
+                                state.copy(assetsWithAssetsPrices = emptyMap())
+                            }
+                        }
+                }
+
                 updateSheetState { it.copy(assets = assets) }
 
                 onLatestEpochRequest()
