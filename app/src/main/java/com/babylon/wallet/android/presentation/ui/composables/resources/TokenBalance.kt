@@ -9,17 +9,13 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.utils.toLocaleNumberFormat
 import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
-import java.util.Currency
-import java.util.Locale
 
 @Composable
 fun TokenBalance(
     modifier: Modifier = Modifier,
     amount: BigDecimal?,
-    fiatValue: BigDecimal? = null,
     symbol: String,
     align: TextAlign = TextAlign.Center
 ) {
@@ -38,13 +34,5 @@ fun TokenBalance(
             color = RadixTheme.colors.gray1,
             textAlign = align
         )
-        fiatValue?.let { // TODO FiatBalanceText
-            Text(
-                text = fiatValue.let { Currency.getInstance(Locale.US).symbol + fiatValue.toLocaleNumberFormat() },
-                style = RadixTheme.typography.body2HighImportance,
-                color = RadixTheme.colors.gray2,
-                maxLines = 1
-            )
-        }
     }
 }
