@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -95,8 +94,8 @@ class WalletViewModel @Inject constructor(
 
     private fun observeNpsSurveyState() {
         viewModelScope.launch {
-            npsSurveyStateObserver.npsSurveyState().filter { it is NPSSurveyState.Active }.collectLatest { state ->
-                _state.update { it.copy(isNpsSurveyShown = state == NPSSurveyState.Active) }
+            npsSurveyStateObserver.npsSurveyState().filterIsInstance<NPSSurveyState.Active>().collectLatest { state ->
+                _state.update { it.copy(isNpsSurveyShown = true) }
             }
         }
     }

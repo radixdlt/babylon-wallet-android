@@ -20,7 +20,7 @@ fun NavGraphBuilder.main(
     onNavigateToIncompatibleProfile: () -> Unit,
     showNPSSurvey: () -> Unit
 ) {
-    composable(route = MAIN_ROUTE) {
+    composable(route = MAIN_ROUTE) { entry ->
         MainScreen(
             mainUiState = mainUiState,
             onMenuClick = onMenuClick,
