@@ -36,7 +36,7 @@ import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
-import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceText
+import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalance
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
@@ -273,18 +273,17 @@ private fun LSUResourceValue(
                 maxLines = 1
             )
 
-            val xrdPriceFormatted = remember(price, amount) {
+            val xrdPrice = remember(price, amount) {
                 if (amount != null) {
-                    price?.xrdPriceFormatted(amount)
+                    price?.xrdPrice(amount)
                 } else {
                     null
                 }
             }
-            if (xrdPriceFormatted != null) {
-                FiatBalanceText(
-                    fiatPriceFormatted = xrdPriceFormatted,
+            if (xrdPrice != null) {
+                FiatBalance(
+                    fiatPrice = xrdPrice,
                     textStyle = RadixTheme.typography.body2HighImportance,
-                    currency = price?.price?.currency,
                     isLoading = false // TODO
                 )
             }

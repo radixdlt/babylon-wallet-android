@@ -193,15 +193,16 @@ fun PoolResourcesValues(
                         maxLines = 1
                     )
 
-                    val (fiatPriceFormatted, currency) = remember(poolUnitPrice, resourceWithAmount) {
-                        poolUnitPrice?.xrdPriceFormatted(resourceWithAmount.key) to poolUnitPrice?.price?.currency
+                    val fiatPrice = remember(poolUnitPrice, resourceWithAmount) {
+                        poolUnitPrice?.xrdPrice(resourceWithAmount.key)
                     }
 
-                    FiatBalanceText(
-                        fiatPriceFormatted = fiatPriceFormatted,
-                        isLoading = isLoadingBalance,
-                        currency = currency
-                    )
+                    if (fiatPrice != null) {
+                        FiatBalance(
+                            fiatPrice = fiatPrice,
+                            isLoading = isLoadingBalance,
+                        )
+                    }
                 }
             }
             if (index != itemsSize - 1) {
