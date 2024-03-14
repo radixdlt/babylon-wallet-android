@@ -166,6 +166,7 @@ class HistoryViewModel @Inject constructor(
         }
         var item = existingIndex?.let { _state.value.historyItems?.getOrNull(it) }
         if (existingIndex == null || existingIndex == -1) {
+            if (_state.value.canLoadMore.not()) return
             _state.update { it.copy(loadMoreState = State.LoadingMoreState.NewRange, areScrollEventsIgnored = true) }
             viewModelScope.launch {
                 getAccountHistoryUseCase.getHistoryChunk(
@@ -347,7 +348,7 @@ class HistoryViewModel @Inject constructor(
                 } else {
                     State.Content.Loaded(
                         historyData = historyData,
-                        historyItems = historyItems.toPersistentList()
+                        historyItems = historyItems.toPersistentList(),
                     )
                 },
                 loadMoreState = if (resetLoadingMoreState) null else it.loadMoreState,
@@ -420,6 +421,9 @@ data class State(
 
     val canLoadMoreDown: Boolean
         get() = content is Content.Loaded && loadMoreState == null && content.historyData.nextCursorId != null
+
+    val canLoadMore: Boolean
+        get() = canLoadMoreUp || canLoadMoreDown
 
     val filtersChanged: Boolean
         get() = filters != currentFilters

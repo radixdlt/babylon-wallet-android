@@ -6,6 +6,7 @@ import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +27,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -99,7 +99,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-private const val FIXED_LIST_ELEMENTS = 2
+private const val FIXED_LIST_ELEMENTS = 0
 
 @Composable
 fun HistoryScreen(
@@ -178,7 +178,7 @@ private class AccountHeaderCardNestedScrollConnection(
 }
 
 @Suppress("CyclomaticComplexMethod")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HistoryContent(
     modifier: Modifier = Modifier,
@@ -302,40 +302,47 @@ fun HistoryContent(
                             }
 
                             is State.Content.Loaded -> {
-                                itemsIndexed(content.historyItems, key = { _, item -> item.key }) { index, item ->
-                                    if (index == 0 && state.loadMoreState == State.LoadingMoreState.Up) {
-                                        LoadingItemPlaceholder(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingMedium))
-                                    }
-                                    when (item) {
+                                val firstTxItemIndex = content.historyItems.indexOfFirst { it is HistoryItem.Transaction }
+                                content.historyItems.forEachIndexed { index, historyItem ->
+                                    when (historyItem) {
                                         is HistoryItem.Date -> {
-                                            Text(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .background(RadixTheme.colors.gray5)
-                                                    .padding(RadixTheme.dimensions.paddingMedium)
-                                                    .radixPlaceholder(
-                                                        visible = state.loadMoreState == State.LoadingMoreState.NewRange
-                                                    ),
-                                                text = item.item.toInstant().dayMonthDateFull(),
-                                                style = RadixTheme.typography.body2Header,
-                                                color = RadixTheme.colors.gray2
-                                            )
+                                            stickyHeader(key = historyItem.key) {
+                                                Text(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .background(RadixTheme.colors.gray5)
+                                                        .padding(RadixTheme.dimensions.paddingMedium)
+                                                        .radixPlaceholder(
+                                                            visible = state.loadMoreState == State.LoadingMoreState.NewRange
+                                                        ),
+                                                    text = historyItem.item.toInstant().dayMonthDateFull(),
+                                                    style = RadixTheme.typography.body2Header,
+                                                    color = RadixTheme.colors.gray2
+                                                )
+                                            }
                                         }
 
                                         is HistoryItem.Transaction -> {
-                                            TransactionHistoryItem(
-                                                modifier = Modifier
-                                                    .padding(horizontal = RadixTheme.dimensions.paddingMedium)
-                                                    .radixPlaceholder(
-                                                        visible = state.loadMoreState == State.LoadingMoreState.NewRange
+                                            item {
+                                                if (index == firstTxItemIndex && state.loadMoreState == State.LoadingMoreState.Up) {
+                                                    LoadingItemPlaceholder(
+                                                        modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingMedium)
                                                     )
-                                                    .shadow(elevation = 6.dp, shape = RadixTheme.shapes.roundedRectMedium),
-                                                transactionItem = item.transactionItem,
-                                                onClick = {
-                                                    onOpenTransactionDetails(item.transactionItem.txId)
                                                 }
-                                            )
-                                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                                                TransactionHistoryItem(
+                                                    modifier = Modifier
+                                                        .padding(horizontal = RadixTheme.dimensions.paddingMedium)
+                                                        .radixPlaceholder(
+                                                            visible = state.loadMoreState == State.LoadingMoreState.NewRange
+                                                        )
+                                                        .shadow(elevation = 6.dp, shape = RadixTheme.shapes.roundedRectMedium),
+                                                    transactionItem = historyItem.transactionItem,
+                                                    onClick = {
+                                                        onOpenTransactionDetails(historyItem.transactionItem.txId)
+                                                    }
+                                                )
+                                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                                            }
                                         }
                                     }
                                 }
