@@ -112,7 +112,8 @@ fun ChooseAssetsSheet(
             contentPadding = PaddingValues(vertical = RadixTheme.dimensions.paddingSemiLarge)
         ) {
             assetsView(
-                data = assetsViewData,
+                assetsViewData = assetsViewData,
+                isLoadingBalance = false, // TODO
                 state = state.assetsViewState,
                 action = AssetsViewAction.Selection(
                     selectedResources = selectedAssets,
