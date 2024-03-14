@@ -305,7 +305,7 @@ data class WalletUiState(
      *
      */
     fun totalFiatValueForAccount(accountWithAssets: AccountWithAssets): FiatPrice? {
-        if (accountWithAssets.assets?.hasAnyAssets?.not() == true) {
+        if (accountWithAssets.assets?.ownsAnyAssetsThatContributeToBalance?.not() == true) {
             return FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
         }
 
