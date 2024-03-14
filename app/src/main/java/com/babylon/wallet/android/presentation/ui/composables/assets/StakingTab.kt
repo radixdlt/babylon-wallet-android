@@ -267,7 +267,7 @@ private fun StakeAmount(
             )
 
             if (fiatPrice != null) {
-                FiatBalance(
+                FiatBalanceView(
                     fiatPrice = fiatPrice,
                     isLoading = isLoadingBalance,
                     textStyle = amountStyle
@@ -750,7 +750,7 @@ fun WorthXRD(
             )
 
             if (fiatPrice != null) {
-                FiatBalance(
+                FiatBalanceView(
                     fiatPrice = fiatPrice,
                     textStyle = RadixTheme.typography.body2HighImportance,
                     isLoading = isLoadingBalance

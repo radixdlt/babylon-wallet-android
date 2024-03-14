@@ -20,7 +20,7 @@ import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 
 @Composable
-fun FiatBalance(
+fun FiatBalanceView(
     modifier: Modifier = Modifier,
     fiatPrice: FiatPrice,
     isLoading: Boolean,
@@ -60,7 +60,7 @@ fun FiatBalance(
 @Composable
 fun FiatBalanceTextPreview() {
     RadixWalletTheme {
-        FiatBalance(
+        FiatBalanceView(
             modifier = Modifier,
             isLoading = false,
             fiatPrice = FiatPrice(price = 1879.32, SupportedCurrency.USD)
@@ -73,7 +73,7 @@ fun FiatBalanceTextPreview() {
 fun FiatBalanceTextHiddenPreview() {
     RadixWalletTheme {
         CompositionLocalProvider(value = LocalBalanceVisibility.provides(false)) {
-            FiatBalance(
+            FiatBalanceView(
                 modifier = Modifier,
                 isLoading = false,
                 fiatPrice = FiatPrice(price = 1879.32, SupportedCurrency.USD)

@@ -45,6 +45,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
@@ -56,7 +57,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
-import com.babylon.wallet.android.presentation.ui.composables.TotalBalanceView
+import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewData
@@ -290,11 +291,11 @@ fun AssetsContent(
                             textColor = RadixTheme.colors.white
                         )
 
-                        TotalBalanceView(
+                        TotalFiatBalanceView(
                             modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
                             fiatPrice = state.totalFiatValueOfAccount,
                             isLoading = state.isAccountBalanceLoading,
-                            isHidden = false,
+                            currency = SupportedCurrency.USD,
                             contentColor = RadixTheme.colors.white,
                             shimmeringColor = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
                             onShowHideClick = onShowHideBalanceClick

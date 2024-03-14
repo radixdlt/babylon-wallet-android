@@ -36,7 +36,7 @@ import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
-import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalance
+import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
@@ -281,7 +281,7 @@ private fun LSUResourceValue(
                 }
             }
             if (xrdPrice != null) {
-                FiatBalance(
+                FiatBalanceView(
                     fiatPrice = xrdPrice,
                     textStyle = RadixTheme.typography.body2HighImportance,
                     isLoading = false // TODO

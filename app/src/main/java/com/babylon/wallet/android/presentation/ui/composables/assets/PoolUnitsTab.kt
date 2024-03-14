@@ -198,7 +198,7 @@ fun PoolResourcesValues(
                     }
 
                     if (fiatPrice != null) {
-                        FiatBalance(
+                        FiatBalanceView(
                             fiatPrice = fiatPrice,
                             isLoading = isLoadingBalance,
                         )
