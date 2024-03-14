@@ -19,19 +19,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.assets.FiatPrice
 import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import timber.log.Timber
 import java.text.DecimalFormatSymbols
-import java.text.NumberFormat
 
 @Composable
 fun TotalFiatBalanceView(
@@ -93,7 +89,7 @@ private fun TotalBalanceContent(
     contentStyle: TextStyle,
     formattedContentStyle: TextStyle,
     trailingContent: (@Composable () -> Unit)?
-)  {
+) {
     val isPriceVisible = LocalBalanceVisibility.current
     val formatted = if (isPriceVisible) {
         remember(fiatPrice, currency) {
@@ -151,11 +147,13 @@ fun TotalFiatBalanceViewToggle(
 ) {
     val isPriceVisible = LocalBalanceVisibility.current
     Icon(
-        painter = painterResource(id = if (isPriceVisible) {
-            com.babylon.wallet.android.designsystem.R.drawable.ic_show
-        } else {
-            com.babylon.wallet.android.designsystem.R.drawable.ic_hide
-        }),
+        painter = painterResource(
+            id = if (isPriceVisible) {
+                com.babylon.wallet.android.designsystem.R.drawable.ic_show
+            } else {
+                com.babylon.wallet.android.designsystem.R.drawable.ic_hide
+            }
+        ),
         contentDescription = "",
         tint = RadixTheme.colors.gray3,
         modifier = modifier
