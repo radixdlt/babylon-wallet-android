@@ -99,8 +99,6 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-private const val FIXED_LIST_ELEMENTS = 0
-
 @Composable
 fun HistoryScreen(
     modifier: Modifier = Modifier,
@@ -215,7 +213,7 @@ fun HistoryContent(
             timeFilterScrollState.scrollToItem(state.timeFilterItems.lastIndex)
         }
     }
-    MonitorListScroll(state = listState, fixedListElements = FIXED_LIST_ELEMENTS, onLoadMore = { direction ->
+    MonitorListScroll(state = listState, onLoadMore = { direction ->
         when (direction) {
             ScrollInfo.Direction.UP -> {
                 if (state.canLoadMoreUp) {
@@ -569,7 +567,6 @@ private fun SyncSheetState(
 @Composable
 private fun MonitorListScroll(
     state: LazyListState,
-    fixedListElements: Int,
     onScrollEvent: (ScrollInfo) -> Unit,
     onLoadMore: (ScrollInfo.Direction) -> Unit,
     loadThreshold: Int = 6
@@ -592,36 +589,23 @@ private fun MonitorListScroll(
         derivedStateOf {
             val lastItem = state.layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
             val threshold = state.layoutInfo.totalItemsCount - loadThreshold - 1
-            if (threshold <= fixedListElements) {
+            if (threshold <= 0) {
                 return@derivedStateOf false
             }
-            state.layoutInfo.totalItemsCount > fixedListElements && lastItem.index >= threshold
+            state.layoutInfo.totalItemsCount > 0 && lastItem.index >= threshold
         }
     }
     val loadMoreUp by remember(state) {
         derivedStateOf {
-            val firstItem = state.layoutInfo.visibleItemsInfo.firstOrNull {
-                if (fixedListElements == 0) {
-                    true
-                } else {
-                    it.index > fixedListElements - 1
-                }
-            } ?: return@derivedStateOf false
-            state.layoutInfo.totalItemsCount > fixedListElements && firstItem.index <= fixedListElements + loadThreshold
+            val firstItem = state.layoutInfo.visibleItemsInfo.firstOrNull() ?: return@derivedStateOf false
+            state.layoutInfo.totalItemsCount > 0 && firstItem.index <= loadThreshold
         }
     }
     val scrollInfo by remember(state) {
         derivedStateOf {
-            val firstItem = state.layoutInfo.visibleItemsInfo.firstOrNull {
-                if (fixedListElements == 0) {
-                    true
-                } else {
-                    it.index > fixedListElements - 1
-                }
-            }
+            val firstItem = state.layoutInfo.visibleItemsInfo.firstOrNull()
             val lastItem = state.layoutInfo.visibleItemsInfo.lastOrNull()
             ScrollInfo(
-                fixedListElements = fixedListElements,
                 firstVisibleIndex = firstItem?.index,
                 lastVisibleIndex = lastItem?.index,
                 totalCount = state.layoutInfo.totalItemsCount
@@ -651,19 +635,11 @@ private fun MonitorListScroll(
 }
 
 data class ScrollInfo(
-    val fixedListElements: Int = 0,
     val direction: Direction? = null,
-    private val firstVisibleIndex: Int?,
-    private val lastVisibleIndex: Int?,
+    val firstVisibleIndex: Int?,
+    val lastVisibleIndex: Int?,
     val totalCount: Int
 ) {
-
-    val firstVisible: Int?
-        get() = firstVisibleIndex?.let { it - fixedListElements }
-
-    val lastVisible: Int?
-        get() = lastVisibleIndex?.let { it - fixedListElements }
-
     enum class Direction {
         UP, DOWN
     }

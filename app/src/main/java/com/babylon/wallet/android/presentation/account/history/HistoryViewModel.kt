@@ -245,8 +245,10 @@ class HistoryViewModel @Inject constructor(
 
             ScrollInfo.Direction.DOWN -> {
                 if (_state.value.canLoadMoreDown.not()) {
+                    Timber.d("History: Nothing to load at the bottom")
                     return
                 }
+                Timber.d("History: Loading data at the bottom, cursor: ${_state.value.historyData?.prevCursorId}")
                 _state.update { it.copy(loadMoreState = State.LoadingMoreState.Down) }
                 viewModelScope.launch {
                     _state.value.historyData?.let { currentData ->
