@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.fakes.FiatPriceRepositoryFake
 import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.babylon.wallet.android.mockdata.mockAccountsWithMockAssets
+import io.mockk.mockk
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -21,7 +22,8 @@ class GetFiatValueUseCaseTest {
 
     private val tokenPriceRepositoryFake = FiatPriceRepositoryFake()
     private val getFiatValueUseCase = GetFiatValueUseCase(
-        fiatPriceRepository = tokenPriceRepositoryFake,
+        mainnetFiatPriceRepository = tokenPriceRepositoryFake,
+        testnetFiatPriceRepository = mockk(),
         stateRepository = StateRepositoryFake()
     )
 

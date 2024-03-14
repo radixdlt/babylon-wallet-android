@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.repository.tokenprice
 
+import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.apis.TokenPriceApi
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.data.gateway.model.TokenPriceResponse.Companion.asEntities
@@ -14,12 +15,25 @@ import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.assets.FiatPrice
 import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
+import com.babylon.wallet.android.domain.model.resources.XrdResource
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import rdx.works.peerdroid.di.IoDispatcher
+import rdx.works.profile.derivation.model.NetworkId
 import timber.log.Timber
+import java.lang.IllegalStateException
 import javax.inject.Inject
+import javax.inject.Qualifier
+import kotlin.random.Random
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class Mainnet
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class Testnet
 
 interface FiatPriceRepository {
 
@@ -46,9 +60,11 @@ interface FiatPriceRepository {
         data class Regular(override val address: String) : PriceRequestAddress
         data class LSU(override val address: String) : PriceRequestAddress
     }
+
+    class PricesNotSupportedInNetwork : IllegalStateException("Pricing service available only on Mainnet")
 }
 
-class FiatPriceRepositoryImpl @Inject constructor(
+class MainnetFiatPriceRepository @Inject constructor(
     private val tokenPriceDao: TokenPriceDao,
     private val tokenPriceApi: TokenPriceApi,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
@@ -123,5 +139,54 @@ class FiatPriceRepositoryImpl @Inject constructor(
             responseBody?.string().orEmpty()
         )
         return RadixWalletException.GatewayException.HttpError(code = 500, message = error.detail ?: "no message")
+    }
+}
+
+class TestnetFiatPriceRepository @Inject constructor(
+    @Mainnet private val delegate: FiatPriceRepository
+) : FiatPriceRepository {
+
+    private val mainnetXrdAddress = XrdResource.address(networkId = NetworkId.Mainnet)
+    private val mainnetAddresses = listOf(
+        "resource_rdx1t4tjx4g3qzd98nayqxm7qdpj0a0u8ns6a0jrchq49dyfevgh6u0gj3",
+        "resource_rdx1t45js47zxtau85v0tlyayerzrgfpmguftlfwfr5fxzu42qtu72tnt0",
+        "resource_rdx1tk7g72c0uv2g83g3dqtkg6jyjwkre6qnusgjhrtz0cj9u54djgnk3c",
+        "resource_rdx1tkk83magp3gjyxrpskfsqwkg4g949rmcjee4tu2xmw93ltw2cz94sq"
+    )
+
+    override suspend fun updateFiatPrices(currency: SupportedCurrency): Result<Unit> {
+        if (!BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
+            return Result.failure(FiatPriceRepository.PricesNotSupportedInNetwork())
+        }
+        return delegate.updateFiatPrices(currency)
+    }
+
+    override suspend fun getFiatPrices(
+        addresses: Set<PriceRequestAddress>,
+        currency: SupportedCurrency
+    ): Result<Map<String, FiatPrice>> {
+        if (!BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
+            return Result.failure(FiatPriceRepository.PricesNotSupportedInNetwork())
+        }
+
+        val mainnetAddressesToRequest = if (addresses.any { it.address in XrdResource.addressesPerNetwork.values }) {
+            mainnetAddresses + mainnetXrdAddress
+        } else {
+            mainnetAddresses
+        }.map { PriceRequestAddress.Regular(it) }.toSet()
+
+        return delegate.getFiatPrices(addresses = mainnetAddressesToRequest, currency = currency).map { result ->
+            val prices = result.toMutableMap()
+            val xrdPrice = prices.remove(mainnetXrdAddress)
+
+            addresses.associate {
+                if (it.address in XrdResource.addressesPerNetwork.values) {
+                    it.address to xrdPrice
+                } else {
+                    val randomPrice = prices.entries.elementAt(Random.nextInt(prices.entries.size)).value
+                    it.address to randomPrice
+                }
+            }.mapNotNull { it.value?.let { value -> it.key to value } }.toMap()
+        }
     }
 }
