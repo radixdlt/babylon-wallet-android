@@ -26,6 +26,16 @@ data class FiatPrice(
                 currency = javaCurrency
             }.format(price)
         }
+
+    val formattedWithoutCurrency: String
+        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            NumberFormatter.with()
+                .locale(Locale.getDefault())
+                .format(price)
+                .toString()
+        } else {
+            NumberFormat.getNumberInstance(Locale.getDefault()).format(price)
+        }
 }
 
 sealed class AssetPrice {
@@ -56,7 +66,8 @@ sealed class AssetPrice {
     data class StakeClaimPrice(
         override val asset: StakeClaim,
         val prices: Map<Resource.NonFungibleResource.Item, FiatPrice?>,
-        private val currency: SupportedCurrency
+        private val currency: SupportedCurrency,
+        val oneXrdPrice: FiatPrice?
     ) : AssetPrice() {
         override val price: FiatPrice?
             get() {
