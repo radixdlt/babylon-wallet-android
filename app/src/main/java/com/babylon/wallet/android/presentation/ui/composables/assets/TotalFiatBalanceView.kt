@@ -22,6 +22,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.assets.FiatPrice
@@ -135,7 +136,8 @@ private fun TotalBalanceContent(
             modifier = Modifier.weight(1f, fill = false),
             text = annotatedFormat,
             style = contentStyle,
-            color = if (fiatPrice != null && isPriceVisible) contentColor else hiddenContentColor
+            color = if (fiatPrice != null && isPriceVisible) contentColor else hiddenContentColor,
+            maxLines = 1
         )
 
         trailingContent?.invoke()
