@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 
 @Suppress("DestructuringDeclarationWithTooManyEntries")
@@ -74,14 +75,18 @@ fun AccountCardView(
             overflow = TextOverflow.Ellipsis
         )
 
-        AccountBalanceLabel(
+        TotalFiatBalanceView(
             modifier = Modifier.constrainAs(fiatTotalValueLabel) {
                 start.linkTo(nameLabel.end, margin = 10.dp)
                 end.linkTo(parent.end)
                 top.linkTo(parent.top)
             },
-            fiatValue = fiatTotalValue,
-            isLoading = isLoadingBalance
+            fiatPrice = fiatTotalValue,
+            currency = SupportedCurrency.USD,
+            isLoading = isLoadingBalance,
+            contentColor = RadixTheme.colors.white,
+            hiddenContentColor = RadixTheme.colors.white.copy(alpha = 0.6f),
+            contentStyle = RadixTheme.typography.body1Header
         )
 
         ActionableAddressView(

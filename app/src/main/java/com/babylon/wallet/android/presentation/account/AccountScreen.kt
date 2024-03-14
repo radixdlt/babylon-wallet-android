@@ -61,6 +61,7 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBa
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewData
+import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import kotlinx.collections.immutable.ImmutableList
@@ -298,7 +299,10 @@ fun AssetsContent(
                             currency = SupportedCurrency.USD,
                             contentColor = RadixTheme.colors.white,
                             shimmeringColor = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
-                            onShowHideClick = onShowHideBalanceClick
+                            formattedContentStyle = RadixTheme.typography.header,
+                            trailingContent = {
+                                TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceClick)
+                            }
                         )
 
                         androidx.compose.animation.AnimatedVisibility(

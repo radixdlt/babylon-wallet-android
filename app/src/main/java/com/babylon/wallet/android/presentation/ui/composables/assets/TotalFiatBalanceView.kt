@@ -4,7 +4,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,6 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -26,6 +28,9 @@ import com.babylon.wallet.android.domain.model.assets.FiatPrice
 import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import timber.log.Timber
+import java.text.DecimalFormatSymbols
+import java.text.NumberFormat
 
 @Composable
 fun TotalFiatBalanceView(
@@ -34,8 +39,11 @@ fun TotalFiatBalanceView(
     currency: SupportedCurrency,
     isLoading: Boolean,
     contentColor: Color = RadixTheme.colors.gray1,
+    hiddenContentColor: Color = RadixTheme.colors.gray3,
+    contentStyle: TextStyle = RadixTheme.typography.title,
+    formattedContentStyle: TextStyle = contentStyle,
     shimmeringColor: Color? = null,
-    onShowHideClick: (isVisible: Boolean) -> Unit
+    trailingContent: (@Composable () -> Unit)? = null
 ) {
     if (isLoading) {
         TotalBalanceShimmering(
@@ -47,8 +55,11 @@ fun TotalFiatBalanceView(
             modifier = modifier,
             fiatPrice = fiatPrice,
             contentColor = contentColor,
+            hiddenContentColor = hiddenContentColor,
+            contentStyle = contentStyle,
             currency = currency,
-            onShowHideClick = onShowHideClick
+            formattedContentStyle = formattedContentStyle,
+            trailingContent = trailingContent
         )
     }
 }
@@ -77,7 +88,10 @@ private fun TotalBalanceContent(
     fiatPrice: FiatPrice?,
     currency: SupportedCurrency,
     contentColor: Color,
-    onShowHideClick: (isVisible: Boolean) -> Unit
+    hiddenContentColor: Color,
+    contentStyle: TextStyle,
+    formattedContentStyle: TextStyle,
+    trailingContent: (@Composable () -> Unit)?
 )  {
     val isPriceVisible = LocalBalanceVisibility.current
     val formatted = if (isPriceVisible) {
@@ -90,34 +104,66 @@ private fun TotalBalanceContent(
         }
     }
 
+    val annotatedFormat = if (formattedContentStyle != contentStyle) {
+        buildAnnotatedString {
+            val currencySymbol = fiatPrice?.currency?.symbol ?: currency.symbol
+            val currencyStart = formatted.indexOf(currencySymbol)
+            if (currencyStart != -1) {
+                val currencyEnd = currencyStart + currencySymbol.length
+
+                append(formatted)
+                addStyle(style = formattedContentStyle.toSpanStyle(), start = currencyStart, end = currencyEnd)
+            }
+
+            val decimalSeparator = DecimalFormatSymbols.getInstance().decimalSeparator
+            val decimalStart = formatted.indexOf(decimalSeparator)
+            if (decimalStart != -1) {
+                val decimalEnd = formatted.length
+                addStyle(style = formattedContentStyle.toSpanStyle(), start = decimalStart, end = decimalEnd)
+            }
+        }
+    } else {
+        buildAnnotatedString { append(formatted) }
+    }
+
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = RadixTheme.dimensions.paddingLarge),
-        verticalAlignment = Alignment.Bottom,
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
         Text(
             modifier = Modifier.weight(1f, fill = false),
-            text = formatted,
-            style = RadixTheme.typography.title,
-            color = if (fiatPrice != null && isPriceVisible) contentColor else RadixTheme.colors.gray3
+            text = annotatedFormat,
+            style = contentStyle,
+            color = if (fiatPrice != null && isPriceVisible) contentColor else hiddenContentColor
         )
 
-        Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_show),
-            contentDescription = "",
-            tint = RadixTheme.colors.gray3,
-            modifier = Modifier
-                .padding(start = RadixTheme.dimensions.paddingSmall)
-                .size(22.dp)
-                .fillMaxSize()
-                .align(Alignment.CenterVertically)
-                .clickable {
-                    onShowHideClick(!isPriceVisible)
-                }
-        )
+        trailingContent?.invoke()
     }
+}
+
+@Composable
+fun TotalFiatBalanceViewToggle(
+    modifier: Modifier = Modifier,
+    onToggle: (isVisible: Boolean) -> Unit
+) {
+    val isPriceVisible = LocalBalanceVisibility.current
+    Icon(
+        painter = painterResource(id = if (isPriceVisible) {
+            com.babylon.wallet.android.designsystem.R.drawable.ic_show
+        } else {
+            com.babylon.wallet.android.designsystem.R.drawable.ic_hide
+        }),
+        contentDescription = "",
+        tint = RadixTheme.colors.gray3,
+        modifier = modifier
+            .padding(start = RadixTheme.dimensions.paddingSmall)
+            .size(22.dp)
+            .fillMaxSize()
+            .clickable {
+                onToggle(!isPriceVisible)
+            }
+    )
 }
 
 @Preview("default", showBackground = true)
@@ -134,7 +180,9 @@ fun TotalBalancePreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
-            onShowHideClick = {}
+            trailingContent = {
+                TotalFiatBalanceViewToggle(onToggle = {})
+            }
         )
     }
 }
@@ -152,7 +200,9 @@ fun TotalBalanceWithLongValuePreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
-            onShowHideClick = {}
+            trailingContent = {
+                TotalFiatBalanceViewToggle(onToggle = {})
+            }
         )
     }
 }
@@ -167,7 +217,9 @@ fun TotalBalanceErrorPreview() {
             fiatPrice = null,
             currency = SupportedCurrency.USD,
             isLoading = false,
-            onShowHideClick = {}
+            trailingContent = {
+                TotalFiatBalanceViewToggle(onToggle = {})
+            }
         )
     }
 }
@@ -185,7 +237,9 @@ fun TotalBalanceHiddenPreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
-            onShowHideClick = {}
+            trailingContent = {
+                TotalFiatBalanceViewToggle(onToggle = {})
+            }
         )
     }
 }
