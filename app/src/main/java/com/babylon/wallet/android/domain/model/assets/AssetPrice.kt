@@ -29,7 +29,7 @@ data class FiatPrice(
                     .locale(Locale.getDefault())
                     .let {
                         if (price < 1.0 && price != 0.0) {
-                            it.precision(Precision.fixedFraction(5))
+                            it.precision(Precision.fixedFraction(FRACTION_PLACES))
                         } else {
                             it
                         }
@@ -41,7 +41,7 @@ data class FiatPrice(
                 NumberFormat.getCurrencyInstance().apply {
                     currency = javaCurrency
                     if (price < 1.0 && price != 0.0) {
-                        maximumFractionDigits = 5
+                        maximumFractionDigits = MAX_FRACTION_DIGITS
                     }
                 }.format(price)
             }
@@ -56,6 +56,11 @@ data class FiatPrice(
         } else {
             NumberFormat.getNumberInstance(Locale.getDefault()).format(price)
         }
+
+    companion object {
+        private const val MAX_FRACTION_DIGITS = 5
+        private const val FRACTION_PLACES = 5
+    }
 }
 
 sealed class AssetPrice {
