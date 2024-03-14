@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.ui.composables.assets
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.assets.FiatPrice
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
@@ -24,10 +26,11 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
 
 fun LazyListScope.tokensTab(
-    data: AssetsViewData,
+    assetsViewData: AssetsViewData,
+    isLoadingBalance: Boolean,
     action: AssetsViewAction
 ) {
-    if (data.isTokensEmpty) {
+    if (assetsViewData.isTokensEmpty) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
@@ -37,14 +40,16 @@ fun LazyListScope.tokensTab(
     }
 
     item {
-        if (data.xrd != null) {
+        if (assetsViewData.xrd != null) {
             AssetCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .padding(top = RadixTheme.dimensions.paddingSemiLarge)
             ) {
                 FungibleResourceItem(
-                    resource = data.xrd.resource,
+                    resource = assetsViewData.xrd.resource,
+                    fiatPrice = assetsViewData.prices?.get(assetsViewData.xrd)?.price,
+                    isLoadingBalance = isLoadingBalance,
                     action = action
                 )
             }
@@ -52,24 +57,24 @@ fun LazyListScope.tokensTab(
     }
 
     itemsIndexed(
-        items = data.nonXrdTokens,
+        items = assetsViewData.nonXrdTokens,
         key = { _, token -> token.resource.resourceAddress },
         itemContent = { index, token ->
             AssetCard(
                 modifier = Modifier
-                    .padding(
-                        top = if (index == 0) RadixTheme.dimensions.paddingSemiLarge else 0.dp
-                    )
+                    .padding(top = if (index == 0) RadixTheme.dimensions.paddingSemiLarge else 0.dp)
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault),
                 itemIndex = index,
-                allItemsSize = data.nonXrdTokens.size
+                allItemsSize = assetsViewData.nonXrdTokens.size
             ) {
                 FungibleResourceItem(
                     resource = token.resource,
+                    fiatPrice = assetsViewData.prices?.get(token)?.price,
+                    isLoadingBalance = isLoadingBalance,
                     action = action
                 )
 
-                if (index != data.nonXrdTokens.lastIndex) {
+                if (index != assetsViewData.nonXrdTokens.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 20.dp),
                         color = RadixTheme.colors.gray4
@@ -83,6 +88,8 @@ fun LazyListScope.tokensTab(
 @Composable
 private fun FungibleResourceItem(
     resource: Resource.FungibleResource,
+    fiatPrice: FiatPrice?,
+    isLoadingBalance: Boolean,
     modifier: Modifier = Modifier,
     action: AssetsViewAction
 ) {
@@ -122,12 +129,18 @@ private fun FungibleResourceItem(
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingMedium))
 
         resource.ownedAmount?.let { amount ->
-            Text(
-                text = amount.displayableQuantity(),
-                style = RadixTheme.typography.secondaryHeader,
-                color = RadixTheme.colors.gray1,
-                maxLines = 2
-            )
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = amount.displayableQuantity(),
+                    style = RadixTheme.typography.secondaryHeader,
+                    color = RadixTheme.colors.gray1,
+                    maxLines = 2
+                )
+                FiatBalanceText(
+                    isLoading = isLoadingBalance,
+                    fiatPrice = fiatPrice
+                )
+            }
         }
 
         if (action is AssetsViewAction.Selection) {

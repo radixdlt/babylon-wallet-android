@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Text
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,7 +27,6 @@ import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.presentation.ui.composables.resources.FiatBalance
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
@@ -35,10 +34,11 @@ import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
 fun LazyListScope.poolUnitsTab(
-    data: AssetsViewData,
+    assetsViewData: AssetsViewData,
+    isLoadingBalance: Boolean,
     action: AssetsViewAction
 ) {
-    if (data.isPoolUnitsEmpty) {
+    if (assetsViewData.isPoolUnitsEmpty) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
@@ -48,14 +48,16 @@ fun LazyListScope.poolUnitsTab(
     }
 
     items(
-        items = data.poolUnits,
-        key = { item -> item.resourceAddress }
-    ) { item ->
+        items = assetsViewData.poolUnits,
+        key = { poolUnitItem -> poolUnitItem.resourceAddress }
+    ) { poolUnitItem ->
         PoolUnitItem(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                 .padding(top = RadixTheme.dimensions.paddingSemiLarge),
-            poolUnit = item,
+            poolUnit = poolUnitItem,
+            poolUnitPrice = assetsViewData.prices?.get(poolUnitItem) as? AssetPrice.PoolUnitPrice,
+            isLoadingBalance = isLoadingBalance,
             action = action
         )
     }
@@ -65,7 +67,9 @@ fun LazyListScope.poolUnitsTab(
 private fun PoolUnitItem(
     modifier: Modifier = Modifier,
     poolUnit: PoolUnit,
-    action: AssetsViewAction
+    poolUnitPrice: AssetPrice.PoolUnitPrice?,
+    isLoadingBalance: Boolean,
+    action: AssetsViewAction,
 ) {
     AssetCard(
         modifier = modifier
@@ -144,7 +148,8 @@ private fun PoolUnitItem(
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                 .padding(bottom = RadixTheme.dimensions.paddingLarge),
             resources = resourcesWithAmounts,
-            fiatPrice = null // TODO change that
+            poolUnitPrice = poolUnitPrice,
+            isLoadingBalance = isLoadingBalance
         )
     }
 }
@@ -153,7 +158,8 @@ private fun PoolUnitItem(
 fun PoolResourcesValues(
     modifier: Modifier = Modifier,
     resources: ImmutableMap<Resource.FungibleResource, BigDecimal?>,
-    fiatPrice: AssetPrice.PoolUnitPrice?,
+    poolUnitPrice: AssetPrice.PoolUnitPrice?,
+    isLoadingBalance: Boolean,
     isCompact: Boolean = true
 ) {
     Column(modifier = modifier.assetOutlineBorder()) {
@@ -187,16 +193,15 @@ fun PoolResourcesValues(
                         maxLines = 1
                     )
 
-                    val fiatPriceFormatted = remember(fiatPrice, resourceWithAmount) {
-                        fiatPrice?.xrdPriceFormatted(resourceWithAmount.key)
+                    val (fiatPriceFormatted, currency) = remember(poolUnitPrice, resourceWithAmount) {
+                        poolUnitPrice?.xrdPriceFormatted(resourceWithAmount.key) to poolUnitPrice?.price?.currency
                     }
 
-                    if (fiatPriceFormatted != null) {
-                        FiatBalance(
-                            fiatPriceFormatted = fiatPriceFormatted,
-                            style = RadixTheme.typography.body2HighImportance
-                        )
-                    }
+                    FiatBalanceText(
+                        fiatPriceFormatted = fiatPriceFormatted,
+                        isLoading = isLoadingBalance,
+                        currency = currency
+                    )
                 }
             }
             if (index != itemsSize - 1) {
