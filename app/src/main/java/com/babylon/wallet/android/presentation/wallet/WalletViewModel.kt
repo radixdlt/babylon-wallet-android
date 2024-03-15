@@ -206,7 +206,7 @@ class WalletViewModel @Inject constructor(
         loadResources(withRefresh = true)
     }
 
-    fun onShowHideBalanceClick(isVisible: Boolean) {
+    fun onShowHideBalanceToggle(isVisible: Boolean) {
         viewModelScope.launch {
             changeBalanceVisibilityUseCase(isVisible = isVisible)
         }

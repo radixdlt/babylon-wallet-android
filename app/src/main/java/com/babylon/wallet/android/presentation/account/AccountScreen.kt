@@ -102,7 +102,7 @@ fun AccountScreen(
     AccountScreenContent(
         modifier = modifier,
         state = state,
-        onShowHideBalanceClick = viewModel::onShowHideBalanceClick,
+        onShowHideBalanceToggle = viewModel::onShowHideBalanceToggle,
         onAccountPreferenceClick = { address ->
             onAccountPreferenceClick(address)
         },
@@ -128,7 +128,7 @@ fun AccountScreen(
 private fun AccountScreenContent(
     modifier: Modifier = Modifier,
     state: AccountUiState,
-    onShowHideBalanceClick: (isVisible: Boolean) -> Unit,
+    onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onAccountPreferenceClick: (address: String) -> Unit,
     onBackClick: () -> Unit,
     onRefresh: () -> Unit,
@@ -205,7 +205,7 @@ private fun AccountScreenContent(
                 modifier = Modifier.padding(innerPadding),
                 state = state,
                 lazyListState = lazyListState,
-                onShowHideBalanceClick = onShowHideBalanceClick,
+                onShowHideBalanceToggle = onShowHideBalanceToggle,
                 onFungibleTokenClick = {
                     onFungibleItemClicked(it)
                 },
@@ -237,7 +237,7 @@ fun AssetsContent(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState,
     state: AccountUiState,
-    onShowHideBalanceClick: (isVisible: Boolean) -> Unit,
+    onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onTabClick: (AssetsTab) -> Unit,
     onCollectionClick: (String) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
@@ -301,7 +301,7 @@ fun AssetsContent(
                             shimmeringColor = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
                             formattedContentStyle = RadixTheme.typography.header,
                             trailingContent = {
-                                TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceClick)
+                                TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
                             }
                         )
 
@@ -437,7 +437,7 @@ fun AccountContentPreview() {
                     accountWithAssets = sampleAccountWithoutResources(),
                     assetsWithAssetsPrices = emptyMap()
                 ),
-                onShowHideBalanceClick = {},
+                onShowHideBalanceToggle = {},
                 onAccountPreferenceClick = { _ -> },
                 onBackClick = {},
                 onRefresh = {},

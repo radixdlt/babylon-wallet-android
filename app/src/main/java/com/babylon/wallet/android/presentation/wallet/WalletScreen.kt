@@ -80,7 +80,7 @@ fun WalletScreen(
         modifier = modifier,
         state = walletState,
         onMenuClick = onMenuClick,
-        onShowHideBalanceClick = viewModel::onShowHideBalanceClick,
+        onShowHideBalanceToggle = viewModel::onShowHideBalanceToggle,
         onAccountClick = onAccountClick,
         onAccountCreationClick = onAccountCreationClick,
         onRefresh = viewModel::onRefresh,
@@ -118,7 +118,7 @@ private fun WalletContent(
     modifier: Modifier = Modifier,
     state: WalletUiState,
     onMenuClick: () -> Unit,
-    onShowHideBalanceClick: (isVisible: Boolean) -> Unit,
+    onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onAccountClick: (Network.Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onRefresh: () -> Unit,
@@ -189,7 +189,7 @@ private fun WalletContent(
             WalletAccountList(
                 modifier = Modifier.pullRefresh(pullRefreshState),
                 state = state,
-                onShowHideBalanceClick = onShowHideBalanceClick,
+                onShowHideBalanceToggle = onShowHideBalanceToggle,
                 onAccountClick = onAccountClick,
                 onAccountCreationClick = onAccountCreationClick,
                 onApplySecuritySettings = onApplySecuritySettings,
@@ -215,7 +215,7 @@ private fun WalletContent(
 private fun WalletAccountList(
     modifier: Modifier = Modifier,
     state: WalletUiState,
-    onShowHideBalanceClick: (isVisible: Boolean) -> Unit,
+    onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onAccountClick: (Network.Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onRadixBannerDismiss: () -> Unit,
@@ -245,7 +245,7 @@ private fun WalletAccountList(
                 currency = SupportedCurrency.USD,
                 formattedContentStyle = RadixTheme.typography.header,
                 trailingContent = {
-                    TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceClick)
+                    TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
                 }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
@@ -378,7 +378,7 @@ fun WalletContentPreview() {
                     uiMessage = null
                 ),
                 onMenuClick = {},
-                onShowHideBalanceClick = {},
+                onShowHideBalanceToggle = {},
                 onAccountClick = {},
                 onAccountCreationClick = { },
                 onRefresh = { },
