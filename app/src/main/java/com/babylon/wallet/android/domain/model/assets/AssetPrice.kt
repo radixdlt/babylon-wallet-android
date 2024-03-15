@@ -47,16 +47,6 @@ data class FiatPrice(
             }
         }
 
-    val formattedWithoutCurrency: String
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            NumberFormatter.with()
-                .locale(Locale.getDefault())
-                .format(price)
-                .toString()
-        } else {
-            NumberFormat.getNumberInstance(Locale.getDefault()).format(price)
-        }
-
     companion object {
         private const val MAX_FRACTION_DIGITS = 5
         private const val FRACTION_PLACES = 5
