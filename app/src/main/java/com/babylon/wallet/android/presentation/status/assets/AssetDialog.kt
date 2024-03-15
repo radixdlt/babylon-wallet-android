@@ -57,19 +57,22 @@ fun AssetDialog(
                 is Token -> FungibleDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
                     token = asset,
-                    tokenPrice = state.assetPrice as? AssetPrice.TokenPrice
+                    tokenPrice = state.assetPrice as? AssetPrice.TokenPrice,
+                    isLoadingBalance = state.isLoadingBalance
                 )
 
                 is LiquidStakeUnit -> LSUDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
                     lsu = asset,
-                    price = state.assetPrice as? AssetPrice.LSUPrice
+                    price = state.assetPrice as? AssetPrice.LSUPrice,
+                    isLoadingBalance = state.isLoadingBalance
                 )
 
                 is PoolUnit -> PoolUnitDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
                     poolUnit = asset,
-                    poolUnitPrice = state.assetPrice as? AssetPrice.PoolUnitPrice
+                    poolUnitPrice = state.assetPrice as? AssetPrice.PoolUnitPrice,
+                    isLoadingBalance = state.isLoadingBalance
                 )
                 // Includes NFTs and stake claims
                 is Asset.NonFungible -> {
@@ -82,6 +85,7 @@ fun AssetDialog(
                         claimState = state.claimState,
                         accountContext = state.accountContext,
                         price = state.assetPrice as? AssetPrice.StakeClaimPrice,
+                        isLoadingBalance = state.isLoadingBalance,
                         onClaimClick = viewModel::onClaimClick,
                     )
                 }
@@ -91,7 +95,8 @@ fun AssetDialog(
                     is AssetDialogArgs.Fungible -> FungibleDialogContent(
                         args = state.args as AssetDialogArgs.Fungible,
                         token = null,
-                        tokenPrice = null
+                        tokenPrice = null,
+                        isLoadingBalance = state.isLoadingBalance
                     )
 
                     is AssetDialogArgs.NFT -> NonFungibleAssetDialogContent(
@@ -99,7 +104,8 @@ fun AssetDialog(
                         localId = args.localId,
                         asset = null,
                         price = null,
-                        isNewlyCreated = args.isNewlyCreated
+                        isNewlyCreated = args.isNewlyCreated,
+                        isLoadingBalance = false // we do not need to pass value here because it's for NFTs
                     )
                 }
             }

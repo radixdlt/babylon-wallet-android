@@ -54,6 +54,7 @@ fun NonFungibleAssetDialogContent(
     localId: String?,
     asset: Asset.NonFungible?,
     price: AssetPrice.StakeClaimPrice?,
+    isLoadingBalance: Boolean,
     isNewlyCreated: Boolean = false,
     accountContext: Network.Account? = null,
     claimState: AssetDialogViewModel.State.ClaimState? = null,
@@ -133,6 +134,7 @@ fun NonFungibleAssetDialogContent(
                     item = item,
                     accountContextMissing = accountContext == null,
                     price = price,
+                    isLoadingBalance = isLoadingBalance,
                     onClaimClick = onClaimClick
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
@@ -282,6 +284,7 @@ private fun ClaimNFTInfo(
     item: Resource.NonFungibleResource.Item,
     accountContextMissing: Boolean,
     price: AssetPrice.StakeClaimPrice? = null,
+    isLoadingBalance: Boolean,
     onClaimClick: () -> Unit
 ) {
     val showClaimButton = claimState is AssetDialogViewModel.State.ClaimState.ReadyToClaim && !accountContextMissing
@@ -328,7 +331,7 @@ private fun ClaimNFTInfo(
         WorthXRD(
             amount = claimState?.amount,
             fiatPrice = fiatPrice,
-            isLoadingBalance = false // TODO
+            isLoadingBalance = isLoadingBalance
         )
 
         if (claimState is AssetDialogViewModel.State.ClaimState.Unstaking) {

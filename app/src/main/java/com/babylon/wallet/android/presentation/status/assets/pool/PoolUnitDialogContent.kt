@@ -46,7 +46,8 @@ fun PoolUnitDialogContent(
     modifier: Modifier = Modifier,
     args: AssetDialogArgs.Fungible,
     poolUnit: PoolUnit?,
-    poolUnitPrice: AssetPrice.PoolUnitPrice?
+    poolUnitPrice: AssetPrice.PoolUnitPrice?,
+    isLoadingBalance: Boolean
 ) {
     val resourceAddress = args.resourceAddress
     val amount = args.fungibleAmountOf(resourceAddress) ?: poolUnit?.stake?.ownedAmount
@@ -110,7 +111,7 @@ fun PoolUnitDialogContent(
                 resources = resourcesWithAmount,
                 isCompact = false,
                 poolUnitPrice = poolUnitPrice,
-                isLoadingBalance = false, // TODO
+                isLoadingBalance = isLoadingBalance
             )
         } else {
             Column(
