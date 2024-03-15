@@ -97,7 +97,7 @@ data class Assets(
     }
 
     val ownsAnyAssetsThatContributeToBalance: Boolean by lazy {
-        ownedTokens.isNotEmpty() || ownedPoolUnits.isNotEmpty() || ownedLiquidStakeUnits.isNotEmpty() || ownedLiquidStakeUnits.isNotEmpty()
+        ownedTokens.isNotEmpty() || ownedPoolUnits.isNotEmpty() || ownedLiquidStakeUnits.isNotEmpty() || ownedStakeClaims.isNotEmpty()
     }
 }
 
