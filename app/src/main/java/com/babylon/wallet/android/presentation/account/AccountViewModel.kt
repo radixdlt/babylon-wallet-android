@@ -55,6 +55,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -120,9 +121,9 @@ class AccountViewModel @Inject constructor(
                             }
                         }
                         .onFailure {
-                            _state.update { state ->
-                                state.copy(assetsWithAssetsPrices = emptyMap())
-                            }
+                            Timber.e("Failed to fetch prices for account: ${it.message}")
+                            // now try to fetch prices per asset of the account
+                            getAssetsPricesForAccount(accountWithAssets)
                         }
                 }
         }
@@ -137,6 +138,21 @@ class AccountViewModel @Inject constructor(
 
         observeSecurityPrompt()
         loadAccountDetails(withRefresh = false)
+    }
+
+    private suspend fun getAssetsPricesForAccount(accountWithAssets: AccountWithAssets) {
+        val assets = accountWithAssets.assets
+        if (assets?.ownsAnyAssetsThatContributeToBalance == true && assets.ownedAssets.isNotEmpty()) {
+            viewModelScope.launch {
+                val assetsPrices = getFiatValueUseCase.forAssets(
+                    assets = assets.ownedAssets,
+                    account = accountWithAssets.account
+                )
+                _state.update { state ->
+                    state.copy(assetsWithAssetsPrices = assetsPrices.mapNotNull { it }.associateBy { it.asset })
+                }
+            }
+        }
     }
 
     private fun observeSecurityPrompt() {
@@ -315,12 +331,12 @@ data class AccountUiState(
     val isAccountBalanceLoading: Boolean
         get() = assetsWithAssetsPrices == null
 
-    val totalFiatValueOfAccount: FiatPrice
+    val totalFiatValueOfAccount: FiatPrice?
         get() {
             val hasAnyAssetPriceFailed = assetsWithAssetsPrices?.any { assetWithAssetPrice ->
                 assetWithAssetPrice.value == null
             } ?: false
-            if (hasAnyAssetPriceFailed) return FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
+            if (hasAnyAssetPriceFailed) return null
 
             var total = 0.0
             var currency = SupportedCurrency.USD
@@ -331,7 +347,7 @@ data class AccountUiState(
                         total += assetPrice.price?.price ?: 0.0
                         currency = assetPrice.price?.currency ?: SupportedCurrency.USD
                     }
-            } ?: return FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
+            } ?: return null
 
             return FiatPrice(price = total, currency = currency)
         }
