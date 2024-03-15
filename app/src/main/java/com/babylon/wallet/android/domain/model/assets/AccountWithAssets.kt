@@ -96,6 +96,10 @@ data class Assets(
             stakeClaims.map { it.nonFungibleResource }
     }
 
+    val ownedAssets: List<Asset> by lazy {
+        ownedTokens + ownedNonFungibles + ownedPoolUnits + ownedLiquidStakeUnits + ownedStakeClaims
+    }
+
     val ownsAnyAssetsThatContributeToBalance: Boolean by lazy {
         ownedTokens.isNotEmpty() || ownedPoolUnits.isNotEmpty() || ownedLiquidStakeUnits.isNotEmpty() || ownedStakeClaims.isNotEmpty()
     }
