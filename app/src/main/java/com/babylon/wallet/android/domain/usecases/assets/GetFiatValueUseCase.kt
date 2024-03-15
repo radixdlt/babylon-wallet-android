@@ -64,6 +64,53 @@ class GetFiatValueUseCase @Inject constructor(
         }
     }
 
+    /**
+     * It is used in Account screen when the forAccount (above) fails to return ALL the assets prices of the account.
+     * Then we use this method to get those asset prices that didn't fail.
+     *
+     */
+    suspend fun forAssets(
+        assets: List<Asset>,
+        account: Network.Account,
+        currency: SupportedCurrency = SupportedCurrency.USD
+    ): List<AssetPrice?> {
+        val networkId = NetworkId.from(account.networkID)
+
+        val requestAddresses = runCatching {
+            assets.map {
+                it.priceRequestAddresses(networkId)
+            }.flatten()
+        }.getOrNull() ?: return emptyList()
+
+        val prices = getFiatPrices(
+            networkId = networkId,
+            addresses = requestAddresses.toSet(),
+            currency = currency
+        ).getOrNull() ?: return emptyList()
+
+        val stakeClaimsWithMissingNFTs = assets.filterIsInstance<StakeClaim>().filter { stakeClaim ->
+            stakeClaim.nonFungibleResource.amount.toInt() != stakeClaim.nonFungibleResource.items.size
+        }
+        val ensuredStakeClaims = if (stakeClaimsWithMissingNFTs.isNotEmpty()) {
+            stateRepository.updateStakeClaims(
+                account = account,
+                claims = stakeClaimsWithMissingNFTs
+            ).getOrNull() ?: stakeClaimsWithMissingNFTs
+        } else {
+            stakeClaimsWithMissingNFTs
+        }
+
+        return assets.map { asset ->
+            // find those assets that are claims and replace them with the new ensuredStakeClaims
+            val claim = ensuredStakeClaims.find { stakeClaim ->
+                stakeClaim.resourceAddress == asset.resource.resourceAddress
+            }
+            claim ?: asset
+        }.map { asset ->
+            asset.price(fiatPrices = prices, networkId = networkId, currency = currency)
+        }
+    }
+
     suspend fun forAsset(
         asset: Asset,
         account: Network.Account,
