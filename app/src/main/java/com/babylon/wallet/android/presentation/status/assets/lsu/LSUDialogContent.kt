@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.account.composable.AssetMetadataR
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
+import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
 import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
@@ -51,7 +52,8 @@ fun LSUDialogContent(
     modifier: Modifier = Modifier,
     lsu: LiquidStakeUnit?,
     price: AssetPrice.LSUPrice?,
-    args: AssetDialogArgs.Fungible
+    args: AssetDialogArgs.Fungible,
+    isLoadingBalance: Boolean
 ) {
     val resourceAddress = args.resourceAddress
     val amount = args.fungibleAmountOf(resourceAddress) ?: lsu?.stakeValue()
@@ -131,7 +133,8 @@ fun LSUDialogContent(
         LSUResourceValue(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
             amount = xrdWorth,
-            price = price
+            price = price,
+            isLoadingBalance = isLoadingBalance
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
@@ -234,7 +237,8 @@ fun LSUDialogContent(
 private fun LSUResourceValue(
     modifier: Modifier = Modifier,
     amount: BigDecimal?,
-    price: AssetPrice.LSUPrice?
+    price: AssetPrice.LSUPrice?,
+    isLoadingBalance: Boolean
 ) {
     Row(
         modifier = modifier
@@ -280,11 +284,19 @@ private fun LSUResourceValue(
                     null
                 }
             }
+            if (isLoadingBalance) {
+                ShimmeringView(
+                    modifier = Modifier
+                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                        .height(12.dp)
+                        .fillMaxWidth(0.3f),
+                    isVisible = true
+                )
+            }
             if (xrdPrice != null) {
                 FiatBalanceView(
                     fiatPrice = xrdPrice,
-                    textStyle = RadixTheme.typography.body2HighImportance,
-                    isLoading = false // TODO
+                    textStyle = RadixTheme.typography.body2HighImportance
                 )
             }
         }
