@@ -261,7 +261,7 @@ data class WalletUiState(
         get() = accountsWithResources == null && loading
 
     val isWalletBalanceLoading: Boolean
-        get() = accountsAddressesWithAssetsPrices == null
+        get() = accountsAddressesWithAssetsPrices.isNullOrEmpty()
 
     fun isBalanceLoadingForAccount(accountAddress: String): Boolean {
         return accountsAddressesWithAssetsPrices?.containsKey(accountAddress) != true
