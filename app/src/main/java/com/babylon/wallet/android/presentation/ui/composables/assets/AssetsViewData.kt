@@ -3,7 +3,6 @@ package com.babylon.wallet.android.presentation.ui.composables.assets
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
 import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeSummary
@@ -51,21 +50,6 @@ data class AssetsViewData(
             }
         )
     }
-
-    val oneXrdPrice: FiatPrice?
-        get() {
-            return (
-                (
-                    this.prices?.values?.find { assetPrice ->
-                        (assetPrice as? AssetPrice.LSUPrice)?.oneXrdPrice != null
-                    } as? AssetPrice.StakeClaimPrice
-                    )?.oneXrdPrice ?: (
-                    this.prices?.values?.find { assetPrice ->
-                        (assetPrice as? AssetPrice.StakeClaimPrice)?.oneXrdPrice != null
-                    } as? AssetPrice.StakeClaimPrice
-                    )?.oneXrdPrice
-                )
-        }
 
     companion object {
 
