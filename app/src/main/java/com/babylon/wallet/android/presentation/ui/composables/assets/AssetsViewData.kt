@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.ui.composables.assets
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.FiatPrice
 import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeSummary
@@ -39,13 +40,32 @@ data class AssetsViewData(
         StakeSummary(
             staked = validatorsWithStakes.sumOf { it.stakeValue() ?: BigDecimal.ZERO },
             unstaking = validatorsWithStakes.sumOf { validator ->
-                validator.stakeClaimNft?.unstakingNFTs(epoch)?.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO } ?: BigDecimal.ZERO
+                validator.stakeClaimNft?.unstakingNFTs(epoch)?.sumOf { item ->
+                    item.claimAmountXrd ?: BigDecimal.ZERO
+                } ?: BigDecimal.ZERO
             },
             readyToClaim = validatorsWithStakes.sumOf { validator ->
-                validator.stakeClaimNft?.readyToClaimNFTs(epoch)?.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO } ?: BigDecimal.ZERO
+                validator.stakeClaimNft?.readyToClaimNFTs(epoch)?.sumOf { item ->
+                    item.claimAmountXrd ?: BigDecimal.ZERO
+                } ?: BigDecimal.ZERO
             }
         )
     }
+
+    val oneXrdPrice: FiatPrice?
+        get() {
+            return (
+                (
+                    this.prices?.values?.find { assetPrice ->
+                        (assetPrice as? AssetPrice.LSUPrice)?.oneXrdPrice != null
+                    } as? AssetPrice.StakeClaimPrice
+                    )?.oneXrdPrice ?: (
+                    this.prices?.values?.find { assetPrice ->
+                        (assetPrice as? AssetPrice.StakeClaimPrice)?.oneXrdPrice != null
+                    } as? AssetPrice.StakeClaimPrice
+                    )?.oneXrdPrice
+                )
+        }
 
     companion object {
 
@@ -56,7 +76,8 @@ data class AssetsViewData(
         ): AssetsViewData? {
             if (assets == null) return null
 
-            val validators = (assets.ownedLiquidStakeUnits.map { it.validator } + assets.ownedStakeClaims.map { it.validator }).toSet()
+            val validators =
+                (assets.ownedLiquidStakeUnits.map { it.validator } + assets.ownedStakeClaims.map { it.validator }).toSet()
             val validatorsWithStakes = validators.mapNotNull { validator ->
                 val lsu = assets.ownedLiquidStakeUnits.find { it.validator == validator }
                 val claimCollection = assets.ownedStakeClaims.find { it.validator == validator }
