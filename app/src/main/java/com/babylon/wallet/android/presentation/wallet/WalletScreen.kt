@@ -256,10 +256,10 @@ private fun WalletAccountList(
                         onAccountClick(accountWithResources.account)
                     },
                 accountWithAssets = accountWithResources,
-                fiatTotalValue = state.totalFiatValueForAccount(accountWithResources),
+                fiatTotalValue = state.totalFiatValueForAccount(accountWithResources.account.address),
                 accountTag = state.getTag(accountWithResources.account),
                 isLoadingResources = accountWithResources.assets == null,
-                isLoadingBalance = state.isBalanceLoadingForAccount(accountWithResources),
+                isLoadingBalance = state.isBalanceLoadingForAccount(accountWithResources.account.address),
                 securityPromptType = state.securityPrompt(accountWithResources.account),
                 onApplySecuritySettings = {
                     onApplySecuritySettings(accountWithResources.account, it)

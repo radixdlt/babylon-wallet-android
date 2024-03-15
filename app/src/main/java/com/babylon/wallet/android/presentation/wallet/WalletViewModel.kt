@@ -136,12 +136,12 @@ class WalletViewModel @Inject constructor(
             .onEach { accountsWithAssets ->
                 _state.update { it.onResourcesReceived(accountsWithAssets) }
 
-                val accountsWithAssetsPrices = accountsWithAssets.associateWith { accountWithAssets ->
-                    getFiatValueUseCase.forAccount(accountWithAssets).getOrNull()
+                val accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
+                    accountWithAssets.account.address to getFiatValueUseCase.forAccount(accountWithAssets).getOrNull()
                 }
                 _state.update { walletUiState ->
                     walletUiState.copy(
-                        accountsWithAssetsPrices = accountsWithAssetsPrices
+                        accountsAddressesWithAssetsPrices = accountsAddressesWithAssetsPrices
                     )
                 }
             }
@@ -241,7 +241,7 @@ internal sealed interface WalletEvent : OneOffEvent {
 
 data class WalletUiState(
     private val accountsWithResources: List<AccountWithAssets>? = null,
-    private val accountsWithAssetsPrices: Map<AccountWithAssets, List<AssetPrice>?>? = null,
+    private val accountsAddressesWithAssetsPrices: Map<String, List<AssetPrice>?>? = null,
     private val loading: Boolean = true,
     private val refreshing: Boolean = false,
     private val entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList(),
@@ -262,10 +262,10 @@ data class WalletUiState(
         get() = accountsWithResources == null && loading
 
     val isWalletBalanceLoading: Boolean
-        get() = accountsWithAssetsPrices == null
+        get() = accountsAddressesWithAssetsPrices == null
 
-    fun isBalanceLoadingForAccount(accountWithAssets: AccountWithAssets): Boolean {
-        return accountsWithAssetsPrices?.containsKey(accountWithAssets) != true
+    fun isBalanceLoadingForAccount(accountAddress: String): Boolean {
+        return accountsAddressesWithAssetsPrices?.containsKey(accountAddress) != true
     }
 
     /**
@@ -280,14 +280,14 @@ data class WalletUiState(
      */
     val totalFiatValueOfWallet: FiatPrice?
         get() {
-            val isAnyAccountTotalFailed = accountsWithAssetsPrices?.values?.any { fiatPrices ->
+            val isAnyAccountTotalFailed = accountsAddressesWithAssetsPrices?.values?.any { fiatPrices ->
                 fiatPrices == null
             } ?: false
             if (isAnyAccountTotalFailed) return null
 
             var total = 0.0
             var currency = SupportedCurrency.USD
-            accountsWithAssetsPrices?.values?.forEach {
+            accountsAddressesWithAssetsPrices?.values?.forEach {
                 it?.let { assetsPrices ->
                     assetsPrices.forEach { assetPrice ->
                         total += assetPrice.price?.price ?: 0.0
@@ -305,12 +305,15 @@ data class WalletUiState(
      * if the account has assets but failed to fetch prices then return Null
      *
      */
-    fun totalFiatValueForAccount(accountWithAssets: AccountWithAssets): FiatPrice? {
-        if (accountWithAssets.assets?.ownsAnyAssetsThatContributeToBalance?.not() == true) {
+    fun totalFiatValueForAccount(accountAddress: String): FiatPrice? {
+        val accountWithAssets = accountResources.find {
+            it.account.address == accountAddress
+        }
+        if (accountWithAssets?.assets?.ownsAnyAssetsThatContributeToBalance?.not() == true) {
             return FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
         }
 
-        val assetsPrices = accountsWithAssetsPrices?.get(accountWithAssets) ?: return null
+        val assetsPrices = accountsAddressesWithAssetsPrices?.get(accountAddress) ?: return null
 
         val hasAtLeastOnePrice = assetsPrices.any { assetPrice -> assetPrice.price != null }
 
