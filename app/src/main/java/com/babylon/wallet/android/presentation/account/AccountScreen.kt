@@ -294,7 +294,7 @@ fun AssetsContent(
 
                         TotalFiatBalanceView(
                             modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
-                            fiatPrice = state.totalFiatValueOfAccount,
+                            fiatPrice = state.totalFiatValue,
                             isLoading = state.isAccountBalanceLoading,
                             currency = SupportedCurrency.USD,
                             contentColor = RadixTheme.colors.white,
