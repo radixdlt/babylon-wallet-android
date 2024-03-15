@@ -25,7 +25,7 @@ interface StreamRepository {
         stateVersion: Long? = null
     ): Result<StreamTransactionsResponse>
 
-    suspend fun updateAccountFirstTransactionDate(accountAddress: String): Result<StreamTransactionsResponse>
+    suspend fun getAccountFirstTransactionDate(accountAddress: String): Result<StreamTransactionsResponse>
 
     companion object {
         const val PAGE_SIZE = 20
@@ -50,7 +50,7 @@ class StreamRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateAccountFirstTransactionDate(accountAddress: String): Result<StreamTransactionsResponse> {
+    override suspend fun getAccountFirstTransactionDate(accountAddress: String): Result<StreamTransactionsResponse> {
         return withContext(dispatcher) {
             runCatching {
                 streamApi.streamTransactions(
