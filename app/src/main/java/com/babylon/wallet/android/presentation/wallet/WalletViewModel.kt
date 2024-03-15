@@ -279,8 +279,8 @@ data class WalletUiState(
      */
     val totalFiatValueOfWallet: FiatPrice?
         get() {
-            val isAnyAccountTotalFailed = accountsAddressesWithAssetsPrices?.values?.any { fiatPrices ->
-                fiatPrices == null
+            val isAnyAccountTotalFailed = accountsAddressesWithAssetsPrices?.values?.any { assetsPrices ->
+                assetsPrices == null
             } ?: false
             if (isAnyAccountTotalFailed) return null
 
