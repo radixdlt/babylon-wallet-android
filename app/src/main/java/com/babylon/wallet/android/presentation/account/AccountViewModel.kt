@@ -171,7 +171,7 @@ class AccountViewModel @Inject constructor(
         loadAccountDetails(withRefresh = true)
     }
 
-    fun onShowHideBalanceClick(isVisible: Boolean) {
+    fun onShowHideBalanceToggle(isVisible: Boolean) {
         viewModelScope.launch {
             changeBalanceVisibilityUseCase(isVisible = isVisible)
         }
