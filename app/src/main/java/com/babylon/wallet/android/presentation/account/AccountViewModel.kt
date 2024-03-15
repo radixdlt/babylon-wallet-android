@@ -329,7 +329,7 @@ data class AccountUiState(
 ) : UiState {
 
     val isAccountBalanceLoading: Boolean
-        get() = assetsWithAssetsPrices == null
+        get() = assetsWithAssetsPrices.isNullOrEmpty()
 
     val totalFiatValue: FiatPrice?
         get() {
