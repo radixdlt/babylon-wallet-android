@@ -456,7 +456,7 @@
   <string name="transactionStatus_dismissDialog_message">Stop waiting for transaction result? The transaction will not be canceled.</string>
   <string name="transactionStatus_dismissalDisabledDialog_title">Dismiss</string>
   <string name="transactionStatus_dismissalDisabledDialog_text">This transaction requires to be completed</string>
-  <string name="transactionStatus_assertionFailure_text">Transaction failed because a guarantee on transaction results was not met. Consider reducing your preferred guarantee %</string>
+  <string name="transactionStatus_assertionFailure_text">Transaction failed because a guarantee on transaction results was not met. Consider reducing your preferred guarantee %%</string>
   <string name="addressAction_copyAddress">Copy Address</string>
   <string name="addressAction_copiedToClipboard">Copied to Clipboard</string>
   <string name="addressAction_copyNftId">Copy NFT ID</string>
@@ -1039,5 +1039,4 @@ If you have any “Legacy” Accounts (created on the Olympia network) to import
   <string name="survey_reason_heading">What’s the main reason for your score?</string>
   <string name="survey_reason_fieldHint">Let us know...</string>
   <string name="survey_submitButton">Submit Feedback - Thanks!</string>
-  <string name="transactionStatus_assertionFailure_text">Transaction failed because a guarantee on transaction results was not met. Consider reducing your preferred guarantee %%</string>
 </resources>
