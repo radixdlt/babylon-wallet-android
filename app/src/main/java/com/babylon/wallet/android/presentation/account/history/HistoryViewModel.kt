@@ -118,10 +118,16 @@ class HistoryViewModel @Inject constructor(
         }
         _state.update { state ->
             state.copy(
-                timeFilterItems = result.mapIndexed { index, monthFilter ->
+                timeFilterItems = result.map { monthFilter ->
                     Selectable(monthFilter)
                 }.toPersistentList()
             )
+        }
+        // if filters are computed after history loaded, we need to highlight current month
+        if (_state.value.content is State.Content.Loaded) {
+            _state.value.firstVisibleIndex?.let { index ->
+                _state.value.historyItems?.getOrNull(index)?.dateTime?.let { selectDate(it) }
+            } ?: _state.value.historyItems?.firstOrNull()?.dateTime?.let { selectDate(it) }
         }
     }
 
@@ -260,7 +266,7 @@ class HistoryViewModel @Inject constructor(
             val items = _state.value.historyItems ?: return
             val firstVisibleItemDate = event.firstVisible?.let { items.getOrNull(it) }?.dateTime ?: return
             val lastVisibleItemDate = event.lastVisible?.let { items.getOrNull(it) }?.dateTime ?: return
-            _state.update { it.copy(firstVisibleIndex = event.firstVisible, lastVisibleIndex = event.lastVisible) }
+            _state.update { it.copy(firstVisibleIndex = event.firstVisible) }
             when (event.direction) {
                 ScrollInfo.Direction.UP -> {
                     selectDate(firstVisibleItemDate)
@@ -370,7 +376,6 @@ data class State(
     val timeFilterItems: ImmutableList<Selectable<MonthFilter>> = persistentListOf(),
     val loadMoreState: LoadingMoreState? = null,
     val firstVisibleIndex: Int? = null,
-    val lastVisibleIndex: Int? = null,
     val areScrollEventsIgnored: Boolean = false,
     val isRefreshing: Boolean = false
 ) : UiState {

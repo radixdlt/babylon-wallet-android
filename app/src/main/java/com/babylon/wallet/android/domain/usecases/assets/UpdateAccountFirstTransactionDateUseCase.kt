@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.repository.stream.StreamRepository
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import java.time.Instant
 import javax.inject.Inject
 
 class UpdateAccountFirstTransactionDateUseCase @Inject constructor(
@@ -14,8 +15,8 @@ class UpdateAccountFirstTransactionDateUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         accountAddress: String
-    ) {
-        streamRepository.updateAccountFirstTransactionDate(accountAddress).mapCatching { response ->
+    ): Result<Instant?> {
+        return streamRepository.getAccountFirstTransactionDate(accountAddress).mapCatching { response ->
             response.items.firstOrNull()?.confirmedAt?.toInstant()
         }.onSuccess { firstTransactionDate ->
             withContext(dispatcher) {

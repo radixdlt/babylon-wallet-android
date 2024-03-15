@@ -12,15 +12,19 @@ android {
     defaultConfig {
         minSdk rootProject.ext.minSdk
         targetSdk rootProject.ext.targetSdk
+        buildConfigField "boolean", "CRASH_REPORTING_ENABLED", "false"
     }
 
     buildTypes {
         debug {
-
+        }
+        debugAlpha {
+            buildConfigField "boolean", "CRASH_REPORTING_ENABLED", "true"
         }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "boolean", "CRASH_REPORTING_ENABLED", "false"
         }
     }
     compileOptions {

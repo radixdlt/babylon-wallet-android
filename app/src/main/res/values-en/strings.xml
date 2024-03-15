@@ -1037,4 +1037,5 @@ If you have any “Legacy” Accounts (created on the Olympia network) to import
   <string name="survey_reason_heading">What’s the main reason for your score?</string>
   <string name="survey_reason_fieldHint">Let us know...</string>
   <string name="survey_submitButton">Submit Feedback - Thanks!</string>
+  <string name="transactionStatus_assertionFailure_text">Transaction failed because a guarantee on transaction results was not met. Consider reducing your preferred guarantee %%</string>
 </resources>
