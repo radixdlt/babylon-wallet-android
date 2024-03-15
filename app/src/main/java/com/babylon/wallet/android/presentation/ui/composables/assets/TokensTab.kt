@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,6 +22,7 @@ import com.babylon.wallet.android.domain.model.assets.FiatPrice
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
+import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
@@ -137,11 +139,16 @@ private fun FungibleResourceItem(
                     maxLines = 2
                 )
 
-                if (fiatPrice != null) {
-                    FiatBalanceView(
-                        isLoading = isLoadingBalance,
-                        fiatPrice = fiatPrice
+                if (isLoadingBalance) {
+                    ShimmeringView(
+                        modifier = Modifier
+                            .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                            .height(12.dp)
+                            .fillMaxWidth(0.3f),
+                        isVisible = true
                     )
+                } else if (fiatPrice != null) {
+                    FiatBalanceView(fiatPrice = fiatPrice)
                 }
             }
         }
