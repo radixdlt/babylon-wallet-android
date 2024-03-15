@@ -117,10 +117,16 @@ class AccountViewModel @Inject constructor(
                     getFiatValueUseCase.forAccount(accountWithAssets)
                         .onSuccess { assetsPrices ->
                             _state.update { state ->
-                                state.copy(assetsWithAssetsPrices = assetsPrices.associateBy { it.asset })
+                                state.copy(
+                                    assetsWithAssetsPrices = assetsPrices.associateBy { it.asset },
+                                    hasFailedToFetchPricesForAccount = false
+                                )
                             }
                         }
                         .onFailure {
+                            _state.update { state ->
+                                state.copy(hasFailedToFetchPricesForAccount = true)
+                            }
                             Timber.e("Failed to fetch prices for account: ${it.message}")
                             // now try to fetch prices per asset of the account
                             getAssetsPricesForAccount(accountWithAssets)
@@ -319,6 +325,7 @@ internal sealed interface AccountEvent : OneOffEvent {
 data class AccountUiState(
     val accountWithAssets: AccountWithAssets? = null,
     val assetsWithAssetsPrices: Map<Asset, AssetPrice?>? = null,
+    private val hasFailedToFetchPricesForAccount: Boolean = false,
     val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
     val pendingStakeUnits: Boolean = false,
     val securityPromptType: SecurityPromptType? = null,
@@ -333,10 +340,7 @@ data class AccountUiState(
 
     val totalFiatValue: FiatPrice?
         get() {
-            val hasAnyAssetPriceFailed = assetsWithAssetsPrices?.any { assetWithAssetPrice ->
-                assetWithAssetPrice.value == null
-            } ?: false
-            if (hasAnyAssetPriceFailed) return null
+            if (hasFailedToFetchPricesForAccount) return null
 
             var total = 0.0
             var currency = SupportedCurrency.USD
