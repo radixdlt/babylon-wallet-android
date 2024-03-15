@@ -138,17 +138,7 @@ private fun StakingSummary(
         }
 
         val oneXrdPrice = remember(assetsViewData) {
-            val oneXrdPrice = (
-                assetsViewData.prices?.values?.find {
-                    (it as? AssetPrice.LSUPrice)?.oneXrdPrice != null
-                } as? AssetPrice.LSUPrice
-                )?.oneXrdPrice
-            oneXrdPrice
-                ?: (
-                    assetsViewData.prices?.values?.find {
-                        (it as? AssetPrice.StakeClaimPrice)?.oneXrdPrice != null
-                    } as? AssetPrice.StakeClaimPrice
-                    )?.oneXrdPrice
+            assetsViewData.oneXrdPrice
         }
 
         val stakedFiatPrice = remember(stakeSummary, oneXrdPrice) {
