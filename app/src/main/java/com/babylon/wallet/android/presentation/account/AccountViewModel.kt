@@ -331,7 +331,7 @@ data class AccountUiState(
     val isAccountBalanceLoading: Boolean
         get() = assetsWithAssetsPrices == null
 
-    val totalFiatValueOfAccount: FiatPrice?
+    val totalFiatValue: FiatPrice?
         get() {
             val hasAnyAssetPriceFailed = assetsWithAssetsPrices?.any { assetWithAssetPrice ->
                 assetWithAssetPrice.value == null
