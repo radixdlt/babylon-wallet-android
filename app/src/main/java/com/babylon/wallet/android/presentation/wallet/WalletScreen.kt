@@ -101,9 +101,11 @@ fun WalletScreen(
         }
     }
 
-    if (walletState.isNpsSurveyShown) {
-        showNPSSurvey()
-        viewModel.npsSurveyShown()
+    LaunchedEffect(walletState.isNpsSurveyShown) {
+        if (walletState.isNpsSurveyShown) {
+            showNPSSurvey()
+            viewModel.npsSurveyShown()
+        }
     }
 }
 

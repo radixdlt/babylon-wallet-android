@@ -9,7 +9,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 
 @Composable
@@ -33,7 +35,9 @@ fun NPSSurveyDialog(
 
     BottomSheetDialogWrapper(
         modifier = modifier,
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
+        showDragHandle = true,
+        title = stringResource(id = R.string.empty)
     ) {
         NPSSurveySheet(
             reason = state.reason,
