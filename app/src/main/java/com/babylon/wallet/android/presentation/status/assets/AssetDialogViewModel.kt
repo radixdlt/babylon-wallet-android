@@ -131,6 +131,8 @@ class AssetDialogViewModel @Inject constructor(
         val accountContext: Network.Account? = null,
     ) : UiState {
 
+        val isLoadingBalance = assetPrice == null
+
         val claimState: ClaimState?
             get() {
                 val item = (asset as? Asset.NonFungible)?.resource?.items?.firstOrNull()
