@@ -26,6 +26,7 @@ import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
+import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableMap
@@ -197,11 +198,16 @@ fun PoolResourcesValues(
                         poolUnitPrice?.xrdPrice(resourceWithAmount.key)
                     }
 
-                    if (fiatPrice != null) {
-                        FiatBalanceView(
-                            fiatPrice = fiatPrice,
-                            isLoading = isLoadingBalance,
+                    if (isLoadingBalance) {
+                        ShimmeringView(
+                            modifier = Modifier
+                                .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                                .height(12.dp)
+                                .fillMaxWidth(0.3f),
+                            isVisible = true
                         )
+                    } else if (fiatPrice != null) {
+                        FiatBalanceView(fiatPrice = fiatPrice)
                     }
                 }
             }

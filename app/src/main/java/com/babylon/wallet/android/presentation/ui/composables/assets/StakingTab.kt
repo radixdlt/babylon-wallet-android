@@ -39,6 +39,7 @@ import com.babylon.wallet.android.presentation.account.composable.EmptyResources
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -266,10 +267,17 @@ private fun StakeAmount(
                 textAlign = TextAlign.End
             )
 
-            if (fiatPrice != null) {
+            if (isLoadingBalance) {
+                ShimmeringView(
+                    modifier = Modifier
+                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                        .height(10.dp)
+                        .fillMaxWidth(0.3f),
+                    isVisible = true
+                )
+            } else if (fiatPrice != null) {
                 FiatBalanceView(
                     fiatPrice = fiatPrice,
-                    isLoading = isLoadingBalance,
                     textStyle = amountStyle
                 )
             }
@@ -749,11 +757,18 @@ fun WorthXRD(
                 maxLines = 2
             )
 
-            if (fiatPrice != null) {
+            if (isLoadingBalance) {
+                ShimmeringView(
+                    modifier = Modifier
+                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                        .height(12.dp)
+                        .fillMaxWidth(0.3f),
+                    isVisible = true
+                )
+            } else if (fiatPrice != null) {
                 FiatBalanceView(
                     fiatPrice = fiatPrice,
-                    textStyle = RadixTheme.typography.body2HighImportance,
-                    isLoading = isLoadingBalance
+                    textStyle = RadixTheme.typography.body2HighImportance
                 )
             }
         }
