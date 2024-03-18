@@ -131,7 +131,7 @@ class AssetDialogViewModel @Inject constructor(
         val accountContext: Network.Account? = null,
     ) : UiState {
 
-        val isLoadingBalance = assetPrice == null
+        val isLoadingBalance = args.underAccountAddress != null && assetPrice == null
 
         val claimState: ClaimState?
             get() {
