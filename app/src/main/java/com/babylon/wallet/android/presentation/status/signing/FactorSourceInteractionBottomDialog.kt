@@ -48,7 +48,8 @@ fun FactorSourceInteractionBottomDialog(
     }
     BottomSheetDialogWrapper(
         onDismiss = dismissHandler,
-        addScrim = true
+        addScrim = true,
+        showDefaultTopBar = false
     ) {
         FactorSourceInteractionBottomDialogContent(
             modifier = modifier,

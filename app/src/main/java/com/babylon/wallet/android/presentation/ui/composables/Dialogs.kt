@@ -99,6 +99,7 @@ fun BottomSheetDialogWrapper(
     dragToDismissEnabled: Boolean = true,
     addScrim: Boolean = false,
     showDragHandle: Boolean = false,
+    showDefaultTopBar: Boolean = true,
     title: String? = null,
     onDismiss: () -> Unit,
     content: @Composable () -> Unit
@@ -164,7 +165,7 @@ fun BottomSheetDialogWrapper(
                 if (showDragHandle) {
                     DefaultModalSheetDragHandle()
                 }
-                if (dragToDismissEnabled && title != null) {
+                if (showDefaultTopBar) {
                     BottomDialogHeader(
                         modifier = Modifier
                             .fillMaxWidth()
