@@ -250,21 +250,22 @@ private fun WalletAccountList(
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
         }
-        itemsIndexed(state.accountResources) { _, accountWithResources ->
+        itemsIndexed(state.accountsAndAssets) { _, accountWithAssets ->
             AccountCardView(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     .throttleClickable {
-                        onAccountClick(accountWithResources.account)
+                        onAccountClick(accountWithAssets.account)
                     },
-                accountWithAssets = accountWithResources,
-                fiatTotalValue = state.totalFiatValueForAccount(accountWithResources.account.address),
-                accountTag = state.getTag(accountWithResources.account),
-                isLoadingResources = accountWithResources.assets == null,
-                isLoadingBalance = state.isBalanceLoadingForAccount(accountWithResources.account.address),
-                securityPromptType = state.securityPrompt(accountWithResources.account),
+                accountWithAssets = accountWithAssets,
+                fiatTotalValue = state.totalFiatValueForAccount(accountWithAssets.account.address),
+                accountTag = state.getTag(accountWithAssets.account),
+                isLoadingResources = accountWithAssets.assets == null,
+                isLoadingBalance = accountWithAssets.assets == null ||
+                    state.isBalanceLoadingForAccount(accountWithAssets.account.address),
+                securityPromptType = state.securityPrompt(accountWithAssets.account),
                 onApplySecuritySettings = {
-                    onApplySecuritySettings(accountWithResources.account, it)
+                    onApplySecuritySettings(accountWithAssets.account, it)
                 }
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -369,7 +370,7 @@ fun WalletContentPreview() {
         with(SampleDataProvider()) {
             WalletContent(
                 state = WalletUiState(
-                    accountsWithResources = listOf(
+                    accountsWithAssets = listOf(
                         sampleAccountWithoutResources(),
                         sampleAccountWithoutResources(name = "my account with a way too much long name")
                     ),
