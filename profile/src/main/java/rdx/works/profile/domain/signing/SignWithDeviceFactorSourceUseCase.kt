@@ -36,11 +36,13 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                         SigningPurpose.SignAuth ->
                             securityState.unsecuredEntityControl.authenticationSigning
                                 ?: securityState.unsecuredEntityControl.transactionSigning
+
                         SigningPurpose.SignTransaction -> securityState.unsecuredEntityControl.transactionSigning
                     }
                     val mnemonicExist = mnemonicRepository.mnemonicExist(deviceFactorSource.id)
                     if (mnemonicExist.not()) return Result.failure(ProfileException.NoMnemonic)
-                    val mnemonic = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.id).getOrNull())
+                    val mnemonic = mnemonicRepository.readMnemonic(deviceFactorSource.id).getOrNull()
+                        ?: return Result.failure(ProfileException.SecureStorageAccess)
                     val hierarchicalDeterministicVirtualSource = factorInstance.badge
                         as? FactorInstance.Badge.VirtualSource.HierarchicalDeterministic ?: return@forEach
                     val extendedKey = mnemonic.deriveExtendedKey(
