@@ -128,11 +128,12 @@ private fun TotalBalanceContent(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
+        val shouldShowContentColor = (fiatPrice != null && isPriceVisible && fiatPrice.price != 0.0)
         Text(
             modifier = Modifier.weight(1f, fill = false),
             text = annotatedFormat,
             style = contentStyle,
-            color = if (fiatPrice != null && isPriceVisible) contentColor else hiddenContentColor,
+            color = if (shouldShowContentColor) contentColor else hiddenContentColor,
             maxLines = 1
         )
 
@@ -166,8 +167,25 @@ fun TotalFiatBalanceViewToggle(
     )
 }
 
-@Preview("default", showBackground = true)
-@Preview("large font", fontScale = 2f, showBackground = true)
+@Preview(showBackground = true)
+@Composable
+fun TotalBalanceZeroPreview() {
+    RadixWalletTheme {
+        TotalFiatBalanceView(
+            modifier = Modifier.fillMaxWidth(),
+            fiatPrice = FiatPrice(
+                price = 0.0,
+                currency = SupportedCurrency.USD
+            ),
+            currency = SupportedCurrency.USD,
+            isLoading = false,
+            trailingContent = {
+                TotalFiatBalanceViewToggle(onToggle = {})
+            }
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun TotalBalancePreview() {
@@ -187,8 +205,8 @@ fun TotalBalancePreview() {
     }
 }
 
-@Preview("default with long value", showBackground = true)
 @Preview(showBackground = true)
+@Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun TotalBalanceWithLongValuePreview() {
     RadixWalletTheme {
@@ -207,7 +225,6 @@ fun TotalBalanceWithLongValuePreview() {
     }
 }
 
-@Preview("default", showBackground = true)
 @Preview(showBackground = true)
 @Composable
 fun TotalBalanceErrorPreview() {
@@ -224,7 +241,6 @@ fun TotalBalanceErrorPreview() {
     }
 }
 
-@Preview("default", showBackground = true)
 @Preview(showBackground = true)
 @Composable
 fun TotalBalanceHiddenPreview() {
