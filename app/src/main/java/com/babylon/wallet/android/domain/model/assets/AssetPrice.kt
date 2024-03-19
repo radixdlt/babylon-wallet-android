@@ -27,11 +27,13 @@ data class FiatPrice(
                 NumberFormatter.with()
                     .unit(Currency.getInstance(currency.name))
                     .locale(Locale.getDefault())
-                    .let {
+                    .let { localizedNumberFormatter ->
                         if (price < 1.0 && price != 0.0) {
-                            it.precision(Precision.fixedFraction(FRACTION_PLACES))
+                            localizedNumberFormatter.precision(Precision.fixedFraction(FRACTION_PLACES))
+                        } else if (price == 0.0) {
+                            localizedNumberFormatter.precision(Precision.fixedFraction(NO_PRECISION))
                         } else {
-                            it
+                            localizedNumberFormatter
                         }
                     }
                     .format(price)
@@ -50,6 +52,7 @@ data class FiatPrice(
     companion object {
         private const val MAX_FRACTION_DIGITS = 5
         private const val FRACTION_PLACES = 5
+        private const val NO_PRECISION = 0
     }
 }
 
