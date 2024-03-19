@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,6 +24,7 @@ import javax.inject.Singleton
 class TransactionStatusClient @Inject constructor(
     private val pollTransactionStatusUseCase: PollTransactionStatusUseCase,
     private val appEventBus: AppEventBus,
+    private val preferencesManager: PreferencesManager,
     @ApplicationScope private val appScope: CoroutineScope
 ) {
 
@@ -51,6 +53,7 @@ class TransactionStatusClient @Inject constructor(
         appScope.launch {
             val pollResult = pollTransactionStatusUseCase(txID, requestId, transactionType, endEpoch)
             pollResult.result.onSuccess {
+                preferencesManager.incrementTransactionCompleteCounter()
                 appEventBus.sendEvent(AppEvent.RefreshResourcesNeeded)
             }
             updateTransactionStatus(pollResult)

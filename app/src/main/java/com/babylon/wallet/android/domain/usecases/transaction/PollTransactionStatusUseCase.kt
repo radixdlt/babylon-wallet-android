@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPaylo
 import com.babylon.wallet.android.data.repository.TransactionStatusData
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.RadixWalletException
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 class PollTransactionStatusUseCase @Inject constructor(
@@ -27,7 +28,7 @@ class PollTransactionStatusUseCase @Inject constructor(
                     TransactionPayloadStatus.unknown,
                     TransactionPayloadStatus.commitPendingOutcomeUnknown,
                     TransactionPayloadStatus.pending -> {
-                        // Keep Polling
+                        delay(POLLING_INTERVAL_MS)
                     }
 
                     TransactionPayloadStatus.committedSuccess -> {
@@ -93,5 +94,9 @@ class PollTransactionStatusUseCase @Inject constructor(
                 }
             }
         }
+    }
+
+    companion object {
+        private const val POLLING_INTERVAL_MS = 2000L
     }
 }
