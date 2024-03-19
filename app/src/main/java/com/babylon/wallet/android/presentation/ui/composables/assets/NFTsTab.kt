@@ -24,7 +24,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
@@ -35,11 +34,11 @@ import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 
 fun LazyListScope.nftsTab(
-    assets: Assets,
+    assetsViewData: AssetsViewData,
     state: AssetsViewState,
     action: AssetsViewAction
 ) {
-    if (assets.nonFungiblesSize() == 0) {
+    if (assetsViewData.isNonFungibleCollectionsEmpty) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
@@ -48,7 +47,7 @@ fun LazyListScope.nftsTab(
         }
     }
 
-    assets.ownedNonFungibles.forEach { nonFungible ->
+    assetsViewData.nonFungibleCollections.forEach { nonFungible ->
         item(
             key = nonFungible.collection.resourceAddress,
             contentType = { "collection" }

@@ -7,7 +7,6 @@ import android.view.animation.AnticipateInterpolator
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -20,12 +19,13 @@ import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import com.babylon.wallet.android.LinkConnectionStatusObserver.LinkConnectionsStatus
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.BalanceVisibilityObserver
 import com.babylon.wallet.android.presentation.main.AppState
 import com.babylon.wallet.android.presentation.main.MainViewModel
+import com.babylon.wallet.android.presentation.ui.CustomCompositionProviders
 import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
-import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.LocalActionableAddressViewEntryPoint
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -37,6 +37,9 @@ class MainActivity : FragmentActivity() {
 
     @Inject
     lateinit var linkConnectionStatusObserver: LinkConnectionStatusObserver
+
+    @Inject
+    lateinit var balanceVisibilityObserver: BalanceVisibilityObserver
 
     // The actual ActionableAddressViewEntryPoint that is used in the app.
     // During development we use a mock ActionableAddressViewEntryPoint in order to have previews.
@@ -54,7 +57,12 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             RadixWalletTheme {
-                CompositionLocalProvider(LocalActionableAddressViewEntryPoint provides actionableAddressViewEntryPoint) {
+                val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
+
+                CustomCompositionProviders(
+                    isBalanceVisible = isVisible,
+                    actionableAddressViewEntryPoint = actionableAddressViewEntryPoint
+                ) {
                     val isDevBannerVisible by viewModel.isDevBannerVisible.collectAsState(initial = true)
                     val devBannerState by remember(isDevBannerVisible) {
                         derivedStateOf { DevBannerState(isVisible = isDevBannerVisible) }

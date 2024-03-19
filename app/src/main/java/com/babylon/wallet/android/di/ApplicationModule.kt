@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.repository.cache.CacheClient
 import com.babylon.wallet.android.data.repository.cache.EncryptedDiskCacheClient
 import com.babylon.wallet.android.data.repository.cache.database.StateDao
 import com.babylon.wallet.android.data.repository.cache.database.StateDatabase
+import com.babylon.wallet.android.data.repository.cache.database.TokenPriceDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -65,6 +66,13 @@ object ApplicationModule {
         stateDatabase: StateDatabase
     ): StateDao {
         return stateDatabase.stateDao()
+    }
+
+    @Provides
+    fun provideTokenPriceDao(
+        stateDatabase: StateDatabase
+    ): TokenPriceDao {
+        return stateDatabase.tokenPriceDao()
     }
 
     @Provides

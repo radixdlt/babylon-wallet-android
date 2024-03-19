@@ -1,8 +1,10 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
@@ -20,6 +22,7 @@ import javax.inject.Inject
 
 class AssetsChooserDelegate @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
+    private val getFiatValueUseCase: GetFiatValueUseCase,
     private val getNextNFTsPageUseCase: GetNextNFTsPageUseCase,
     private val updateLSUsInfo: UpdateLSUsInfo,
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
@@ -49,7 +52,23 @@ class AssetsChooserDelegate @Inject constructor(
                 }
             }
             .collect { accountsWithAssets ->
-                val assets = accountsWithAssets.firstOrNull()?.assets
+                val accountWithAssets = accountsWithAssets.firstOrNull()
+                val assets = accountWithAssets?.assets
+
+                accountWithAssets?.let {
+                    getFiatValueUseCase.forAccount(accountWithAssets = it)
+                        .onSuccess { assetsPrices ->
+                            updateSheetState { state ->
+                                state.copy(assetsWithAssetsPrices = assetsPrices.associateBy { assetPrice -> assetPrice.asset })
+                            }
+                        }
+                        .onFailure {
+                            updateSheetState { state ->
+                                state.copy(assetsWithAssetsPrices = emptyMap())
+                            }
+                        }
+                }
+
                 updateSheetState { it.copy(assets = assets) }
 
                 onLatestEpochRequest()
@@ -107,13 +126,14 @@ class AssetsChooserDelegate @Inject constructor(
     fun onStakesRequest() {
         val sheet = _state.value.sheet as? Sheet.ChooseAssets ?: return
         val account = _state.value.fromAccount ?: return
-        val stakes = sheet.assets?.ownedValidatorsWithStakes ?: return
-        val unknownLSUs = stakes.any { !it.isDetailsAvailable }
+        val lsus = sheet.assets?.ownedLiquidStakeUnits ?: return
+        val validatorsWithStakes = ValidatorWithStakes.from(lsus, sheet.assets.ownedStakeClaims)
+        val unknownLSUs = validatorsWithStakes.any { !it.isDetailsAvailable }
 
         if (!sheet.pendingStakeUnits && unknownLSUs) {
             updateSheetState { state -> state.copy(pendingStakeUnits = true) }
             viewModelScope.launch {
-                updateLSUsInfo(account, stakes).onSuccess {
+                updateLSUsInfo(account, validatorsWithStakes).onSuccess {
                     updateSheetState { state -> state.onValidatorsReceived(it) }
                 }.onFailure { error ->
                     updateSheetState { state -> state.copy(pendingStakeUnits = false, uiMessage = UiMessage.ErrorMessage(error)) }

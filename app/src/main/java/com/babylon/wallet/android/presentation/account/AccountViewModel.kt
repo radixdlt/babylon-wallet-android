@@ -5,15 +5,20 @@ package com.babylon.wallet.android.presentation.account
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.Asset
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
+import com.babylon.wallet.android.domain.model.assets.FiatPrice
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
@@ -49,17 +54,21 @@ import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
+import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
-    private val getProfileUseCase: GetProfileUseCase,
+    private val getFiatValueUseCase: GetFiatValueUseCase,
+    getProfileUseCase: GetProfileUseCase,
     private val getNetworkInfoUseCase: GetNetworkInfoUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
     private val getNextNFTsPageUseCase: GetNextNFTsPageUseCase,
     private val updateLSUsInfo: UpdateLSUsInfo,
+    private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
     private val sendClaimRequestUseCase: SendClaimRequestUseCase,
     savedStateHandle: SavedStateHandle
@@ -104,6 +113,24 @@ class AccountViewModel @Inject constructor(
                             isRefreshing = false
                         )
                     }
+
+                    getFiatValueUseCase.forAccount(accountWithAssets)
+                        .onSuccess { assetsPrices ->
+                            _state.update { state ->
+                                state.copy(
+                                    assetsWithAssetsPrices = assetsPrices.associateBy { it.asset },
+                                    hasFailedToFetchPricesForAccount = false
+                                )
+                            }
+                        }
+                        .onFailure {
+                            _state.update { state ->
+                                state.copy(hasFailedToFetchPricesForAccount = true)
+                            }
+                            Timber.e("Failed to fetch prices for account: ${it.message}")
+                            // now try to fetch prices per asset of the account
+                            getAssetsPricesForAccount(accountWithAssets)
+                        }
                 }
         }
 
@@ -117,6 +144,21 @@ class AccountViewModel @Inject constructor(
 
         observeSecurityPrompt()
         loadAccountDetails(withRefresh = false)
+    }
+
+    private suspend fun getAssetsPricesForAccount(accountWithAssets: AccountWithAssets) {
+        val assets = accountWithAssets.assets
+        if (assets?.ownsAnyAssetsThatContributeToBalance == true && assets.ownedAssets.isNotEmpty()) {
+            viewModelScope.launch {
+                val assetsPrices = getFiatValueUseCase.forAssets(
+                    assets = assets.ownedAssets,
+                    account = accountWithAssets.account
+                )
+                _state.update { state ->
+                    state.copy(assetsWithAssetsPrices = assetsPrices.mapNotNull { it }.associateBy { it.asset })
+                }
+            }
+        }
     }
 
     private fun observeSecurityPrompt() {
@@ -133,6 +175,12 @@ class AccountViewModel @Inject constructor(
 
     fun refresh() {
         loadAccountDetails(withRefresh = true)
+    }
+
+    fun onShowHideBalanceToggle(isVisible: Boolean) {
+        viewModelScope.launch {
+            changeBalanceVisibilityUseCase(isVisible = isVisible)
+        }
     }
 
     fun onFungibleResourceClicked(resource: Resource.FungibleResource) {
@@ -213,13 +261,15 @@ class AccountViewModel @Inject constructor(
 
     fun onStakesRequest() {
         val account = state.value.accountWithAssets?.account ?: return
-        val stakes = state.value.accountWithAssets?.assets?.ownedValidatorsWithStakes ?: return
-        val unknownLSUs = stakes.any { !it.isDetailsAvailable }
+        val lsus = state.value.accountWithAssets?.assets?.ownedLiquidStakeUnits ?: return
+        val stakeClaims = state.value.accountWithAssets?.assets?.ownedStakeClaims ?: return
+        val validatorsWithStakes = ValidatorWithStakes.from(lsus, stakeClaims)
+        val unknownLSUs = validatorsWithStakes.any { !it.isDetailsAvailable }
         onLatestEpochRequest()
         if (!state.value.isRefreshing && !state.value.pendingStakeUnits && unknownLSUs) {
             _state.update { state -> state.copy(pendingStakeUnits = true) }
             viewModelScope.launch {
-                updateLSUsInfo(account, stakes).onSuccess {
+                updateLSUsInfo(account, validatorsWithStakes).onSuccess {
                     _state.update { state -> state.onValidatorsReceived(it) }
                 }.onFailure { error ->
                     _state.update { state -> state.copy(pendingStakeUnits = false, uiMessage = UiMessage.ErrorMessage(error)) }
@@ -274,14 +324,37 @@ internal sealed interface AccountEvent : OneOffEvent {
 
 data class AccountUiState(
     val accountWithAssets: AccountWithAssets? = null,
+    val assetsWithAssetsPrices: Map<Asset, AssetPrice?>? = null,
+    private val hasFailedToFetchPricesForAccount: Boolean = false,
     val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
     val pendingStakeUnits: Boolean = false,
     val securityPromptType: SecurityPromptType? = null,
-    val assetsViewState: AssetsViewState = AssetsViewState.from(assets = null),
+    val assetsViewState: AssetsViewState = AssetsViewState.init(),
     val epoch: Long? = null,
     val isRefreshing: Boolean = false,
     val uiMessage: UiMessage? = null
 ) : UiState {
+
+    val isAccountBalanceLoading: Boolean
+        get() = assetsWithAssetsPrices == null
+
+    val totalFiatValue: FiatPrice?
+        get() {
+            if (hasFailedToFetchPricesForAccount) return null
+
+            var total = 0.0
+            var currency = SupportedCurrency.USD
+            assetsWithAssetsPrices?.let { assetsWithAssetsPrices ->
+                assetsWithAssetsPrices.values
+                    .mapNotNull { it }
+                    .forEach { assetPrice ->
+                        total += assetPrice.price?.price ?: 0.0
+                        currency = assetPrice.price?.currency ?: SupportedCurrency.USD
+                    }
+            } ?: return null
+
+            return FiatPrice(price = total, currency = currency)
+        }
 
     val isTransferEnabled: Boolean
         get() = accountWithAssets?.assets != null

@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-class Display private constructor(
+class Display(
     @SerialName("fiatCurrencyPriceTarget")
     val fiatCurrencyPriceTarget: String,
     @SerialName("isCurrencyAmountVisible")

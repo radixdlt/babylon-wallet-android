@@ -11,11 +11,12 @@ import com.google.accompanist.placeholder.shimmer
 
 fun Modifier.radixPlaceholder(
     visible: Boolean,
-    shape: Shape? = null
+    shape: Shape? = null,
+    color: Color? = null
 ) = composed {
     placeholder(
         visible = visible,
-        color = RadixTheme.colors.gray4,
+        color = color ?: RadixTheme.colors.gray4,
         shape = shape ?: RadixTheme.shapes.roundedRectDefault,
         highlight = PlaceholderHighlight.shimmer(highlightColor = Color.White)
     )

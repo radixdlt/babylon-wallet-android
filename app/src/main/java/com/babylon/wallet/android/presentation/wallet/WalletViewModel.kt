@@ -1,15 +1,17 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package com.babylon.wallet.android.presentation.wallet
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.FiatPrice
+import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -46,6 +48,7 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
 import rdx.works.profile.domain.factorSources
 import timber.log.Timber
 import javax.inject.Inject
@@ -54,8 +57,10 @@ import javax.inject.Inject
 @HiltViewModel
 class WalletViewModel @Inject constructor(
     private val getWalletAssetsUseCase: GetWalletAssetsUseCase,
+    private val getFiatValueUseCase: GetFiatValueUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
+    private val changeBalanceVisibilityUseCase: ChangeBalanceVisibilityUseCase,
     private val appEventBus: AppEventBus,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val preferencesManager: PreferencesManager,
@@ -117,6 +122,7 @@ class WalletViewModel @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeAccounts() {
         accountsFlow
             .flatMapLatest { accounts ->
@@ -126,8 +132,17 @@ class WalletViewModel @Inject constructor(
                     Timber.w(error)
                 }
             }
-            .onEach { resources ->
-                _state.update { it.onResourcesReceived(resources) }
+            .onEach { accountsWithAssets ->
+                _state.update { it.onResourcesReceived(accountsWithAssets) }
+
+                val accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
+                    accountWithAssets.account.address to getFiatValueUseCase.forAccount(accountWithAssets).getOrNull()
+                }
+                _state.update { walletUiState ->
+                    walletUiState.copy(
+                        accountsAddressesWithAssetsPrices = accountsAddressesWithAssetsPrices
+                    )
+                }
             }
             .launchIn(viewModelScope)
     }
@@ -191,14 +206,20 @@ class WalletViewModel @Inject constructor(
         loadResources(withRefresh = true)
     }
 
+    fun onShowHideBalanceToggle(isVisible: Boolean) {
+        viewModelScope.launch {
+            changeBalanceVisibilityUseCase(isVisible = isVisible)
+        }
+    }
+
     fun onMessageShown() {
         _state.update { it.copy(uiMessage = null) }
     }
 
     fun onApplySecuritySettings(account: Network.Account, securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
-            val factorSourceId =
-                getProfileUseCase.accountOnCurrentNetwork(account.address)?.factorSourceId as? FactorSourceID.FromHash ?: return@launch
+            val factorSourceId = getProfileUseCase.accountOnCurrentNetwork(account.address)
+                ?.factorSourceId as? FactorSourceID.FromHash ?: return@launch
 
             when (securityPromptType) {
                 SecurityPromptType.NEEDS_BACKUP -> sendEvent(WalletEvent.NavigateToMnemonicBackup(factorSourceId))
@@ -219,6 +240,7 @@ internal sealed interface WalletEvent : OneOffEvent {
 
 data class WalletUiState(
     private val accountsWithResources: List<AccountWithAssets>? = null,
+    private val accountsAddressesWithAssetsPrices: Map<String, List<AssetPrice>?>? = null,
     private val loading: Boolean = true,
     private val refreshing: Boolean = false,
     private val entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList(),
@@ -238,11 +260,74 @@ data class WalletUiState(
     val isLoading: Boolean
         get() = accountsWithResources == null && loading
 
+    val isWalletBalanceLoading: Boolean
+        get() = accountsAddressesWithAssetsPrices.isNullOrEmpty()
+
+    fun isBalanceLoadingForAccount(accountAddress: String): Boolean {
+        return accountsAddressesWithAssetsPrices?.containsKey(accountAddress) != true
+    }
+
     /**
      * Used in pull to refresh mode.
      */
     val isRefreshing: Boolean
         get() = refreshing
+
+    /**
+     * if at least one account failed to fetch at least one price then return Zero
+     *
+     */
+    val totalFiatValueOfWallet: FiatPrice?
+        get() {
+            val isAnyAccountTotalFailed = accountsAddressesWithAssetsPrices?.values?.any { assetsPrices ->
+                assetsPrices == null
+            } ?: false
+            if (isAnyAccountTotalFailed) return null
+
+            var total = 0.0
+            var currency = SupportedCurrency.USD
+            accountsAddressesWithAssetsPrices?.values?.forEach {
+                it?.let { assetsPrices ->
+                    assetsPrices.forEach { assetPrice ->
+                        total += assetPrice.price?.price ?: 0.0
+                        currency = assetPrice.price?.currency ?: SupportedCurrency.USD
+                    }
+                }
+            } ?: return null
+
+            return FiatPrice(price = total, currency = currency)
+        }
+
+    /**
+     * if the account has zero assets then return Zero price
+     * if the account has assets but without prices then return Zero price
+     * if the account has assets but failed to fetch prices then return Null
+     *
+     */
+    fun totalFiatValueForAccount(accountAddress: String): FiatPrice? {
+        val accountWithAssets = accountResources.find {
+            it.account.address == accountAddress
+        }
+        if (accountWithAssets?.assets?.ownsAnyAssetsThatContributeToBalance?.not() == true) {
+            return FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
+        }
+
+        val assetsPrices = accountsAddressesWithAssetsPrices?.get(accountAddress) ?: return null
+
+        val hasAtLeastOnePrice = assetsPrices.any { assetPrice -> assetPrice.price != null }
+
+        return if (hasAtLeastOnePrice) {
+            var total = 0.0
+            var currency = SupportedCurrency.USD
+            assetsPrices.forEach { assetPrice ->
+                total += assetPrice.price?.price ?: 0.0
+                currency = assetPrice.price?.currency ?: SupportedCurrency.USD
+            }
+            FiatPrice(price = total, currency = currency)
+        } else {
+            FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
+        }
+    }
 
     fun securityPrompt(forAccount: Network.Account) = entitiesWithSecurityPrompt.find {
         it.entity.address == forAccount.address

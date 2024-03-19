@@ -3,6 +3,7 @@ package com.babylon.wallet.android.fakes
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Pool
@@ -27,6 +28,9 @@ open class StateRepositoryFake: StateRepository {
         account: Network.Account,
         validatorsWithStakes: List<ValidatorWithStakes>
     ): Result<List<ValidatorWithStakes>> = Result.failure(RuntimeException("Not implemented"))
+
+    override suspend fun updateStakeClaims(account: Network.Account, claims: List<StakeClaim>): Result<List<StakeClaim>> =
+        Result.success(claims)
 
     override suspend fun getResources(addresses: Set<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>> =
         Result.failure(RuntimeException("Not implemented"))

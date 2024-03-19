@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
@@ -33,8 +34,10 @@ import com.babylon.wallet.android.presentation.account.composable.AssetMetadataR
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
+import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
+import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlineBorder
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
@@ -48,7 +51,9 @@ import java.math.BigDecimal
 fun LSUDialogContent(
     modifier: Modifier = Modifier,
     lsu: LiquidStakeUnit?,
-    args: AssetDialogArgs.Fungible
+    price: AssetPrice.LSUPrice?,
+    args: AssetDialogArgs.Fungible,
+    isLoadingBalance: Boolean
 ) {
     val resourceAddress = args.resourceAddress
     val amount = args.fungibleAmountOf(resourceAddress) ?: lsu?.stakeValue()
@@ -127,7 +132,9 @@ fun LSUDialogContent(
         }
         LSUResourceValue(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingMedium),
-            amount = xrdWorth
+            amount = xrdWorth,
+            price = price,
+            isLoadingBalance = isLoadingBalance
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         HorizontalDivider(
@@ -229,7 +236,9 @@ fun LSUDialogContent(
 @Composable
 private fun LSUResourceValue(
     modifier: Modifier = Modifier,
-    amount: BigDecimal?
+    amount: BigDecimal?,
+    price: AssetPrice.LSUPrice?,
+    isLoadingBalance: Boolean
 ) {
     Row(
         modifier = modifier
@@ -256,16 +265,41 @@ private fun LSUResourceValue(
             maxLines = 2
         )
 
-        Text(
-            modifier = Modifier
-                .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
-                .radixPlaceholder(visible = amount == null),
-            text = amount?.displayableQuantity().orEmpty(),
-            style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.End,
-            maxLines = 1
-        )
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                modifier = Modifier
+                    .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
+                    .radixPlaceholder(visible = amount == null),
+                text = amount?.displayableQuantity().orEmpty(),
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.End,
+                maxLines = 1
+            )
+
+            val xrdPrice = remember(price, amount) {
+                if (amount != null) {
+                    price?.xrdPrice(amount)
+                } else {
+                    null
+                }
+            }
+            if (isLoadingBalance) {
+                ShimmeringView(
+                    modifier = Modifier
+                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                        .height(12.dp)
+                        .fillMaxWidth(0.3f),
+                    isVisible = true
+                )
+            }
+            if (xrdPrice != null) {
+                FiatBalanceView(
+                    fiatPrice = xrdPrice,
+                    textStyle = RadixTheme.typography.body2HighImportance
+                )
+            }
+        }
     }
 }
 

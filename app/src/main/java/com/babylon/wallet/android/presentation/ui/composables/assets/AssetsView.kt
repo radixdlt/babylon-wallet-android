@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,8 +38,8 @@ import java.math.BigDecimal
 
 @Suppress("LongParameterList", "MagicNumber")
 fun LazyListScope.assetsView(
-    assets: Assets?,
-    epoch: Long?,
+    assetsViewData: AssetsViewData?,
+    isLoadingBalance: Boolean,
     state: AssetsViewState,
     action: AssetsViewAction
 ) {
@@ -50,30 +50,32 @@ fun LazyListScope.assetsView(
         )
     }
 
-    if (assets == null) {
+    if (assetsViewData == null) {
         loadingAssets()
     } else {
         when (state.selectedTab) {
             AssetsTab.Tokens -> tokensTab(
-                assets = assets,
+                assetsViewData = assetsViewData,
+                isLoadingBalance = isLoadingBalance,
                 action = action
             )
 
             AssetsTab.Nfts -> nftsTab(
-                assets = assets,
+                assetsViewData = assetsViewData,
                 state = state,
                 action = action
             )
 
             AssetsTab.Staking -> stakingTab(
-                assets = assets,
-                epoch = epoch,
+                assetsViewData = assetsViewData,
+                isLoadingBalance = isLoadingBalance,
                 state = state,
                 action = action
             )
 
             AssetsTab.PoolUnits -> poolUnitsTab(
-                assets = assets,
+                assetsViewData = assetsViewData,
+                isLoadingBalance = isLoadingBalance,
                 action = action
             )
         }
@@ -109,16 +111,10 @@ data class AssetsViewState(
         return copy(collapsedCollections = collapsedCollections)
     }
     companion object {
-        fun from(selectedTab: AssetsTab = AssetsTab.Tokens, assets: Assets?): AssetsViewState {
-            val collectionAddresses = assets?.nonFungibles?.map {
-                it.collection.resourceAddress
-            }.orEmpty() + assets?.ownedValidatorsWithStakes?.map {
-                it.validatorDetail.address
-            }.orEmpty()
-
+        fun init(selectedTab: AssetsTab = AssetsTab.Tokens): AssetsViewState {
             return AssetsViewState(
                 selectedTab = selectedTab,
-                collapsedCollections = collectionAddresses.associateWith { true }
+                collapsedCollections = emptyMap()
             )
         }
     }
@@ -157,15 +153,15 @@ sealed interface AssetsViewAction {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun AssetsViewWithLoadingAssets() {
     RadixWalletTheme {
         LazyColumn {
             assetsView(
-                assets = null,
-                epoch = null,
-                state = AssetsViewState.from(assets = null),
+                assetsViewData = null,
+                isLoadingBalance = false,
+                state = AssetsViewState.init(),
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
@@ -182,15 +178,15 @@ fun AssetsViewWithLoadingAssets() {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun AssetsViewWithEmptyAssets() {
     RadixWalletTheme {
         LazyColumn {
             assetsView(
-                assets = null,
-                epoch = null,
-                state = AssetsViewState.from(assets = null),
+                assetsViewData = null,
+                isLoadingBalance = false,
+                state = AssetsViewState.init(),
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},
                     onNonFungibleItemClick = { _, _ -> },
@@ -381,14 +377,14 @@ fun AssetsViewWithAssets() {
         )
     }
     var state by remember(assets) {
-        mutableStateOf(AssetsViewState.from(assets = assets))
+        mutableStateOf(AssetsViewState.init())
     }
 
     RadixWalletTheme {
         LazyColumn(modifier = Modifier.background(RadixTheme.colors.gray5)) {
             assetsView(
-                assets = assets,
-                epoch = null,
+                assetsViewData = null,
+                isLoadingBalance = false,
                 state = state,
                 action = AssetsViewAction.Click(
                     onFungibleClick = {},

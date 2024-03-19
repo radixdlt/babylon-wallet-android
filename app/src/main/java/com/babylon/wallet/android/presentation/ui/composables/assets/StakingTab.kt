@@ -25,17 +25,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
+import com.babylon.wallet.android.domain.model.assets.FiatPrice
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
+import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -43,12 +47,12 @@ import rdx.works.core.displayableQuantity
 import java.math.BigDecimal
 
 fun LazyListScope.stakingTab(
-    assets: Assets,
-    epoch: Long?,
+    assetsViewData: AssetsViewData,
+    isLoadingBalance: Boolean,
     state: AssetsViewState,
     action: AssetsViewAction
 ) {
-    if (assets.ownedValidatorsWithStakes.isEmpty()) {
+    if (assetsViewData.isValidatorWithStakesEmpty) {
         item {
             EmptyResourcesContent(
                 modifier = Modifier.fillMaxWidth(),
@@ -58,26 +62,28 @@ fun LazyListScope.stakingTab(
     } else {
         item {
             StakingSummary(
-                assets = assets,
-                epoch = epoch,
+                assetsViewData = assetsViewData,
+                isLoadingBalance = isLoadingBalance,
                 action = action
             )
         }
 
         item {
-            ValidatorsSize(assets = assets)
+            ValidatorsSize(assetsViewData = assetsViewData)
         }
 
-        assets.ownedValidatorsWithStakes.forEachIndexed { index, validatorWithStakes ->
+        assetsViewData.validatorsWithStakes.forEachIndexed { index, validatorWithStakes ->
             item(
                 key = validatorWithStakes.validatorDetail.address,
                 contentType = { "validator-header" }
             ) {
                 ValidatorDetails(
                     modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingDefault else 0.dp),
+                    assetsViewData = assetsViewData,
                     validatorWithStakes = validatorWithStakes,
                     state = state,
-                    epoch = epoch,
+                    epoch = assetsViewData.epoch,
+                    isLoadingBalance = isLoadingBalance,
                     action = action
                 )
             }
@@ -85,13 +91,15 @@ fun LazyListScope.stakingTab(
     }
 }
 
+@Suppress("CyclomaticComplexMethod")
 @Composable
 private fun StakingSummary(
     modifier: Modifier = Modifier,
-    epoch: Long?,
-    assets: Assets,
+    assetsViewData: AssetsViewData,
+    isLoadingBalance: Boolean,
     action: AssetsViewAction
 ) {
+    val stakeSummary = assetsViewData.stakeSummary
     AssetCard(
         modifier = modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
@@ -123,48 +131,95 @@ private fun StakingSummary(
             )
         }
 
-        val summary = remember(assets.ownedValidatorsWithStakes, epoch) {
-            assets.stakeSummary(epoch)
+        LaunchedEffect(stakeSummary) {
+            if (stakeSummary == null) {
+                action.onStakesRequest()
+            }
         }
 
-        LaunchedEffect(summary) {
-            if (summary == null) {
-                action.onStakesRequest()
+        val oneXrdPrice = remember(assetsViewData) {
+            val oneXrdPrice = (
+                assetsViewData.prices?.values?.find {
+                    (it as? AssetPrice.LSUPrice)?.oneXrdPrice != null
+                } as? AssetPrice.LSUPrice
+                )?.oneXrdPrice
+            oneXrdPrice
+                ?: (
+                    assetsViewData.prices?.values?.find {
+                        (it as? AssetPrice.StakeClaimPrice)?.oneXrdPrice != null
+                    } as? AssetPrice.StakeClaimPrice
+                    )?.oneXrdPrice
+        }
+
+        val stakedFiatPrice = remember(stakeSummary, oneXrdPrice) {
+            if (stakeSummary != null && oneXrdPrice != null && stakeSummary.hasStakedValue) {
+                FiatPrice(
+                    price = stakeSummary.staked.multiply(oneXrdPrice.price.toBigDecimal()).toDouble(),
+                    currency = oneXrdPrice.currency
+                )
+            } else {
+                null
+            }
+        }
+
+        val unstakingFiatPrice = remember(stakeSummary, oneXrdPrice) {
+            if (stakeSummary != null && oneXrdPrice != null && stakeSummary.unstaking > BigDecimal.ZERO) {
+                FiatPrice(
+                    price = stakeSummary.unstaking.multiply(oneXrdPrice.price.toBigDecimal()).toDouble(),
+                    currency = oneXrdPrice.currency
+                )
+            } else {
+                null
+            }
+        }
+
+        val readyToClaimFiatPrice = remember(stakeSummary, oneXrdPrice) {
+            if (stakeSummary != null && oneXrdPrice != null && stakeSummary.hasReadyToClaimValue) {
+                FiatPrice(
+                    price = stakeSummary.readyToClaim.multiply(oneXrdPrice.price.toBigDecimal()).toDouble(),
+                    currency = oneXrdPrice.currency
+                )
+            } else {
+                null
             }
         }
 
         StakeAmount(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
             label = stringResource(id = R.string.account_staking_staked),
-            amount = summary?.staked,
+            amount = stakeSummary?.staked,
+            fiatPrice = stakedFiatPrice,
+            isLoadingBalance = isLoadingBalance,
             amountStyle = RadixTheme.typography.body2HighImportance.copy(
-                color = if (summary?.hasStakedValue == true) RadixTheme.colors.gray1 else RadixTheme.colors.gray2
+                color = if (assetsViewData.stakeSummary?.hasStakedValue == true) RadixTheme.colors.gray1 else RadixTheme.colors.gray2
             )
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         StakeAmount(
             modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
             label = stringResource(id = R.string.account_staking_unstaking),
-            amount = summary?.unstaking
+            amount = stakeSummary?.unstaking,
+            fiatPrice = unstakingFiatPrice,
+            isLoadingBalance = isLoadingBalance
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         StakeAmount(
             modifier = Modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingLarge)
-                .clickable(enabled = summary?.hasReadyToClaimValue == true && action is AssetsViewAction.Click) {
+                .clickable(enabled = stakeSummary?.hasReadyToClaimValue == true && action is AssetsViewAction.Click) {
                     if (action is AssetsViewAction.Click) {
-                        val claims = assets.ownedValidatorsWithStakes
-                            .filter {
-                                it.hasClaims
-                            }
+                        val claims = assetsViewData.validatorsWithStakes
+                            .filter { it.hasClaims }
                             .mapNotNull { it.stakeClaimNft }
 
                         action.onClaimClick(claims)
                     }
                 },
             label = stringResource(id = R.string.account_staking_readyToClaim),
-            amount = summary?.readyToClaim,
-            labelStyle = if (summary?.hasReadyToClaimValue == true) {
+            amount = stakeSummary?.readyToClaim,
+            fiatPrice = readyToClaimFiatPrice,
+            isLoadingBalance = isLoadingBalance,
+            labelStyle = if (stakeSummary?.hasReadyToClaimValue == true) {
                 RadixTheme.typography.body2Link.copy(color = RadixTheme.colors.blue2)
             } else {
                 RadixTheme.typography.body2HighImportance.copy(color = RadixTheme.colors.gray2)
@@ -178,7 +233,9 @@ private fun StakingSummary(
 private fun StakeAmount(
     modifier: Modifier = Modifier,
     label: String,
+    isLoadingBalance: Boolean,
     amount: BigDecimal?,
+    fiatPrice: FiatPrice?,
     labelStyle: TextStyle = RadixTheme.typography.body2HighImportance.copy(
         color = RadixTheme.colors.gray2
     ),
@@ -198,21 +255,40 @@ private fun StakeAmount(
             maxLines = 1
         )
 
-        Text(
+        Column(
             modifier = Modifier
                 .weight(1f)
                 .radixPlaceholder(visible = amount == null),
-            text = amount?.let { "${it.displayableQuantity()} ${XrdResource.SYMBOL}" }.orEmpty(),
-            style = amountStyle,
-            textAlign = TextAlign.End
-        )
+            horizontalAlignment = Alignment.End
+        ) {
+            Text(
+                text = amount?.let { "${it.displayableQuantity()} ${XrdResource.SYMBOL}" }.orEmpty(),
+                style = amountStyle,
+                textAlign = TextAlign.End
+            )
+
+            if (isLoadingBalance) {
+                ShimmeringView(
+                    modifier = Modifier
+                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                        .height(10.dp)
+                        .fillMaxWidth(0.3f),
+                    isVisible = true
+                )
+            } else if (fiatPrice != null) {
+                FiatBalanceView(
+                    fiatPrice = fiatPrice,
+                    textStyle = amountStyle
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun ValidatorsSize(
     modifier: Modifier = Modifier,
-    assets: Assets
+    assetsViewData: AssetsViewData
 ) {
     Row(
         modifier = modifier
@@ -236,7 +312,7 @@ fun ValidatorsSize(
 
         Text(
             modifier = Modifier.fillMaxWidth(),
-            text = stringResource(id = R.string.account_staking_stakedValidators, assets.validatorsWithStakesSize()),
+            text = stringResource(id = R.string.account_staking_stakedValidators, assetsViewData.validatorsWithStakes.size),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray2
         )
@@ -246,7 +322,9 @@ fun ValidatorsSize(
 @Composable
 fun ValidatorDetails(
     modifier: Modifier = Modifier,
+    assetsViewData: AssetsViewData,
     validatorWithStakes: ValidatorWithStakes,
+    isLoadingBalance: Boolean,
     epoch: Long?,
     state: AssetsViewState,
     action: AssetsViewAction
@@ -293,6 +371,8 @@ fun ValidatorDetails(
                 ) {
                     LiquidStakeUnit(
                         validatorWithStakes = validatorWithStakes,
+                        assetsViewData = assetsViewData,
+                        isLoadingBalance = isLoadingBalance,
                         action = action
                     )
                 }
@@ -307,8 +387,10 @@ fun ValidatorDetails(
                     roundBottomCorners = true
                 ) {
                     StakeClaims(
+                        assetsViewData = assetsViewData,
                         validatorWithStakes = validatorWithStakes,
                         epoch = epoch,
+                        isLoadingBalance = isLoadingBalance,
                         action = action
                     )
                 }
@@ -320,7 +402,9 @@ fun ValidatorDetails(
 @Composable
 private fun LiquidStakeUnit(
     modifier: Modifier = Modifier,
+    assetsViewData: AssetsViewData,
     validatorWithStakes: ValidatorWithStakes,
+    isLoadingBalance: Boolean,
     action: AssetsViewAction,
 ) {
     Column(
@@ -384,8 +468,18 @@ private fun LiquidStakeUnit(
             color = RadixTheme.colors.gray2
         )
 
+        val fiatPrice = remember(validatorWithStakes) {
+            val lsuPrice = validatorWithStakes.liquidStakeUnit?.let {
+                assetsViewData.prices?.get(it)
+            } as? AssetPrice.LSUPrice
+
+            validatorWithStakes.stakeValue()?.let { lsuPrice?.xrdPrice(it) }
+        }
+
         WorthXRD(
-            amount = remember(validatorWithStakes) { validatorWithStakes.stakeValue() }
+            amount = remember(validatorWithStakes) { validatorWithStakes.stakeValue() },
+            fiatPrice = fiatPrice,
+            isLoadingBalance = isLoadingBalance
         )
     }
 }
@@ -393,7 +487,9 @@ private fun LiquidStakeUnit(
 @Composable
 private fun StakeClaims(
     modifier: Modifier = Modifier,
+    assetsViewData: AssetsViewData,
     validatorWithStakes: ValidatorWithStakes,
+    isLoadingBalance: Boolean,
     epoch: Long?,
     action: AssetsViewAction
 ) {
@@ -446,11 +542,14 @@ private fun StakeClaims(
                 color = RadixTheme.colors.gray2
             )
 
+            val stakeClaimPrice = assetsViewData.prices?.get(validatorWithStakes.stakeClaimNft) as? AssetPrice.StakeClaimPrice
             unstakingItems.forEachIndexed { index, item ->
                 ClaimWorth(
                     modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingSmall else 0.dp),
                     claimCollection = validatorWithStakes.stakeClaimNft.nonFungibleResource,
                     claimNft = item,
+                    stakeClaimPrice = stakeClaimPrice,
+                    isLoadingBalance = isLoadingBalance,
                     action = action
                 )
             }
@@ -487,11 +586,14 @@ private fun StakeClaims(
                 }
             }
 
+            val stakeClaimPrice = assetsViewData.prices?.get(validatorWithStakes.stakeClaimNft) as? AssetPrice.StakeClaimPrice
             claimItems.forEachIndexed { index, item ->
                 ClaimWorth(
                     modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingSmall else 0.dp),
                     claimCollection = validatorWithStakes.stakeClaimNft.nonFungibleResource,
                     claimNft = item,
+                    stakeClaimPrice = stakeClaimPrice,
+                    isLoadingBalance = isLoadingBalance,
                     action = action
                 )
             }
@@ -551,8 +653,13 @@ private fun ClaimWorth(
     modifier: Modifier = Modifier,
     claimCollection: Resource.NonFungibleResource,
     claimNft: Resource.NonFungibleResource.Item,
+    stakeClaimPrice: AssetPrice.StakeClaimPrice?,
+    isLoadingBalance: Boolean,
     action: AssetsViewAction
 ) {
+    val fiatPrice = remember(stakeClaimPrice, claimNft) {
+        stakeClaimPrice?.xrdPrice(claimNft)
+    }
     WorthXRD(
         modifier = modifier.throttleClickable {
             when (action) {
@@ -570,6 +677,7 @@ private fun ClaimWorth(
             }
         },
         amount = remember(claimNft) { claimNft.claimAmountXrd },
+        fiatPrice = fiatPrice,
         trailingContent = if (action is AssetsViewAction.Selection) {
             {
                 val isSelected = remember(claimNft, action) {
@@ -588,7 +696,8 @@ private fun ClaimWorth(
             }
         } else {
             null
-        }
+        },
+        isLoadingBalance = isLoadingBalance
     )
 }
 
@@ -596,6 +705,8 @@ private fun ClaimWorth(
 fun WorthXRD(
     modifier: Modifier = Modifier,
     amount: BigDecimal?,
+    fiatPrice: FiatPrice?,
+    isLoadingBalance: Boolean,
     trailingContent: @Composable (() -> Unit)? = null
 ) {
     Row(
@@ -628,20 +739,52 @@ fun WorthXRD(
             maxLines = 1
         )
 
-        Text(
+        Column(
             modifier = Modifier
                 .weight(1f)
                 .padding(
                     end = if (trailingContent == null || amount == null) RadixTheme.dimensions.paddingDefault else 0.dp
                 )
                 .assetPlaceholder(visible = amount == null),
-            text = amount?.displayableQuantity().orEmpty(),
-            style = RadixTheme.typography.secondaryHeader,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.End,
-            maxLines = 2
-        )
+            horizontalAlignment = Alignment.End
+        ) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = amount?.displayableQuantity().orEmpty(),
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.End,
+                maxLines = 2
+            )
+
+            if (isLoadingBalance) {
+                ShimmeringView(
+                    modifier = Modifier
+                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                        .height(12.dp)
+                        .fillMaxWidth(0.3f),
+                    isVisible = true
+                )
+            } else if (fiatPrice != null) {
+                FiatBalanceView(
+                    fiatPrice = fiatPrice,
+                    textStyle = RadixTheme.typography.body2HighImportance
+                )
+            }
+        }
 
         trailingContent?.invoke()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WorthXRDPreview() {
+    RadixWalletPreviewTheme {
+        WorthXRD(
+            amount = BigDecimal.valueOf(4362.67),
+            fiatPrice = null,
+            isLoadingBalance = true,
+        )
     }
 }

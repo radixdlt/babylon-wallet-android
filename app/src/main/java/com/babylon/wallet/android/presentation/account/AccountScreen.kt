@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -46,6 +45,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.StakeClaim
+import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
@@ -59,6 +59,9 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.ThrottleIconButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
+import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewData
+import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
+import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import kotlinx.collections.immutable.ImmutableList
@@ -99,6 +102,7 @@ fun AccountScreen(
     AccountScreenContent(
         modifier = modifier,
         state = state,
+        onShowHideBalanceToggle = viewModel::onShowHideBalanceToggle,
         onAccountPreferenceClick = { address ->
             onAccountPreferenceClick(address)
         },
@@ -121,10 +125,10 @@ fun AccountScreen(
 }
 
 @Composable
-@OptIn(ExperimentalMaterialApi::class)
 private fun AccountScreenContent(
     modifier: Modifier = Modifier,
     state: AccountUiState,
+    onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onAccountPreferenceClick: (address: String) -> Unit,
     onBackClick: () -> Unit,
     onRefresh: () -> Unit,
@@ -201,6 +205,7 @@ private fun AccountScreenContent(
                 modifier = Modifier.padding(innerPadding),
                 state = state,
                 lazyListState = lazyListState,
+                onShowHideBalanceToggle = onShowHideBalanceToggle,
                 onFungibleTokenClick = {
                     onFungibleItemClicked(it)
                 },
@@ -232,6 +237,7 @@ fun AssetsContent(
     modifier: Modifier = Modifier,
     lazyListState: LazyListState,
     state: AccountUiState,
+    onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
     onTabClick: (AssetsTab) -> Unit,
     onCollectionClick: (String) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
@@ -254,6 +260,14 @@ fun AssetsContent(
             state.accountWithAssets?.account?.address.orEmpty()
         }
 
+        val assetsViewData = remember(state.accountWithAssets?.assets, state.assetsWithAssetsPrices, state.epoch) {
+            AssetsViewData.from(
+                assets = state.accountWithAssets?.assets,
+                prices = state.assetsWithAssetsPrices,
+                epoch = state.epoch
+            )
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             state = lazyListState,
@@ -272,10 +286,23 @@ fun AssetsContent(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         ActionableAddressView(
+                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
                             address = accountAddress,
-                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
                             textStyle = RadixTheme.typography.body2HighImportance,
                             textColor = RadixTheme.colors.white
+                        )
+
+                        TotalFiatBalanceView(
+                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
+                            fiatPrice = state.totalFiatValue,
+                            isLoading = state.isAccountBalanceLoading,
+                            currency = SupportedCurrency.USD,
+                            contentColor = RadixTheme.colors.white,
+                            shimmeringColor = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
+                            formattedContentStyle = RadixTheme.typography.header,
+                            trailingContent = {
+                                TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
+                            }
                         )
 
                         androidx.compose.animation.AnimatedVisibility(
@@ -334,9 +361,9 @@ fun AssetsContent(
             }
 
             assetsView(
-                assets = state.accountWithAssets?.assets,
-                epoch = state.epoch,
+                assetsViewData = assetsViewData,
                 state = state.assetsViewState,
+                isLoadingBalance = state.isAccountBalanceLoading,
                 action = AssetsViewAction.Click(
                     onFungibleClick = onFungibleTokenClick,
                     onNonFungibleItemClick = onNonFungibleItemClick,
@@ -406,7 +433,11 @@ fun AccountContentPreview() {
     RadixWalletPreviewTheme {
         with(SampleDataProvider()) {
             AccountScreenContent(
-                state = AccountUiState(accountWithAssets = sampleAccountWithoutResources()),
+                state = AccountUiState(
+                    accountWithAssets = sampleAccountWithoutResources(),
+                    assetsWithAssetsPrices = emptyMap()
+                ),
+                onShowHideBalanceToggle = {},
                 onAccountPreferenceClick = { _ -> },
                 onBackClick = {},
                 onRefresh = {},

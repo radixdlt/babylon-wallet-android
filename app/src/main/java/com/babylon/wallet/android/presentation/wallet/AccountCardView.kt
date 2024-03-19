@@ -3,13 +3,17 @@ package com.babylon.wallet.android.presentation.wallet
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -22,23 +26,30 @@ import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
+import com.babylon.wallet.android.domain.model.assets.FiatPrice
+import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.presentation.LocalBalanceVisibility
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.toText
+import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 
 @Suppress("DestructuringDeclarationWithTooManyEntries")
 @Composable
 fun AccountCardView(
+    modifier: Modifier = Modifier,
     accountWithAssets: AccountWithAssets,
+    fiatTotalValue: FiatPrice?,
     accountTag: WalletUiState.AccountTag?,
     isLoadingResources: Boolean,
+    isLoadingBalance: Boolean,
     securityPromptType: SecurityPromptType?,
-    modifier: Modifier = Modifier,
     onApplySecuritySettings: (SecurityPromptType) -> Unit
 ) {
     val gradient = remember(accountWithAssets.account.appearanceID) {
@@ -54,12 +65,35 @@ fun AccountCardView(
                 horizontal = RadixTheme.dimensions.paddingLarge
             )
     ) {
-        val (nameLabel, legacyLabel, addressLabel, spacer, assetsContainer, promptsContainer) = createRefs()
+        val (
+            nameLabel,
+            fiatTotalValueLabel,
+            fiatTotalLoading,
+            legacyLabel,
+            addressLabel,
+            spacer,
+            assetsContainer,
+            promptsContainer
+        ) = createRefs()
+        val isFiatBalanceVisible = accountWithAssets.assets == null ||
+            accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
 
         Text(
             modifier = Modifier.constrainAs(nameLabel) {
-                linkTo(start = parent.start, end = parent.end, bias = 0f)
-                top.linkTo(parent.top)
+                linkTo(
+                    start = parent.start,
+                    end = if (isFiatBalanceVisible) {
+                        if (isLoadingBalance) {
+                            fiatTotalLoading.start
+                        } else {
+                            fiatTotalValueLabel.start
+                        }
+                    } else {
+                        parent.end
+                    },
+                    bias = 0f
+                )
+                width = Dimension.fillToConstraints
             },
             text = accountWithAssets.account.displayName,
             style = RadixTheme.typography.body1Header,
@@ -67,6 +101,43 @@ fun AccountCardView(
             color = RadixTheme.colors.white,
             overflow = TextOverflow.Ellipsis
         )
+
+        if (isFiatBalanceVisible) {
+            if (isLoadingBalance) {
+                Row(
+                    modifier = Modifier.constrainAs(fiatTotalLoading) {
+                        start.linkTo(nameLabel.end, margin = 10.dp)
+                        end.linkTo(parent.end)
+                        top.linkTo(parent.top)
+                    }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .height(20.dp)
+                            .fillMaxWidth(0.4f)
+                            .radixPlaceholder(
+                                visible = true,
+                                color = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
+                                shape = RadixTheme.shapes.roundedRectSmall,
+                            ),
+                    )
+                }
+            } else {
+                TotalFiatBalanceView(
+                    modifier = Modifier.constrainAs(fiatTotalValueLabel) {
+                        start.linkTo(nameLabel.end, margin = 10.dp)
+                        end.linkTo(parent.end)
+                        top.linkTo(parent.top)
+                    },
+                    fiatPrice = fiatTotalValue,
+                    currency = SupportedCurrency.USD,
+                    isLoading = false,
+                    contentColor = RadixTheme.colors.white,
+                    hiddenContentColor = RadixTheme.colors.white.copy(alpha = 0.6f),
+                    contentStyle = RadixTheme.typography.body1Header
+                )
+            }
+        }
 
         ActionableAddressView(
             address = accountWithAssets.account.address,
@@ -155,6 +226,7 @@ private fun WalletUiState.AccountTag.toLabel(context: Context): String {
                 .append(context.resources.getString(R.string.homePage_accountsTag_ledgerBabylon))
                 .toString()
         }
+
         WalletUiState.AccountTag.LEDGER_LEGACY -> {
             StringBuilder()
                 .append(" ")
@@ -163,6 +235,7 @@ private fun WalletUiState.AccountTag.toLabel(context: Context): String {
                 .append(context.resources.getString(R.string.homePage_accountsTag_ledgerLegacy))
                 .toString()
         }
+
         WalletUiState.AccountTag.LEGACY_SOFTWARE -> {
             StringBuilder()
                 .append(" ")
@@ -171,6 +244,7 @@ private fun WalletUiState.AccountTag.toLabel(context: Context): String {
                 .append(context.resources.getString(R.string.homePage_accountsTag_legacySoftware))
                 .toString()
         }
+
         WalletUiState.AccountTag.DAPP_DEFINITION -> {
             StringBuilder()
                 .append(" ")
@@ -185,7 +259,7 @@ private fun WalletUiState.AccountTag.toLabel(context: Context): String {
 @Preview
 @Composable
 fun AccountCardPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             AccountCardView(
                 accountWithAssets = AccountWithAssets(
@@ -198,8 +272,126 @@ fun AccountCardPreview() {
                         stakeClaims = emptyList()
                     )
                 ),
+                fiatTotalValue = FiatPrice(price = 3450900.899, currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
+                isLoadingBalance = false,
+                securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                onApplySecuritySettings = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun AccountCardWithLongNameAndShortTotalValuePreview() {
+    RadixWalletPreviewTheme {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            AccountCardView(
+                accountWithAssets = AccountWithAssets(
+                    account = SampleDataProvider().sampleAccount(
+                        name = "a very long name for my account"
+                    ),
+                    assets = Assets(
+                        tokens = emptyList(),
+                        nonFungibles = listOf(),
+                        poolUnits = emptyList(),
+                        liquidStakeUnits = emptyList(),
+                        stakeClaims = emptyList()
+                    )
+                ),
+                fiatTotalValue = FiatPrice(price = 3450.0, currency = SupportedCurrency.USD),
+                accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
+                isLoadingResources = false,
+                isLoadingBalance = false,
+                securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                onApplySecuritySettings = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun AccountCardWithLongNameAndLongTotalValuePreview() {
+    RadixWalletPreviewTheme {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            AccountCardView(
+                accountWithAssets = AccountWithAssets(
+                    account = SampleDataProvider().sampleAccount(
+                        name = "a very long name for my account again much more longer oh god "
+                    ),
+                    assets = Assets(
+                        tokens = emptyList(),
+                        nonFungibles = listOf(),
+                        poolUnits = emptyList(),
+                        liquidStakeUnits = emptyList(),
+                        stakeClaims = emptyList()
+                    )
+                ),
+                fiatTotalValue = FiatPrice(price = 3450900899900899732.4, currency = SupportedCurrency.USD),
+                accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
+                isLoadingResources = false,
+                isLoadingBalance = false,
+                securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                onApplySecuritySettings = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
+    RadixWalletPreviewTheme {
+        CompositionLocalProvider(value = LocalBalanceVisibility.provides(false)) {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                AccountCardView(
+                    accountWithAssets = AccountWithAssets(
+                        account = SampleDataProvider().sampleAccount(
+                            name = "a very long name for my account again much more longer oh god "
+                        ),
+                        assets = Assets(
+                            tokens = emptyList(),
+                            nonFungibles = listOf(),
+                            poolUnits = emptyList(),
+                            liquidStakeUnits = emptyList(),
+                            stakeClaims = emptyList()
+                        )
+                    ),
+                    fiatTotalValue = FiatPrice(price = 3450900899900899732.4, currency = SupportedCurrency.USD),
+                    accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
+                    isLoadingResources = false,
+                    isLoadingBalance = false,
+                    securityPromptType = SecurityPromptType.NEEDS_RESTORE,
+                    onApplySecuritySettings = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun AccountCardLoadingPreview() {
+    RadixWalletPreviewTheme {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            AccountCardView(
+                accountWithAssets = AccountWithAssets(
+                    account = SampleDataProvider().sampleAccount(),
+                    assets = Assets(
+                        tokens = emptyList(),
+                        nonFungibles = listOf(),
+                        poolUnits = emptyList(),
+                        liquidStakeUnits = emptyList(),
+                        stakeClaims = emptyList()
+                    )
+                ),
+                fiatTotalValue = FiatPrice(price = 3450900899.0, currency = SupportedCurrency.USD),
+                accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
+                isLoadingResources = true,
+                isLoadingBalance = true,
                 securityPromptType = SecurityPromptType.NEEDS_RESTORE,
                 onApplySecuritySettings = {}
             )

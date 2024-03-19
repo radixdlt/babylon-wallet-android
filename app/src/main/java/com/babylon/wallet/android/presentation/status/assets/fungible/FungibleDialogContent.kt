@@ -23,13 +23,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
 import com.babylon.wallet.android.presentation.status.assets.TagsSection
+import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
@@ -40,7 +43,9 @@ import java.math.BigDecimal
 fun FungibleDialogContent(
     modifier: Modifier = Modifier,
     token: Token?,
+    tokenPrice: AssetPrice.TokenPrice?,
     args: AssetDialogArgs.Fungible,
+    isLoadingBalance: Boolean
 ) {
     val resourceAddress = args.resourceAddress
     val isNewlyCreated = args.isNewlyCreated
@@ -80,6 +85,22 @@ fun FungibleDialogContent(
                 amount = amount,
                 symbol = token?.resource?.symbol.orEmpty(),
             )
+
+            if (isLoadingBalance) {
+                ShimmeringView(
+                    modifier = Modifier
+                        .padding(top = RadixTheme.dimensions.paddingXXSmall)
+                        .height(12.dp)
+                        .fillMaxWidth(0.2f),
+                    isVisible = true
+                )
+            } else if (tokenPrice?.price != null) {
+                FiatBalanceView(
+                    modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
+                    fiatPrice = tokenPrice.price,
+                    textStyle = RadixTheme.typography.body2HighImportance
+                )
+            }
         }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
 

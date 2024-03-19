@@ -22,6 +22,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
+import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
 import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.domain.model.assets.Token
@@ -56,16 +57,22 @@ fun AssetDialog(
                 is Token -> FungibleDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
                     token = asset,
+                    tokenPrice = state.assetPrice as? AssetPrice.TokenPrice,
+                    isLoadingBalance = state.isLoadingBalance
                 )
 
                 is LiquidStakeUnit -> LSUDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
-                    lsu = asset
+                    lsu = asset,
+                    price = state.assetPrice as? AssetPrice.LSUPrice,
+                    isLoadingBalance = state.isLoadingBalance
                 )
 
                 is PoolUnit -> PoolUnitDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
-                    poolUnit = asset
+                    poolUnit = asset,
+                    poolUnitPrice = state.assetPrice as? AssetPrice.PoolUnitPrice,
+                    isLoadingBalance = state.isLoadingBalance
                 )
                 // Includes NFTs and stake claims
                 is Asset.NonFungible -> {
@@ -77,7 +84,9 @@ fun AssetDialog(
                         isNewlyCreated = state.args.isNewlyCreated,
                         claimState = state.claimState,
                         accountContext = state.accountContext,
-                        onClaimClick = viewModel::onClaimClick
+                        price = state.assetPrice as? AssetPrice.StakeClaimPrice,
+                        isLoadingBalance = state.isLoadingBalance,
+                        onClaimClick = viewModel::onClaimClick,
                     )
                 }
 
@@ -85,14 +94,18 @@ fun AssetDialog(
                 null -> when (val args = state.args) {
                     is AssetDialogArgs.Fungible -> FungibleDialogContent(
                         args = state.args as AssetDialogArgs.Fungible,
-                        token = null
+                        token = null,
+                        tokenPrice = null,
+                        isLoadingBalance = state.isLoadingBalance
                     )
 
                     is AssetDialogArgs.NFT -> NonFungibleAssetDialogContent(
                         resourceAddress = state.args.resourceAddress,
                         localId = args.localId,
                         asset = null,
-                        isNewlyCreated = args.isNewlyCreated
+                        price = null,
+                        isNewlyCreated = args.isNewlyCreated,
+                        isLoadingBalance = false // we do not need to pass value here because it's for NFTs
                     )
                 }
             }
