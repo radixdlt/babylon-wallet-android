@@ -29,7 +29,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
 import rdx.works.core.displayableQuantity
-import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.resources.Resource
 import java.math.BigDecimal

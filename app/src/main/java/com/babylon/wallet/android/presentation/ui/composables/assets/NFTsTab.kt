@@ -31,7 +31,6 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
-import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.nftsTab(

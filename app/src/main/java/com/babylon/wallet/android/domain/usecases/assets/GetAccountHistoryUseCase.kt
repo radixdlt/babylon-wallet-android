@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
+import rdx.works.core.domain.resources.Resource
 import javax.inject.Inject
 
 class GetAccountHistoryUseCase @Inject constructor(
@@ -96,7 +97,9 @@ class GetAccountHistoryUseCase @Inject constructor(
         }
     }
 
-    private fun resolveResponseAssetAddresses(response: StreamTransactionsResponse): Pair<Set<String>, MutableMap<String, Set<String>>> {
+    private fun resolveResponseAssetAddresses(
+        response: StreamTransactionsResponse
+    ): Pair<Set<String>, MutableMap<String, Set<Resource.NonFungibleResource.Item.ID>>> {
         val fungibleAddresses = response.items.map {
             it.balanceChanges?.fungibleBalanceChanges?.map { balanceChange ->
                 balanceChange.resourceAddress
@@ -105,11 +108,13 @@ class GetAccountHistoryUseCase @Inject constructor(
                     balanceChange.resourceAddress
                 }.orEmpty().toSet()
         }.flatten().toSet()
-        val nonFungibleAddresses = response.items.fold(mutableMapOf<String, Set<String>>()) { acc, item ->
+        val nonFungibleAddresses = response.items.fold(mutableMapOf<String, Set<Resource.NonFungibleResource.Item.ID>>()) { acc, item ->
             acc.apply {
                 item.balanceChanges?.nonFungibleBalanceChanges?.forEach { balanceChange ->
                     val nftCollectionAddress = balanceChange.resourceAddress
-                    val nftLocalIds = balanceChange.added.toSet() + balanceChange.removed
+                    val nftLocalIds = (balanceChange.added.toSet() + balanceChange.removed).map {
+                        Resource.NonFungibleResource.Item.ID.from(it)
+                    }.toSet()
                     if (containsKey(nftCollectionAddress)) {
                         this[nftCollectionAddress] = this[nftCollectionAddress].orEmpty() + nftLocalIds
                     } else {

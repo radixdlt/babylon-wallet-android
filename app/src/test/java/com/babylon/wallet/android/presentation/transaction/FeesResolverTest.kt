@@ -42,7 +42,7 @@ class FeesResolverTest {
             packageAddresses = listOf(),
             metadata = mapOf()
         ),
-        presentedProofs = listOf(),
+        presentedProofs = mapOf(),
         newlyCreatedNonFungibles = listOf()
     )
     private val notaryAndSigners = NotaryAndSigners(
