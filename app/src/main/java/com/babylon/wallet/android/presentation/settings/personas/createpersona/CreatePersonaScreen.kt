@@ -19,11 +19,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,12 +48,15 @@ import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrap
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
+import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.persona.AddFieldSheet
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDataFieldInput
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
-import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.babylon.wallet.android.utils.activityBiometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.PersonaDataEntryId
@@ -85,7 +90,8 @@ fun CreatePersonaScreen(
             onValueChanged = viewModel::onFieldValueChanged,
             onFieldFocusChanged = viewModel::onFieldFocusChanged,
             onPersonaDisplayNameFocusChanged = viewModel::onPersonaDisplayNameFieldFocusChanged,
-            onAddFieldSheetVisible = viewModel::setAddFieldSheetVisible
+            onAddFieldSheetVisible = viewModel::setAddFieldSheetVisible,
+            onMessageShown = viewModel::onMessageShown
         )
     }
 
@@ -96,6 +102,11 @@ fun CreatePersonaScreen(
                     event.personaId
                 )
             }
+        }
+    }
+    if (state.isNoMnemonicErrorVisible) {
+        NoMnemonicAlertDialog {
+            viewModel.dismissNoMnemonicError()
         }
     }
 }
@@ -114,9 +125,16 @@ fun CreatePersonaContent(
     onValueChanged: (PersonaDataEntryId, PersonaDataField) -> Unit,
     onFieldFocusChanged: (PersonaDataEntryId, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
-    onAddFieldSheetVisible: (Boolean) -> Unit
+    onAddFieldSheetVisible: (Boolean) -> Unit,
+    onMessageShown: () -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = state.uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
     val bottomSheetState =
         rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
@@ -145,7 +163,7 @@ fun CreatePersonaContent(
                     text = stringResource(id = R.string.createPersona_saveAndContinueButtonTitle),
                     onClick = {
                         context.findFragmentActivity()?.let { activity ->
-                            activity.biometricAuthenticate { result ->
+                            activity.activityBiometricAuthenticate { result ->
                                 if (result == BiometricAuthenticationResult.Succeeded) {
                                     onPersonaCreateClick()
                                 }
@@ -160,6 +178,12 @@ fun CreatePersonaContent(
                     enabled = state.continueButtonEnabled
                 )
             }
+        },
+        snackbarHost = {
+            RadixSnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.padding(dimensions.paddingDefault)
+            )
         },
         containerColor = RadixTheme.colors.defaultBackground
     ) { padding ->
@@ -356,7 +380,8 @@ fun CreateAccountContentPreview() {
             onValueChanged = { _, _ -> },
             onFieldFocusChanged = { _, _ -> },
             onPersonaDisplayNameFocusChanged = {},
-            onAddFieldSheetVisible = {}
+            onAddFieldSheetVisible = {},
+            onMessageShown = {}
         )
     }
 }

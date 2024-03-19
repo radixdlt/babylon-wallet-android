@@ -34,58 +34,62 @@ import javax.crypto.spec.SecretKeySpec
  * https://levelup.gitconnected.com/doing-aes-gcm-in-android-adventures-in-the-field-72617401269d
  */
 
-private fun getOrCreateSecretKey(keySpec: KeySpec): SecretKey {
-    return getSecretKey(keySpec.alias).getOrNull() ?: generateAesKey(keySpec)
+fun getOrCreateSecretKey(keySpec: KeySpec): Result<SecretKey> {
+    return getSecretKey(keySpec.alias).mapCatching { secretKey ->
+        secretKey ?: generateAesKey(keySpec).getOrThrow()
+    }
 }
 
 @Suppress("SwallowedException")
-private fun generateAesKey(keySpec: KeySpec): SecretKey {
-    when (keySpec) {
-        is KeySpec.Cache,
-        is KeySpec.Profile -> {
-            val keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM_AES, PROVIDER)
-            val builder = KeyGenParameterSpec.Builder(keySpec.alias, PURPOSE_ENCRYPT or PURPOSE_DECRYPT)
-                .setBlockModes(BLOCK_MODE_GCM)
-                .setEncryptionPaddings(ENCRYPTION_PADDING_NONE)
-                // This is required to be able to provide the IV ourselves
-                .setRandomizedEncryptionRequired(false)
-                .setKeySize(AES_KEY_SIZE)
-                .build()
-            keyGenerator.init(builder)
-            return keyGenerator.generateKey()
-        }
-
-        is KeySpec.Mnemonic -> {
-            val keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM_AES, PROVIDER)
-            val keygenParameterSpecBuilder = KeyGenParameterSpec.Builder(keySpec.alias, PURPOSE_ENCRYPT or PURPOSE_DECRYPT)
-                .setBlockModes(BLOCK_MODE_GCM)
-                .setEncryptionPaddings(ENCRYPTION_PADDING_NONE)
-                // This is required to be able to provide the IV ourselves
-                .setRandomizedEncryptionRequired(false)
-                .setUserAuthenticationRequired(true)
-                .setInvalidatedByBiometricEnrollment(false)
-                .setKeySize(AES_KEY_SIZE)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                keygenParameterSpecBuilder.setUserAuthenticationParameters(
-                    KEY_AUTHORIZATION_SECONDS,
-                    KeyProperties.AUTH_BIOMETRIC_STRONG or KeyProperties.AUTH_DEVICE_CREDENTIAL
-                )
-            } else {
-                keygenParameterSpecBuilder.setUserAuthenticationValidityDurationSeconds(KEY_AUTHORIZATION_SECONDS)
+private fun generateAesKey(keySpec: KeySpec): Result<SecretKey> {
+    return runCatching {
+        when (keySpec) {
+            is KeySpec.Cache,
+            is KeySpec.Profile -> {
+                val keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM_AES, PROVIDER)
+                val builder = KeyGenParameterSpec.Builder(keySpec.alias, PURPOSE_ENCRYPT or PURPOSE_DECRYPT)
+                    .setBlockModes(BLOCK_MODE_GCM)
+                    .setEncryptionPaddings(ENCRYPTION_PADDING_NONE)
+                    // This is required to be able to provide the IV ourselves
+                    .setRandomizedEncryptionRequired(false)
+                    .setKeySize(AES_KEY_SIZE)
+                    .build()
+                keyGenerator.init(builder)
+                keyGenerator.generateKey()
             }
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                keygenParameterSpecBuilder.setIsStrongBoxBacked(true)
-                try {
-                    keyGenerator.init(keygenParameterSpecBuilder.build())
-                    keyGenerator.generateKey()
-                } catch (e: ProviderException) {
-                    keygenParameterSpecBuilder.setIsStrongBoxBacked(false)
+
+            is KeySpec.Mnemonic -> {
+                val keyGenerator = KeyGenerator.getInstance(KEY_ALGORITHM_AES, PROVIDER)
+                val keygenParameterSpecBuilder = KeyGenParameterSpec.Builder(keySpec.alias, PURPOSE_ENCRYPT or PURPOSE_DECRYPT)
+                    .setBlockModes(BLOCK_MODE_GCM)
+                    .setEncryptionPaddings(ENCRYPTION_PADDING_NONE)
+                    // This is required to be able to provide the IV ourselves
+                    .setRandomizedEncryptionRequired(false)
+                    .setUserAuthenticationRequired(true)
+                    .setInvalidatedByBiometricEnrollment(false)
+                    .setKeySize(AES_KEY_SIZE)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    keygenParameterSpecBuilder.setUserAuthenticationParameters(
+                        KEY_AUTHORIZATION_SECONDS,
+                        KeyProperties.AUTH_BIOMETRIC_STRONG or KeyProperties.AUTH_DEVICE_CREDENTIAL
+                    )
+                } else {
+                    keygenParameterSpecBuilder.setUserAuthenticationValidityDurationSeconds(KEY_AUTHORIZATION_SECONDS)
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    keygenParameterSpecBuilder.setIsStrongBoxBacked(true)
+                    try {
+                        keyGenerator.init(keygenParameterSpecBuilder.build())
+                        keyGenerator.generateKey()
+                    } catch (e: ProviderException) {
+                        keygenParameterSpecBuilder.setIsStrongBoxBacked(false)
+                        keyGenerator.init(keygenParameterSpecBuilder.build())
+                        keyGenerator.generateKey()
+                    }
+                } else {
                     keyGenerator.init(keygenParameterSpecBuilder.build())
                     keyGenerator.generateKey()
                 }
-            } else {
-                keyGenerator.init(keygenParameterSpecBuilder.build())
-                keyGenerator.generateKey()
             }
         }
     }
@@ -134,11 +138,11 @@ fun encryptData(
 
 fun String.encrypt(
     withKey: KeySpec
-) = toByteArray().encrypt(withKey = withKey).map { Base64.encodeToString(it, Base64.DEFAULT) }
+) = toByteArray().encrypt(withKey = withKey).mapCatching { Base64.encodeToString(it, Base64.DEFAULT) }
 
 fun ByteArray.encrypt(
     withKey: KeySpec
-): Result<ByteArray> = encryptData(input = this, secretKey = getOrCreateSecretKey(withKey))
+): Result<ByteArray> = encryptData(input = this, secretKey = getOrCreateSecretKey(withKey).getOrThrow())
 
 fun ByteArray.encrypt(
     withEncryptionKey: ByteArray
@@ -163,7 +167,7 @@ fun checkIfKeyWasPermanentlyInvalidated(input: String, key: KeySpec): Boolean {
 
 fun ByteArray.decrypt(
     withKey: KeySpec
-): Result<ByteArray> = decryptData(input = this, secretKey = getOrCreateSecretKey(withKey))
+): Result<ByteArray> = decryptData(input = this, secretKey = getOrCreateSecretKey(withKey).getOrThrow())
 
 fun ByteArray.decrypt(
     withEncryptionKey: ByteArray

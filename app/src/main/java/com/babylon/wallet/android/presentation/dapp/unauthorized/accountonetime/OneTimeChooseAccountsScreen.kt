@@ -7,10 +7,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
@@ -18,8 +18,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.Event
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
+import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -43,14 +43,9 @@ fun OneTimeChooseAccountsScreen(
     val context = LocalContext.current
     val sharedViewModelState by sharedViewModel.state.collectAsStateWithLifecycle()
     if (sharedViewModelState.isNoMnemonicErrorVisible) {
-        BasicPromptAlertDialog(
-            finish = {
-                sharedViewModel.dismissNoMnemonicError()
-            },
-            titleText = stringResource(id = R.string.transactionReview_noMnemonicError_title),
-            messageText = stringResource(id = R.string.transactionReview_noMnemonicError_text),
-            dismissText = null
-        )
+        NoMnemonicAlertDialog {
+            sharedViewModel.dismissNoMnemonicError()
+        }
     }
     LaunchedEffect(Unit) {
         sharedViewModel.oneOffEvent.collect { event ->

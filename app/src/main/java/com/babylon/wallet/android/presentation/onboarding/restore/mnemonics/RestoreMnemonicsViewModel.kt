@@ -213,7 +213,9 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
                 args.backupType?.let { backupType ->
                     if (skipAuth.not() && biometricAuthProvider().not()) return
-                    restoreAndCreateMainSeedPhraseUseCase(backupType)
+                    restoreAndCreateMainSeedPhraseUseCase(backupType).onFailure { e ->
+                        _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(e)) }
+                    }
                 }
 
                 _state.update { state ->

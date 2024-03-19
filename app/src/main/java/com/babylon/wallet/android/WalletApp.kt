@@ -30,8 +30,6 @@ import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
@@ -95,13 +93,6 @@ fun WalletApp(
     LaunchedEffect(Unit) {
         mainViewModel.appNotSecureEvent.collect {
             showNotSecuredDialog = true
-        }
-    }
-    LaunchedEffect(Unit) {
-        mainViewModel.babylonMnemonicNeedsRecoveryEvent.collect {
-            navController.restoreMnemonics(
-                args = RestoreMnemonicsArgs(isMandatory = true)
-            )
         }
     }
     HandleAccessFactorSourcesEvents(

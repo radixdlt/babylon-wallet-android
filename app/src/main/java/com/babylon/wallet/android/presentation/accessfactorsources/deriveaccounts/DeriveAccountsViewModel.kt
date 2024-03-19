@@ -163,7 +163,7 @@ class DeriveAccountsViewModel @Inject constructor(
             .onSuccess {
                 sendEvent(Event.DerivingAccountsCompleted)
             }
-            .onFailure {
+            .onFailure { e ->
                 _state.update { uiState ->
                     uiState.copy(shouldShowRetryButton = true)
                 }

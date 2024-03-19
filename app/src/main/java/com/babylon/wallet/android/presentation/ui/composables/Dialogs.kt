@@ -363,6 +363,16 @@ fun BasicPromptAlertDialog(
 }
 
 @Composable
+fun NoMnemonicAlertDialog(onDismiss: () -> Unit) {
+    BasicPromptAlertDialog(
+        finish = { onDismiss() },
+        titleText = stringResource(id = R.string.transactionReview_noMnemonicError_title),
+        messageText = stringResource(id = R.string.transactionReview_noMnemonicError_text),
+        dismissText = null
+    )
+}
+
+@Composable
 fun NotSecureAlertDialog(
     finish: (accepted: Boolean) -> Unit,
     modifier: Modifier = Modifier

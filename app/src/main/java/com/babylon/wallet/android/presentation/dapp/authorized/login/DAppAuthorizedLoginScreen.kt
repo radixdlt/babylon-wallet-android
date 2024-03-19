@@ -29,7 +29,7 @@ import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
+import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -67,14 +67,9 @@ fun DappAuthorizedLoginScreen(
         }
     }
     if (sharedState.isNoMnemonicErrorVisible) {
-        BasicPromptAlertDialog(
-            finish = {
-                viewModel.dismissNoMnemonicError()
-            },
-            titleText = stringResource(id = R.string.transactionReview_noMnemonicError_title),
-            messageText = stringResource(id = R.string.transactionReview_noMnemonicError_text),
-            dismissText = null
-        )
+        NoMnemonicAlertDialog {
+            viewModel.dismissNoMnemonicError()
+        }
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
     when (val route = state.initialAuthorizedLoginRoute) {

@@ -38,6 +38,7 @@ import com.babylon.wallet.android.presentation.account.createaccount.confirmatio
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
+import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -96,6 +97,11 @@ fun CreateAccountScreen(
                 is CreateAccountEvent.AddLedgerDevice -> onAddLedgerDevice()
                 is CreateAccountEvent.Dismiss -> onBackClick()
             }
+        }
+    }
+    if (state.isNoMnemonicErrorVisible) {
+        NoMnemonicAlertDialog {
+            viewModel.dismissNoMnemonicError()
         }
     }
 }

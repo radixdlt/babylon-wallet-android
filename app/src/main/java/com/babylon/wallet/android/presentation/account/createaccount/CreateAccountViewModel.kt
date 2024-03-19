@@ -33,6 +33,7 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
@@ -124,11 +125,15 @@ class CreateAccountViewModel @Inject constructor(
                         hdPublicKey = it.value
                     )
                 }
-            }.onFailure { error ->
+            }.onFailure { throwable ->
                 _state.update { state ->
-                    state.copy(
-                        uiMessage = UiMessage.ErrorMessage(error)
-                    )
+                    if (throwable is ProfileException.NoMnemonic) {
+                        state.copy(isNoMnemonicErrorVisible = true)
+                    } else {
+                        state.copy(
+                            uiMessage = UiMessage.ErrorMessage(throwable)
+                        )
+                    }
                 }
             }
         }
@@ -195,8 +200,14 @@ class CreateAccountViewModel @Inject constructor(
         val accountName: String = "",
         val firstTime: Boolean = false,
         val isWithLedger: Boolean = false,
-        val uiMessage: UiMessage? = null
+        val isCancelable: Boolean = true,
+        val uiMessage: UiMessage? = null,
+        val isNoMnemonicErrorVisible: Boolean = false
     ) : UiState
+
+    fun dismissNoMnemonicError() {
+        _state.update { it.copy(isNoMnemonicErrorVisible = false) }
+    }
 
     companion object {
         private const val ACCOUNT_NAME = "account_name"

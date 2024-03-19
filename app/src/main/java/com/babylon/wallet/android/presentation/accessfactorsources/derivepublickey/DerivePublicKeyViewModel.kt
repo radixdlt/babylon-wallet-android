@@ -6,6 +6,8 @@ import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.HDPublicKey
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.PublicKeyAndDerivationPath
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.DerivePublicKeyViewModel.DerivePublicKeyUiState.ShowContentForFactorSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -25,6 +27,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.repository.PublicKeyProvider
+import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
+import rdx.works.profile.domain.ProfileException
 import java.io.IOException
 import javax.inject.Inject
 
@@ -67,9 +72,18 @@ class DerivePublicKeyViewModel @Inject constructor(
                 .onSuccess {
                     sendEvent(Event.AccessingFactorSourceCompleted)
                 }
-                .onFailure {
-                    _state.update { uiState ->
-                        uiState.copy(shouldShowRetryButton = true)
+                .onFailure { e ->
+                    when (e) {
+                        is ProfileException -> {
+                            accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(e))
+                            sendEvent(Event.AccessingFactorSourceCompleted)
+                        }
+
+                        else -> {
+                            _state.update { uiState ->
+                                uiState.copy(shouldShowRetryButton = true)
+                            }
+                        }
                     }
                 }
         }
@@ -90,7 +104,9 @@ class DerivePublicKeyViewModel @Inject constructor(
                 uiState.copy(shouldShowRetryButton = false)
             }
             when (state.value.showContentForFactorSource) {
-                ShowContentForFactorSource.Device -> sendEvent(Event.RequestBiometricPrompt)
+                ShowContentForFactorSource.Device -> {
+                    sendEvent(Event.RequestBiometricPrompt())
+                }
                 is ShowContentForFactorSource.Ledger -> {
                     derivePublicKey().onSuccess {
                         sendEvent(Event.AccessingFactorSourceCompleted)
@@ -100,24 +116,49 @@ class DerivePublicKeyViewModel @Inject constructor(
         }
     }
 
-    private suspend fun derivePublicKey() = when (val factorSource = input.factorSource) {
-        is FactorSource.Device -> {
-            derivePublicKeyFromDeviceFactorSource(
-                forNetworkId = input.forNetworkId,
-                deviceFactorSource = factorSource
-            )
-        }
-        is FactorSource.Ledger -> {
-            _state.update { uiState ->
-                uiState.copy(
-                    showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = factorSource)
+    private suspend fun derivePublicKey(): Result<Unit> {
+        return ensureBabylonFactorSourceExistUseCase().mapCatching { profile ->
+            if (input.factorSource == null) { // device factor source
+                val deviceFactorSource = profile.mainBabylonFactorSource() ?: error("Babylon factor source is not present")
+                derivePublicKeyFromDeviceFactorSource(
+                    forNetworkId = input.forNetworkId,
+                    deviceFactorSource = deviceFactorSource
+                ).fold(
+                    onSuccess = { Unit },
+                    onFailure = { e -> throw e }
+                )
+            } else { // ledger factor source
+                val ledgerFactorSource = input.factorSource as LedgerHardwareWalletFactorSource
+                _state.update { uiState ->
+                    uiState.copy(
+                        showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = ledgerFactorSource)
+                    )
+                }
+                derivePublicKeyFromLedgerFactorSource(
+                    forNetworkId = input.forNetworkId,
+                    ledgerFactorSource = ledgerFactorSource
                 )
             }
-            derivePublicKeyFromLedgerFactorSource(
-                forNetworkId = input.forNetworkId,
-                ledgerFactorSource = factorSource
-            )
         }
+//        when (val factorSource = input.factorSource) {
+//            is FactorSource.Device -> {
+//                derivePublicKeyFromDeviceFactorSource(
+//                    forNetworkId = input.forNetworkId,
+//                    deviceFactorSource = factorSource
+//                )
+//            }
+//            is FactorSource.Ledger -> {
+//                _state.update { uiState ->
+//                    uiState.copy(
+//                        showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = factorSource)
+//                    )
+//                }
+//                derivePublicKeyFromLedgerFactorSource(
+//                    forNetworkId = input.forNetworkId,
+//                    ledgerFactorSource = factorSource
+//                )
+//            }
+//        }
     }
 
     private suspend fun derivePublicKeyFromDeviceFactorSource(
@@ -173,7 +214,7 @@ class DerivePublicKeyViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        data object RequestBiometricPrompt : Event
+        data class RequestBiometricPrompt(val onlyDeviceCredentials: Boolean = false) : Event
         data object AccessingFactorSourceCompleted : Event
     }
 }

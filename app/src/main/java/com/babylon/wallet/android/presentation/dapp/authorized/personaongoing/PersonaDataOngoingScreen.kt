@@ -41,8 +41,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
-import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomPrimaryButton
+import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDetailCard
@@ -70,14 +70,9 @@ fun PersonaDataOngoingScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sharedState by sharedViewModel.state.collectAsStateWithLifecycle()
     if (sharedState.isNoMnemonicErrorVisible) {
-        BasicPromptAlertDialog(
-            finish = {
-                sharedViewModel.dismissNoMnemonicError()
-            },
-            titleText = stringResource(id = R.string.transactionReview_noMnemonicError_title),
-            messageText = stringResource(id = R.string.transactionReview_noMnemonicError_text),
-            dismissText = null
-        )
+        NoMnemonicAlertDialog {
+            sharedViewModel.dismissNoMnemonicError()
+        }
     }
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->

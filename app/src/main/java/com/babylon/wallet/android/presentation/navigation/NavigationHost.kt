@@ -313,11 +313,10 @@ fun NavigationHost(
             }
         )
         createPersonaScreen(
-            onBackClick = { navController.navigateUp() },
-            onContinueClick = { personaId ->
-                navController.createPersonaConfirmationScreen(personaId = personaId)
-            }
-        )
+            onBackClick = { navController.navigateUp() }
+        ) { personaId ->
+            navController.createPersonaConfirmationScreen(personaId = personaId)
+        }
         personaInfoScreen(
             onBackClick = { navController.navigateUp() },
             onContinueClick = { navController.createPersonaScreen() }

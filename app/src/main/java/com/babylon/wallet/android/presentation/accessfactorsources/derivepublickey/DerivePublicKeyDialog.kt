@@ -48,8 +48,8 @@ fun DerivePublicKeyDialog(
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                DerivePublicKeyViewModel.Event.RequestBiometricPrompt -> {
-                    context.biometricAuthenticate { biometricAuthenticationResult ->
+                is DerivePublicKeyViewModel.Event.RequestBiometricPrompt -> {
+                    context.biometricAuthenticate(event.onlyDeviceCredentials) { biometricAuthenticationResult ->
                         when (biometricAuthenticationResult) {
                             BiometricAuthenticationResult.Succeeded -> viewModel.biometricAuthenticationCompleted()
                             BiometricAuthenticationResult.Error -> viewModel.onBiometricAuthenticationDismiss()

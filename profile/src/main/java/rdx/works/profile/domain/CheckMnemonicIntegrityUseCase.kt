@@ -36,14 +36,4 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
             }
         }
     }
-
-    suspend fun babylonMnemonicNeedsRecovery(): FactorSourceId.Hash? {
-        if (getProfileUseCase.isInitialized().not()) return null
-        val factSourceIdToRecover = getProfileUseCase.flow.firstOrNull()?.mainBabylonFactorSource?.value?.id?.asGeneral() ?: return null
-        return if (mnemonicRepository.mnemonicExist(factSourceIdToRecover).not()) {
-            factSourceIdToRecover
-        } else {
-            null
-        }
-    }
 }

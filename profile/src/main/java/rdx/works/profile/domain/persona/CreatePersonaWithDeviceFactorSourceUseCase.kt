@@ -30,33 +30,34 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
     suspend operator fun invoke(
         displayName: DisplayName,
         personaData: PersonaData
-    ): Persona {
+    ): Result<Network.Persona> {
         return withContext(defaultDispatcher) {
-            val profile = ensureBabylonFactorSourceExistUseCase()
+            ensureBabylonFactorSourceExistUseCase().mapCatching { profile ->
+                val networkID = profile.currentGateway.network.id
+                val factorSource = profile.mainBabylonFactorSource()
+                    ?: error("Babylon factor source is not present")
+                val mnemonicWithPassphrase = mnemonicRepository.readMnemonic(factorSource.value.id.asGeneral()).getOrNull()
+                // Construct new persona
+                val newPersona = Persona.init(
+                    entityIndex = profile.nextPersonaIndex(
+                        forNetworkId = networkId,
+                        derivationPathScheme = DerivationPathScheme.CAP26
+                    ),
+                    displayName = displayName,
+                    mnemonicWithPassphrase = mnemonicWithPassphrase,
+                    factorSourceId = factorSource.value.id.asGeneral(),
+                    networkId = networkId,
+                    personaData = personaData
+                )
 
-            val networkId = profile.currentGateway.network.id
-            val factorSource = profile.mainBabylonFactorSource ?: error("Babylon factor source is not present")
-            val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.value.id.asGeneral()).getOrNull())
-            // Construct new persona
-            val newPersona = Persona.init(
-                entityIndex = profile.nextPersonaIndex(
-                    forNetworkId = networkId,
-                    derivationPathScheme = DerivationPathScheme.CAP26
-                ),
-                displayName = displayName,
-                mnemonicWithPassphrase = mnemonicWithPassphrase,
-                factorSourceId = factorSource.value.id.asGeneral(),
-                networkId = networkId,
-                personaData = personaData
-            )
-
-            // Add persona to the profile
-            val updatedProfile = profile.addPersona(
-                persona = newPersona,
-                onNetwork = networkId
-            )
-            profileRepository.saveProfile(updatedProfile)
-            newPersona
+                // Add persona to the profile
+                val updatedProfile = profile.addPersona(
+                    persona = newPersona,
+                    onNetwork = networkId
+                )
+                profileRepository.saveProfile(updatedProfile)
+                newPersona
+            }
         }
     }
 }
