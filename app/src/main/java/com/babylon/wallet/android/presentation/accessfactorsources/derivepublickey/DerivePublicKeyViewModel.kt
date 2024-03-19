@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.PublicKeyAndDerivationPath
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.DerivePublicKeyViewModel.DerivePublicKeyUiState.ShowContentForFactorSource
@@ -25,6 +26,7 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
+import rdx.works.profile.domain.ProfileException
 import java.io.IOException
 import javax.inject.Inject
 
@@ -51,9 +53,10 @@ class DerivePublicKeyViewModel @Inject constructor(
                         sendEvent(Event.AccessingFactorSourceCompleted)
                     }
                 }
+
                 is DeviceFactorSource,
                 null -> {
-                    sendEvent(Event.RequestBiometricPrompt)
+                    sendEvent(Event.RequestBiometricPrompt())
                 }
             }
         }
@@ -66,9 +69,18 @@ class DerivePublicKeyViewModel @Inject constructor(
                 .onSuccess {
                     sendEvent(Event.AccessingFactorSourceCompleted)
                 }
-                .onFailure {
-                    _state.update { uiState ->
-                        uiState.copy(shouldShowRetryButton = true)
+                .onFailure { e ->
+                    when (e) {
+                        is ProfileException -> {
+                            accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(e))
+                            sendEvent(Event.AccessingFactorSourceCompleted)
+                        }
+
+                        else -> {
+                            _state.update { uiState ->
+                                uiState.copy(shouldShowRetryButton = true)
+                            }
+                        }
                     }
                 }
         }
@@ -89,7 +101,9 @@ class DerivePublicKeyViewModel @Inject constructor(
                 uiState.copy(shouldShowRetryButton = false)
             }
             when (state.value.showContentForFactorSource) {
-                ShowContentForFactorSource.Device -> sendEvent(Event.RequestBiometricPrompt)
+                ShowContentForFactorSource.Device -> {
+                    sendEvent(Event.RequestBiometricPrompt())
+                }
                 is ShowContentForFactorSource.Ledger -> {
                     derivePublicKey().onSuccess {
                         sendEvent(Event.AccessingFactorSourceCompleted)
@@ -100,25 +114,28 @@ class DerivePublicKeyViewModel @Inject constructor(
     }
 
     private suspend fun derivePublicKey(): Result<Unit> {
-        val profile = ensureBabylonFactorSourceExistUseCase()
-
-        return if (input.factorSource == null) { // device factor source
-            val deviceFactorSource = profile.mainBabylonFactorSource() ?: error("Babylon factor source is not present")
-            derivePublicKeyFromDeviceFactorSource(
-                forNetworkId = input.forNetworkId,
-                deviceFactorSource = deviceFactorSource
-            )
-        } else { // ledger factor source
-            val ledgerFactorSource = input.factorSource as LedgerHardwareWalletFactorSource
-            _state.update { uiState ->
-                uiState.copy(
-                    showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = ledgerFactorSource)
+        return ensureBabylonFactorSourceExistUseCase().mapCatching { profile ->
+            if (input.factorSource == null) { // device factor source
+                val deviceFactorSource = profile.mainBabylonFactorSource() ?: error("Babylon factor source is not present")
+                derivePublicKeyFromDeviceFactorSource(
+                    forNetworkId = input.forNetworkId,
+                    deviceFactorSource = deviceFactorSource
+                ).fold(
+                    onSuccess = { Unit },
+                    onFailure = { e -> throw e }
+                )
+            } else { // ledger factor source
+                val ledgerFactorSource = input.factorSource as LedgerHardwareWalletFactorSource
+                _state.update { uiState ->
+                    uiState.copy(
+                        showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = ledgerFactorSource)
+                    )
+                }
+                derivePublicKeyFromLedgerFactorSource(
+                    forNetworkId = input.forNetworkId,
+                    ledgerFactorSource = ledgerFactorSource
                 )
             }
-            derivePublicKeyFromLedgerFactorSource(
-                forNetworkId = input.forNetworkId,
-                ledgerFactorSource = ledgerFactorSource
-            )
         }
     }
 
@@ -130,17 +147,16 @@ class DerivePublicKeyViewModel @Inject constructor(
             forNetworkId = forNetworkId,
             factorSource = deviceFactorSource
         )
-        val compressedPublicKey = publicKeyProvider.derivePublicKeyForDeviceFactorSource(
+        return publicKeyProvider.derivePublicKeyForDeviceFactorSource(
             deviceFactorSource = deviceFactorSource,
             derivationPath = derivationPath
-        )
-        val output = PublicKeyAndDerivationPath(
-            compressedPublicKey = compressedPublicKey,
-            derivationPath = derivationPath
-        )
-
-        accessFactorSourcesUiProxy.setOutput(output)
-        return Result.success(Unit)
+        ).mapCatching { compressedPublicKey ->
+            val output = PublicKeyAndDerivationPath(
+                compressedPublicKey = compressedPublicKey,
+                derivationPath = derivationPath
+            )
+            accessFactorSourcesUiProxy.setOutput(output)
+        }
     }
 
     private suspend fun derivePublicKeyFromLedgerFactorSource(
@@ -181,7 +197,7 @@ class DerivePublicKeyViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        data object RequestBiometricPrompt : Event
+        data class RequestBiometricPrompt(val onlyDeviceCredentials: Boolean = false) : Event
         data object AccessingFactorSourceCompleted : Event
     }
 }

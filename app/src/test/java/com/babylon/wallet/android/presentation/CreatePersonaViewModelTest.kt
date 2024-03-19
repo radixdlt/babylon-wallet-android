@@ -55,25 +55,27 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         }
         coEvery { preferencesManager.markFirstPersonaCreated() } just Runs
 
-        coEvery { createPersonaWithDeviceFactorSourceUseCase.invoke(any(), any()) } returns Network.Persona(
-            address = personaId,
-            displayName = personaName.value,
-            networkID = Radix.Gateway.default.network.id,
-            personaData = PersonaData(),
-            securityState = SecurityState.Unsecured(
-                unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                    transactionSigning = FactorInstance(
-                        badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
-                            derivationPath = DerivationPath.forIdentity(
-                                networkId = Radix.Gateway.default.network.networkId(),
-                                identityIndex = 0,
-                                keyType = KeyType.TRANSACTION_SIGNING
+        coEvery { createPersonaWithDeviceFactorSourceUseCase.invoke(any(), any()) } returns Result.success(
+            Network.Persona(
+                address = personaId,
+                displayName = personaName.value,
+                networkID = Radix.Gateway.default.network.id,
+                personaData = PersonaData(),
+                securityState = SecurityState.Unsecured(
+                    unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+                        transactionSigning = FactorInstance(
+                            badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+                                derivationPath = DerivationPath.forIdentity(
+                                    networkId = Radix.Gateway.default.network.networkId(),
+                                    identityIndex = 0,
+                                    keyType = KeyType.TRANSACTION_SIGNING
+                                ),
+                                publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
                             ),
-                            publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
-                        ),
-                        factorSourceId = FactorSource.FactorSourceID.FromHash(
-                            kind = FactorSourceKind.DEVICE,
-                            body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
+                            factorSourceId = FactorSource.FactorSourceID.FromHash(
+                                kind = FactorSourceKind.DEVICE,
+                                body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
+                            )
                         )
                     )
                 )

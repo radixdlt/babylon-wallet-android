@@ -5,7 +5,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,8 +27,6 @@ sealed interface AppEvent {
     data object RestoredMnemonic : AppEvent
     data object BabylonFactorSourceDoesNotExist : AppEvent
     data object NPSSurveySubmitted : AppEvent
-    data class BabylonFactorSourceNeedsRecovery(val factorSourceID: FactorSource.FactorSourceID.FromHash) : AppEvent
-
     sealed interface AccessFactorSources : AppEvent {
 
         data class SelectedLedgerDevice(val ledgerFactorSource: LedgerHardwareWalletFactorSource) : AccessFactorSources

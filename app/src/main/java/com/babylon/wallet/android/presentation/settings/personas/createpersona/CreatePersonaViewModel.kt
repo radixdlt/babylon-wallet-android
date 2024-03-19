@@ -7,6 +7,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.PersonaEditable
 import com.babylon.wallet.android.presentation.common.PersonaEditableImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
@@ -17,6 +18,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
 import javax.inject.Inject
 
@@ -51,26 +53,41 @@ class CreatePersonaViewModel @Inject constructor(
         _state.update { it.copy(loading = true) }
         viewModelScope.launch {
             val personaData = _state.value.currentFields.toPersonaData()
-            val persona = createPersonaWithDeviceFactorSourceUseCase(
+            createPersonaWithDeviceFactorSourceUseCase(
                 displayName = _state.value.personaDisplayName.value,
                 personaData = personaData
-            )
+            ).onSuccess { persona ->
+                val personaId = persona.address
+                _state.update { it.copy(loading = true) }
+                preferencesManager.markFirstPersonaCreated()
 
-            val personaId = persona.address
-
-            _state.update { it.copy(loading = true) }
-            preferencesManager.markFirstPersonaCreated()
-
-            sendEvent(
-                CreatePersonaEvent.Complete(
-                    personaId = personaId
+                sendEvent(
+                    CreatePersonaEvent.Complete(
+                        personaId = personaId
+                    )
                 )
-            )
+            }.onFailure { error ->
+                _state.update {
+                    if (error is ProfileException.NoMnemonic) {
+                        it.copy(loading = false, isNoMnemonicErrorVisible = true)
+                    } else {
+                        it.copy(loading = false, uiMessage = UiMessage.ErrorMessage(error))
+                    }
+                }
+            }
         }
     }
 
     fun setAddFieldSheetVisible(isVisible: Boolean) {
         _state.update { it.copy(isAddFieldBottomSheetVisible = isVisible) }
+    }
+
+    fun onMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
+    }
+
+    fun dismissNoMnemonicError() {
+        _state.update { it.copy(isNoMnemonicErrorVisible = false) }
     }
 
     data class CreatePersonaUiState(
@@ -80,7 +97,9 @@ class CreatePersonaViewModel @Inject constructor(
         val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
         val continueButtonEnabled: Boolean = false,
         val anyFieldSelected: Boolean = false,
-        val isAddFieldBottomSheetVisible: Boolean = false
+        val isAddFieldBottomSheetVisible: Boolean = false,
+        val uiMessage: UiMessage? = null,
+        val isNoMnemonicErrorVisible: Boolean = false
     ) : UiState
 }
 

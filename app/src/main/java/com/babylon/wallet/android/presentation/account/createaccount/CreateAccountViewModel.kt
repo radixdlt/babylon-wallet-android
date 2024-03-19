@@ -32,6 +32,7 @@ import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
@@ -122,11 +123,15 @@ class CreateAccountViewModel @Inject constructor(
                         onNetworkId = networkId
                     )
                 }
-            }.onFailure { error ->
+            }.onFailure { throwable ->
                 _state.update { state ->
-                    state.copy(
-                        uiMessage = UiMessage.ErrorMessage(error)
-                    )
+                    if (throwable is ProfileException.NoMnemonic) {
+                        state.copy(isNoMnemonicErrorVisible = true)
+                    } else {
+                        state.copy(
+                            uiMessage = UiMessage.ErrorMessage(throwable)
+                        )
+                    }
                 }
             }
         }
@@ -190,6 +195,10 @@ class CreateAccountViewModel @Inject constructor(
         return networkId
     }
 
+    fun dismissNoMnemonicError() {
+        _state.update { it.copy(isNoMnemonicErrorVisible = false) }
+    }
+
     data class CreateAccountUiState(
         val loading: Boolean = false,
         val accountId: String = "",
@@ -197,7 +206,8 @@ class CreateAccountViewModel @Inject constructor(
         val firstTime: Boolean = false,
         val isWithLedger: Boolean = false,
         val isCancelable: Boolean = true,
-        val uiMessage: UiMessage? = null
+        val uiMessage: UiMessage? = null,
+        val isNoMnemonicErrorVisible: Boolean = false
     ) : UiState
 
     companion object {

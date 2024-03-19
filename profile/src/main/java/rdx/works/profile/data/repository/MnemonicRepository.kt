@@ -39,9 +39,9 @@ class MnemonicRepository @Inject constructor(
     suspend fun saveMnemonic(
         key: FactorSource.FactorSourceID.FromHash,
         mnemonicWithPassphrase: MnemonicWithPassphrase
-    ) {
+    ): Result<Unit> {
         val serialised = Json.encodeToString(mnemonicWithPassphrase)
-        encryptedPreferencesManager.saveMnemonic("mnemonic${key.body.value}", serialised)
+        return encryptedPreferencesManager.saveMnemonic("mnemonic${key.body.value}", serialised)
     }
 
     suspend fun deleteMnemonic(
@@ -62,8 +62,8 @@ class MnemonicRepository @Inject constructor(
      * 3. We passed a key and the mnemonic exists:
      *    We deserialize it properly and just return that back.
      */
-    suspend operator fun invoke(mnemonicKey: FactorSource.FactorSourceID.FromHash? = null): MnemonicWithPassphrase {
-        return mnemonicKey?.let { readMnemonic(key = it).getOrNull() } ?: withContext(defaultDispatcher) {
+    suspend operator fun invoke(mnemonicKey: FactorSource.FactorSourceID.FromHash? = null): Result<MnemonicWithPassphrase> {
+        return mnemonicKey?.let { readMnemonic(key = it) } ?: withContext(defaultDispatcher) {
             val generated = MnemonicWithPassphrase.generate(entropyStrength = ENTROPY_STRENGTH)
 
             val key = FactorSource.factorSourceId(mnemonicWithPassphrase = generated)
@@ -71,8 +71,7 @@ class MnemonicRepository @Inject constructor(
                 kind = FactorSourceKind.DEVICE,
                 body = HexCoded32Bytes(key)
             )
-            saveMnemonic(key = fromHash, mnemonicWithPassphrase = generated)
-            generated
+            saveMnemonic(key = fromHash, mnemonicWithPassphrase = generated).mapCatching { generated }
         }
     }
 

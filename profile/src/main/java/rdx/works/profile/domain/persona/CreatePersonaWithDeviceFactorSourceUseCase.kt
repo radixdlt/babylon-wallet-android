@@ -26,31 +26,31 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
     suspend operator fun invoke(
         displayName: String,
         personaData: PersonaData
-    ): Network.Persona {
+    ): Result<Network.Persona> {
         return withContext(defaultDispatcher) {
-            val profile = ensureBabylonFactorSourceExistUseCase()
+            ensureBabylonFactorSourceExistUseCase().mapCatching { profile ->
+                val networkID = profile.currentGateway.network.networkId()
+                val factorSource = profile.mainBabylonFactorSource()
+                    ?: error("Babylon factor source is not present")
+                val mnemonicWithPassphrase = mnemonicRepository.readMnemonic(factorSource.id).getOrThrow()
+                // Construct new persona
+                val newPersona = init(
+                    entityIndex = profile.nextPersonaIndex(DerivationPathScheme.CAP_26, networkID),
+                    displayName = displayName,
+                    mnemonicWithPassphrase = mnemonicWithPassphrase,
+                    factorSource = factorSource,
+                    networkId = networkID,
+                    personaData = personaData
+                )
 
-            val networkID = profile.currentGateway.network.networkId()
-            val factorSource = profile.mainBabylonFactorSource()
-                ?: error("Babylon factor source is not present")
-            val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.id).getOrNull())
-            // Construct new persona
-            val newPersona = init(
-                entityIndex = profile.nextPersonaIndex(DerivationPathScheme.CAP_26, networkID),
-                displayName = displayName,
-                mnemonicWithPassphrase = mnemonicWithPassphrase,
-                factorSource = factorSource,
-                networkId = networkID,
-                personaData = personaData
-            )
-
-            // Add persona to the profile
-            val updatedProfile = profile.addPersona(
-                persona = newPersona,
-                onNetwork = networkID
-            )
-            profileRepository.saveProfile(updatedProfile)
-            newPersona
+                // Add persona to the profile
+                val updatedProfile = profile.addPersona(
+                    persona = newPersona,
+                    onNetwork = networkID
+                )
+                profileRepository.saveProfile(updatedProfile)
+                newPersona
+            }
         }
     }
 }

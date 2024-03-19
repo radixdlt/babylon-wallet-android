@@ -28,6 +28,6 @@ class OnboardingViewModel @Inject constructor() :
     ) : UiState
 
     sealed interface OnBoardingEvent : OneOffEvent {
-        object CreateNewWallet : OnBoardingEvent
+        data object CreateNewWallet : OnBoardingEvent
     }
 }
