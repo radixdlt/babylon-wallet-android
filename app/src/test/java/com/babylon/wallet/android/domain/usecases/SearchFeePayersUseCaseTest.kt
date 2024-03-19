@@ -5,7 +5,6 @@ import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import rdx.works.core.domain.assets.ValidatorDetail
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Pool
@@ -18,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState

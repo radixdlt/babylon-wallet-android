@@ -11,7 +11,6 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import rdx.works.core.domain.assets.ValidatorDetail
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Pool
@@ -43,6 +42,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
+import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Entity

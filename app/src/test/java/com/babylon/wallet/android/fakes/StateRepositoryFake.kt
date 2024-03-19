@@ -3,7 +3,6 @@ package com.babylon.wallet.android.fakes
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
 import rdx.works.core.domain.assets.ValidatorDetail
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Pool
@@ -11,6 +10,7 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import java.lang.RuntimeException
