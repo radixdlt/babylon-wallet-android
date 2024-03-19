@@ -21,6 +21,8 @@ import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.ValidatorWithStakes

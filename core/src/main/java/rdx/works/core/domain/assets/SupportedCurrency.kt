@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model.assets
+package rdx.works.core.domain.assets
 
 import java.util.Currency
 

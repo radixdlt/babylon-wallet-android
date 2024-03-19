@@ -13,8 +13,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.HistoryFilters
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.utils.truncatedHash
+import rdx.works.core.domain.resources.Resource
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

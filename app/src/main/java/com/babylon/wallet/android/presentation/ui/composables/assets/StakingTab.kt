@@ -39,7 +39,8 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.displayableQuantity
-import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
@@ -543,7 +544,7 @@ private fun StakeClaims(
                 color = RadixTheme.colors.gray2
             )
 
-            val stakeClaimPrice = assetsViewData.prices?.get(validatorWithStakes.stakeClaimNft) as? AssetPrice.StakeClaimPrice
+            val stakeClaimPrice = assetsViewData.prices?.get(claim) as? AssetPrice.StakeClaimPrice
             unstakingItems.forEachIndexed { index, item ->
                 ClaimWorth(
                     modifier = Modifier.padding(top = if (index != 0) RadixTheme.dimensions.paddingSmall else 0.dp),

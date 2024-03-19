@@ -53,7 +53,7 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.Metadata

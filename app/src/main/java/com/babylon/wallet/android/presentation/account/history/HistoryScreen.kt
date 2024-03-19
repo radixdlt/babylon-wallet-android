@@ -76,7 +76,6 @@ import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.FiltersDialog
 import com.babylon.wallet.android.presentation.account.composable.FiltersStrip
 import com.babylon.wallet.android.presentation.account.composable.TransactionHistoryItem
@@ -95,6 +94,7 @@ import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT_THIS_YEAR
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.resources.Resource
 import timber.log.Timber
 import java.time.Instant
 import java.time.ZoneId

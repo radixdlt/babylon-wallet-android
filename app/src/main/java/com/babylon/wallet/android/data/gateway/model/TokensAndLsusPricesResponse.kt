@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.data.gateway.model
 
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntity
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.assets.SupportedCurrency
 
 @Serializable
 data class TokensAndLsusPricesResponse(

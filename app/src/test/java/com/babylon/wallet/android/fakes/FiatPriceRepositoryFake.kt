@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.fakes
 
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 import com.babylon.wallet.android.mockdata.mockLSUAddress1
 import com.babylon.wallet.android.mockdata.mockLSUAddress2
 import com.babylon.wallet.android.mockdata.mockNFTAddressForStakeClaim1

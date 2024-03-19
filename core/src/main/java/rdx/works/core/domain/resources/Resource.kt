@@ -1,6 +1,7 @@
 package rdx.works.core.domain.resources
 
 import android.net.Uri
+import com.radixdlt.derivation.model.NetworkId
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import rdx.works.core.AddressHelper
@@ -332,6 +333,10 @@ object XrdResource {
 
     fun address(networkId: Int): String {
         return AddressHelper.xrdAddress(forNetworkId = networkId)
+    }
+
+    fun addressesPerNetwork(): Map<Int, String> = NetworkId.entries.associate { entry ->
+        entry.value to address(networkId = entry.value)
     }
 }
 
