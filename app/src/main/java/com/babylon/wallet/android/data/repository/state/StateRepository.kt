@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.gateway.extensions.getNextNftItems
 import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
 import com.babylon.wallet.android.data.gateway.extensions.paginateNonFungibles
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
-import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataRequest
 import com.babylon.wallet.android.data.repository.cache.database.DAppEntity
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsResourcesJoin
