@@ -1,14 +1,14 @@
 package com.babylon.wallet.android.presentation.ui.composables.assets
 
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeSummary
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.assets.TokensPriceSorter
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeSummary
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.assets.TokensPriceSorter
+import rdx.works.core.domain.assets.ValidatorWithStakes
 import java.math.BigDecimal
 
 data class AssetsViewData(

@@ -33,7 +33,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isOlympiaAccount

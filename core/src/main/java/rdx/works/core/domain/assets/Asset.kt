@@ -51,7 +51,7 @@ data class Assets(
     val ownedNonXrdTokens: List<Token> by lazy {
         tokens.filterNot { it.resource.isXrd || it.resource.ownedAmount == BigDecimal.ZERO }
     }
-    val ownedFungibles: List<Token> by lazy {
+    val ownedTokens: List<Token> by lazy {
         ownedXrd?.let { listOf(it) + ownedNonXrdTokens } ?: ownedNonXrdTokens
     }
 
@@ -59,29 +59,16 @@ data class Assets(
         nonFungibles.filterNot { it.collection.amount == 0L }
     }
 
-    val ownedPoolUnits: List<PoolUnit> by lazy {
-        poolUnits.filterNot { it.stake.ownedAmount == BigDecimal.ZERO }
+    val ownedLiquidStakeUnits: List<LiquidStakeUnit> by lazy {
+        liquidStakeUnits.filter { it.fungibleResource.ownedAmount != BigDecimal.ZERO }
     }
 
-    val ownedValidatorsWithStakes: List<ValidatorWithStakes> by lazy {
-        // TODO sort
-        val validators = (liquidStakeUnits.map { it.validator } + stakeClaims.map { it.validator }).toSet()
+    val ownedStakeClaims: List<StakeClaim> by lazy {
+        stakeClaims.filter { it.nonFungibleResource.amount > 0L }
+    }
 
-        validators.mapNotNull { validator ->
-            val lsu = liquidStakeUnits.find {
-                it.validator == validator && it.fungibleResource.ownedAmount != BigDecimal.ZERO
-            }
-            val claimCollection = stakeClaims.find { claim ->
-                claim.validator == validator && claim.nonFungibleResource.amount > 0
-            }
-            if (lsu == null && claimCollection == null) return@mapNotNull null
-
-            ValidatorWithStakes(
-                validatorDetail = validator,
-                liquidStakeUnit = lsu,
-                stakeClaimNft = claimCollection
-            )
-        }
+    val ownedPoolUnits: List<PoolUnit> by lazy {
+        poolUnits.filterNot { it.stake.ownedAmount == BigDecimal.ZERO }
     }
 
     // knownResources of an account is when
@@ -95,32 +82,12 @@ data class Assets(
             stakeClaims.map { it.nonFungibleResource }
     }
 
-    fun hasXrd(minimumBalance: BigDecimal = BigDecimal(1)): Boolean = ownedXrd?.let {
-        it.resource.ownedAmount?.let { amount ->
-            amount >= minimumBalance
-        }
-    } == true
+    val ownedAssets: List<Asset> by lazy {
+        ownedTokens + ownedNonFungibles + ownedPoolUnits + ownedLiquidStakeUnits + ownedStakeClaims
+    }
 
-    fun fungiblesSize(): Int = ownedFungibles.size
-
-    fun nonFungiblesSize(): Int = ownedNonFungibles.size
-
-    fun validatorsWithStakesSize() = ownedValidatorsWithStakes.size
-
-    fun poolUnitsSize(): Int = ownedPoolUnits.size
-
-    fun stakeSummary(epoch: Long?): StakeSummary? {
-        if (epoch == null || ownedValidatorsWithStakes.any { !it.isDetailsAvailable }) return null
-
-        return StakeSummary(
-            staked = ownedValidatorsWithStakes.sumOf { it.stakeValue() ?: BigDecimal.ZERO },
-            unstaking = ownedValidatorsWithStakes.sumOf { validator ->
-                validator.stakeClaimNft?.unstakingNFTs(epoch)?.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO } ?: BigDecimal.ZERO
-            },
-            readyToClaim = ownedValidatorsWithStakes.sumOf { validator ->
-                validator.stakeClaimNft?.readyToClaimNFTs(epoch)?.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO } ?: BigDecimal.ZERO
-            }
-        )
+    val ownsAnyAssetsThatContributeToBalance: Boolean by lazy {
+        ownedTokens.isNotEmpty() || ownedPoolUnits.isNotEmpty() || ownedLiquidStakeUnits.isNotEmpty() || ownedStakeClaims.isNotEmpty()
     }
 }
 
@@ -161,6 +128,27 @@ data class ValidatorWithStakes(
     fun stakeValue(): BigDecimal? {
         if (validatorDetail.totalXrdStake == null) return null
         return liquidStakeUnit?.stakeValueInXRD(validatorDetail.totalXrdStake)
+    }
+
+    companion object {
+        fun from(
+            liquidStakeUnits: List<LiquidStakeUnit>,
+            stakeClaims: List<StakeClaim>
+        ): List<ValidatorWithStakes> {
+            val validators = (liquidStakeUnits.map { it.validator } + stakeClaims.map { it.validator }).toSet()
+
+            return validators.mapNotNull { validator ->
+                val lsu = liquidStakeUnits.find { it.validator == validator }
+                val claimCollection = stakeClaims.find { it.validator == validator }
+                if (lsu == null && claimCollection == null) return@mapNotNull null
+
+                ValidatorWithStakes(
+                    validatorDetail = validator,
+                    liquidStakeUnit = lsu,
+                    stakeClaimNft = claimCollection
+                )
+            }
+        }
     }
 }
 

@@ -1,6 +1,6 @@
-package com.babylon.wallet.android.domain.model.assets
+package rdx.works.core.domain.assets
 
-import com.babylon.wallet.android.domain.model.resources.isXrd
+import rdx.works.core.domain.resources.isXrd
 
 class TokensPriceSorter(
     private val pricesPerAsset: Map<Asset, AssetPrice?>?
