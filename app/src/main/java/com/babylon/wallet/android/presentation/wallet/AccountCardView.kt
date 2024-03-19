@@ -28,9 +28,6 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import rdx.works.core.domain.assets.Assets
-import rdx.works.core.domain.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -39,6 +36,9 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 
 @Suppress("DestructuringDeclarationWithTooManyEntries")
 @Composable

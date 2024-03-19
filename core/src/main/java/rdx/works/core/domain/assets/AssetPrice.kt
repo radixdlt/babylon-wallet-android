@@ -1,11 +1,11 @@
-package com.babylon.wallet.android.domain.model.assets
+package rdx.works.core.domain.assets
 
 import android.icu.number.NumberFormatter
 import android.icu.number.Precision
 import android.icu.text.NumberFormat
 import android.icu.util.Currency
 import android.os.Build
-import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.domain.resources.Resource
 import java.math.BigDecimal
 import java.util.Locale
 

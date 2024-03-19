@@ -9,9 +9,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 
 @Composable
 fun FiatBalanceView(

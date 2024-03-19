@@ -64,6 +64,7 @@ import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network

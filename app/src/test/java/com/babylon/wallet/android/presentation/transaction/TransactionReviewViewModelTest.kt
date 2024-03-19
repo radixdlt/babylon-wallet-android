@@ -106,7 +106,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
     private val transactionRepository = mockk<TransactionRepository>()
-    private val getNFTDetailsUseCase = mockk<GetNFTDetailsUseCase>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()

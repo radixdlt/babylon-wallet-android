@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.fakes.FiatPriceRepositoryFake
 import com.babylon.wallet.android.fakes.StateRepositoryFake
@@ -14,6 +13,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import rdx.works.core.domain.assets.Asset
 
 class GetFiatValueUseCaseTest {
 

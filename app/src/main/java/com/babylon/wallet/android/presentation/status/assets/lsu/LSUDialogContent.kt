@@ -40,6 +40,7 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBal
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import rdx.works.core.AddressHelper
 import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource

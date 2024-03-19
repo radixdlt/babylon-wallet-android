@@ -41,7 +41,9 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.WorthXRD
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Suppress("CyclomaticComplexMethod")

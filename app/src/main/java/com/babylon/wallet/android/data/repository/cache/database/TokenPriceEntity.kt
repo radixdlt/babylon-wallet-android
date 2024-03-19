@@ -2,8 +2,8 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 import java.math.BigDecimal
 import java.time.Instant
 

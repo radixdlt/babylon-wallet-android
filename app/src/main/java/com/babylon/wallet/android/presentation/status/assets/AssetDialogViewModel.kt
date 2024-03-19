@@ -14,6 +14,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim

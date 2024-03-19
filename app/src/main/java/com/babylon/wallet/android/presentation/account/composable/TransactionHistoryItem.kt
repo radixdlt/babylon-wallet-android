@@ -32,18 +32,18 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.BalanceChange
 import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.TransactionHistoryItem
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.name
 import com.babylon.wallet.android.utils.timestampHoursMinutes
 import com.babylon.wallet.android.utils.truncatedHash
 import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Resource
 import timber.log.Timber
 
 @Suppress("CyclomaticComplexMethod")
