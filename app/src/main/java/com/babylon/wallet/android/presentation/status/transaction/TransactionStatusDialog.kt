@@ -56,72 +56,78 @@ fun TransactionStatusDialog(
             }
         }
     }
-    BottomSheetDialogWrapper(modifier = modifier, onDismiss = dismissHandler, dragToDismissEnabled = !state.blockUntilComplete, content = {
-        Box {
-            androidx.compose.animation.AnimatedVisibility(
-                visible = state.isCompleting,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                CompletingContent()
-            }
-
-            androidx.compose.animation.AnimatedVisibility(
-                visible = state.isFailed,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                val title = when (state.walletErrorType) {
-                    WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
-                        stringResource(id = R.string.transactionStatus_failed_title)
-                    }
-
-                    WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
-                        stringResource(id = R.string.transactionStatus_rejected_title)
-                    }
-
-                    WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
-                        stringResource(id = R.string.transactionStatus_error_title)
-                    }
-
-                    else -> {
-                        stringResource(id = R.string.common_somethingWentWrong)
-                    }
+    BottomSheetDialogWrapper(
+        modifier = modifier,
+        onDismiss = dismissHandler,
+        dragToDismissEnabled = !state.blockUntilComplete,
+        showDefaultTopBar = false,
+        content = {
+            Box {
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = state.isCompleting,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    CompletingContent()
                 }
-                SomethingWentWrongDialogContent(
-                    title = title,
-                    subtitle = state.failureError,
-                    transactionAddress = state.transactionId
-                )
-            }
 
-            androidx.compose.animation.AnimatedVisibility(
-                visible = state.isSuccess,
-                enter = fadeIn(),
-                exit = fadeOut()
-            ) {
-                // Need to send the correct transaction id
-                SuccessContent(transactionAddress = state.transactionId)
-            }
-
-            if (state.isIgnoreTransactionModalShowing) {
-                BasicPromptAlertDialog(
-                    finish = { accepted ->
-                        if (accepted) {
-                            viewModel.onDismissConfirmed()
-                        } else {
-                            viewModel.onDismissCanceled()
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = state.isFailed,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    val title = when (state.walletErrorType) {
+                        WalletErrorType.SubmittedTransactionHasFailedTransactionStatus -> {
+                            stringResource(id = R.string.transactionStatus_failed_title)
                         }
-                    },
-                    message = {
-                        Text(text = stringResource(id = R.string.transactionStatus_dismissDialog_message))
-                    },
-                    confirmText = stringResource(id = R.string.common_ok),
-                    dismissText = null
-                )
+
+                        WalletErrorType.SubmittedTransactionHasPermanentlyRejectedTransactionStatus -> {
+                            stringResource(id = R.string.transactionStatus_rejected_title)
+                        }
+
+                        WalletErrorType.SubmittedTransactionHasTemporarilyRejectedTransactionStatus -> {
+                            stringResource(id = R.string.transactionStatus_error_title)
+                        }
+
+                        else -> {
+                            stringResource(id = R.string.common_somethingWentWrong)
+                        }
+                    }
+                    SomethingWentWrongDialogContent(
+                        title = title,
+                        subtitle = state.failureError,
+                        transactionAddress = state.transactionId
+                    )
+                }
+
+                androidx.compose.animation.AnimatedVisibility(
+                    visible = state.isSuccess,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    // Need to send the correct transaction id
+                    SuccessContent(transactionAddress = state.transactionId)
+                }
+
+                if (state.isIgnoreTransactionModalShowing) {
+                    BasicPromptAlertDialog(
+                        finish = { accepted ->
+                            if (accepted) {
+                                viewModel.onDismissConfirmed()
+                            } else {
+                                viewModel.onDismissCanceled()
+                            }
+                        },
+                        message = {
+                            Text(text = stringResource(id = R.string.transactionStatus_dismissDialog_message))
+                        },
+                        confirmText = stringResource(id = R.string.common_ok),
+                        dismissText = null
+                    )
+                }
             }
         }
-    })
+    )
 }
 
 @Composable

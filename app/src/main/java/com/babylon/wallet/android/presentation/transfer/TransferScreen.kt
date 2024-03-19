@@ -356,12 +356,16 @@ fun TransferContent(
         BottomSheetDialogWrapper(
             addScrim = true,
             showDragHandle = true,
-            onDismiss = onSheetClosed
+            onDismiss = onSheetClosed,
+            showDefaultTopBar = false
         ) {
             when (val sheetState = state.sheet) {
                 is State.Sheet.ChooseAccounts -> {
                     ChooseAccountSheet(
-                        modifier = Modifier.fillMaxHeight(0.9f).imePadding(),
+                        modifier = Modifier
+                            .background(RadixTheme.colors.gray5)
+                            .fillMaxHeight(0.9f)
+                            .imePadding(),
                         onCloseClick = onSheetClosed,
                         state = sheetState,
                         onOwnedAccountSelected = onOwnedAccountSelected,
@@ -375,7 +379,10 @@ fun TransferContent(
 
                 is State.Sheet.ChooseAssets -> {
                     ChooseAssetsSheet(
-                        modifier = Modifier.fillMaxHeight(0.9f).imePadding(),
+                        modifier = Modifier
+                            .background(RadixTheme.colors.defaultBackground)
+                            .fillMaxHeight(0.9f)
+                            .imePadding(),
                         state = sheetState,
                         onTabClick = onChooseAssetTabClick,
                         onCollectionClick = onChooseAssetCollectionClick,
@@ -391,49 +398,6 @@ fun TransferContent(
                 is State.Sheet.None -> {}
             }
         }
-//        DefaultModalSheetLayout(
-//            modifier = Modifier.imePadding(),
-//            sheetState = bottomSheetState,
-//            sheetContent = {
-//                when (val sheetState = state.sheet) {
-//                    is State.Sheet.ChooseAccounts -> {
-//                        ChooseAccountSheet(
-//                            onCloseClick = onSheetClosed,
-//                            state = sheetState,
-//                            onOwnedAccountSelected = onOwnedAccountSelected,
-//                            onChooseAccountSubmitted = onChooseAccountSubmitted,
-//                            onAddressDecoded = onAddressDecoded,
-//                            onQrCodeIconClick = onQrCodeIconClick,
-//                            cancelQrScan = cancelQrScan,
-//                            onAddressChanged = onAddressTyped
-//                        )
-//                    }
-//
-//                    is State.Sheet.ChooseAssets -> {
-//                        ChooseAssetsSheet(
-//                            state = sheetState,
-//                            onTabClick = onChooseAssetTabClick,
-//                            onCollectionClick = onChooseAssetCollectionClick,
-//                            onCloseClick = onSheetClosed,
-//                            onAssetSelectionChanged = onAssetSelectionChanged,
-//                            onNextNFtsPageRequest = onNextNFTsPageRequest,
-//                            onStakesRequest = onStakesRequest,
-//                            onUiMessageShown = onUiMessageShown,
-//                            onChooseAssetsSubmitted = onChooseAssetsSubmitted
-//                        )
-//                    }
-//
-//                    is State.Sheet.None -> {}
-//                }
-//            },
-//            showDragHandle = true,
-//            containerColor = if (state.sheet is State.Sheet.ChooseAccounts) {
-//                RadixTheme.colors.defaultBackground
-//            } else {
-//                RadixTheme.colors.gray5
-//            },
-//            onDismissRequest = onSheetClosed
-//        )
     }
 }
 
