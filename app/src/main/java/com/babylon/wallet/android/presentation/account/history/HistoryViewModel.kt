@@ -166,6 +166,7 @@ class HistoryViewModel @Inject constructor(
         }
         var item = existingIndex?.let { _state.value.historyItems?.getOrNull(it) }
         if (existingIndex == null || existingIndex == -1) {
+            if (_state.value.canLoadMore.not()) return
             _state.update { it.copy(loadMoreState = State.LoadingMoreState.NewRange, areScrollEventsIgnored = true) }
             viewModelScope.launch {
                 getAccountHistoryUseCase.getHistoryChunk(
@@ -228,7 +229,6 @@ class HistoryViewModel @Inject constructor(
                     Timber.d("History: Nothing to load at the top")
                     return
                 }
-                Timber.d("History: Loading data at the top, cursor: ${_state.value.historyData?.prevCursorId}")
                 _state.update { it.copy(loadMoreState = State.LoadingMoreState.Up) }
                 viewModelScope.launch {
                     _state.value.historyData?.let { currentData ->
@@ -244,6 +244,7 @@ class HistoryViewModel @Inject constructor(
 
             ScrollInfo.Direction.DOWN -> {
                 if (_state.value.canLoadMoreDown.not()) {
+                    Timber.d("History: Nothing to load at the bottom")
                     return
                 }
                 _state.update { it.copy(loadMoreState = State.LoadingMoreState.Down) }
@@ -264,9 +265,9 @@ class HistoryViewModel @Inject constructor(
     fun onScrollEvent(event: ScrollInfo) {
         if (_state.value.areScrollEventsIgnored.not()) {
             val items = _state.value.historyItems ?: return
-            val firstVisibleItemDate = event.firstVisible?.let { items.getOrNull(it) }?.dateTime ?: return
-            val lastVisibleItemDate = event.lastVisible?.let { items.getOrNull(it) }?.dateTime ?: return
-            _state.update { it.copy(firstVisibleIndex = event.firstVisible) }
+            val firstVisibleItemDate = event.firstVisibleIndex?.let { items.getOrNull(it) }?.dateTime ?: return
+            val lastVisibleItemDate = event.lastVisibleIndex?.let { items.getOrNull(it) }?.dateTime ?: return
+            _state.update { it.copy(firstVisibleIndex = event.firstVisibleIndex) }
             when (event.direction) {
                 ScrollInfo.Direction.UP -> {
                     selectDate(firstVisibleItemDate)
@@ -347,7 +348,7 @@ class HistoryViewModel @Inject constructor(
                 } else {
                     State.Content.Loaded(
                         historyData = historyData,
-                        historyItems = historyItems.toPersistentList()
+                        historyItems = historyItems.toPersistentList(),
                     )
                 },
                 loadMoreState = if (resetLoadingMoreState) null else it.loadMoreState,
@@ -420,6 +421,9 @@ data class State(
 
     val canLoadMoreDown: Boolean
         get() = content is Content.Loaded && loadMoreState == null && content.historyData.nextCursorId != null
+
+    val canLoadMore: Boolean
+        get() = canLoadMoreUp || canLoadMoreDown
 
     val filtersChanged: Boolean
         get() = filters != currentFilters

@@ -6,6 +6,7 @@ import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +27,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -98,8 +98,6 @@ import timber.log.Timber
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-
-private const val FIXED_LIST_ELEMENTS = 2
 
 @Composable
 fun HistoryScreen(
@@ -178,7 +176,7 @@ private class AccountHeaderCardNestedScrollConnection(
 }
 
 @Suppress("CyclomaticComplexMethod")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun HistoryContent(
     modifier: Modifier = Modifier,
@@ -215,7 +213,7 @@ fun HistoryContent(
             timeFilterScrollState.scrollToItem(state.timeFilterItems.lastIndex)
         }
     }
-    MonitorListScroll(state = listState, fixedListElements = FIXED_LIST_ELEMENTS, onLoadMore = { direction ->
+    MonitorListScroll(state = listState, onLoadMore = { direction ->
         when (direction) {
             ScrollInfo.Direction.UP -> {
                 if (state.canLoadMoreUp) {
@@ -302,40 +300,47 @@ fun HistoryContent(
                             }
 
                             is State.Content.Loaded -> {
-                                itemsIndexed(content.historyItems, key = { _, item -> item.key }) { index, item ->
-                                    if (index == 0 && state.loadMoreState == State.LoadingMoreState.Up) {
-                                        LoadingItemPlaceholder(modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingMedium))
-                                    }
-                                    when (item) {
+                                val firstTxItemIndex = content.historyItems.indexOfFirst { it is HistoryItem.Transaction }
+                                content.historyItems.forEachIndexed { index, historyItem ->
+                                    when (historyItem) {
                                         is HistoryItem.Date -> {
-                                            Text(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .background(RadixTheme.colors.gray5)
-                                                    .padding(RadixTheme.dimensions.paddingMedium)
-                                                    .radixPlaceholder(
-                                                        visible = state.loadMoreState == State.LoadingMoreState.NewRange
-                                                    ),
-                                                text = item.item.toInstant().dayMonthDateFull(),
-                                                style = RadixTheme.typography.body2Header,
-                                                color = RadixTheme.colors.gray2
-                                            )
+                                            stickyHeader(key = historyItem.key) {
+                                                Text(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .background(RadixTheme.colors.gray5)
+                                                        .padding(RadixTheme.dimensions.paddingMedium)
+                                                        .radixPlaceholder(
+                                                            visible = state.loadMoreState == State.LoadingMoreState.NewRange
+                                                        ),
+                                                    text = historyItem.item.toInstant().dayMonthDateFull(),
+                                                    style = RadixTheme.typography.body2Header,
+                                                    color = RadixTheme.colors.gray2
+                                                )
+                                            }
                                         }
 
                                         is HistoryItem.Transaction -> {
-                                            TransactionHistoryItem(
-                                                modifier = Modifier
-                                                    .padding(horizontal = RadixTheme.dimensions.paddingMedium)
-                                                    .radixPlaceholder(
-                                                        visible = state.loadMoreState == State.LoadingMoreState.NewRange
+                                            item {
+                                                if (index == firstTxItemIndex && state.loadMoreState == State.LoadingMoreState.Up) {
+                                                    LoadingItemPlaceholder(
+                                                        modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingMedium)
                                                     )
-                                                    .shadow(elevation = 6.dp, shape = RadixTheme.shapes.roundedRectMedium),
-                                                transactionItem = item.transactionItem,
-                                                onClick = {
-                                                    onOpenTransactionDetails(item.transactionItem.txId)
                                                 }
-                                            )
-                                            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                                                TransactionHistoryItem(
+                                                    modifier = Modifier
+                                                        .padding(horizontal = RadixTheme.dimensions.paddingMedium)
+                                                        .radixPlaceholder(
+                                                            visible = state.loadMoreState == State.LoadingMoreState.NewRange
+                                                        )
+                                                        .shadow(elevation = 6.dp, shape = RadixTheme.shapes.roundedRectMedium),
+                                                    transactionItem = historyItem.transactionItem,
+                                                    onClick = {
+                                                        onOpenTransactionDetails(historyItem.transactionItem.txId)
+                                                    }
+                                                )
+                                                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+                                            }
                                         }
                                     }
                                 }
@@ -562,7 +567,6 @@ private fun SyncSheetState(
 @Composable
 private fun MonitorListScroll(
     state: LazyListState,
-    fixedListElements: Int,
     onScrollEvent: (ScrollInfo) -> Unit,
     onLoadMore: (ScrollInfo.Direction) -> Unit,
     loadThreshold: Int = 6
@@ -585,36 +589,23 @@ private fun MonitorListScroll(
         derivedStateOf {
             val lastItem = state.layoutInfo.visibleItemsInfo.lastOrNull() ?: return@derivedStateOf false
             val threshold = state.layoutInfo.totalItemsCount - loadThreshold - 1
-            if (threshold <= fixedListElements) {
+            if (threshold <= 0) {
                 return@derivedStateOf false
             }
-            state.layoutInfo.totalItemsCount > fixedListElements && lastItem.index >= threshold
+            state.layoutInfo.totalItemsCount > 0 && lastItem.index >= threshold
         }
     }
     val loadMoreUp by remember(state) {
         derivedStateOf {
-            val firstItem = state.layoutInfo.visibleItemsInfo.firstOrNull {
-                if (fixedListElements == 0) {
-                    true
-                } else {
-                    it.index > fixedListElements - 1
-                }
-            } ?: return@derivedStateOf false
-            state.layoutInfo.totalItemsCount > fixedListElements && firstItem.index <= fixedListElements + loadThreshold
+            val firstItem = state.layoutInfo.visibleItemsInfo.firstOrNull() ?: return@derivedStateOf false
+            state.layoutInfo.totalItemsCount > 0 && firstItem.index <= loadThreshold
         }
     }
     val scrollInfo by remember(state) {
         derivedStateOf {
-            val firstItem = state.layoutInfo.visibleItemsInfo.firstOrNull {
-                if (fixedListElements == 0) {
-                    true
-                } else {
-                    it.index > fixedListElements - 1
-                }
-            }
+            val firstItem = state.layoutInfo.visibleItemsInfo.firstOrNull()
             val lastItem = state.layoutInfo.visibleItemsInfo.lastOrNull()
             ScrollInfo(
-                fixedListElements = fixedListElements,
                 firstVisibleIndex = firstItem?.index,
                 lastVisibleIndex = lastItem?.index,
                 totalCount = state.layoutInfo.totalItemsCount
@@ -644,19 +635,11 @@ private fun MonitorListScroll(
 }
 
 data class ScrollInfo(
-    val fixedListElements: Int = 0,
     val direction: Direction? = null,
-    private val firstVisibleIndex: Int?,
-    private val lastVisibleIndex: Int?,
+    val firstVisibleIndex: Int?,
+    val lastVisibleIndex: Int?,
     val totalCount: Int
 ) {
-
-    val firstVisible: Int?
-        get() = firstVisibleIndex?.let { it - fixedListElements }
-
-    val lastVisible: Int?
-        get() = lastVisibleIndex?.let { it - fixedListElements }
-
     enum class Direction {
         UP, DOWN
     }
