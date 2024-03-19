@@ -12,4 +12,6 @@ sealed class ProfileException(msg: String? = null, cause: Throwable? = null) : T
     data object NoMnemonic : ProfileException("Please restore your Seed Phrase and try again")
 
     data class BdfsSecureStorage(val isSamsungDevice: Boolean) : ProfileException("There was issue tying to save BDFS for your profile")
+
+    data object SecureStorageAccess : ProfileException("There was issue tying to access mnemonic secure storage")
 }
