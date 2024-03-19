@@ -239,7 +239,7 @@ internal sealed interface WalletEvent : OneOffEvent {
 }
 
 data class WalletUiState(
-    private val accountsWithResources: List<AccountWithAssets>? = null,
+    private val accountsWithAssets: List<AccountWithAssets>? = null,
     private val accountsAddressesWithAssetsPrices: Map<String, List<AssetPrice>?>? = null,
     private val loading: Boolean = true,
     private val refreshing: Boolean = false,
@@ -251,17 +251,21 @@ data class WalletUiState(
     val isNpsSurveyShown: Boolean = false
 ) : UiState {
 
-    val accountResources: List<AccountWithAssets>
-        get() = accountsWithResources.orEmpty()
+    val accountsAndAssets: List<AccountWithAssets>
+        get() = accountsWithAssets.orEmpty()
 
     /**
      * Initial loading of the screen.
      */
     val isLoading: Boolean
-        get() = accountsWithResources == null && loading
+        get() = accountsWithAssets == null && loading
 
     val isWalletBalanceLoading: Boolean
-        get() = accountsAddressesWithAssetsPrices.isNullOrEmpty()
+        get() {
+            // if assets loading then getFiatValueUseCase won't fetch any actual prices
+            val areAnyAssetsLoading = accountsAndAssets.any { accountWithAssets -> accountWithAssets.assets == null }
+            return isLoading || areAnyAssetsLoading || accountsAddressesWithAssetsPrices.isNullOrEmpty()
+        }
 
     fun isBalanceLoadingForAccount(accountAddress: String): Boolean {
         return accountsAddressesWithAssetsPrices?.containsKey(accountAddress) != true
@@ -305,7 +309,7 @@ data class WalletUiState(
      *
      */
     fun totalFiatValueForAccount(accountAddress: String): FiatPrice? {
-        val accountWithAssets = accountResources.find {
+        val accountWithAssets = accountsAndAssets.find {
             it.account.address == accountAddress
         }
         if (accountWithAssets?.assets?.ownsAnyAssetsThatContributeToBalance?.not() == true) {
@@ -360,14 +364,14 @@ data class WalletUiState(
     }
 
     private fun isDappDefinitionAccount(forAccount: Network.Account): Boolean {
-        return accountResources.find { accountWithResources ->
+        return accountsAndAssets.find { accountWithResources ->
             accountWithResources.account.address == forAccount.address
         }?.isDappDefinitionAccountType ?: false
     }
 
     fun loadingResources(accounts: List<Network.Account>, isRefreshing: Boolean): WalletUiState = copy(
-        accountsWithResources = accounts.map { account ->
-            val current = accountsWithResources?.find { account == it.account }
+        accountsWithAssets = accounts.map { account ->
+            val current = accountsWithAssets?.find { account == it.account }
             AccountWithAssets(
                 account = account,
                 details = current?.details,
@@ -379,14 +383,14 @@ data class WalletUiState(
     )
 
     fun onResourcesReceived(accountsWithResources: List<AccountWithAssets>): WalletUiState = copy(
-        accountsWithResources = accountsWithResources,
+        accountsWithAssets = accountsWithResources,
         loading = false,
         refreshing = false
     )
 
     fun onResourcesError(error: Throwable?): WalletUiState = copy(
         uiMessage = UiMessage.ErrorMessage(error),
-        accountsWithResources = accountsWithResources?.map { account ->
+        accountsWithAssets = accountsWithAssets?.map { account ->
             if (account.assets == null) {
                 // If assets don't exist leave them empty
                 account.copy(assets = Assets())
