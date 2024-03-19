@@ -261,7 +261,11 @@ data class WalletUiState(
         get() = accountsWithAssets == null && loading
 
     val isWalletBalanceLoading: Boolean
-        get() = accountsAddressesWithAssetsPrices.isNullOrEmpty()
+        get() {
+            // if assets loading then getFiatValueUseCase won't fetch any actual prices
+            val areAnyAssetsLoading = accountsAndAssets.any { accountWithAssets -> accountWithAssets.assets == null }
+            return isLoading || areAnyAssetsLoading || accountsAddressesWithAssetsPrices.isNullOrEmpty()
+        }
 
     fun isBalanceLoadingForAccount(accountAddress: String): Boolean {
         return accountsAddressesWithAssetsPrices?.containsKey(accountAddress) != true
