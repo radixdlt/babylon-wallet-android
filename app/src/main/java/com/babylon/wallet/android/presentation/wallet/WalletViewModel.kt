@@ -99,13 +99,16 @@ class WalletViewModel @Inject constructor(
 
     private fun observeNpsSurveyState() {
         viewModelScope.launch {
-            npsSurveyStateObserver.npsSurveyState().filterIsInstance<NPSSurveyState.Active>().collectLatest { state ->
-                _state.update { it.copy(isNpsSurveyShown = true) }
+            npsSurveyStateObserver.npsSurveyState.filterIsInstance<NPSSurveyState.Active>().collectLatest {
+                if (state.value.isNpsSurveyShown.not()) {
+                    sendEvent(WalletEvent.ShowNpsSurvey)
+                    _state.update { state -> state.copy(isNpsSurveyShown = true) }
+                }
             }
         }
     }
 
-    fun npsSurveyShown() {
+    fun dismissSurvey() {
         viewModelScope.launch {
             _state.update { it.copy(isNpsSurveyShown = false) }
         }
@@ -236,6 +239,8 @@ class WalletViewModel @Inject constructor(
 internal sealed interface WalletEvent : OneOffEvent {
     data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : WalletEvent
     data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceID.FromHash) : WalletEvent
+
+    data object ShowNpsSurvey : WalletEvent
 }
 
 data class WalletUiState(

@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -37,12 +38,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
@@ -100,14 +104,32 @@ fun WalletScreen(
             when (it) {
                 is WalletEvent.NavigateToMnemonicBackup -> onNavigateToMnemonicBackup(it.factorSourceId)
                 is WalletEvent.NavigateToMnemonicRestore -> onNavigateToMnemonicRestore()
+                WalletEvent.ShowNpsSurvey -> showNPSSurvey()
             }
         }
     }
+    SyncNpsSurveyState(walletState, viewModel::dismissSurvey)
+}
 
-    LaunchedEffect(walletState.isNpsSurveyShown) {
-        if (walletState.isNpsSurveyShown) {
-            showNPSSurvey()
-            viewModel.npsSurveyShown()
+/**
+ * NPS survey is new composable destination, so current lifecycle is paused when NPS takes over,
+ * and resumed when wallet screen is shown again. We use that fact to mark survey as shown.
+ *
+ */
+@Composable
+fun SyncNpsSurveyState(walletState: WalletUiState, onDismiss: () -> Unit) {
+    val owner = LocalLifecycleOwner.current
+    DisposableEffect(walletState.isNpsSurveyShown) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (walletState.isNpsSurveyShown) {
+                    onDismiss()
+                }
+            }
+        }
+        owner.lifecycle.addObserver(observer)
+        onDispose {
+            owner.lifecycle.removeObserver(observer)
         }
     }
 }
