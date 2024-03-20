@@ -133,10 +133,16 @@ class WalletViewModel @Inject constructor(
                 }
             }
             .onEach { accountsWithAssets ->
+                // keep the val here because the onResourcesReceived sets the refreshing to false
+                val isRefreshing = state.value.isRefreshing
+
                 _state.update { it.onResourcesReceived(accountsWithAssets) }
 
                 val accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
-                    accountWithAssets.account.address to getFiatValueUseCase.forAccount(accountWithAssets).getOrNull()
+                    accountWithAssets.account.address to getFiatValueUseCase.forAccount(
+                        accountWithAssets = accountWithAssets,
+                        isRefreshing = isRefreshing
+                    ).getOrNull()
                 }
                 _state.update { walletUiState ->
                     walletUiState.copy(
