@@ -23,6 +23,7 @@ interface TokenPriceDao {
     companion object {
         private val tokenPriceCacheDuration = 5.toDuration(DurationUnit.MINUTES)
 
-        fun tokenPriceCacheValidity() = InstantGenerator().toEpochMilli() - tokenPriceCacheDuration.inWholeMilliseconds
+        fun tokenPriceCacheValidity(isRefreshing: Boolean = false) =
+            InstantGenerator().toEpochMilli() - if (isRefreshing) 0 else tokenPriceCacheDuration.inWholeMilliseconds
     }
 }
