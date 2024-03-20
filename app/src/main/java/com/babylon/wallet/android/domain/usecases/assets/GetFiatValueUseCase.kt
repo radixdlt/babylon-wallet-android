@@ -30,7 +30,8 @@ class GetFiatValueUseCase @Inject constructor(
 
     suspend fun forAccount(
         accountWithAssets: AccountWithAssets,
-        currency: SupportedCurrency = SupportedCurrency.USD
+        currency: SupportedCurrency = SupportedCurrency.USD,
+        isRefreshing: Boolean
     ): Result<List<AssetPrice>> {
         val networkId = NetworkId.from(accountWithAssets.account.networkID)
         return runCatching {
@@ -39,7 +40,12 @@ class GetFiatValueUseCase @Inject constructor(
                 accountWithAssets.assets?.ownedPoolUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
                 accountWithAssets.assets?.ownedStakeClaims?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty()
         }.then { addresses ->
-            getFiatPrices(networkId = networkId, addresses = addresses.toSet(), currency = currency)
+            getFiatPrices(
+                networkId = networkId,
+                addresses = addresses.toSet(),
+                currency = currency,
+                isRefreshing = isRefreshing
+            )
         }.mapCatching { prices ->
             // ensure that all claims are fetched
             val claims = if (accountWithAssets.assets?.ownedStakeClaims?.isNotEmpty() == true) {
@@ -72,7 +78,8 @@ class GetFiatValueUseCase @Inject constructor(
     suspend fun forAssets(
         assets: List<Asset>,
         account: Network.Account,
-        currency: SupportedCurrency = SupportedCurrency.USD
+        currency: SupportedCurrency = SupportedCurrency.USD,
+        isRefreshing: Boolean
     ): List<AssetPrice?> {
         val networkId = NetworkId.from(account.networkID)
 
@@ -85,7 +92,8 @@ class GetFiatValueUseCase @Inject constructor(
         val prices = getFiatPrices(
             networkId = networkId,
             addresses = requestAddresses.toSet(),
-            currency = currency
+            currency = currency,
+            isRefreshing = isRefreshing
         ).getOrNull() ?: return emptyList()
 
         val stakeClaimsWithMissingNFTs = assets.filterIsInstance<StakeClaim>().filter { stakeClaim ->
@@ -114,14 +122,20 @@ class GetFiatValueUseCase @Inject constructor(
     suspend fun forAsset(
         asset: Asset,
         account: Network.Account,
-        currency: SupportedCurrency = SupportedCurrency.USD
+        currency: SupportedCurrency = SupportedCurrency.USD,
+        isRefreshing: Boolean
     ): Result<AssetPrice?> {
         val networkId = NetworkId.from(account.networkID)
 
         return runCatching {
             asset.priceRequestAddresses(networkId)
         }.then { addresses ->
-            getFiatPrices(networkId = networkId, addresses = addresses.toSet(), currency = currency)
+            getFiatPrices(
+                networkId = networkId,
+                addresses = addresses.toSet(),
+                currency = currency,
+                isRefreshing = isRefreshing
+            )
         }.mapCatching { prices ->
             // ensure that all claims are fetched
             val ensured = if (asset is StakeClaim) {
@@ -249,10 +263,19 @@ class GetFiatValueUseCase @Inject constructor(
     private suspend fun getFiatPrices(
         networkId: NetworkId,
         addresses: Set<PriceRequestAddress>,
-        currency: SupportedCurrency
+        currency: SupportedCurrency,
+        isRefreshing: Boolean
     ): Result<Map<String, FiatPrice>> = if (networkId == NetworkId.Mainnet) {
-        mainnetFiatPriceRepository.getFiatPrices(addresses = addresses, currency = currency)
+        mainnetFiatPriceRepository.getFiatPrices(
+            addresses = addresses,
+            currency = currency,
+            isRefreshing = isRefreshing
+        )
     } else {
-        testnetFiatPriceRepository.getFiatPrices(addresses = addresses, currency = currency)
+        testnetFiatPriceRepository.getFiatPrices(
+            addresses = addresses,
+            currency = currency,
+            isRefreshing = isRefreshing
+        )
     }
 }

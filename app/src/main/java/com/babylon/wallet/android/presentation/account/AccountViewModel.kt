@@ -106,6 +106,10 @@ class AccountViewModel @Inject constructor(
                         .mapNotNull { it.firstOrNull() }
                 }
                 .collectLatest { accountWithAssets ->
+                    // keep the val here because the assets have been updated and we need to stop refreshing
+                    // in the next update of the state (below)
+                    val isRefreshing = state.value.isRefreshing
+
                     // Update assets of the account each time they are updated
                     _state.update { state ->
                         state.copy(
@@ -114,7 +118,10 @@ class AccountViewModel @Inject constructor(
                         )
                     }
 
-                    getFiatValueUseCase.forAccount(accountWithAssets)
+                    getFiatValueUseCase.forAccount(
+                        accountWithAssets = accountWithAssets,
+                        isRefreshing = isRefreshing
+                    )
                         .onSuccess { assetsPrices ->
                             _state.update { state ->
                                 state.copy(
@@ -129,7 +136,7 @@ class AccountViewModel @Inject constructor(
                             }
                             Timber.e("Failed to fetch prices for account: ${it.message}")
                             // now try to fetch prices per asset of the account
-                            getAssetsPricesForAccount(accountWithAssets)
+                            getAssetsPricesForAccount(accountWithAssets = accountWithAssets, isRefreshing = isRefreshing)
                         }
                 }
         }
@@ -146,13 +153,17 @@ class AccountViewModel @Inject constructor(
         loadAccountDetails(withRefresh = false)
     }
 
-    private suspend fun getAssetsPricesForAccount(accountWithAssets: AccountWithAssets) {
+    private suspend fun getAssetsPricesForAccount(
+        accountWithAssets: AccountWithAssets,
+        isRefreshing: Boolean
+    ) {
         val assets = accountWithAssets.assets
         if (assets?.ownsAnyAssetsThatContributeToBalance == true && assets.ownedAssets.isNotEmpty()) {
             viewModelScope.launch {
                 val assetsPrices = getFiatValueUseCase.forAssets(
                     assets = assets.ownedAssets,
-                    account = accountWithAssets.account
+                    account = accountWithAssets.account,
+                    isRefreshing = isRefreshing
                 )
                 _state.update { state ->
                     state.copy(assetsWithAssetsPrices = assetsPrices.mapNotNull { it }.associateBy { it.asset })

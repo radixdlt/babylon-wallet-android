@@ -78,7 +78,11 @@ class AssetDialogViewModel @Inject constructor(
                     _state.update { it.copy(accountContext = account) }
 
                     if (account != null) {
-                        val assetPrice = getFiatValueUseCase.forAsset(asset = asset, account = account).getOrThrow()
+                        val assetPrice = getFiatValueUseCase.forAsset(
+                            asset = asset,
+                            account = account,
+                            isRefreshing = true
+                        ).getOrThrow()
                         _state.update { it.copy(assetPrice = assetPrice) }
                     }
                 }
