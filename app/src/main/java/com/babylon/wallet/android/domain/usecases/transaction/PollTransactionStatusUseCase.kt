@@ -19,6 +19,7 @@ class PollTransactionStatusUseCase @Inject constructor(
         transactionType: TransactionType = TransactionType.Generic,
         endEpoch: ULong
     ): TransactionStatusData {
+        var defaultPollDelayMs = DEFAULT_POLL_INTERVAL_MS
         while (true) {
             transactionRepository.getTransactionStatus(txID).onSuccess { statusCheckResult ->
                 val currentEpoch = statusCheckResult.ledgerState.epoch.toULong()
@@ -28,7 +29,8 @@ class PollTransactionStatusUseCase @Inject constructor(
                     TransactionPayloadStatus.unknown,
                     TransactionPayloadStatus.commitPendingOutcomeUnknown,
                     TransactionPayloadStatus.pending -> {
-                        delay(POLLING_INTERVAL_MS)
+                        delay(defaultPollDelayMs)
+                        defaultPollDelayMs += POLL_INTERVAL_MS
                     }
 
                     TransactionPayloadStatus.committedSuccess -> {
@@ -97,6 +99,7 @@ class PollTransactionStatusUseCase @Inject constructor(
     }
 
     companion object {
-        private const val POLLING_INTERVAL_MS = 2000L
+        private const val DEFAULT_POLL_INTERVAL_MS = 2000L
+        private const val POLL_INTERVAL_MS = 1000L
     }
 }
