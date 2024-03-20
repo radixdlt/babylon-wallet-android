@@ -80,7 +80,7 @@ class NPSSurveyStateObserverTest {
 
         advanceUntilIdle()
 
-        Assert.assertEquals(event.first(), NPSSurveyState.InActive)
+        Assert.assertEquals(event.last(), NPSSurveyState.InActive)
     }
 
     @Test
