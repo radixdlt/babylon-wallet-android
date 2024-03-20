@@ -30,7 +30,7 @@ class GetFiatValueUseCaseTest {
     @Test
     fun `assert that all the tokens of the given accounts have their prices`() = testScope.runTest {
         mockAccountsWithMockAssets.forEach { accountWithAssets ->
-            val assetPriceAddresses = getFiatValueUseCase.forAccount(accountWithAssets).getOrThrow().map {
+            val assetPriceAddresses = getFiatValueUseCase.forAccount(accountWithAssets, isRefreshing = false).getOrThrow().map {
                 it.asset.resource.resourceAddress
             }.toSet()
 
@@ -41,7 +41,7 @@ class GetFiatValueUseCaseTest {
 
     @Test
     fun `given a token when it is not included in the result of the prices then it does not have fiat value`() = testScope.runTest {
-        val assetPrices = getFiatValueUseCase.forAccount(mockAccountsWithMockAssets[0]).getOrThrow()
+        val assetPrices = getFiatValueUseCase.forAccount(mockAccountsWithMockAssets[0], isRefreshing = false).getOrThrow()
 
         val assetPrice = assetPrices.find { it.asset.resource.name == "OtherToken" }
         assertNotNull(assetPrice?.asset)
@@ -60,7 +60,7 @@ class GetFiatValueUseCaseTest {
         val accountWithAssets = accountsWithAssets[0]
 
         testScope.runTest {
-            val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets).getOrThrow()
+            val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets, isRefreshing = false).getOrThrow()
 
             val pricesPerAsset: Map<Asset, Double> = assetPricesForAccount.associate { assetPrice ->
                 assetPrice.asset to (assetPrice.price?.price ?: 0.0)
@@ -107,7 +107,7 @@ class GetFiatValueUseCaseTest {
         val accountWithAssets = accountsWithAssets[1]
 
         testScope.runTest {
-            val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets).getOrThrow()
+            val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets, isRefreshing = false).getOrThrow()
 
             val pricesPerAsset: Map<Asset, Double> = assetPricesForAccount.associate { assetPrice ->
                 assetPrice.asset to (assetPrice.price?.price ?: 0.0)
@@ -151,7 +151,7 @@ class GetFiatValueUseCaseTest {
 
         testScope.runTest {
             accountsWithAssets.forEach { accountWithAssets ->
-                val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets).getOrThrow()
+                val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets, isRefreshing = false).getOrThrow()
 
                 val pricesPerAsset: Map<Asset, Double> = assetPricesForAccount.associate { assetPrice ->
                     assetPrice.asset to (assetPrice.price?.price ?: 0.0)

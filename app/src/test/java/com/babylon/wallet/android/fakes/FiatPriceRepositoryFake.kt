@@ -24,7 +24,8 @@ class FiatPriceRepositoryFake : FiatPriceRepository {
 
     override suspend fun getFiatPrices(
         addresses: Set<FiatPriceRepository.PriceRequestAddress>,
-        currency: SupportedCurrency
+        currency: SupportedCurrency,
+        isRefreshing: Boolean
     ): Result<Map<String, FiatPrice>> {
         val all = addresses.map { it.address }
         val results = fiatPrices.filter {
