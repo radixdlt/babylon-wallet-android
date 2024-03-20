@@ -51,7 +51,8 @@ interface FiatPriceRepository {
      */
     suspend fun getFiatPrices(
         addresses: Set<PriceRequestAddress>,
-        currency: SupportedCurrency
+        currency: SupportedCurrency,
+        isRefreshing: Boolean
     ): Result<Map<String, FiatPrice>>
 
     // This will not be needed when using sargon's Address types
@@ -91,7 +92,8 @@ class MainnetFiatPriceRepository @Inject constructor(
 
     override suspend fun getFiatPrices(
         addresses: Set<PriceRequestAddress>,
-        currency: SupportedCurrency
+        currency: SupportedCurrency,
+        isRefreshing: Boolean
     ): Result<Map<String, FiatPrice>> = withContext(ioDispatcher) {
         runCatching {
             val allAddresses = addresses.map { it.address }.toSet()
@@ -99,7 +101,7 @@ class MainnetFiatPriceRepository @Inject constructor(
             val lsuResourceAddresses = addresses.filterIsInstance<PriceRequestAddress.LSU>().map { it.address }.toSet()
             val tokensPrices = tokenPriceDao.getTokensPrices(
                 addresses = allAddresses,
-                minValidity = tokenPriceCacheValidity()
+                minValidity = tokenPriceCacheValidity(isRefreshing = isRefreshing)
             )
 
             // always add XRD address to ensure that we have the latest price
@@ -163,7 +165,8 @@ class TestnetFiatPriceRepository @Inject constructor(
 
     override suspend fun getFiatPrices(
         addresses: Set<PriceRequestAddress>,
-        currency: SupportedCurrency
+        currency: SupportedCurrency,
+        isRefreshing: Boolean
     ): Result<Map<String, FiatPrice>> {
         if (!BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
             return Result.failure(FiatPriceRepository.PricesNotSupportedInNetwork())
@@ -175,7 +178,11 @@ class TestnetFiatPriceRepository @Inject constructor(
             mainnetAddresses
         }.map { PriceRequestAddress.Regular(it) }.toSet()
 
-        return delegate.getFiatPrices(addresses = mainnetAddressesToRequest, currency = currency).map { result ->
+        return delegate.getFiatPrices(
+            addresses = mainnetAddressesToRequest,
+            currency = currency,
+            isRefreshing = isRefreshing
+        ).map { result ->
             val prices = result.toMutableMap()
             val xrdPrice = prices.remove(mainnetXrdAddress)
 
