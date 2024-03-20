@@ -638,7 +638,7 @@ private fun ValidatorHeader(
                     .fillMaxWidth()
                     .radixPlaceholder(visible = stakedAmount == null),
                 text = stakedAmount?.let {
-                    "${stringResource(id = R.string.account_staking_staked)} ${it.displayableQuantity()} ${XrdResource.SYMBOL}"
+                    "${stringResource(id = R.string.account_staking_currentStake, it.displayableQuantity())} ${XrdResource.SYMBOL}"
                 }.orEmpty(),
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray2,
