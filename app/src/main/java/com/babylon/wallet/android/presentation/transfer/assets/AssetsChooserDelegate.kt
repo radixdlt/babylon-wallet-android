@@ -56,7 +56,7 @@ class AssetsChooserDelegate @Inject constructor(
                 val assets = accountWithAssets?.assets
 
                 accountWithAssets?.let {
-                    getFiatValueUseCase.forAccount(accountWithAssets = it)
+                    getFiatValueUseCase.forAccount(accountWithAssets = it, isRefreshing = true)
                         .onSuccess { assetsPrices ->
                             updateSheetState { state ->
                                 state.copy(assetsWithAssetsPrices = assetsPrices.associateBy { assetPrice -> assetPrice.asset })
