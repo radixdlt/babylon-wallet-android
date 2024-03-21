@@ -32,7 +32,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
-import com.babylon.wallet.android.presentation.ui.composables.SomethingWentWrongDialogContent
+import com.babylon.wallet.android.presentation.ui.composables.FailureDialogContent
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 
 @Composable
@@ -60,7 +60,8 @@ fun TransactionStatusDialog(
         modifier = modifier,
         onDismiss = dismissHandler,
         dragToDismissEnabled = !state.blockUntilComplete,
-        showDefaultTopBar = false,
+        showDefaultTopBar = !state.blockUntilComplete,
+        showDragHandle = !state.blockUntilComplete,
         content = {
             Box {
                 androidx.compose.animation.AnimatedVisibility(
@@ -93,7 +94,7 @@ fun TransactionStatusDialog(
                             stringResource(id = R.string.common_somethingWentWrong)
                         }
                     }
-                    SomethingWentWrongDialogContent(
+                    FailureDialogContent(
                         title = title,
                         subtitle = state.failureError,
                         transactionAddress = state.transactionId

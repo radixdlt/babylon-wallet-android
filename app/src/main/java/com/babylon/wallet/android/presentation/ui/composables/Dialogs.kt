@@ -309,7 +309,7 @@ fun NotSecureAlertDialog(
 }
 
 @Composable
-fun SomethingWentWrongDialogContent(
+fun FailureDialogContent(
     modifier: Modifier = Modifier,
     title: String,
     subtitle: String?,
@@ -355,14 +355,15 @@ fun SomethingWentWrongDialogContent(
             ) {
                 Text(
                     text = stringResource(id = R.string.transactionStatus_transactionID_text),
-                    style = RadixTheme.typography.body1Regular,
+                    style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1
                 )
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
                 ActionableAddressView(
                     address = transactionAddress,
-                    textStyle = RadixTheme.typography.body1Regular,
-                    textColor = RadixTheme.colors.gray1
+                    textStyle = RadixTheme.typography.body1Header,
+                    textColor = RadixTheme.colors.blue1,
+                    iconColor = RadixTheme.colors.gray2
                 )
             }
         }
@@ -373,7 +374,7 @@ fun SomethingWentWrongDialogContent(
 @Preview
 fun SomethingWentWrongDialogPreview() {
     RadixWalletTheme {
-        SomethingWentWrongDialogContent(
+        FailureDialogContent(
             title = "Title",
             subtitle = "Subtitle",
             transactionAddress = "rdx1239j329fj292r32e23"
