@@ -27,7 +27,7 @@ class SearchFeePayersUseCase @Inject constructor(
             }
 
             TransactionFeePayers(
-                selected = candidateAddress,
+                selectedAccountAddress = candidateAddress,
                 candidates = candidates
             )
         }

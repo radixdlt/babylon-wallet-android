@@ -71,7 +71,7 @@ class TransactionSubmitDelegate @Inject constructor(
                 return@launch
             }
 
-            if (currentState.feePayers?.selected != null) {
+            if (currentState.feePayers?.selectedAccountAddress != null) {
                 val requestWithGuarantees = try {
                     val request = currentState.requestNonNull
                     request.copy(transactionManifestData = request.transactionManifestData.attachGuarantees(currentState.previewType))
@@ -82,7 +82,7 @@ class TransactionSubmitDelegate @Inject constructor(
                 signAndSubmit(
                     transactionRequest = requestWithGuarantees,
                     signTransactionUseCase = signTransactionUseCase,
-                    feePayerAddress = currentState.feePayers.selected,
+                    feePayerAddress = currentState.feePayers.selectedAccountAddress,
                     deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
                 )
             }

@@ -45,7 +45,7 @@ class SearchFeePayersUseCaseTest {
 
             assertEquals(
                 TransactionFeePayers(
-                    selected = account1.address,
+                    selectedAccountAddress = account1.address,
                     candidates = listOf(
                         TransactionFeePayers.FeePayerCandidate(account1, BigDecimal(100)),
                         TransactionFeePayers.FeePayerCandidate(account2, BigDecimal.ZERO)
@@ -64,7 +64,7 @@ class SearchFeePayersUseCaseTest {
 
             assertEquals(
                 TransactionFeePayers(
-                    selected = null,
+                    selectedAccountAddress = null,
                     candidates = listOf(
                         TransactionFeePayers.FeePayerCandidate(account1, BigDecimal(100)),
                         TransactionFeePayers.FeePayerCandidate(account2, BigDecimal.ZERO)
