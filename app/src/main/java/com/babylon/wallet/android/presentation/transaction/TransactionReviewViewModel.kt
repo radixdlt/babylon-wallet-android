@@ -178,7 +178,7 @@ class TransactionReviewViewModel @Inject constructor(
         val signersCount = state.value.defaultSignersCount
 
         val updatedFeePayerResult = feePayerSearchResult?.copy(
-            selected = selectedFeePayer.address,
+            selectedAccountAddress = selectedFeePayer.address,
             candidates = feePayerSearchResult.candidates
         )
 
@@ -316,12 +316,12 @@ class TransactionReviewViewModel @Inject constructor(
             get() = previewType !is PreviewType.None && !isBalanceInsufficientToPayTheFee
 
         val noFeePayerSelected: Boolean
-            get() = feePayers?.selected == null
+            get() = feePayers?.selectedAccountAddress == null
 
         val isBalanceInsufficientToPayTheFee: Boolean
             get() {
                 if (feePayers == null) return true
-                val candidateAddress = feePayers.selected ?: return true
+                val candidateAddress = feePayers.selectedAccountAddress ?: return true
 
                 val xrdInCandidateAccount = feePayers.candidates.find {
                     it.account.address == candidateAddress
