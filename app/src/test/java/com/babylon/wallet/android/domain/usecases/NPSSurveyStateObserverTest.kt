@@ -36,7 +36,7 @@ class NPSSurveyStateObserverTest {
     fun `given survey has never been shown and less than 10 transactions performed, verify no survey shown`() = runTest {
         val event = mutableListOf<NPSSurveyState>()
 
-        useCase.npsSurveyState().onEach {
+        useCase.npsSurveyState.onEach {
             event.add(it)
         }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -49,7 +49,7 @@ class NPSSurveyStateObserverTest {
     fun `given survey has never been shown and 10 transactions performed, verify survey shown`() = runTest {
         val useCase = NPSSurveyStateObserver(preferencesManager)
         val event = mutableListOf<NPSSurveyState>()
-        useCase.npsSurveyState().onEach {
+        useCase.npsSurveyState.onEach {
             event.add(it)
         }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -70,7 +70,7 @@ class NPSSurveyStateObserverTest {
 
         val event = mutableListOf<NPSSurveyState>()
 
-        useCase.npsSurveyState().onEach {
+        useCase.npsSurveyState.onEach {
             event.add(it)
         }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))
@@ -80,7 +80,7 @@ class NPSSurveyStateObserverTest {
 
         advanceUntilIdle()
 
-        Assert.assertEquals(event.first(), NPSSurveyState.InActive)
+        Assert.assertEquals(event.last(), NPSSurveyState.InActive)
     }
 
     @Test
@@ -88,7 +88,7 @@ class NPSSurveyStateObserverTest {
         val useCase = NPSSurveyStateObserver(preferencesManager)
 
         val event = mutableListOf<NPSSurveyState>()
-        useCase.npsSurveyState().onEach {
+        useCase.npsSurveyState.onEach {
             event.add(it)
         }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))

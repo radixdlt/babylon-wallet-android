@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation
 
 import app.cash.turbine.test
+import com.babylon.wallet.android.NPSSurveyState
+import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Assets
@@ -10,8 +12,6 @@ import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
-import com.babylon.wallet.android.NPSSurveyState
-import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.mockdata.account
@@ -84,7 +84,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         every { getProfileUseCase() } returns flowOf(sampleProfile)
         every { appEventBus.events } returns MutableSharedFlow()
         every { preferencesManager.isRadixBannerVisible } returns flowOf(false)
-        every { npsSurveyStateObserver.npsSurveyState() } returns flowOf(NPSSurveyState.InActive)
+        every { npsSurveyStateObserver.npsSurveyState } returns flowOf(NPSSurveyState.InActive)
     }
 
     @Test

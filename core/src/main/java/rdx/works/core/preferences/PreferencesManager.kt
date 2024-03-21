@@ -29,6 +29,7 @@ interface PreferencesManager {
     val isRadixBannerVisible: Flow<Boolean>
     val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean>
     val lastNPSSurveyInstant: Flow<Instant?>
+    val transactionCompleteCounter: Flow<Int>
 
     suspend fun updateLastBackupInstant(backupInstant: Instant)
 
@@ -52,8 +53,6 @@ interface PreferencesManager {
     suspend fun markDeviceRootedDialogShown()
 
     suspend fun setLinkConnectionStatusIndicator(isEnabled: Boolean)
-    fun transactionCompleteCounter(): Flow<Int>
-
     suspend fun incrementTransactionCompleteCounter()
 
     suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant)
@@ -202,10 +201,6 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
-    override fun transactionCompleteCounter(): Flow<Int> = dataStore.data.map { preferences ->
-        preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] ?: 0
-    }
-
     override suspend fun incrementTransactionCompleteCounter() {
         dataStore.edit { preferences ->
             val oldValue = preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] ?: 0
@@ -218,6 +213,10 @@ class PreferencesManagerImpl @Inject constructor(
             preferences[KEY_SHOW_NPS_SURVEY_INSTANT]?.let {
                 Instant.parse(it)
             }
+        }
+    override val transactionCompleteCounter: Flow<Int>
+        get() = dataStore.data.map { preferences ->
+            preferences[KEY_TRANSACTIONS_COMPLETE_COUNT] ?: 0
         }
 
     override suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant) {

@@ -35,7 +35,7 @@ fun NPSSurveyDialog(
 
     BottomSheetDialogWrapper(
         modifier = modifier,
-        onDismiss = onDismiss,
+        onDismiss = viewModel::onBackPress,
         showDragHandle = true,
         title = stringResource(id = R.string.empty)
     ) {

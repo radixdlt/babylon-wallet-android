@@ -78,9 +78,8 @@ class FakePreferenceManager : PreferencesManager {
         TODO("Not yet implemented")
     }
 
-    override fun transactionCompleteCounter(): Flow<Int> {
-        return _transactionCompleteCounter
-    }
+    override val transactionCompleteCounter: Flow<Int>
+        get() = _transactionCompleteCounter
 
     override suspend fun incrementTransactionCompleteCounter() {
         _transactionCompleteCounter.emit(_transactionCompleteCounter.value + 1)

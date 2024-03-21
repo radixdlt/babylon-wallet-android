@@ -164,25 +164,37 @@ class HistoryViewModel @Inject constructor(
             it.dateTime?.isAfter(timeFilterItem.start) == true &&
                 it.dateTime?.isBefore(timeFilterItem.end) == true
         }
-        var item = existingIndex?.let { _state.value.historyItems?.getOrNull(it) }
         if (existingIndex == null || existingIndex == -1) {
-            if (_state.value.canLoadMore.not()) return
-            _state.update { it.copy(loadMoreState = State.LoadingMoreState.NewRange, areScrollEventsIgnored = true) }
             viewModelScope.launch {
+                if (_state.value.canLoadMore.not()) {
+                    // if we don't have the index in range and we loaded all data, we scroll to the first item before the selected date
+                    val firstIndexBefore = _state.value.historyItems?.indexOfFirst {
+                        it.dateTime?.isBefore(timeFilterItem.end) == true
+                    }
+                    if (firstIndexBefore != null && firstIndexBefore >= 0) {
+                        blockScrollHandlingAndExecute {
+                            sendEvent(HistoryEvent.ScrollToItem(firstIndexBefore))
+                            selectDate(_state.value.historyItems?.getOrNull(firstIndexBefore)?.dateTime)
+                        }
+                        return@launch
+                    }
+                }
+                // we don't have data, we need to load new range
+                _state.update { it.copy(loadMoreState = State.LoadingMoreState.NewRange, areScrollEventsIgnored = true) }
                 getAccountHistoryUseCase.getHistoryChunk(
                     args.accountAddress,
                     _state.value.filters.copy(start = timeFilterItem.end)
                 ).onSuccess { historyData ->
                     updateStateWith(historyData, false)
+                    // after data load we scroll to first item before the selected date
                     val scrollTo = _state.value.historyItems?.indexOfFirst {
                         it.dateTime?.isBefore(timeFilterItem.end) == true
                     }
                     if (scrollTo != null && scrollTo != -1) {
-                        item = _state.value.historyItems?.getOrNull(scrollTo)
                         delay(SCROLL_DELAY_AFTER_LOAD)
                         blockScrollHandlingAndExecute {
                             sendEvent(HistoryEvent.ScrollToItem(scrollTo))
-                            selectDate(item?.dateTime)
+                            selectDate(_state.value.historyItems?.getOrNull(scrollTo)?.dateTime)
                         }
                     }
                     _state.update { it.copy(loadMoreState = null, areScrollEventsIgnored = false) }
@@ -197,10 +209,11 @@ class HistoryViewModel @Inject constructor(
                 }
             }
         } else {
+            // if we have the index in range, we just scroll to it
             viewModelScope.launch {
                 blockScrollHandlingAndExecute {
                     sendEvent(HistoryEvent.ScrollToItem(existingIndex))
-                    selectDate(item?.dateTime)
+                    selectDate(_state.value.historyItems?.getOrNull(existingIndex)?.dateTime)
                 }
             }
         }
