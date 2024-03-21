@@ -169,8 +169,7 @@ fun BottomSheetDialogWrapper(
                     BottomDialogHeader(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault)
-                            .padding(vertical = RadixTheme.dimensions.paddingSmall),
+                            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectTopDefault),
                         onDismissRequest = onDismiss,
                         title = title
                     )
