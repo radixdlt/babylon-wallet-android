@@ -4,7 +4,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 
 data class TransactionFeePayers(
-    val selected: String? = null,
+    val selectedAccountAddress: String? = null,
     val candidates: List<FeePayerCandidate> = emptyList(),
 ) {
     data class FeePayerCandidate(
