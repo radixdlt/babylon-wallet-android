@@ -36,6 +36,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import kotlinx.coroutines.test.TestScope
 import rdx.works.core.domain.DApp
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
@@ -50,6 +51,7 @@ internal fun TransactionReviewViewModelTestExperimental.testViewModel(
     stateRepository: StateRepository,
     dAppMessenger: DappMessenger,
     appEventBus: AppEventBus,
+    preferencesManager: PreferencesManager,
     exceptionMessageProvider: ExceptionMessageProvider,
     savedStateHandle: SavedStateHandle,
     testScope: TestScope
@@ -105,7 +107,12 @@ internal fun TransactionReviewViewModelTestExperimental.testViewModel(
         incomingRequestRepository = incomingRequestRepository,
         submitTransactionUseCase = SubmitTransactionUseCase(transactionRepository = transactionRepository),
         appEventBus = appEventBus,
-        transactionStatusClient = TransactionStatusClient(PollTransactionStatusUseCase(transactionRepository), appEventBus, testScope),
+        transactionStatusClient = TransactionStatusClient(
+            pollTransactionStatusUseCase = PollTransactionStatusUseCase(transactionRepository = transactionRepository),
+            appEventBus = appEventBus,
+            preferencesManager = preferencesManager,
+            appScope = testScope
+        ),
         exceptionMessageProvider = exceptionMessageProvider,
         applicationScope = testScope
     ),
