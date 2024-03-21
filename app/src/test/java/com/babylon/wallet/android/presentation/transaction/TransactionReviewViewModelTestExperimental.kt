@@ -36,6 +36,7 @@ import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -79,6 +80,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private val signTransactionUseCase = mockk<SignTransactionUseCase>().apply {
         every { signingState } returns flowOf()
     }
+    private val preferencesManager = mockk<PreferencesManager>()
 
     private val profileRepository = fakeProfileDataSource(initialProfileState = ProfileState.Restored(testProfile))
     private val testScope = TestScope(context = coroutineRule.dispatcher)
@@ -91,6 +93,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         stateRepository = stateRepository,
         dAppMessenger = dAppMessenger,
         appEventBus = appEventBus,
+        preferencesManager = preferencesManager,
         exceptionMessageProvider = exceptionMessageProvider,
         savedStateHandle = savedStateHandle,
         testScope = testScope
