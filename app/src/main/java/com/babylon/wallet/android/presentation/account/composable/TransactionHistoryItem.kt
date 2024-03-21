@@ -164,18 +164,6 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                     }
                 }
             }
-            if (transactionItem.isUnknownTransaction) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(1.dp)
-                        .background(RadixTheme.colors.gray5, shape = RadixTheme.shapes.roundedRectBottomMedium)
-                        .padding(RadixTheme.dimensions.paddingMedium),
-                    text = stringResource(id = R.string.transactionHistory_complexTransaction),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
-                )
-            }
         }
         val paddingMedium = RadixTheme.dimensions.paddingMedium
         val paddingDefault = RadixTheme.dimensions.paddingDefault
