@@ -21,9 +21,9 @@ class TransactionFeesDelegate @Inject constructor(
             }
         } else {
             _state.value.feePayers?.let { feePayerResult ->
-                if (feePayerResult.selected != null) {
+                if (feePayerResult.selectedAccountAddress != null) {
                     // Candidate selected
-                    getProfileUseCase.accountOnCurrentNetwork(withAddress = feePayerResult.selected)
+                    getProfileUseCase.accountOnCurrentNetwork(withAddress = feePayerResult.selectedAccountAddress)
                         ?.let { feePayerCandidate ->
                             _state.update { state ->
                                 state.candidateSelectedState(feePayerCandidate)
