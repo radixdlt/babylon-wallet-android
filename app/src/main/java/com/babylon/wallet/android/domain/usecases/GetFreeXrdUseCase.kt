@@ -7,6 +7,10 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.faucet
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -16,6 +20,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateways
 import rdx.works.profile.ret.ManifestPoet
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -32,11 +37,16 @@ class GetFreeXrdUseCase @Inject constructor(
 
     suspend operator fun invoke(address: String): Result<String> {
         return withContext(ioDispatcher) {
-            val manifest = ManifestPoet
-                .buildFaucet(toAddress = address)
-                .getOrElse {
-                    return@withContext Result.failure(it)
-                }
+            val manifest = runCatching {
+                TransactionManifest.faucet(
+                    includeLockFeeInstruction = true,
+                    addressOfReceivingAccount = AccountAddress.init(validatingAddress = address)
+                )
+            }.mapCatching {
+                TransactionManifestData.from(manifest = it)
+            }.getOrElse {
+                return@withContext Result.failure(it)
+            }
 
             val epochResult = transactionRepository.getLedgerEpoch()
             epochResult.getOrNull()?.let { epoch ->
