@@ -72,9 +72,6 @@ data class TransactionHistoryItem(
             }
         }
 
-    val isUnknownTransaction: Boolean
-        get() = transactionClass == null
-
     val hasNoBalanceChanges: Boolean
         get() = deposited.isEmpty() && withdrawn.isEmpty()
 }
