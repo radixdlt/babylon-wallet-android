@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -193,7 +194,45 @@ fun TotalBalancePreview() {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
             fiatPrice = FiatPrice(
-                price = 246.6,
+                price = 246.608903,
+                currency = SupportedCurrency.USD
+            ),
+            currency = SupportedCurrency.USD,
+            isLoading = false,
+            trailingContent = {
+                TotalFiatBalanceViewToggle(onToggle = {})
+            }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TotalBalanceWithValueLessThanOnePreview() {
+    RadixWalletTheme {
+        TotalFiatBalanceView(
+            modifier = Modifier.fillMaxWidth(),
+            fiatPrice = FiatPrice(
+                price = 0.608903,
+                currency = SupportedCurrency.USD
+            ),
+            currency = SupportedCurrency.USD,
+            isLoading = false,
+            trailingContent = {
+                TotalFiatBalanceViewToggle(onToggle = {})
+            }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TotalBalanceWithVerySmallValuePreview() {
+    RadixWalletTheme {
+        TotalFiatBalanceView(
+            modifier = Modifier.fillMaxWidth(),
+            fiatPrice = FiatPrice(
+                price = 0.0000000003,
                 currency = SupportedCurrency.USD
             ),
             currency = SupportedCurrency.USD,
@@ -245,17 +284,19 @@ fun TotalBalanceErrorPreview() {
 @Composable
 fun TotalBalanceHiddenPreview() {
     RadixWalletTheme {
-        TotalFiatBalanceView(
-            modifier = Modifier.fillMaxWidth(),
-            fiatPrice = FiatPrice(
-                price = 2246.6,
-                currency = SupportedCurrency.USD
-            ),
-            currency = SupportedCurrency.USD,
-            isLoading = false,
-            trailingContent = {
-                TotalFiatBalanceViewToggle(onToggle = {})
-            }
-        )
+        CompositionLocalProvider(value = LocalBalanceVisibility.provides(false)) {
+            TotalFiatBalanceView(
+                modifier = Modifier.fillMaxWidth(),
+                fiatPrice = FiatPrice(
+                    price = 2246.6,
+                    currency = SupportedCurrency.USD
+                ),
+                currency = SupportedCurrency.USD,
+                isLoading = false,
+                trailingContent = {
+                    TotalFiatBalanceViewToggle(onToggle = {})
+                }
+            )
+        }
     }
 }
