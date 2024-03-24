@@ -142,6 +142,13 @@ internal class PeerdroidConnectorImpl(
                 webSocketHolder.listenMessagesJob.cancel()
                 webSocketHolder.webSocketClient.closeSession()
             }
+            // close and remove data channels for this connection id
+            val dataChannelsForTermination = mapOfDataChannels.values.filter { dataChannelHolder ->
+                dataChannelHolder.connectionIdHolder == connectionId
+            }
+            dataChannelsForTermination.forEach { dataChannelHolder ->
+                dataChannelHolder.dataChannel.close()
+            }
             // close and remove the peer connections and their jobs for this connection id
             val peerConnectionsForTermination = mapOfPeerConnections.values.filter { peerConnectionHolder ->
                 peerConnectionHolder.connectionIdHolder == connectionId
@@ -151,13 +158,6 @@ internal class PeerdroidConnectorImpl(
                 peerConnectionHolder.webRtcManager.close()
             }
             mapOfPeerConnections.values.removeAll(peerConnectionsForTermination.toSet())
-            // close and remove data channels for this connection id
-            val dataChannelsForTermination = mapOfDataChannels.values.filter { dataChannelHolder ->
-                dataChannelHolder.connectionIdHolder == connectionId
-            }
-            dataChannelsForTermination.forEach { dataChannelHolder ->
-                dataChannelHolder.dataChannel.close()
-            }
             mapOfDataChannels.values.removeAll(dataChannelsForTermination.toSet())
             updatePeerConnectionStatus(connectionId = connectionId, isOpen = false, isDeleted = true)
             Timber.d("⚙️ \uD83D\uDDD1️ link connection with connectionId: ${connectionId.id} deleted ✅")
@@ -173,16 +173,16 @@ internal class PeerdroidConnectorImpl(
             }
             mapOfWebSockets.clear()
 
+            mapOfDataChannels.values.forEach { dataChannelHolder ->
+                dataChannelHolder.dataChannel.close()
+            }
+            mapOfDataChannels.clear()
+
             mapOfPeerConnections.values.forEach { peerConnectionHolder ->
                 peerConnectionHolder.observePeerConnectionJob.cancel()
                 peerConnectionHolder.webRtcManager.close()
             }
             mapOfPeerConnections.clear()
-
-            mapOfDataChannels.values.forEach { dataChannelHolder ->
-                dataChannelHolder.dataChannel.close()
-            }
-            mapOfDataChannels.clear()
             Timber.d("⚙️ \uD83D\uDEAB all link connection terminated and cleared ✅")
         }
     }
