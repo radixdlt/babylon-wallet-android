@@ -26,6 +26,7 @@ import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
 import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
 import timber.log.Timber
+import java.lang.IllegalStateException
 
 interface PeerdroidLink {
 
@@ -48,21 +49,25 @@ internal class PeerdroidLinkImpl(
     private var webSocketClientJob: Job? = null
     private var webRtcManagerJob: Job? = null
 
-    // This CompletableDeferred will return a result when a peer connection
-    // has been first connected and then disconnected.
+    // A successful link connection between wallet and connector extensions happens when with the connection id
+    // a peer connection is successfully established and gets terminated instantly.
+    // Success flow: connection to websocket with connectionId -> peer connection created -> connecting -> connected -> disconnected
+    // This CompletableDeferred will return a result indicating the above result.
     private lateinit var addConnectionDeferred: CompletableDeferred<Result<Unit>>
+
+    // This CompletableDeferred will return a result indicating if the peer connection is ready or not.
+    private lateinit var peerConnectionDeferred: CompletableDeferred<Result<Unit>>
 
     override suspend fun addConnection(encryptionKey: ByteArray): Result<Unit> {
         addConnectionDeferred = CompletableDeferred()
+        peerConnectionDeferred = CompletableDeferred()
         // get connection id from encryption key
         val connectionId = encryptionKey.blake2Hash().toHexString()
-        Timber.d("\uD83D\uDDFC️ add new link connection with connectionId: $connectionId")
+        Timber.d("\uD83D\uDDFC️ start process to add a new link connector with connectionId: $connectionId")
 
         withContext(ioDispatcher) {
-            // Leave this method here because WebRTC takes too long to initialize its components
-            // and to create the peer connection and initialize the data channel.
-            // So by the time the web socket is open and listening the peer connection will be ready to negotiate.
             observePeerConnectionUntilEstablished()
+            peerConnectionDeferred.await() // wait until the peer connection is initialized and ready to negotiate
             // and now establish the web socket
             webSocketClient.initSession(
                 connectionId = connectionId,
@@ -156,6 +161,7 @@ internal class PeerdroidLinkImpl(
                 when (event) {
                     PeerConnectionEvent.RenegotiationNeeded -> {
                         Timber.d("🗼 ⚡ renegotiation needed 🆗")
+                        peerConnectionDeferred.complete(Result.success(Unit))
                     }
                     is PeerConnectionEvent.IceGatheringChange -> {
                         Timber.d("🗼 ⚡ ice gathering state changed: ${event.state}")
@@ -231,12 +237,10 @@ internal class PeerdroidLinkImpl(
 
     private suspend fun sendIceCandidateToRemoteClient(iceCandidateData: PeerConnectionEvent.IceCandidate.Data) {
         Timber.d("🗼️ \uD83D\uDCE1️ send ice candidate to the connector extension ⬆️")
-        withContext(ioDispatcher) {
-            webSocketClient.sendIceCandidateMessage(
-                remoteClientId = "",
-                iceCandidateData = iceCandidateData
-            )
-        }
+        webSocketClient.sendIceCandidateMessage(
+            remoteClientId = "",
+            iceCandidateData = iceCandidateData
+        )
     }
 
     private suspend fun addRemoteIceCandidateInWebRtc(iceCandidate: SignalingServerMessage.RemoteData.IceCandidate) {
@@ -249,7 +253,8 @@ internal class PeerdroidLinkImpl(
         webSocketClient.closeSession()
         webRtcManagerJob?.cancel()
         webRtcManager.close()
-        addConnectionDeferred.complete(Result.failure(Throwable("data channel couldn't initialize")))
+        peerConnectionDeferred.complete(Result.failure(IllegalStateException("peer connection couldn't initialize")))
+        addConnectionDeferred.complete(Result.failure(IllegalStateException("data channel couldn't initialize")))
     }
 
     private suspend fun terminateWithSuccess() {
