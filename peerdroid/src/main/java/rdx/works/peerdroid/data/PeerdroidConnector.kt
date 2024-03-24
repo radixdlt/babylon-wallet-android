@@ -274,7 +274,7 @@ internal class PeerdroidConnectorImpl(
                                     remoteClientHolder = remoteClientHolder
                                 )
                                 if (isSuccess.not()) {
-                                    mapOfPeerConnections.remove(remoteClientHolder)
+                                    terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionId)
                                     return@collect
                                 }
                             }
@@ -362,6 +362,7 @@ internal class PeerdroidConnectorImpl(
             }
             .catch { exception ->
                 Timber.e("⚙️ ⚡ an exception occurred: ${exception.localizedMessage} ❗")
+                terminatePeerConnectionAndDataChannel(remoteClientHolder, connectionId)
             }
             .cancellable()
             .flowOn(ioDispatcher)
@@ -378,17 +379,17 @@ internal class PeerdroidConnectorImpl(
         remoteClientHolder: RemoteClientHolder,
         connectionId: ConnectionIdHolder
     ) {
-        Timber.d("⚙️ \uD83D\uDEAB terminating link connection for connectionId: ${connectionId.id}")
+        Timber.d("⚙️ \uD83D\uDEAB terminating link connection for remote client: $remoteClientHolder")
+        val dataChannelHolder = mapOfDataChannels.remove(connectionId)
+        dataChannelHolder?.let {
+            dataChannelHolder.dataChannel.close()
+        }
         val peerConnectionHolder = mapOfPeerConnections.remove(remoteClientHolder)
         peerConnectionHolder?.let {
             peerConnectionHolder.observePeerConnectionJob.cancel()
             peerConnectionHolder.webRtcManager.close()
         }
-        val dataChannelHolder = mapOfDataChannels.remove(connectionId)
-        dataChannelHolder?.let {
-            dataChannelHolder.dataChannel.close()
-        }
-        Timber.d("⚙️ \uD83D\uDEAB link connection terminated for connectionId: ${connectionId.id} ✅")
+        Timber.d("⚙️ \uD83D\uDEAB link connection terminated for remote client: $remoteClientHolder ✅")
     }
 
     private suspend fun processOfferFromRemoteClientAndSendAnswer(
