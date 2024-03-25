@@ -24,6 +24,8 @@ fun String.truncatedHash(): String {
     return "$first...$last"
 }
 
+fun String.replaceDoublePercent() = replace("%%", "%")
+
 fun String.toMnemonicWords(expectedWordCount: Int): List<String> {
     val words = trim().split(" ").map { it.trim() }.filter { it.isNotEmpty() }
     if (words.size != expectedWordCount) return emptyList()

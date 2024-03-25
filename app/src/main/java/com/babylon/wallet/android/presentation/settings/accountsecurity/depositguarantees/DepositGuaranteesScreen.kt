@@ -35,6 +35,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.utils.replaceDoublePercent
 
 @Composable
 fun DepositGuaranteesScreen(
@@ -112,7 +113,7 @@ fun DepositGuaranteesContent(
                             .padding(bottom = RadixTheme.dimensions.paddingDefault),
                         text = stringResource(
                             id = R.string.transactionReview_guarantees_setGuaranteedMinimum
-                        ).replace("%%", "%"),
+                        ).replaceDoublePercent(),
                         style = RadixTheme.typography.body2Header,
                         color = RadixTheme.colors.gray1,
                         textAlign = TextAlign.Center
