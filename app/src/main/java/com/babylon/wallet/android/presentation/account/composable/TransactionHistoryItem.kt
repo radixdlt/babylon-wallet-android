@@ -333,7 +333,7 @@ private fun PoolUnitBalanceChange(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = asset.name().ifEmpty { stringResource(id = R.string.account_poolUnits) },
+                    text = asset.name(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,

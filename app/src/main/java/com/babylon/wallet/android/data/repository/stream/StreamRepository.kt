@@ -82,7 +82,7 @@ class StreamRepositoryImpl @Inject constructor(
         }
         val ascending = filters.sortOrder == HistoryFilters.SortOrder.Asc
         return StreamTransactionsRequest(
-            optIns = TransactionDetailsOptIns(balanceChanges = true, affectedGlobalEntities = true),
+            optIns = TransactionDetailsOptIns(balanceChanges = true),
             cursor = cursor,
             limitPerPage = StreamRepository.PAGE_SIZE,
             atLedgerState = if (ascending) null else ledgerState,
