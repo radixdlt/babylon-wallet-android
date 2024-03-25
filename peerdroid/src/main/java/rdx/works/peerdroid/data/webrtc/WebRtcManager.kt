@@ -94,8 +94,8 @@ internal class WebRtcManager(applicationContext: Context) {
         entryPoint = PeerConnectionFactoryEntryPoint::class.java
     )
 
-    private lateinit var peerConnection: PeerConnection
-    private lateinit var dataChannel: DataChannel // this will be returned
+    private var peerConnection: PeerConnection? = null
+    private var dataChannel: DataChannel? = null // this will be returned
 
     init {
         Timber.d("🔌 initialize WebRtcManager")
@@ -118,46 +118,59 @@ internal class WebRtcManager(applicationContext: Context) {
             this.peerConnection = it
             Timber.d("🔌 created a peer connection: $peerConnection for remote client: $remoteClientId")
         } ?: Timber.e("🔌 failed to create a peer connection")
-        return this.peerConnection
+        return this.peerConnection ?: throw UninitializedPropertyAccessException("property peerConnection has not been initialized")
     }
 
     private fun createRtcDataChannel(remoteClientId: String) {
-        peerConnection.let {
+        peerConnection?.let {
             dataChannel = it.createDataChannel(remoteClientId, dataChannelInit)
             Timber.d("🔌 created a data channel for remote client: $remoteClientId")
         }
     }
 
-    suspend fun createOffer(): Result<SessionDescriptionWrapper.SessionDescriptionValue> =
-        peerConnection.createSuspendingOffer(mediaConstraints = mediaConstraints)
+    suspend fun createOffer(): Result<SessionDescriptionWrapper.SessionDescriptionValue> {
+        return peerConnection?.createSuspendingOffer(
+            mediaConstraints = mediaConstraints
+        ) ?: Result.failure(IllegalStateException("failed to create offer"))
+    }
 
     suspend fun createAnswer(): Result<SessionDescriptionWrapper.SessionDescriptionValue> =
-        peerConnection.createSuspendingAnswer(mediaConstraints = mediaConstraints)
+        peerConnection?.createSuspendingAnswer(
+            mediaConstraints = mediaConstraints
+        ) ?: Result.failure(IllegalStateException("failed to create answer"))
 
     suspend fun setLocalDescription(
         sessionDescription: SessionDescriptionWrapper
-    ): Result<Unit> = peerConnection.setSuspendingLocalDescription(sessionDescription = sessionDescription)
+    ): Result<Unit> = peerConnection?.setSuspendingLocalDescription(
+        sessionDescription = sessionDescription
+    ) ?: Result.failure(IllegalStateException("failed to set local description"))
 
     suspend fun setRemoteDescription(
         sessionDescription: SessionDescriptionWrapper
-    ): Result<Unit> = peerConnection.setSuspendingRemoteDescription(sessionDescription = sessionDescription)
+    ): Result<Unit> = peerConnection?.setSuspendingRemoteDescription(
+        sessionDescription = sessionDescription
+    ) ?: Result.failure(IllegalStateException("failed to set remote description"))
 
     suspend fun addRemoteIceCandidate(remoteIceCandidate: RemoteIceCandidate): Result<Unit> {
-        return peerConnection.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)
-            .onSuccess {
+        return peerConnection?.let {
+            it.addSuspendingIceCandidate(remoteIceCandidate = remoteIceCandidate)
+                .onSuccess {
 //                Timber.d("🔌 added successfully ice candidate")
-                Result.success(Unit)
-            }
-            .onFailure { throwable ->
-                Timber.e("🔌 failed to add ice candidate with error: ${throwable.message}")
-                Result.failure<Throwable>(throwable)
-            }
+                    Result.success(Unit)
+                }
+                .onFailure { throwable ->
+                    Timber.e("🔌 failed to add ice candidate with error: ${throwable.message}")
+                    Result.failure<Throwable>(throwable)
+                }
+        } ?: Result.failure(UninitializedPropertyAccessException("property peerConnection has not been initialized"))
     }
 
     fun close() {
         Timber.d("🔌 close data channel and peer connection")
-        peerConnection.close()
+        peerConnection?.close()
     }
 
-    fun getDataChannel(): DataChannel = dataChannel
+    fun getDataChannel(): DataChannel {
+        return dataChannel ?: throw UninitializedPropertyAccessException("property dataChannel has not been initialized")
+    }
 }
