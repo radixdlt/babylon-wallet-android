@@ -208,7 +208,7 @@ fun TargetAccountCard(
                         )
                     }
                 }
-                if (targetAccount.isSignatureRequiredForTransfer(forSpendingAsset = spendingAsset)) {
+                if (targetAccount.isSignatureRequiredForTransfer(resourceAddress = spendingAsset.address)) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
                     Row(
                         modifier = Modifier
