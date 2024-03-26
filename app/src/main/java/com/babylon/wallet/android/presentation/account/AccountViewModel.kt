@@ -4,6 +4,7 @@ package com.babylon.wallet.android.presentation.account
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
@@ -131,12 +132,16 @@ class AccountViewModel @Inject constructor(
                             }
                         }
                         .onFailure {
-                            _state.update { state ->
-                                state.copy(hasFailedToFetchPricesForAccount = true)
+                            if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
+                                hideFiatBalancesWhenNotOnMainnet()
+                            } else {
+                                _state.update { state ->
+                                    state.copy(hasFailedToFetchPricesForAccount = true)
+                                }
+                                Timber.e("Failed to fetch prices for account: ${it.message}")
+                                // now try to fetch prices per asset of the account
+                                getAssetsPricesForAccount(accountWithAssets = accountWithAssets, isRefreshing = isRefreshing)
                             }
-                            Timber.e("Failed to fetch prices for account: ${it.message}")
-                            // now try to fetch prices per asset of the account
-                            getAssetsPricesForAccount(accountWithAssets = accountWithAssets, isRefreshing = isRefreshing)
                         }
                 }
         }
@@ -320,6 +325,12 @@ class AccountViewModel @Inject constructor(
         viewModelScope.launch { refreshFlow.emit(Unit) }
         onLatestEpochRequest()
     }
+
+    private fun hideFiatBalancesWhenNotOnMainnet() {
+        _state.update { accountUiState ->
+            accountUiState.copy(isFiatBalancesEnabled = false)
+        }
+    }
 }
 
 internal sealed interface AccountEvent : OneOffEvent {
@@ -335,6 +346,7 @@ internal sealed interface AccountEvent : OneOffEvent {
 
 data class AccountUiState(
     val accountWithAssets: AccountWithAssets? = null,
+    val isFiatBalancesEnabled: Boolean = true,
     val assetsWithAssetsPrices: Map<Asset, AssetPrice?>? = null,
     private val hasFailedToFetchPricesForAccount: Boolean = false,
     val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
