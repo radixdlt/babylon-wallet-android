@@ -27,27 +27,6 @@ object ManifestPoet {
         .setOwnerKeys(entityAddress, publicKeyHashes)
         .buildSafely(AddressHelper.networkId(entityAddress))
 
-    fun buildFaucet(toAddress: String) = BabylonManifestBuilder()
-        .lockFee()
-        .freeXrd()
-        .accountTryDepositEntireWorktopOrAbort(toAddress = toAddress)
-        .buildSafely(AddressHelper.networkId(toAddress))
-
-    fun buildTransfer(
-        fromAccount: Network.Account,
-        depositFungibles: List<FungibleTransfer>,
-        depositNFTs: List<NonFungibleTransfer>
-    ) = BabylonManifestBuilder()
-        .attachInstructionsForFungibles(
-            fromAccount = fromAccount,
-            depositFungibles = depositFungibles
-        ).attachInstructionsForNonFungibles(
-            fromAccount = fromAccount,
-            depositNFTs = depositNFTs
-        ).buildSafely(
-            networkId = AddressHelper.networkId(fromAccount.address)
-        )
-
     fun buildClaim(
         fromAccount: Network.Account,
         claims: List<Claim>
@@ -131,97 +110,6 @@ object ManifestPoet {
         }
     }.buildSafely(
         AddressHelper.networkId(settings.accountAddress)
-    )
-
-    private fun BabylonManifestBuilder.attachInstructionsForFungibles(
-        fromAccount: Network.Account,
-        depositFungibles: List<FungibleTransfer>
-    ): BabylonManifestBuilder = apply {
-        // calculate the withdraw sum of each fungible
-        val withdraws = mutableMapOf<String, BigDecimal>()
-        depositFungibles.forEach { trasfer ->
-            val alreadySpentAmount = withdraws[trasfer.resourceAddress] ?: BigDecimal.ZERO
-            withdraws[trasfer.resourceAddress] = alreadySpentAmount + trasfer.amount
-        }
-
-        withdraws.forEach { (withdrawingResource, totalWithdrawAmount) ->
-            withdrawFromAccount(
-                fromAddress = fromAccount.address,
-                fungibleAddress = withdrawingResource,
-                amount = totalWithdrawAmount
-            )
-
-            depositFungibles.filter { it.resourceAddress == withdrawingResource }.forEach { transfer ->
-                val bucket = newBucket()
-
-                takeFromWorktop(
-                    fungibleAddress = transfer.resourceAddress,
-                    amount = transfer.amount,
-                    intoBucket = bucket
-                )
-
-                deposit(
-                    toAccountAddress = transfer.toAccountAddress,
-                    bucket = bucket,
-                    isSignatureRequired = transfer.signatureRequired
-                )
-            }
-        }
-    }
-
-    private fun BabylonManifestBuilder.attachInstructionsForNonFungibles(
-        fromAccount: Network.Account,
-        depositNFTs: List<NonFungibleTransfer>
-    ): BabylonManifestBuilder = apply {
-        depositNFTs.forEach { transfer ->
-            val bucket = newBucket()
-
-            withdrawNonFungiblesFromAccount(
-                fromAddress = fromAccount.address,
-                nonFungibleGlobalAddress = transfer.globalId
-            )
-            takeNonFungiblesFromWorktop(
-                nonFungibleGlobalAddress = transfer.globalId,
-                intoBucket = bucket
-            )
-
-            deposit(
-                toAccountAddress = transfer.toAccountAddress,
-                bucket = bucket,
-                isSignatureRequired = transfer.signatureRequired,
-            )
-        }
-    }
-
-    private fun BabylonManifestBuilder.deposit(
-        toAccountAddress: String,
-        bucket: BabylonManifestBuilder.Bucket,
-        isSignatureRequired: Boolean
-    ): BabylonManifestBuilder = apply {
-        if (isSignatureRequired) {
-            accountDeposit(
-                toAddress = toAccountAddress,
-                fromBucket = bucket
-            )
-        } else {
-            accountTryDepositOrAbort(
-                toAddress = toAccountAddress,
-                fromBucket = bucket
-            )
-        }
-    }
-
-    data class FungibleTransfer(
-        val toAccountAddress: String,
-        val resourceAddress: String,
-        val amount: BigDecimal,
-        val signatureRequired: Boolean
-    )
-
-    data class NonFungibleTransfer(
-        val toAccountAddress: String,
-        val globalId: String,
-        val signatureRequired: Boolean
     )
 
     data class Claim(
