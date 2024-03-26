@@ -363,7 +363,7 @@ fun AssetsContent(
             }
 
             assetsView(
-                assetsViewData = if (state.isTransferEnabled) {
+                assetsViewData = if (state.isFiatBalancesEnabled) {
                     assetsViewData
                 } else {
                     assetsViewData?.copy(prices = null)
