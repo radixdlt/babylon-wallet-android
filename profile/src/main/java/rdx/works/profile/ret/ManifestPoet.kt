@@ -10,7 +10,6 @@ import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.AddressHelper
 import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.ret.transaction.TransactionManifestData
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -23,57 +22,6 @@ object ManifestPoet {
     ) = BabylonManifestBuilder()
         .setOwnerKeys(entityAddress, publicKeyHashes)
         .buildSafely(AddressHelper.networkId(entityAddress))
-
-    fun buildThirdPartyDeposits(
-        settings: ThirdPartyDepositSettings
-    ): Result<TransactionManifestData> = BabylonManifestBuilder().apply {
-        if (settings.defaultDepositRule != null) {
-            setDefaultDepositRule(
-                accountAddress = settings.accountAddress,
-                accountDefaultDepositRule = settings.defaultDepositRule
-            )
-        }
-
-        settings.removeAssetExceptions.forEach { assetException ->
-            removeResourcePreference(
-                accountAddress = settings.accountAddress,
-                resourceAddress = assetException.address
-            )
-        }
-
-        settings.addAssetExceptions.forEach { assetException ->
-            setResourcePreference(
-                accountAddress = settings.accountAddress,
-                resourceAddress = assetException.address,
-                exceptionRule = assetException.exceptionRule
-            )
-        }
-
-        settings.removeDepositors.forEach { depositorAddress ->
-            removeAuthorizedDepositor(
-                accountAddress = settings.accountAddress,
-                depositorAddress = depositorAddress
-            )
-        }
-
-        settings.addedDepositors.forEach { depositorAddress ->
-            addAuthorizedDepositor(
-                accountAddress = settings.accountAddress,
-                depositorAddress = depositorAddress
-            )
-        }
-    }.buildSafely(
-        AddressHelper.networkId(settings.accountAddress)
-    )
-
-    data class ThirdPartyDepositSettings(
-        val accountAddress: String,
-        val defaultDepositRule: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule?,
-        val removeAssetExceptions: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException>,
-        val addAssetExceptions: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException>,
-        val removeDepositors: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress>,
-        val addedDepositors: List<Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress>
-    )
 }
 
 fun sampleXRDWithdraw(
