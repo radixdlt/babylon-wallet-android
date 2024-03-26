@@ -247,6 +247,7 @@ dependencies {
     implementation libs.composeUiToolingPreview
     debugImplementation libs.composeUiTooling
     debugImplementation libs.composeUiTestManifest
+    testRuntimeOnly libs.sargonDesktop
 }
 
 jacoco {
