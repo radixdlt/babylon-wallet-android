@@ -118,27 +118,29 @@ fun Network.Account.OnLedgerSettings.toSargon(): OnLedgerSettings = OnLedgerSett
 )
 
 fun Network.Account.OnLedgerSettings.ThirdPartyDeposits.toSargon(): ThirdPartyDeposits = ThirdPartyDeposits(
-    depositRule = when (depositRule) {
-        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll -> DepositRule.ACCEPT_ALL
-        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown -> DepositRule.ACCEPT_KNOWN
-        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll -> DepositRule.DENY_ALL
-    },
-    assetsExceptionList = assetsExceptionList?.map {
-        AssetException(
-            address = ResourceAddress.init(validatingAddress = it.address),
-            exceptionRule = when (it.exceptionRule) {
-                Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow -> DepositAddressExceptionRule.ALLOW
-                Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny -> DepositAddressExceptionRule.DENY
-            }
-        )
-    }.orEmpty(),
-    depositorsAllowList = depositorsAllowList?.map {
-        when (it) {
-            is Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID ->
-                ResourceOrNonFungible.NonFungible(value = NonFungibleGlobalId.init(it.value))
-            is Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress -> ResourceOrNonFungible.Resource(
-                value = ResourceAddress.init(validatingAddress = it.address)
-            )
-        }
-    }.orEmpty(),
+    depositRule = depositRule.toSargon(),
+    assetsExceptionList = assetsExceptionList?.map { it.toSargon() }.orEmpty(),
+    depositorsAllowList = depositorsAllowList?.map { it.toSargon() }.orEmpty()
 )
+
+fun Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.toSargon() = when (this) {
+    Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll -> DepositRule.ACCEPT_ALL
+    Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown -> DepositRule.ACCEPT_KNOWN
+    Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll -> DepositRule.DENY_ALL
+}
+
+fun Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException.toSargon() = AssetException(
+    address = ResourceAddress.init(validatingAddress = address),
+    exceptionRule = when (exceptionRule) {
+        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow -> DepositAddressExceptionRule.ALLOW
+        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny -> DepositAddressExceptionRule.DENY
+    }
+)
+
+fun Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.toSargon() = when (this) {
+    is Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID ->
+        ResourceOrNonFungible.NonFungible(value = NonFungibleGlobalId.init(value))
+    is Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositorAddress.ResourceAddress -> ResourceOrNonFungible.Resource(
+        value = ResourceAddress.init(validatingAddress = address)
+    )
+}
