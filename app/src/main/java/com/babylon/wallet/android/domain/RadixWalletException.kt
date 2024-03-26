@@ -6,6 +6,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.utils.replaceDoublePercent
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.ProfileException
 
@@ -323,7 +324,7 @@ fun RadixWalletException.TransactionSubmitException.toUserFriendlyMessage(contex
         }
 
         is RadixWalletException.TransactionSubmitException.TransactionCommitted.AssertionFailed -> {
-            context.getString(R.string.transactionStatus_assertionFailure_text)
+            context.getString(R.string.transactionStatus_assertionFailure_text).replaceDoublePercent()
         }
     }
 }
