@@ -4,8 +4,6 @@ import com.radixdlt.ret.Address
 import com.radixdlt.ret.Decimal
 import com.radixdlt.ret.Instruction
 import com.radixdlt.ret.Instructions
-import com.radixdlt.ret.ManifestAddress
-import com.radixdlt.ret.ManifestValue
 import com.radixdlt.ret.TransactionHeader
 import com.radixdlt.ret.TransactionManifest
 import rdx.works.core.AddressHelper
@@ -22,32 +20,6 @@ object ManifestPoet {
     ) = BabylonManifestBuilder()
         .setOwnerKeys(entityAddress, publicKeyHashes)
         .buildSafely(AddressHelper.networkId(entityAddress))
-}
-
-fun TransactionManifestData.addLockFee(
-    feePayerAddress: String,
-    fee: BigDecimal
-): TransactionManifestData {
-    return TransactionManifestData.from(
-        manifest = TransactionManifest(
-            instructions = Instructions.fromInstructions(
-                instructions = listOf(
-                    Instruction.CallMethod(
-                        address = ManifestAddress.Static(Address(feePayerAddress)),
-                        methodName = "lock_fee",
-                        args = ManifestValue.TupleValue(
-                            fields = listOf(
-                                ManifestValue.DecimalValue(fee.toRETDecimal(roundingMode = RoundingMode.HALF_UP))
-                            )
-                        )
-                    )
-                ) + manifest.instructions().instructionsList(),
-                networkId = manifest.instructions().networkId()
-            ),
-            blobs = manifest.blobs()
-        ),
-        message = message
-    )
 }
 
 fun TransactionManifestData.addGuaranteeInstructionToManifest(
