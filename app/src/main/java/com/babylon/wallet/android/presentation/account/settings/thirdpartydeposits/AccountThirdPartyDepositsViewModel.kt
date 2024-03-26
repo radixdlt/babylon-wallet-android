@@ -11,6 +11,10 @@ import com.babylon.wallet.android.presentation.account.settings.specificassets.D
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.thirdPartyDepositUpdate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -29,7 +33,8 @@ import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
-import rdx.works.profile.ret.ManifestPoet
+import rdx.works.profile.ret.transaction.TransactionManifestData
+import rdx.works.profile.sargon.toSargon
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -105,29 +110,29 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun onUpdateThirdPartyDeposits() {
         viewModelScope.launch {
-            val currentThirdPartyDeposits = state.value.account?.onLedgerSettings?.thirdPartyDeposits
+            val currentThirdPartyDeposits = state.value.account?.onLedgerSettings?.thirdPartyDeposits ?: return@launch
 
-            val currentAssetExceptions = currentThirdPartyDeposits?.assetsExceptionList.orEmpty()
-            val currentDepositors = currentThirdPartyDeposits?.depositorsAllowList.orEmpty()
+            val newDepositRule = state.value.updatedThirdPartyDepositSettings?.depositRule ?: currentThirdPartyDeposits.depositRule
             val newAssetExceptions = state.value.updatedThirdPartyDepositSettings?.assetsExceptionList.orEmpty()
             val newDepositors = state.value.updatedThirdPartyDepositSettings?.depositorsAllowList.orEmpty()
 
-            val defaultRule = if (currentThirdPartyDeposits?.depositRule != state.value.updatedThirdPartyDepositSettings?.depositRule) {
-                checkNotNull(state.value.updatedThirdPartyDepositSettings?.depositRule)
-            } else {
-                null
-            }
-
-            ManifestPoet.buildThirdPartyDeposits(
-                settings = ManifestPoet.ThirdPartyDepositSettings(
-                    accountAddress = args.address,
-                    defaultDepositRule = defaultRule,
-                    removeAssetExceptions = currentAssetExceptions.minus(newAssetExceptions.toSet()),
-                    addAssetExceptions = newAssetExceptions.minus(currentAssetExceptions.toSet()),
-                    removeDepositors = currentDepositors.minus(newDepositors.toSet()),
-                    addedDepositors = newDepositors.minus(currentDepositors.toSet())
+            runCatching {
+                TransactionManifest.thirdPartyDepositUpdate(
+                    accountAddress = AccountAddress.init(args.address),
+                    from = com.radixdlt.sargon.ThirdPartyDeposits(
+                        depositRule = currentThirdPartyDeposits.depositRule.toSargon(),
+                        assetsExceptionList = currentThirdPartyDeposits.assetsExceptionList?.map { it.toSargon() }.orEmpty(),
+                        depositorsAllowList = currentThirdPartyDeposits.depositorsAllowList?.map { it.toSargon() }.orEmpty()
+                    ),
+                    to = com.radixdlt.sargon.ThirdPartyDeposits(
+                        depositRule = newDepositRule.toSargon(),
+                        assetsExceptionList = newAssetExceptions.map { it.toSargon() },
+                        depositorsAllowList = newDepositors.map { it.toSargon() }
+                    )
                 )
-            ).onSuccess { manifest ->
+            }.mapCatching {
+                TransactionManifestData.from(it)
+            }.onSuccess { manifest ->
                 val updatedThirdPartyDepositSettings = state.value.updatedThirdPartyDepositSettings ?: return@onSuccess
                 val requestId = UUIDGenerator.uuid().toString()
                 incomingRequestRepository.add(
