@@ -480,7 +480,7 @@ sealed class TargetAccount {
     abstract val id: String
     abstract val spendingAssets: ImmutableSet<SpendingAsset>
 
-    abstract fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean
+    abstract fun isSignatureRequiredForTransfer(resourceAddress: String): Boolean
 
     val isAddressValid: Boolean
         get() = when (this) {
@@ -542,7 +542,7 @@ sealed class TargetAccount {
     ) : TargetAccount() {
         override val address: String = ""
 
-        override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean = false
+        override fun isSignatureRequiredForTransfer(resourceAddress: String): Boolean = false
     }
 
     data class Other(
@@ -552,7 +552,7 @@ sealed class TargetAccount {
         override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
 
-        override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean = false
+        override fun isSignatureRequiredForTransfer(resourceAddress: String): Boolean = false
 
         enum class AddressValidity {
             VALID,
@@ -570,9 +570,9 @@ sealed class TargetAccount {
         override val address: String
             get() = account.address
 
-        override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean {
+        override fun isSignatureRequiredForTransfer(resourceAddress: String): Boolean {
             return account.isSignatureRequiredBasedOnDepositRules(
-                forSpecificAssetAddress = forSpendingAsset.address,
+                forSpecificAssetAddress = resourceAddress,
                 addressesOfAssetsOfTargetAccount = accountAssetsAddresses
             )
         }
