@@ -52,27 +52,33 @@ fun AssetDialog(
         title = state.asset?.displayTitle(),
         onDismiss = onDismiss
     ) {
+        val isLoadingBalance = if (state.isFiatBalancesEnabled) {
+            state.isLoadingBalance
+        } else {
+            false
+        }
+
         Box(modifier = Modifier.fillMaxHeight(fraction = 0.9f)) {
             when (val asset = state.asset) {
                 is Token -> FungibleDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
                     token = asset,
                     tokenPrice = state.assetPrice as? AssetPrice.TokenPrice,
-                    isLoadingBalance = state.isLoadingBalance
+                    isLoadingBalance = isLoadingBalance
                 )
 
                 is LiquidStakeUnit -> LSUDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
                     lsu = asset,
                     price = state.assetPrice as? AssetPrice.LSUPrice,
-                    isLoadingBalance = state.isLoadingBalance
+                    isLoadingBalance = isLoadingBalance
                 )
 
                 is PoolUnit -> PoolUnitDialogContent(
                     args = state.args as AssetDialogArgs.Fungible,
                     poolUnit = asset,
                     poolUnitPrice = state.assetPrice as? AssetPrice.PoolUnitPrice,
-                    isLoadingBalance = state.isLoadingBalance
+                    isLoadingBalance = isLoadingBalance
                 )
                 // Includes NFTs and stake claims
                 is Asset.NonFungible -> {
@@ -85,7 +91,7 @@ fun AssetDialog(
                         claimState = state.claimState,
                         accountContext = state.accountContext,
                         price = state.assetPrice as? AssetPrice.StakeClaimPrice,
-                        isLoadingBalance = state.isLoadingBalance,
+                        isLoadingBalance = isLoadingBalance,
                         onClaimClick = viewModel::onClaimClick,
                     )
                 }

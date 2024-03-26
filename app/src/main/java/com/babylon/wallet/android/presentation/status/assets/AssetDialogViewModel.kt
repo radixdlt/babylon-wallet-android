@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.status.assets
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.domain.model.assets.Asset
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
@@ -78,12 +79,24 @@ class AssetDialogViewModel @Inject constructor(
                     _state.update { it.copy(accountContext = account) }
 
                     if (account != null) {
-                        val assetPrice = getFiatValueUseCase.forAsset(
+                        getFiatValueUseCase.forAsset(
                             asset = asset,
                             account = account,
                             isRefreshing = true
-                        ).getOrThrow()
-                        _state.update { it.copy(assetPrice = assetPrice) }
+                        )
+                            .onSuccess { assetPrice ->
+                                _state.update { state ->
+                                    state.copy(assetPrice = assetPrice)
+                                }
+                            }
+                            .onFailure {
+                                if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
+                                    hideFiatBalancesWhenNotOnMainnet()
+                                }
+                                _state.update { state ->
+                                    state.copy(assetPrice = null)
+                                }
+                            }
                     }
                 }
 
@@ -126,10 +139,17 @@ class AssetDialogViewModel @Inject constructor(
         }
     }
 
+    private fun hideFiatBalancesWhenNotOnMainnet() {
+        _state.update { state ->
+            state.copy(isFiatBalancesEnabled = false)
+        }
+    }
+
     data class State(
         val args: AssetDialogArgs,
         val asset: Asset? = null,
         val epoch: Long? = null,
+        val isFiatBalancesEnabled: Boolean = true,
         val assetPrice: AssetPrice? = null,
         val uiMessage: UiMessage? = null,
         val accountContext: Network.Account? = null,
