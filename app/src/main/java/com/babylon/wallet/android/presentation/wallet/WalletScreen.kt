@@ -254,23 +254,25 @@ private fun WalletAccountList(
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
-            Text(
-                text = stringResource(R.string.homePage_totalValue).uppercase(),
-                style = RadixTheme.typography.body2Header,
-                color = RadixTheme.colors.gray2
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
-            TotalFiatBalanceView(
-                fiatPrice = state.totalFiatValueOfWallet,
-                isLoading = state.isWalletBalanceLoading,
-                currency = SupportedCurrency.USD,
-                formattedContentStyle = RadixTheme.typography.header,
-                trailingContent = {
-                    TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
-                }
-            )
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            if (state.isFiatBalancesEnabled) {
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+                Text(
+                    text = stringResource(R.string.homePage_totalValue).uppercase(),
+                    style = RadixTheme.typography.body2Header,
+                    color = RadixTheme.colors.gray2
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
+                TotalFiatBalanceView(
+                    fiatPrice = state.totalFiatValueOfWallet,
+                    isLoading = state.isWalletBalanceLoading,
+                    currency = SupportedCurrency.USD,
+                    formattedContentStyle = RadixTheme.typography.header,
+                    trailingContent = {
+                        TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
+                    }
+                )
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
+            }
         }
         itemsIndexed(state.accountsAndAssets) { _, accountWithAssets ->
             AccountCardView(
@@ -282,6 +284,7 @@ private fun WalletAccountList(
                 accountWithAssets = accountWithAssets,
                 fiatTotalValue = state.totalFiatValueForAccount(accountWithAssets.account.address),
                 accountTag = state.getTag(accountWithAssets.account),
+                isFiatBalancesEnabled = state.isFiatBalancesEnabled,
                 isLoadingResources = accountWithAssets.assets == null,
                 isLoadingBalance = accountWithAssets.assets == null ||
                     state.isBalanceLoadingForAccount(accountWithAssets.account.address),

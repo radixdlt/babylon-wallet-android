@@ -45,6 +45,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 fun AccountCardView(
     modifier: Modifier = Modifier,
     accountWithAssets: AccountWithAssets,
+    isFiatBalancesEnabled: Boolean,
     fiatTotalValue: FiatPrice?,
     accountTag: WalletUiState.AccountTag?,
     isLoadingResources: Boolean,
@@ -75,6 +76,7 @@ fun AccountCardView(
             assetsContainer,
             promptsContainer
         ) = createRefs()
+
         val isFiatBalanceVisible = accountWithAssets.assets == null ||
             accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
 
@@ -82,7 +84,7 @@ fun AccountCardView(
             modifier = Modifier.constrainAs(nameLabel) {
                 linkTo(
                     start = parent.start,
-                    end = if (isFiatBalanceVisible) {
+                    end = if (isFiatBalancesEnabled && isFiatBalanceVisible) {
                         if (isLoadingBalance) {
                             fiatTotalLoading.start
                         } else {
@@ -102,7 +104,7 @@ fun AccountCardView(
             overflow = TextOverflow.Ellipsis
         )
 
-        if (isFiatBalanceVisible) {
+        if (isFiatBalancesEnabled && isFiatBalanceVisible) {
             if (isLoadingBalance) {
                 Row(
                     modifier = Modifier.constrainAs(fiatTotalLoading) {
@@ -272,6 +274,7 @@ fun AccountCardPreview() {
                         stakeClaims = emptyList()
                     )
                 ),
+                isFiatBalancesEnabled = true,
                 fiatTotalValue = FiatPrice(price = 3450900.899, currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
@@ -301,6 +304,7 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                         stakeClaims = emptyList()
                     )
                 ),
+                isFiatBalancesEnabled = true,
                 fiatTotalValue = FiatPrice(price = 3450.0, currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
@@ -330,7 +334,8 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                         stakeClaims = emptyList()
                     )
                 ),
-                fiatTotalValue = FiatPrice(price = 3450900899900899732.4, currency = SupportedCurrency.USD),
+                isFiatBalancesEnabled = true,
+                fiatTotalValue = FiatPrice(price = 345008999008932.4, currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
                 isLoadingBalance = false,
@@ -360,7 +365,8 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                             stakeClaims = emptyList()
                         )
                     ),
-                    fiatTotalValue = FiatPrice(price = 3450900899900899732.4, currency = SupportedCurrency.USD),
+                    isFiatBalancesEnabled = true,
+                    fiatTotalValue = FiatPrice(price = 34509008998732.4, currency = SupportedCurrency.USD),
                     accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                     isLoadingResources = false,
                     isLoadingBalance = false,
@@ -388,6 +394,7 @@ fun AccountCardLoadingPreview() {
                         stakeClaims = emptyList()
                     )
                 ),
+                isFiatBalancesEnabled = true,
                 fiatTotalValue = FiatPrice(price = 3450900899.0, currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = true,
