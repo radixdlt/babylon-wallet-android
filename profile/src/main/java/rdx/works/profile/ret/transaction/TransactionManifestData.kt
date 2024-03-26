@@ -37,7 +37,7 @@ data class TransactionManifestData(
         )
     }
 
-    internal val manifestSargon: com.radixdlt.sargon.TransactionManifest by lazy {
+    val manifestSargon: com.radixdlt.sargon.TransactionManifest by lazy {
         com.radixdlt.sargon.TransactionManifest.init(
             instructionsString = instructions,
             networkId = NetworkId.init(discriminant = networkId.toUByte()),
