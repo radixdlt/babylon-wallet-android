@@ -186,14 +186,19 @@ class TestnetFiatPriceRepository @Inject constructor(
             val prices = result.toMutableMap()
             val xrdPrice = prices.remove(mainnetXrdAddress)
 
-            addresses.associate {
-                if (it.address in XrdResource.addressesPerNetwork.values) {
-                    it.address to xrdPrice
+            addresses.associate { priceRequestAddress ->
+                if (prices.isEmpty()) {
+                    // if the token price service (getFiatPrices) returns emptyMap we can't give random price
+                    priceRequestAddress.address to FiatPrice(0.0, currency)
+                } else if (priceRequestAddress.address in XrdResource.addressesPerNetwork.values) {
+                    priceRequestAddress.address to xrdPrice
                 } else {
                     val randomPrice = prices.entries.elementAt(Random.nextInt(prices.entries.size)).value
-                    it.address to randomPrice
+                    priceRequestAddress.address to randomPrice
                 }
-            }.mapNotNull { it.value?.let { value -> it.key to value } }.toMap()
+            }.mapNotNull { addressAndFiatPrice ->
+                addressAndFiatPrice.value?.let { fiatPrice -> addressAndFiatPrice.key to fiatPrice }
+            }.toMap()
         }
     }
 }
