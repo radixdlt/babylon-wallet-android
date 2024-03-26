@@ -7,15 +7,18 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.modifyLockFee
 import rdx.works.core.NonceGenerator
 import rdx.works.core.mapError
 import rdx.works.core.then
-import rdx.works.profile.ret.addLockFee
 import rdx.works.profile.ret.crypto.PrivateKey
 import rdx.works.profile.ret.crypto.Signature
 import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.ret.transaction.TransactionSigner
+import rdx.works.profile.sargon.toDecimal192
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -100,7 +103,13 @@ class SignTransactionUseCase @Inject constructor(
             get() = if (feePayerAddress == null) {
                 manifest
             } else {
-                manifest.addLockFee(feePayerAddress, lockFee)
+                TransactionManifestData.from(
+                    manifest = manifest.manifestSargon.modifyLockFee(
+                        addressOfFeePayer = AccountAddress.init(feePayerAddress),
+                        fee = lockFee.toDecimal192()
+                    ),
+                    message = manifest.message
+                )
             }
     }
 
