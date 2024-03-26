@@ -24,19 +24,6 @@ object ManifestPoet {
         .buildSafely(AddressHelper.networkId(entityAddress))
 }
 
-fun sampleXRDWithdraw(
-    fromAddress: String,
-    value: BigDecimal
-) = with(AddressHelper.networkId(fromAddress)) {
-    BabylonManifestBuilder()
-        .withdrawFromAccount(
-            fromAddress = fromAddress,
-            fungibleAddress = AddressHelper.xrdAddress(this),
-            amount = value
-        )
-        .build(this)
-}
-
 fun TransactionManifestData.addLockFee(
     feePayerAddress: String,
     fee: BigDecimal
