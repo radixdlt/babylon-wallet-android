@@ -20,6 +20,18 @@ import com.babylon.wallet.android.presentation.transaction.vectors.sampleManifes
 import com.babylon.wallet.android.presentation.transaction.vectors.testViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AssetsTransfersRecipient
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.PerRecipientAssetTransfer
+import com.radixdlt.sargon.PerRecipientAssetTransfers
+import com.radixdlt.sargon.PerRecipientFungibleTransfer
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.perRecipientTransfers
+import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.xrd
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -43,6 +55,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.ret.ManifestPoet
 import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.ret.transaction.TransactionSigner
+import rdx.works.profile.sargon.toSargon
 import java.math.BigDecimal
 import java.util.Locale
 import java.util.UUID
@@ -67,11 +80,13 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val transactionRepository = mockk<TransactionRepository>().apply {
         coEvery { getLedgerEpoch() } returns Result.success(1000)
-        coEvery { getTransactionPreview(any()) } returns Result.success(TransactionPreviewResponse(
-            encodedReceipt = "",
-            receipt = CoreApiTransactionReceipt(status = "success"),
-            logs = emptyList()
-        ))
+        coEvery { getTransactionPreview(any()) } returns Result.success(
+            TransactionPreviewResponse(
+                encodedReceipt = "",
+                receipt = CoreApiTransactionReceipt(status = "success"),
+                logs = emptyList()
+            )
+        )
     }
     private val stateRepository = mockk<StateRepository>()
     private val dAppMessenger = mockk<DappMessenger>()
@@ -161,16 +176,25 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         coEvery { incomingRequestRepository.getTransactionWriteRequest(transactionId) } returns transactionRequest
     }
 
-    private fun simpleXRDTransfer(withProfile: Profile): TransactionManifestData = ManifestPoet.buildTransfer(
-        fromAccount = withProfile.networks.first().accounts.first(),
-        depositFungibles = listOf(
-            ManifestPoet.FungibleTransfer(
-                toAccountAddress = withProfile.networks.first().accounts[1].address,
-                resourceAddress = XrdResource.address(withProfile.networks.first().networkID),
-                amount = 2.toBigDecimal(),
-                signatureRequired = true
+    private fun simpleXRDTransfer(withProfile: Profile): TransactionManifestData = TransactionManifestData.from(
+        manifest = TransactionManifest.perRecipientTransfers(
+            transfers = PerRecipientAssetTransfers(
+                addressOfSender = AccountAddress.init(withProfile.networks.first().accounts.first().address),
+                transfers = listOf(
+                    PerRecipientAssetTransfer(
+                        recipient = AssetsTransfersRecipient.MyOwnAccount(value = withProfile.networks.first().accounts[1].toSargon()),
+                        fungibles = listOf(
+                            PerRecipientFungibleTransfer(
+                                useTryDepositOrAbort = false,
+                                amount = 2.toDecimal192(),
+                                divisibility = null,
+                                resourceAddress = ResourceAddress.xrd(NetworkId.init(withProfile.networks.first().networkID.toUByte()))
+                            )
+                        ),
+                        nonFungibles = emptyList()
+                    )
+                )
             )
         ),
-        depositNFTs = emptyList()
-    ).getOrThrow()
+    )
 }

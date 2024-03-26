@@ -12,7 +12,6 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.discriminant
-import com.radixdlt.sargon.extensions.from
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.instructionsString
 import com.radixdlt.sargon.extensions.networkId
@@ -41,7 +40,7 @@ data class TransactionManifestData(
     internal val manifestSargon: com.radixdlt.sargon.TransactionManifest by lazy {
         com.radixdlt.sargon.TransactionManifest.init(
             instructionsString = instructions,
-            networkId = NetworkId.from(networkId.toUByte()),
+            networkId = NetworkId.init(discriminant = networkId.toUByte()),
             blobs = Blobs.init(blobs = blobs.map { Blob.init(it.toBagOfBytes()) })
         )
     }
