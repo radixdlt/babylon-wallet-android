@@ -148,7 +148,7 @@ class WalletViewModel @Inject constructor(
                         isRefreshing = isRefreshing
                     ).onFailure {
                         if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                            hideFiatBalancesWhenNotOnMainnet()
+                            disableFiatPrices()
                         }
                     }.getOrNull()
                 }
@@ -246,7 +246,7 @@ class WalletViewModel @Inject constructor(
         preferencesManager.setRadixBannerVisibility(isVisible = false)
     }
 
-    private fun hideFiatBalancesWhenNotOnMainnet() {
+    private fun disableFiatPrices() {
         _state.update { walletUiState ->
             walletUiState.copy(isFiatBalancesEnabled = false)
         }

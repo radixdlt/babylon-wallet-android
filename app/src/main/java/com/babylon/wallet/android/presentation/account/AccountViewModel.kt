@@ -133,7 +133,7 @@ class AccountViewModel @Inject constructor(
                         }
                         .onFailure {
                             if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                                hideFiatBalancesWhenNotOnMainnet()
+                                disableFiatPrices()
                             } else {
                                 _state.update { state ->
                                     state.copy(hasFailedToFetchPricesForAccount = true)
@@ -326,7 +326,7 @@ class AccountViewModel @Inject constructor(
         onLatestEpochRequest()
     }
 
-    private fun hideFiatBalancesWhenNotOnMainnet() {
+    private fun disableFiatPrices() {
         _state.update { accountUiState ->
             accountUiState.copy(isFiatBalancesEnabled = false)
         }

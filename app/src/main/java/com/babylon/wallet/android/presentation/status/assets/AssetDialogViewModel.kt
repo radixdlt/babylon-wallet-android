@@ -91,7 +91,7 @@ class AssetDialogViewModel @Inject constructor(
                             }
                             .onFailure {
                                 if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                                    hideFiatBalancesWhenNotOnMainnet()
+                                    disableFiatPrices()
                                 }
                                 _state.update { state ->
                                     state.copy(assetPrice = null)
@@ -139,7 +139,7 @@ class AssetDialogViewModel @Inject constructor(
         }
     }
 
-    private fun hideFiatBalancesWhenNotOnMainnet() {
+    private fun disableFiatPrices() {
         _state.update { state ->
             state.copy(isFiatBalancesEnabled = false)
         }

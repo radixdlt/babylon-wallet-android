@@ -65,7 +65,7 @@ class AssetsChooserDelegate @Inject constructor(
                         }
                         .onFailure { exception ->
                             if (exception is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                                hideFiatBalancesWhenNotOnMainnet()
+                                disableFiatPrices()
                             }
                             updateSheetState { state ->
                                 state.copy(assetsWithAssetsPrices = emptyMap())
@@ -152,7 +152,7 @@ class AssetsChooserDelegate @Inject constructor(
         }
     }
 
-    private fun hideFiatBalancesWhenNotOnMainnet() {
+    private fun disableFiatPrices() {
         updateSheetState { state ->
             state.copy(isFiatBalancesEnabled = false)
         }
