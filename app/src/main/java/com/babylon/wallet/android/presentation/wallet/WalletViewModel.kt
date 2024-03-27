@@ -146,9 +146,11 @@ class WalletViewModel @Inject constructor(
                     accountWithAssets.account.address to getFiatValueUseCase.forAccount(
                         accountWithAssets = accountWithAssets,
                         isRefreshing = isRefreshing
-                    ).onFailure {
+                    ).onSuccess {
+                        shouldEnableFiatPrices(isEnabled = true)
+                    }.onFailure {
                         if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
-                            disableFiatPrices()
+                            shouldEnableFiatPrices(isEnabled = false)
                         }
                     }.getOrNull()
                 }
@@ -246,9 +248,9 @@ class WalletViewModel @Inject constructor(
         preferencesManager.setRadixBannerVisibility(isVisible = false)
     }
 
-    private fun disableFiatPrices() {
+    private fun shouldEnableFiatPrices(isEnabled: Boolean) {
         _state.update { walletUiState ->
-            walletUiState.copy(isFiatBalancesEnabled = false)
+            walletUiState.copy(isFiatBalancesEnabled = isEnabled)
         }
     }
 }
