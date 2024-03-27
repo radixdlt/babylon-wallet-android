@@ -385,6 +385,7 @@ class TransferViewModel @Inject constructor(
 
             data class ChooseAssets(
                 val assets: Assets? = null,
+                val isFiatBalancesEnabled: Boolean = true,
                 val assetsWithAssetsPrices: Map<Asset, AssetPrice?>? = null,
                 private val initialAssetAddress: ImmutableSet<String>, // Used to compute the difference between chosen assets
                 val nonFungiblesWithPendingNFTs: Set<String> = setOf(),

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transfer.assets
 
+import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.domain.model.assets.Assets
 import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
 import com.babylon.wallet.android.domain.model.resources.Resource
@@ -62,7 +63,10 @@ class AssetsChooserDelegate @Inject constructor(
                                 state.copy(assetsWithAssetsPrices = assetsPrices.associateBy { assetPrice -> assetPrice.asset })
                             }
                         }
-                        .onFailure {
+                        .onFailure { exception ->
+                            if (exception is FiatPriceRepository.PricesNotSupportedInNetwork) {
+                                disableFiatPrices()
+                            }
                             updateSheetState { state ->
                                 state.copy(assetsWithAssetsPrices = emptyMap())
                             }
@@ -145,6 +149,12 @@ class AssetsChooserDelegate @Inject constructor(
     private fun onLatestEpochRequest() = viewModelScope.launch {
         getNetworkInfoUseCase().onSuccess { info ->
             updateSheetState { state -> state.copy(epoch = info.epoch) }
+        }
+    }
+
+    private fun disableFiatPrices() {
+        updateSheetState { state ->
+            state.copy(isFiatBalancesEnabled = false)
         }
     }
 

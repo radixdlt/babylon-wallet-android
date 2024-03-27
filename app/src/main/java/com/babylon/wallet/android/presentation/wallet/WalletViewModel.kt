@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.wallet
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
+import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.model.assets.AssetPrice
 import com.babylon.wallet.android.domain.model.assets.Assets
@@ -145,7 +146,11 @@ class WalletViewModel @Inject constructor(
                     accountWithAssets.account.address to getFiatValueUseCase.forAccount(
                         accountWithAssets = accountWithAssets,
                         isRefreshing = isRefreshing
-                    ).getOrNull()
+                    ).onFailure {
+                        if (it is FiatPriceRepository.PricesNotSupportedInNetwork) {
+                            disableFiatPrices()
+                        }
+                    }.getOrNull()
                 }
                 _state.update { walletUiState ->
                     walletUiState.copy(
@@ -240,6 +245,12 @@ class WalletViewModel @Inject constructor(
     fun onRadixBannerDismiss() = viewModelScope.launch {
         preferencesManager.setRadixBannerVisibility(isVisible = false)
     }
+
+    private fun disableFiatPrices() {
+        _state.update { walletUiState ->
+            walletUiState.copy(isFiatBalancesEnabled = false)
+        }
+    }
 }
 
 internal sealed interface WalletEvent : OneOffEvent {
@@ -258,6 +269,7 @@ data class WalletUiState(
     private val factorSources: List<FactorSource> = emptyList(),
     val isRadixBannerVisible: Boolean = false,
     val isBackupWarningVisible: Boolean = false,
+    val isFiatBalancesEnabled: Boolean = true,
     val uiMessage: UiMessage? = null,
     val isNpsSurveyShown: Boolean = false
 ) : UiState {

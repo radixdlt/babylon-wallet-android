@@ -292,18 +292,20 @@ fun AssetsContent(
                             textColor = RadixTheme.colors.white
                         )
 
-                        TotalFiatBalanceView(
-                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
-                            fiatPrice = state.totalFiatValue,
-                            isLoading = state.isAccountBalanceLoading,
-                            currency = SupportedCurrency.USD,
-                            contentColor = RadixTheme.colors.white,
-                            shimmeringColor = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
-                            formattedContentStyle = RadixTheme.typography.header,
-                            trailingContent = {
-                                TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
-                            }
-                        )
+                        if (state.isFiatBalancesEnabled) {
+                            TotalFiatBalanceView(
+                                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingXXLarge),
+                                fiatPrice = state.totalFiatValue,
+                                isLoading = state.isAccountBalanceLoading,
+                                currency = SupportedCurrency.USD,
+                                contentColor = RadixTheme.colors.white,
+                                shimmeringColor = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
+                                formattedContentStyle = RadixTheme.typography.header,
+                                trailingContent = {
+                                    TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
+                                }
+                            )
+                        }
 
                         androidx.compose.animation.AnimatedVisibility(
                             modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingLarge),
@@ -361,9 +363,17 @@ fun AssetsContent(
             }
 
             assetsView(
-                assetsViewData = assetsViewData,
+                assetsViewData = if (state.isFiatBalancesEnabled) {
+                    assetsViewData
+                } else {
+                    assetsViewData?.copy(prices = null)
+                },
                 state = state.assetsViewState,
-                isLoadingBalance = state.isAccountBalanceLoading,
+                isLoadingBalance = if (state.isFiatBalancesEnabled) {
+                    state.isAccountBalanceLoading
+                } else {
+                    false
+                },
                 action = AssetsViewAction.Click(
                     onFungibleClick = onFungibleTokenClick,
                     onNonFungibleItemClick = onNonFungibleItemClick,
@@ -434,6 +444,38 @@ fun AccountContentPreview() {
         with(SampleDataProvider()) {
             AccountScreenContent(
                 state = AccountUiState(
+                    accountWithAssets = sampleAccountWithoutResources(),
+                    assetsWithAssetsPrices = emptyMap()
+                ),
+                onShowHideBalanceToggle = {},
+                onAccountPreferenceClick = { _ -> },
+                onBackClick = {},
+                onRefresh = {},
+                onTransferClick = {},
+                onMessageShown = {},
+                onTabClick = {},
+                onCollectionClick = {},
+                onFungibleItemClicked = {},
+                onNonFungibleItemClicked = { _, _ -> },
+                onApplySecuritySettings = {},
+                onPoolUnitClick = {},
+                onLSUUnitClicked = {},
+                onNextNFTsPageRequest = {},
+                onStakesRequest = {},
+                onClaimClick = {}
+            ) {}
+        }
+    }
+}
+
+@Preview
+@Composable
+fun AccountContentWithFiatBalancesDisabledPreview() {
+    RadixWalletPreviewTheme {
+        with(SampleDataProvider()) {
+            AccountScreenContent(
+                state = AccountUiState(
+                    isFiatBalancesEnabled = false,
                     accountWithAssets = sampleAccountWithoutResources(),
                     assetsWithAssetsPrices = emptyMap()
                 ),

@@ -113,7 +113,11 @@ fun ChooseAssetsSheet(
         ) {
             assetsView(
                 assetsViewData = assetsViewData,
-                isLoadingBalance = state.isAccountBalanceLoading,
+                isLoadingBalance = if (state.isFiatBalancesEnabled) {
+                    state.isAccountBalanceLoading
+                } else {
+                    false
+                },
                 state = state.assetsViewState,
                 action = AssetsViewAction.Selection(
                     selectedResources = selectedAssets,
