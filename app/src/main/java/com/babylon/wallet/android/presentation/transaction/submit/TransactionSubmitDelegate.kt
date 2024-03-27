@@ -20,15 +20,20 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.TransactionGuarantee
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.modifyAddGuarantees
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.logNonFatalException
 import rdx.works.core.then
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.ret.addGuaranteeInstructionToManifest
 import rdx.works.profile.ret.transaction.TransactionManifestData
+import rdx.works.profile.sargon.toDecimal192
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -256,28 +261,22 @@ class TransactionSubmitDelegate @Inject constructor(
     private fun TransactionManifestData.addAssertions(
         depositing: List<Transferable.Depositing>
     ): TransactionManifestData {
-        var startIndex = 0
-        var manifest = this
-
-        depositing.forEach {
-            when (val assertion = it.guaranteeAssertion) {
-                is GuaranteeAssertion.ForAmount -> {
-                    manifest = manifest.addGuaranteeInstructionToManifest(
-                        address = it.transferable.resourceAddress,
-                        guaranteedAmount = assertion.amount,
-                        index = assertion.instructionIndex.toInt() + startIndex
-                    )
-                    startIndex++
-                }
-
-                is GuaranteeAssertion.ForNFT -> {
-                    // Will be implemented later
-                }
-
-                null -> {}
-            }
+        val guarantees = depositing.mapNotNull { transferable ->
+            val assertion = transferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount ?: return@mapNotNull null
+            val resource = transferable.transferable.resource as? Resource.FungibleResource ?: return@mapNotNull null
+            TransactionGuarantee(
+                amount = assertion.amount.toDecimal192(),
+                instructionIndex = assertion.instructionIndex.toULong(),
+                resourceAddress = ResourceAddress.init(resource.resourceAddress),
+                resourceDivisibility = resource.divisibility?.toUByte()
+            )
         }
 
-        return manifest
+
+
+        return TransactionManifestData.from(
+            manifest = manifestSargon.modifyAddGuarantees(guarantees = guarantees),
+            message = message
+        )
     }
 }
