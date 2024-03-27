@@ -47,12 +47,10 @@ import org.junit.Test
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
-import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.ret.ManifestPoet
 import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.ret.transaction.TransactionSigner
 import rdx.works.profile.sargon.toSargon

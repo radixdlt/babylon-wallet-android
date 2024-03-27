@@ -5,15 +5,22 @@ import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUse
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.PublicKeyHash
+import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.setOwnerKeysHashes
 import kotlinx.coroutines.flow.merge
-import rdx.works.core.compressedPublicKeyHash
+import rdx.works.core.then
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
-import rdx.works.profile.ret.ManifestPoet
 import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import rdx.works.profile.ret.transaction.TransactionManifestData
+import rdx.works.profile.sargon.toSargon
 import javax.inject.Inject
 
 class ROLAClient @Inject constructor(
@@ -39,31 +46,35 @@ class ROLAClient @Inject constructor(
             is SecurityState.Unsecured -> {
                 when (val badge = state.unsecuredEntityControl.transactionSigning.badge) {
                     is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-                        badge.publicKey
+                        badge.publicKey.toSargon()
                     }
                 }
             }
         }
-        val ownerKeys = getEntitiesOwnerKeysUseCase(listOf(entity)).getOrNull()?.get(entity)
-        val publicKeyHashes = mutableListOf<FactorInstance.PublicKey>()
-        val ownerKeysHashes = ownerKeys.orEmpty()
         val authSigningPublicKey = when (val badge = authSigningFactorInstance.badge) {
             is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-                badge.publicKey
+                badge.publicKey.toSargon()
             }
         }
-        val authSigningKeyHash = authSigningPublicKey.compressedData.compressedPublicKeyHash()
-        val transactionSigningKeyHash = transactionSigningPublicKey.compressedData.compressedPublicKeyHash()
-        if (ownerKeysHashes.none { it.hex == authSigningKeyHash }) {
-            publicKeyHashes.add(authSigningPublicKey)
+
+        return getEntitiesOwnerKeysUseCase(listOf(entity)).mapCatching { ownerKeysPerEntity ->
+            val ownerKeys = ownerKeysPerEntity[entity].orEmpty()
+            val publicKeys = mutableListOf<PublicKey>()
+            if (ownerKeys.none { it.hex == authSigningPublicKey.hex }) {
+                publicKeys.add(authSigningPublicKey)
+            }
+            if (ownerKeys.none { it.hex == transactionSigningPublicKey.hex }) {
+                publicKeys.add(transactionSigningPublicKey)
+            }
+            publicKeys
+        }.mapCatching { publicKeys ->
+            TransactionManifest.setOwnerKeysHashes(
+                addressOfAccountOrPersona = AddressOfAccountOrPersona.init(validating = entity.address),
+                ownerKeyHashes = publicKeys.map { PublicKeyHash.init(it) }
+            )
+        }.mapCatching {
+            TransactionManifestData.from(manifest = it)
         }
-        if (ownerKeysHashes.none { it.hex == transactionSigningKeyHash }) {
-            publicKeyHashes.add(transactionSigningPublicKey)
-        }
-        return ManifestPoet.buildRola(
-            entityAddress = entity.address,
-            publicKeyHashes = publicKeyHashes
-        )
     }
 
     suspend fun signAuthChallenge(
@@ -85,6 +96,7 @@ class ROLAClient @Inject constructor(
                     throw RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                 }
             }
+
             else -> Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge(exception))
         }
     }

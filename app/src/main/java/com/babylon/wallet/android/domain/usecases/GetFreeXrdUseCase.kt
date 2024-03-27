@@ -19,7 +19,6 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateways
-import rdx.works.profile.ret.ManifestPoet
 import rdx.works.profile.ret.transaction.TransactionManifestData
 import java.math.BigDecimal
 import javax.inject.Inject
