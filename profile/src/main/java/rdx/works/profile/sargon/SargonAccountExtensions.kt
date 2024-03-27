@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package rdx.works.profile.sargon
 
 import com.radixdlt.sargon.Account
@@ -58,7 +60,9 @@ private fun SecurityState.toSargon(): EntitySecurityState = when (this) {
 
 private fun FactorInstance.toSargonHD(): HierarchicalDeterministicFactorInstance = HierarchicalDeterministicFactorInstance(
     factorSourceId = (factorSourceId.toSargon() as FactorSourceId.Hash).value,
-    publicKey = with((badge.toSargon() as FactorInstanceBadge.Virtual).value as FactorInstanceBadgeVirtualSource.HierarchicalDeterministic) {
+    publicKey = with(
+        (badge.toSargon() as FactorInstanceBadge.Virtual).value as FactorInstanceBadgeVirtualSource.HierarchicalDeterministic
+    ) {
         HierarchicalDeterministicPublicKey(
             publicKey = this.value.publicKey,
             derivationPath = value.derivationPath

@@ -272,8 +272,6 @@ class TransactionSubmitDelegate @Inject constructor(
             )
         }
 
-
-
         return TransactionManifestData.from(
             manifest = manifestSargon.modifyAddGuarantees(guarantees = guarantees),
             message = message

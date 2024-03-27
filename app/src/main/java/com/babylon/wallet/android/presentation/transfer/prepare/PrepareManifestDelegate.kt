@@ -137,8 +137,8 @@ class PrepareManifestDelegate @Inject constructor(
             val factorSourceId = it.factorSourceId ?: return@filter false
 
             factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET || (
-                    factorSourceId.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(factorSourceId)
-                    )
+                factorSourceId.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(factorSourceId)
+                )
         }
 
     private fun TargetAccount.useTryDepositOrAbort(resourceAddress: String, accountsAbleToSign: List<TargetAccount.Owned>): Boolean =
