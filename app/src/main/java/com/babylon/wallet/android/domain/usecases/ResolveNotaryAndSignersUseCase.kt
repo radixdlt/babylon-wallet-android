@@ -13,16 +13,16 @@ class ResolveNotaryAndSignersUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        accountsRequiringAuth: List<String>,
-        personasRequiringAuth: List<String>,
+        accountsAddressesRequiringAuth: List<String>,
+        personaAddressesRequiringAuth: List<String>,
         notary: PrivateKey
     ) = runCatching {
         val accounts = profileUseCase.accountsOnCurrentNetwork()
         val personas = profileUseCase.personasOnCurrentNetwork()
 
-        accountsRequiringAuth.map { address ->
+        accountsAddressesRequiringAuth.map { address ->
             accounts.find { it.address == address } ?: throw FailedToFindSigningEntities
-        } + personasRequiringAuth.map { address ->
+        } + personaAddressesRequiringAuth.map { address ->
             personas.find { it.address == address } ?: throw FailedToFindSigningEntities
         }
     }.map {

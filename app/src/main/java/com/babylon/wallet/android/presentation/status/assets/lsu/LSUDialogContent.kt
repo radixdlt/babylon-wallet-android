@@ -206,7 +206,7 @@ fun LSUDialogContent(
                         visible = lsu?.fungibleResource?.currentSupply == null
                     ),
                 text = when (val supply = lsu?.fungibleResource?.currentSupply) {
-                    null -> ""
+                    null -> stringResource(id = R.string.empty)
                     BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
                     else -> supply.displayableQuantity()
                 },
