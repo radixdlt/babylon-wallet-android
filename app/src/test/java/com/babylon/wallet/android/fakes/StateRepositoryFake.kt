@@ -3,7 +3,7 @@ package com.babylon.wallet.android.fakes
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
@@ -37,7 +37,7 @@ open class StateRepositoryFake: StateRepository {
 
     override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> = Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> =
+    override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<Validator>> =
         Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun getNFTDetails(resourceAddress: String, localIds: Set<String>): Result<List<Resource.NonFungibleResource.Item>> =

@@ -52,7 +52,7 @@ import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
@@ -404,7 +404,7 @@ fun AssetsContentRowPreview() {
                                 resourceAddress = "resource_address$it",
                                 ownedAmount = BigDecimal.valueOf(237659)
                             ),
-                            ValidatorDetail(
+                            Validator(
                                 address = "validator_$it",
                                 totalXrdStake = BigDecimal.TEN
                             )

@@ -1,12 +1,8 @@
 package rdx.works.core.domain.assets
 
-import android.net.Uri
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.isXrd
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.description
-import rdx.works.core.domain.resources.metadata.iconUrl
-import rdx.works.core.domain.resources.metadata.name
 import java.math.BigDecimal
 
 sealed interface Asset {
@@ -91,31 +87,14 @@ data class Assets(
     }
 }
 
-data class ValidatorDetail(
-    val address: String,
-    val totalXrdStake: BigDecimal?,
-    val stakeUnitResourceAddress: String? = null,
-    val claimTokenResourceAddress: String? = null,
-    val metadata: List<Metadata> = emptyList()
-) {
-    val name: String
-        get() = metadata.name().orEmpty()
-
-    val url: Uri?
-        get() = metadata.iconUrl()
-
-    val description: String?
-        get() = metadata.description()
-}
-
 data class ValidatorWithStakes(
-    val validatorDetail: ValidatorDetail,
+    val validator: Validator,
     val liquidStakeUnit: LiquidStakeUnit? = null,
     val stakeClaimNft: StakeClaim? = null
 ) {
 
     val isDetailsAvailable: Boolean
-        get() = validatorDetail.totalXrdStake != null &&
+        get() = validator.totalXrdStake != null &&
             (liquidStakeUnit == null || liquidStakeUnit.fungibleResource.isDetailsAvailable) &&
             (stakeClaimNft == null || stakeClaimNft.nonFungibleResource.amount.toInt() == stakeClaimNft.nonFungibleResource.items.size)
 
@@ -126,8 +105,8 @@ data class ValidatorWithStakes(
         get() = stakeClaimNft != null && stakeClaimNft.nonFungibleResource.amount > 0L
 
     fun stakeValue(): BigDecimal? {
-        if (validatorDetail.totalXrdStake == null) return null
-        return liquidStakeUnit?.stakeValueInXRD(validatorDetail.totalXrdStake)
+        if (validator.totalXrdStake == null) return null
+        return liquidStakeUnit?.stakeValueInXRD(validator.totalXrdStake)
     }
 
     companion object {
@@ -143,7 +122,7 @@ data class ValidatorWithStakes(
                 if (lsu == null && claimCollection == null) return@mapNotNull null
 
                 ValidatorWithStakes(
-                    validatorDetail = validator,
+                    validator = validator,
                     liquidStakeUnit = lsu,
                     stakeClaimNft = claimCollection
                 )

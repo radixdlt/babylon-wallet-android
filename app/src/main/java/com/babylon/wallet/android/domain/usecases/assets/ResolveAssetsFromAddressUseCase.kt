@@ -7,7 +7,7 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import javax.inject.Inject
@@ -47,7 +47,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
             }
         }
 
-    private fun Resource.asAsset(pools: Map<String, Pool>, validators: Map<String, ValidatorDetail>): Asset = when (this) {
+    private fun Resource.asAsset(pools: Map<String, Pool>, validators: Map<String, Validator>): Asset = when (this) {
         is Resource.FungibleResource -> {
             if (poolAddress?.isNotEmpty() == true) {
                 val pool = pools[poolAddress] ?: error("Pool not found")

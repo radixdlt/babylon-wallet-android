@@ -63,7 +63,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
@@ -316,7 +316,7 @@ object Thumbnail {
     @Composable
     fun Validator(
         modifier: Modifier = Modifier,
-        validator: ValidatorDetail
+        validator: Validator
     ) {
         Custom(
             modifier = modifier,

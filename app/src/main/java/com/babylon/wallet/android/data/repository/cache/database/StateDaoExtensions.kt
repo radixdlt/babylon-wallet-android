@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.repository.cache.database.AccountNFTJoin.
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import rdx.works.core.InstantGenerator
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 
@@ -40,8 +40,8 @@ fun StateDao.getCachedPools(poolAddresses: Set<String>, atStateVersion: Long): M
     return pools.mapValues { it.value.copy(resources = it.value.resources.sorted()) }
 }
 
-fun StateDao.getCachedValidators(addresses: Set<String>, atStateVersion: Long): Map<String, ValidatorDetail> {
-    val validators = mutableMapOf<String, ValidatorDetail>()
+fun StateDao.getCachedValidators(addresses: Set<String>, atStateVersion: Long): Map<String, Validator> {
+    val validators = mutableMapOf<String, Validator>()
     getValidators(addresses, atStateVersion).forEach { entity ->
         validators[entity.address] = entity.asValidatorDetail()
     }
