@@ -48,8 +48,8 @@ class TransactionAnalysisDelegate @Inject constructor(
             manifestData.entitiesRequiringAuth()
         }.then { entitiesRequiringAuth ->
             resolveNotaryAndSignersUseCase(
-                accountsRequiringAuth = entitiesRequiringAuth.accounts,
-                personasRequiringAuth = entitiesRequiringAuth.identities,
+                accountsAddressesRequiringAuth = entitiesRequiringAuth.accounts,
+                personaAddressesRequiringAuth = entitiesRequiringAuth.identities,
                 notary = _state.value.ephemeralNotaryPrivateKey
             )
         }.then { notaryAndSigners ->
