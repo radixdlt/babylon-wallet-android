@@ -1,8 +1,14 @@
 package rdx.works.core.domain
 
 import android.net.Uri
+import androidx.annotation.VisibleForTesting
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.samples.Sample
+import com.radixdlt.sargon.samples.sampleMainnet
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.metadata.AccountType
 import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.accountType
 import rdx.works.core.domain.resources.metadata.claimedEntities
 import rdx.works.core.domain.resources.metadata.claimedWebsites
@@ -12,7 +18,7 @@ import rdx.works.core.domain.resources.metadata.iconUrl
 import rdx.works.core.domain.resources.metadata.name
 
 data class DApp(
-    val dAppAddress: String,
+    val dAppAddress: AccountAddress,
     val metadata: List<Metadata> = listOf()
 ) {
 
@@ -50,6 +56,45 @@ data class DApp(
             } catch (e: Exception) {
                 false
             }
+        }
+    }
+
+    companion object {
+        @VisibleForTesting
+        val sample: Sample<DApp> = object : Sample<DApp> {
+            override fun invoke(): DApp = DApp(
+                dAppAddress = AccountAddress.sampleMainnet(),
+                metadata = listOf(
+                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Sample Mainnet DApp", MetadataType.String),
+                    Metadata.Primitive(ExplicitMetadataKey.DESCRIPTION.key, "Description", MetadataType.String),
+                    Metadata.Collection(
+                        ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                        listOf(
+                            Metadata.Primitive(
+                                ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                "https://hammunet-dashboard.rdx-works-main.extratools.works",
+                                MetadataType.Url
+                            ),
+                            Metadata.Primitive(
+                                ExplicitMetadataKey.CLAIMED_WEBSITES.key,
+                                "https://ansharnet-dashboard.rdx-works-main.extratools.works",
+                                MetadataType.Url
+                            ),
+                        )
+                    ),
+                )
+            )
+
+            override fun other(): DApp = DApp(
+                dAppAddress = AccountAddress.sampleMainnet.other(),
+                metadata = listOf(
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.NAME.key,
+                        value = "Another dApp",
+                        valueType = MetadataType.String
+                    )
+                )
+            )
         }
     }
 }

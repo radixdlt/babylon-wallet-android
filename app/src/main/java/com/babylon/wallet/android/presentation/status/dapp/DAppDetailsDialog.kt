@@ -35,6 +35,7 @@ import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.card.NonFungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
 
 @Composable
@@ -114,7 +115,7 @@ private fun DAppDetailsDialogContent(
                 state.dAppWithResources?.dApp?.dAppAddress?.let { dAppAddress ->
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     DappDefinitionAddressRow(
-                        dappDefinitionAddress = dAppAddress,
+                        dappDefinitionAddress = dAppAddress.string,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault)

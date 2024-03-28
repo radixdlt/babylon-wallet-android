@@ -13,6 +13,10 @@ import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.ARG_PERSONA_ADDRESS
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.PersonaDetailViewModel
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -60,16 +64,19 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
     @Before
     override fun setUp() {
         super.setUp()
-        every { savedStateHandle.get<String>(ARG_PERSONA_ADDRESS) } returns "1"
+        val identityAddress = IdentityAddress.sampleMainnet()
+        every { savedStateHandle.get<String>(ARG_PERSONA_ADDRESS) } returns identityAddress.string
         every { getProfileUseCase() } returns flowOf(
             profile(
                 personas = identifiedArrayListOf(
-                    SampleDataProvider().samplePersona("1")
+                    SampleDataProvider().samplePersona(identityAddress.string)
                 )
             )
         )
-        coEvery { getDAppsUseCase("address1", false) } returns Result.success(DApp("address1"))
-        coEvery { getDAppsUseCase("address2", false) } returns Result.success(DApp("address2"))
+        val dApp = DApp.sample()
+        val dAppOther = DApp.sample.other()
+        coEvery { getDAppsUseCase(dApp.dAppAddress.string, false) } returns Result.success(dApp)
+        coEvery { getDAppsUseCase(dAppOther.dAppAddress.string, false) } returns Result.success(dAppOther)
     }
 
     @Test
@@ -80,7 +87,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
         advanceUntilIdle()
         vm.state.test {
             val item = expectMostRecentItem()
-            assert(item.persona?.address == "1")
+            assert(item.persona?.address == IdentityAddress.sampleMainnet().string)
             assert(item.authorizedDapps.size == 2)
         }
         collectJob.cancel()

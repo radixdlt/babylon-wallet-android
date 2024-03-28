@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.DApp
 import javax.inject.Inject
 
@@ -11,7 +12,7 @@ class GetValidatedDAppWebsiteUseCase @Inject constructor(
     suspend operator fun invoke(dApp: DApp): Result<String?> {
         val website = dApp.claimedWebsites.firstOrNull() ?: return Result.success(null)
         return wellKnownDAppDefinitionRepository.getWellKnownDAppDefinitions(website).map { dAppDefinitions ->
-            if (dAppDefinitions.contains(dApp.dAppAddress)) {
+            if (dAppDefinitions.contains(dApp.dAppAddress.string)) {
                 website
             } else {
                 null

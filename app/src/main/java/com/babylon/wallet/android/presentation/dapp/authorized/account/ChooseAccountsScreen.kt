@@ -11,11 +11,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.dapp.DappInteractionFailureDialog
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountContent
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
@@ -24,9 +24,6 @@ import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.resources.ExplicitMetadataKey
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 
 @Composable
 fun ChooseAccountsScreen(
@@ -146,7 +143,7 @@ private fun HandleOneOffEvents(
 @Preview(showBackground = true)
 @Composable
 fun ChooseAccountContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         ChooseAccountContent(
             onBackClick = {},
             onContinueClick = {},
@@ -167,12 +164,7 @@ fun ChooseAccountContentPreview() {
             ),
             onAccountSelect = {},
             onCreateNewAccount = {},
-            dapp = DApp(
-                dAppAddress = "account_tdx_abc",
-                metadata = listOf(
-                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "dApp", MetadataType.String)
-                )
-            ),
+            dapp = DApp.sample(),
             isOneTime = false,
             isSingleChoice = false,
             numberOfAccounts = 1,

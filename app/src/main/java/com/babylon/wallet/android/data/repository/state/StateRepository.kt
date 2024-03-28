@@ -24,6 +24,7 @@ import com.babylon.wallet.android.data.repository.cache.database.storeAccountNFT
 import com.babylon.wallet.android.data.repository.cache.database.updateResourceDetails
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -32,11 +33,11 @@ import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.StakeClaim
-import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import rdx.works.core.domain.resources.metadata.ownerKeyHashes
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -460,7 +461,7 @@ class StateRepositoryImpl @Inject constructor(
                 }.toMutableList()
             }
 
-            val remainingAddresses = definitionAddresses.toSet() subtract cachedDApps.map { it.dAppAddress }.toSet()
+            val remainingAddresses = definitionAddresses.toSet() subtract cachedDApps.map { it.dAppAddress.string }.toSet()
             if (remainingAddresses.isNotEmpty()) {
                 stateApi.paginateDetails(
                     addresses = definitionAddresses.toSet(),

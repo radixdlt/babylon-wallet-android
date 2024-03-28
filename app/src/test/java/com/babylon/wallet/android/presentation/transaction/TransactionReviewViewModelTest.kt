@@ -47,6 +47,11 @@ import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.FeeLocks
 import com.radixdlt.ret.FeeSummary
 import com.radixdlt.ret.NewEntities
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -166,9 +171,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         requestId = sampleRequestId,
         transactionManifestData = sampleTransactionManifestData,
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            networkId = Radix.Gateway.nebunet.network.id,
+            networkId = NetworkId.MAINNET.discriminant.toInt(),
             origin = "https://test.origin.com",
-            dAppDefinitionAddress = "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa",
+            dAppDefinitionAddress = DApp.sample().dAppAddress.string,
             isInternal = false
         ),
         transactionType = com.babylon.wallet.android.data.dapp.model.TransactionType.Generic
@@ -223,9 +228,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     @Before
     override fun setUp() = runTest {
         super.setUp()
+        val dApp = DApp.sample()
         coEvery {
-            getDAppsUseCase("account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa", false)
-        } returns Result.success(DApp("account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa"))
+            getDAppsUseCase(dApp.dAppAddress.string, false)
+        } returns Result.success(dApp)
         every { exceptionMessageProvider.throwableMessage(any()) } returns ""
         every { deviceCapabilityHelper.isDeviceSecure() } returns true
         mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
