@@ -42,8 +42,8 @@ class SignTransactionUseCase @Inject constructor(
 
         val entitiesRequiringAuth = manifestWithLockFee.entitiesRequiringAuth()
         return resolveNotaryAndSignersUseCase(
-            accountsRequiringAuth = entitiesRequiringAuth.accounts,
-            personasRequiringAuth = entitiesRequiringAuth.identities,
+            accountsAddressesRequiringAuth = entitiesRequiringAuth.accounts,
+            personaAddressesRequiringAuth = entitiesRequiringAuth.identities,
             notary = request.ephemeralNotaryPrivateKey
         ).then { notaryAndSigners ->
             transactionRepository.getLedgerEpoch().fold(
