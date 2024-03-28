@@ -7,7 +7,7 @@ import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
@@ -211,7 +211,7 @@ val mockAccountsWithMockAssets = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "TokenXRD", valueType = MetadataType.String)
                         )
                     ),
-                    validator = ValidatorDetail(
+                    validator = Validator(
                         address = mockValidatorAddress0,
                         totalXrdStake = BigDecimal(99),
                         metadata = listOf(
@@ -227,7 +227,7 @@ val mockAccountsWithMockAssets = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "TokenXRD", valueType = MetadataType.String)
                         )
                     ),
-                    validator = ValidatorDetail(
+                    validator = Validator(
                         address = mockValidatorAddress1,
                         totalXrdStake = BigDecimal(909),
                         metadata = listOf(
@@ -302,7 +302,7 @@ val mockAccountsWithMockAssets = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.VALIDATOR.key, value = "validator_address1", valueType = MetadataType.Address)
                         )
                     ),
-                    validator = ValidatorDetail(
+                    validator = Validator(
                         address = "validator_address1",
                         totalXrdStake = BigDecimal(27335.0901),
                         stakeUnitResourceAddress = "stakeUnitResourceAddress1",
@@ -331,7 +331,7 @@ val mockAccountsWithMockAssets = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.VALIDATOR.key, value = "validator_address2", valueType = MetadataType.Address)
                         )
                     ),
-                    validator = ValidatorDetail(
+                    validator = Validator(
                         address = "validator_address2",
                         totalXrdStake = BigDecimal(11075),
                         stakeUnitResourceAddress = "stakeUnitResourceAddress2",

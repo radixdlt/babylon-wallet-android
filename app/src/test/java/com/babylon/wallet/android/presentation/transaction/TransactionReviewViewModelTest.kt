@@ -73,7 +73,6 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.assets.ValidatorDetail
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.logNonFatalException

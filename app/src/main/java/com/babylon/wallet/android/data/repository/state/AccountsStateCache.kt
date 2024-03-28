@@ -45,7 +45,7 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.AccountDetails
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
@@ -311,7 +311,7 @@ class AccountsStateCache @Inject constructor(
         fun toAccountAddressWithAssets(
             accountAddress: String,
             pools: Map<String, Pool>,
-            validators: Map<String, ValidatorDetail>
+            validators: Map<String, Validator>
         ): AccountAddressWithAssets? {
             if (stateVersion == null) return null
 

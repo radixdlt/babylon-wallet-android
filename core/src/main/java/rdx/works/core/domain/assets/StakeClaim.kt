@@ -2,10 +2,11 @@ package rdx.works.core.domain.assets
 
 import android.net.Uri
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 
 data class StakeClaim(
     val nonFungibleResource: Resource.NonFungibleResource,
-    val validator: ValidatorDetail
+    val validator: Validator
 ) : Asset.NonFungible {
 
     override val resource: Resource.NonFungibleResource

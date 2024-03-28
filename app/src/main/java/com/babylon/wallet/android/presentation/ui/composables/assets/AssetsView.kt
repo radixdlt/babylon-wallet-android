@@ -27,7 +27,7 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
@@ -329,7 +329,7 @@ fun AssetsViewWithAssets() {
                                 )
                             )
                         ),
-                        ValidatorDetail(
+                        Validator(
                             address = "validator_abc",
                             totalXrdStake = BigDecimal(1000),
                             metadata = listOf(
@@ -349,7 +349,7 @@ fun AssetsViewWithAssets() {
                                 )
                             )
                         ),
-                        ValidatorDetail(
+                        Validator(
                             address = "validator_abcd",
                             totalXrdStake = BigDecimal(10000),
                             metadata = listOf(
@@ -365,7 +365,7 @@ fun AssetsViewWithAssets() {
                             amount = 2,
                             items = listOf()
                         ),
-                        ValidatorDetail(
+                        Validator(
                             address = "validator_abc",
                             totalXrdStake = BigDecimal(1000),
                             metadata = listOf(

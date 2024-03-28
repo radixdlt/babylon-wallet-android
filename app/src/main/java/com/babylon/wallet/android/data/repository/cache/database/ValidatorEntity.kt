@@ -8,7 +8,7 @@ import com.babylon.wallet.android.data.gateway.extensions.stakeUnitResourceAddre
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.extensions.totalXRDStake
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import java.math.BigDecimal
 
 @Entity
@@ -26,7 +26,7 @@ data class ValidatorEntity(
     val stateVersion: Long
 ) {
 
-    fun asValidatorDetail() = ValidatorDetail(
+    fun asValidatorDetail() = Validator(
         address = address,
         totalXrdStake = totalStake,
         stakeUnitResourceAddress = stakeUnitResourceAddress,
@@ -35,7 +35,7 @@ data class ValidatorEntity(
     )
 
     companion object {
-        fun ValidatorDetail.asValidatorEntity(syncInfo: SyncInfo) = ValidatorEntity(
+        fun Validator.asValidatorEntity(syncInfo: SyncInfo) = ValidatorEntity(
             address = address,
             stakeUnitResourceAddress = stakeUnitResourceAddress,
             claimTokenResourceAddress = claimTokenResourceAddress,
@@ -46,7 +46,7 @@ data class ValidatorEntity(
 
         fun List<StateEntityDetailsResponseItem>.asValidators() = map { item ->
             val metadata = item.explicitMetadata?.toMetadata().orEmpty()
-            ValidatorDetail(
+            Validator(
                 address = item.address,
                 totalXrdStake = item.totalXRDStake,
                 stakeUnitResourceAddress = item.details?.stakeUnitResourceAddress.orEmpty(),
@@ -55,7 +55,7 @@ data class ValidatorEntity(
             )
         }
 
-        fun List<ValidatorDetail>.asValidatorEntities(syncInfo: SyncInfo) = map { item ->
+        fun List<Validator>.asValidatorEntities(syncInfo: SyncInfo) = map { item ->
             item.asValidatorEntity(syncInfo)
         }
     }

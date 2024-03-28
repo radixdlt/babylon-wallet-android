@@ -32,7 +32,7 @@ import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.StakeClaim
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
@@ -62,7 +62,7 @@ interface StateRepository {
 
     suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>>
 
-    suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>>
+    suspend fun getValidators(validatorAddresses: Set<String>): Result<List<Validator>>
 
     suspend fun getNFTDetails(resourceAddress: String, localIds: Set<String>): Result<List<Resource.NonFungibleResource.Item>>
 
@@ -193,7 +193,7 @@ class StateRepositoryImpl @Inject constructor(
                             ) as? Resource.FungibleResource
 
                             if (newLsu != null) {
-                                LiquidStakeUnit(newLsu, item.validatorDetail)
+                                LiquidStakeUnit(newLsu, item.validator)
                             } else {
                                 item.liquidStakeUnit
                             }
@@ -370,7 +370,7 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> = withContext(dispatcher) {
+    override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<Validator>> = withContext(dispatcher) {
         runCatching {
             val stateVersion = getLatestCachedStateVersionInNetwork()
             val cachedValidators = if (stateVersion != null) {
