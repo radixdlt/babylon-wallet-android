@@ -8,6 +8,9 @@ import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ARG_DAPP_DEFINITION_ADDRESS
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -18,6 +21,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.domain.DApp
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
@@ -45,12 +49,12 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         coEvery { preferencesManager.firstPersonaCreated } returns flow {
             emit(true)
         }
-        every { savedStateHandle.get<String>(ARG_DAPP_DEFINITION_ADDRESS) } returns "address1"
+        every { savedStateHandle.get<String>(ARG_DAPP_DEFINITION_ADDRESS) } returns DApp.sample().dAppAddress.string
         every { getProfileUseCase() } returns flowOf(
             profile(
                 personas = identifiedArrayListOf(
-                    SampleDataProvider().samplePersona("address1"),
-                    SampleDataProvider().samplePersona("address2")
+                    SampleDataProvider().samplePersona(IdentityAddress.sampleMainnet().string),
+                    SampleDataProvider().samplePersona(IdentityAddress.sampleMainnet.other().string)
                 )
             )
         )

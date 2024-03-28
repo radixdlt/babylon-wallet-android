@@ -134,7 +134,7 @@ fun ConnectedDAppsContent(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            "component_tdx_19jd32jd3928jd3892jd329" to DApp(dAppAddress = "account_tdx_19jd32jd3928jd3892jd329"),
+            "component_tdx_19jd32jd3928jd3892jd329" to DApp.sample(),
             "component_tdx_19jd32jd3928jd3892jd330" to null
         ),
         onDAppClick = {},

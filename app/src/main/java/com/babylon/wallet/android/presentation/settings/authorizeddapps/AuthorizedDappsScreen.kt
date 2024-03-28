@@ -32,6 +32,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.toImmutableList
 import rdx.works.core.domain.DApp
 
@@ -110,7 +111,7 @@ private fun AuthorizedDAppsContent(
                     items(state.dApps) { dApp ->
                         DappCard(
                             modifier = Modifier.throttleClickable {
-                                onDAppClick(dApp.dAppAddress)
+                                onDAppClick(dApp.dAppAddress.string)
                             },
                             dApp = dApp
                         )
@@ -136,7 +137,7 @@ fun AuthorizedDAppsContentPreview() {
         AuthorizedDAppsContent(
             onBackClick = {},
             state = AuthorizedDappsUiState(
-                dApps = listOf(DApp(dAppAddress = "dapp_address")).toImmutableList()
+                dApps = DApp.sample.all.toImmutableList()
             ),
             onDAppClick = {},
             onMessageShown = {}

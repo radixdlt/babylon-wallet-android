@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.utils.isValidHttpsUrl
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.first
 import rdx.works.core.AddressHelper
 import rdx.works.core.domain.DApp
@@ -78,6 +79,6 @@ class VerifyDAppUseCase @Inject constructor(
         else ->
             wellKnownDAppDefinitionRepository
                 .getWellKnownDAppDefinitions(origin)
-                .map { dAppDefinitions -> dAppDefinitions.contains(dAppAddress) }
+                .map { dAppDefinitions -> dAppDefinitions.contains(dAppAddress.string) }
     }
 }

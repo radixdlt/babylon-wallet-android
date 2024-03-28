@@ -247,6 +247,12 @@ dependencies {
     implementation libs.composeUiToolingPreview
     debugImplementation libs.composeUiTooling
     debugImplementation libs.composeUiTestManifest
+
+    // Needed for compose previews to run with Sargon
+    debugRuntimeOnly(libs.sargonDesktop) {
+        exclude(group: "net.java.dev.jna")
+    }
+    // Needed for unit tests to run with Sargon
     testRuntimeOnly libs.sargonDesktop
 }
 

@@ -1,8 +1,16 @@
 package com.babylon.wallet.android.fakes
 
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.networkId
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import rdx.works.core.domain.DApp
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
@@ -24,10 +32,11 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         return when (state) {
             InitialState.NoDapp -> null
             InitialState.PredefinedDapp -> {
+                val dApp = DApp.sample()
                 authorizedDApp = Network.AuthorizedDapp(
-                    11, dAppDefinitionAddress, "dApp", listOf(
+                    NetworkId.MAINNET.discriminant.toInt(), dApp.dAppAddress.string, dApp.name, listOf(
                         Network.AuthorizedDapp.AuthorizedPersonaSimple(
-                            identityAddress = "address1",
+                            identityAddress = IdentityAddress.sampleMainnet().string,
                             lastLogin = "2023-01-31T10:28:14Z",
                             sharedAccounts = Shared(
                                 listOf("address-acc-1", SampleDataProvider().randomAddress()),
@@ -50,38 +59,42 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         return flow {
             emit(
                 listOf(
-                    Network.AuthorizedDapp(
-                        11, "address1", "dApp 1", listOf(
-                            Network.AuthorizedDapp.AuthorizedPersonaSimple(
-                                identityAddress = "address1",
-                                lastLogin = "2023-01-31T10:28:14Z",
-                                sharedAccounts = Shared(
-                                    listOf(),
-                                    RequestedNumber(
-                                        RequestedNumber.Quantifier.AtLeast,
-                                        1
-                                    )
-                                ),
-                                sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData()
+                    with(DApp.sample()) {
+                        Network.AuthorizedDapp(
+                            dAppAddress.networkId.discriminant.toInt(), dAppAddress.string, name, listOf(
+                                Network.AuthorizedDapp.AuthorizedPersonaSimple(
+                                    identityAddress = IdentityAddress.sampleMainnet().string,
+                                    lastLogin = "2023-01-31T10:28:14Z",
+                                    sharedAccounts = Shared(
+                                        listOf(),
+                                        RequestedNumber(
+                                            RequestedNumber.Quantifier.AtLeast,
+                                            1
+                                        )
+                                    ),
+                                    sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData()
+                                )
                             )
                         )
-                    ),
-                    Network.AuthorizedDapp(
-                        11, "address2", "dApp 2", listOf(
-                            Network.AuthorizedDapp.AuthorizedPersonaSimple(
-                                identityAddress = "address1",
-                                sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData(),
-                                lastLogin = "2023-01-31T10:28:14Z",
-                                sharedAccounts = Shared(
-                                    listOf(),
-                                    RequestedNumber(
-                                        RequestedNumber.Quantifier.AtLeast,
-                                        1
+                    },
+                    with(DApp.sample.other()) {
+                        Network.AuthorizedDapp(
+                            dAppAddress.networkId.discriminant.toInt(), dAppAddress.string, name, listOf(
+                                Network.AuthorizedDapp.AuthorizedPersonaSimple(
+                                    identityAddress = IdentityAddress.sampleMainnet().string,
+                                    sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData(),
+                                    lastLogin = "2023-01-31T10:28:14Z",
+                                    sharedAccounts = Shared(
+                                        listOf(),
+                                        RequestedNumber(
+                                            RequestedNumber.Quantifier.AtLeast,
+                                            1
+                                        )
                                     )
                                 )
                             )
                         )
-                    )
+                    }
                 )
             )
         }

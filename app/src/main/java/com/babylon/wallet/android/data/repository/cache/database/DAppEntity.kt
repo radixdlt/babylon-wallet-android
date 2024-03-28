@@ -5,6 +5,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.DApp
 import java.time.Instant
 
@@ -18,7 +20,7 @@ data class DAppEntity(
 ) {
 
     fun toDApp() = DApp(
-        dAppAddress = definitionAddress,
+        dAppAddress = AccountAddress.init(definitionAddress),
         metadata = metadata?.metadata.orEmpty()
     )
 

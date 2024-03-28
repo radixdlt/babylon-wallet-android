@@ -40,9 +40,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.utils.formattedSpans
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.resources.ExplicitMetadataKey
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 
 @Composable
 fun LoginPermissionScreen(
@@ -221,12 +218,7 @@ fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         LoginPermissionContent(
             onContinueClick = {},
-            dapp = DApp(
-                dAppAddress = "account_tdx_abc",
-                metadata = listOf(
-                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Collabo.fi", MetadataType.String)
-                )
-            ),
+            dapp = DApp.sample(),
             onBackClick = {},
             numberOfAccounts = 2,
             isExactAccountsCount = false,
@@ -242,12 +234,7 @@ fun LoginPermissionContentFirstTimePreview() {
     RadixWalletTheme {
         LoginPermissionContent(
             onContinueClick = {},
-            dapp = DApp(
-                dAppAddress = "account_tdx_abc",
-                metadata = listOf(
-                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Collabo.fi", MetadataType.String)
-                )
-            ),
+            dapp = DApp.sample(),
             onBackClick = {},
             numberOfAccounts = 2,
             isExactAccountsCount = false,

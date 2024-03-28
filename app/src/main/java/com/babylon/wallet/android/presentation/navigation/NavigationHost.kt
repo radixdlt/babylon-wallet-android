@@ -72,6 +72,7 @@ import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.core.AddressHelper
 import rdx.works.core.domain.resources.XrdResource
@@ -333,7 +334,7 @@ fun NavigationHost(
                 navController.personaEditScreen(it)
             },
             onDAppClick = {
-                navController.dAppDetailsDialog(dAppDefinitionAddress = it.dAppAddress)
+                navController.dAppDetailsDialog(dAppDefinitionAddress = it.dAppAddress.string)
             }
         )
         personaEditScreen(onBackClick = {
@@ -378,7 +379,7 @@ fun NavigationHost(
                 )
             },
             onDAppClick = { dApp ->
-                navController.dAppDetailsDialog(dAppDefinitionAddress = dApp.dAppAddress)
+                navController.dAppDetailsDialog(dAppDefinitionAddress = dApp.dAppAddress.string)
             }
         )
         transferScreen(

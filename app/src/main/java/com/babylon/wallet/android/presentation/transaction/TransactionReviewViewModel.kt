@@ -30,9 +30,9 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.isXrd
 import rdx.works.core.mapWhen
 import rdx.works.core.multiplyWithDivisibility

@@ -34,6 +34,7 @@ import com.babylon.wallet.android.presentation.transaction.guarantees.Transactio
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.test.TestScope
 import rdx.works.core.domain.DApp
 import rdx.works.core.preferences.PreferencesManager
@@ -137,6 +138,6 @@ internal fun TransactionReviewViewModelTestExperimental.requestMetadata(
 ) = MessageFromDataChannel.IncomingRequest.RequestMetadata(
     networkId = manifestData.networkId,
     origin = dApp?.claimedWebsites?.firstOrNull().orEmpty(),
-    dAppDefinitionAddress = dApp?.dAppAddress.orEmpty(),
+    dAppDefinitionAddress = dApp?.dAppAddress?.string.orEmpty(),
     isInternal = dApp == null,
 )
