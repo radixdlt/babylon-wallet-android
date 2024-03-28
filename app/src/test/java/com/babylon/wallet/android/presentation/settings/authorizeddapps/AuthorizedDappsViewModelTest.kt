@@ -29,9 +29,7 @@ internal class AuthorizedDappsViewModelTest : StateViewModelTest<AuthorizedDapps
     override fun setUp() {
         super.setUp()
 
-        coEvery { getDAppsUseCase(setOf("address1", "address2"), false) } returns Result.success(
-            listOf(DApp(dAppAddress = "address1"), DApp(dAppAddress = "address2"))
-        )
+        coEvery { getDAppsUseCase(any<Set<String>>(), false) } returns Result.success(DApp.sample.all)
     }
 
     @Test

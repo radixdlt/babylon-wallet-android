@@ -57,9 +57,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.resources.ExplicitMetadataKey
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -332,12 +329,7 @@ fun SelectPersonaPreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dapp = DApp(
-                dAppAddress = "account_tdx_abc",
-                metadata = listOf(
-                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Collabo.fi", MetadataType.String)
-                )
-            ),
+            dapp = DApp.sample(),
             firstTimeLogin = false,
             continueButtonEnabled = false,
             personas = persistentListOf(),
@@ -356,12 +348,7 @@ fun SelectPersonaFirstTimePreview() {
             onCancelClick = {},
             onContinueClick = {},
             onSelectPersona = {},
-            dapp = DApp(
-                dAppAddress = "account_tdx_abc",
-                metadata = listOf(
-                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Collabo.fi", MetadataType.String)
-                )
-            ),
+            dapp = DApp.sample(),
             firstTimeLogin = true,
             continueButtonEnabled = false,
             personas = persistentListOf(),

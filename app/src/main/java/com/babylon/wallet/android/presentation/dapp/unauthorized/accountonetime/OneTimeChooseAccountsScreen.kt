@@ -25,9 +25,6 @@ import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.resources.ExplicitMetadataKey
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 
 @Composable
 fun OneTimeChooseAccountsScreen(
@@ -145,12 +142,7 @@ fun OneTimeAccountContentPreview() {
             ),
             onAccountSelect = {},
             onCreateNewAccount = {},
-            dapp = DApp(
-                dAppAddress = "account_tdx_abc",
-                metadata = listOf(
-                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "dApp", MetadataType.String)
-                )
-            ),
+            dapp = DApp.sample(),
             isOneTime = true,
             isSingleChoice = false,
             numberOfAccounts = 1,

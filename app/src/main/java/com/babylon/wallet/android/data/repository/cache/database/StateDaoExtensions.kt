@@ -6,9 +6,9 @@ import com.babylon.wallet.android.data.repository.cache.database.AccountNFTJoin.
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import rdx.works.core.InstantGenerator
-import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 
 @Suppress("UnsafeCallOnNullableType")
 fun StateDao.getCachedPools(poolAddresses: Set<String>, atStateVersion: Long): Map<String, Pool> {

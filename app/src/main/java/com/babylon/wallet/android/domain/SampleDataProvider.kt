@@ -2,7 +2,6 @@
 
 package com.babylon.wallet.android.domain
 
-import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
@@ -12,15 +11,14 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.radixdlt.extensions.removeLeadingZero
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
-import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
@@ -558,16 +556,6 @@ class SampleDataProvider {
             metadata = listOf(
                 Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = name, valueType = MetadataType.String),
             )
-        )
-    }
-
-    fun sampleDAppWithResources(): DAppWithResources {
-        return DAppWithResources(
-            dApp = DApp(
-                dAppAddress = "account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u"
-            ),
-            fungibleResources = emptyList(),
-            nonFungibleResources = emptyList()
         )
     }
 
