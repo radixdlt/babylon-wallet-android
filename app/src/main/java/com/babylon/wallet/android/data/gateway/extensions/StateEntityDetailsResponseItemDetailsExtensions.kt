@@ -8,8 +8,9 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
-import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
-import com.babylon.wallet.android.domain.model.resources.XrdResource
+import rdx.works.core.AddressHelper
+import rdx.works.core.domain.assets.AssetBehaviours
+import rdx.works.core.domain.resources.XrdResource
 import java.math.BigDecimal
 
 fun StateEntityDetailsResponseItemDetails.totalSupply(): String? {
@@ -28,9 +29,10 @@ fun StateEntityDetailsResponseItemDetails.divisibility(): Int? {
 }
 
 fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigDecimal? {
+    val networkId = AddressHelper.networkId(vaultAddress)
     return when (
         val resource = fungibleResources?.items?.find {
-            XrdResource.addressesPerNetwork.containsValue(it.resourceAddress)
+            XrdResource.address(networkId = networkId) == it.resourceAddress
         }
     ) {
         is FungibleResourcesCollectionItemVaultAggregated -> {
@@ -51,8 +53,10 @@ val StateEntityDetailsResponseItem.totalXRDStake: BigDecimal?
     get() {
         val xrdVaultAddress = details?.xrdVaultAddress ?: return null
 
+        val networkId = AddressHelper.networkId(xrdVaultAddress)
+
         val xrdResource = fungibleResources?.items?.find {
-            XrdResource.addressesPerNetwork.containsValue(it.resourceAddress)
+            XrdResource.address(networkId = networkId) == it.resourceAddress
         }
 
         return if (xrdResource is FungibleResourcesCollectionItemVaultAggregated) {

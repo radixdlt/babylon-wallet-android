@@ -7,12 +7,12 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.utils.isValidHttpsUrl
-import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.first
+import rdx.works.core.AddressHelper
+import rdx.works.core.domain.DApp
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.security
@@ -26,9 +26,7 @@ class VerifyDAppUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(request: IncomingRequest): Result<Boolean> {
-        val developerMode = getProfileUseCase.security.first().isDeveloperModeEnabled
-        val decodeResult = runCatching { Address(request.metadata.dAppDefinitionAddress) }
-        if (decodeResult.isFailure) {
+        if (!AddressHelper.isValid(address = request.metadata.dAppDefinitionAddress)) {
             dAppMessenger.sendWalletInteractionResponseFailure(
                 remoteConnectorId = request.remoteConnectorId,
                 requestId = request.id,
@@ -36,6 +34,8 @@ class VerifyDAppUseCase @Inject constructor(
             )
             return Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
         }
+
+        val developerMode = getProfileUseCase.security.first().isDeveloperModeEnabled
         return if (developerMode) {
             Result.success(true)
         } else {

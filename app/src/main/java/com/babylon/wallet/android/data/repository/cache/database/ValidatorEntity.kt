@@ -8,7 +8,7 @@ import com.babylon.wallet.android.data.gateway.extensions.stakeUnitResourceAddre
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.extensions.totalXRDStake
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
+import rdx.works.core.domain.assets.ValidatorDetail
 import java.math.BigDecimal
 
 @Entity

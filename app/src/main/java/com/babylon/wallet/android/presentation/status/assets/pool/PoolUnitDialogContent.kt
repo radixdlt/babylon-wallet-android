@@ -25,8 +25,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
@@ -39,6 +37,8 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBal
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import kotlinx.collections.immutable.toImmutableMap
 import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.PoolUnit
 import java.math.BigDecimal
 
 @Composable
@@ -182,13 +182,10 @@ fun PoolUnitDialogContent(
                     .padding(start = RadixTheme.dimensions.paddingDefault)
                     .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(visible = poolUnit?.stake?.currentSupply == null),
-                text = when {
-                    poolUnit?.stake?.currentSupply != null -> when (poolUnit.stake.currentSupply) {
-                        BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                        else -> poolUnit.stake.currentSupply.displayableQuantity()
-                    }
-
-                    else -> ""
+                text = when (val supply = poolUnit?.stake?.currentSupply) {
+                    null -> stringResource(id = R.string.empty)
+                    BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                    else -> supply.displayableQuantity()
                 },
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,

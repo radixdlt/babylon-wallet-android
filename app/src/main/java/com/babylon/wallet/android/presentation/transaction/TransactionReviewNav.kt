@@ -8,10 +8,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.resources.Resource
 
 @VisibleForTesting
 internal const val ARG_TRANSACTION_REQUEST_ID = "arg_transaction_request_id"

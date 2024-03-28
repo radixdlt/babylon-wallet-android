@@ -5,17 +5,6 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 import com.babylon.wallet.android.domain.model.GuaranteeType
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.findFungible
-import com.babylon.wallet.android.domain.model.resources.findNonFungible
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.FungibleResourceIndicator
@@ -28,7 +17,17 @@ import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
-import rdx.works.core.ret.asStr
+import com.radixdlt.ret.nonFungibleLocalIdFromStr
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
@@ -44,7 +43,7 @@ fun ExecutionSummary.involvedFungibleAddresses(excludeNewlyCreated: Boolean = tr
         }.toSet()
 }
 
-fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true): Map<String, Set<String>> {
+fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true): Map<String, Set<Item.ID>> {
     val withdrawIndicators = accountWithdraws.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
     val depositIndicators = accountDeposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
     return (withdrawIndicators + depositIndicators).filterNot {
@@ -53,9 +52,9 @@ fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true)
         val indicatorAddress = indicator.resourceAddress.addressString()
         acc.apply {
             if (containsKey(indicatorAddress)) {
-                this[indicatorAddress] = this[indicatorAddress].orEmpty() + indicator.localIds
+                this[indicatorAddress] = this[indicatorAddress].orEmpty() + indicator.nonFungibleLocalIds
             } else {
-                this[indicatorAddress] = indicator.localIds.toSet()
+                this[indicatorAddress] = indicator.nonFungibleLocalIds.toSet()
             }
         }
     })
@@ -66,9 +65,6 @@ val ResourceIndicator.resourceAddress: String
         is ResourceIndicator.Fungible -> resourceAddress.addressString()
         is ResourceIndicator.NonFungible -> resourceAddress.addressString()
     }
-
-val ResourceIndicator.NonFungible.localIds: List<String>
-    get() = indicator.nonFungibleLocalIds.map { nonFungibleLocalIdAsStr(it) }
 
 val ResourceIndicator.amount: BigDecimal
     get() = when (this) {
@@ -83,7 +79,7 @@ val ResourceIndicator.amount: BigDecimal
         }
 
         is ResourceIndicator.NonFungible -> {
-            BigDecimal(indicator.nonFungibleLocalIds.size)
+            BigDecimal(nonFungibleLocalIds.size)
         }
     }
 
@@ -187,12 +183,10 @@ private fun ResourceIndicator.NonFungible.toTransferableAsset(
     assets: List<Asset>
 ): TransferableAsset.NonFungible = when (val asset = assets.find { it.resource.resourceAddress == resourceAddress.addressString() }) {
     is StakeClaim -> {
-        val items = indicator.nonFungibleLocalIds.map {
-            val localId = Resource.NonFungibleResource.Item.ID.from(it)
-
+        val items = nonFungibleLocalIds.map { localId ->
             asset.nonFungibleResource.items.find { item ->
                 item.localId == localId
-            } ?: Resource.NonFungibleResource.Item(
+            } ?: Item(
                 collectionAddress = resourceAddress.addressString(),
                 localId = localId
             )
@@ -207,12 +201,10 @@ private fun ResourceIndicator.NonFungible.toTransferableAsset(
     }
 
     is NonFungibleCollection -> {
-        val items = indicator.nonFungibleLocalIds.map {
-            val localId = Resource.NonFungibleResource.Item.ID.from(it)
-
+        val items = nonFungibleLocalIds.map { localId ->
             asset.collection.items.find { item ->
                 item.localId == localId
-            } ?: Resource.NonFungibleResource.Item(
+            } ?: Item(
                 collectionAddress = resourceAddress.addressString(),
                 localId = localId
             )
@@ -225,10 +217,10 @@ private fun ResourceIndicator.NonFungible.toTransferableAsset(
     }
 
     else -> {
-        val items = indicator.nonFungibleLocalIds.map { localId ->
-            Resource.NonFungibleResource.Item(
+        val items = nonFungibleLocalIds.map { localId ->
+            Item(
                 collectionAddress = resourceAddress.addressString(),
-                localId = Resource.NonFungibleResource.Item.ID.from(localId)
+                localId = localId
             )
         }
 
@@ -267,10 +259,10 @@ fun ResourceIndicator.toNewlyCreatedTransferableAsset(
         )
 
         is ResourceIndicator.NonFungible -> {
-            val items = indicator.nonFungibleLocalIds.map { localId ->
-                Resource.NonFungibleResource.Item(
+            val items = nonFungibleLocalIds.map { localId ->
+                Item(
                     collectionAddress = resourceAddress.addressString(),
-                    localId = Resource.NonFungibleResource.Item.ID.from(localId)
+                    localId = localId
                 )
             }
 
@@ -287,54 +279,19 @@ fun ResourceIndicator.toNewlyCreatedTransferableAsset(
     }
 }
 
-fun ResourceIndicator.toTransferableResource(resources: List<Resource>): TransferableAsset {
-    val resourceAddress = this.resourceAddress
-    return when (this) {
-        is ResourceIndicator.Fungible -> {
-            val resource = resources.findFungible(resourceAddress) ?: Resource.FungibleResource(
-                resourceAddress = resourceAddress,
-                ownedAmount = BigDecimal.ZERO
-            )
-            TransferableAsset.Fungible.Token(
-                amount = amount,
-                resource = resource.copy(ownedAmount = amount),
-                isNewlyCreated = false
-            )
-        }
-
-        is ResourceIndicator.NonFungible -> {
-            val items = indicator.nonFungibleLocalIds.map { id ->
-                Resource.NonFungibleResource.Item(
-                    collectionAddress = resourceAddress,
-                    localId = Resource.NonFungibleResource.Item.ID.from(id)
-                )
-            }
-
-            val collection = resources.findNonFungible(resourceAddress)?.copy(items = items) ?: Resource.NonFungibleResource(
-                resourceAddress = resourceAddress,
-                amount = items.size.toLong(),
-                items = items
-            )
-
-            TransferableAsset.NonFungible.NFTAssets(
-                resource = collection,
-                isNewlyCreated = false
-            )
-        }
-    }
-}
-
 private val ResourceIndicator.Fungible.amount: BigDecimal
     get() = when (val specificIndicator = indicator) {
         is FungibleResourceIndicator.Guaranteed -> specificIndicator.amount.asStr().toBigDecimal()
         is FungibleResourceIndicator.Predicted -> specificIndicator.predictedAmount.value.asStr().toBigDecimal()
     }
 
-val NonFungibleResourceIndicator.nonFungibleLocalIds: List<NonFungibleLocalId>
-    get() = when (this) {
-        is NonFungibleResourceIndicator.ByAll -> predictedIds.value
-        is NonFungibleResourceIndicator.ByAmount -> predictedIds.value
-        is NonFungibleResourceIndicator.ByIds -> ids
+val ResourceIndicator.NonFungible.nonFungibleLocalIds: List<Item.ID>
+    get() = when (val indicator = indicator) {
+        is NonFungibleResourceIndicator.ByAll -> indicator.predictedIds.value
+        is NonFungibleResourceIndicator.ByAmount -> indicator.predictedIds.value
+        is NonFungibleResourceIndicator.ByIds -> indicator.ids
+    }.let { retIds ->
+        retIds.map { Item.ID.from(it.asStr()) }
     }
 
 fun Map<String, MetadataValue?>.toMetadata(): List<Metadata> = mapNotNull { it.toMetadata() }
@@ -684,7 +641,7 @@ fun ExecutionSummary.toWithdrawingAccountsWithTransferableAssets(
                     is ResourceIndicator.NonFungible -> {
                         val nonFungibleLocalIds = resources.filterIsInstance<ResourceIndicator.NonFungible>()
                             .fold(setOf<NonFungibleLocalId>(), operation = { acc, resource ->
-                                acc + resource.indicator.nonFungibleLocalIds.toSet()
+                                acc + resource.nonFungibleLocalIds.map { nonFungibleLocalIdFromStr(it.code) }.toSet()
                             })
                         val resource = first.copy(indicator = NonFungibleResourceIndicator.ByIds(nonFungibleLocalIds.toList()))
                         if (resource.isNewlyCreated(summary = this)) {
@@ -742,3 +699,5 @@ fun ExecutionSummary.toDepositingAccountsWithTransferableAssets(
         allOwnedAccounts
     )
 }.sortedWith(AccountWithTransferableResources.Companion.Sorter(allOwnedAccounts))
+
+private fun NonFungibleLocalId.asStr() = nonFungibleLocalIdAsStr(this)

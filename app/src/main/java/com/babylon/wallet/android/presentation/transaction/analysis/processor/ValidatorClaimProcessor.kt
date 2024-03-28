@@ -2,19 +2,18 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
-import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import kotlinx.coroutines.flow.first
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -28,7 +27,7 @@ class ValidatorClaimProcessor @Inject constructor(
 ) : PreviewTypeProcessor<DetailedManifestClass.ValidatorClaim> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.ValidatorClaim): PreviewType {
         val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
-        val xrdAddress = XrdResource.address(networkId)
+        val xrdAddress = XrdResource.address(networkId.value)
         val assets = resolveAssetsFromAddressUseCase(
             fungibleAddresses = summary.involvedFungibleAddresses() + xrdAddress,
             nonFungibleIds = summary.involvedNonFungibleIds()
@@ -71,14 +70,15 @@ class ValidatorClaimProcessor @Inject constructor(
                 val resourceAddress = resourceIndicator.resourceAddress
                 val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No asset found")
                 if (asset is StakeClaim) {
-                    resourceIndicator as? ResourceIndicator.NonFungible ?: error("No non-fungible resource claim found")
-                    val items = resourceIndicator.localIds.map { localId ->
+                    val nonFungibleIndicator = resourceIndicator as? ResourceIndicator.NonFungible
+                        ?: error("No non-fungible resource claim found")
+                    val items = nonFungibleIndicator.nonFungibleLocalIds.map { localId ->
                         val claimAmount = stakeClaimNfts.find {
-                            resourceAddress == it.collectionAddress && localId == nonFungibleLocalIdAsStr(it.localId.toRetId())
+                            resourceAddress == it.collectionAddress && localId == it.localId
                         }?.claimAmountXrd ?: BigDecimal.ZERO
                         Resource.NonFungibleResource.Item(
                             collectionAddress = resourceAddress,
-                            localId = Resource.NonFungibleResource.Item.ID.from(localId)
+                            localId = localId
                         ) to claimAmount
                     }
                     Transferable.Withdrawing(

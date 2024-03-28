@@ -26,10 +26,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
@@ -42,9 +38,13 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlin
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.radixdlt.ret.Address
+import rdx.works.core.AddressHelper
 import rdx.works.core.displayableQuantity
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.profile.data.model.apppreferences.Radix
 import java.math.BigDecimal
 
 @Composable
@@ -124,7 +124,7 @@ fun LSUDialogContent(
 
         val xrdWorth = remember(args, lsu) {
             val xrdResourceAddress = runCatching {
-                val networkId = NetworkId.from(Address(args.resourceAddress).networkId().toInt())
+                val networkId = AddressHelper.networkId(args.resourceAddress)
                 XrdResource.address(networkId = networkId)
             }.getOrNull()
 
@@ -205,14 +205,10 @@ fun LSUDialogContent(
                     .radixPlaceholder(
                         visible = lsu?.fungibleResource?.currentSupply == null
                     ),
-                text = when {
-                    lsu?.fungibleResource?.currentSupply != null ->
-                        when (lsu.fungibleResource.currentSupply) {
-                            BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                            else -> lsu.fungibleResource.currentSupply.displayableQuantity()
-                        }
-
-                    else -> ""
+                text = when (val supply = lsu?.fungibleResource?.currentSupply) {
+                    null -> stringResource(id = R.string.empty)
+                    BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                    else -> supply.displayableQuantity()
                 },
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
@@ -253,7 +249,7 @@ private fun LSUResourceValue(
         Thumbnail.Fungible(
             modifier = Modifier.size(44.dp),
             token = Resource.FungibleResource(
-                resourceAddress = XrdResource.address(),
+                resourceAddress = XrdResource.address(Radix.Gateway.default.network.networkId().value),
                 ownedAmount = null
             )
         )

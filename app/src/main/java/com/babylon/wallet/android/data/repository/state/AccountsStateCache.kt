@@ -18,19 +18,6 @@ import com.babylon.wallet.android.data.repository.cache.database.getCachedValida
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.AccountDetails
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
-import com.babylon.wallet.android.domain.model.resources.metadata.poolUnit
 import com.babylon.wallet.android.utils.truncatedHash
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -52,9 +39,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.AccountDetails
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.AccountType
+import rdx.works.core.domain.resources.metadata.poolUnit
 import rdx.works.core.toUnitResult
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import timber.log.Timber
@@ -131,8 +130,8 @@ class AccountsStateCache @Inject constructor(
 
     suspend fun getOwnedXRD(accounts: List<Network.Account>) = withContext(dispatcher) {
         if (accounts.isEmpty()) return@withContext Result.success(emptyMap())
-        val networkId = NetworkId.from(accounts.first().networkID)
-        val xrdAddress = XrdResource.address(networkId = networkId)
+
+        val xrdAddress = XrdResource.address(networkId = accounts.first().networkID)
 
         val accountsWithXRDVaults = accounts.associateWith { account ->
             dao.getAccountResourceJoin(accountAddress = account.address, resourceAddress = xrdAddress)?.vaultAddress

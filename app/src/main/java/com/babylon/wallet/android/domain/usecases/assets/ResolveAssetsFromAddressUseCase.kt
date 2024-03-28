@@ -1,15 +1,15 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
 import javax.inject.Inject
 
 class ResolveAssetsFromAddressUseCase @Inject constructor(
@@ -17,7 +17,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         fungibleAddresses: Set<String>,
-        nonFungibleIds: Map<String, Set<String>>
+        nonFungibleIds: Map<String, Set<Resource.NonFungibleResource.Item.ID>>
     ): Result<List<Asset>> = stateRepository
         .getResources(
             addresses = fungibleAddresses + nonFungibleIds.keys,
@@ -25,7 +25,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
             withDetails = true
         ).mapCatching { resources ->
             val nfts = nonFungibleIds.mapValues { entry ->
-                stateRepository.getNFTDetails(entry.key, entry.value.toSet()).getOrThrow()
+                stateRepository.getNFTDetails(entry.key, entry.value.map { it.code }.toSet()).getOrThrow()
             }
 
             val fungibles = resources.filterIsInstance<Resource.FungibleResource>()

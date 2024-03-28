@@ -24,11 +24,11 @@ import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScry
 import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScryptoSborValueU64
 import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScryptoSborValueU8
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.utils.isValidUrl
-import com.babylon.wallet.android.utils.toAddressOrNull
+import rdx.works.core.AddressHelper
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 
 private enum class SborTypeName(val code: String) {
     INSTANT("Instant")
@@ -63,7 +63,7 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
             } else {
                 if (sborValue.value.isValidUrl()) {
                     MetadataType.Url
-                } else if (sborValue.value.toAddressOrNull() != null) {
+                } else if (AddressHelper.isValid(sborValue.value)) {
                     MetadataType.Address
                 } else {
                     MetadataType.String
@@ -189,7 +189,7 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
             values = sborValue.fields.mapNotNull { it.toMetadata(isCollection = true) }
         )
 
-        is ProgrammaticScryptoSborValueReference -> if (sborValue.value.toAddressOrNull() != null) {
+        is ProgrammaticScryptoSborValueReference -> if (AddressHelper.isValid(sborValue.value)) {
             Metadata.Primitive(
                 key = key,
                 value = sborValue.value,
@@ -199,7 +199,7 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
             null
         }
 
-        is ProgrammaticScryptoSborValueOwn -> if (sborValue.value.toAddressOrNull() != null) {
+        is ProgrammaticScryptoSborValueOwn -> if (AddressHelper.isValid(sborValue.value)) {
             Metadata.Primitive(
                 key = key,
                 value = sborValue.value,

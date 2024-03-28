@@ -8,7 +8,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.domain.model.resources.Resource
+import rdx.works.core.domain.resources.Resource
 
 private const val ROUTE = "dApp_details_dialog"
 private const val ARG_DAPP_DEFINITION_ADDRESS = "dApp_definition_address"

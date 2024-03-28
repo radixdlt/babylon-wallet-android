@@ -2,30 +2,28 @@
 
 package com.babylon.wallet.android.domain
 
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.data.transaction.TransactionVersion
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.radixdlt.extensions.removeLeadingZero
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Header
@@ -53,6 +51,9 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.TestData
+import rdx.works.profile.ret.transaction.TransactionManifestData
+import rdx.works.profile.ret.transaction.TransactionManifestData.TransactionMessage
+import rdx.works.profile.ret.transaction.TransactionVersion
 import java.math.BigDecimal
 
 class SampleDataProvider {
@@ -86,9 +87,9 @@ class SampleDataProvider {
         requestId = "7294770e-5aec-4e49-ada0-e6a2213fc8c8",
         transactionManifestData = TransactionManifestData(
             instructions = "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY",
-            version = TransactionVersion.Default.value,
             networkId = Radix.Gateway.default.network.id,
-            message = "Hello"
+            message = TransactionMessage.Public("Hello"),
+            version = TransactionVersion.Default.value
         ),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
     )
@@ -398,11 +399,15 @@ class SampleDataProvider {
         return sb.toString()
     }
 
-    fun samplePersona(personaAddress: String = "1", personaName: String = "Test Persona"): Network.Persona {
+    fun samplePersona(
+        personaAddress: String = "1",
+        personaName: String = "Test Persona",
+        networkId: Int = NetworkId.Nebunet.value
+    ): Network.Persona {
         return Network.Persona(
             address = personaAddress,
             displayName = personaName,
-            networkID = NetworkId.Nebunet.value,
+            networkID = networkId,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     transactionSigning = FactorInstance(

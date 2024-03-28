@@ -2,13 +2,12 @@
 
 package rdx.works.profile.domain
 
-import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
-import rdx.works.core.PUBLIC_KEY_HASH_LENGTH
+import rdx.works.core.AddressHelper
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.data.model.extensions.factorSourceId
@@ -134,10 +133,8 @@ suspend fun GetProfileUseCase.accountOnCurrentNetwork(
 }
 
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {
-    return accountsOnCurrentNetwork().map {
-        val addressData = Address(it.address).bytes()
-        // last 29 bytes of addressData are hash of public key of this account
-        addressData.takeLast(PUBLIC_KEY_HASH_LENGTH).toByteArray()
+    return accountsOnCurrentNetwork().mapNotNull {
+        AddressHelper.publicKeyHash(it.address)
     }.toSet()
 }
 

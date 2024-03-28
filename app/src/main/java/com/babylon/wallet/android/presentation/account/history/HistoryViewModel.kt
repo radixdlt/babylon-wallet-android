@@ -8,7 +8,6 @@ import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.TransactionHistoryData
 import com.babylon.wallet.android.domain.model.TransactionHistoryItem
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.assets.GetAccountHistoryUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateAccountFirstTransactionDateUseCase
@@ -29,6 +28,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
@@ -69,11 +69,10 @@ class HistoryViewModel @Inject constructor(
                             accountWithAssets = state.accountWithAssets?.copy(assets = accountWithAssets.assets)
                         )
                     }
-                    if (accountWithAssets.details?.firstTransactionDate == null) {
-                        updateAccountFirstTransactionDateUseCase(args.accountAddress)
-                    } else {
-                        computeTimeFilters(accountWithAssets.details.firstTransactionDate)
-                    }
+
+                    accountWithAssets.details?.firstTransactionDate?.let { firstTransactionDate ->
+                        computeTimeFilters(firstTransactionDate)
+                    } ?: updateAccountFirstTransactionDateUseCase(args.accountAddress)
                 }
             }
         }

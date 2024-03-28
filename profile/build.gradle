@@ -57,6 +57,7 @@ dependencies {
 
     implementation libs.slip10
     implementation libs.retAndroid
+    implementation libs.crypto
 
     testImplementation libs.junit
     testImplementation libs.kotlinTestJunit

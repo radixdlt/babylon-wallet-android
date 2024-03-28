@@ -14,7 +14,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.DApp
+import rdx.works.core.domain.DApp
 
 @Composable
 fun InvolvedComponentDetails(modifier: Modifier = Modifier, dApp: DApp?, text: String, iconSize: Dp = 24.dp) {

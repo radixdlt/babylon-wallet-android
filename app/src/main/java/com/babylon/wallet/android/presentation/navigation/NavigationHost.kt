@@ -11,7 +11,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKey
 import com.babylon.wallet.android.presentation.account.AccountScreen
@@ -73,9 +72,9 @@ import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
-import com.radixdlt.ret.Address
 import kotlinx.coroutines.flow.StateFlow
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.core.AddressHelper
+import rdx.works.core.domain.resources.XrdResource
 import rdx.works.profile.domain.backup.BackupType
 
 @Suppress("CyclomaticComplexMethod")
@@ -348,8 +347,8 @@ fun NavigationHost(
                 val resourcesWithAmount = when (asset) {
                     is TransferableAsset.Fungible.LSUAsset -> {
                         val xrdResourceAddress = runCatching {
-                            val networkId = Address(asset.resource.resourceAddress).networkId().toInt()
-                            XrdResource.address(networkId = NetworkId.from(networkId))
+                            val networkId = AddressHelper.networkId(asset.resourceAddress)
+                            XrdResource.address(networkId = networkId)
                         }.getOrNull()
 
                         mutableMapOf(

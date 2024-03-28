@@ -2,35 +2,30 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.TransactionConfig
-import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
-import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
+import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.PublicKeyHash
+import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.Decimal
-import com.radixdlt.ret.TransactionManifest
-import com.radixdlt.ret.knownAddresses
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.identifiedArrayListOf
-import rdx.works.core.ret.BabylonManifestBuilder
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.ret.sampleXRDWithdraw
 import java.math.BigDecimal
 
 class SearchFeePayersUseCaseTest {
@@ -44,18 +39,16 @@ class SearchFeePayersUseCaseTest {
     @Test
     fun `when account with enough xrd exists, returns the selected fee payer`() =
         runTest {
-            val manifest = manifestWithAddress(account1).summary(
-                networkId = Radix.Gateway.default.network.id.toUByte()
-            )
+            val manifestData = manifestDataWithAddress(account1)
 
-            val result = useCase(manifest, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()).getOrThrow()
+            val result = useCase(manifestData, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()).getOrThrow()
 
             assertEquals(
-                FeePayerSearchResult(
-                    feePayerAddress = account1.address,
+                TransactionFeePayers(
+                    selectedAccountAddress = account1.address,
                     candidates = listOf(
-                        FeePayerSearchResult.FeePayerCandidate(account1, BigDecimal(100)),
-                        FeePayerSearchResult.FeePayerCandidate(account2, BigDecimal.ZERO)
+                        TransactionFeePayers.FeePayerCandidate(account1, BigDecimal(100)),
+                        TransactionFeePayers.FeePayerCandidate(account2, BigDecimal.ZERO)
                     )
                 ),
                 result
@@ -65,18 +58,16 @@ class SearchFeePayersUseCaseTest {
     @Test
     fun `when account with xrd does not exist, returns the null fee payer`() =
         runTest {
-            val manifest = manifestWithAddress(account1).summary(
-                networkId = Radix.Gateway.default.network.id.toUByte()
-            )
+            val manifestData = manifestDataWithAddress(account1)
 
-            val result = useCase(manifest, BigDecimal(200)).getOrThrow()
+            val result = useCase(manifestData, BigDecimal(200)).getOrThrow()
 
             assertEquals(
-                FeePayerSearchResult(
-                    feePayerAddress = null,
+                TransactionFeePayers(
+                    selectedAccountAddress = null,
                     candidates = listOf(
-                        FeePayerSearchResult.FeePayerCandidate(account1, BigDecimal(100)),
-                        FeePayerSearchResult.FeePayerCandidate(account2, BigDecimal.ZERO)
+                        TransactionFeePayers.FeePayerCandidate(account1, BigDecimal(100)),
+                        TransactionFeePayers.FeePayerCandidate(account2, BigDecimal.ZERO)
                     )
                 ),
                 result
@@ -87,15 +78,12 @@ class SearchFeePayersUseCaseTest {
         private val account1 = account(name = "account1", address = "account_rdx12x20vgu94d96g3demdumxl6yjpvm0jy8dhrr03g75299ghxrwq76uh")
         private val account2 = account(name = "account2", address = "account_rdx12x20vgu94d96g3demdumxl6yjpvm0jy8dhrr03g75299ghxrwq73uh")
 
-        private fun manifestWithAddress(
-            account: Network.Account,
-            networkId: Int = Radix.Gateway.default.network.id
-        ): TransactionManifest = BabylonManifestBuilder()
-            .withdrawFromAccount(
-                fromAddress = Address(account.address),
-                fungible = knownAddresses(networkId = networkId.toUByte()).resourceAddresses.xrd,
-                amount = Decimal("10")
-            ).build(networkId)
+        private fun manifestDataWithAddress(
+            account: Network.Account
+        ) = sampleXRDWithdraw(
+            fromAddress = account.address,
+            value = BigDecimal.TEN
+        )
 
         private object ProfileRepositoryFake : ProfileRepository {
             private val profile = profile(accounts = identifiedArrayListOf(account1, account2))

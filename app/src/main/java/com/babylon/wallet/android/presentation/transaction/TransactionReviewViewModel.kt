@@ -7,21 +7,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.toPrettyString
 import com.babylon.wallet.android.data.transaction.InteractionState
-import com.babylon.wallet.android.data.transaction.TransactionClient
-import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
+import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Badge
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
+import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -31,16 +25,21 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
-import com.radixdlt.ret.AccountDefaultDepositRule
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Badge
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.isXrd
 import rdx.works.core.mapWhen
 import rdx.works.core.multiplyWithDivisibility
-import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import rdx.works.profile.domain.ProfileException
+import rdx.works.profile.ret.crypto.PrivateKey
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -48,7 +47,7 @@ import javax.inject.Inject
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class TransactionReviewViewModel @Inject constructor(
-    private val transactionClient: TransactionClient,
+    private val signTransactionUseCase: SignTransactionUseCase,
     private val analysis: TransactionAnalysisDelegate,
     private val guarantees: TransactionGuaranteesDelegate,
     private val fees: TransactionFeesDelegate,
@@ -82,14 +81,14 @@ class TransactionReviewViewModel @Inject constructor(
         } else {
             _state.update { it.copy(request = request) }
             viewModelScope.launch {
-                transactionClient.signingState.collect { signingState ->
+                signTransactionUseCase.signingState.collect { signingState ->
                     _state.update { state ->
                         state.copy(interactionState = signingState)
                     }
                 }
             }
             viewModelScope.launch {
-                analysis.analyse(transactionClient = transactionClient)
+                analysis.analyse()
             }
 
             if (!request.isInternal) {
@@ -108,7 +107,7 @@ class TransactionReviewViewModel @Inject constructor(
         } else {
             viewModelScope.launch {
                 submit.onDismiss(
-                    transactionClient = transactionClient,
+                    signTransactionUseCase = signTransactionUseCase,
                     exception = RadixWalletException.DappRequestException.RejectedByUser
                 )
             }
@@ -125,8 +124,8 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun approveTransaction(deviceBiometricAuthenticationProvider: suspend () -> Boolean) {
         submit.onSubmit(
-            transactionClient = transactionClient,
-            deviceBiometricAuthenticationProvider
+            signTransactionUseCase = signTransactionUseCase,
+            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         )
     }
 
@@ -154,7 +153,7 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     fun onCancelSigningClick() {
-        transactionClient.cancelSigning()
+        signTransactionUseCase.cancelSigning()
     }
 
     fun onChangeFeePayerClick() = fees.onChangeFeePayerClick()
@@ -174,24 +173,19 @@ class TransactionReviewViewModel @Inject constructor(
     fun onViewAdvancedModeClick() = fees.onViewAdvancedModeClick()
 
     fun onPayerSelected(selectedFeePayer: Network.Account) {
-        val feePayerSearchResult = state.value.feePayerSearchResult
+        val feePayerSearchResult = state.value.feePayers
         val transactionFees = state.value.transactionFees
         val signersCount = state.value.defaultSignersCount
 
         val updatedFeePayerResult = feePayerSearchResult?.copy(
-            feePayerAddress = selectedFeePayer.address,
+            selectedAccountAddress = selectedFeePayer.address,
             candidates = feePayerSearchResult.candidates
         )
 
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
-        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData
-            ?.toTransactionManifest()
-            ?.getOrNull()
-            ?.let { manifest ->
-                val summary = manifest.summary(selectedFeePayer.networkID.toUByte())
-                summary.accountsWithdrawnFrom + summary.accountsDepositedInto + summary.accountsRequiringAuth
-            }.orEmpty().any { accountAddress ->
-                accountAddress.addressString() == selectedFeePayer.address
+        val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.feePayerCandidates()
+            .orEmpty().any { accountAddress ->
+                accountAddress == selectedFeePayer.address
             }
 
         val updatedSignersCount = if (selectedFeePayerInvolvedInTransaction) signersCount else signersCount + 1
@@ -201,7 +195,7 @@ class TransactionReviewViewModel @Inject constructor(
                 transactionFees = transactionFees.copy(
                     signersCount = updatedSignersCount
                 ),
-                feePayerSearchResult = updatedFeePayerResult,
+                feePayers = updatedFeePayerResult,
                 sheetState = customizeFeesSheet.copy(
                     feePayerMode = State.Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
                         feePayerCandidate = selectedFeePayer
@@ -237,7 +231,7 @@ class TransactionReviewViewModel @Inject constructor(
         val showRawTransactionWarning: Boolean = false,
         val previewType: PreviewType,
         val transactionFees: TransactionFees = TransactionFees(),
-        val feePayerSearchResult: FeePayerSearchResult? = null,
+        val feePayers: TransactionFeePayers? = null,
         val defaultSignersCount: Int = 0,
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
@@ -269,7 +263,7 @@ class TransactionReviewViewModel @Inject constructor(
         fun noCandidateSelectedState(): State = copy(
             sheetState = Sheet.CustomizeFees(
                 feePayerMode = Sheet.CustomizeFees.FeePayerMode.NoFeePayerSelected(
-                    candidates = feePayerSearchResult?.candidates.orEmpty()
+                    candidates = feePayers?.candidates.orEmpty()
                 ),
                 feesMode = latestFeesMode
             )
@@ -279,7 +273,7 @@ class TransactionReviewViewModel @Inject constructor(
             transactionFees = transactionFees,
             sheetState = Sheet.CustomizeFees(
                 feePayerMode = Sheet.CustomizeFees.FeePayerMode.SelectFeePayer(
-                    candidates = feePayerSearchResult?.candidates.orEmpty()
+                    candidates = feePayers?.candidates.orEmpty()
                 ),
                 feesMode = latestFeesMode
             )
@@ -310,34 +304,26 @@ class TransactionReviewViewModel @Inject constructor(
 
         val rawManifest: String = request
             ?.transactionManifestData
-            ?.toTransactionManifest()
-            ?.getOrNull()?.toPrettyString().orEmpty()
+            ?.instructions.orEmpty()
 
         val isSheetVisible: Boolean
             get() = sheetState != Sheet.None
 
         val message: String?
-            get() {
-                val message = request?.transactionManifestData?.message
-                return if (!message.isNullOrBlank()) {
-                    message
-                } else {
-                    null
-                }
-            }
+            get() = request?.transactionManifestData?.message?.messageOrNull
 
         val isSubmitEnabled: Boolean
             get() = previewType !is PreviewType.None && !isBalanceInsufficientToPayTheFee
 
         val noFeePayerSelected: Boolean
-            get() = feePayerSearchResult?.feePayerAddress == null
+            get() = feePayers?.selectedAccountAddress == null
 
         val isBalanceInsufficientToPayTheFee: Boolean
             get() {
-                if (feePayerSearchResult == null) return true
-                val candidateAddress = feePayerSearchResult.feePayerAddress ?: return true
+                if (feePayers == null) return true
+                val candidateAddress = feePayers.selectedAccountAddress ?: return true
 
-                val xrdInCandidateAccount = feePayerSearchResult.candidates.find {
+                val xrdInCandidateAccount = feePayers.candidates.find {
                     it.account.address == candidateAddress
                 }?.xrdAmount ?: BigDecimal.ZERO
 
@@ -399,11 +385,11 @@ class TransactionReviewViewModel @Inject constructor(
                     ) : FeePayerMode
 
                     data class NoFeePayerSelected(
-                        val candidates: List<FeePayerSearchResult.FeePayerCandidate>
+                        val candidates: List<TransactionFeePayers.FeePayerCandidate>
                     ) : FeePayerMode
 
                     data class SelectFeePayer(
-                        val candidates: List<FeePayerSearchResult.FeePayerCandidate>
+                        val candidates: List<TransactionFeePayers.FeePayerCandidate>
                     ) : FeePayerMode
                 }
 
@@ -494,7 +480,7 @@ sealed interface PreviewType {
                 Contribution, Redemption
             }
 
-            val poolsInvolved: Set<com.babylon.wallet.android.domain.model.resources.Pool>
+            val poolsInvolved: Set<rdx.works.core.domain.resources.Pool>
                 get() = (from + to).toSet().map { accountWithAssets ->
                     accountWithAssets.resources.mapNotNull {
                         (it.transferable as? TransferableAsset.Fungible.PoolUnitAsset)?.unit?.pool
@@ -513,7 +499,7 @@ sealed interface PreviewType {
 
 data class AccountWithDepositSettingsChanges(
     val account: Network.Account,
-    val defaultDepositRule: AccountDefaultDepositRule? = null,
+    val defaultDepositRule: ThirdPartyDeposits.DepositRule? = null,
     val assetChanges: List<AssetPreferenceChange> = emptyList(),
     val depositorChanges: List<DepositorPreferenceChange> = emptyList()
 ) {

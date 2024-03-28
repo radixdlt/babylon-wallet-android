@@ -12,6 +12,8 @@ import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.DeviceInfoRepositoryImpl
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.ProfileRepositoryImpl
+import rdx.works.profile.ret.transaction.TransactionSigner
+import rdx.works.profile.ret.transaction.TransactionSignerImpl
 import javax.inject.Singleton
 
 @Module
@@ -39,4 +41,9 @@ interface ProfileModule {
     fun bindDeviceInfoRepository(
         deviceInfoRepositoryImpl: DeviceInfoRepositoryImpl
     ): DeviceInfoRepository
+
+    @Binds
+    fun bindTransactionSigner(
+        transactionSignerImpl: TransactionSignerImpl
+    ): TransactionSigner
 }

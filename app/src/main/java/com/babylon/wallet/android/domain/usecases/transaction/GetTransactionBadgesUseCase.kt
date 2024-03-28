@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.model.resources.Badge
+import rdx.works.core.domain.resources.Badge
 import javax.inject.Inject
 
 class GetTransactionBadgesUseCase @Inject constructor(

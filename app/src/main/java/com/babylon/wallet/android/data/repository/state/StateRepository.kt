@@ -7,7 +7,6 @@ import com.babylon.wallet.android.data.gateway.extensions.getNextNftItems
 import com.babylon.wallet.android.data.gateway.extensions.paginateDetails
 import com.babylon.wallet.android.data.gateway.extensions.paginateNonFungibles
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.cache.database.DAppEntity
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.PoolEntity.Companion.asPoolsResourcesJoin
@@ -23,21 +22,22 @@ import com.babylon.wallet.android.data.repository.cache.database.getCachedPools
 import com.babylon.wallet.android.data.repository.cache.database.storeAccountNFTsPortfolio
 import com.babylon.wallet.android.data.repository.cache.database.updateResourceDetails
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.PublicKeyHash
-import com.babylon.wallet.android.domain.model.resources.metadata.ownerKeyHashes
-import com.radixdlt.ret.Address
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import rdx.works.core.AddressHelper
 import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.PublicKeyHash
+import rdx.works.core.domain.resources.metadata.ownerKeyHashes
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
@@ -166,7 +166,10 @@ class StateRepositoryImpl @Inject constructor(
 
             val lsuEntities = mutableMapOf<String, ResourceEntity>()
             val lsuAddresses = result
-                .filter { it.liquidStakeUnit != null && it.liquidStakeUnit.fungibleResource.isDetailsAvailable.not() }
+                .filter {
+                    val lsu = it.liquidStakeUnit
+                    lsu != null && lsu.fungibleResource.isDetailsAvailable.not()
+                }
                 .map { it.liquidStakeUnit!!.resourceAddress }
                 .toSet()
             if (lsuAddresses.isNotEmpty()) {
@@ -181,10 +184,11 @@ class StateRepositoryImpl @Inject constructor(
                 )
 
                 result = result.map { item ->
+                    val lsu = item.liquidStakeUnit
                     item.copy(
-                        liquidStakeUnit = if (item.liquidStakeUnit != null && !item.liquidStakeUnit.fungibleResource.isDetailsAvailable) {
-                            val newLsu = lsuEntities[item.liquidStakeUnit.resourceAddress]?.toResource(
-                                item.liquidStakeUnit.fungibleResource.ownedAmount
+                        liquidStakeUnit = if (lsu != null && !lsu.fungibleResource.isDetailsAvailable) {
+                            val newLsu = lsuEntities[lsu.resourceAddress]?.toResource(
+                                lsu.fungibleResource.ownedAmount
                             ) as? Resource.FungibleResource
 
                             if (newLsu != null) {
@@ -486,10 +490,10 @@ class StateRepositoryImpl @Inject constructor(
     override suspend fun clearCachedState(): Result<Unit> = accountsStateCache.clear()
 
     private suspend fun getLatestCachedStateVersionInNetwork(): Long? {
-        val currentNetworkId = (getProfileUseCase.currentNetwork()?.networkID ?: Radix.Gateway.default.network.id).toUByte()
+        val currentNetworkId = getProfileUseCase.currentNetwork()?.networkID ?: Radix.Gateway.default.network.id
 
         return stateDao.getAccountStateVersions().filter {
-            Address(it.address).networkId() == currentNetworkId
+            AddressHelper.networkIdOrNull(it.address) == currentNetworkId
         }.maxByOrNull { it.stateVersion }?.stateVersion
     }
 }
