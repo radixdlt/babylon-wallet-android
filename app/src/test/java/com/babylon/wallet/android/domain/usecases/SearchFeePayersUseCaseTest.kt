@@ -3,21 +3,34 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.TransactionConfig
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import rdx.works.core.domain.assets.ValidatorDetail
-import rdx.works.core.domain.assets.ValidatorWithStakes
-import rdx.works.core.domain.resources.Pool
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AssetsTransfersRecipient
+import com.radixdlt.sargon.PerAssetFungibleResource
+import com.radixdlt.sargon.PerAssetFungibleTransfer
+import com.radixdlt.sargon.PerAssetTransfers
+import com.radixdlt.sargon.PerAssetTransfersOfFungibleResource
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.perAssetTransfers
+import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sampleMainnet
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
@@ -25,7 +38,7 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.ret.sampleXRDWithdraw
+import rdx.works.profile.ret.transaction.TransactionManifestData
 import java.math.BigDecimal
 
 class SearchFeePayersUseCaseTest {
@@ -80,9 +93,30 @@ class SearchFeePayersUseCaseTest {
 
         private fun manifestDataWithAddress(
             account: Network.Account
-        ) = sampleXRDWithdraw(
-            fromAddress = account.address,
-            value = BigDecimal.TEN
+        ) = TransactionManifestData.from(
+            manifest = TransactionManifest.perAssetTransfers(
+                transfers = PerAssetTransfers(
+                    fromAccount = AccountAddress.init(account.address),
+                    fungibleResources = listOf(
+                        PerAssetTransfersOfFungibleResource(
+                            resource = PerAssetFungibleResource(
+                                resourceAddress = ResourceAddress.init(XrdResource.address(networkId = account.networkID)),
+                                divisibility = 18.toUByte()
+                            ),
+                            transfers = listOf(
+                                PerAssetFungibleTransfer(
+                                    useTryDepositOrAbort = true,
+                                    amount = 10.toDecimal192(),
+                                    recipient = AssetsTransfersRecipient.ForeignAccount(
+                                        value = AccountAddress.sampleMainnet()
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    nonFungibleResources = emptyList()
+                )
+            )
         )
 
         private object ProfileRepositoryFake : ProfileRepository {
