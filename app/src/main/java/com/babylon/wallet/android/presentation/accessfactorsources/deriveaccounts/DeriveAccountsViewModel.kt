@@ -45,7 +45,7 @@ import rdx.works.profile.data.model.pernetwork.derivationPathEntityIndex
 import rdx.works.profile.data.repository.PublicKeyProvider
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.GetProfileUseCase
-import java.io.IOException
+import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -96,16 +96,27 @@ class DeriveAccountsViewModel @Inject constructor(
                                 .onSuccess {
                                     sendEvent(Event.DerivingAccountsCompleted)
                                 }
-                                .onFailure {
-                                    _state.update { uiState ->
-                                        uiState.copy(shouldShowRetryButton = true)
+                                .onFailure { e ->
+                                    if (e is ProfileException) {
+                                        accessFactorSourcesUiProxy.setOutput(AccessFactorSourcesOutput.Failure(e))
+                                        sendEvent(Event.DerivingAccountsCompleted)
+                                    } else {
+                                        _state.update { uiState ->
+                                            uiState.copy(shouldShowRetryButton = true)
+                                        }
                                     }
                                 }
                         }
-                        else -> { /* do nothing */ }
+
+                        else -> {
+                            /* do nothing */
+                        }
                     }
                 }
-                else -> { /* do nothing */ }
+
+                else -> {
+                    /* do nothing */
+                }
             }
         }
     }
@@ -193,11 +204,10 @@ class DeriveAccountsViewModel @Inject constructor(
                 forNetworkId = networkId,
                 factorSource = input.factorSource as FactorSource
             )
-            val derivationPathsWithPublicKeys = reDerivePublicKeysWithGivenAccountIndices(
+            reDerivePublicKeysWithGivenAccountIndices(
                 accountIndices = indicesToScan,
                 forNetworkId = networkId
-            )
-            if (derivationPathsWithPublicKeys != null) {
+            ).mapCatching { derivationPathsWithPublicKeys ->
                 val derivedAccounts = deriveAccounts(
                     derivationPathsWithPublicKeys = derivationPathsWithPublicKeys,
                     forNetworkId = networkId
@@ -208,9 +218,6 @@ class DeriveAccountsViewModel @Inject constructor(
                         nextDerivationPathOffset = indicesToScan.last() + 1
                     )
                 )
-                Result.success(Unit)
-            } else { // it failed for some reason to derive the public keys (e.g. lost link connection)
-                Result.failure(IOException("failed to derive public keys"))
             }
         }
     }
@@ -236,7 +243,7 @@ class DeriveAccountsViewModel @Inject constructor(
     private suspend fun reDerivePublicKeysWithGivenAccountIndices(
         accountIndices: Set<Int>,
         forNetworkId: NetworkId
-    ): Map<DerivationPath, ByteArray>? {
+    ): Result<Map<DerivationPath, ByteArray>> {
         val derivationPaths = publicKeyProvider.getDerivationPathsForIndices(
             forNetworkId = forNetworkId,
             indices = accountIndices,
@@ -245,12 +252,11 @@ class DeriveAccountsViewModel @Inject constructor(
 
         return when (val factorSource = input.factorSource) {
             is DeviceFactorSource -> {
-                val derivationPathsWithPublicKeys = publicKeyProvider.derivePublicKeysDeviceFactorSource(
+                publicKeyProvider.derivePublicKeysDeviceFactorSource(
                     deviceFactorSource = factorSource,
                     derivationPaths = derivationPaths,
                     isForLegacyOlympia = input.isForLegacyOlympia
                 )
-                derivationPathsWithPublicKeys
             }
 
             is LedgerHardwareWalletFactorSource -> {
@@ -263,17 +269,14 @@ class DeriveAccountsViewModel @Inject constructor(
                         )
                     },
                     ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource = factorSource)
-                ).onSuccess { derivePublicKeyResponse ->
+                ).mapCatching { derivePublicKeyResponse ->
                     val publicKeys = derivePublicKeyResponse.publicKeysHex
                     val derivationPathsWithPublicKeys = publicKeys.associate { publicKey ->
                         val derivationPath = derivationPaths.first { it.path == publicKey.derivationPath }
                         derivationPath to publicKey.publicKeyHex.decodeHex()
                     }
-                    return derivationPathsWithPublicKeys
-                }.onFailure {
-                    return null
+                    derivationPathsWithPublicKeys
                 }
-                null
             }
         }
     }

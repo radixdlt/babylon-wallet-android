@@ -53,6 +53,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.Constants
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
@@ -101,7 +102,8 @@ fun AccountRecoveryScanScreen(
         onContinueClick = {
             viewModel.onContinueClick { context.biometricAuthenticateSuspend() }
         },
-        isScanningNetwork = state.isScanningNetwork
+        isScanningNetwork = state.isScanningNetwork,
+        onMessageShown = viewModel::onMessageShown
     )
 }
 
@@ -114,13 +116,19 @@ private fun AccountRecoveryScanContent(
     state: AccountRecoveryScanViewModel.State,
     onAccountSelected: (Selectable<Network.Account>) -> Unit,
     onContinueClick: () -> Unit,
-    isScanningNetwork: Boolean
+    isScanningNetwork: Boolean,
+    onMessageShown: () -> Unit
 ) {
     val pages = ScanCompletePages.entries.toTypedArray()
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = state.uiMessage,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
     val backHandler = {
         if (pagerState.currentPage == ScanCompletePages.InactiveAccounts.ordinal) {
             scope.launch {

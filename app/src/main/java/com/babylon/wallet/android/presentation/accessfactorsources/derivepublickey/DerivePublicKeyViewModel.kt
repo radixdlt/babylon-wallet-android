@@ -130,17 +130,16 @@ class DerivePublicKeyViewModel @Inject constructor(
             forNetworkId = forNetworkId,
             factorSource = deviceFactorSource
         )
-        val compressedPublicKey = publicKeyProvider.derivePublicKeyForDeviceFactorSource(
+        return publicKeyProvider.derivePublicKeyForDeviceFactorSource(
             deviceFactorSource = deviceFactorSource,
             derivationPath = derivationPath
-        )
-        val output = PublicKeyAndDerivationPath(
-            compressedPublicKey = compressedPublicKey,
-            derivationPath = derivationPath
-        )
-
-        accessFactorSourcesUiProxy.setOutput(output)
-        return Result.success(Unit)
+        ).mapCatching { compressedPublicKey ->
+            val output = PublicKeyAndDerivationPath(
+                compressedPublicKey = compressedPublicKey,
+                derivationPath = derivationPath
+            )
+            accessFactorSourcesUiProxy.setOutput(output)
+        }
     }
 
     private suspend fun derivePublicKeyFromLedgerFactorSource(
