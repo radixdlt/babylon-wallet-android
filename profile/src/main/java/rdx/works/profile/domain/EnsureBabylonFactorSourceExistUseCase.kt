@@ -16,6 +16,7 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.data.repository.updateProfile
 import rdx.works.profile.domain.TestData.deviceInfo
+import timber.log.Timber
 import java.time.Instant
 import javax.inject.Inject
 
@@ -26,23 +27,27 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) {
 
-    suspend operator fun invoke(): Profile {
+    suspend operator fun invoke(): Result<Profile> {
         val profile = profileRepository.profile.first()
-        if (profile.mainBabylonFactorSource() != null) return profile
+        if (profile.mainBabylonFactorSource() != null) return Result.success(profile)
         val deviceInfo = deviceInfoRepository.getDeviceInfo()
-        val mnemonic = mnemonicRepository()
-        val deviceFactorSource = DeviceFactorSource.babylon(
-            mnemonicWithPassphrase = mnemonic,
-            model = deviceInfo.model,
-            name = deviceInfo.name,
-            createdAt = Instant.now(),
-            isMain = true
-        )
-        val updatedProfile = profile.addMainBabylonDeviceFactorSource(
-            mainBabylonFactorSource = deviceFactorSource
-        )
-        profileRepository.saveProfile(updatedProfile)
-        return updatedProfile
+        return mnemonicRepository().fold(onSuccess = { mnemonic ->
+            val deviceFactorSource = DeviceFactorSource.babylon(
+                mnemonicWithPassphrase = mnemonic,
+                model = deviceInfo.model,
+                name = deviceInfo.name,
+                createdAt = Instant.now(),
+                isMain = true
+            )
+            val updatedProfile = profile.addMainBabylonDeviceFactorSource(
+                mainBabylonFactorSource = deviceFactorSource
+            )
+            profileRepository.saveProfile(updatedProfile)
+            Result.success(updatedProfile)
+        }, onFailure = {
+            Timber.d(it)
+            Result.failure(ProfileException.BdfsSecureStorage(deviceInfo.isSamsungDevice))
+        })
     }
 
     fun initMainBabylonFactorSourceWithMnemonic(mnemonic: MnemonicWithPassphrase): DeviceFactorSource {

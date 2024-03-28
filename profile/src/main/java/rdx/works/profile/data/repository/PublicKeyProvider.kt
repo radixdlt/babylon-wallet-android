@@ -55,25 +55,26 @@ class PublicKeyProvider @Inject constructor(
     suspend fun derivePublicKeyForDeviceFactorSource(
         deviceFactorSource: DeviceFactorSource,
         derivationPath: DerivationPath
-    ): ByteArray {
-        val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.id).getOrNull())
-        return mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
+    ): Result<ByteArray> {
+        return mnemonicRepository.readMnemonic(deviceFactorSource.id).mapCatching { mnemonicWithPassphrase ->
+            mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
+        }
     }
 
     suspend fun derivePublicKeysDeviceFactorSource(
         deviceFactorSource: DeviceFactorSource,
         derivationPaths: List<DerivationPath>,
         isForLegacyOlympia: Boolean = false
-    ): Map<DerivationPath, ByteArray> {
-        return if (isForLegacyOlympia) {
-            derivationPaths.associateWith { derivationPath ->
-                val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.id).getOrNull())
-                mnemonicWithPassphrase.compressedPublicKey(Slip10Curve.SECP_256K1, derivationPath)
-            }
-        } else {
-            derivationPaths.associateWith { derivationPath ->
-                val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.id).getOrNull())
-                mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
+    ): Result<Map<DerivationPath, ByteArray>> {
+        return mnemonicRepository.readMnemonic(deviceFactorSource.id).mapCatching { mnemonicWithPassphrase ->
+            if (isForLegacyOlympia) {
+                derivationPaths.associateWith { derivationPath ->
+                    mnemonicWithPassphrase.compressedPublicKey(Slip10Curve.SECP_256K1, derivationPath)
+                }
+            } else {
+                derivationPaths.associateWith { derivationPath ->
+                    mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero()
+                }
             }
         }
     }

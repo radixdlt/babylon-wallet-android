@@ -56,15 +56,15 @@ class EncryptedPreferencesManager @Inject constructor(
             val preferencesKey = stringPreferencesKey(key)
             val encryptedValue = preferences[preferencesKey]
             if (encryptedValue.isNullOrEmpty()) {
-                return@map Result.failure(ProfileException.NoMnemonic)
+                Result.failure(ProfileException.NoMnemonic)
+            } else {
+                encryptedValue.decrypt(KeySpec.Mnemonic())
             }
-            val result = encryptedValue.decrypt(KeySpec.Mnemonic())
-            result
         }.first()
     }
 
-    suspend fun saveMnemonic(key: String, newValue: String?) {
-        putString(key, newValue, KeySpec.Mnemonic())
+    suspend fun saveMnemonic(key: String, newValue: String): Result<Unit> {
+        return putString(key, newValue, KeySpec.Mnemonic())
     }
 
     suspend fun keyExist(key: String): Boolean {
@@ -74,13 +74,13 @@ class EncryptedPreferencesManager @Inject constructor(
         }.first()
     }
 
-    private suspend fun putString(key: String, newValue: String?, keySpec: KeySpec) {
+    private suspend fun putString(key: String, newValue: String, keySpec: KeySpec): Result<Unit> {
         val preferencesKey = stringPreferencesKey(key)
-        newValue?.let { newValueNotNull ->
-            val encryptedValue = newValueNotNull.encrypt(withKey = keySpec).getOrThrow()
+        return newValue.encrypt(withKey = keySpec).mapCatching { encryptedValue ->
             preferences.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }
+            Unit
         }
     }
 

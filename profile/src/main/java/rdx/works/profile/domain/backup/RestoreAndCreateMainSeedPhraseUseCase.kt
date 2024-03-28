@@ -19,25 +19,27 @@ class RestoreAndCreateMainSeedPhraseUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         backupType: BackupType
-    ) {
+    ): Result<Unit> {
         // always restore backup on mainnet
         val profile = backupProfileRepository.getTemporaryRestoringProfile(backupType)?.changeGateway(Radix.Gateway.mainnet)
 
         if (profile != null) {
             val deviceInfo = deviceInfoRepository.getDeviceInfo()
-            val mnemonic = mnemonicRepository()
-            val deviceFactorSource = DeviceFactorSource.babylon(
-                mnemonicWithPassphrase = mnemonic,
-                model = deviceInfo.model,
-                name = deviceInfo.name,
-                createdAt = Instant.now(),
-                isMain = true
-            )
-            val updatedProfile = profile.addMainBabylonDeviceFactorSource(
-                mainBabylonFactorSource = deviceFactorSource
-            )
+            return mnemonicRepository().mapCatching { mnemonic ->
+                val deviceFactorSource = DeviceFactorSource.babylon(
+                    mnemonicWithPassphrase = mnemonic,
+                    model = deviceInfo.model,
+                    name = deviceInfo.name,
+                    createdAt = Instant.now(),
+                    isMain = true
+                )
+                val updatedProfile = profile.addMainBabylonDeviceFactorSource(
+                    mainBabylonFactorSource = deviceFactorSource
+                )
 
-            profileRepository.saveProfile(updatedProfile)
+                profileRepository.saveProfile(updatedProfile)
+            }
         }
+        return Result.failure(Exception("No profile to restore"))
     }
 }
