@@ -30,7 +30,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.isXrd
@@ -463,7 +463,7 @@ sealed interface PreviewType {
         data class Staking(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
-            val validators: List<ValidatorDetail>,
+            val validators: List<Validator>,
             val actionType: ActionType
         ) : Transfer {
             enum class ActionType {

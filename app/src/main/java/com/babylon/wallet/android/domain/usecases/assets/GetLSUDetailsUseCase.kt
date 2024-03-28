@@ -28,7 +28,7 @@ class GetLSUDetailsUseCase @Inject constructor(
             stateRepository.getValidators(validatorAddresses = setOf(validatorAddress)).mapCatching { validators ->
                 val validator = validators.first()
                 ValidatorWithStakes(
-                    validatorDetail = validator,
+                    validator = validator,
                     liquidStakeUnit = LiquidStakeUnit(stake, validator)
                 )
             }

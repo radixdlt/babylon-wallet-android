@@ -11,7 +11,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
@@ -327,7 +327,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             error("Not needed")
         }
 
-        override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> {
+        override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<Validator>> {
             error("Not needed")
         }
 

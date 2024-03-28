@@ -74,7 +74,7 @@ fun LazyListScope.stakingTab(
 
         assetsViewData.validatorsWithStakes.forEachIndexed { index, validatorWithStakes ->
             item(
-                key = validatorWithStakes.validatorDetail.address,
+                key = validatorWithStakes.validator.address,
                 contentType = { "validator-header" }
             ) {
                 ValidatorDetails(
@@ -342,7 +342,7 @@ fun ValidatorDetails(
             }
             cards
         }
-        val isCollapsed = state.isCollapsed(validatorWithStakes.validatorDetail.address)
+        val isCollapsed = state.isCollapsed(validatorWithStakes.validator.address)
         CollapsibleAssetCard(
             modifier = modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -353,7 +353,7 @@ fun ValidatorDetails(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        action.onCollectionClick(validatorWithStakes.validatorDetail.address)
+                        action.onCollectionClick(validatorWithStakes.validator.address)
                     }
                     .padding(RadixTheme.dimensions.paddingLarge),
                 validatorWithStakes = validatorWithStakes
@@ -615,13 +615,13 @@ private fun ValidatorHeader(
     ) {
         Thumbnail.Validator(
             modifier = Modifier.size(44.dp),
-            validator = validatorWithStakes.validatorDetail
+            validator = validatorWithStakes.validator
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
             Text(
-                text = validatorWithStakes.validatorDetail.name,
+                text = validatorWithStakes.validator.name,
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1

@@ -38,12 +38,12 @@ import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsIt
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import java.math.BigDecimal
 
 @Composable
 fun ValidatorsContent(
-    validators: ImmutableList<ValidatorDetail>,
+    validators: ImmutableList<Validator>,
     modifier: Modifier = Modifier,
     text: String
 ) {
@@ -134,8 +134,8 @@ fun StakingToValidatorsContentPreview() {
         Column {
             ValidatorsContent(
                 persistentListOf(
-                    ValidatorDetail("validator_tdx_19jd32jd3928jd3892jd329", BigDecimal(1000)),
-                    ValidatorDetail("validator_tdx_19jd32jd3928jd3892jd329", BigDecimal(1000000))
+                    Validator("validator_tdx_19jd32jd3928jd3892jd329", BigDecimal(1000)),
+                    Validator("validator_tdx_19jd32jd3928jd3892jd329", BigDecimal(1000000))
                 ),
                 text = "Staking to Validators Staking to Validators Staking to Validators Staking to Validators".uppercase()
             )

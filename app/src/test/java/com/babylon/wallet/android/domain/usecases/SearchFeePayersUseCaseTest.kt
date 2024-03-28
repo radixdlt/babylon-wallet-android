@@ -25,7 +25,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.StakeClaim
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
@@ -179,7 +179,7 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> {
+            override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<Validator>> {
                 error("Not needed")
             }
 

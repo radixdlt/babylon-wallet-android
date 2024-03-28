@@ -68,7 +68,7 @@ data class AssetsViewData(
                 if (lsu == null && claimCollection == null) return@mapNotNull null
 
                 ValidatorWithStakes(
-                    validatorDetail = validator,
+                    validator = validator,
                     liquidStakeUnit = lsu,
                     stakeClaimNft = claimCollection
                 )
