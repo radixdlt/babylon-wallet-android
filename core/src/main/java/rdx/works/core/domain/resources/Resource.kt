@@ -25,6 +25,7 @@ sealed class Resource {
     abstract val validatorAddress: String?
     abstract val name: String
     abstract val iconUrl: Uri?
+    abstract val metadata: List<Metadata>
 
     val isDetailsAvailable: Boolean
         get() = when (this) {
@@ -38,7 +39,7 @@ sealed class Resource {
         private val assetBehaviours: AssetBehaviours? = null,
         val currentSupply: BigDecimal? = null,
         val divisibility: Int? = null,
-        val metadata: List<Metadata> = emptyList()
+        override val metadata: List<Metadata> = emptyList()
     ) : Resource(), Comparable<FungibleResource> {
         override val name: String by lazy {
             metadata.name().orEmpty().truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
@@ -136,7 +137,7 @@ sealed class Resource {
         private val assetBehaviours: AssetBehaviours? = null,
         val items: List<Item>,
         val currentSupply: Int? = null,
-        val metadata: List<Metadata> = emptyList(),
+        override val metadata: List<Metadata> = emptyList(),
     ) : Resource(), Comparable<NonFungibleResource> {
         override val name: String by lazy {
             metadata.name().orEmpty().truncate(maxNumberOfCharacters = NAME_MAX_CHARS)

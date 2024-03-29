@@ -35,15 +35,17 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.InvolvedComponentDetails
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.babylon.wallet.android.presentation.ui.composables.displayName
+import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
 
 @Composable
 fun ConnectedDAppsContent(
-    connectedDApps: ImmutableList<Pair<String, DApp?>>,
+    connectedDApps: ImmutableList<Pair<ComponentAddress, DApp?>>,
     onDAppClick: (DApp) -> Unit,
-    onUnknownComponentsClick: (List<String>) -> Unit,
+    onUnknownComponentsClick: (List<ComponentAddress>) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (connectedDApps.isEmpty()) return
@@ -134,8 +136,8 @@ fun ConnectedDAppsContent(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            "component_tdx_19jd32jd3928jd3892jd329" to DApp.sample(),
-            "component_tdx_19jd32jd3928jd3892jd330" to null
+            ComponentAddress.sampleMainnet() to DApp.sample(),
+            ComponentAddress.sampleMainnet.other() to null
         ),
         onDAppClick = {},
         onUnknownComponentsClick = {}

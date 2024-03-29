@@ -78,6 +78,7 @@ import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openUrl
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -332,7 +333,7 @@ private fun DappDetails(
                 item {
                     Spacer(modifier = Modifier.height(dimensions.paddingDefault))
                     DappDefinitionAddressRow(
-                        dappDefinitionAddress = dappDefinitionAddress.string,
+                        dappDefinitionAddress = dappDefinitionAddress,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = dimensions.paddingDefault)
@@ -456,7 +457,7 @@ private fun DappDetails(
 
 @Composable
 fun DappDefinitionAddressRow(
-    dappDefinitionAddress: String,
+    dappDefinitionAddress: AccountAddress,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -471,7 +472,7 @@ fun DappDefinitionAddressRow(
         )
 
         ActionableAddressView(
-            address = dappDefinitionAddress,
+            address = dappDefinitionAddress.string,
             textStyle = RadixTheme.typography.body1Regular,
             textColor = RadixTheme.colors.gray1
         )

@@ -60,6 +60,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
 import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
+import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
@@ -290,7 +291,7 @@ private fun TransactionPreviewContent(
                                     onPromptForGuarantees = promptForGuarantees,
                                     onDAppClick = onDAppClick,
                                     onUnknownComponentsClick = { componentAddresses ->
-                                        onUnknownComponentsClick(componentAddresses.toPersistentList())
+                                        onUnknownComponentsClick(componentAddresses.map { it.string }.toPersistentList())
                                     },
                                     onTransferableFungibleClick = onTransferableFungibleClick,
                                     onNonTransferableFungibleClick = onNonTransferableFungibleClick

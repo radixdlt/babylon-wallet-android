@@ -5,6 +5,8 @@ import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -29,7 +31,7 @@ class AuthorizedDappsViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             dAppConnectionRepository.getAuthorizedDapps().collect { authorisedDApps ->
-                val addresses = authorisedDApps.map { it.dAppDefinitionAddress }.toSet()
+                val addresses = authorisedDApps.map { AccountAddress.init(it.dAppDefinitionAddress) }.toSet()
                 getDAppsUseCase(
                     definitionAddresses = addresses,
                     needMostRecentData = false

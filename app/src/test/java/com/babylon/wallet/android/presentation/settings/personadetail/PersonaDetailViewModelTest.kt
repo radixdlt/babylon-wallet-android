@@ -75,8 +75,8 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
         )
         val dApp = DApp.sample()
         val dAppOther = DApp.sample.other()
-        coEvery { getDAppsUseCase(dApp.dAppAddress.string, false) } returns Result.success(dApp)
-        coEvery { getDAppsUseCase(dAppOther.dAppAddress.string, false) } returns Result.success(dAppOther)
+        coEvery { getDAppsUseCase(dApp.dAppAddress, false) } returns Result.success(dApp)
+        coEvery { getDAppsUseCase(dAppOther.dAppAddress, false) } returns Result.success(dAppOther)
     }
 
     @Test

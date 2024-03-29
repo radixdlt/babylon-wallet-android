@@ -1,10 +1,11 @@
 package com.babylon.wallet.android.presentation.dapp
 
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.radixdlt.sargon.AccountAddress
 
 sealed interface InitialAuthorizedLoginRoute {
     data object CompleteRequest : InitialAuthorizedLoginRoute
-    data class SelectPersona(val dappDefinitionAddress: String) : InitialAuthorizedLoginRoute
+    data class SelectPersona(val dappDefinitionAddress: AccountAddress) : InitialAuthorizedLoginRoute
     data class Permission(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,

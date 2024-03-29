@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.usecases.GetValidatedDAppWebsiteUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.AccountAddress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -47,7 +48,7 @@ class DAppDetailsDialogViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
     data class State(
-        val dAppDefinitionAddress: String,
+        val dAppDefinitionAddress: AccountAddress,
         val dAppWithResources: DAppWithResources? = null,
         val validatedWebsite: String? = null,
         val isWebsiteValidating: Boolean = false,

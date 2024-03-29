@@ -7,6 +7,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.ROUTE_DAPP_DETAIL
+import com.radixdlt.sargon.AccountAddress
 
 const val ROUTE_AUTHORIZED_DAPPS = "settings_authorized_dapps"
 
@@ -18,7 +19,7 @@ fun NavController.authorizedDAppsScreen() {
 
 fun NavGraphBuilder.authorizedDAppsScreen(
     onBackClick: () -> Unit,
-    onDAppClick: (String) -> Unit
+    onDAppClick: (AccountAddress) -> Unit
 ) {
     composable(
         route = ROUTE_AUTHORIZED_DAPPS,

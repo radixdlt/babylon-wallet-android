@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.domain.usecases.transaction
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
+import com.radixdlt.sargon.NonFungibleResourceAddress
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Badge
 import javax.inject.Inject
@@ -10,16 +12,17 @@ class GetTransactionBadgesUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        accountProofs: Set<String>
-    ): List<Badge> = stateRepository.getDAppsDetails(
-        definitionAddresses = accountProofs.toList(),
-        isRefreshing = false
-    ).map { dApps ->
-        dApps.map {
+        addresses: Set<NonFungibleResourceAddress>
+    ): Result<List<Badge>> = stateRepository.getResources(
+        addresses = addresses.map { it.string }.toSet(),
+        underAccountAddress = null,
+        withDetails = false
+    ).mapCatching { resources ->
+        resources.map {
             Badge(
-                address = it.dAppAddress.string,
+                address = NonFungibleResourceAddress.init(it.resourceAddress),
                 metadata = it.metadata
             )
         }
-    }.getOrNull().orEmpty()
+    }
 }

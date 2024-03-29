@@ -24,6 +24,9 @@ import com.babylon.wallet.android.data.repository.cache.database.storeAccountNFT
 import com.babylon.wallet.android.data.repository.cache.database.updateResourceDetails
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +42,7 @@ import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
+import rdx.works.core.domain.resources.metadata.dAppDefinition
 import rdx.works.core.domain.resources.metadata.ownerKeyHashes
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -71,7 +75,9 @@ interface StateRepository {
 
     suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>>
 
-    suspend fun getDAppsDetails(definitionAddresses: List<String>, isRefreshing: Boolean): Result<List<DApp>>
+    suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>>
+
+    suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>>
 
     suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit>
 
@@ -444,7 +450,7 @@ class StateRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getDAppsDetails(
-        definitionAddresses: List<String>,
+        definitionAddresses: List<AccountAddress>,
         isRefreshing: Boolean
     ): Result<List<DApp>> = withContext(dispatcher) {
         runCatching {
@@ -461,10 +467,10 @@ class StateRepositoryImpl @Inject constructor(
                 }.toMutableList()
             }
 
-            val remainingAddresses = definitionAddresses.toSet() subtract cachedDApps.map { it.dAppAddress.string }.toSet()
+            val remainingAddresses = definitionAddresses.toSet() subtract cachedDApps.map { it.dAppAddress }.toSet()
             if (remainingAddresses.isNotEmpty()) {
                 stateApi.paginateDetails(
-                    addresses = definitionAddresses.toSet(),
+                    addresses = remainingAddresses.map { it.string }.toSet(),
                     metadataKeys = ExplicitMetadataKey.forDApps
                 ) { page ->
                     val syncedAt = InstantGenerator()
@@ -478,6 +484,23 @@ class StateRepositoryImpl @Inject constructor(
             cachedDApps
         }
     }
+
+    override suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>> =
+        runCatching {
+            val result = mutableMapOf<ComponentAddress, AccountAddress?>()
+            stateApi.paginateDetails(
+                addresses = componentAddresses.map { it.string }.toSet(),
+                metadataKeys = ExplicitMetadataKey.forDApps
+            ) { page ->
+                page.items.map { item ->
+                    val componentAddress = ComponentAddress.init(item.address)
+                    val dAppDefinitionAddress = item.explicitMetadata?.toMetadata()?.dAppDefinition()?.let { AccountAddress.init(it) }
+
+                    result[componentAddress] = dAppDefinitionAddress
+                }
+            }
+            result
+        }
 
     override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>) = withContext(dispatcher) {
         runCatching {

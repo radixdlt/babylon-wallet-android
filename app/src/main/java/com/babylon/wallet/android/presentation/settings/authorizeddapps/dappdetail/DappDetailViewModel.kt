@@ -52,7 +52,7 @@ class DappDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            dAppWithAssociatedResourcesUseCase.invoke(
+            dAppWithAssociatedResourcesUseCase(
                 definitionAddress = args.dappDefinitionAddress,
                 needMostRecentData = false
             ).onSuccess { dAppWithAssociatedResources ->

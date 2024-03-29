@@ -27,6 +27,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toU
 import com.babylon.wallet.android.presentation.model.toPersonaData
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -82,12 +84,13 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 )
                 return@launch
             }
-            if (!request.isValidRequest()) {
+            val dAppDefinitionAddress = runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.getOrNull()
+            if (!request.isValidRequest() || dAppDefinitionAddress == null) {
                 handleRequestError(RadixWalletException.DappRequestException.InvalidRequest)
                 return@launch
             }
             stateRepository.getDAppsDetails(
-                definitionAddresses = listOf(request.metadata.dAppDefinitionAddress),
+                definitionAddresses = listOf(dAppDefinitionAddress),
                 isRefreshing = false
             ).onSuccess { dApps ->
                 dApps.firstOrNull()?.let { dApp ->

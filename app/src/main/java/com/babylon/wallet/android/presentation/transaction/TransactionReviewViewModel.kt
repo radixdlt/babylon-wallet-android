@@ -25,6 +25,9 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
@@ -93,7 +96,7 @@ class TransactionReviewViewModel @Inject constructor(
 
             if (!request.isInternal) {
                 viewModelScope.launch {
-                    getDAppsUseCase(request.requestMetadata.dAppDefinitionAddress, false).onSuccess { dApp ->
+                    getDAppsUseCase(AccountAddress.init(request.requestMetadata.dAppDefinitionAddress), false).onSuccess { dApp ->
                         _state.update { it.copy(proposingDApp = dApp) }
                     }
                 }
@@ -492,7 +495,7 @@ sealed interface PreviewType {
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
             val badges: List<Badge> = emptyList(),
-            val dApps: List<Pair<String, DApp?>> = emptyList()
+            val dApps: List<Pair<ComponentAddress, DApp?>> = emptyList()
         ) : Transfer
     }
 }
