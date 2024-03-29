@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ValidatorAddress
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.resources.metadata.accountType
@@ -196,7 +197,7 @@ interface StateDao {
         WHERE address in (:addresses) AND state_version = :atStateVersion
     """
     )
-    fun getValidators(addresses: Set<String>, atStateVersion: Long): List<ValidatorEntity>
+    fun getValidators(addresses: Set<ValidatorAddress>, atStateVersion: Long): List<ValidatorEntity>
 
     @Query(
         """

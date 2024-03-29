@@ -19,6 +19,8 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -238,7 +240,7 @@ class AccountsStateCache @Inject constructor(
             val cachedValidators = dao.getCachedValidators(allValidatorAddresses, stateVersion).toMutableMap()
             val newValidators = runCatching {
                 api.fetchValidators(
-                    allValidatorAddresses - cachedValidators.keys,
+                    (allValidatorAddresses - cachedValidators.keys).map { it.string }.toSet(),
                     stateVersion
                 ).validators.asValidators().onEach {
                     cachedValidators[it.address] = it
@@ -301,7 +303,7 @@ class AccountsStateCache @Inject constructor(
 
         fun poolAddresses() = fungibles.mapNotNull { it.poolAddress }.toSet()
 
-        fun validatorAddresses(): Set<String> = fungibles.mapNotNull {
+        fun validatorAddresses(): Set<ValidatorAddress> = fungibles.mapNotNull {
             it.validatorAddress
         }.toSet() + nonFungibles.mapNotNull {
             it.validatorAddress
@@ -311,7 +313,7 @@ class AccountsStateCache @Inject constructor(
         fun toAccountAddressWithAssets(
             accountAddress: String,
             pools: Map<String, Pool>,
-            validators: Map<String, Validator>
+            validators: Map<ValidatorAddress, Validator>
         ): AccountAddressWithAssets? {
             if (stateVersion == null) return null
 

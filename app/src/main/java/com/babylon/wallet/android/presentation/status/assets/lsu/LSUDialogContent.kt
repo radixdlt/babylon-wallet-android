@@ -38,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlin
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.AddressHelper
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.assets.AssetPrice
@@ -170,7 +171,7 @@ fun LSUDialogContent(
                 .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                 .radixPlaceholder(visible = lsu == null),
             label = stringResource(id = R.string.assetDetails_validator),
-            address = lsu?.validator?.address.orEmpty()
+            address = lsu?.validator?.address?.string.orEmpty()
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 

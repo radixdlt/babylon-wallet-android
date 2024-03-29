@@ -318,7 +318,7 @@ fun AssetsViewWithAssets() {
                 ),
                 liquidStakeUnits = listOf(
                     LiquidStakeUnit(
-                        Resource.FungibleResource(
+                        fungibleResource = Resource.FungibleResource(
                             resourceAddress = "resource_dfgh",
                             ownedAmount = BigDecimal(100),
                             metadata = listOf(
@@ -329,16 +329,10 @@ fun AssetsViewWithAssets() {
                                 )
                             )
                         ),
-                        Validator(
-                            address = "validator_abc",
-                            totalXrdStake = BigDecimal(1000),
-                            metadata = listOf(
-                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Awesome Validator", MetadataType.String)
-                            )
-                        )
+                        validator = Validator.sampleMainnet()
                     ),
                     LiquidStakeUnit(
-                        Resource.FungibleResource(
+                        fungibleResource = Resource.FungibleResource(
                             resourceAddress = "resource_dfg",
                             ownedAmount = BigDecimal(21),
                             metadata = listOf(
@@ -349,13 +343,7 @@ fun AssetsViewWithAssets() {
                                 )
                             )
                         ),
-                        Validator(
-                            address = "validator_abcd",
-                            totalXrdStake = BigDecimal(10000),
-                            metadata = listOf(
-                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Another Validator", MetadataType.String)
-                            )
-                        )
+                        validator = Validator.sampleMainnet()
                     )
                 ),
                 stakeClaims = listOf(
@@ -365,13 +353,7 @@ fun AssetsViewWithAssets() {
                             amount = 2,
                             items = listOf()
                         ),
-                        Validator(
-                            address = "validator_abc",
-                            totalXrdStake = BigDecimal(1000),
-                            metadata = listOf(
-                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Awesome Validator", MetadataType.String)
-                            )
-                        )
+                        validator = Validator.sampleMainnet()
                     )
                 )
             )

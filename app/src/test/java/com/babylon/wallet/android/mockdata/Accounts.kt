@@ -1,6 +1,11 @@
 package com.babylon.wallet.android.mockdata
 
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.radixdlt.sargon.NonFungibleResourceAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -65,16 +70,13 @@ const val mockSomeOtherResource = "some_other_strange_resource"
 const val mockLSUAddress1 = "mocKLSUAddress1"
 const val mockLSUAddress2 = "mocKLSUAddress2"
 
-const val mockValidatorAddress0 = "validatorAddress_0"
-const val mockValidatorAddress1 = "validatorAddress_1"
-
 const val mockStakeFungibleResourceAddress1 = "stakeFungibleResourceAddress1"
 const val mockPoolAddress1 = "poolAddress1"
 const val mockStakeFungibleResourceAddress2 = "stakeFungibleResourceAddress2"
 const val mockPoolAddress2 = "poolAddress2"
 
-const val mockNFTAddressForStakeClaim1 = "nftAddressForStakeClaim_1"
-const val mockNFTAddressForStakeClaim2 = "nftAddressForStakeClaim_2"
+val mockNFTAddressForStakeClaim1 = ResourceAddress.sampleMainnet.candy
+val mockNFTAddressForStakeClaim2 = ResourceAddress.init(NonFungibleResourceAddress.sampleMainnet().string)
 
 // Total fiat value of all accounts: 110481686.856 + 874160.26252 = 111355847.119
 val mockAccountsWithMockAssets = listOf(
@@ -211,13 +213,7 @@ val mockAccountsWithMockAssets = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "TokenXRD", valueType = MetadataType.String)
                         )
                     ),
-                    validator = Validator(
-                        address = mockValidatorAddress0,
-                        totalXrdStake = BigDecimal(99),
-                        metadata = listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Validator0", valueType = MetadataType.String)
-                        )
-                    )
+                    validator = Validator.sampleMainnet().copy(totalXrdStake = BigDecimal(99))
                 ),
                 LiquidStakeUnit(
                     fungibleResource = Resource.FungibleResource(
@@ -227,13 +223,7 @@ val mockAccountsWithMockAssets = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "TokenXRD", valueType = MetadataType.String)
                         )
                     ),
-                    validator = Validator(
-                        address = mockValidatorAddress1,
-                        totalXrdStake = BigDecimal(909),
-                        metadata = listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Validator1", valueType = MetadataType.String)
-                        )
-                    )
+                    validator = Validator.sampleMainnet.other().copy(totalXrdStake = BigDecimal(909))
                 )
             )
         )
@@ -271,11 +261,11 @@ val mockAccountsWithMockAssets = listOf(
             stakeClaims = listOf( // Total fiat value of stake claims: 2587.82926 + 1007.32326 = 3595.15252
                 StakeClaim( // Total fiat value of stake claim 1: 1595.70666 + 992.1226 = 2587.82926
                     nonFungibleResource = Resource.NonFungibleResource(
-                        resourceAddress = mockNFTAddressForStakeClaim1,
+                        resourceAddress = mockNFTAddressForStakeClaim1.string,
                         amount = 2L, // number of items
                         items = listOf(
                             Resource.NonFungibleResource.Item(
-                                collectionAddress = mockNFTAddressForStakeClaim1,
+                                collectionAddress = mockNFTAddressForStakeClaim1.string,
                                 localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
                                 metadata = listOf(
                                     Metadata.Primitive(
@@ -286,7 +276,7 @@ val mockAccountsWithMockAssets = listOf(
                                 )
                             ),
                             Resource.NonFungibleResource.Item(
-                                collectionAddress = mockNFTAddressForStakeClaim1,
+                                collectionAddress = mockNFTAddressForStakeClaim1.string,
                                 localId = Resource.NonFungibleResource.Item.ID.from("#2#"),
                                 metadata = listOf(
                                     Metadata.Primitive(
@@ -299,23 +289,25 @@ val mockAccountsWithMockAssets = listOf(
                         ),
                         currentSupply = 66598,
                         metadata = listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.VALIDATOR.key, value = "validator_address1", valueType = MetadataType.Address)
+                            Metadata.Primitive(
+                                key = ExplicitMetadataKey.VALIDATOR.key,
+                                value = Validator.sampleMainnet().address.string,
+                                valueType = MetadataType.Address
+                            )
                         )
                     ),
-                    validator = Validator(
-                        address = "validator_address1",
+                    validator = Validator.sampleMainnet().copy(
                         totalXrdStake = BigDecimal(27335.0901),
-                        stakeUnitResourceAddress = "stakeUnitResourceAddress1",
-                        claimTokenResourceAddress = mockNFTAddressForStakeClaim1
+                        claimTokenResourceAddress = mockNFTAddressForStakeClaim1.string
                     )
                 ),
                 StakeClaim( // Total fiat value of stake claim 2: 1007.32326
                     nonFungibleResource = Resource.NonFungibleResource(
-                        resourceAddress = mockNFTAddressForStakeClaim2,
+                        resourceAddress = mockNFTAddressForStakeClaim2.string,
                         amount = 1L, // number of items
                         items = listOf(
                             Resource.NonFungibleResource.Item(
-                                collectionAddress = mockNFTAddressForStakeClaim2,
+                                collectionAddress = mockNFTAddressForStakeClaim2.string,
                                 localId = Resource.NonFungibleResource.Item.ID.Companion.from("#1#"),
                                 metadata = listOf(
                                     Metadata.Primitive(
@@ -328,17 +320,15 @@ val mockAccountsWithMockAssets = listOf(
                         ),
                         currentSupply = 66598,
                         metadata = listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.VALIDATOR.key, value = "validator_address2", valueType = MetadataType.Address)
+                            Metadata.Primitive(
+                                key = ExplicitMetadataKey.VALIDATOR.key,
+                                value = Validator.sampleMainnet.other().address.string,
+                                valueType = MetadataType.Address)
                         )
                     ),
-                    validator = Validator(
-                        address = "validator_address2",
+                    validator = Validator.sampleMainnet.other().copy(
                         totalXrdStake = BigDecimal(11075),
-                        stakeUnitResourceAddress = "stakeUnitResourceAddress2",
-                        claimTokenResourceAddress = mockNFTAddressForStakeClaim2,
-                        metadata = listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.CLAIM_NFT.key, value = mockNFTAddressForStakeClaim2, valueType = MetadataType.Address)
-                        )
+                        claimTokenResourceAddress = mockNFTAddressForStakeClaim2.string,
                     )
                 )
             )

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository.cache.database
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.Serializable
@@ -80,5 +81,16 @@ class StateDatabaseConverters {
     @TypeConverter
     fun accountAddressToString(accountAddress: AccountAddress?): String? {
         return accountAddress?.string
+    }
+
+    // ValidatorAddress
+    @TypeConverter
+    fun stringToValidatorAddress(validatorAddress: String?): ValidatorAddress? {
+        return validatorAddress?.let { ValidatorAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun validatorAddressToString(validatorAddress: ValidatorAddress?): String? {
+        return validatorAddress?.string
     }
 }
