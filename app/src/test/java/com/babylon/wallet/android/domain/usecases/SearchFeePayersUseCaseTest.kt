@@ -13,6 +13,7 @@ import com.radixdlt.sargon.PerAssetFungibleResource
 import com.radixdlt.sargon.PerAssetFungibleTransfer
 import com.radixdlt.sargon.PerAssetTransfers
 import com.radixdlt.sargon.PerAssetTransfersOfFungibleResource
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.ValidatorAddress
@@ -177,7 +178,7 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> {
+            override suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>> {
                 error("Not needed")
             }
 

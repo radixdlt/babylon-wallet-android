@@ -21,6 +21,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -278,42 +280,7 @@ fun AssetsViewWithAssets() {
                                 )
                             )
                         ),
-                        pool = Pool(
-                            address = "pool_abc",
-                            metadata = listOf(
-                                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool", valueType = MetadataType.String),
-                                Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
-                                Metadata.Primitive(
-                                    key = ExplicitMetadataKey.POOL_UNIT.key,
-                                    value = "resource_tdx_19jd32jd3928jd3892jd329",
-                                    valueType = MetadataType.Address
-                                )
-                            ),
-                            resources = listOf(
-                                Resource.FungibleResource(
-                                    resourceAddress = XrdResource.address(Radix.Gateway.default.network.networkId().value),
-                                    ownedAmount = BigDecimal(1000),
-                                    metadata = listOf(
-                                        Metadata.Primitive(
-                                            key = ExplicitMetadataKey.SYMBOL.key,
-                                            value = XrdResource.SYMBOL,
-                                            valueType = MetadataType.String
-                                        )
-                                    )
-                                ),
-                                Resource.FungibleResource(
-                                    resourceAddress = "resource_abcdef",
-                                    ownedAmount = BigDecimal(100),
-                                    metadata = listOf(
-                                        Metadata.Primitive(
-                                            key = ExplicitMetadataKey.SYMBOL.key,
-                                            value = "CTM",
-                                            valueType = MetadataType.String
-                                        )
-                                    )
-                                )
-                            )
-                        )
+                        pool = Pool.sampleMainnet()
                     )
                 ),
                 liquidStakeUnits = listOf(

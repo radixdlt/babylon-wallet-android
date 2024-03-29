@@ -9,6 +9,8 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.assets.Assets
@@ -134,74 +136,6 @@ class SampleDataProvider {
                 Validator.sampleMainnet()
             ),
             xrdWorth = BigDecimal(1000)
-        )
-    )
-
-    val transferableDepositingPool = Transferable.Depositing(
-        transferable = TransferableAsset.Fungible.PoolUnitAsset(
-            amount = BigDecimal(300),
-            unit = PoolUnit(
-                Resource.FungibleResource(
-                    resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
-                    ownedAmount = null,
-                    currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                    metadata = listOf(
-                        Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                        Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.DESCRIPTION.key,
-                            value = "a very xxx token",
-                            valueType = MetadataType.String
-                        )
-                    )
-                ),
-                pool = Pool(
-                    address = "pool_tdx_19jd32jd3928jd3892jd329",
-                    metadata = listOf(
-                        Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool", valueType = MetadataType.String),
-                        Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.POOL_UNIT.key,
-                            value = "resource_tdx_19jd32jd3928jd3892jd329",
-                            valueType = MetadataType.Address
-                        )
-                    ),
-                    resources = listOf(
-                        Resource.FungibleResource(
-                            resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt12",
-                            ownedAmount = null,
-                            currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                            metadata = listOf(
-                                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                                Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                                Metadata.Primitive(
-                                    key = ExplicitMetadataKey.DESCRIPTION.key,
-                                    value = "pool 1 token",
-                                    valueType = MetadataType.String
-                                )
-                            )
-                        ),
-                        Resource.FungibleResource(
-                            resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt21",
-                            ownedAmount = null,
-                            currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                            metadata = listOf(
-                                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                                Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                                Metadata.Primitive(
-                                    key = ExplicitMetadataKey.DESCRIPTION.key,
-                                    value = "pool 2 token",
-                                    valueType = MetadataType.String
-                                )
-                            )
-                        )
-                    )
-                ),
-            ),
-            contributionPerResource = mapOf(
-                "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt12" to BigDecimal(100),
-                "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt21" to BigDecimal(200)
-            )
         )
     )
 

@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.resources.AccountDetails
 import rdx.works.core.domain.resources.metadata.AccountType
@@ -29,7 +30,7 @@ data class AccountPortfolioResponse(
     @ColumnInfo("validator_address")
     private val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
-    private val poolAddress: String?,
+    private val poolAddress: PoolAddress?,
     private val divisibility: Int?,
     private val behaviours: BehavioursColumn?,
     private val supply: BigDecimal?,
@@ -67,7 +68,7 @@ data class AccountPortfolioResponse(
 
 data class PoolWithResourceResponse(
     @ColumnInfo("pool_entity_address")
-    val address: String,
+    val address: PoolAddress,
     @ColumnInfo("pool_unit_address")
     val poolUnitAddress: String,
     @ColumnInfo("account_state_version")
@@ -83,7 +84,7 @@ data class PoolWithResourceResponse(
     @ColumnInfo("validator_address")
     private val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
-    private val poolAddress: String?,
+    private val poolAddress: PoolAddress?,
     private val divisibility: Int?,
     private val behaviours: BehavioursColumn?,
     private val supply: BigDecimal?,

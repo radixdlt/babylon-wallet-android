@@ -2,6 +2,7 @@ package com.babylon.wallet.android.mockdata
 
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.NonFungibleResourceAddress
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -71,9 +72,9 @@ const val mockLSUAddress1 = "mocKLSUAddress1"
 const val mockLSUAddress2 = "mocKLSUAddress2"
 
 const val mockStakeFungibleResourceAddress1 = "stakeFungibleResourceAddress1"
-const val mockPoolAddress1 = "poolAddress1"
+val mockPoolAddress1 = PoolAddress.sampleMainnet()
 const val mockStakeFungibleResourceAddress2 = "stakeFungibleResourceAddress2"
-const val mockPoolAddress2 = "poolAddress2"
+val mockPoolAddress2 = PoolAddress.sampleMainnet.other()
 
 val mockNFTAddressForStakeClaim1 = ResourceAddress.sampleMainnet.candy
 val mockNFTAddressForStakeClaim2 = ResourceAddress.init(NonFungibleResourceAddress.sampleMainnet().string)
@@ -137,7 +138,7 @@ val mockAccountsWithMockAssets = listOf(
                         divisibility=18,
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "cool pool unit", valueType = MetadataType.String),
-                            Metadata.Primitive(key = ExplicitMetadataKey.POOL.key, value = mockPoolAddress1, valueType = MetadataType.Address)
+                            Metadata.Primitive(key = ExplicitMetadataKey.POOL.key, value = mockPoolAddress1.string, valueType = MetadataType.Address)
                         )
                     ),
                     pool = Pool(
@@ -178,7 +179,7 @@ val mockAccountsWithMockAssets = listOf(
                         divisibility=18,
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "cool pool unit", valueType = MetadataType.String),
-                            Metadata.Primitive(key = ExplicitMetadataKey.POOL.key, value = mockPoolAddress2, valueType = MetadataType.Address)
+                            Metadata.Primitive(key = ExplicitMetadataKey.POOL.key, value = mockPoolAddress2.string, valueType = MetadataType.Address)
                         )
                     ),
                     pool = Pool(

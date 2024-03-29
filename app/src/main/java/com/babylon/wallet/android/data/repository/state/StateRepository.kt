@@ -26,6 +26,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -66,7 +67,7 @@ interface StateRepository {
 
     suspend fun getResources(addresses: Set<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>>
 
-    suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>>
+    suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>>
 
     suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>>
 
@@ -350,7 +351,7 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> = withContext(dispatcher) {
+    override suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>> = withContext(dispatcher) {
         runCatching {
             val stateVersion = getLatestCachedStateVersionInNetwork()
             var cachedPools = if (stateVersion != null) {
@@ -363,7 +364,7 @@ class StateRepositoryImpl @Inject constructor(
             }
             val unknownPools = poolAddresses - cachedPools.map { it.address }.toSet()
             if (unknownPools.isNotEmpty()) {
-                val newPools = stateApi.fetchPools(unknownPools, stateVersion)
+                val newPools = stateApi.fetchPools(unknownPools.map { it.string }.toSet(), stateVersion)
                 if (newPools.poolItems.isNotEmpty()) {
                     val fetchedStateVersion = requireNotNull(newPools.stateVersion)
                     val join = newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), fetchedStateVersion))
