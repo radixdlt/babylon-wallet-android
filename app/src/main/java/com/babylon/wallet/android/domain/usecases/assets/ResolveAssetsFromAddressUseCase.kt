@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
+import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -47,7 +48,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
             }
         }
 
-    private fun Resource.asAsset(pools: Map<String, Pool>, validators: Map<String, Validator>): Asset = when (this) {
+    private fun Resource.asAsset(pools: Map<String, Pool>, validators: Map<ValidatorAddress, Validator>): Asset = when (this) {
         is Resource.FungibleResource -> {
             if (poolAddress?.isNotEmpty() == true) {
                 val pool = pools[poolAddress] ?: error("Pool not found")
@@ -55,7 +56,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
                     stake = this,
                     pool = pool
                 )
-            } else if (validatorAddress?.isNotEmpty() == true) {
+            } else if (validatorAddress != null) {
                 val validator = validators[validatorAddress] ?: error("Validator not found")
                 LiquidStakeUnit(
                     fungibleResource = this,
@@ -67,7 +68,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
         }
 
         is Resource.NonFungibleResource -> {
-            if (validatorAddress.isNullOrEmpty()) {
+            if (validatorAddress == null) {
                 NonFungibleCollection(
                     collection = this
                 )

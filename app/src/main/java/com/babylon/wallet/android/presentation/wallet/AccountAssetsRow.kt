@@ -404,10 +404,7 @@ fun AssetsContentRowPreview() {
                                 resourceAddress = "resource_address$it",
                                 ownedAmount = BigDecimal.valueOf(237659)
                             ),
-                            Validator(
-                                address = "validator_$it",
-                                totalXrdStake = BigDecimal.TEN
-                            )
+                            Validator.sampleMainnet()
                         )
                     }
                 ),

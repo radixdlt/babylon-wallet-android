@@ -15,8 +15,6 @@ data class LiquidStakeUnit(
     override val resource: Resource.FungibleResource
         get() = fungibleResource
 
-    val validatorAddress: String
-        get() = fungibleResource.validatorAddress.orEmpty()
     val resourceAddress: String
         get() = fungibleResource.resourceAddress
 

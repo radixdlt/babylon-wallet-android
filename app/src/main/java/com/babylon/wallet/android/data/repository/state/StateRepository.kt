@@ -26,6 +26,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
@@ -67,7 +68,7 @@ interface StateRepository {
 
     suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>>
 
-    suspend fun getValidators(validatorAddresses: Set<String>): Result<List<Validator>>
+    suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>>
 
     suspend fun getNFTDetails(resourceAddress: String, localIds: Set<String>): Result<List<Resource.NonFungibleResource.Item>>
 
@@ -377,7 +378,7 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<Validator>> = withContext(dispatcher) {
+    override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> = withContext(dispatcher) {
         runCatching {
             val stateVersion = getLatestCachedStateVersionInNetwork()
             val cachedValidators = if (stateVersion != null) {
@@ -391,7 +392,7 @@ class StateRepositoryImpl @Inject constructor(
             val unknownAddresses = validatorAddresses - cachedValidators.map { it.address }.toSet()
             if (unknownAddresses.isNotEmpty()) {
                 val response = stateApi.fetchValidators(
-                    validatorsAddresses = unknownAddresses.toSet(),
+                    validatorsAddresses = unknownAddresses.map { it.string }.toSet(),
                     stateVersion = stateVersion
                 )
                 val details = response.validators.asValidators()

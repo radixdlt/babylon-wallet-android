@@ -2,6 +2,7 @@ package rdx.works.core.domain.resources
 
 import android.net.Uri
 import com.radixdlt.derivation.model.NetworkId
+import com.radixdlt.sargon.ValidatorAddress
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import rdx.works.core.AddressHelper
@@ -22,7 +23,7 @@ import java.math.BigDecimal
 
 sealed class Resource {
     abstract val resourceAddress: String
-    abstract val validatorAddress: String?
+    abstract val validatorAddress: ValidatorAddress?
     abstract val name: String
     abstract val iconUrl: Uri?
     abstract val metadata: List<Metadata>
@@ -57,7 +58,7 @@ sealed class Resource {
             metadata.iconUrl()
         }
 
-        override val validatorAddress: String? by lazy {
+        override val validatorAddress: ValidatorAddress? by lazy {
             metadata.validatorAddress()
         }
 
@@ -157,7 +158,7 @@ sealed class Resource {
             }.take(TAGS_MAX).toImmutableList()
         }
 
-        override val validatorAddress: String? by lazy {
+        override val validatorAddress: ValidatorAddress? by lazy {
             metadata.validatorAddress()
         }
 

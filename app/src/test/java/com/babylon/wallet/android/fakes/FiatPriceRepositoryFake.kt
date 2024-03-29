@@ -13,6 +13,7 @@ import com.babylon.wallet.android.mockdata.mockResourceAddress3
 import com.babylon.wallet.android.mockdata.mockResourceAddress4
 import com.babylon.wallet.android.mockdata.mockResourceAddress5
 import com.babylon.wallet.android.mockdata.mockResourceAddressXRD
+import com.radixdlt.sargon.extensions.string
 
 class FiatPriceRepositoryFake : FiatPriceRepository {
 
@@ -68,11 +69,11 @@ class FiatPriceRepositoryFake : FiatPriceRepository {
             price = mockLSUPrice2,
             currency = SupportedCurrency.USD
         ),
-        mockNFTAddressForStakeClaim1 to FiatPrice(
+        mockNFTAddressForStakeClaim1.string to FiatPrice(
             price = mockResourceXRDPrice,
             currency = SupportedCurrency.USD
         ),
-        mockNFTAddressForStakeClaim2 to FiatPrice(
+        mockNFTAddressForStakeClaim2.string to FiatPrice(
             price = mockResourceXRDPrice,
             currency = SupportedCurrency.USD
         )

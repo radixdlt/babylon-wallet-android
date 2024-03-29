@@ -38,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.FiatPrice
@@ -74,7 +75,7 @@ fun LazyListScope.stakingTab(
 
         assetsViewData.validatorsWithStakes.forEachIndexed { index, validatorWithStakes ->
             item(
-                key = validatorWithStakes.validator.address,
+                key = validatorWithStakes.validator.address.string,
                 contentType = { "validator-header" }
             ) {
                 ValidatorDetails(
@@ -342,7 +343,7 @@ fun ValidatorDetails(
             }
             cards
         }
-        val isCollapsed = state.isCollapsed(validatorWithStakes.validator.address)
+        val isCollapsed = state.isCollapsed(validatorWithStakes.validator.address.string)
         CollapsibleAssetCard(
             modifier = modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -353,7 +354,7 @@ fun ValidatorDetails(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        action.onCollectionClick(validatorWithStakes.validator.address)
+                        action.onCollectionClick(validatorWithStakes.validator.address.string)
                     }
                     .padding(RadixTheme.dimensions.paddingLarge),
                 validatorWithStakes = validatorWithStakes

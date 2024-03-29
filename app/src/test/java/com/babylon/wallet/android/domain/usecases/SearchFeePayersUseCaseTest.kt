@@ -15,6 +15,7 @@ import com.radixdlt.sargon.PerAssetTransfers
 import com.radixdlt.sargon.PerAssetTransfersOfFungibleResource
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.perAssetTransfers
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -180,7 +181,7 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<Validator>> {
+            override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> {
                 error("Not needed")
             }
 
