@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.gateway.extensions.stakeUnitResourceAddre
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.extensions.totalXRDStake
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.resources.Validator
@@ -18,9 +19,9 @@ data class ValidatorEntity(
     @PrimaryKey
     val address: ValidatorAddress,
     @ColumnInfo("stake_unit_resource_address")
-    val stakeUnitResourceAddress: String?,
+    val stakeUnitResourceAddress: ResourceAddress?,
     @ColumnInfo("claim_token_resource_address")
-    val claimTokenResourceAddress: String?,
+    val claimTokenResourceAddress: ResourceAddress?,
     @ColumnInfo("total_stake")
     val totalStake: BigDecimal?,
     val metadata: MetadataColumn?,
@@ -51,8 +52,8 @@ data class ValidatorEntity(
             Validator(
                 address = ValidatorAddress.init(item.address),
                 totalXrdStake = item.totalXRDStake,
-                stakeUnitResourceAddress = item.details?.stakeUnitResourceAddress.orEmpty(),
-                claimTokenResourceAddress = item.details?.claimTokenResourceAddress.orEmpty(),
+                stakeUnitResourceAddress = item.details?.stakeUnitResourceAddress?.let { ResourceAddress.init(it) },
+                claimTokenResourceAddress = item.details?.claimTokenResourceAddress?.let { ResourceAddress.init(it) },
                 metadata = metadata
             )
         }
