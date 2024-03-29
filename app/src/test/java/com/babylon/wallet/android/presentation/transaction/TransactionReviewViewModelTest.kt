@@ -50,6 +50,7 @@ import com.radixdlt.ret.NewEntities
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleResourceAddress
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -244,7 +245,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, 50u)
         )
         coEvery { getTransactionBadgesUseCase(any()) } returns Result.success(listOf(
-            Badge(address = NonFungibleResourceAddress.sampleMainnet())
+            Badge(address = ResourceAddress.sampleMainnet())
         ))
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(
             TransactionSigner.Notarization(txIdHash = sampleTxId, notarizedTransactionIntentHex = "",  endEpoch = 50u)
