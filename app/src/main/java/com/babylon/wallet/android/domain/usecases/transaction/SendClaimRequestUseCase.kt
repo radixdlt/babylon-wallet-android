@@ -6,7 +6,6 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.NonFungibleResourceAddress
 import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.stakesClaim
 import rdx.works.core.domain.assets.StakeClaim
@@ -37,7 +36,7 @@ class SendClaimRequestUseCase @Inject constructor(
 
                     SargonStakeClaim(
                         resourceAddress = NonFungibleResourceAddress.init(claim.resourceAddress),
-                        validatorAddress = ValidatorAddress.init(claim.validatorAddress),
+                        validatorAddress = claim.validatorAddress,
                         ids = nfts.map { NonFungibleLocalId.init(it.localId.code) },
                         amount = nfts.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO }.toDecimal192(),
                     )
@@ -64,7 +63,7 @@ class SendClaimRequestUseCase @Inject constructor(
                 stakeClaims = listOf(
                     SargonStakeClaim(
                         resourceAddress = NonFungibleResourceAddress.init(claim.resourceAddress),
-                        validatorAddress = ValidatorAddress.init(claim.validatorAddress),
+                        validatorAddress = claim.validatorAddress,
                         ids = listOf(NonFungibleLocalId.init(nft.localId.code)),
                         amount = (nft.claimAmountXrd ?: BigDecimal.ZERO).toDecimal192(),
                     )

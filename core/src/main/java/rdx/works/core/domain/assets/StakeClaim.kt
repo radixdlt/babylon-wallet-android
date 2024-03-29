@@ -1,6 +1,7 @@
 package rdx.works.core.domain.assets
 
 import android.net.Uri
+import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 
@@ -11,8 +12,8 @@ data class StakeClaim(
 
     override val resource: Resource.NonFungibleResource
         get() = nonFungibleResource
-    val validatorAddress: String
-        get() = nonFungibleResource.validatorAddress.orEmpty()
+    val validatorAddress: ValidatorAddress
+        get() = validator.address
 
     val resourceAddress: String
         get() = nonFungibleResource.resourceAddress

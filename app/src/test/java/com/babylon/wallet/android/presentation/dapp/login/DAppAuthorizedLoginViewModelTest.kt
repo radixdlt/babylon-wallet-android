@@ -5,19 +5,10 @@ package com.babylon.wallet.android.presentation.dapp.login
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import rdx.works.core.domain.resources.Validator
-import rdx.works.core.domain.assets.ValidatorWithStakes
-import rdx.works.core.domain.resources.Pool
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
-import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DappMessengerFake
@@ -33,8 +24,8 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.discriminant
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
@@ -50,7 +41,16 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
+import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -335,7 +335,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             error("Not needed")
         }
 
-        override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<Validator>> {
+        override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> {
             error("Not needed")
         }
 

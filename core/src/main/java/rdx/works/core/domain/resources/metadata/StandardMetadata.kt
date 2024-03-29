@@ -4,6 +4,8 @@ package rdx.works.core.domain.resources.metadata
 
 import android.net.Uri
 import androidx.core.net.toUri
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.AddressHelper
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import java.math.BigDecimal
@@ -51,12 +53,10 @@ fun List<Metadata>.keyImageUrl(): Uri? = findPrimitive(
     type = MetadataType.Url
 )?.value?.toUri()
 
-fun List<Metadata>.validatorAddress(): String? = findPrimitive(
+fun List<Metadata>.validatorAddress(): ValidatorAddress? = findPrimitive(
     key = ExplicitMetadataKey.VALIDATOR,
     type = MetadataType.Address
-)?.value?.takeIf { value ->
-    AddressHelper.isValidator(value)
-}
+)?.value?.let { runCatching { ValidatorAddress.init(it) }.getOrNull() }
 
 fun List<Metadata>.poolAddress(): String? = findPrimitive(
     key = ExplicitMetadataKey.POOL,

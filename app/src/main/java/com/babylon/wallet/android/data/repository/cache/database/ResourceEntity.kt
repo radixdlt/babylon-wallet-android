@@ -14,6 +14,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.Metadata
@@ -36,7 +38,7 @@ data class ResourceEntity(
     val divisibility: Int?,
     val behaviours: BehavioursColumn?,
     @ColumnInfo("validator_address")
-    val validatorAddress: String?,
+    val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
     val poolAddress: String?,
     val supply: BigDecimal?,
@@ -47,7 +49,7 @@ data class ResourceEntity(
     fun toResource(amount: BigDecimal?): Resource {
         val validatorAndPoolMetadata = listOf(
             validatorAddress?.let {
-                Metadata.Primitive(ExplicitMetadataKey.VALIDATOR.key, it, MetadataType.Address)
+                Metadata.Primitive(ExplicitMetadataKey.VALIDATOR.key, it.string, MetadataType.Address)
             },
             poolAddress?.let {
                 Metadata.Primitive(ExplicitMetadataKey.POOL.key, it, MetadataType.Address)

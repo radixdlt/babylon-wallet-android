@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Validator
 
 @Composable
@@ -34,7 +35,7 @@ fun ValidatorDetailsItem(validator: Validator, modifier: Modifier = Modifier, ic
             )
 
             ActionableAddressView(
-                address = validator.address,
+                address = validator.address.string,
                 textStyle = RadixTheme.typography.body2HighImportance,
                 textColor = RadixTheme.colors.gray2
             )
