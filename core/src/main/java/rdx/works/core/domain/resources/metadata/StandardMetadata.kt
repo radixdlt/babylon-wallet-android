@@ -85,11 +85,6 @@ fun List<Metadata>.claimEpoch(): Long? = findPrimitive(
     type = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.LONG)
 )?.value?.toLongOrNull()
 
-fun List<Metadata>.claimNFTAddress(): String? = findPrimitive(
-    key = ExplicitMetadataKey.CLAIM_NFT,
-    type = MetadataType.Address
-)?.value
-
 fun List<Metadata>.accountType(): AccountType? = findPrimitive(
     key = ExplicitMetadataKey.ACCOUNT_TYPE,
     type = MetadataType.String
@@ -100,34 +95,12 @@ fun List<Metadata>.tags(): List<String>? = findCollection(
     type = MetadataType.String
 )?.map { it.value }
 
-fun List<Metadata>.dAppDefinitions(): List<String> {
-    val dAppDefinitions = findCollection(
-        key = ExplicitMetadataKey.DAPP_DEFINITIONS,
-        type = MetadataType.Address
-    )?.map { it.value }.orEmpty()
-
-    val single = findPrimitive(
-        key = ExplicitMetadataKey.DAPP_DEFINITION,
-        type = MetadataType.Address
-    )?.value
-    return if (single != null) {
-        dAppDefinitions + single
-    } else {
-        dAppDefinitions
-    }
-}
-
 fun List<Metadata>.dAppDefinition(): String? {
     return findPrimitive(
         key = ExplicitMetadataKey.DAPP_DEFINITION,
         type = MetadataType.Address
     )?.value
 }
-
-fun List<Metadata>.relatedWebsites(): List<String>? = findCollection(
-    key = ExplicitMetadataKey.RELATED_WEBSITES,
-    type = MetadataType.Url
-)?.map { it.value }
 
 fun List<Metadata>.claimedWebsites(): List<String>? = findCollection(
     key = ExplicitMetadataKey.CLAIMED_WEBSITES,
