@@ -34,17 +34,11 @@ data class DApp(
     val isDappDefinition: Boolean
         get() = metadata.accountType() == AccountType.DAPP_DEFINITION
 
-    val definitionAddress: String?
-        get() = metadata.dAppDefinition()
-
     val claimedWebsites: List<String>
         get() = metadata.claimedWebsites().orEmpty()
 
     val claimedEntities: List<String>
         get() = metadata.claimedEntities().orEmpty()
-
-    val componentAddresses: List<String>
-        get() = claimedEntities.filter { it.startsWith("component_") }
 
     @Suppress("SwallowedException")
     fun isRelatedWith(origin: String): Boolean {
