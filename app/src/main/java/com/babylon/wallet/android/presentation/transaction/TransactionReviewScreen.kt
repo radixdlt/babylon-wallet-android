@@ -322,7 +322,7 @@ private fun TransactionPreviewContent(
                                     previewType = preview,
                                     onDAppClick = onDAppClick,
                                     onUnknownPoolsClick = { pools ->
-                                        onUnknownComponentsClick(pools.map { it.address }.toPersistentList())
+                                        onUnknownComponentsClick(pools.map { it.address.string }.toPersistentList())
                                     }
                                 )
                             }

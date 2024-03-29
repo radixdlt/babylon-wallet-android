@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
@@ -168,7 +169,7 @@ interface StateDao {
         WHERE PoolEntity.address IN (:addresses) AND account_state_version = :atStateVersion
     """
     )
-    fun getPoolDetails(addresses: Set<String>, atStateVersion: Long): List<PoolWithResourceResponse>
+    fun getPoolDetails(addresses: Set<PoolAddress>, atStateVersion: Long): List<PoolWithResourceResponse>
 
     @Query(
         """
@@ -177,7 +178,7 @@ interface StateDao {
             WHERE PoolDAppJoin.pool_address = :poolAddress
         """
     )
-    fun getPoolAssociatedDApp(poolAddress: String): DAppEntity?
+    fun getPoolAssociatedDApp(poolAddress: PoolAddress): DAppEntity?
 
     @Query(
         """
@@ -186,7 +187,7 @@ interface StateDao {
         WHERE RE.pool_address = :poolAddress AND RE.divisibility IS NOT NULL AND RE.supply IS NOT NULL AND RE.synced >= :minValidity
     """
     )
-    fun getPoolResource(poolAddress: String, minValidity: Long): ResourceEntity?
+    fun getPoolResource(poolAddress: PoolAddress, minValidity: Long): ResourceEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertValidators(validators: List<ValidatorEntity>)
