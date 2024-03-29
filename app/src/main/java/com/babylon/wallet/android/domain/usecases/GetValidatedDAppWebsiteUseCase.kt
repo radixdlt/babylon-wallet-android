@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
-import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.DApp
 import javax.inject.Inject
 

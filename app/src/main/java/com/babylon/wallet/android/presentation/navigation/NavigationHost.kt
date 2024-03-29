@@ -72,7 +72,6 @@ import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
-import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.core.AddressHelper
 import rdx.works.core.domain.resources.XrdResource
