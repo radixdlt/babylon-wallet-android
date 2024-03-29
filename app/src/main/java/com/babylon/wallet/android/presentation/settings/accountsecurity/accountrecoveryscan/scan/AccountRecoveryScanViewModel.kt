@@ -11,12 +11,15 @@ import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -30,6 +33,7 @@ import rdx.works.profile.domain.AddRecoveredAccountsToProfileUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.factorSourceByIdValue
 import javax.inject.Inject
 
@@ -134,8 +138,14 @@ class AccountRecoveryScanViewModel @Inject constructor(
                     nextDerivationPathOffset = derivedAccountsWithNextDerivationPath.nextDerivationPathOffset
                     resolveStateFromDerivedAccounts(derivedAccountsWithNextDerivationPath.derivedAccounts)
                 }
-            }.onFailure {
-                sendEvent(Event.CloseScan)
+            }.onFailure { e ->
+                if (e is ProfileException.NoMnemonic) {
+                    _state.update { it.copy(isNoMnemonicErrorVisible = true) }
+                } else {
+                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(e)) }
+                    delay(Constants.SNACKBAR_SHOW_DURATION_MS)
+                    sendEvent(Event.CloseScan)
+                }
             }
         }
     }
@@ -228,6 +238,10 @@ class AccountRecoveryScanViewModel @Inject constructor(
         }
     }
 
+    fun onMessageShown() {
+        _state.update { it.copy(uiMessage = null) }
+    }
+
     fun onBackClick() {
         viewModelScope.launch {
             sendEvent(Event.OnBackClick)
@@ -247,7 +261,8 @@ class AccountRecoveryScanViewModel @Inject constructor(
         val activeAccounts: PersistentList<Network.Account> = persistentListOf(),
         val inactiveAccounts: PersistentList<Selectable<Network.Account>> = persistentListOf(),
         val isScanningNetwork: Boolean = false,
-        val isNoMnemonicErrorVisible: Boolean = false
+        val isNoMnemonicErrorVisible: Boolean = false,
+        val uiMessage: UiMessage? = null
     ) : UiState {
 
         enum class ContentState {
