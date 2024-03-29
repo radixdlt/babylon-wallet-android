@@ -19,6 +19,7 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
@@ -263,7 +264,7 @@ class AccountsStateCache @Inject constructor(
                 logger.d("\uD83D\uDCBD Inserting pools")
 
                 val newPools = runCatching {
-                    api.fetchPools(unknownPools, stateVersion)
+                    api.fetchPools(unknownPools.map { it.string }.toSet(), stateVersion)
                 }.onFailure { error ->
                     cacheErrors.value = error
                 }.getOrNull() ?: return@transform
@@ -314,7 +315,7 @@ class AccountsStateCache @Inject constructor(
         @Suppress("LongMethod")
         fun toAccountAddressWithAssets(
             accountAddress: String,
-            pools: Map<String, Pool>,
+            pools: Map<PoolAddress, Pool>,
             validators: Map<ValidatorAddress, Validator>
         ): AccountAddressWithAssets? {
             if (stateVersion == null) return null

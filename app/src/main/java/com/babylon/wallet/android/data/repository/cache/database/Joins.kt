@@ -13,6 +13,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.PoolAddress
 import java.math.BigDecimal
 
 @Entity(
@@ -132,7 +133,7 @@ data class AccountNFTJoin(
 )
 data class PoolResourceJoin(
     @ColumnInfo("pool_address")
-    val poolAddress: String,
+    val poolAddress: PoolAddress,
     @ColumnInfo("resource_address")
     val resourceAddress: String,
     val amount: BigDecimal?,
@@ -142,7 +143,7 @@ data class PoolResourceJoin(
 
     companion object {
         fun FungibleResourcesCollectionItem.asPoolResourceJoin(
-            poolAddress: String,
+            poolAddress: PoolAddress,
             syncInfo: SyncInfo
         ): Pair<PoolResourceJoin, ResourceEntity> = PoolResourceJoin(
             poolAddress = poolAddress,
@@ -173,7 +174,7 @@ data class PoolResourceJoin(
 )
 data class PoolDAppJoin(
     @ColumnInfo("pool_address")
-    val poolAddress: String,
+    val poolAddress: PoolAddress,
     @ColumnInfo("dApp_definition_address")
     val dAppDefinitionAddress: AccountAddress,
 )

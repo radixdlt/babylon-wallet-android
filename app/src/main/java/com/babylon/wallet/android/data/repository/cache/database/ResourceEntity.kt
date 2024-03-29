@@ -14,6 +14,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -40,7 +41,7 @@ data class ResourceEntity(
     @ColumnInfo("validator_address")
     val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
-    val poolAddress: String?,
+    val poolAddress: PoolAddress?,
     val supply: BigDecimal?,
     val synced: Instant
 ) {
@@ -52,7 +53,7 @@ data class ResourceEntity(
                 Metadata.Primitive(ExplicitMetadataKey.VALIDATOR.key, it.string, MetadataType.Address)
             },
             poolAddress?.let {
-                Metadata.Primitive(ExplicitMetadataKey.POOL.key, it, MetadataType.Address)
+                Metadata.Primitive(ExplicitMetadataKey.POOL.key, it.string, MetadataType.Address)
             }
         ).mapNotNull { it }
 

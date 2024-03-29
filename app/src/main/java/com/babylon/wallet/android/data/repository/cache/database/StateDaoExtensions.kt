@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.repository.cache.database.AccountNFTJoin.Companion.asAccountNFTJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.resources.Pool
@@ -12,8 +13,8 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 
 @Suppress("UnsafeCallOnNullableType")
-fun StateDao.getCachedPools(poolAddresses: Set<String>, atStateVersion: Long): Map<String, Pool> {
-    val pools = mutableMapOf<String, Pool>()
+fun StateDao.getCachedPools(poolAddresses: Set<PoolAddress>, atStateVersion: Long): Map<PoolAddress, Pool> {
+    val pools = mutableMapOf<PoolAddress, Pool>()
     getPoolDetails(poolAddresses, atStateVersion).forEach { join ->
         // If pool's resource is not up to date or has no details, all pool info is considered stale
         val poolResource = getPoolResource(join.address, resourcesCacheValidity()) ?: return@forEach

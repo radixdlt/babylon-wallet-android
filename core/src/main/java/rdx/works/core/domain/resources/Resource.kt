@@ -2,6 +2,7 @@ package rdx.works.core.domain.resources
 
 import android.net.Uri
 import com.radixdlt.derivation.model.NetworkId
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -62,7 +63,7 @@ sealed class Resource {
             metadata.validatorAddress()
         }
 
-        val poolAddress: String? by lazy {
+        val poolAddress: PoolAddress? by lazy {
             metadata.poolAddress()
         }
 

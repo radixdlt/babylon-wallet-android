@@ -5,6 +5,7 @@ import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.assets.ValidatorWithStakes
@@ -38,7 +39,7 @@ open class StateRepositoryFake : StateRepository {
     override suspend fun getResources(addresses: Set<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>> =
         Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> = Result.failure(RuntimeException("Not implemented"))
+    override suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>> = Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> =
         Result.failure(RuntimeException("Not implemented"))

@@ -4,9 +4,9 @@ package rdx.works.core.domain.resources.metadata
 
 import android.net.Uri
 import androidx.core.net.toUri
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
-import rdx.works.core.AddressHelper
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import java.math.BigDecimal
 
@@ -58,12 +58,10 @@ fun List<Metadata>.validatorAddress(): ValidatorAddress? = findPrimitive(
     type = MetadataType.Address
 )?.value?.let { runCatching { ValidatorAddress.init(it) }.getOrNull() }
 
-fun List<Metadata>.poolAddress(): String? = findPrimitive(
+fun List<Metadata>.poolAddress(): PoolAddress? = findPrimitive(
     key = ExplicitMetadataKey.POOL,
     type = MetadataType.Address
-)?.value?.takeIf { value ->
-    AddressHelper.isPool(value)
-}
+)?.value?.let { runCatching { PoolAddress.init(it) }.getOrNull() }
 
 fun List<Metadata>.ownerBadge(): OwnerBadge? = findPrimitive(
     key = ExplicitMetadataKey.OWNER_BADGE,

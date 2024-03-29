@@ -10,6 +10,8 @@ import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoin.Companion.asPoolResourceJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.resources.metadata.poolUnit
 
 @Entity(
@@ -26,7 +28,7 @@ import rdx.works.core.domain.resources.metadata.poolUnit
 )
 data class PoolEntity(
     @PrimaryKey
-    val address: String,
+    val address: PoolAddress,
     val metadata: MetadataColumn?,
     @ColumnInfo("resource_address")
     val resourceAddress: String
@@ -60,7 +62,7 @@ fun StateEntityDetailsResponseItem.asPoolEntity(): PoolEntity? {
     val metadata = this.metadata.toMetadata()
     val poolUnitResourceAddress = metadata.poolUnit() ?: return null
     return PoolEntity(
-        address = address,
+        address = PoolAddress.init(address),
         metadata = MetadataColumn(metadata),
         resourceAddress = poolUnitResourceAddress
     )
