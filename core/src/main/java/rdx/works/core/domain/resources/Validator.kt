@@ -17,8 +17,8 @@ import java.math.BigDecimal
 data class Validator(
     val address: ValidatorAddress,
     val totalXrdStake: BigDecimal?,
-    val stakeUnitResourceAddress: String? = null,
-    val claimTokenResourceAddress: String? = null,
+    val stakeUnitResourceAddress: ResourceAddress? = null,
+    val claimTokenResourceAddress: ResourceAddress? = null,
     val metadata: List<Metadata> = emptyList()
 ) {
     val name: String
@@ -36,8 +36,8 @@ data class Validator(
             override fun invoke(): Validator = Validator(
                 address = ValidatorAddress.sampleMainnet(),
                 totalXrdStake = 10000.toBigDecimal(),
-                stakeUnitResourceAddress = ResourceAddress.sampleMainnet.candy.string,
-                claimTokenResourceAddress = ResourceAddress.sampleMainnet.nonFungibleGCMembership.string,
+                stakeUnitResourceAddress = ResourceAddress.sampleMainnet.candy,
+                claimTokenResourceAddress = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
                 metadata = listOf(
                     Metadata.Primitive(
                         key = ExplicitMetadataKey.NAME.key,
@@ -65,8 +65,8 @@ data class Validator(
             override fun other(): Validator = Validator(
                 address = ValidatorAddress.sampleMainnet(),
                 totalXrdStake = 20000.toBigDecimal(),
-                stakeUnitResourceAddress = ResourceAddress.sampleMainnet.candy.string,
-                claimTokenResourceAddress = ResourceAddress.sampleMainnet.nonFungibleGCMembership.string,
+                stakeUnitResourceAddress = ResourceAddress.sampleMainnet.candy,
+                claimTokenResourceAddress = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
                 metadata = listOf(
                     Metadata.Primitive(
                         key = ExplicitMetadataKey.NAME.key,

@@ -298,7 +298,7 @@ val mockAccountsWithMockAssets = listOf(
                     ),
                     validator = Validator.sampleMainnet().copy(
                         totalXrdStake = BigDecimal(27335.0901),
-                        claimTokenResourceAddress = mockNFTAddressForStakeClaim1.string
+                        claimTokenResourceAddress = mockNFTAddressForStakeClaim1
                     )
                 ),
                 StakeClaim( // Total fiat value of stake claim 2: 1007.32326
@@ -328,7 +328,7 @@ val mockAccountsWithMockAssets = listOf(
                     ),
                     validator = Validator.sampleMainnet.other().copy(
                         totalXrdStake = BigDecimal(11075),
-                        claimTokenResourceAddress = mockNFTAddressForStakeClaim2.string,
+                        claimTokenResourceAddress = mockNFTAddressForStakeClaim2,
                     )
                 )
             )
