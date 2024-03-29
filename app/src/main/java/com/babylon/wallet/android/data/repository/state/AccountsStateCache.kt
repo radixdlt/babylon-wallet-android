@@ -19,7 +19,9 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -347,7 +349,7 @@ class AccountsStateCache @Inject constructor(
                     fungiblesIterator.remove()
                 }
 
-                val validatorDetails = stakeUnitAddressToValidator[fungible.resourceAddress]?.takeIf { validator ->
+                val validatorDetails = stakeUnitAddressToValidator[ResourceAddress.init(fungible.resourceAddress)]?.takeIf { validator ->
                     // The fungible claims that it is a LSU,
                     // so we need to check if the validator points back to this resource
                     validator.address == fungible.validatorAddress
@@ -364,7 +366,11 @@ class AccountsStateCache @Inject constructor(
             while (nonFungiblesIterator.hasNext()) {
                 val nonFungible = nonFungiblesIterator.next()
 
-                val validatorDetails = claimTokenAddressToValidator[nonFungible.resourceAddress]?.takeIf { validator ->
+                val validatorDetails = claimTokenAddressToValidator[
+                    ResourceAddress.init(
+                        nonFungible.resourceAddress
+                    )
+                ]?.takeIf { validator ->
                     // The non-fungible claims that it is a claim token,
                     // so we need to check if the validator points back to this resource
                     validator.address == nonFungible.validatorAddress

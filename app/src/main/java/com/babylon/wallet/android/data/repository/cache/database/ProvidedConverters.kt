@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository.cache.database
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -70,6 +71,17 @@ class StateDatabaseConverters {
     @TypeConverter
     fun instantToLong(date: Instant?): Long? {
         return date?.toEpochMilli()
+    }
+
+    // ResourceAddress
+    @TypeConverter
+    fun stringToResourceAddress(resourceAddress: String?): ResourceAddress? {
+        return resourceAddress?.let { ResourceAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun resourceAddressToString(resourceAddress: ResourceAddress?): String? {
+        return resourceAddress?.string
     }
 
     // AccountAddress
