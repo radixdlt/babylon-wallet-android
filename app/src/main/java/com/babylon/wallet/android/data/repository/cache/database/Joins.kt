@@ -12,6 +12,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResou
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
+import com.radixdlt.sargon.AccountAddress
 import java.math.BigDecimal
 
 @Entity(
@@ -174,5 +175,5 @@ data class PoolDAppJoin(
     @ColumnInfo("pool_address")
     val poolAddress: String,
     @ColumnInfo("dApp_definition_address")
-    val dAppDefinitionAddress: String,
+    val dAppDefinitionAddress: AccountAddress,
 )

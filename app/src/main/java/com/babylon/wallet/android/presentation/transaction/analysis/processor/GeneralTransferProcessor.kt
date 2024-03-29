@@ -7,6 +7,9 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.NonFungibleResourceAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -22,10 +25,11 @@ class GeneralTransferProcessor @Inject constructor(
     private val resolveComponentAddressesUseCase: ResolveComponentAddressesUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.General> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
-        val badgesAddresses = summary.presentedProofs.map { entry ->
-            entry.value.map { it.resourceAddress }
-        }.flatten().toSet()
-        val badges = getTransactionBadgesUseCase(accountProofs = badgesAddresses)
+        val badges = getTransactionBadgesUseCase(
+            addresses = summary.presentedProofs.map { entry ->
+                entry.value.mapNotNull { runCatching { NonFungibleResourceAddress.init(it.resourceAddress) }.getOrNull() }
+            }.flatten().toSet()
+        ).getOrThrow()
         val dApps = summary.resolveDApps()
         val allOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
         val assets = resolveAssetsFromAddressUseCase(
@@ -52,7 +56,7 @@ class GeneralTransferProcessor @Inject constructor(
         encounteredEntities.filter { it.entityType() == EntityType.GLOBAL_GENERIC_COMPONENT }
             .map { address ->
                 async {
-                    resolveComponentAddressesUseCase.invoke(address.addressString())
+                    resolveComponentAddressesUseCase.invoke(ComponentAddress.init(address.addressString()))
                 }
             }
             .awaitAll()

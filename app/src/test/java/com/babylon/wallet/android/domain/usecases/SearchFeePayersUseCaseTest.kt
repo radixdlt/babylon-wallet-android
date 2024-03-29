@@ -8,6 +8,7 @@ import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AssetsTransfersRecipient
+import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.PerAssetFungibleResource
 import com.radixdlt.sargon.PerAssetFungibleTransfer
 import com.radixdlt.sargon.PerAssetTransfers
@@ -203,7 +204,11 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getDAppsDetails(definitionAddresses: List<String>, isRefreshing: Boolean): Result<List<DApp>> {
+            override suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>> {
+                error("Not needed")
+            }
+
+            override suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>> {
                 error("Not needed")
             }
 

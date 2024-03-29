@@ -32,7 +32,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.AccountAddress
 import kotlinx.collections.immutable.toImmutableList
 import rdx.works.core.domain.DApp
 
@@ -40,7 +40,7 @@ import rdx.works.core.domain.DApp
 fun AuthorizedDAppsScreen(
     viewModel: AuthorizedDappsViewModel,
     onBackClick: () -> Unit,
-    onDAppClick: (String) -> Unit,
+    onDAppClick: (AccountAddress) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -58,7 +58,7 @@ private fun AuthorizedDAppsContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     state: AuthorizedDappsUiState,
-    onDAppClick: (String) -> Unit,
+    onDAppClick: (AccountAddress) -> Unit,
     onMessageShown: () -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
@@ -111,7 +111,7 @@ private fun AuthorizedDAppsContent(
                     items(state.dApps) { dApp ->
                         DappCard(
                             modifier = Modifier.throttleClickable {
-                                onDAppClick(dApp.dAppAddress.string)
+                                onDAppClick(dApp.dAppAddress)
                             },
                             dApp = dApp
                         )

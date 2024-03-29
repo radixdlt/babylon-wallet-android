@@ -49,9 +49,11 @@ import com.radixdlt.ret.FeeSummary
 import com.radixdlt.ret.NewEntities
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NonFungibleResourceAddress
 import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -230,7 +232,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         super.setUp()
         val dApp = DApp.sample()
         coEvery {
-            getDAppsUseCase(dApp.dAppAddress.string, false)
+            getDAppsUseCase(dApp.dAppAddress, false)
         } returns Result.success(dApp)
         every { exceptionMessageProvider.throwableMessage(any()) } returns ""
         every { deviceCapabilityHelper.isDeviceSecure() } returns true
@@ -241,9 +243,9 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(
             SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, 50u)
         )
-        coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
-            Badge(address = "")
-        )
+        coEvery { getTransactionBadgesUseCase(any()) } returns Result.success(listOf(
+            Badge(address = NonFungibleResourceAddress.sampleMainnet())
+        ))
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(
             TransactionSigner.Notarization(txIdHash = sampleTxId, notarizedTransactionIntentHex = "",  endEpoch = 50u)
         )

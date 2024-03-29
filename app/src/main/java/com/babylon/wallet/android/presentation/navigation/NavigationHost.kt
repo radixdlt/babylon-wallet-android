@@ -334,7 +334,7 @@ fun NavigationHost(
                 navController.personaEditScreen(it)
             },
             onDAppClick = {
-                navController.dAppDetailsDialog(dAppDefinitionAddress = it.dAppAddress.string)
+                navController.dAppDetailsDialog(dAppDefinitionAddress = it.dAppAddress)
             }
         )
         personaEditScreen(onBackClick = {
@@ -379,7 +379,7 @@ fun NavigationHost(
                 )
             },
             onDAppClick = { dApp ->
-                navController.dAppDetailsDialog(dAppDefinitionAddress = dApp.dAppAddress.string)
+                navController.dAppDetailsDialog(dAppDefinitionAddress = dApp.dAppAddress)
             }
         )
         transferScreen(

@@ -3,6 +3,8 @@ package com.babylon.wallet.android.fakes
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ComponentAddress
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Pool
@@ -16,7 +18,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 import java.lang.RuntimeException
 import java.math.BigDecimal
 
-open class StateRepositoryFake: StateRepository {
+open class StateRepositoryFake : StateRepository {
     override fun observeAccountsOnLedger(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>> = flowOf()
 
     override suspend fun getNextNFTsPage(
@@ -49,7 +51,10 @@ open class StateRepositoryFake: StateRepository {
     override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>> =
         Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun getDAppsDetails(definitionAddresses: List<String>, isRefreshing: Boolean): Result<List<DApp>> =
+    override suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>> =
+        Result.failure(RuntimeException("Not implemented"))
+
+    override suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>> =
         Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit> =

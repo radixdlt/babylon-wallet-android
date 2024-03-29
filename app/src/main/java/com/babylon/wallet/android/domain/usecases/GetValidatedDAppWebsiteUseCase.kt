@@ -12,7 +12,7 @@ class GetValidatedDAppWebsiteUseCase @Inject constructor(
     suspend operator fun invoke(dApp: DApp): Result<String?> {
         val website = dApp.claimedWebsites.firstOrNull() ?: return Result.success(null)
         return wellKnownDAppDefinitionRepository.getWellKnownDAppDefinitions(website).map { dAppDefinitions ->
-            if (dAppDefinitions.contains(dApp.dAppAddress.string)) {
+            if (dAppDefinitions.contains(dApp.dAppAddress)) {
                 website
             } else {
                 null
