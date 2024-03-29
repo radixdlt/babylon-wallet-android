@@ -115,7 +115,7 @@ private fun DAppDetailsDialogContent(
                 state.dAppWithResources?.dApp?.dAppAddress?.let { dAppAddress ->
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
                     DappDefinitionAddressRow(
-                        dappDefinitionAddress = dAppAddress.string,
+                        dappDefinitionAddress = dAppAddress,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = RadixTheme.dimensions.paddingDefault)

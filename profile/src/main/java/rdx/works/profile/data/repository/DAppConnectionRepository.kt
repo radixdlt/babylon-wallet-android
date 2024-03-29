@@ -1,5 +1,8 @@
 package rdx.works.profile.data.repository
 
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -22,44 +25,44 @@ import javax.inject.Inject
 @Suppress("TooManyFunctions")
 interface DAppConnectionRepository {
 
-    suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp?
+    suspend fun getAuthorizedDapp(dAppDefinitionAddress: AccountAddress): Network.AuthorizedDapp?
     fun getAuthorizedDapps(): Flow<List<Network.AuthorizedDapp>>
 
     suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: Network.AuthorizedDapp)
 
     suspend fun getDAppConnectedPersona(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String
     ): Network.AuthorizedDapp.AuthorizedPersonaSimple?
 
     suspend fun dAppAuthorizedPersonaAccountAddresses(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String,
         numberOfAccounts: Int,
         quantifier: RequestedNumber.Quantifier
     ): List<String>
 
     suspend fun dAppAuthorizedPersonaHasAllDataFields(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String,
         requestedFieldKinds: Map<PersonaData.PersonaDataField.Kind, Int>
     ): Boolean
 
     suspend fun updateDappAuthorizedPersonaSharedAccounts(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String,
         sharedAccounts: Shared<String>
     ): Network.AuthorizedDapp
 
     suspend fun deletePersonaForDapp(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String
     )
 
     fun getAuthorizedDappsByPersona(personaAddress: String): Flow<List<Network.AuthorizedDapp>>
 
-    fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?>
-    suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String)
+    fun getAuthorizedDappFlow(dAppDefinitionAddress: AccountAddress): Flow<Network.AuthorizedDapp?>
+    suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: AccountAddress)
 
     suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<PersonaDataEntryID>)
 }
@@ -70,14 +73,14 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase
 ) : DAppConnectionRepository {
 
-    override fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?> {
+    override fun getAuthorizedDappFlow(dAppDefinitionAddress: AccountAddress): Flow<Network.AuthorizedDapp?> {
         return profileRepository.profile.map {
             Timber.d("Authorized dapps $it")
             it.getAuthorizedDapp(dAppDefinitionAddress)
         }
     }
 
-    override suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp? {
+    override suspend fun getAuthorizedDapp(dAppDefinitionAddress: AccountAddress): Network.AuthorizedDapp? {
         return profileRepository.profile.first().getAuthorizedDapp(dAppDefinitionAddress)
     }
 
@@ -93,7 +96,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         profileRepository.saveProfile(updatedProfile)
     }
 
-    override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String) {
+    override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: AccountAddress) {
         val profile = profileRepository.profile.first()
 
         getAuthorizedDapp(dAppDefinitionAddress)?.let {
@@ -103,7 +106,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getDAppConnectedPersona(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String
     ): Network.AuthorizedDapp.AuthorizedPersonaSimple? {
         return getAuthorizedDapp(dAppDefinitionAddress)?.referencesToAuthorizedPersonas?.firstOrNull {
@@ -112,7 +115,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun dAppAuthorizedPersonaAccountAddresses(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String,
         numberOfAccounts: Int,
         quantifier: RequestedNumber.Quantifier
@@ -131,7 +134,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
 
     @Suppress("UnsafeCallOnNullableType")
     override suspend fun dAppAuthorizedPersonaHasAllDataFields(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String,
         requestedFieldKinds: Map<PersonaData.PersonaDataField.Kind, Int>
     ): Boolean {
@@ -156,7 +159,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateDappAuthorizedPersonaSharedAccounts(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String,
         sharedAccounts: Shared<String>
     ): Network.AuthorizedDapp {
@@ -172,7 +175,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun deletePersonaForDapp(dAppDefinitionAddress: String, personaAddress: String) {
+    override suspend fun deletePersonaForDapp(dAppDefinitionAddress: AccountAddress, personaAddress: String) {
         getAuthorizedDapp(dAppDefinitionAddress)?.let { dapp ->
             val updatedDapp = dapp.copy(
                 referencesToAuthorizedPersonas = dapp.referencesToAuthorizedPersonas.filter {
@@ -180,7 +183,7 @@ class DAppConnectionRepositoryImpl @Inject constructor(
                 }
             )
             if (updatedDapp.referencesToAuthorizedPersonas.isEmpty()) {
-                deleteAuthorizedDapp(dapp.dAppDefinitionAddress)
+                deleteAuthorizedDapp(AccountAddress.init(dapp.dAppDefinitionAddress))
             } else {
                 updateOrCreateAuthorizedDApp(updatedDapp)
             }
@@ -209,8 +212,8 @@ class DAppConnectionRepositoryImpl @Inject constructor(
     }
 }
 
-private fun Profile.getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp? {
-    return getAuthorizedDapps().firstOrNull { it.dAppDefinitionAddress == dAppDefinitionAddress }
+private fun Profile.getAuthorizedDapp(dAppDefinitionAddress: AccountAddress): Network.AuthorizedDapp? {
+    return getAuthorizedDapps().firstOrNull { it.dAppDefinitionAddress == dAppDefinitionAddress.string }
 }
 
 private fun Profile.getAuthorizedDapps(): List<Network.AuthorizedDapp> {

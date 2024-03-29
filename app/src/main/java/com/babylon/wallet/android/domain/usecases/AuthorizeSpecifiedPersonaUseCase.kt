@@ -11,6 +11,8 @@ import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.babylon.wallet.android.utils.toISO8601String
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.repository.DAppConnectionRepository
@@ -47,7 +49,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             }
             (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.let {
                 val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
-                    dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
+                    dAppDefinitionAddress = AccountAddress.init(request.metadata.dAppDefinitionAddress)
                 )
                 if (authorizedDapp == null) {
                     respondWithInvalidPersona(incomingRequest)
@@ -241,7 +243,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         val handledRequest = checkNotNull(request.ongoingAccountsRequestItem)
         if (request.resetRequestItem?.personaData != true && request.resetRequestItem?.accounts != true) {
             val potentialOngoingAddresses = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                authorizedDapp.dAppDefinitionAddress,
+                AccountAddress.init(authorizedDapp.dAppDefinitionAddress),
                 authorizedPersonaSimple.identityAddress,
                 handledRequest.numberOfValues.quantity,
                 handledRequest.numberOfValues.toProfileShareAccountsQuantifier()
@@ -262,7 +264,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     ): Boolean {
         val requestedFieldKinds = requestItem.toRequiredFields()
         return dAppConnectionRepository.dAppAuthorizedPersonaHasAllDataFields(
-            dApp.dAppDefinitionAddress,
+            AccountAddress.init(dApp.dAppDefinitionAddress),
             personaAddress,
             requestedFieldKinds.fields.associate { it.kind to it.numberOfValues.quantity }
         )

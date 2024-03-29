@@ -90,7 +90,7 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
                 )
             )
         )
-        coEvery { getDAppWithAssociatedResourcesUseCase(dApp.dAppAddress.string, false) } returns
+        coEvery { getDAppWithAssociatedResourcesUseCase(dApp.dAppAddress, false) } returns
                 Result.success(DAppWithResources(dApp = dApp))
     }
 

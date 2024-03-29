@@ -14,19 +14,19 @@ import java.time.Instant
 data class DAppEntity(
     @PrimaryKey
     @ColumnInfo(name = "definition_address")
-    val definitionAddress: String,
+    val definitionAddress: AccountAddress,
     val metadata: MetadataColumn?,
     val synced: Instant
 ) {
 
     fun toDApp() = DApp(
-        dAppAddress = AccountAddress.init(definitionAddress),
+        dAppAddress = definitionAddress,
         metadata = metadata?.metadata.orEmpty()
     )
 
     companion object {
         fun from(item: StateEntityDetailsResponseItem, syncedAt: Instant) = DAppEntity(
-            definitionAddress = item.address,
+            definitionAddress = AccountAddress.init(item.address),
             metadata = item.explicitMetadata?.toMetadata()?.let { MetadataColumn(it) },
             synced = syncedAt
         )

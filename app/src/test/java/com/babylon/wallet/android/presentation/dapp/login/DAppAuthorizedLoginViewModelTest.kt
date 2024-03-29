@@ -30,6 +30,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthori
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.discriminant
@@ -353,11 +354,9 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             error("Not needed")
         }
 
-        override suspend fun getDAppsDetails(definitionAddresses: List<String>, isRefreshing: Boolean): Result<List<DApp>> {
+        override suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>> {
             return Result.success(
-                definitionAddresses.map {
-                    AccountAddress.init(it)
-                }.mapIndexed { index, accountAddress ->
+                definitionAddresses.mapIndexed { index, accountAddress ->
                     DApp(
                         dAppAddress = accountAddress,
                         metadata = listOf(
@@ -366,6 +365,10 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
                     )
                 }
             )
+        }
+
+        override suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>> {
+            error("Not needed")
         }
 
         override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit> {

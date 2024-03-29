@@ -7,6 +7,8 @@ import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -15,7 +17,7 @@ import javax.inject.Inject
 
 interface WellKnownDAppDefinitionRepository {
 
-    suspend fun getWellKnownDAppDefinitions(origin: String): Result<List<String>>
+    suspend fun getWellKnownDAppDefinitions(origin: String): Result<List<AccountAddress>>
 }
 
 class WellKnownDAppDefinitionRepositoryImpl @Inject constructor(
@@ -23,15 +25,15 @@ class WellKnownDAppDefinitionRepositoryImpl @Inject constructor(
     @JsonConverterFactory private val jsonConverterFactory: Converter.Factory,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : WellKnownDAppDefinitionRepository {
-    override suspend fun getWellKnownDAppDefinitions(origin: String): Result<List<String>> = withContext(ioDispatcher) {
+    override suspend fun getWellKnownDAppDefinitions(origin: String): Result<List<AccountAddress>> = withContext(ioDispatcher) {
         val api = buildApi<DAppDefinitionApi>(
             baseUrl = origin,
             okHttpClient = okHttpClient,
             jsonConverterFactory = jsonConverterFactory
         )
 
-        api.wellKnownDAppDefinition().toResult().map { wellKnownFile ->
-            wellKnownFile.dApps.map { it.dAppDefinitionAddress }
+        api.wellKnownDAppDefinition().toResult().mapCatching { wellKnownFile ->
+            wellKnownFile.dApps.map { AccountAddress.init(it.dAppDefinitionAddress) }
         }.onFailure {
             RadixWalletException.DappVerificationException.RadixJsonNotFound
         }

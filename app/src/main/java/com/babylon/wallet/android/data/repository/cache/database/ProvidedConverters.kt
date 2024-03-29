@@ -2,6 +2,9 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -66,5 +69,16 @@ class StateDatabaseConverters {
     @TypeConverter
     fun instantToLong(date: Instant?): Long? {
         return date?.toEpochMilli()
+    }
+
+    // AccountAddress
+    @TypeConverter
+    fun stringToAccountAddress(accountAddress: String?): AccountAddress? {
+        return accountAddress?.let { AccountAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun accountAddressToString(accountAddress: AccountAddress?): String? {
+        return accountAddress?.string
     }
 }

@@ -28,11 +28,11 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
 
     private var authorizedDApp: Network.AuthorizedDapp? = null
 
-    override suspend fun getAuthorizedDapp(dAppDefinitionAddress: String): Network.AuthorizedDapp? {
+    override suspend fun getAuthorizedDapp(dAppDefinitionAddress: AccountAddress): Network.AuthorizedDapp? {
         return when (state) {
             InitialState.NoDapp -> null
             InitialState.PredefinedDapp -> {
-                val dApp = DApp.sample()
+                val dApp = DApp.sample().copy(dAppAddress = dAppDefinitionAddress)
                 authorizedDApp = Network.AuthorizedDapp(
                     NetworkId.MAINNET.discriminant.toInt(), dApp.dAppAddress.string, dApp.name, listOf(
                         Network.AuthorizedDapp.AuthorizedPersonaSimple(
@@ -105,14 +105,14 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     }
 
     override suspend fun getDAppConnectedPersona(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String
     ): Network.AuthorizedDapp.AuthorizedPersonaSimple? {
         return null
     }
 
     override suspend fun dAppAuthorizedPersonaAccountAddresses(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String,
         numberOfAccounts: Int,
         quantifier: RequestedNumber.Quantifier
@@ -121,7 +121,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     }
 
     override suspend fun dAppAuthorizedPersonaHasAllDataFields(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String,
         requestedFieldKinds: Map<PersonaData.PersonaDataField.Kind, Int>
     ): Boolean {
@@ -129,27 +129,27 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     }
 
     override suspend fun updateDappAuthorizedPersonaSharedAccounts(
-        dAppDefinitionAddress: String,
+        dAppDefinitionAddress: AccountAddress,
         personaAddress: String,
         sharedAccounts: Shared<String>
     ): Network.AuthorizedDapp {
         return checkNotNull(authorizedDApp)
     }
 
-    override suspend fun deletePersonaForDapp(dAppDefinitionAddress: String, personaAddress: String) {
+    override suspend fun deletePersonaForDapp(dAppDefinitionAddress: AccountAddress, personaAddress: String) {
     }
 
     override fun getAuthorizedDappsByPersona(personaAddress: String): Flow<List<Network.AuthorizedDapp>> {
         return getAuthorizedDapps()
     }
 
-    override fun getAuthorizedDappFlow(dAppDefinitionAddress: String): Flow<Network.AuthorizedDapp?> {
+    override fun getAuthorizedDappFlow(dAppDefinitionAddress: AccountAddress): Flow<Network.AuthorizedDapp?> {
         return flow {
             emit(getAuthorizedDapp(dAppDefinitionAddress))
         }
     }
 
-    override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: String) {
+    override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: AccountAddress) {
     }
 
     override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<PersonaDataEntryID>) {

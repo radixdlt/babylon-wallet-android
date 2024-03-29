@@ -11,6 +11,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.radixdlt.sargon.ComponentAddress
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Resource
@@ -22,7 +23,7 @@ fun TransferTypeContent(
     preview: PreviewType.Transfer.GeneralTransfer,
     onPromptForGuarantees: () -> Unit,
     onDAppClick: (DApp) -> Unit,
-    onUnknownComponentsClick: (List<String>) -> Unit,
+    onUnknownComponentsClick: (List<ComponentAddress>) -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
 ) {
