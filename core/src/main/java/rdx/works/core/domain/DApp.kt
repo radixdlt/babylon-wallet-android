@@ -12,7 +12,6 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.accountType
 import rdx.works.core.domain.resources.metadata.claimedEntities
 import rdx.works.core.domain.resources.metadata.claimedWebsites
-import rdx.works.core.domain.resources.metadata.dAppDefinition
 import rdx.works.core.domain.resources.metadata.description
 import rdx.works.core.domain.resources.metadata.iconUrl
 import rdx.works.core.domain.resources.metadata.name

@@ -44,17 +44,17 @@ class VerifyDAppUseCase @Inject constructor(
                 origin = request.metadata.origin,
                 dAppDefinitionAddress = dAppDefinitionAddress
             )
-            .onFailure { error ->
-                error.asRadixWalletException()?.let { radixWalletException ->
-                    val walletErrorType = radixWalletException.toConnectorExtensionError() ?: return@let
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        remoteConnectorId = request.remoteConnectorId,
-                        requestId = request.id,
-                        error = walletErrorType,
-                        message = radixWalletException.getDappMessage()
-                    )
+                .onFailure { error ->
+                    error.asRadixWalletException()?.let { radixWalletException ->
+                        val walletErrorType = radixWalletException.toConnectorExtensionError() ?: return@let
+                        dAppMessenger.sendWalletInteractionResponseFailure(
+                            remoteConnectorId = request.remoteConnectorId,
+                            requestId = request.id,
+                            error = walletErrorType,
+                            message = radixWalletException.getDappMessage()
+                        )
+                    }
                 }
-            }
         }
     }
 

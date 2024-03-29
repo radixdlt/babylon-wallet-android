@@ -8,7 +8,7 @@ import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.sargon.ComponentAddress
-import com.radixdlt.sargon.NonFungibleResourceAddress
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -27,7 +27,7 @@ class GeneralTransferProcessor @Inject constructor(
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
         val badges = getTransactionBadgesUseCase(
             addresses = summary.presentedProofs.map { entry ->
-                entry.value.mapNotNull { runCatching { NonFungibleResourceAddress.init(it.resourceAddress) }.getOrNull() }
+                entry.value.map { ResourceAddress.init(it.resourceAddress) }
             }.flatten().toSet()
         ).getOrThrow()
         val dApps = summary.resolveDApps()
