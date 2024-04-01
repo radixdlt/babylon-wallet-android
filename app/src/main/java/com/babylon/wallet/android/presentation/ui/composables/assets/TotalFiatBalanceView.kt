@@ -41,6 +41,7 @@ fun TotalFiatBalanceView(
     contentStyle: TextStyle = RadixTheme.typography.title,
     formattedContentStyle: TextStyle = contentStyle,
     shimmeringColor: Color? = null,
+    onVisibilityToggle: (isVisible: Boolean) -> Unit,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     if (isLoading) {
@@ -57,6 +58,7 @@ fun TotalFiatBalanceView(
             contentStyle = contentStyle,
             currency = currency,
             formattedContentStyle = formattedContentStyle,
+            onVisibilityToggle = onVisibilityToggle,
             trailingContent = trailingContent
         )
     }
@@ -89,6 +91,7 @@ private fun TotalBalanceContent(
     hiddenContentColor: Color,
     contentStyle: TextStyle,
     formattedContentStyle: TextStyle,
+    onVisibilityToggle: (isVisible: Boolean) -> Unit,
     trailingContent: (@Composable () -> Unit)?
 ) {
     val isPriceVisible = LocalBalanceVisibility.current
@@ -125,7 +128,10 @@ private fun TotalBalanceContent(
     }
 
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .clickable {
+                onVisibilityToggle(!isPriceVisible)
+            },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -180,6 +186,7 @@ fun TotalBalanceZeroPreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -199,6 +206,7 @@ fun TotalBalancePreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -218,6 +226,7 @@ fun TotalBalanceWithValueLessThanOnePreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -237,6 +246,7 @@ fun TotalBalanceWithVerySmallValuePreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -257,6 +267,7 @@ fun TotalBalanceWithLongValuePreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -273,6 +284,7 @@ fun TotalBalanceErrorPreview() {
             fiatPrice = null,
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -293,6 +305,7 @@ fun TotalBalanceHiddenPreview() {
                 ),
                 currency = SupportedCurrency.USD,
                 isLoading = false,
+                onVisibilityToggle = {},
                 trailingContent = {
                     TotalFiatBalanceViewToggle(onToggle = {})
                 }
