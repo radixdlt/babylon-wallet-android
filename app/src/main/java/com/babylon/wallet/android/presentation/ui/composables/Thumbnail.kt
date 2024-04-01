@@ -60,6 +60,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.samples.sample
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
@@ -175,7 +178,7 @@ object Thumbnail {
             SubcomposeAsyncImage(
                 modifier = modifier,
                 model = request,
-                contentDescription = nft.localId.displayable,
+                contentDescription = nft.localId.formatted(),
                 onState = { painterState = it }
             ) {
                 Image(
@@ -631,7 +634,7 @@ fun NFTsPreview() {
                 modifier = Modifier.fillMaxWidth(),
                 nft = Resource.NonFungibleResource.Item(
                     collectionAddress = SampleDataProvider().randomAddress(),
-                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                    localId = NonFungibleLocalId.sample(),
                     metadata = listOf(
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
@@ -647,7 +650,7 @@ fun NFTsPreview() {
                 modifier = Modifier.fillMaxWidth(),
                 nft = Resource.NonFungibleResource.Item(
                     collectionAddress = SampleDataProvider().randomAddress(),
-                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                    localId = NonFungibleLocalId.sample(),
                     metadata = listOf(
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
@@ -664,7 +667,7 @@ fun NFTsPreview() {
                 modifier = Modifier.fillMaxWidth(),
                 nft = Resource.NonFungibleResource.Item(
                     collectionAddress = SampleDataProvider().randomAddress(),
-                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                    localId = NonFungibleLocalId.sample(),
                     metadata = listOf(
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
@@ -681,7 +684,7 @@ fun NFTsPreview() {
                 modifier = Modifier.fillMaxWidth(),
                 nft = Resource.NonFungibleResource.Item(
                     collectionAddress = SampleDataProvider().randomAddress(),
-                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                    localId = NonFungibleLocalId.sample(),
                     metadata = listOf(
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
@@ -697,7 +700,7 @@ fun NFTsPreview() {
                 modifier = Modifier.fillMaxWidth(),
                 nft = Resource.NonFungibleResource.Item(
                     collectionAddress = SampleDataProvider().randomAddress(),
-                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                    localId = NonFungibleLocalId.sample(),
                     metadata = listOf(
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,

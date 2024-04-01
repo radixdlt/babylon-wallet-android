@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import kotlinx.coroutines.flow.Flow
@@ -265,7 +266,7 @@ interface StateDao {
         WHERE address = :resourceAddress AND local_id = :localId and synced >= :minValidity
     """
     )
-    fun getNFTDetails(resourceAddress: String, localId: String, minValidity: Long): NFTEntity?
+    fun getNFTDetails(resourceAddress: String, localId: NonFungibleLocalId, minValidity: Long): NFTEntity?
 
     @Query(
         """
@@ -273,7 +274,7 @@ interface StateDao {
         WHERE address = :resourceAddress AND local_id in (:localIds) and synced >= :minValidity
     """
     )
-    fun getNFTDetails(resourceAddress: String, localIds: Set<String>, minValidity: Long): List<NFTEntity>?
+    fun getNFTDetails(resourceAddress: String, localIds: Set<NonFungibleLocalId>, minValidity: Long): List<NFTEntity>?
 
     @Transaction
     fun storeStakeDetails(

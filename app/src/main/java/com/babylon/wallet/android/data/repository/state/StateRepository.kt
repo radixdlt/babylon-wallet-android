@@ -26,6 +26,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
@@ -71,7 +72,7 @@ interface StateRepository {
 
     suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>>
 
-    suspend fun getNFTDetails(resourceAddress: String, localIds: Set<String>): Result<List<Resource.NonFungibleResource.Item>>
+    suspend fun getNFTDetails(resourceAddress: String, localIds: Set<NonFungibleLocalId>): Result<List<Resource.NonFungibleResource.Item>>
 
     suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>>
 
@@ -410,7 +411,7 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getNFTDetails(
         resourceAddress: String,
-        localIds: Set<String>
+        localIds: Set<NonFungibleLocalId>
     ): Result<List<Resource.NonFungibleResource.Item>> = withContext(dispatcher) {
         runCatching {
             val cachedItems = stateDao.getNFTDetails(resourceAddress, localIds, resourcesCacheValidity())
@@ -421,7 +422,7 @@ class StateRepositoryImpl @Inject constructor(
             val unknownIds = localIds - cachedItems?.map { it.localId }.orEmpty().toSet()
 
             val result = mutableListOf<Resource.NonFungibleResource.Item>()
-            stateApi.paginateNonFungibles(resourceAddress, nonFungibleIds = unknownIds.toList(), onPage = { response ->
+            stateApi.paginateNonFungibles(resourceAddress, nonFungibleIds = unknownIds.map { it.string }, onPage = { response ->
                 val item = response.nonFungibleIds
                 val entities = item.map { it.asEntity(resourceAddress, InstantGenerator()) }
                 stateDao.insertNFTs(entities)

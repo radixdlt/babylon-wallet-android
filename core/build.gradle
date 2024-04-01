@@ -55,6 +55,7 @@ dependencies {
 
     testImplementation libs.junit
     testImplementation libs.retKotlin
+    testRuntimeOnly libs.sargonDesktop
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso
 }

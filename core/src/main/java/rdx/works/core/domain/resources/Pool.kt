@@ -19,6 +19,7 @@ data class Pool(
 ) {
 
     companion object {
+        @Suppress("MagicNumber")
         @VisibleForTesting
         val sampleMainnet: Sample<Pool> = object : Sample<Pool> {
             override fun invoke(): Pool = Pool(
@@ -42,7 +43,7 @@ data class Pool(
                     Metadata.Collection(
                         key = "pool_resources",
                         values = listOf(
-                            Metadata.Primitive("pool_resources",  ResourceAddress.sampleMainnet.xrd.string, MetadataType.Address),
+                            Metadata.Primitive("pool_resources", ResourceAddress.sampleMainnet.xrd.string, MetadataType.Address),
                             Metadata.Primitive("pool_resources", ResourceAddress.sampleMainnet.candy.string, MetadataType.Address),
                         )
                     )
@@ -81,7 +82,7 @@ data class Pool(
                     Metadata.Collection(
                         key = "pool_resources",
                         values = listOf(
-                            Metadata.Primitive("pool_resources",  ResourceAddress.sampleMainnet.xrd.string, MetadataType.Address),
+                            Metadata.Primitive("pool_resources", ResourceAddress.sampleMainnet.xrd.string, MetadataType.Address),
                             Metadata.Primitive("pool_resources", ResourceAddress.sampleMainnet.candy.string, MetadataType.Address),
                         )
                     )
@@ -103,8 +104,6 @@ data class Pool(
                     )
                 )
             )
-
         }
     }
-
 }

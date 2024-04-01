@@ -1,11 +1,13 @@
 package com.babylon.wallet.android.mockdata
 
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.NonFungibleResourceAddress
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.domain.assets.Assets
@@ -267,7 +269,7 @@ val mockAccountsWithMockAssets = listOf(
                         items = listOf(
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = mockNFTAddressForStakeClaim1.string,
-                                localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                                localId = NonFungibleLocalId.sample(),
                                 metadata = listOf(
                                     Metadata.Primitive(
                                         key = ExplicitMetadataKey.CLAIM_AMOUNT.key,
@@ -278,7 +280,7 @@ val mockAccountsWithMockAssets = listOf(
                             ),
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = mockNFTAddressForStakeClaim1.string,
-                                localId = Resource.NonFungibleResource.Item.ID.from("#2#"),
+                                localId = NonFungibleLocalId.sample.other(),
                                 metadata = listOf(
                                     Metadata.Primitive(
                                         key = ExplicitMetadataKey.CLAIM_AMOUNT.key,
@@ -309,7 +311,7 @@ val mockAccountsWithMockAssets = listOf(
                         items = listOf(
                             Resource.NonFungibleResource.Item(
                                 collectionAddress = mockNFTAddressForStakeClaim2.string,
-                                localId = Resource.NonFungibleResource.Item.ID.Companion.from("#1#"),
+                                localId = NonFungibleLocalId.sample(),
                                 metadata = listOf(
                                     Metadata.Primitive(
                                         key = ExplicitMetadataKey.CLAIM_AMOUNT.key,

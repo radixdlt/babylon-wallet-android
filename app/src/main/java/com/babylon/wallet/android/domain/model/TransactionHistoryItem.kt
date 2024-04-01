@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.CommittedTransac
 import com.babylon.wallet.android.data.gateway.generated.models.ManifestClass
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -199,7 +200,7 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
             is NonFungibleCollection -> {
                 val updatedCollection = asset.collection.copy(
                     items = asset.collection.items.filter {
-                        relatedLocalIds.contains(it.localId.code)
+                        relatedLocalIds.contains(it.localId.string)
                     }
                 )
                 asset.copy(collection = updatedCollection)
@@ -207,7 +208,7 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
 
             is StakeClaim -> {
                 val updatedResource = asset.nonFungibleResource.copy(
-                    items = asset.nonFungibleResource.items.filter { relatedLocalIds.contains(it.localId.code) }
+                    items = asset.nonFungibleResource.items.filter { relatedLocalIds.contains(it.localId.string) }
                 )
                 asset.copy(nonFungibleResource = updatedResource)
             }

@@ -31,6 +31,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
+import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.nftsTab(
@@ -202,7 +203,7 @@ private fun NonFungibleResourceItem(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = item.localId.displayable,
+                text = item.localId.formatted(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )

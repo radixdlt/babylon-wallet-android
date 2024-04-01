@@ -21,8 +21,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
-import com.radixdlt.sargon.PoolAddress
-import com.radixdlt.sargon.samples.sampleMainnet
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.samples.sample
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -244,7 +244,7 @@ fun AssetsViewWithAssets() {
                             items = listOf(
                                 Resource.NonFungibleResource.Item(
                                     collectionAddress = this,
-                                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                                    localId = NonFungibleLocalId.sample(),
                                     metadata = listOf(
                                         Metadata.Primitive(
                                             key = ExplicitMetadataKey.NAME.key,

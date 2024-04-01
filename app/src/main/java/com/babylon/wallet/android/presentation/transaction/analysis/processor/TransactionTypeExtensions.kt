@@ -18,6 +18,8 @@ import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -43,7 +45,7 @@ fun ExecutionSummary.involvedFungibleAddresses(excludeNewlyCreated: Boolean = tr
         }.toSet()
 }
 
-fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true): Map<String, Set<Item.ID>> {
+fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true): Map<String, Set<com.radixdlt.sargon.NonFungibleLocalId>> {
     val withdrawIndicators = accountWithdraws.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
     val depositIndicators = accountDeposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
     return (withdrawIndicators + depositIndicators).filterNot {
@@ -195,7 +197,7 @@ private fun ResourceIndicator.NonFungible.toTransferableAsset(
 
         TransferableAsset.NonFungible.StakeClaimAssets(
             claim = assetWithItems,
-            xrdWorthPerNftItem = items.associate { it.localId.displayable to (it.claimAmountXrd ?: BigDecimal.ZERO) },
+            xrdWorthPerNftItem = items.associate { it.localId to (it.claimAmountXrd ?: BigDecimal.ZERO) },
             isNewlyCreated = false
         )
     }
@@ -285,13 +287,13 @@ private val ResourceIndicator.Fungible.amount: BigDecimal
         is FungibleResourceIndicator.Predicted -> specificIndicator.predictedAmount.value.asStr().toBigDecimal()
     }
 
-val ResourceIndicator.NonFungible.nonFungibleLocalIds: List<Item.ID>
+val ResourceIndicator.NonFungible.nonFungibleLocalIds: List<com.radixdlt.sargon.NonFungibleLocalId>
     get() = when (val indicator = indicator) {
         is NonFungibleResourceIndicator.ByAll -> indicator.predictedIds.value
         is NonFungibleResourceIndicator.ByAmount -> indicator.predictedIds.value
         is NonFungibleResourceIndicator.ByIds -> indicator.ids
     }.let { retIds ->
-        retIds.map { Item.ID.from(it.asStr()) }
+        retIds.map { com.radixdlt.sargon.NonFungibleLocalId.init(it.asStr()) }
     }
 
 fun Map<String, MetadataValue?>.toMetadata(): List<Metadata> = mapNotNull { it.toMetadata() }
@@ -641,7 +643,7 @@ fun ExecutionSummary.toWithdrawingAccountsWithTransferableAssets(
                     is ResourceIndicator.NonFungible -> {
                         val nonFungibleLocalIds = resources.filterIsInstance<ResourceIndicator.NonFungible>()
                             .fold(setOf<NonFungibleLocalId>(), operation = { acc, resource ->
-                                acc + resource.nonFungibleLocalIds.map { nonFungibleLocalIdFromStr(it.code) }.toSet()
+                                acc + resource.nonFungibleLocalIds.map { nonFungibleLocalIdFromStr(it.string) }.toSet()
                             })
                         val resource = first.copy(indicator = NonFungibleResourceIndicator.ByIds(nonFungibleLocalIds.toList()))
                         if (resource.isNewlyCreated(summary = this)) {

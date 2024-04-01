@@ -47,6 +47,8 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -363,7 +365,7 @@ fun AssetsContentRowPreview() {
                     items = List(1117) {
                         Resource.NonFungibleResource.Item(
                             collectionAddress = "resource_address1",
-                            localId = Resource.NonFungibleResource.Item.ID.from("<f1_$it>")
+                            localId = NonFungibleLocalId.init("<f1_$it>")
                         )
                     },
                     metadata = listOf(
@@ -376,7 +378,7 @@ fun AssetsContentRowPreview() {
                     items = List(3) {
                         Resource.NonFungibleResource.Item(
                             collectionAddress = "resource_address2",
-                            localId = Resource.NonFungibleResource.Item.ID.from("<nba_$it>")
+                            localId = NonFungibleLocalId.init("<nba_$it>")
                         )
                     },
                     metadata = listOf(

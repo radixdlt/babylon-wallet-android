@@ -88,7 +88,7 @@ class ValidatorClaimProcessor @Inject constructor(
                                 validator = asset.validator
                             ),
                             xrdWorthPerNftItem = items.associate {
-                                it.first.localId.displayable to it.second
+                                it.first.localId to it.second
                             }
                         )
                     )

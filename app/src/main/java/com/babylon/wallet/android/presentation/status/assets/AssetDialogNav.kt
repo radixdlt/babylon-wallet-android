@@ -8,6 +8,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -44,11 +47,11 @@ fun NavController.fungibleAssetDialog(
 
 fun NavController.nftAssetDialog(
     resourceAddress: String,
-    localId: String? = null,
+    localId: NonFungibleLocalId? = null,
     isNewlyCreated: Boolean = false,
     underAccountAddress: String? = null
 ) {
-    val localIdParam = if (localId != null) "&$ARG_LOCAL_ID=${URLEncoder.encode(localId, Charsets.UTF_8.name())}" else ""
+    val localIdParam = if (localId != null) "&$ARG_LOCAL_ID=${URLEncoder.encode(localId.string, Charsets.UTF_8.name())}" else ""
     val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=$underAccountAddress" else ""
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_NFT" +
@@ -83,7 +86,7 @@ sealed interface AssetDialogArgs {
         override val resourceAddress: String,
         override val isNewlyCreated: Boolean,
         override val underAccountAddress: String?,
-        val localId: String?
+        val localId: NonFungibleLocalId?
     ) : AssetDialogArgs
 
     companion object {
@@ -104,7 +107,7 @@ sealed interface AssetDialogArgs {
                     resourceAddress = requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS]),
                     isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
                     underAccountAddress = savedStateHandle[ARG_UNDER_ACCOUNT_ADDRESS],
-                    localId = savedStateHandle[ARG_LOCAL_ID]
+                    localId = savedStateHandle.get<String>(ARG_LOCAL_ID)?.let { NonFungibleLocalId.init(it) }
                 )
 
                 else -> error("No type specified.")
