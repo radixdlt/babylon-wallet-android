@@ -674,7 +674,7 @@ private fun ClaimWorth(
                     action.onNFTCheckChanged(
                         claimCollection,
                         claimNft,
-                        !action.isSelected(claimNft.globalAddress)
+                        !action.isSelected(claimNft.globalId)
                     )
                 }
             }
@@ -684,7 +684,7 @@ private fun ClaimWorth(
         trailingContent = if (action is AssetsViewAction.Selection) {
             {
                 val isSelected = remember(claimNft, action) {
-                    action.isSelected(claimNft.globalAddress)
+                    action.isSelected(claimNft.globalId)
                 }
                 AssetsViewCheckBox(
                     isSelected = isSelected,

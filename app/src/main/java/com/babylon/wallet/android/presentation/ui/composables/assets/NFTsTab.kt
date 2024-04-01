@@ -32,6 +32,7 @@ import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.nftsTab(
@@ -176,7 +177,7 @@ private fun NonFungibleResourceItem(
                     }
 
                     is AssetsViewAction.Selection -> {
-                        action.onNFTCheckChanged(collection, item, !action.isSelected(item.globalAddress))
+                        action.onNFTCheckChanged(collection, item, !action.isSelected(item.globalId))
                     }
                 }
             }
@@ -211,7 +212,7 @@ private fun NonFungibleResourceItem(
 
         if (action is AssetsViewAction.Selection) {
             val isSelected = remember(item, action) {
-                action.isSelected(item.globalAddress)
+                action.isSelected(item.globalId)
             }
             AssetsViewCheckBox(
                 isSelected = isSelected,

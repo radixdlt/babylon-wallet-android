@@ -2,9 +2,12 @@ package rdx.works.core.domain.resources
 
 import android.net.Uri
 import com.radixdlt.derivation.model.NetworkId
+import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -184,8 +187,12 @@ sealed class Resource {
             val metadata: List<Metadata> = emptyList()
         ) : Comparable<Item> {
 
-            val globalAddress: String
-                get() = "$collectionAddress:${localId.string}"
+            val globalId: NonFungibleGlobalId by lazy {
+                NonFungibleGlobalId(
+                    resourceAddress = ResourceAddress.init(collectionAddress),
+                    nonFungibleLocalId = localId
+                )
+            }
 
             val name: String? by lazy {
                 metadata.name()?.truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
