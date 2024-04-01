@@ -21,6 +21,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
+import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.samples.sample
 import rdx.works.core.domain.assets.Assets
@@ -144,6 +145,7 @@ sealed interface AssetsViewAction {
 
     data class Selection(
         val selectedResources: List<String>,
+        val selectedNFTs: List<NonFungibleGlobalId>,
         val onFungibleCheckChanged: (Resource.FungibleResource, Boolean) -> Unit,
         val onNFTCheckChanged: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
         override val onTabClick: (AssetsTab) -> Unit,
@@ -153,6 +155,8 @@ sealed interface AssetsViewAction {
     ) : AssetsViewAction {
 
         fun isSelected(resourceAddress: String) = selectedResources.contains(resourceAddress)
+
+        fun isSelected(globalId: NonFungibleGlobalId) = selectedNFTs.contains(globalId)
     }
 }
 

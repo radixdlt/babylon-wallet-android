@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDele
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -604,7 +605,7 @@ sealed class SpendingAsset {
         val exceedingBalance: Boolean = false
     ) : SpendingAsset() {
         override val address: String
-            get() = item.globalAddress
+            get() = item.globalId.string
 
         override val isValidForSubmission: Boolean
             get() = !exceedingBalance

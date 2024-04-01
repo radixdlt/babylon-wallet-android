@@ -41,6 +41,7 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.WorthXRD
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.StakeClaim
@@ -120,7 +121,7 @@ fun NonFungibleAssetDialogContent(
                 ) {
                     ActionableAddressView(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingDefault),
-                        address = item.globalAddress,
+                        address = item.globalId.string,
                         visitableInDashboard = !isNewlyCreated,
                         textStyle = RadixTheme.typography.body1HighImportance,
                         textColor = RadixTheme.colors.gray1
