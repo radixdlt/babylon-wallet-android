@@ -10,10 +10,6 @@ object AddressHelper {
 
     fun networkIdOrNull(fromAddress: String): Int? = fromAddress.toAddressOrNull()?.networkId()?.toInt()
 
-    fun isResource(address: String): Boolean = address.toAddressOrNull()?.isGlobalResourceManager() == true
-
-    fun isValidResource(address: String, networkId: Int) = isValid(address, networkId) && isResource(address)
-
     fun isValid(address: String, checkNetworkId: Int? = null): Boolean {
         val retAddress = address.toAddressOrNull() ?: return false
 
@@ -23,8 +19,6 @@ object AddressHelper {
             true
         }
     }
-
-    fun isValidNFT(address: String) = address.toNonFungibleGlobalId() != null
 
     fun globalId(address: String) = NonFungibleGlobalId(address).resourceAddress().addressString()
 
@@ -37,8 +31,5 @@ object AddressHelper {
     ).addressString()
 
     private fun String.toAddressOrNull() = runCatching { EngineAddress(this) }
-        .getOrNull()
-
-    private fun String.toNonFungibleGlobalId() = runCatching { NonFungibleGlobalId(this) }
         .getOrNull()
 }

@@ -26,6 +26,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
 import rdx.works.core.displayableQuantity
@@ -50,7 +51,7 @@ fun LazyListScope.poolUnitsTab(
 
     items(
         items = assetsViewData.poolUnits,
-        key = { poolUnitItem -> poolUnitItem.resourceAddress }
+        key = { poolUnitItem -> poolUnitItem.resourceAddress.string }
     ) { poolUnitItem ->
         PoolUnitItem(
             modifier = Modifier
