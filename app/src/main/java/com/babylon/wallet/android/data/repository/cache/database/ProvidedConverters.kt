@@ -7,6 +7,7 @@ import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.VaultAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.Serializable
@@ -128,5 +129,16 @@ class StateDatabaseConverters {
     @TypeConverter
     fun nonFungibleLocalIdToString(localId: NonFungibleLocalId?): String? {
         return localId?.string
+    }
+
+    // VaultAddress
+    @TypeConverter
+    fun stringToVaultAddress(vaultAddress: String?): VaultAddress? {
+        return vaultAddress?.let { VaultAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun vaultAddressToString(vaultAddress: VaultAddress?): String? {
+        return vaultAddress?.string
     }
 }

@@ -7,6 +7,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.assets.ValidatorWithStakes
@@ -37,7 +38,7 @@ open class StateRepositoryFake : StateRepository {
     override suspend fun updateStakeClaims(account: Network.Account, claims: List<StakeClaim>): Result<List<StakeClaim>> =
         Result.success(claims)
 
-    override suspend fun getResources(addresses: Set<String>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>> =
+    override suspend fun getResources(addresses: Set<ResourceAddress>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>> =
         Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>> = Result.failure(RuntimeException("Not implemented"))
@@ -45,7 +46,7 @@ open class StateRepositoryFake : StateRepository {
     override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> =
         Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun getNFTDetails(resourceAddress: String, localIds: Set<NonFungibleLocalId>): Result<List<Resource.NonFungibleResource.Item>> =
+    override suspend fun getNFTDetails(resourceAddress: ResourceAddress, localIds: Set<NonFungibleLocalId>): Result<List<Resource.NonFungibleResource.Item>> =
         Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> =

@@ -11,6 +11,7 @@ import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.toManifestClass
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -115,7 +116,7 @@ class StreamRepositoryImpl @Inject constructor(
                     matchOnlyMostSpecific = true
                 )
             },
-            manifestResourcesFilter = filters.resource?.let { listOf(it.resourceAddress) },
+            manifestResourcesFilter = filters.resource?.let { listOf(it.address.string) },
             affectedGlobalEntitiesFilter = listOf(accountAddress)
         )
     }

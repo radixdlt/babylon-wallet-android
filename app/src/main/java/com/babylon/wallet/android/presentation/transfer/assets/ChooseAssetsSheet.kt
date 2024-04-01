@@ -95,7 +95,7 @@ fun ChooseAssetsSheet(
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
         val selectedResources = remember(state.targetAccount.spendingAssets) {
-            state.targetAccount.spendingAssets.filterIsInstance<SpendingAsset.Fungible>().map { it.address }
+            state.targetAccount.spendingAssets.filterIsInstance<SpendingAsset.Fungible>().map { it.resourceAddress }
         }
 
         val selectedNFTs = remember(state.targetAccount.spendingAssets) {

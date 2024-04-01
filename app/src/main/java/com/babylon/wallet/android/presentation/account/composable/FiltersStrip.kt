@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.HistoryFilters
-import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.resources.Resource
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -58,11 +58,11 @@ fun FiltersStrip(
                 is Resource.FungibleResource -> resource.displayTitle
                 is Resource.NonFungibleResource -> resource.name
             }
-            item(key = resource.resourceAddress) {
+            item(key = resource.address) {
                 HistoryFilterTag(
                     modifier = Modifier.animateItemPlacement(),
                     selected = true,
-                    text = name.ifEmpty { resource.resourceAddress.truncatedHash() },
+                    text = name.ifEmpty { resource.address.formatted() },
                     onCloseClick = {
                         onResourceFilterRemoved()
                     }

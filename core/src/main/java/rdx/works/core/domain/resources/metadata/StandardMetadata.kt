@@ -5,6 +5,7 @@ package rdx.works.core.domain.resources.metadata
 import android.net.Uri
 import androidx.core.net.toUri
 import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -68,10 +69,10 @@ fun List<Metadata>.ownerBadge(): OwnerBadge? = findPrimitive(
     type = MetadataType.NonFungibleLocalId
 )?.let { OwnerBadge(it.value, it.lastUpdatedAtStateVersion) }
 
-fun List<Metadata>.poolUnit(): String? = findPrimitive(
+fun List<Metadata>.poolUnit(): ResourceAddress? = findPrimitive(
     key = ExplicitMetadataKey.POOL_UNIT,
     type = MetadataType.Address
-)?.value
+)?.value?.let { runCatching { ResourceAddress.init(it) }.getOrNull() }
 
 fun List<Metadata>.claimAmount(): BigDecimal? = findPrimitive(
     key = ExplicitMetadataKey.CLAIM_AMOUNT,

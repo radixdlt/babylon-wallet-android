@@ -46,10 +46,10 @@ fun NavGraphBuilder.settingsNavGraph(
                 navController.personaEditScreen(personaAddress, requiredFields)
             },
             onFungibleClick = { resource ->
-                navController.fungibleAssetDialog(resourceAddress = resource.resourceAddress)
+                navController.fungibleAssetDialog(resourceAddress = resource.address)
             },
             onNonFungibleClick = { resource ->
-                navController.nftAssetDialog(resourceAddress = resource.resourceAddress)
+                navController.nftAssetDialog(resourceAddress = resource.address)
             }
         )
         accountSecurityNavGraph(navController)

@@ -12,8 +12,10 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.thirdPartyDepositUpdate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -186,9 +188,9 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     }
 
     private fun loadAssets(addresses: Set<String>) = viewModelScope.launch {
-        getResourcesUseCase(addresses = addresses)
+        getResourcesUseCase(addresses = addresses.map { ResourceAddress.init(it) }.toSet())
             .onSuccess { resources ->
-                val loadedResourcesAddresses = resources.map { it.resourceAddress }.toSet()
+                val loadedResourcesAddresses = resources.map { it.address.string }.toSet()
                 _state.update { state ->
                     state.copy(
                         assetExceptionsUiModels = state.assetExceptionsUiModels?.mapWhen(
@@ -198,7 +200,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                         ) { assetException ->
                             when (
                                 val resource = resources.firstOrNull {
-                                    it.resourceAddress == assetException.assetException.address
+                                    it.address.string == assetException.assetException.address
                                 }
                             ) {
                                 is Resource -> assetException.copy(resource = resource)
@@ -212,7 +214,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                         ) { depositor ->
                             when (
                                 val resource = resources.firstOrNull {
-                                    it.resourceAddress == depositor.depositorAddress?.resourceAddress()
+                                    it.address.string == depositor.depositorAddress?.resourceAddress()
                                 }
                             ) {
                                 is Resource -> depositor.copy(resource = resource)

@@ -9,6 +9,7 @@ import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourcePreference
 import com.radixdlt.ret.ResourcePreferenceUpdate
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.Asset
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
@@ -59,7 +60,7 @@ class AccountDepositSettingsProcessor @Inject constructor(
         val added = authorizedDepositorsChangeForAccount.map { added ->
             when (added) {
                 is ResourceOrNonFungible.NonFungible -> {
-                    val resource = assets.find { it.resource.resourceAddress == added.value.resourceAddress().addressString() }?.resource
+                    val resource = assets.find { it.resource.address.string == added.value.resourceAddress().addressString() }?.resource
                     AccountWithDepositSettingsChanges.DepositorPreferenceChange(
                         change = AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add,
                         resource = resource
@@ -67,7 +68,7 @@ class AccountDepositSettingsProcessor @Inject constructor(
                 }
 
                 is ResourceOrNonFungible.Resource -> {
-                    val resource = assets.find { it.resource.resourceAddress == added.value.addressString() }?.resource
+                    val resource = assets.find { it.resource.address.string == added.value.addressString() }?.resource
                     AccountWithDepositSettingsChanges.DepositorPreferenceChange(
                         change = AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add,
                         resource = resource
@@ -84,7 +85,7 @@ class AccountDepositSettingsProcessor @Inject constructor(
                 }
 
                 is ResourceOrNonFungible.Resource -> {
-                    val resource = assets.find { it.resource.resourceAddress == removed.value.addressString() }?.resource
+                    val resource = assets.find { it.resource.address.string == removed.value.addressString() }?.resource
                     AccountWithDepositSettingsChanges.DepositorPreferenceChange(
                         change = AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Remove,
                         resource = resource
@@ -100,7 +101,7 @@ class AccountDepositSettingsProcessor @Inject constructor(
         allResources: List<Asset>
     ) = resourcePreferencesUpdates[involvedAccount.address]?.let { resourcePreferenceChangeForAccount ->
         resourcePreferenceChangeForAccount.map { resourcePreferenceChange ->
-            val resource = allResources.find { it.resource.resourceAddress == resourcePreferenceChange.key }?.resource
+            val resource = allResources.find { it.resource.address.string == resourcePreferenceChange.key }?.resource
             val assetPreferenceChange = when (val action = resourcePreferenceChange.value) {
                 ResourcePreferenceUpdate.Remove -> AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Clear
                 is ResourcePreferenceUpdate.Set -> when (action.value) {

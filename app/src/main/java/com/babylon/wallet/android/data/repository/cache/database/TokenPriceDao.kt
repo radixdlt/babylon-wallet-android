@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.radixdlt.sargon.ResourceAddress
 import rdx.works.core.InstantGenerator
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -16,7 +17,7 @@ interface TokenPriceDao {
 
     @Query("SELECT * FROM TokenPriceEntity WHERE resource_address in (:addresses) AND synced >= :minValidity")
     suspend fun getTokensPrices(
-        addresses: Set<String>,
+        addresses: Set<ResourceAddress>,
         minValidity: Long
     ): List<TokenPriceEntity>
 

@@ -64,7 +64,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         claimsPerAddress.value.map { claimedResource ->
             val resourceAddress = claimedResource.resourceAddress
-            val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No resource found")
+            val asset = assets.find { it.resource.address == resourceAddress } ?: error("No resource found")
             if (asset is StakeClaim) {
                 claimedResource as? ResourceIndicator.NonFungible
                     ?: error("No non-fungible indicator found")

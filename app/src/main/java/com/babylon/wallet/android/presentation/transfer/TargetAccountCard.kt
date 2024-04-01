@@ -36,16 +36,10 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
-import com.radixdlt.sargon.NonFungibleLocalId
-import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.persistentSetOf
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
-import java.math.BigDecimal
+import rdx.works.core.domain.resources.sampleMainnet
 
 @Composable
 fun TargetAccountCard(
@@ -210,7 +204,7 @@ fun TargetAccountCard(
                         )
                     }
                 }
-                if (targetAccount.isSignatureRequiredForTransfer(resourceAddress = spendingAsset.address)) {
+                if (targetAccount.isSignatureRequiredForTransfer(resourceAddress = spendingAsset.resourceAddress)) {
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXSmall))
                     Row(
                         modifier = Modifier
@@ -267,10 +261,6 @@ fun TargetAccountCardPreview() {
                 targetAccount = TargetAccount.Skeleton()
             )
 
-            val item = Resource.NonFungibleResource.Item(
-                collectionAddress = "resource_rdx_abcde",
-                localId = NonFungibleLocalId.sample()
-            )
             TargetAccountCard(
                 onChooseAccountClick = {},
                 onAddAssetsClick = {},
@@ -283,38 +273,14 @@ fun TargetAccountCardPreview() {
                     id = UUIDGenerator.uuid().toString(),
                     spendingAssets = persistentSetOf(
                         SpendingAsset.Fungible(
-                            resource = Resource.FungibleResource(
-                                resourceAddress = "resource_rdx_abcd",
-                                ownedAmount = BigDecimal.TEN,
-                                metadata = listOf(
-                                    Metadata.Primitive(
-                                        key = ExplicitMetadataKey.NAME.key,
-                                        value = "Radix",
-                                        valueType = MetadataType.String
-                                    ),
-                                    Metadata.Primitive(
-                                        key = ExplicitMetadataKey.SYMBOL.key,
-                                        value = XrdResource.SYMBOL,
-                                        valueType = MetadataType.String
-                                    )
-                                )
-                            )
+                            resource = Resource.FungibleResource.sampleMainnet()
                         ),
-                        SpendingAsset.NFT(
-                            resource = Resource.NonFungibleResource(
-                                resourceAddress = "resource_rdx_abcde",
-                                amount = 1L,
-                                items = listOf(item),
-                                metadata = listOf(
-                                    Metadata.Primitive(
-                                        key = ExplicitMetadataKey.NAME.key,
-                                        value = "NFT Collection",
-                                        valueType = MetadataType.String
-                                    ),
-                                )
-                            ),
-                            item = item
-                        )
+                        with(Resource.NonFungibleResource.sampleMainnet()) {
+                            SpendingAsset.NFT(
+                                resource = this,
+                                item = this.items[0]
+                            )
+                        }
                     )
                 )
             )

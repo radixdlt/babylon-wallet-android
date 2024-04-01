@@ -75,7 +75,7 @@ class PrepareManifestDelegate @Inject constructor(
                 val listOfExistingTransfers = perFungibleAssetTransfers.getOrPut(asset.resource) { mutableListOf() }
                 listOfExistingTransfers.add(
                     PerAssetFungibleTransfer(
-                        useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(asset.address, accountsAbleToSign),
+                        useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(asset.resourceAddress, accountsAbleToSign),
                         amount = asset.amountDecimal.toDecimal192(),
                         recipient = targetAccount.toAssetTransfersRecipient()
                     )
@@ -86,7 +86,7 @@ class PrepareManifestDelegate @Inject constructor(
         return perFungibleAssetTransfers.map { entry ->
             PerAssetTransfersOfFungibleResource(
                 resource = PerAssetFungibleResource(
-                    resourceAddress = ResourceAddress.init(entry.key.resourceAddress),
+                    resourceAddress = entry.key.address,
                     divisibility = entry.key.divisibility?.toUByte()
                 ),
                 transfers = entry.value
@@ -109,7 +109,7 @@ class PrepareManifestDelegate @Inject constructor(
                 val perNFTAssetTransfer = perNFTAssetTransfers.getOrPut(entry.key) { mutableListOf() }
                 perNFTAssetTransfer.add(
                     PerAssetNonFungibleTransfer(
-                        useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(entry.key.resourceAddress, accountsAbleToSign),
+                        useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(entry.key.address, accountsAbleToSign),
                         nonFungibleLocalIds = entry.value.map { it.localId },
                         recipient = targetAccount.toAssetTransfersRecipient()
                     )
@@ -119,7 +119,7 @@ class PrepareManifestDelegate @Inject constructor(
 
         return perNFTAssetTransfers.map { entry ->
             PerAssetTransfersOfNonFungibleResource(
-                resource = ResourceAddress.init(validatingAddress = entry.key.resourceAddress),
+                resource = entry.key.address,
                 transfers = entry.value
             )
         }
@@ -140,6 +140,8 @@ class PrepareManifestDelegate @Inject constructor(
                 )
         }
 
-    private fun TargetAccount.useTryDepositOrAbort(resourceAddress: String, accountsAbleToSign: List<TargetAccount.Owned>): Boolean =
-        this !in accountsAbleToSign || !isSignatureRequiredForTransfer(resourceAddress)
+    private fun TargetAccount.useTryDepositOrAbort(
+        resourceAddress: ResourceAddress,
+        accountsAbleToSign: List<TargetAccount.Owned>
+    ): Boolean = this !in accountsAbleToSign || !isSignatureRequiredForTransfer(resourceAddress)
 }

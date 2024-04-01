@@ -9,17 +9,16 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
-import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Header
@@ -93,20 +92,7 @@ class SampleDataProvider {
     val transferableDepositing = Transferable.Depositing(
         transferable = TransferableAsset.Fungible.Token(
             amount = BigDecimal(69),
-            resource = Resource.FungibleResource(
-                resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
-                ownedAmount = null,
-                currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                metadata = listOf(
-                    Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                    Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                    Metadata.Primitive(
-                        key = ExplicitMetadataKey.DESCRIPTION.key,
-                        value = "a very xxx token",
-                        valueType = MetadataType.String
-                    )
-                )
-            ),
+            resource = Resource.FungibleResource.sampleMainnet(),
             isNewlyCreated = true
         )
     )
@@ -115,20 +101,7 @@ class SampleDataProvider {
         transferable = TransferableAsset.Fungible.LSUAsset(
             amount = BigDecimal(69),
             lsu = LiquidStakeUnit(
-                Resource.FungibleResource(
-                    resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
-                    ownedAmount = null,
-                    currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                    metadata = listOf(
-                        Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                        Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.DESCRIPTION.key,
-                            value = "a very xxx token",
-                            valueType = MetadataType.String
-                        )
-                    )
-                ),
+                Resource.FungibleResource.sampleMainnet(),
                 Validator.sampleMainnet()
             ),
             xrdWorth = BigDecimal(1000)
@@ -366,22 +339,6 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleAccountWithResources(
-        address: String = randomAddress(),
-        withFungibleTokens: List<Resource.FungibleResource> = sampleFungibleResources()
-    ): AccountWithAssets {
-        return AccountWithAssets(
-            account = sampleAccount(address = address),
-            assets = Assets(
-                tokens = withFungibleTokens.map { Token(it) },
-                nonFungibles = emptyList(),
-                poolUnits = emptyList(),
-                liquidStakeUnits = emptyList(),
-                stakeClaims = emptyList()
-            )
-        )
-    }
-
     fun sampleAccountWithoutResources(
         name: String = "my account",
         address: String = randomAddress()
@@ -447,43 +404,6 @@ class SampleDataProvider {
 
     fun network(networkId: Int): Network {
         return Network(networkId, emptyIdentifiedArrayList(), emptyIdentifiedArrayList(), emptyList())
-    }
-
-    fun sampleFungibleResources(
-        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to XrdResource.SYMBOL
-    ): List<Resource.FungibleResource> {
-        val result = mutableListOf<Resource.FungibleResource>()
-        return result.apply {
-            repeat(3) {
-                add(
-                    Resource.FungibleResource(
-                        resourceAddress = randomAddress(),
-                        ownedAmount = amount.first,
-                        currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                        metadata = listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                            Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                            Metadata.Primitive(
-                                key = ExplicitMetadataKey.DESCRIPTION.key,
-                                value = "a very xxx token",
-                                valueType = MetadataType.String
-                            ),
-                        )
-                    )
-                )
-            }
-        }
-    }
-
-    fun nonFungibleResource(name: String): Resource.NonFungibleResource {
-        return Resource.NonFungibleResource(
-            resourceAddress = randomAddress(),
-            amount = 1,
-            items = emptyList(),
-            metadata = listOf(
-                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = name, valueType = MetadataType.String),
-            )
-        )
     }
 
     fun sampleAssetException(): AssetType.AssetException {

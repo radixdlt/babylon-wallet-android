@@ -1,5 +1,7 @@
 package rdx.works.profile.data.model.extensions
 
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.mapWhen
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
@@ -53,8 +55,8 @@ fun Network.Account.hasAcceptKnownDepositRule(): Boolean {
 
 @Suppress("ReturnCount")
 fun Network.Account.isSignatureRequiredBasedOnDepositRules(
-    forSpecificAssetAddress: String,
-    addressesOfAssetsOfTargetAccount: List<String> = emptyList()
+    forSpecificAssetAddress: ResourceAddress,
+    addressesOfAssetsOfTargetAccount: List<ResourceAddress> = emptyList()
 ): Boolean {
     val thirdPartyDeposits = this.onLedgerSettings.thirdPartyDeposits
 
@@ -64,12 +66,12 @@ fun Network.Account.isSignatureRequiredBasedOnDepositRules(
 
     val hasDenyExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList?.any {
         it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny &&
-            it.address == forSpecificAssetAddress
+            it.address == forSpecificAssetAddress.string
     } == true
 
     val hasAllowExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList?.any {
         it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow &&
-            it.address == forSpecificAssetAddress
+            it.address == forSpecificAssetAddress.string
     } == true
 
     if (hasAllowExceptionRuleForAsset) {

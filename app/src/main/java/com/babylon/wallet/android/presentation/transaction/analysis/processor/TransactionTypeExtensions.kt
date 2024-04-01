@@ -18,6 +18,7 @@ import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.Asset
@@ -34,24 +35,26 @@ import rdx.works.core.toHexString
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 
-fun ExecutionSummary.involvedFungibleAddresses(excludeNewlyCreated: Boolean = true): Set<String> {
+fun ExecutionSummary.involvedFungibleAddresses(excludeNewlyCreated: Boolean = true): Set<ResourceAddress> {
     val withdrawIndicators = accountWithdraws.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
     val depositIndicators = accountDeposits.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
     return (withdrawIndicators + depositIndicators)
         .filterNot {
             excludeNewlyCreated && it.isNewlyCreated(this)
         }.map {
-            it.resourceAddress.addressString()
+            ResourceAddress.init(it.resourceAddress.addressString())
         }.toSet()
 }
 
-fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true): Map<String, Set<com.radixdlt.sargon.NonFungibleLocalId>> {
+fun ExecutionSummary.involvedNonFungibleIds(
+    excludeNewlyCreated: Boolean = true
+): Map<ResourceAddress, Set<com.radixdlt.sargon.NonFungibleLocalId>> {
     val withdrawIndicators = accountWithdraws.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
     val depositIndicators = accountDeposits.values.flatten().filterIsInstance<ResourceIndicator.NonFungible>()
     return (withdrawIndicators + depositIndicators).filterNot {
         excludeNewlyCreated && it.isNewlyCreated(this)
     }.fold(mutableMapOf(), operation = { acc, indicator ->
-        val indicatorAddress = indicator.resourceAddress.addressString()
+        val indicatorAddress = ResourceAddress.init(indicator.resourceAddress.addressString())
         acc.apply {
             if (containsKey(indicatorAddress)) {
                 this[indicatorAddress] = this[indicatorAddress].orEmpty() + indicator.nonFungibleLocalIds
@@ -62,10 +65,10 @@ fun ExecutionSummary.involvedNonFungibleIds(excludeNewlyCreated: Boolean = true)
     })
 }
 
-val ResourceIndicator.resourceAddress: String
+val ResourceIndicator.resourceAddress: ResourceAddress
     get() = when (this) {
-        is ResourceIndicator.Fungible -> resourceAddress.addressString()
-        is ResourceIndicator.NonFungible -> resourceAddress.addressString()
+        is ResourceIndicator.Fungible -> ResourceAddress.init(resourceAddress.addressString())
+        is ResourceIndicator.NonFungible -> ResourceAddress.init(resourceAddress.addressString())
     }
 
 val ResourceIndicator.amount: BigDecimal
@@ -133,7 +136,7 @@ fun ResourceIndicator.toTransferableAsset(
 private fun ResourceIndicator.Fungible.toTransferableAsset(
     assets: List<Asset>,
     aggregateAmount: BigDecimal? = null
-): TransferableAsset.Fungible = when (val asset = assets.find { it.resource.resourceAddress == resourceAddress.addressString() }) {
+): TransferableAsset.Fungible = when (val asset = assets.find { it.resource.address.string == resourceAddress.addressString() }) {
     is PoolUnit -> {
         val assetWithAmount = asset.copy(
             stake = asset.stake.copy(ownedAmount = aggregateAmount ?: amount),
@@ -143,7 +146,7 @@ private fun ResourceIndicator.Fungible.toTransferableAsset(
             amount = aggregateAmount ?: amount,
             unit = assetWithAmount,
             contributionPerResource = assetWithAmount.pool?.resources?.associate {
-                it.resourceAddress to (assetWithAmount.resourceRedemptionValue(it) ?: BigDecimal.ZERO)
+                it.address to (assetWithAmount.resourceRedemptionValue(it) ?: BigDecimal.ZERO)
             }.orEmpty(),
             isNewlyCreated = false
         )
@@ -170,7 +173,7 @@ private fun ResourceIndicator.Fungible.toTransferableAsset(
 
     else -> {
         val resourceWithAmount = Resource.FungibleResource(
-            resourceAddress = resourceAddress.addressString(),
+            address = ResourceAddress.init(resourceAddress.addressString()),
             ownedAmount = aggregateAmount ?: amount
         )
         TransferableAsset.Fungible.Token(
@@ -183,13 +186,13 @@ private fun ResourceIndicator.Fungible.toTransferableAsset(
 
 private fun ResourceIndicator.NonFungible.toTransferableAsset(
     assets: List<Asset>
-): TransferableAsset.NonFungible = when (val asset = assets.find { it.resource.resourceAddress == resourceAddress.addressString() }) {
+): TransferableAsset.NonFungible = when (val asset = assets.find { it.resource.address.string == resourceAddress.addressString() }) {
     is StakeClaim -> {
         val items = nonFungibleLocalIds.map { localId ->
             asset.nonFungibleResource.items.find { item ->
                 item.localId == localId
             } ?: Item(
-                collectionAddress = resourceAddress.addressString(),
+                collectionAddress = ResourceAddress.init(resourceAddress.addressString()),
                 localId = localId
             )
         }
@@ -207,7 +210,7 @@ private fun ResourceIndicator.NonFungible.toTransferableAsset(
             asset.collection.items.find { item ->
                 item.localId == localId
             } ?: Item(
-                collectionAddress = resourceAddress.addressString(),
+                collectionAddress = ResourceAddress.init(resourceAddress.addressString()),
                 localId = localId
             )
         }
@@ -221,14 +224,14 @@ private fun ResourceIndicator.NonFungible.toTransferableAsset(
     else -> {
         val items = nonFungibleLocalIds.map { localId ->
             Item(
-                collectionAddress = resourceAddress.addressString(),
+                collectionAddress = ResourceAddress.init(resourceAddress.addressString()),
                 localId = localId
             )
         }
 
         TransferableAsset.NonFungible.NFTAssets(
             resource = Resource.NonFungibleResource(
-                resourceAddress = resourceAddress.addressString(),
+                address = ResourceAddress.init(resourceAddress.addressString()),
                 amount = items.size.toLong(),
                 items = items
             ),
@@ -238,10 +241,10 @@ private fun ResourceIndicator.NonFungible.toTransferableAsset(
 }
 
 fun ResourceIndicator.isNewlyCreated(summary: ExecutionSummary) = summary.newEntities.resourceAddresses.any {
-    it.addressString() == resourceAddress
+    it.addressString() == resourceAddress.string
 }
 
-fun ResourceIndicator.newlyCreatedMetadata(summary: ExecutionSummary) = summary.newEntities.metadata[resourceAddress].orEmpty()
+fun ResourceIndicator.newlyCreatedMetadata(summary: ExecutionSummary) = summary.newEntities.metadata[resourceAddress.string].orEmpty()
 
 fun ResourceIndicator.toNewlyCreatedTransferableAsset(
     metadata: Map<String, MetadataValue?>,
@@ -253,7 +256,7 @@ fun ResourceIndicator.toNewlyCreatedTransferableAsset(
         is ResourceIndicator.Fungible -> TransferableAsset.Fungible.Token(
             amount = aggregateAmount ?: amount,
             resource = Resource.FungibleResource(
-                resourceAddress = resourceAddress.addressString(),
+                address = ResourceAddress.init(resourceAddress.addressString()),
                 ownedAmount = aggregateAmount ?: amount,
                 metadata = metadataItems
             ),
@@ -263,14 +266,14 @@ fun ResourceIndicator.toNewlyCreatedTransferableAsset(
         is ResourceIndicator.NonFungible -> {
             val items = nonFungibleLocalIds.map { localId ->
                 Item(
-                    collectionAddress = resourceAddress.addressString(),
+                    collectionAddress = ResourceAddress.init(resourceAddress.addressString()),
                     localId = localId
                 )
             }
 
             TransferableAsset.NonFungible.NFTAssets(
                 resource = Resource.NonFungibleResource(
-                    resourceAddress = resourceAddress.addressString(),
+                    address = ResourceAddress.init(resourceAddress.addressString()),
                     amount = items.size.toLong(),
                     items = items,
                     metadata = metadataItems

@@ -20,9 +20,7 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
-import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionGuarantee
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -267,7 +265,7 @@ class TransactionSubmitDelegate @Inject constructor(
             TransactionGuarantee(
                 amount = assertion.amount.toDecimal192(),
                 instructionIndex = assertion.instructionIndex.toULong(),
-                resourceAddress = ResourceAddress.init(resource.resourceAddress),
+                resourceAddress = resource.address,
                 resourceDivisibility = resource.divisibility?.toUByte()
             )
         }
