@@ -176,7 +176,7 @@ fun TotalFiatBalanceViewToggle(
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalanceZeroPreview() {
+fun TotalFiatBalanceZeroPreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
@@ -196,7 +196,7 @@ fun TotalBalanceZeroPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalancePreview() {
+fun TotalFiatBalancePreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
@@ -216,7 +216,7 @@ fun TotalBalancePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalanceWithValueLessThanOnePreview() {
+fun TotalFiatBalanceWithValueLessThanOnePreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
@@ -236,7 +236,7 @@ fun TotalBalanceWithValueLessThanOnePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalanceWithVerySmallValuePreview() {
+fun TotalFiatBalanceWithVerySmallValuePreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
@@ -257,7 +257,7 @@ fun TotalBalanceWithVerySmallValuePreview() {
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun TotalBalanceWithLongValuePreview() {
+fun TotalFiatBalanceWithLongValuePreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
@@ -277,7 +277,7 @@ fun TotalBalanceWithLongValuePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalanceErrorPreview() {
+fun TotalFiatBalanceErrorPreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
@@ -294,7 +294,7 @@ fun TotalBalanceErrorPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalanceHiddenPreview() {
+fun TotalFiatBalanceHiddenPreview() {
     RadixWalletTheme {
         CompositionLocalProvider(value = LocalBalanceVisibility.provides(false)) {
             TotalFiatBalanceView(
