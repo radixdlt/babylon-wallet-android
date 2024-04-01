@@ -12,6 +12,7 @@ import com.babylon.wallet.android.data.repository.cache.database.AccountResource
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
@@ -211,7 +212,7 @@ interface StateDao {
             AccountNFTJoin.state_version = :stateVersion
         """
     )
-    fun getOwnedNfts(accountAddress: String, resourceAddress: String, stateVersion: Long): List<NFTEntity>
+    fun getOwnedNfts(accountAddress: String, resourceAddress: ResourceAddress, stateVersion: Long): List<NFTEntity>
 
     @Query(
         """
@@ -220,7 +221,7 @@ interface StateDao {
         WHERE AccountResourceJoin.account_address = :accountAddress AND AccountResourceJoin.resource_address = :resourceAddress
     """
     )
-    fun updateNextCursor(accountAddress: String, resourceAddress: String, cursor: String?)
+    fun updateNextCursor(accountAddress: String, resourceAddress: ResourceAddress, cursor: String?)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAccountNFTsJoin(accountNFTsJoin: List<AccountNFTJoin>)
@@ -231,7 +232,7 @@ interface StateDao {
     @Transaction
     fun insertAccountNFTsJoin(
         accountAddress: String,
-        resourceAddress: String,
+        resourceAddress: ResourceAddress,
         cursor: String?,
         nfts: List<NFTEntity>,
         accountNFTsJoin: List<AccountNFTJoin>,
@@ -247,7 +248,7 @@ interface StateDao {
         WHERE address = :resourceAddress AND synced >= :minValidity
     """
     )
-    fun getResourceDetails(resourceAddress: String, minValidity: Long): ResourceEntity?
+    fun getResourceDetails(resourceAddress: ResourceAddress, minValidity: Long): ResourceEntity?
 
     @Query(
         """
@@ -258,7 +259,7 @@ interface StateDao {
             state_version = (SELECT state_version FROM AccountEntity WHERE address = :accountAddress)
     """
     )
-    fun getAccountResourceJoin(resourceAddress: String, accountAddress: String): AccountResourceJoin?
+    fun getAccountResourceJoin(resourceAddress: ResourceAddress, accountAddress: String): AccountResourceJoin?
 
     @Query(
         """
@@ -266,7 +267,7 @@ interface StateDao {
         WHERE address = :resourceAddress AND local_id = :localId and synced >= :minValidity
     """
     )
-    fun getNFTDetails(resourceAddress: String, localId: NonFungibleLocalId, minValidity: Long): NFTEntity?
+    fun getNFTDetails(resourceAddress: ResourceAddress, localId: NonFungibleLocalId, minValidity: Long): NFTEntity?
 
     @Query(
         """
@@ -274,7 +275,7 @@ interface StateDao {
         WHERE address = :resourceAddress AND local_id in (:localIds) and synced >= :minValidity
     """
     )
-    fun getNFTDetails(resourceAddress: String, localIds: Set<NonFungibleLocalId>, minValidity: Long): List<NFTEntity>?
+    fun getNFTDetails(resourceAddress: ResourceAddress, localIds: Set<NonFungibleLocalId>, minValidity: Long): List<NFTEntity>?
 
     @Transaction
     fun storeStakeDetails(

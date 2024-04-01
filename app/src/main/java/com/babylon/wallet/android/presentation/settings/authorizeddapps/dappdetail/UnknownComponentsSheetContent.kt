@@ -24,9 +24,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.core.AddressHelper
 
 @Composable
 fun UnknownComponentsSheetContent(
@@ -35,7 +36,7 @@ fun UnknownComponentsSheetContent(
     unknownComponentAddresses: ImmutableList<String>
 ) {
     val isPools = remember(unknownComponentAddresses) {
-        unknownComponentAddresses.all { AddressHelper.isPool(it) }
+        unknownComponentAddresses.all { runCatching { PoolAddress.init(it) }.getOrNull() != null }
     }
 
     Column(modifier = modifier) {
@@ -68,7 +69,7 @@ fun UnknownComponentsSheetContent(
 
                         Column {
                             val isPool = remember(unknownComponentAddress) {
-                                AddressHelper.isPool(unknownComponentAddress)
+                                runCatching { PoolAddress.init(unknownComponentAddress) }.getOrNull() != null
                             }
                             Text(
                                 text = if (isPool) {

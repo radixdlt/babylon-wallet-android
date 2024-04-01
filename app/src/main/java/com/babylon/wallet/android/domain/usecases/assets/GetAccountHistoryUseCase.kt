@@ -7,6 +7,7 @@ import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.TransactionHistoryData
 import com.babylon.wallet.android.domain.model.toDomainModel
 import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
@@ -100,19 +101,19 @@ class GetAccountHistoryUseCase @Inject constructor(
 
     private fun resolveResponseAssetAddresses(
         response: StreamTransactionsResponse
-    ): Pair<Set<String>, MutableMap<String, Set<NonFungibleLocalId>>> {
+    ): Pair<Set<ResourceAddress>, MutableMap<ResourceAddress, Set<NonFungibleLocalId>>> {
         val fungibleAddresses = response.items.map {
             it.balanceChanges?.fungibleBalanceChanges?.map { balanceChange ->
-                balanceChange.resourceAddress
+                ResourceAddress.init(balanceChange.resourceAddress)
             }.orEmpty().toSet() +
                 it.balanceChanges?.nonFungibleBalanceChanges?.map { balanceChange ->
-                    balanceChange.resourceAddress
+                    ResourceAddress.init(balanceChange.resourceAddress)
                 }.orEmpty().toSet()
         }.flatten().toSet()
-        val nonFungibleAddresses = response.items.fold(mutableMapOf<String, Set<NonFungibleLocalId>>()) { acc, item ->
+        val nonFungibleAddresses = response.items.fold(mutableMapOf<ResourceAddress, Set<NonFungibleLocalId>>()) { acc, item ->
             acc.apply {
                 item.balanceChanges?.nonFungibleBalanceChanges?.forEach { balanceChange ->
-                    val nftCollectionAddress = balanceChange.resourceAddress
+                    val nftCollectionAddress = ResourceAddress.init(balanceChange.resourceAddress)
                     val nftLocalIds = (balanceChange.added.toSet() + balanceChange.removed).map {
                         NonFungibleLocalId.init(it)
                     }.toSet()

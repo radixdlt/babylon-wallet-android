@@ -57,7 +57,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
     private val sampleProfile = profile(accounts = identifiedArrayListOf(account(address = "adr_1", name = "primary")))
     private val sampleXrdResource = Resource.FungibleResource(
-        resourceAddress = XrdResource.address(networkId = Radix.Network.mainnet.id),
+        address = XrdResource.address(networkId = Radix.Network.mainnet.id),
         ownedAmount = BigDecimal.TEN,
         metadata = listOf(
             Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = XrdResource.SYMBOL, valueType = MetadataType.String)

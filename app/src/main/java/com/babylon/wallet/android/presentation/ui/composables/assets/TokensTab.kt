@@ -60,7 +60,7 @@ fun LazyListScope.tokensTab(
 
     itemsIndexed(
         items = assetsViewData.nonXrdTokens,
-        key = { _, token -> token.resource.resourceAddress },
+        key = { _, token -> token.resource.address },
         itemContent = { index, token ->
             AssetCard(
                 modifier = Modifier
@@ -105,7 +105,7 @@ private fun FungibleResourceItem(
                     }
 
                     is AssetsViewAction.Selection -> {
-                        action.onFungibleCheckChanged(resource, !action.isSelected(resource.resourceAddress))
+                        action.onFungibleCheckChanged(resource, !action.isSelected(resource.address))
                     }
                 }
             }
@@ -155,7 +155,7 @@ private fun FungibleResourceItem(
 
         if (action is AssetsViewAction.Selection) {
             val isSelected = remember(resource, action) {
-                action.isSelected(resource.resourceAddress)
+                action.isSelected(resource.address)
             }
             AssetsViewCheckBox(
                 isSelected = isSelected,

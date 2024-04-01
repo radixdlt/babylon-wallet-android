@@ -35,8 +35,6 @@ class AccountViewModelTest {
     private val appEventBus = Mockito.mock(AppEventBus::class.java)
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
 
-    private val sampleData = SampleDataProvider().sampleAccountWithResources(address = accountId)
-
     @Before
     fun setUp() = runTest {
         coEvery { preferencesManager.getBackedUpFactorSourceIds() } returns flowOf(emptySet())

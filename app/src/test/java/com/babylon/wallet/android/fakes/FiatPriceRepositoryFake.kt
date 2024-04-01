@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.fakes
 
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
-import rdx.works.core.domain.assets.FiatPrice
-import rdx.works.core.domain.assets.SupportedCurrency
 import com.babylon.wallet.android.mockdata.mockLSUAddress1
 import com.babylon.wallet.android.mockdata.mockLSUAddress2
 import com.babylon.wallet.android.mockdata.mockNFTAddressForStakeClaim1
@@ -13,7 +11,9 @@ import com.babylon.wallet.android.mockdata.mockResourceAddress3
 import com.babylon.wallet.android.mockdata.mockResourceAddress4
 import com.babylon.wallet.android.mockdata.mockResourceAddress5
 import com.babylon.wallet.android.mockdata.mockResourceAddressXRD
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.ResourceAddress
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 
 class FiatPriceRepositoryFake : FiatPriceRepository {
 
@@ -27,7 +27,7 @@ class FiatPriceRepositoryFake : FiatPriceRepository {
         addresses: Set<FiatPriceRepository.PriceRequestAddress>,
         currency: SupportedCurrency,
         isRefreshing: Boolean
-    ): Result<Map<String, FiatPrice>> {
+    ): Result<Map<ResourceAddress, FiatPrice>> {
         val all = addresses.map { it.address }
         val results = fiatPrices.filter {
             all.contains(it.key)
@@ -69,11 +69,11 @@ class FiatPriceRepositoryFake : FiatPriceRepository {
             price = mockLSUPrice2,
             currency = SupportedCurrency.USD
         ),
-        mockNFTAddressForStakeClaim1.string to FiatPrice(
+        mockNFTAddressForStakeClaim1 to FiatPrice(
             price = mockResourceXRDPrice,
             currency = SupportedCurrency.USD
         ),
-        mockNFTAddressForStakeClaim2.string to FiatPrice(
+        mockNFTAddressForStakeClaim2 to FiatPrice(
             price = mockResourceXRDPrice,
             currency = SupportedCurrency.USD
         )

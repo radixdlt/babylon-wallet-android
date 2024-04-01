@@ -68,7 +68,7 @@ class ValidatorClaimProcessor @Inject constructor(
         return executionSummary.accountWithdraws.map { claimsPerAddress ->
             claimsPerAddress.value.map { resourceIndicator ->
                 val resourceAddress = resourceIndicator.resourceAddress
-                val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No asset found")
+                val asset = assets.find { it.resource.address == resourceAddress } ?: error("No asset found")
                 if (asset is StakeClaim) {
                     val nonFungibleIndicator = resourceIndicator as? ResourceIndicator.NonFungible
                         ?: error("No non-fungible resource claim found")

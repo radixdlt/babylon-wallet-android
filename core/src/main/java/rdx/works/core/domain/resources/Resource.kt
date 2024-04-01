@@ -1,6 +1,7 @@
 package rdx.works.core.domain.resources
 
 import android.net.Uri
+import androidx.annotation.VisibleForTesting
 import com.radixdlt.derivation.model.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
@@ -8,13 +9,18 @@ import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.intId
+import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.xrd
+import com.radixdlt.sargon.samples.SampleWithRandomValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import rdx.works.core.AddressHelper
 import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.assets.AssetBehaviours
 import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.claimAmount
 import rdx.works.core.domain.resources.metadata.claimEpoch
 import rdx.works.core.domain.resources.metadata.description
@@ -26,9 +32,10 @@ import rdx.works.core.domain.resources.metadata.symbol
 import rdx.works.core.domain.resources.metadata.tags
 import rdx.works.core.domain.resources.metadata.validatorAddress
 import java.math.BigDecimal
+import kotlin.random.Random
 
 sealed class Resource {
-    abstract val resourceAddress: String
+    abstract val address: ResourceAddress
     abstract val validatorAddress: ValidatorAddress?
     abstract val name: String
     abstract val iconUrl: Uri?
@@ -41,7 +48,7 @@ sealed class Resource {
         }
 
     data class FungibleResource(
-        override val resourceAddress: String,
+        override val address: ResourceAddress,
         val ownedAmount: BigDecimal?,
         private val assetBehaviours: AssetBehaviours? = null,
         val currentSupply: BigDecimal? = null,
@@ -70,6 +77,10 @@ sealed class Resource {
 
         val poolAddress: PoolAddress? by lazy {
             metadata.poolAddress()
+        }
+
+        val isXrd: Boolean by lazy {
+            ResourceAddress.xrd(address.networkId) == address
         }
 
         val tags: ImmutableList<Tag> by lazy {
@@ -131,7 +142,7 @@ sealed class Resource {
             return if (symbolDiff != 0) {
                 symbolDiff
             } else {
-                resourceAddress.compareTo(other.resourceAddress)
+                address.string.compareTo(other.address.string)
             }
         }
 
@@ -139,7 +150,7 @@ sealed class Resource {
     }
 
     data class NonFungibleResource(
-        override val resourceAddress: String,
+        override val address: ResourceAddress,
         val amount: Long,
         private val assetBehaviours: AssetBehaviours? = null,
         val items: List<Item>,
@@ -177,19 +188,19 @@ sealed class Resource {
                 name == null && otherName != null -> 1
                 name != null && otherName == null -> -1
                 name != null && otherName != null -> name.compareTo(otherName)
-                else -> resourceAddress.compareTo(other.resourceAddress)
+                else -> address.string.compareTo(other.address.string)
             }
         }
 
         data class Item(
-            val collectionAddress: String,
+            val collectionAddress: ResourceAddress,
             val localId: NonFungibleLocalId,
             val metadata: List<Metadata> = emptyList()
         ) : Comparable<Item> {
 
             val globalId: NonFungibleGlobalId by lazy {
                 NonFungibleGlobalId(
-                    resourceAddress = ResourceAddress.init(collectionAddress),
+                    resourceAddress = collectionAddress,
                     nonFungibleLocalId = localId
                 )
             }
@@ -289,18 +300,137 @@ private fun String.truncate(maxNumberOfCharacters: Int, addEllipsis: Boolean = t
 object XrdResource {
     const val SYMBOL = "XRD"
 
-    fun address(networkId: Int): String {
-        return AddressHelper.xrdAddress(forNetworkId = networkId)
+    fun address(networkId: Int): ResourceAddress {
+        return ResourceAddress.xrd(com.radixdlt.sargon.NetworkId.init(discriminant = networkId.toUByte()))
     }
 
-    fun addressesPerNetwork(): Map<Int, String> = NetworkId.entries.associate { entry ->
+    fun addressesPerNetwork(): Map<Int, ResourceAddress> = NetworkId.entries.associate { entry ->
         entry.value to address(networkId = entry.value)
     }
 }
 
-val Resource.FungibleResource.isXrd: Boolean
-    get() {
-        val networkIdValue = AddressHelper.networkIdOrNull(resourceAddress) ?: return false
+@Suppress("MagicNumber")
+@VisibleForTesting
+val Resource.FungibleResource.Companion.sampleMainnet
+    @VisibleForTesting
+    get() = object : SampleWithRandomValues<Resource.FungibleResource> {
+        override fun invoke(): Resource.FungibleResource = Resource.FungibleResource(
+            address = ResourceAddress.sampleMainnet.xrd,
+            ownedAmount = BigDecimal.TEN,
+            metadata = listOf(
+                Metadata.Primitive(
+                    key = ExplicitMetadataKey.NAME.key,
+                    value = "Radix",
+                    valueType = MetadataType.String
+                ),
+                Metadata.Primitive(
+                    key = ExplicitMetadataKey.SYMBOL.key,
+                    value = "XRD",
+                    valueType = MetadataType.String
+                )
+            )
+        )
 
-        return XrdResource.address(networkId = networkIdValue) == resourceAddress
+        override fun other(): Resource.FungibleResource = Resource.FungibleResource(
+            address = ResourceAddress.sampleMainnet.candy,
+            ownedAmount = BigDecimal.valueOf(100),
+            metadata = listOf(
+                Metadata.Primitive(
+                    key = ExplicitMetadataKey.NAME.key,
+                    value = "Candy",
+                    valueType = MetadataType.String
+                ),
+                Metadata.Primitive(
+                    key = ExplicitMetadataKey.SYMBOL.key,
+                    value = "CND",
+                    valueType = MetadataType.String
+                )
+            )
+        )
+
+        override fun random(): Resource.FungibleResource = Resource.FungibleResource(
+            address = ResourceAddress.sampleMainnet.random(),
+            ownedAmount = BigDecimal.valueOf(Random.nextLong(10000)),
+            metadata = with(Random.nextInt()) {
+                listOf(
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.NAME.key,
+                        value = "Random $this resource",
+                        valueType = MetadataType.String
+                    ),
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.SYMBOL.key,
+                        value = "RND$this",
+                        valueType = MetadataType.String
+                    )
+                )
+            }
+        )
+    }
+
+@VisibleForTesting
+val Resource.NonFungibleResource.Companion.sampleMainnet
+    @VisibleForTesting
+    get() = object : SampleWithRandomValues<Resource.NonFungibleResource> {
+        override fun invoke(): Resource.NonFungibleResource = Resource.NonFungibleResource(
+            address = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
+            amount = 2,
+            metadata = listOf(
+                Metadata.Primitive(
+                    key = ExplicitMetadataKey.NAME.key,
+                    value = "Collection 1",
+                    valueType = MetadataType.String
+                )
+            ),
+            items = listOf(
+                Resource.NonFungibleResource.Item(
+                    collectionAddress = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
+                    localId = NonFungibleLocalId.intId(0.toULong())
+                ),
+                Resource.NonFungibleResource.Item(
+                    collectionAddress = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
+                    localId = NonFungibleLocalId.intId(1.toULong())
+                )
+            )
+        )
+
+        override fun other(): Resource.NonFungibleResource = with(ResourceAddress.sampleMainnet.random()) {
+            Resource.NonFungibleResource(
+                address = this,
+                amount = 1,
+                metadata = listOf(
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.NAME.key,
+                        value = "Collection 2",
+                        valueType = MetadataType.String
+                    )
+                ),
+                items = listOf(
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = this,
+                        localId = NonFungibleLocalId.intId(0.toULong())
+                    )
+                )
+            )
+        }
+
+        override fun random(): Resource.NonFungibleResource = with(ResourceAddress.sampleMainnet.random()) {
+            Resource.NonFungibleResource(
+                address = this,
+                amount = 1,
+                metadata = listOf(
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.NAME.key,
+                        value = "Collection ${Random.nextInt()}",
+                        valueType = MetadataType.String
+                    )
+                ),
+                items = listOf(
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = this,
+                        localId = NonFungibleLocalId.intId(0.toULong())
+                    )
+                )
+            )
+        }
     }

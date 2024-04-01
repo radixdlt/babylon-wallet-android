@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.repository.cache.database.AccountNFTJoin.
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
 import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.resources.Pool
@@ -52,7 +53,7 @@ fun StateDao.getCachedValidators(addresses: Set<ValidatorAddress>, atStateVersio
 
 fun StateDao.storeAccountNFTsPortfolio(
     accountAddress: String,
-    resourceAddress: String,
+    resourceAddress: ResourceAddress,
     nextCursor: String?,
     items: List<StateNonFungibleDetailsResponseItem>,
     syncInfo: SyncInfo

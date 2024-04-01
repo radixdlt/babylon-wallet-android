@@ -2,6 +2,7 @@ package com.babylon.wallet.android.domain.model
 
 import androidx.annotation.FloatRange
 import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.ResourceAddress
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
@@ -113,8 +114,8 @@ sealed interface GuaranteeType {
 sealed interface TransferableAsset {
 
     val resource: Resource
-    val resourceAddress: String
-        get() = resource.resourceAddress
+    val resourceAddress: ResourceAddress
+        get() = resource.address
     val isNewlyCreated: Boolean
 
     sealed class Fungible : TransferableAsset {
@@ -138,7 +139,7 @@ sealed interface TransferableAsset {
         data class PoolUnitAsset(
             override val amount: BigDecimal,
             val unit: PoolUnit,
-            val contributionPerResource: Map<String, BigDecimal>,
+            val contributionPerResource: Map<ResourceAddress, BigDecimal>,
             override val isNewlyCreated: Boolean = false
         ) : Fungible() {
             override val resource: Resource.FungibleResource

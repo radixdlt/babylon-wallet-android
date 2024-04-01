@@ -22,6 +22,12 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDataResponse
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.repository.toResult
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.VaultAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -94,12 +100,12 @@ suspend fun StateApi.fetchPools(
 ): PoolsResponse {
     if (poolAddresses.isEmpty()) return PoolsResponse(emptyList(), stateVersion)
 
-    val poolUnitToPool = mutableMapOf<String, String>()
-    val poolToResources = mutableMapOf<String, List<FungibleResourcesCollectionItem>>()
-    val poolToDAppDefinition = mutableMapOf<String, String>()
+    val poolUnitToPool = mutableMapOf<ResourceAddress, PoolAddress>()
+    val poolToResources = mutableMapOf<PoolAddress, List<FungibleResourcesCollectionItem>>()
+    val poolToDAppDefinition = mutableMapOf<PoolAddress, AccountAddress>()
 
-    val poolDetails = mutableMapOf<String, StateEntityDetailsResponseItem>()
-    val dApps = mutableMapOf<String, StateEntityDetailsResponseItem>()
+    val poolDetails = mutableMapOf<PoolAddress, StateEntityDetailsResponseItem>()
+    val dApps = mutableMapOf<AccountAddress, StateEntityDetailsResponseItem>()
 
     var resolvedVersion = stateVersion
     paginateDetails(
@@ -108,20 +114,24 @@ suspend fun StateApi.fetchPools(
         stateVersion = resolvedVersion,
     ) { page ->
         page.items.forEach { pool ->
-            poolDetails[pool.address] = pool
+            val poolAddress = PoolAddress.init(pool.address)
+
+            poolDetails[poolAddress] = pool
             val metadata = pool.explicitMetadata?.toMetadata().orEmpty()
-            val poolUnit = metadata.poolUnit().orEmpty()
+            val poolUnit = metadata.poolUnit()
 
             // Associate Pool with Pool Unit
-            poolUnitToPool[poolUnit] = pool.address
+            if (poolUnit != null) {
+                poolUnitToPool[poolUnit] = poolAddress
+            }
 
             // Associate Pool with resources
-            poolToResources[pool.address] = pool.fungibleResources?.items.orEmpty()
+            poolToResources[poolAddress] = pool.fungibleResources?.items.orEmpty()
 
             // Associate pool with dApp definition
             val dAppDefinition = metadata.dAppDefinition()
             if (dAppDefinition != null) {
-                poolToDAppDefinition[pool.address] = dAppDefinition
+                poolToDAppDefinition[poolAddress] = AccountAddress.init(dAppDefinition)
             }
         }
         resolvedVersion = page.ledgerState.stateVersion
@@ -131,17 +141,17 @@ suspend fun StateApi.fetchPools(
     val dAppDefinitionAddresses = poolToDAppDefinition.values.toSet()
     if (dAppDefinitionAddresses.isNotEmpty()) {
         paginateDetails(
-            addresses = dAppDefinitionAddresses,
+            addresses = dAppDefinitionAddresses.map { it.string }.toSet(),
             metadataKeys = ExplicitMetadataKey.forDApps,
             stateVersion = resolvedVersion
         ) { page ->
             page.items.forEach { item ->
-                val dAppDefinition = item.address
+                val dAppDefinition = AccountAddress.init(item.address)
                 val claimedEntities = item.explicitMetadata?.toMetadata().orEmpty().claimedEntities()
                 if (claimedEntities != null) {
                     val poolAddress = poolToDAppDefinition.entries.find { entry ->
                         entry.value == dAppDefinition
-                    }?.key
+                    }?.key?.string
 
                     if (poolAddress in claimedEntities) {
                         // Two way linking exists, store dApp information
@@ -155,14 +165,15 @@ suspend fun StateApi.fetchPools(
     // Resolve Pool Units
     val poolItems = mutableListOf<PoolsResponse.PoolItem>()
     paginateDetails(
-        addresses = poolUnitToPool.keys,
+        addresses = poolUnitToPool.keys.map { it.string }.toSet(),
         metadataKeys = ExplicitMetadataKey.forAssets,
         stateVersion = resolvedVersion
     ) { page ->
         page.items.forEach { poolUnitDetails ->
-            val poolAddress = poolUnitToPool[poolUnitDetails.address]
+            val poolUnitAddress = ResourceAddress.init(poolUnitDetails.address)
+            val poolAddress = poolUnitToPool[poolUnitAddress]
             poolDetails[poolAddress]?.let { poolDetails ->
-                val dAppDefinition = poolToDAppDefinition[poolDetails.address]
+                val dAppDefinition = poolToDAppDefinition[PoolAddress.init(poolDetails.address)]
                 val dAppDetails = if (dAppDefinition != null) {
                     dApps[dAppDefinition]
                 } else {
@@ -226,13 +237,13 @@ data class ValidatorsResponse(
     val stateVersion: Long? = null
 )
 
-suspend fun StateApi.fetchVaultDetails(vaultAddresses: Set<String>): Map<String, BigDecimal> {
-    val vaultAmount = mutableMapOf<String, BigDecimal>()
-    paginateDetails(vaultAddresses) { page ->
+suspend fun StateApi.fetchVaultDetails(vaultAddresses: Set<VaultAddress>): Map<VaultAddress, BigDecimal> {
+    val vaultAmount = mutableMapOf<VaultAddress, BigDecimal>()
+    paginateDetails(vaultAddresses.map { it.string }.toSet()) { page ->
         page.items.forEach { item ->
             val vaultDetails = item.details as? StateEntityDetailsResponseFungibleVaultDetails ?: return@forEach
             val amount = vaultDetails.balance.amount.toBigDecimalOrNull() ?: return@forEach
-            vaultAmount[vaultDetails.balance.vaultAddress] = amount
+            vaultAmount[VaultAddress.init(vaultDetails.balance.vaultAddress)] = amount
         }
     }
     return vaultAmount
@@ -240,15 +251,15 @@ suspend fun StateApi.fetchVaultDetails(vaultAddresses: Set<String>): Map<String,
 
 suspend fun StateApi.getNextNftItems(
     accountAddress: String,
-    resourceAddress: String,
-    vaultAddress: String,
+    resourceAddress: ResourceAddress,
+    vaultAddress: VaultAddress,
     nextCursor: String?,
     stateVersion: Long
 ): Pair<String?, List<StateNonFungibleDetailsResponseItem>> = entityNonFungibleIdsPage(
     StateEntityNonFungibleIdsPageRequest(
         address = accountAddress,
-        vaultAddress = vaultAddress,
-        resourceAddress = resourceAddress,
+        vaultAddress = vaultAddress.string,
+        resourceAddress = resourceAddress.string,
         cursor = nextCursor,
         atLedgerState = LedgerStateSelector(stateVersion = stateVersion)
     )
@@ -257,7 +268,7 @@ suspend fun StateApi.getNextNftItems(
     ids.items.chunked(ENTITY_DETAILS_PAGE_LIMIT).forEach { idsPage ->
         nonFungibleData(
             StateNonFungibleDataRequest(
-                resourceAddress = resourceAddress,
+                resourceAddress = resourceAddress.string,
                 nonFungibleIds = idsPage,
                 atLedgerState = LedgerStateSelector(stateVersion = stateVersion)
             )

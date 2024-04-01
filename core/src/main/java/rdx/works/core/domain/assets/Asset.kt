@@ -2,7 +2,6 @@ package rdx.works.core.domain.assets
 
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
-import rdx.works.core.domain.resources.isXrd
 import java.math.BigDecimal
 
 sealed interface Asset {
