@@ -2,7 +2,9 @@ package com.babylon.wallet.android.presentation.model
 
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.truncatedHash
-import rdx.works.core.domain.resources.Resource
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.init
 import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.derivation.model.NetworkId
 
@@ -18,9 +20,9 @@ data class ActionableAddress(
 
     val displayAddress: String = if (isNft) {
         val localId = address.split(NFT_DELIMITER)[1]
-        Resource.NonFungibleResource.Item.ID.from(localId).displayable
+        NonFungibleLocalId.init(localId).formatted()
     } else if (type is Type.LocalId) {
-        type.id.displayable
+        type.id.formatted()
     } else {
         if (truncateAddress) address.truncatedHash() else address
     }
@@ -77,7 +79,7 @@ data class ActionableAddress(
         }
 
         data class LocalId(
-            val id: Resource.NonFungibleResource.Item.ID
+            val id: NonFungibleLocalId
         ) : Type
 
         companion object {
@@ -85,7 +87,7 @@ data class ActionableAddress(
                 val globalType = Global.from(address)
                 return if (globalType == null) {
                     val localId = runCatching {
-                        Resource.NonFungibleResource.Item.ID.from(address)
+                        NonFungibleLocalId.init(address)
                     }.getOrNull()
 
                     if (localId != null) {

@@ -51,6 +51,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
@@ -269,7 +272,7 @@ private fun NonFungibleSpendingAsset(
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
         Column {
             Text(
-                text = nft.localId.displayable,
+                text = nft.localId.formatted(),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2Regular
             )
@@ -356,7 +359,7 @@ fun SpendingAssetItemsPreview() {
 
             val item = Resource.NonFungibleResource.Item(
                 collectionAddress = "resource_rdx_abcd",
-                localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_39>"),
+                localId = NonFungibleLocalId.init("<dbooker_dunk_39>"),
                 metadata = listOf(
                     Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, "Local item with ID 39", valueType = MetadataType.String),
                     Metadata.Primitive(

@@ -9,7 +9,6 @@ import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AssetsTransfersRecipient
-import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PerAssetFungibleResource
 import com.radixdlt.sargon.PerAssetFungibleTransfer
 import com.radixdlt.sargon.PerAssetNonFungibleTransfer
@@ -111,7 +110,7 @@ class PrepareManifestDelegate @Inject constructor(
                 perNFTAssetTransfer.add(
                     PerAssetNonFungibleTransfer(
                         useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(entry.key.resourceAddress, accountsAbleToSign),
-                        nonFungibleLocalIds = entry.value.map { NonFungibleLocalId.init(it.localId.code) },
+                        nonFungibleLocalIds = entry.value.map { it.localId },
                         recipient = targetAccount.toAssetTransfersRecipient()
                     )
                 )

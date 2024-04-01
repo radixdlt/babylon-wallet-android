@@ -37,6 +37,7 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.name
 import com.babylon.wallet.android.utils.timestampHoursMinutes
 import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -450,7 +451,7 @@ private fun NftItemBalanceChange(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = nftItem.name ?: nftItem.localId.displayable,
+                text = nftItem.name ?: nftItem.localId.formatted(),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,

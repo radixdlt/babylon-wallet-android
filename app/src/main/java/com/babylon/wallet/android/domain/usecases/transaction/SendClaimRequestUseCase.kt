@@ -3,7 +3,6 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.NonFungibleResourceAddress
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.init
@@ -37,7 +36,7 @@ class SendClaimRequestUseCase @Inject constructor(
                     SargonStakeClaim(
                         resourceAddress = NonFungibleResourceAddress.init(claim.resourceAddress),
                         validatorAddress = claim.validatorAddress,
-                        ids = nfts.map { NonFungibleLocalId.init(it.localId.code) },
+                        ids = nfts.map { it.localId },
                         amount = nfts.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO }.toDecimal192(),
                     )
                 }
@@ -64,7 +63,7 @@ class SendClaimRequestUseCase @Inject constructor(
                     SargonStakeClaim(
                         resourceAddress = NonFungibleResourceAddress.init(claim.resourceAddress),
                         validatorAddress = claim.validatorAddress,
-                        ids = listOf(NonFungibleLocalId.init(nft.localId.code)),
+                        ids = listOf(nft.localId),
                         amount = (nft.claimAmountXrd ?: BigDecimal.ZERO).toDecimal192(),
                     )
                 )

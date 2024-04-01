@@ -13,7 +13,9 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.extensions.init
 import java.math.BigDecimal
 
 @Entity(
@@ -94,7 +96,7 @@ data class AccountNFTJoin(
     @ColumnInfo("resource_address")
     val resourceAddress: String,
     @ColumnInfo("local_id")
-    val localId: String,
+    val localId: NonFungibleLocalId,
     @ColumnInfo("state_version")
     val stateVersion: Long
 ) {
@@ -107,7 +109,7 @@ data class AccountNFTJoin(
         ): Pair<AccountNFTJoin, NFTEntity> = AccountNFTJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
-            localId = nonFungibleId,
+            localId = NonFungibleLocalId.init(nonFungibleId),
             stateVersion = syncInfo.accountStateVersion
         ) to asEntity(resourceAddress, syncInfo.synced)
     }

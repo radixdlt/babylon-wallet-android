@@ -24,6 +24,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.discriminant
@@ -342,7 +343,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
         override suspend fun getNFTDetails(
             resourceAddress: String,
-            localIds: Set<String>
+            localIds: Set<NonFungibleLocalId>
         ): Result<List<Resource.NonFungibleResource.Item>> {
             error("Not needed")
         }
