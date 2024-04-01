@@ -60,20 +60,20 @@ fun account(
     onLedgerSettings = Network.Account.OnLedgerSettings.init()
 )
 
-const val mockResourceAddressXRD = "resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd"
-const val mockResourceAddress1 = "resourceAddress_1"
-const val mockResourceAddress2 = "resourceAddress_2"
-const val mockResourceAddress3 = "resourceAddress_3"
-const val mockResourceAddress4 = "resourceAddress_4"
-const val mockResourceAddress5 = "resourceAddress_5"
-const val mockSomeOtherResource = "some_other_strange_resource"
+val mockResourceAddressXRD = ResourceAddress.sampleMainnet.xrd.string
+val mockResourceAddress1 = ResourceAddress.sampleMainnet.random().string
+val mockResourceAddress2 = ResourceAddress.sampleMainnet.random().string
+val mockResourceAddress3 = ResourceAddress.sampleMainnet.random().string
+val mockResourceAddress4 = ResourceAddress.sampleMainnet.random().string
+val mockResourceAddress5 = ResourceAddress.sampleMainnet.random().string
+val mockSomeOtherResource = ResourceAddress.sampleMainnet.random().string
 
-const val mockLSUAddress1 = "mocKLSUAddress1"
-const val mockLSUAddress2 = "mocKLSUAddress2"
+val mockLSUAddress1 = ResourceAddress.sampleMainnet.random().string
+val mockLSUAddress2 = ResourceAddress.sampleMainnet.random().string
 
-const val mockStakeFungibleResourceAddress1 = "stakeFungibleResourceAddress1"
+val mockStakeFungibleResourceAddress1 = ResourceAddress.sampleMainnet.random().string
 val mockPoolAddress1 = PoolAddress.sampleMainnet()
-const val mockStakeFungibleResourceAddress2 = "stakeFungibleResourceAddress2"
+val mockStakeFungibleResourceAddress2 = ResourceAddress.sampleMainnet.random().string
 val mockPoolAddress2 = PoolAddress.sampleMainnet.other()
 
 val mockNFTAddressForStakeClaim1 = ResourceAddress.sampleMainnet.candy
