@@ -51,7 +51,7 @@ fun LazyListScope.nftsTab(
 
     assetsViewData.nonFungibleCollections.forEach { nonFungible ->
         item(
-            key = nonFungible.collection.address,
+            key = nonFungible.collection.address.string,
             contentType = { "collection" }
         ) {
             NFTHeader(

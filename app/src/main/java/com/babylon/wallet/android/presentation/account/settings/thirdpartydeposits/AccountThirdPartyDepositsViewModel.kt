@@ -12,9 +12,12 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.thirdPartyDepositUpdate
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -294,16 +297,15 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun assetExceptionAddressTyped(address: String) {
         val currentNetworkId = state.value.account?.networkID ?: return
-        val valid = AddressHelper.isValidResource(
-            address = address,
-            networkId = currentNetworkId
-        )
+        val isAddressValid = runCatching {
+            ResourceAddress.init(address).takeIf { it.networkId.discriminant.toInt() == currentNetworkId }
+        }.getOrNull() != null
         val alreadyAdded = state.value.assetExceptionsUiModels?.any { it.assetException.address == address } == true
 
         _state.update { state ->
             val updatedException = state.assetExceptionToAdd.copy(
                 assetException = state.assetExceptionToAdd.assetException.copy(address = address),
-                addressValid = valid && !alreadyAdded
+                addressValid = isAddressValid && !alreadyAdded
             )
             state.copy(assetExceptionToAdd = updatedException)
         }
@@ -312,19 +314,22 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun depositorAddressTyped(address: String) {
         val currentNetworkId = state.value.account?.networkID ?: return
-        val validAddress = AddressHelper.isValidResource(
-            address = address,
-            networkId = currentNetworkId
-        )
-        val validNft = AddressHelper.isValidNFT(address)
+        val validatedFungibleAddress = runCatching {
+            ResourceAddress.init(address).takeIf { it.networkId.discriminant.toInt() == currentNetworkId }
+        }.getOrNull()
+        val validatedNftAddress = runCatching {
+            // TODO ask that
+//            NonFungibleResourceAddress.init(address).takeIf { it.networkId.discriminant.toInt() == currentNetworkId }
+            NonFungibleGlobalId.init(address).takeIf { it.resourceAddress.networkId.discriminant.toInt() == currentNetworkId }
+        }.getOrNull()
         _state.update { state ->
             val updatedDepositor = state.depositorToAdd.copy(
                 depositorAddress = when {
-                    validAddress -> ThirdPartyDeposits.DepositorAddress.ResourceAddress(address)
-                    validNft -> ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(address)
+                    validatedFungibleAddress != null -> ThirdPartyDeposits.DepositorAddress.ResourceAddress(validatedFungibleAddress.string)
+                    validatedNftAddress != null -> ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(validatedNftAddress.string)
                     else -> null
                 },
-                addressValid = validAddress || validNft,
+                addressValid = validatedFungibleAddress != null || validatedNftAddress != null,
                 addressToDisplay = address
             )
             state.copy(depositorToAdd = updatedDepositor)
