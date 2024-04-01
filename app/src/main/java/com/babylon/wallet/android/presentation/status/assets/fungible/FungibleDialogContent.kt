@@ -33,10 +33,10 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalance
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.resources.isXrd
 import java.math.BigDecimal
 
 @Composable
@@ -123,7 +123,7 @@ fun FungibleDialogContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            address = resourceAddress,
+            address = resourceAddress.string,
             isNewlyCreatedEntity = isNewlyCreated
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))

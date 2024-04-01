@@ -7,6 +7,9 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.PoolUnit
@@ -50,21 +53,22 @@ class PoolContributionProcessor @Inject constructor(
         val to = accountDeposits.map { depositsPerAddress ->
             depositsPerAddress.value.map { deposit ->
                 val resourceAddress = deposit.resourceAddress
-                val poolUnit = assets.find { it.resource.resourceAddress == resourceAddress } as? PoolUnit
+                val poolUnit = assets.find { it.resource.address == resourceAddress } as? PoolUnit
                 if (poolUnit == null) {
                     resolveDepositingAsset(deposit, assets, defaultDepositGuarantee)
                 } else {
                     val contributions = classification.poolContributions.filter {
-                        it.poolUnitsResourceAddress.addressString() == resourceAddress
+                        it.poolUnitsResourceAddress.addressString() == resourceAddress.string
                     }
                     val contributedResourceAddresses = contributions.first().contributedResources.keys
                     val guaranteeType = deposit.guaranteeType(defaultDepositGuarantee)
                     val poolUnitAmount = contributions.find {
-                        it.poolUnitsResourceAddress.addressString() == poolUnit.resourceAddress
+                        it.poolUnitsResourceAddress.addressString() == poolUnit.resourceAddress.string
                     }?.poolUnitsAmount?.asStr()?.toBigDecimalOrNull()
-                    val contributionPerResource = contributedResourceAddresses.associateWith { contributedResourceAddress ->
-                        contributions.mapNotNull { it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
-                            .sumOf { it }
+                    val contributionPerResource = contributedResourceAddresses.associate { contributedResourceAddress ->
+                        ResourceAddress.init(contributedResourceAddress) to contributions.mapNotNull {
+                            it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal()
+                        }.sumOf { it }
                     }
                     Transferable.Depositing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(

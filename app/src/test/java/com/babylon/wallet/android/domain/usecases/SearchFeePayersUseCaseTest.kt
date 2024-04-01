@@ -104,7 +104,7 @@ class SearchFeePayersUseCaseTest {
                     fungibleResources = listOf(
                         PerAssetTransfersOfFungibleResource(
                             resource = PerAssetFungibleResource(
-                                resourceAddress = ResourceAddress.init(XrdResource.address(networkId = account.networkID)),
+                                resourceAddress = XrdResource.address(networkId = account.networkID),
                                 divisibility = 18.toUByte()
                             ),
                             transfers = listOf(
@@ -172,7 +172,7 @@ class SearchFeePayersUseCaseTest {
             }
 
             override suspend fun getResources(
-                addresses: Set<String>,
+                addresses: Set<ResourceAddress>,
                 underAccountAddress: String?,
                 withDetails: Boolean
             ): Result<List<Resource>> {
@@ -188,7 +188,7 @@ class SearchFeePayersUseCaseTest {
             }
 
             override suspend fun getNFTDetails(
-                resourceAddress: String,
+                resourceAddress: ResourceAddress,
                 localIds: Set<NonFungibleLocalId>
             ): Result<List<Resource.NonFungibleResource.Item>> {
                 error("Not needed")

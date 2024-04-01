@@ -178,7 +178,7 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
         BalanceChange.FungibleBalanceChange(
             item.balanceChange.toBigDecimal(),
             item.entityAddress,
-            when (val asset = assets.filterIsInstance<Asset.Fungible>().find { it.resource.resourceAddress == item.resourceAddress }) {
+            when (val asset = assets.filterIsInstance<Asset.Fungible>().find { it.resource.address.string == item.resourceAddress }) {
                 is LiquidStakeUnit -> asset.copy(
                     fungibleResource = asset.fungibleResource.copy(
                         ownedAmount = item.balanceChange.toBigDecimal().abs()
@@ -195,7 +195,7 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
         val relatedLocalIds = item.removed.toSet() + item.added
         val relatedAsset = when (
             val asset = assets.filterIsInstance<Asset.NonFungible>().find {
-                it.resource.resourceAddress == item.resourceAddress
+                it.resource.address.string == item.resourceAddress
             }
         ) {
             is NonFungibleCollection -> {

@@ -15,7 +15,9 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
 import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
@@ -33,7 +35,7 @@ enum class ResourceEntityType {
 
 @Entity
 data class ResourceEntity(
-    @PrimaryKey val address: String,
+    @PrimaryKey val address: ResourceAddress,
     val type: ResourceEntityType,
     val metadata: MetadataColumn?,
     val divisibility: Int?,
@@ -60,7 +62,7 @@ data class ResourceEntity(
         return when (type) {
             ResourceEntityType.FUNGIBLE -> {
                 Resource.FungibleResource(
-                    resourceAddress = address,
+                    address = address,
                     ownedAmount = amount,
                     assetBehaviours = behaviours?.behaviours?.toSet(),
                     currentSupply = supply,
@@ -71,7 +73,7 @@ data class ResourceEntity(
 
             ResourceEntityType.NON_FUNGIBLE -> {
                 Resource.NonFungibleResource(
-                    resourceAddress = address,
+                    address = address,
                     amount = amount?.toLong() ?: 0L,
                     assetBehaviours = behaviours?.behaviours?.toSet(),
                     items = emptyList(),
@@ -85,7 +87,7 @@ data class ResourceEntity(
     companion object {
         fun Resource.asEntity(synced: Instant): ResourceEntity = when (this) {
             is Resource.FungibleResource -> ResourceEntity(
-                address = resourceAddress,
+                address = address,
                 type = ResourceEntityType.FUNGIBLE,
                 divisibility = divisibility,
                 behaviours = behaviours?.let { BehavioursColumn(it) },
@@ -100,7 +102,7 @@ data class ResourceEntity(
             )
 
             is Resource.NonFungibleResource -> ResourceEntity(
-                address = resourceAddress,
+                address = address,
                 type = ResourceEntityType.NON_FUNGIBLE,
                 behaviours = behaviours?.let { BehavioursColumn(it) },
                 supply = currentSupply?.toBigDecimal(),
@@ -121,7 +123,7 @@ data class ResourceEntity(
             // In case we have fetched details for this item
             details: StateEntityDetailsResponseItemDetails? = null
         ): ResourceEntity = from(
-            address = resourceAddress,
+            address = ResourceAddress.init(resourceAddress),
             metadataCollection = explicitMetadata,
             details = details,
             type = ResourceEntityType.FUNGIBLE,
@@ -134,7 +136,7 @@ data class ResourceEntity(
             // In case we have fetched details for this item
             details: StateEntityDetailsResponseItemDetails? = null
         ): ResourceEntity = from(
-            address = resourceAddress,
+            address = ResourceAddress.init(resourceAddress),
             metadataCollection = explicitMetadata,
             details = details,
             type = ResourceEntityType.NON_FUNGIBLE,
@@ -151,7 +153,7 @@ data class ResourceEntity(
                 else -> error("Item is neither fungible nor non-fungible")
             }
             return from(
-                address = address,
+                address = ResourceAddress.init(address),
                 metadataCollection = metadata,
                 details = details,
                 type = type,
@@ -160,7 +162,7 @@ data class ResourceEntity(
         }
 
         private fun from(
-            address: String,
+            address: ResourceAddress,
             metadataCollection: EntityMetadataCollection?,
             details: StateEntityDetailsResponseItemDetails?,
             type: ResourceEntityType,

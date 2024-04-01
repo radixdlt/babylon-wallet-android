@@ -72,8 +72,8 @@ import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
+import com.radixdlt.sargon.extensions.networkId
 import kotlinx.coroutines.flow.StateFlow
-import rdx.works.core.AddressHelper
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.profile.domain.backup.BackupType
 
@@ -225,17 +225,17 @@ fun NavigationHost(
                 },
                 onFungibleResourceClick = { resource, account ->
                     val resourceWithAmount = resource.ownedAmount?.let {
-                        mapOf(resource.resourceAddress to it)
+                        mapOf(resource.address to it)
                     }.orEmpty()
                     navController.fungibleAssetDialog(
-                        resourceAddress = resource.resourceAddress,
+                        resourceAddress = resource.address,
                         amounts = resourceWithAmount,
                         underAccountAddress = account.address
                     )
                 },
                 onNonFungibleResourceClick = { resource, item, account ->
                     navController.nftAssetDialog(
-                        resourceAddress = resource.resourceAddress,
+                        resourceAddress = resource.address,
                         localId = item.localId,
                         underAccountAddress = account.address
                     )
@@ -347,32 +347,32 @@ fun NavigationHost(
                 val resourcesWithAmount = when (asset) {
                     is TransferableAsset.Fungible.LSUAsset -> {
                         val xrdResourceAddress = runCatching {
-                            val networkId = AddressHelper.networkId(asset.resourceAddress)
+                            val networkId = asset.resourceAddress.networkId.value.toInt()
                             XrdResource.address(networkId = networkId)
                         }.getOrNull()
 
                         mutableMapOf(
-                            asset.resource.resourceAddress to asset.amount,
+                            asset.resource.address to asset.amount,
                         ).apply {
                             if (xrdResourceAddress != null) {
                                 put(xrdResourceAddress, asset.xrdWorth)
                             }
                         }
                     }
-                    is TransferableAsset.Fungible.PoolUnitAsset -> mutableMapOf(asset.resource.resourceAddress to asset.amount).apply {
+                    is TransferableAsset.Fungible.PoolUnitAsset -> mutableMapOf(asset.resource.address to asset.amount).apply {
                         putAll(asset.contributionPerResource)
                     }
-                    is TransferableAsset.Fungible.Token -> mapOf(asset.resource.resourceAddress to asset.amount)
+                    is TransferableAsset.Fungible.Token -> mapOf(asset.resource.address to asset.amount)
                 }
                 navController.fungibleAssetDialog(
-                    resourceAddress = asset.resource.resourceAddress,
+                    resourceAddress = asset.resource.address,
                     amounts = resourcesWithAmount,
                     isNewlyCreated = asset.isNewlyCreated
                 )
             },
             onTransferableNonFungibleClick = { asset, item ->
                 navController.nftAssetDialog(
-                    resourceAddress = asset.resource.resourceAddress,
+                    resourceAddress = asset.resource.address,
                     localId = item.localId,
                     isNewlyCreated = asset.isNewlyCreated
                 )
@@ -489,10 +489,10 @@ fun NavigationHost(
         )
         dAppDetailsDialog(
             onFungibleClick = {
-                navController.fungibleAssetDialog(resourceAddress = it.resourceAddress)
+                navController.fungibleAssetDialog(resourceAddress = it.address)
             },
             onNonFungibleClick = {
-                navController.nftAssetDialog(resourceAddress = it.resourceAddress)
+                navController.nftAssetDialog(resourceAddress = it.address)
             },
             onDismiss = {
                 navController.popBackStack()

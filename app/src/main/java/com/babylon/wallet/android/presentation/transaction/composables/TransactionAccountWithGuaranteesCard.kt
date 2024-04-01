@@ -44,6 +44,7 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 import java.math.BigDecimal
 
 @Composable
@@ -248,7 +249,7 @@ fun TransactionAccountWithGuaranteesCardPreview() {
                     account = SampleDataProvider().sampleAccount(),
                     transferable = TransferableAsset.Fungible.Token(
                         amount = BigDecimal.TEN,
-                        resource = SampleDataProvider().sampleFungibleResources()[0],
+                        resource = Resource.FungibleResource.sampleMainnet(),
                         isNewlyCreated = false
                     ),
                     instructionIndex = 1L,

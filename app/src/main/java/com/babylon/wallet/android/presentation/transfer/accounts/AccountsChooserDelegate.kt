@@ -5,6 +5,7 @@ import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
+import com.radixdlt.sargon.ResourceAddress
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
@@ -144,7 +145,7 @@ class AccountsChooserDelegate @Inject constructor(
         }
     }
 
-    private suspend fun fetchKnownResourcesOfOwnedAccount(ownedAccount: Network.Account): List<String> {
+    private suspend fun fetchKnownResourcesOfOwnedAccount(ownedAccount: Network.Account): List<ResourceAddress> {
         return getWalletAssetsUseCase(
             accounts = listOf(ownedAccount),
             isRefreshing = false
@@ -153,7 +154,7 @@ class AccountsChooserDelegate @Inject constructor(
             .assets
             ?.knownResources
             ?.map { resource ->
-                resource.resourceAddress
+                resource.address
             }.orEmpty()
     }
 

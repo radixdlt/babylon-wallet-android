@@ -69,28 +69,31 @@ class ResourceTests {
 
     @Test
     fun `given a list of fungible resources, when displayed in a list, they are sorted correctly`() {
+        val resourceAddresses = List(9) {
+            ResourceAddress.sampleMainnet.random()
+        }.sortedBy { it.string }
         val unsortedList = listOf(
-            fungibleResource(address = "1", name = "NoSymbolToken", symbol = null),
-            fungibleResource(address = "9", name = null, symbol = "NNT"),
-            fungibleResource(address = "8", name = null, symbol = null),
-            fungibleResource(address = "4", name = "BigToken", symbol = null),
-            fungibleResource(address = "5", name = "RadToken", symbol = null),
-            fungibleResource(address = "7", name = "Another", symbol = "ANT"),
-            fungibleResource(address = "6", name = "Another", symbol = "ANT"),
-            fungibleResource(address = "2", name = null, symbol = "NNT"),
-            fungibleResource(address = "3", name = null, symbol = null),
+            fungibleResource(address = resourceAddresses[0], name = "NoSymbolToken", symbol = null),
+            fungibleResource(address = resourceAddresses[8], name = null, symbol = "NNT"),
+            fungibleResource(address = resourceAddresses[7], name = null, symbol = null),
+            fungibleResource(address = resourceAddresses[3], name = "BigToken", symbol = null),
+            fungibleResource(address = resourceAddresses[4], name = "RadToken", symbol = null),
+            fungibleResource(address = resourceAddresses[6], name = "Another", symbol = "ANT"),
+            fungibleResource(address = resourceAddresses[5], name = "Another", symbol = "ANT"),
+            fungibleResource(address = resourceAddresses[1], name = null, symbol = "NNT"),
+            fungibleResource(address = resourceAddresses[2], name = null, symbol = null),
         )
 
         val sortedList = listOf(
-            fungibleResource(address = "6", name = "Another", symbol = "ANT"),
-            fungibleResource(address = "7", name = "Another", symbol = "ANT"),
-            fungibleResource(address = "2", name = null, symbol = "NNT"),
-            fungibleResource(address = "9", name = null, symbol = "NNT"),
-            fungibleResource(address = "4", name = "BigToken", symbol = null),
-            fungibleResource(address = "1", name = "NoSymbolToken", symbol = null),
-            fungibleResource(address = "5", name = "RadToken", symbol = null),
-            fungibleResource(address = "3", name = null, symbol = null),
-            fungibleResource(address = "8", name = null, symbol = null),
+            fungibleResource(address = resourceAddresses[5], name = "Another", symbol = "ANT"),
+            fungibleResource(address = resourceAddresses[6], name = "Another", symbol = "ANT"),
+            fungibleResource(address = resourceAddresses[1], name = null, symbol = "NNT"),
+            fungibleResource(address = resourceAddresses[8], name = null, symbol = "NNT"),
+            fungibleResource(address = resourceAddresses[3], name = "BigToken", symbol = null),
+            fungibleResource(address = resourceAddresses[0], name = "NoSymbolToken", symbol = null),
+            fungibleResource(address = resourceAddresses[4], name = "RadToken", symbol = null),
+            fungibleResource(address = resourceAddresses[2], name = null, symbol = null),
+            fungibleResource(address = resourceAddresses[7], name = null, symbol = null),
         )
 
         Assert.assertEquals(sortedList, unsortedList.sorted())
@@ -103,25 +106,25 @@ class ResourceTests {
         val resourceAddress3 = ResourceAddress.sampleMainnet.random()
         val resourceAddress4 = ResourceAddress.sampleMainnet.random()
         val unsortedList = listOf(
-            nonFungibleCollection(address = resourceAddress2.string, name = "Name 2", items = listOf(
+            nonFungibleCollection(address = resourceAddress2, name = "Name 2", items = listOf(
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#12#"))),
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#3#"))),
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#10#"))),
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#2#")))
             )),
-            nonFungibleCollection(address = resourceAddress3.string, name = "Name 3", items = listOf(
+            nonFungibleCollection(address = resourceAddress3, name = "Name 3", items = listOf(
                 nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#10#"))),
                 nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#1#"))),
                 nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#8#"))),
                 nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#20#")))
             )),
-            nonFungibleCollection(address = resourceAddress1.string, name = "Name 1", items = listOf(
+            nonFungibleCollection(address = resourceAddress1, name = "Name 1", items = listOf(
                 nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#10#"))),
                 nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#1#"))),
                 nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#8#"))),
                 nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#20#")))
             )),
-            nonFungibleCollection(address = resourceAddress4.string, name = "Name 4", items = listOf(
+            nonFungibleCollection(address = resourceAddress4, name = "Name 4", items = listOf(
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<C>"))),
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<A>"))),
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<D>"))),
@@ -130,25 +133,25 @@ class ResourceTests {
         )
 
         val sortedList = listOf(
-            nonFungibleCollection(address = resourceAddress1.string, name = "Name 1", items = listOf(
+            nonFungibleCollection(address = resourceAddress1, name = "Name 1", items = listOf(
                 nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#1#"))),
                 nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#8#"))),
                 nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#10#"))),
                 nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#20#")))
             )),
-            nonFungibleCollection(address = resourceAddress2.string, name = "Name 2", items = listOf(
+            nonFungibleCollection(address = resourceAddress2, name = "Name 2", items = listOf(
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#2#"))),
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#3#"))),
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#10#"))),
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#12#"))),
             )),
-            nonFungibleCollection(address = resourceAddress3.string, name = "Name 3", items = listOf(
+            nonFungibleCollection(address = resourceAddress3, name = "Name 3", items = listOf(
                 nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#1#"))),
                 nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#8#"))),
                 nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#10#"))),
                 nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#20#")))
             )),
-            nonFungibleCollection(address = resourceAddress4.string, name = "Name 4", items = listOf(
+            nonFungibleCollection(address = resourceAddress4, name = "Name 4", items = listOf(
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<A>"))),
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<B>"))),
                 nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<C>"))),
@@ -184,7 +187,7 @@ class ResourceTests {
     @Test
     fun `verify that all resources except xrd show behaviours `() {
         val resource = fungibleResource(
-            address = "resource_rdx_abcd",
+            address = ResourceAddress.sampleMainnet.random(),
             name = "Some fungible",
             symbol = "BUM"
         )
@@ -196,11 +199,11 @@ class ResourceTests {
     }
 
     private fun fungibleResource(
-        address: String = "resource_rdx_abcd",
+        address: ResourceAddress = ResourceAddress.sampleMainnet.random(),
         name: String?,
         symbol: String?
     ) = Resource.FungibleResource(
-        resourceAddress = address,
+        address = address,
         ownedAmount = BigDecimal(1234.5678),
         assetBehaviours = setOf(
             AssetBehaviour.SUPPLY_FLEXIBLE,
@@ -215,11 +218,11 @@ class ResourceTests {
     )
 
     private fun nonFungibleCollection(
-        address: String,
+        address: ResourceAddress,
         name: String?,
         items: List<Item>
     ): Resource.NonFungibleResource = Resource.NonFungibleResource(
-        resourceAddress = address,
+        address = address,
         amount = items.size.toLong(),
         items = items,
         metadata = listOf(
@@ -230,7 +233,7 @@ class ResourceTests {
     private fun nft(
         globalId: NonFungibleGlobalId
     ) = Item(
-        collectionAddress = globalId.resourceAddress.string,
+        collectionAddress = globalId.resourceAddress,
         localId = globalId.nonFungibleLocalId
     )
 }

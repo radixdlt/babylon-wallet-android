@@ -11,6 +11,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.repository.cache.database.PoolResourceJoin.Companion.asPoolResourceJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.resources.metadata.poolUnit
 
@@ -31,7 +32,7 @@ data class PoolEntity(
     val address: PoolAddress,
     val metadata: MetadataColumn?,
     @ColumnInfo("resource_address")
-    val resourceAddress: String
+    val resourceAddress: ResourceAddress
 ) {
 
     companion object {

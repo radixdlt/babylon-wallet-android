@@ -20,9 +20,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.utils.truncatedHash
 import com.radixdlt.sargon.PoolAddress
-import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -337,7 +335,7 @@ class AccountsStateCache @Inject constructor(
                 val pool = pools[fungible.poolAddress]?.takeIf { pool ->
                     // The fungible claims that it is part of the poolAddress.
                     // We need to check if pool points back to this resource
-                    pool.metadata.poolUnit() == fungible.resourceAddress
+                    pool.metadata.poolUnit() == fungible.address
                 }
                 if (pool != null) {
                     resultingPoolUnits.add(
@@ -350,7 +348,7 @@ class AccountsStateCache @Inject constructor(
                     fungiblesIterator.remove()
                 }
 
-                val validatorDetails = stakeUnitAddressToValidator[ResourceAddress.init(fungible.resourceAddress)]?.takeIf { validator ->
+                val validatorDetails = stakeUnitAddressToValidator[fungible.address]?.takeIf { validator ->
                     // The fungible claims that it is a LSU,
                     // so we need to check if the validator points back to this resource
                     validator.address == fungible.validatorAddress
@@ -368,9 +366,7 @@ class AccountsStateCache @Inject constructor(
                 val nonFungible = nonFungiblesIterator.next()
 
                 val validatorDetails = claimTokenAddressToValidator[
-                    ResourceAddress.init(
-                        nonFungible.resourceAddress
-                    )
+                    nonFungible.address
                 ]?.takeIf { validator ->
                     // The non-fungible claims that it is a claim token,
                     // so we need to check if the validator points back to this resource
@@ -413,7 +409,7 @@ class AccountsStateCache @Inject constructor(
             details = details,
             assets = details?.stateVersion?.let { stateVersion ->
                 val nonFungibles = assets?.nonFungibles?.map { nonFungible ->
-                    val items = dao.getOwnedNfts(account.address, nonFungible.collection.resourceAddress, stateVersion)
+                    val items = dao.getOwnedNfts(account.address, nonFungible.collection.address, stateVersion)
                         .map { it.toItem() }.sorted()
                     nonFungible.copy(collection = nonFungible.collection.copy(items = items))
                 }.orEmpty()

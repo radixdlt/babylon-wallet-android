@@ -1,7 +1,5 @@
 package rdx.works.core.domain.assets
 
-import rdx.works.core.domain.resources.isXrd
-
 class TokensPriceSorter(
     private val pricesPerAsset: Map<Asset, AssetPrice?>?
 ) : Comparator<Token> {

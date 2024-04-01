@@ -5,13 +5,14 @@ import androidx.room.Entity
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.resources.Resource
 import java.time.Instant
 
 @Entity(primaryKeys = ["address", "local_id"])
 data class NFTEntity(
-    val address: String,
+    val address: ResourceAddress,
     @ColumnInfo("local_id")
     val localId: NonFungibleLocalId,
     @ColumnInfo("metadata")
@@ -27,7 +28,7 @@ data class NFTEntity(
 
     companion object {
         fun StateNonFungibleDetailsResponseItem.asEntity(
-            resourceAddress: String,
+            resourceAddress: ResourceAddress,
             synced: Instant
         ): NFTEntity {
             return NFTEntity(

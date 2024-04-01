@@ -8,6 +8,11 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
+import com.radixdlt.sargon.VaultAddress
+import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.networkId
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.AddressHelper
 import rdx.works.core.domain.assets.AssetBehaviours
 import rdx.works.core.domain.resources.XrdResource
@@ -28,21 +33,6 @@ fun StateEntityDetailsResponseItemDetails.divisibility(): Int? {
     }
 }
 
-fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigDecimal? {
-    val networkId = AddressHelper.networkId(vaultAddress)
-    return when (
-        val resource = fungibleResources?.items?.find {
-            XrdResource.address(networkId = networkId) == it.resourceAddress
-        }
-    ) {
-        is FungibleResourcesCollectionItemVaultAggregated -> {
-            resource.vaults.items.find { it.vaultAddress == vaultAddress }?.amount?.toBigDecimal()
-        }
-
-        else -> null
-    }
-}
-
 val StateEntityDetailsResponseItemDetails.xrdVaultAddress: String?
     get() = when (val details = this) {
         is StateEntityDetailsResponseComponentDetails -> details.state?.stakeXrdVault?.entityAddress
@@ -51,16 +41,14 @@ val StateEntityDetailsResponseItemDetails.xrdVaultAddress: String?
 
 val StateEntityDetailsResponseItem.totalXRDStake: BigDecimal?
     get() {
-        val xrdVaultAddress = details?.xrdVaultAddress ?: return null
-
-        val networkId = AddressHelper.networkId(xrdVaultAddress)
+        val xrdVaultAddress = details?.xrdVaultAddress?.let { runCatching { VaultAddress.init(it) }.getOrNull() } ?: return null
 
         val xrdResource = fungibleResources?.items?.find {
-            XrdResource.address(networkId = networkId) == it.resourceAddress
+            XrdResource.address(networkId = xrdVaultAddress.networkId.discriminant.toInt()).string == it.resourceAddress
         }
 
         return if (xrdResource is FungibleResourcesCollectionItemVaultAggregated) {
-            xrdResource.vaults.items.find { it.vaultAddress == xrdVaultAddress }?.amount?.toBigDecimal()
+            xrdResource.vaults.items.find { it.vaultAddress == xrdVaultAddress.string }?.amount?.toBigDecimal()
         } else {
             null
         }

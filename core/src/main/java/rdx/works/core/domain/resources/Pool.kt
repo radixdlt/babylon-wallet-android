@@ -4,12 +4,12 @@ import androidx.annotation.VisibleForTesting
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.samples.Sample
+import com.radixdlt.sargon.samples.SampleWithRandomValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
-import java.math.BigDecimal
+import kotlin.random.Random
 
 data class Pool(
     val address: PoolAddress,
@@ -19,9 +19,8 @@ data class Pool(
 ) {
 
     companion object {
-        @Suppress("MagicNumber")
         @VisibleForTesting
-        val sampleMainnet: Sample<Pool> = object : Sample<Pool> {
+        val sampleMainnet: SampleWithRandomValues<Pool> = object : SampleWithRandomValues<Pool> {
             override fun invoke(): Pool = Pool(
                 address = PoolAddress.sampleMainnet(),
                 metadata = listOf(
@@ -49,20 +48,8 @@ data class Pool(
                     )
                 ),
                 resources = listOf(
-                    Resource.FungibleResource(
-                        resourceAddress = ResourceAddress.sampleMainnet.xrd.string,
-                        ownedAmount = BigDecimal(100),
-                        metadata = listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Radix", valueType = MetadataType.String)
-                        )
-                    ),
-                    Resource.FungibleResource(
-                        resourceAddress = ResourceAddress.sampleMainnet.candy.string,
-                        ownedAmount = BigDecimal(100000),
-                        metadata = listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Candy", valueType = MetadataType.String)
-                        )
-                    )
+                    Resource.FungibleResource.sampleMainnet.random(),
+                    Resource.FungibleResource.sampleMainnet.random()
                 )
             )
 
@@ -88,22 +75,40 @@ data class Pool(
                     )
                 ),
                 resources = listOf(
-                    Resource.FungibleResource(
-                        resourceAddress = ResourceAddress.sampleMainnet.xrd.string,
-                        ownedAmount = BigDecimal(100),
-                        metadata = listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Radix", valueType = MetadataType.String)
-                        )
-                    ),
-                    Resource.FungibleResource(
-                        resourceAddress = ResourceAddress.sampleMainnet.candy.string,
-                        ownedAmount = BigDecimal(100000),
-                        metadata = listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Candy", valueType = MetadataType.String)
-                        )
-                    )
+                    Resource.FungibleResource.sampleMainnet.random(),
+                    Resource.FungibleResource.sampleMainnet.random()
                 )
             )
+
+            override fun random(): Pool = with(
+                listOf(
+                    Resource.FungibleResource.sampleMainnet.random(),
+                    Resource.FungibleResource.sampleMainnet.random()
+                )
+            ) {
+                Pool(
+                    address = PoolAddress.sampleMainnet.random(),
+                    metadata = listOf(
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.NAME.key,
+                            value = "Sample Pool ${Random.nextInt()}",
+                            valueType = MetadataType.String
+                        ),
+                        Metadata.Primitive(
+                            key = ExplicitMetadataKey.POOL_UNIT.key,
+                            value = ResourceAddress.sampleMainnet.candy.string,
+                            valueType = MetadataType.Address
+                        ),
+                        Metadata.Collection(
+                            key = "pool_resources",
+                            values = map {
+                                Metadata.Primitive("pool_resources", it.address.string, MetadataType.Address)
+                            }
+                        )
+                    ),
+                    resources = this
+                )
+            }
         }
     }
 }

@@ -31,10 +31,10 @@ class GetFiatValueUseCaseTest {
     fun `assert that all the tokens of the given accounts have their prices`() = testScope.runTest {
         mockAccountsWithMockAssets.forEach { accountWithAssets ->
             val assetPriceAddresses = getFiatValueUseCase.forAccount(accountWithAssets, isRefreshing = false).getOrThrow().map {
-                it.asset.resource.resourceAddress
+                it.asset.resource.address
             }.toSet()
 
-            val ownedTokenAddresses = accountWithAssets.assets?.ownedTokens.orEmpty().map { it.resource.resourceAddress }.toSet()
+            val ownedTokenAddresses = accountWithAssets.assets?.ownedTokens.orEmpty().map { it.resource.address }.toSet()
             assertTrue(assetPriceAddresses.containsAll(ownedTokenAddresses))
         }
     }

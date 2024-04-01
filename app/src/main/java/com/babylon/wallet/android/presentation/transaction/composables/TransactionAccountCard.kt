@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -180,15 +181,15 @@ fun TransactionAccountCardPreview() {
         TransactionAccountCard(
             account = Owned(
                 account = SampleDataProvider().sampleAccount(),
-                resources = SampleDataProvider().sampleFungibleResources().map {
+                resources = listOf(
                     Transferable.Withdrawing(
                         transferable = TransferableAsset.Fungible.Token(
                             amount = "689.203".toBigDecimal(),
-                            resource = it,
+                            resource = Resource.FungibleResource.sampleMainnet(),
                             isNewlyCreated = false
                         )
                     )
-                }
+                )
             ),
             onTransferableFungibleClick = { },
             onTransferableNonFungibleClick = { _, _ -> }

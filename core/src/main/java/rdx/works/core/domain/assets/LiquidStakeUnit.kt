@@ -1,9 +1,17 @@
 package rdx.works.core.domain.assets
 
 import android.net.Uri
+import androidx.annotation.VisibleForTesting
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.SampleWithRandomValues
 import rdx.works.core.divideWithDivisibility
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.core.multiplyWithDivisibility
 import java.math.BigDecimal
 
@@ -15,8 +23,8 @@ data class LiquidStakeUnit(
     override val resource: Resource.FungibleResource
         get() = fungibleResource
 
-    val resourceAddress: String
-        get() = fungibleResource.resourceAddress
+    val resourceAddress: ResourceAddress
+        get() = fungibleResource.address
 
     val name: String
         get() = fungibleResource.name
@@ -39,5 +47,55 @@ data class LiquidStakeUnit(
     fun stakeValueInXRD(totalXrdStake: BigDecimal?): BigDecimal? {
         if (totalXrdStake == null) return null
         return percentageOwned?.multiplyWithDivisibility(totalXrdStake, fungibleResource.divisibility)
+    }
+
+    companion object {
+        @VisibleForTesting
+        val sampleMainnet: SampleWithRandomValues<LiquidStakeUnit> = object : SampleWithRandomValues<LiquidStakeUnit> {
+            override fun invoke(): LiquidStakeUnit = with(Validator.sampleMainnet()) {
+                LiquidStakeUnit(
+                    fungibleResource = Resource.FungibleResource.sampleMainnet.random().let {
+                        it.copy(
+                            metadata = it.metadata.toMutableList().apply {
+                                add(
+                                    Metadata.Primitive(ExplicitMetadataKey.VALIDATOR.key, this@with.address.string, MetadataType.Address)
+                                )
+                            }
+                        )
+                    },
+                    validator = this
+                )
+            }
+
+            override fun other(): LiquidStakeUnit = with(Validator.sampleMainnet.other()) {
+                LiquidStakeUnit(
+                    fungibleResource = Resource.FungibleResource.sampleMainnet.random().let {
+                        it.copy(
+                            metadata = it.metadata.toMutableList().apply {
+                                add(
+                                    Metadata.Primitive(ExplicitMetadataKey.VALIDATOR.key, this@with.address.string, MetadataType.Address)
+                                )
+                            }
+                        )
+                    },
+                    validator = this
+                )
+            }
+
+            override fun random(): LiquidStakeUnit = with(Validator.sampleMainnet.other()) {
+                LiquidStakeUnit(
+                    fungibleResource = Resource.FungibleResource.sampleMainnet.random().let {
+                        it.copy(
+                            metadata = it.metadata.toMutableList().apply {
+                                add(
+                                    Metadata.Primitive(ExplicitMetadataKey.VALIDATOR.key, this@with.address.string, MetadataType.Address)
+                                )
+                            }
+                        )
+                    },
+                    validator = this
+                )
+            }
+        }
     }
 }
