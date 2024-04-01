@@ -1,15 +1,26 @@
 package com.babylon.wallet.core.domain.resources
 
-import rdx.works.core.domain.resources.ExplicitMetadataKey
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.bytesId
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.intId
+import com.radixdlt.sargon.extensions.ruidId
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.stringId
+import com.radixdlt.sargon.samples.sampleMainnet
+import junit.framework.TestCase.assertEquals
+import org.junit.Assert
+import org.junit.Test
 import rdx.works.core.domain.assets.AssetBehaviour
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
-import junit.framework.TestCase.assertEquals
-import org.junit.Assert
-import org.junit.Test
 import java.math.BigDecimal
 
 class ResourceTests {
@@ -87,69 +98,61 @@ class ResourceTests {
 
     @Test
     fun `given a list of non fungible collections, when displayed in a list, they are sorted correctly`() {
+        val resourceAddress1 = ResourceAddress.sampleMainnet.random()
+        val resourceAddress2 = ResourceAddress.sampleMainnet.random()
+        val resourceAddress3 = ResourceAddress.sampleMainnet.random()
+        val resourceAddress4 = ResourceAddress.sampleMainnet.random()
         val unsortedList = listOf(
-            nonFungibleCollection(address = "2", name = "Big Collection", items = listOf(
-                nft(collectionAddress = "2", "#12#"),
-                nft(collectionAddress = "2", "#3#"),
-                nft(collectionAddress = "2", "#10#"),
-                nft(collectionAddress = "2", "#2#")
+            nonFungibleCollection(address = resourceAddress2.string, name = "Name 2", items = listOf(
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#12#"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#3#"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#10#"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#2#")))
             )),
-            nonFungibleCollection(address = "3", name = null, items = listOf(
-                nft(collectionAddress = "2", "#10#"),
-                nft(collectionAddress = "2", "#1#"),
-                nft(collectionAddress = "2", "#8#"),
-                nft(collectionAddress = "2", "#20#")
+            nonFungibleCollection(address = resourceAddress3.string, name = "Name 3", items = listOf(
+                nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#10#"))),
+                nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#1#"))),
+                nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#8#"))),
+                nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#20#")))
             )),
-            nonFungibleCollection(address = "1", name = "Small Collection", items = listOf(
-                nft(collectionAddress = "2", "#10#"),
-                nft(collectionAddress = "2", "#1#"),
-                nft(collectionAddress = "2", "#8#"),
-                nft(collectionAddress = "2", "#20#")
+            nonFungibleCollection(address = resourceAddress1.string, name = "Name 1", items = listOf(
+                nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#10#"))),
+                nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#1#"))),
+                nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#8#"))),
+                nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#20#")))
             )),
-            nonFungibleCollection(address = "2", name = null, items = listOf(
-                nft(collectionAddress = "2", "#10#"),
-                nft(collectionAddress = "2", "#1#"),
-                nft(collectionAddress = "2", "#8#"),
-                nft(collectionAddress = "2", "#20#")
-            )),
-            nonFungibleCollection(address = "4", name = null, items = listOf(
-                nft(collectionAddress = "2", "<C>"),
-                nft(collectionAddress = "2", "<A>"),
-                nft(collectionAddress = "2", "<D>"),
-                nft(collectionAddress = "2", "<B>")
+            nonFungibleCollection(address = resourceAddress4.string, name = "Name 4", items = listOf(
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<C>"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<A>"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<D>"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<B>")))
             ))
         )
 
         val sortedList = listOf(
-            nonFungibleCollection(address = "2", name = "Big Collection", items = listOf(
-                nft(collectionAddress = "2", "#2#"),
-                nft(collectionAddress = "2", "#3#"),
-                nft(collectionAddress = "2", "#10#"),
-                nft(collectionAddress = "2", "#12#"),
+            nonFungibleCollection(address = resourceAddress1.string, name = "Name 1", items = listOf(
+                nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#1#"))),
+                nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#8#"))),
+                nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#10#"))),
+                nft(NonFungibleGlobalId(resourceAddress1, NonFungibleLocalId.init("#20#")))
             )),
-            nonFungibleCollection(address = "1", name = "Small Collection", items = listOf(
-                nft(collectionAddress = "2", "#1#"),
-                nft(collectionAddress = "2", "#8#"),
-                nft(collectionAddress = "2", "#10#"),
-                nft(collectionAddress = "2", "#20#")
+            nonFungibleCollection(address = resourceAddress2.string, name = "Name 2", items = listOf(
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#2#"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#3#"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#10#"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("#12#"))),
             )),
-            nonFungibleCollection(address = "2", name = null, items = listOf(
-                nft(collectionAddress = "2", "#1#"),
-                nft(collectionAddress = "2", "#8#"),
-                nft(collectionAddress = "2", "#10#"),
-                nft(collectionAddress = "2", "#20#")
+            nonFungibleCollection(address = resourceAddress3.string, name = "Name 3", items = listOf(
+                nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#1#"))),
+                nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#8#"))),
+                nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#10#"))),
+                nft(NonFungibleGlobalId(resourceAddress3, NonFungibleLocalId.init("#20#")))
             )),
-            nonFungibleCollection(address = "3", name = null, items = listOf(
-                nft(collectionAddress = "2", "#1#"),
-                nft(collectionAddress = "2", "#8#"),
-                nft(collectionAddress = "2", "#10#"),
-                nft(collectionAddress = "2", "#20#")
-            )),
-            nonFungibleCollection(address = "4", name = null, items = listOf(
-                nft(collectionAddress = "2", "<A>"),
-                nft(collectionAddress = "2", "<B>"),
-                nft(collectionAddress = "2", "<C>"),
-                nft(collectionAddress = "2", "<D>")
+            nonFungibleCollection(address = resourceAddress4.string, name = "Name 4", items = listOf(
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<A>"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<B>"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<C>"))),
+                nft(NonFungibleGlobalId(resourceAddress2, NonFungibleLocalId.init("<D>"))),
             ))
         )
 
@@ -158,21 +161,13 @@ class ResourceTests {
 
     @Test
     fun `given various nft ids, when a local id is created, then the correct type is assigned`() {
-        Assert.assertEquals(Item.ID.IntegerType(1.toULong()), Item.ID.from("#1#"))
-        Assert.assertEquals(Item.ID.StringType("Michael"), Item.ID.from("<Michael>"))
-        Assert.assertEquals(Item.ID.BytesType("deadbeef"), Item.ID.from("[deadbeef]"))
+        Assert.assertEquals(NonFungibleLocalId.intId(1.toULong()), NonFungibleLocalId.init("#1#"))
+        Assert.assertEquals(NonFungibleLocalId.stringId("Michael"), NonFungibleLocalId.init("<Michael>"))
+        Assert.assertEquals(NonFungibleLocalId.bytesId("deadbeef".hexToBagOfBytes()), NonFungibleLocalId.init("[deadbeef]"))
         Assert.assertEquals(
-            Item.ID.RUIDType("7b003d8e0b2c9e3a-516cf99882de64a1-f1cd6742ce3299e0-357f54f0333d25d0"),
-            Item.ID.from("{7b003d8e0b2c9e3a-516cf99882de64a1-f1cd6742ce3299e0-357f54f0333d25d0}")
+            NonFungibleLocalId.ruidId("7b003d8e0b2c9e3a516cf99882de64a1f1cd6742ce3299e0357f54f0333d25d0".hexToBagOfBytes()),
+            NonFungibleLocalId.init("{7b003d8e0b2c9e3a-516cf99882de64a1-f1cd6742ce3299e0-357f54f0333d25d0}")
         )
-    }
-
-    @Test
-    fun `given various nft ids, when a local id is initialised, then no exception is raised`() {
-        Item.ID.from("#1#")
-        Item.ID.from("<Michael>")
-        Item.ID.from("[deadbeef]")
-        Item.ID.from("{7b003d8e0b2c9e3a-516cf99882de64a1-f1cd6742ce3299e0-357f54f0333d25d0}")
     }
 
     @Test
@@ -233,10 +228,9 @@ class ResourceTests {
     )
 
     private fun nft(
-        collectionAddress: String,
-        localId: String
+        globalId: NonFungibleGlobalId
     ) = Item(
-        collectionAddress = collectionAddress,
-        localId = Item.ID.from(localId)
+        collectionAddress = globalId.resourceAddress.string,
+        localId = globalId.nonFungibleLocalId
     )
 }

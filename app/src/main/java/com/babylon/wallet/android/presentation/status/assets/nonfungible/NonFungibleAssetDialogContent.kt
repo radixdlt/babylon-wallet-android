@@ -40,6 +40,7 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.WorthXRD
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.sargon.NonFungibleLocalId
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.StakeClaim
@@ -51,7 +52,7 @@ import rdx.works.profile.data.model.pernetwork.Network
 fun NonFungibleAssetDialogContent(
     modifier: Modifier = Modifier,
     resourceAddress: String,
-    localId: String?,
+    localId: NonFungibleLocalId?,
     asset: Asset.NonFungible?,
     price: AssetPrice.StakeClaimPrice?,
     isLoadingBalance: Boolean,

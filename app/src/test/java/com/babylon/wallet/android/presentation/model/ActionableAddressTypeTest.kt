@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.model
 
-import rdx.works.core.domain.resources.Resource
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.extensions.init
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,7 +30,7 @@ internal class ActionableAddressTypeTest(
                 arrayOf(PACKAGE_ADDRESS, ActionableAddress.Type.Global.PACKAGE),
                 arrayOf(TRANSACTION_ADDRESS, ActionableAddress.Type.Global.TRANSACTION),
                 arrayOf(COMPONENT_ADDRESS, ActionableAddress.Type.Global.COMPONENT),
-                arrayOf("#1#", ActionableAddress.Type.LocalId(id = Resource.NonFungibleResource.Item.ID.Companion.from("#1#"))),
+                arrayOf("#1#", ActionableAddress.Type.LocalId(id = NonFungibleLocalId.init("#1#"))),
                 arrayOf(UNKNOWN_ADDRESS, null)
             )
         }

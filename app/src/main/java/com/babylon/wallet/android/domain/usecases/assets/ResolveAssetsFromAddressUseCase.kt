@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.assets.Asset
@@ -19,7 +20,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         fungibleAddresses: Set<String>,
-        nonFungibleIds: Map<String, Set<Resource.NonFungibleResource.Item.ID>>
+        nonFungibleIds: Map<String, Set<NonFungibleLocalId>>
     ): Result<List<Asset>> = stateRepository
         .getResources(
             addresses = fungibleAddresses + nonFungibleIds.keys,
@@ -27,7 +28,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
             withDetails = true
         ).mapCatching { resources ->
             val nfts = nonFungibleIds.mapValues { entry ->
-                stateRepository.getNFTDetails(entry.key, entry.value.map { it.code }.toSet()).getOrThrow()
+                stateRepository.getNFTDetails(entry.key, entry.value.toSet()).getOrThrow()
             }
 
             val fungibles = resources.filterIsInstance<Resource.FungibleResource>()

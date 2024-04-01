@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.resources.Resource
 
 @Composable
@@ -48,7 +49,7 @@ fun TransferableNftItemContent(
         )
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(
-                text = nftItem.localId.displayable,
+                text = nftItem.localId.formatted(),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,

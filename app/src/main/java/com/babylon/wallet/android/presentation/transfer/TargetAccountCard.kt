@@ -36,6 +36,8 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.persistentSetOf
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -267,7 +269,7 @@ fun TargetAccountCardPreview() {
 
             val item = Resource.NonFungibleResource.Item(
                 collectionAddress = "resource_rdx_abcde",
-                localId = Resource.NonFungibleResource.Item.ID.from("<local_id>")
+                localId = NonFungibleLocalId.sample()
             )
             TargetAccountCard(
                 onChooseAccountClick = {},

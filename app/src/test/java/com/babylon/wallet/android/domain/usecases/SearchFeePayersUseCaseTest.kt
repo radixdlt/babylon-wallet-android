@@ -9,6 +9,7 @@ import com.babylon.wallet.android.mockdata.profile
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AssetsTransfersRecipient
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PerAssetFungibleResource
 import com.radixdlt.sargon.PerAssetFungibleTransfer
 import com.radixdlt.sargon.PerAssetTransfers
@@ -188,7 +189,7 @@ class SearchFeePayersUseCaseTest {
 
             override suspend fun getNFTDetails(
                 resourceAddress: String,
-                localIds: Set<String>
+                localIds: Set<NonFungibleLocalId>
             ): Result<List<Resource.NonFungibleResource.Item>> {
                 error("Not needed")
             }

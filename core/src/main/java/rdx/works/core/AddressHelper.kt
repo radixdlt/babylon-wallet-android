@@ -2,11 +2,8 @@ package rdx.works.core
 
 import com.radixdlt.ret.EntityType
 import com.radixdlt.ret.NonFungibleGlobalId
-import com.radixdlt.ret.NonFungibleLocalId
 import com.radixdlt.ret.OlympiaAddress
 import com.radixdlt.ret.knownAddresses
-import com.radixdlt.ret.nonFungibleLocalIdFromStr
-import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item.ID
 
 private typealias EngineAddress = com.radixdlt.ret.Address
 
@@ -29,12 +26,6 @@ object AddressHelper {
             entityType == EntityType.GLOBAL_MULTI_RESOURCE_POOL
     }
 
-    fun isValidator(address: String): Boolean {
-        val entityType = address.toAddressOrNull()?.entityType()
-
-        return entityType == EntityType.GLOBAL_VALIDATOR
-    }
-
     fun isValid(address: String, checkNetworkId: Int? = null): Boolean {
         val retAddress = address.toAddressOrNull() ?: return false
 
@@ -48,13 +39,6 @@ object AddressHelper {
     fun isValidNFT(address: String) = address.toNonFungibleGlobalId() != null
 
     fun globalId(address: String) = NonFungibleGlobalId(address).resourceAddress().addressString()
-
-    fun localId(localId: String): ID = when (val id = nonFungibleLocalIdFromStr(localId)) {
-        is NonFungibleLocalId.Integer -> ID.IntegerType(id = id.value)
-        is NonFungibleLocalId.Str -> ID.StringType(id = id.value)
-        is NonFungibleLocalId.Bytes -> ID.BytesType(id = localId.removeSurrounding(ID.BytesType.PREFIX, ID.BytesType.SUFFIX))
-        is NonFungibleLocalId.Ruid -> ID.RUIDType(id = localId.removeSurrounding(ID.RUIDType.PREFIX, ID.RUIDType.SUFFIX))
-    }
 
     fun publicKeyHash(accountAddress: String) =
         accountAddress.toAddressOrNull()?.bytes()?.takeLast(PUBLIC_KEY_HASH_LENGTH)?.toByteArray()

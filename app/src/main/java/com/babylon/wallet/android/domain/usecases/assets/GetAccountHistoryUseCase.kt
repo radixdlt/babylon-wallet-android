@@ -6,11 +6,12 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.TransactionHistoryData
 import com.babylon.wallet.android.domain.model.toDomainModel
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
-import rdx.works.core.domain.resources.Resource
 import javax.inject.Inject
 
 class GetAccountHistoryUseCase @Inject constructor(
@@ -99,7 +100,7 @@ class GetAccountHistoryUseCase @Inject constructor(
 
     private fun resolveResponseAssetAddresses(
         response: StreamTransactionsResponse
-    ): Pair<Set<String>, MutableMap<String, Set<Resource.NonFungibleResource.Item.ID>>> {
+    ): Pair<Set<String>, MutableMap<String, Set<NonFungibleLocalId>>> {
         val fungibleAddresses = response.items.map {
             it.balanceChanges?.fungibleBalanceChanges?.map { balanceChange ->
                 balanceChange.resourceAddress
@@ -108,12 +109,12 @@ class GetAccountHistoryUseCase @Inject constructor(
                     balanceChange.resourceAddress
                 }.orEmpty().toSet()
         }.flatten().toSet()
-        val nonFungibleAddresses = response.items.fold(mutableMapOf<String, Set<Resource.NonFungibleResource.Item.ID>>()) { acc, item ->
+        val nonFungibleAddresses = response.items.fold(mutableMapOf<String, Set<NonFungibleLocalId>>()) { acc, item ->
             acc.apply {
                 item.balanceChanges?.nonFungibleBalanceChanges?.forEach { balanceChange ->
                     val nftCollectionAddress = balanceChange.resourceAddress
                     val nftLocalIds = (balanceChange.added.toSet() + balanceChange.removed).map {
-                        Resource.NonFungibleResource.Item.ID.from(it)
+                        NonFungibleLocalId.init(it)
                     }.toSet()
                     if (containsKey(nftCollectionAddress)) {
                         this[nftCollectionAddress] = this[nftCollectionAddress].orEmpty() + nftLocalIds

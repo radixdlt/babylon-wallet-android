@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository.cache.database
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
@@ -116,5 +117,16 @@ class StateDatabaseConverters {
     @TypeConverter
     fun poolAddressToString(poolAddress: PoolAddress?): String? {
         return poolAddress?.string
+    }
+
+    // NonFungibleLocalId
+    @TypeConverter
+    fun stringToNonFungibleLocalId(localId: String?): NonFungibleLocalId? {
+        return localId?.let { NonFungibleLocalId.init(it) }
+    }
+
+    @TypeConverter
+    fun nonFungibleLocalIdToString(localId: NonFungibleLocalId?): String? {
+        return localId?.string
     }
 }

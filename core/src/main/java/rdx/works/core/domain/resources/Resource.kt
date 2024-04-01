@@ -2,8 +2,10 @@ package rdx.works.core.domain.resources
 
 import android.net.Uri
 import com.radixdlt.derivation.model.NetworkId
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import rdx.works.core.AddressHelper
@@ -178,12 +180,12 @@ sealed class Resource {
 
         data class Item(
             val collectionAddress: String,
-            val localId: ID,
+            val localId: NonFungibleLocalId,
             val metadata: List<Metadata> = emptyList()
         ) : Comparable<Item> {
 
             val globalAddress: String
-                get() = "$collectionAddress:${localId.code}"
+                get() = "$collectionAddress:${localId.string}"
 
             val name: String? by lazy {
                 metadata.name()?.truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
@@ -222,95 +224,41 @@ sealed class Resource {
             }
 
             override fun compareTo(other: Item): Int = when (localId) {
-                is ID.StringType -> (other.localId as? ID.StringType)?.compareTo(localId) ?: -1
-                is ID.IntegerType -> (other.localId as? ID.IntegerType)?.compareTo(localId) ?: -1
-                is ID.BytesType -> (other.localId as? ID.BytesType)?.compareTo(localId) ?: -1
-                is ID.RUIDType -> (other.localId as? ID.RUIDType)?.compareTo(localId) ?: -1
-            }
+                is NonFungibleLocalId.Str -> {
+                    val otherStr = other.localId as? NonFungibleLocalId.Str
 
-            sealed class ID {
-                abstract val prefix: String
-                abstract val suffix: String
-
-                abstract val displayable: String
-
-                val code: String
-                    get() = "$prefix$displayable$suffix"
-
-                data class StringType(
-                    private val id: String
-                ) : ID(), Comparable<StringType> {
-                    override val prefix: String = PREFIX
-                    override val suffix: String = SUFFIX
-
-                    override val displayable: String
-                        get() = id
-
-                    override fun compareTo(other: StringType): Int = other.id.compareTo(id)
-
-                    companion object {
-                        const val PREFIX = "<"
-                        const val SUFFIX = ">"
+                    if (otherStr != null) {
+                        localId.string.compareTo(otherStr.string)
+                    } else {
+                        -1
                     }
                 }
+                is NonFungibleLocalId.Ruid -> {
+                    val otherRuid = other.localId as? NonFungibleLocalId.Ruid
 
-                data class IntegerType(
-                    private val id: ULong
-                ) : ID(), Comparable<IntegerType> {
-                    override val prefix: String = PREFIX
-                    override val suffix: String = SUFFIX
-
-                    override val displayable: String
-                        get() = id.toString()
-
-                    override fun compareTo(other: IntegerType): Int = other.id.compareTo(id)
-
-                    companion object {
-                        const val PREFIX = "#"
-                        const val SUFFIX = "#"
+                    if (otherRuid != null) {
+                        localId.string.compareTo(otherRuid.string)
+                    } else {
+                        -1
                     }
                 }
+                is NonFungibleLocalId.Bytes -> {
+                    val otherBytes = other.localId as? NonFungibleLocalId.Bytes
 
-                data class BytesType(
-                    private val id: String
-                ) : ID(), Comparable<BytesType> {
-                    override val prefix: String = PREFIX
-                    override val suffix: String = SUFFIX
-                    override val displayable: String
-                        get() = id
-
-                    override fun compareTo(other: BytesType): Int = other.id.compareTo(id)
-
-                    companion object {
-                        const val PREFIX = "["
-                        const val SUFFIX = "]"
+                    if (otherBytes != null) {
+                        localId.string.compareTo(otherBytes.string)
+                    } else {
+                        -1
                     }
                 }
+                is NonFungibleLocalId.Integer -> {
+                    val otherInteger = (other.localId as? NonFungibleLocalId.Integer)
 
-                data class RUIDType(
-                    private val id: String
-                ) : ID(), Comparable<RUIDType> {
-                    override val prefix: String = PREFIX
-                    override val suffix: String = SUFFIX
-                    override val displayable: String
-                        get() = id
-
-                    override fun compareTo(other: RUIDType): Int = other.id.compareTo(id)
-
-                    companion object {
-                        const val PREFIX = "{"
-                        const val SUFFIX = "}"
+                    if (otherInteger != null) {
+                        localId.value.compareTo(otherInteger.value)
+                    } else {
+                        -1
                     }
-                }
-
-                companion object {
-                    /**
-                     * Infers the type of the [Item].[ID] from its surrounding delimiter
-                     *
-                     * More info https://docs-babylon.radixdlt.com/main/reference-materials/resource-addressing.html
-                     * #_non_fungibles_individual_units_of_non_fungible_resources
-                     */
-                    fun from(value: String): ID = AddressHelper.localId(value)
                 }
             }
         }
