@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.designsystem.composable.RadixSwitch
@@ -65,7 +66,11 @@ fun SwitchSettingsItem(
         onCheckedChange = onCheckedChange,
         icon = iconResource?.let {
             {
-                Icon(painter = painterResource(id = iconResource), contentDescription = null)
+                Icon(
+                    painter = painterResource(id = iconResource),
+                    contentDescription = null,
+                    tint = Color.Unspecified
+                )
             }
         },
         subtitleRes = subtitleRes
