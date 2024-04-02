@@ -267,6 +267,7 @@ private fun WalletAccountList(
                     isLoading = state.isWalletBalanceLoading,
                     currency = SupportedCurrency.USD,
                     formattedContentStyle = RadixTheme.typography.header,
+                    onVisibilityToggle = onShowHideBalanceToggle,
                     trailingContent = {
                         TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
                     }

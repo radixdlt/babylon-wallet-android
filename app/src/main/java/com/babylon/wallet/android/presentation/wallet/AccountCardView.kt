@@ -136,6 +136,7 @@ fun AccountCardView(
                     isLoading = false,
                     contentColor = RadixTheme.colors.white,
                     hiddenContentColor = RadixTheme.colors.white.copy(alpha = 0.6f),
+                    onVisibilityToggle = {},
                     contentStyle = RadixTheme.typography.body1Header
                 )
             }

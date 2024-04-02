@@ -301,6 +301,7 @@ fun AssetsContent(
                                 contentColor = RadixTheme.colors.white,
                                 shimmeringColor = RadixTheme.colors.defaultBackground.copy(alpha = 0.6f),
                                 formattedContentStyle = RadixTheme.typography.header,
+                                onVisibilityToggle = onShowHideBalanceToggle,
                                 trailingContent = {
                                     TotalFiatBalanceViewToggle(onToggle = onShowHideBalanceToggle)
                                 }

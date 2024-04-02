@@ -41,6 +41,7 @@ fun TotalFiatBalanceView(
     contentStyle: TextStyle = RadixTheme.typography.title,
     formattedContentStyle: TextStyle = contentStyle,
     shimmeringColor: Color? = null,
+    onVisibilityToggle: (isVisible: Boolean) -> Unit,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
     if (isLoading) {
@@ -57,6 +58,7 @@ fun TotalFiatBalanceView(
             contentStyle = contentStyle,
             currency = currency,
             formattedContentStyle = formattedContentStyle,
+            onVisibilityToggle = onVisibilityToggle,
             trailingContent = trailingContent
         )
     }
@@ -89,6 +91,7 @@ private fun TotalBalanceContent(
     hiddenContentColor: Color,
     contentStyle: TextStyle,
     formattedContentStyle: TextStyle,
+    onVisibilityToggle: (isVisible: Boolean) -> Unit,
     trailingContent: (@Composable () -> Unit)?
 ) {
     val isPriceVisible = LocalBalanceVisibility.current
@@ -125,7 +128,10 @@ private fun TotalBalanceContent(
     }
 
     Row(
-        modifier = modifier,
+        modifier = modifier
+            .clickable {
+                onVisibilityToggle(!isPriceVisible)
+            },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -170,7 +176,7 @@ fun TotalFiatBalanceViewToggle(
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalanceZeroPreview() {
+fun TotalFiatBalanceZeroPreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
@@ -180,6 +186,7 @@ fun TotalBalanceZeroPreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -189,7 +196,7 @@ fun TotalBalanceZeroPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalancePreview() {
+fun TotalFiatBalancePreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
@@ -199,6 +206,7 @@ fun TotalBalancePreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -208,7 +216,7 @@ fun TotalBalancePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalanceWithValueLessThanOnePreview() {
+fun TotalFiatBalanceWithValueLessThanOnePreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
@@ -218,6 +226,7 @@ fun TotalBalanceWithValueLessThanOnePreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -227,7 +236,7 @@ fun TotalBalanceWithValueLessThanOnePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalanceWithVerySmallValuePreview() {
+fun TotalFiatBalanceWithVerySmallValuePreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
@@ -237,6 +246,7 @@ fun TotalBalanceWithVerySmallValuePreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -247,7 +257,7 @@ fun TotalBalanceWithVerySmallValuePreview() {
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun TotalBalanceWithLongValuePreview() {
+fun TotalFiatBalanceWithLongValuePreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
@@ -257,6 +267,7 @@ fun TotalBalanceWithLongValuePreview() {
             ),
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -266,13 +277,14 @@ fun TotalBalanceWithLongValuePreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalanceErrorPreview() {
+fun TotalFiatBalanceErrorPreview() {
     RadixWalletTheme {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
             fiatPrice = null,
             currency = SupportedCurrency.USD,
             isLoading = false,
+            onVisibilityToggle = {},
             trailingContent = {
                 TotalFiatBalanceViewToggle(onToggle = {})
             }
@@ -282,7 +294,7 @@ fun TotalBalanceErrorPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun TotalBalanceHiddenPreview() {
+fun TotalFiatBalanceHiddenPreview() {
     RadixWalletTheme {
         CompositionLocalProvider(value = LocalBalanceVisibility.provides(false)) {
             TotalFiatBalanceView(
@@ -293,6 +305,7 @@ fun TotalBalanceHiddenPreview() {
                 ),
                 currency = SupportedCurrency.USD,
                 isLoading = false,
+                onVisibilityToggle = {},
                 trailingContent = {
                     TotalFiatBalanceViewToggle(onToggle = {})
                 }
