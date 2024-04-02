@@ -279,7 +279,7 @@ private fun AccountSettingsContent(
                         horizontal = RadixTheme.dimensions.paddingLarge,
                         vertical = RadixTheme.dimensions.paddingDefault
                     ),
-                    text = stringResource(R.string.accountSettings_hideThisAccount),
+                    text = stringResource(R.string.accountSettings_hideAccount_button),
                     onClick = onHideAccount
                 )
             }
