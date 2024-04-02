@@ -23,8 +23,10 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.repository.toResult
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.VaultAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -95,7 +97,7 @@ suspend fun StateApi.fetchAccountGatewayDetails(
 
 @Suppress("LongMethod")
 suspend fun StateApi.fetchPools(
-    poolAddresses: Set<String>,
+    poolAddresses: Set<PoolAddress>,
     stateVersion: Long?
 ): PoolsResponse {
     if (poolAddresses.isEmpty()) return PoolsResponse(emptyList(), stateVersion)
@@ -109,7 +111,7 @@ suspend fun StateApi.fetchPools(
 
     var resolvedVersion = stateVersion
     paginateDetails(
-        addresses = poolAddresses,
+        addresses = poolAddresses.map { it.string }.toSet(),
         metadataKeys = ExplicitMetadataKey.forPools,
         stateVersion = resolvedVersion,
     ) { page ->
@@ -210,7 +212,7 @@ data class PoolsResponse(
 }
 
 suspend fun StateApi.fetchValidators(
-    validatorsAddresses: Set<String>,
+    validatorsAddresses: Set<ValidatorAddress>,
     stateVersion: Long?
 ): ValidatorsResponse {
     if (validatorsAddresses.isEmpty()) return ValidatorsResponse(emptyList(), stateVersion)
@@ -218,7 +220,7 @@ suspend fun StateApi.fetchValidators(
     val validators = mutableListOf<StateEntityDetailsResponseItem>()
     var returnedStateVersion = stateVersion
     paginateDetails(
-        addresses = validatorsAddresses,
+        addresses = validatorsAddresses.map { it.string }.toSet(),
         metadataKeys = ExplicitMetadataKey.forValidators,
         stateVersion = stateVersion,
     ) { poolsChunked ->
@@ -369,15 +371,15 @@ suspend fun StateApi.paginateNonFungibles(
 }
 
 suspend fun StateApi.paginateNonFungibles(
-    resourceAddress: String,
-    nonFungibleIds: List<String>,
+    resourceAddress: ResourceAddress,
+    nonFungibleIds: Set<NonFungibleLocalId>,
     onPage: (StateNonFungibleDataResponse) -> Unit
 ) {
     nonFungibleIds.chunked(NFT_DETAILS_PAGE_LIMIT).forEach { idsChunk ->
         val response = nonFungibleData(
             StateNonFungibleDataRequest(
-                resourceAddress = resourceAddress,
-                nonFungibleIds = idsChunk
+                resourceAddress = resourceAddress.string,
+                nonFungibleIds = idsChunk.map { it.string }
             )
         ).toResult().getOrThrow()
         onPage(response)
