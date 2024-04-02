@@ -67,7 +67,11 @@ interface StateRepository {
 
     suspend fun updateStakeClaims(account: Network.Account, claims: List<StakeClaim>): Result<List<StakeClaim>>
 
-    suspend fun getResources(addresses: Set<ResourceAddress>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>>
+    suspend fun getResources(
+        addresses: Set<ResourceAddress>,
+        underAccountAddress: AccountAddress?,
+        withDetails: Boolean
+    ): Result<List<Resource>>
 
     suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>>
 
@@ -124,16 +128,17 @@ class StateRepositoryImpl @Inject constructor(
             // No more pages to return
             if (resource.amount.toInt() == resource.items.size) throw StateRepository.Error.NoMorePages
 
-            val accountStateVersion = stateDao.getAccountStateVersion(accountAddress = account.address)
+            val accountAddress = AccountAddress.init(account.address)
+            val accountStateVersion = stateDao.getAccountStateVersion(accountAddress = accountAddress)
                 ?: throw StateRepository.Error.StateVersionMissing
 
             val accountResourceJoin = stateDao.getAccountResourceJoin(
-                accountAddress = account.address,
+                accountAddress = accountAddress,
                 resourceAddress = resource.address
             )
 
             val cachedNFTItems = stateDao.getOwnedNfts(
-                accountAddress = account.address,
+                accountAddress = accountAddress,
                 resourceAddress = resource.address,
                 stateVersion = accountStateVersion
             )
@@ -147,7 +152,7 @@ class StateRepositoryImpl @Inject constructor(
             val nextCursor = accountResourceJoin.nextCursor
 
             val page = stateApi.getNextNftItems(
-                accountAddress = account.address,
+                accountAddress = accountAddress,
                 resourceAddress = resource.address,
                 vaultAddress = vaultAddress,
                 nextCursor = nextCursor,
@@ -156,7 +161,7 @@ class StateRepositoryImpl @Inject constructor(
             val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = accountStateVersion)
 
             val newItems = stateDao.storeAccountNFTsPortfolio(
-                accountAddress = account.address,
+                accountAddress = accountAddress,
                 resourceAddress = resource.address,
                 nextCursor = page.first,
                 items = page.second,
@@ -175,7 +180,8 @@ class StateRepositoryImpl @Inject constructor(
         validatorsWithStakes: List<ValidatorWithStakes>
     ) = withContext(dispatcher) {
         runCatching {
-            val stateVersion = stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
+            val accountAddress = AccountAddress.init(account.address)
+            val stateVersion = stateDao.getAccountStateVersion(accountAddress) ?: throw StateRepository.Error.StateVersionMissing
 
             var result = validatorsWithStakes
 
@@ -223,11 +229,11 @@ class StateRepositoryImpl @Inject constructor(
                 if (stakeClaimCollection != null && stakeClaimCollection.amount.toInt() != stakeClaimCollection.items.size) {
                     val resourcesInAccount = stateDao.getAccountResourceJoin(
                         resourceAddress = stakeClaimCollection.address,
-                        accountAddress = account.address
+                        accountAddress = accountAddress
                     )
                     if (resourcesInAccount?.vaultAddress != null) {
                         val nfts = stateApi.getNextNftItems(
-                            accountAddress = account.address,
+                            accountAddress = accountAddress,
                             resourceAddress = stakeClaimCollection.address,
                             vaultAddress = resourcesInAccount.vaultAddress,
                             nextCursor = null,
@@ -245,7 +251,7 @@ class StateRepositoryImpl @Inject constructor(
             }.flatten()
 
             stateDao.storeStakeDetails(
-                accountAddress = account.address,
+                accountAddress = accountAddress,
                 stateVersion = stateVersion,
                 lsuList = lsuEntities.values.toList(),
                 claims = claims
@@ -271,18 +277,19 @@ class StateRepositoryImpl @Inject constructor(
     override suspend fun updateStakeClaims(account: Network.Account, claims: List<StakeClaim>): Result<List<StakeClaim>> =
         withContext(dispatcher) {
             runCatching {
-                val stateVersion = stateDao.getAccountStateVersion(account.address) ?: throw StateRepository.Error.StateVersionMissing
+                val accountAddress = AccountAddress.init(account.address)
+                val stateVersion = stateDao.getAccountStateVersion(accountAddress) ?: throw StateRepository.Error.StateVersionMissing
 
                 claims.map { claim ->
                     val claimNFTs = if (claim.nonFungibleResource.amount > claim.nonFungibleResource.items.size) {
                         val resourcesInAccount = stateDao.getAccountResourceJoin(
                             resourceAddress = claim.resourceAddress,
-                            accountAddress = account.address
+                            accountAddress = accountAddress
                         )
 
                         if (resourcesInAccount?.vaultAddress != null) {
                             val nftsOnLedger = stateApi.getNextNftItems(
-                                accountAddress = account.address,
+                                accountAddress = accountAddress,
                                 resourceAddress = claim.resourceAddress,
                                 vaultAddress = resourcesInAccount.vaultAddress,
                                 nextCursor = null,
@@ -293,7 +300,7 @@ class StateRepositoryImpl @Inject constructor(
                             val nftEntities = nftsOnLedger.map { it.asEntity(claim.resourceAddress, syncedAt) }
 
                             stateDao.storeStakeClaims(
-                                accountAddress = account.address,
+                                accountAddress = accountAddress,
                                 stateVersion = stateVersion,
                                 claims = nftEntities
                             )
@@ -313,7 +320,7 @@ class StateRepositoryImpl @Inject constructor(
 
     override suspend fun getResources(
         addresses: Set<ResourceAddress>,
-        underAccountAddress: String?,
+        underAccountAddress: AccountAddress?,
         withDetails: Boolean
     ): Result<List<Resource>> = withContext(dispatcher) {
         runCatching {

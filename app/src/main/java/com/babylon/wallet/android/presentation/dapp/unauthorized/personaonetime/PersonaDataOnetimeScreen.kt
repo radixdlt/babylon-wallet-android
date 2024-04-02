@@ -257,7 +257,7 @@ fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         PersonaDataOnetimeContent(
             onContinueClick = {},
-            dapp = DApp.sample(),
+            dapp = DApp.sampleMainnet(),
             onBackClick = {},
             modifier = Modifier.fillMaxSize(),
             isFirstScreenInFlow = false,

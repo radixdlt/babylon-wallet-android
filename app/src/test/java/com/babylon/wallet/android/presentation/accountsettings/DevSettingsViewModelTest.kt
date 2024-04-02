@@ -11,6 +11,9 @@ import com.babylon.wallet.android.presentation.account.settings.ARG_ACCOUNT_SETT
 import com.babylon.wallet.android.presentation.account.settings.devsettings.DevSettingsViewModel
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -44,7 +47,7 @@ internal class DevSettingsViewModelTest : StateViewModelTest<DevSettingsViewMode
     private val eventBus = mockk<AppEventBus>()
     private val sampleTxId = "txId1"
     private val sampleProfile = sampleDataProvider.sampleProfile()
-    private val sampleAddress = sampleProfile.currentNetwork!!.accounts.first().address
+    private val sampleAddress = AccountAddress.init(sampleProfile.currentNetwork!!.accounts.first().address)
 
     override fun initVM(): DevSettingsViewModel {
         return DevSettingsViewModel(
@@ -66,7 +69,7 @@ internal class DevSettingsViewModelTest : StateViewModelTest<DevSettingsViewMode
         every { getFreeXrdUseCase.getFaucetState(any()) } returns flowOf(FaucetState.Available(true))
         every { getProfileUseCase() } returns flowOf(sampleDataProvider.sampleProfile())
         coEvery { getFreeXrdUseCase(any()) } returns Result.success(sampleTxId)
-        every { savedStateHandle.get<String>(ARG_ACCOUNT_SETTINGS_ADDRESS) } returns sampleAddress
+        every { savedStateHandle.get<String>(ARG_ACCOUNT_SETTINGS_ADDRESS) } returns sampleAddress.string
         coEvery { eventBus.sendEvent(any()) } just Runs
         every { rolaClient.signingState } returns emptyFlow()
     }

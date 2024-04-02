@@ -1,5 +1,7 @@
 package rdx.works.profile.data.model.extensions
 
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.mapWhen
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.Profile
@@ -89,24 +91,24 @@ fun Profile.hidePersona(address: String): Profile {
     return copy(networks = updatedNetworks).withUpdatedContentHint()
 }
 
-fun Profile.hideAccount(address: String): Profile {
+fun Profile.hideAccount(address: AccountAddress): Profile {
     val networkId = currentGateway.network.networkId()
     val updatedNetworks = networks.mapWhen(predicate = { it.networkID == networkId.value }, mutation = { network ->
         val updatedAuthorizedDapps = network.authorizedDapps.mapWhen(predicate = { authorizedDapp ->
             authorizedDapp.referencesToAuthorizedPersonas.any { reference ->
-                reference.sharedAccounts.ids.any { it == address }
+                reference.sharedAccounts.ids.any { it == address.string }
             }
         }, mutation = { authorizedDapp ->
             val updatedReferences =
                 authorizedDapp.referencesToAuthorizedPersonas.mapWhen(
                     predicate = { reference ->
-                        reference.sharedAccounts.ids.any { it == address }
+                        reference.sharedAccounts.ids.any { it == address.string }
                     },
                     mutation = { reference ->
                         reference.copy(
                             sharedAccounts = reference.sharedAccounts.copy(
                                 reference.sharedAccounts.ids.filter {
-                                    it != address
+                                    it != address.string
                                 }
                             )
                         )
@@ -115,7 +117,7 @@ fun Profile.hideAccount(address: String): Profile {
             authorizedDapp.copy(referencesToAuthorizedPersonas = updatedReferences)
         })
         val updatedAccounts = network.accounts.mapWhen(
-            predicate = { it.address == address },
+            predicate = { it.address == address.string },
             mutation = { account ->
                 account.copy(flags = account.flags + EntityFlag.DeletedByUser)
             }

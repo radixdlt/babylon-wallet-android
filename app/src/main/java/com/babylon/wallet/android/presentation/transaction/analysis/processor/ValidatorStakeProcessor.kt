@@ -8,6 +8,8 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.first
 import rdx.works.core.divideWithDivisibility
@@ -66,7 +68,7 @@ class ValidatorStakeProcessor @Inject constructor(
             } else {
                 executionSummary.resolveDepositingAsset(depositedResource, assets, defaultDepositGuarantees)
             }
-        }.toAccountWithTransferableResources(depositsPerAccount.key, involvedOwnedAccounts)
+        }.toAccountWithTransferableResources(AccountAddress.init(depositsPerAccount.key), involvedOwnedAccounts)
     }
 
     private fun DetailedManifestClass.ValidatorStake.resolveLSU(

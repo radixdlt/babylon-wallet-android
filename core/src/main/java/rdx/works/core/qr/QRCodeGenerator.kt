@@ -4,11 +4,13 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.string
 
 object QRCodeGenerator {
 
-    fun forAccount(address: String, sizePx: Int = DEFAULT_QR_CODE_SIZE_PX): Bitmap {
-        val qrContent = "$ADDRESS_QR_PREFIX$address"
+    fun forAccount(address: AccountAddress, sizePx: Int = DEFAULT_QR_CODE_SIZE_PX): Bitmap {
+        val qrContent = "$ADDRESS_QR_PREFIX${address.string}"
         val matrix = QRCodeWriter().encode(
             qrContent,
             BarcodeFormat.QR_CODE,

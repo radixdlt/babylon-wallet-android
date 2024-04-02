@@ -11,6 +11,9 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 
 @VisibleForTesting
 internal const val ARG_ADDRESS = "arg_address"
@@ -18,18 +21,20 @@ internal const val ARG_ADDRESS = "arg_address"
 const val ROUTE_ACCOUNT_THIRD_PARTY_DEPOSITS =
     "account_third_party_deposits_route/{$ARG_ADDRESS}"
 
-internal class AccountThirdPartyDepositsArgs(val address: String) {
-    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_ADDRESS]) as String)
+internal class AccountThirdPartyDepositsArgs(val address: AccountAddress) {
+    constructor(savedStateHandle: SavedStateHandle) : this(
+        AccountAddress.init(checkNotNull(savedStateHandle[ARG_ADDRESS]) as String)
+    )
 }
 
-fun NavController.accountThirdPartyDeposits(address: String) {
-    navigate("account_third_party_deposits_route/$address")
+fun NavController.accountThirdPartyDeposits(address: AccountAddress) {
+    navigate("account_third_party_deposits_route/${address.string}")
 }
 
 fun NavGraphBuilder.accountThirdPartyDeposits(
     navController: NavController,
     onBackClick: () -> Unit,
-    onAssetSpecificRulesClick: (String) -> Unit,
+    onAssetSpecificRulesClick: (AccountAddress) -> Unit,
     onSpecificDepositorsClick: () -> Unit
 ) {
     composable(

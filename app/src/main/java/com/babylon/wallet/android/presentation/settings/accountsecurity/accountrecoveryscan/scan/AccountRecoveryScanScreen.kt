@@ -58,6 +58,8 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.Constants
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -373,7 +375,7 @@ private fun InactiveAccountsPage(
                         onAccountSelected(account)
                     },
                 accountName = Constants.DEFAULT_ACCOUNT_NAME,
-                address = account.data.address,
+                address = AccountAddress.init(account.data.address),
                 checked = account.selected,
                 isSingleChoice = false,
                 radioButtonClicked = {

@@ -11,6 +11,7 @@ import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.toManifestClass
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -19,13 +20,13 @@ import javax.inject.Inject
 interface StreamRepository {
 
     suspend fun getAccountHistory(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         filters: HistoryFilters,
         cursor: String?,
         stateVersion: Long? = null
     ): Result<StreamTransactionsResponse>
 
-    suspend fun getAccountFirstTransactionDate(accountAddress: String): Result<StreamTransactionsResponse>
+    suspend fun getAccountFirstTransactionDate(accountAddress: AccountAddress): Result<StreamTransactionsResponse>
 
     companion object {
         const val PAGE_SIZE = 20
@@ -37,7 +38,7 @@ class StreamRepositoryImpl @Inject constructor(
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
 ) : StreamRepository {
     override suspend fun getAccountHistory(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         filters: HistoryFilters,
         cursor: String?,
         stateVersion: Long?
@@ -50,14 +51,14 @@ class StreamRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAccountFirstTransactionDate(accountAddress: String): Result<StreamTransactionsResponse> {
+    override suspend fun getAccountFirstTransactionDate(accountAddress: AccountAddress): Result<StreamTransactionsResponse> {
         return withContext(dispatcher) {
             runCatching {
                 streamApi.streamTransactions(
                     StreamTransactionsRequest(
                         order = StreamTransactionsRequest.Order.asc,
                         fromLedgerState = LedgerStateSelector(stateVersion = 1),
-                        affectedGlobalEntitiesFilter = listOf(accountAddress),
+                        affectedGlobalEntitiesFilter = listOf(accountAddress.string),
                         limitPerPage = 1
                     )
                 ).toResult().getOrThrow()
@@ -67,7 +68,7 @@ class StreamRepositoryImpl @Inject constructor(
 
     @Suppress("LongMethod")
     private fun buildStreamTransactionRequest(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         cursor: String?,
         filters: HistoryFilters,
         stateVersion: Long?
@@ -97,7 +98,7 @@ class StreamRepositoryImpl @Inject constructor(
                         listOf(
                             StreamTransactionsRequestEventFilterItem(
                                 StreamTransactionsRequestEventFilterItem.Event.deposit,
-                                emitterAddress = accountAddress
+                                emitterAddress = accountAddress.string
                             )
                         )
 
@@ -105,7 +106,7 @@ class StreamRepositoryImpl @Inject constructor(
                         listOf(
                             StreamTransactionsRequestEventFilterItem(
                                 StreamTransactionsRequestEventFilterItem.Event.withdrawal,
-                                emitterAddress = accountAddress
+                                emitterAddress = accountAddress.string
                             )
                         )
                 }
@@ -117,7 +118,7 @@ class StreamRepositoryImpl @Inject constructor(
                 )
             },
             manifestResourcesFilter = filters.resource?.let { listOf(it.address.string) },
-            affectedGlobalEntitiesFilter = listOf(accountAddress)
+            affectedGlobalEntitiesFilter = listOf(accountAddress.string)
         )
     }
 }

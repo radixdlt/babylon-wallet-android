@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.fakes
 
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
@@ -26,20 +25,20 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         NoDapp, PredefinedDapp, SavedDapp
     }
 
-    private var authorizedDApp: Network.AuthorizedDapp? = null
+    var savedDApp: Network.AuthorizedDapp? = null
 
     override suspend fun getAuthorizedDapp(dAppDefinitionAddress: AccountAddress): Network.AuthorizedDapp? {
         return when (state) {
             InitialState.NoDapp -> null
             InitialState.PredefinedDapp -> {
-                val dApp = DApp.sample().copy(dAppAddress = dAppDefinitionAddress)
-                authorizedDApp = Network.AuthorizedDapp(
+                val dApp = DApp.sampleMainnet().copy(dAppAddress = dAppDefinitionAddress)
+                savedDApp = Network.AuthorizedDapp(
                     NetworkId.MAINNET.discriminant.toInt(), dApp.dAppAddress.string, dApp.name, listOf(
                         Network.AuthorizedDapp.AuthorizedPersonaSimple(
                             identityAddress = IdentityAddress.sampleMainnet().string,
                             lastLogin = "2023-01-31T10:28:14Z",
                             sharedAccounts = Shared(
-                                listOf("address-acc-1", SampleDataProvider().randomAddress()),
+                                listOf(AccountAddress.sampleMainnet.random().string, AccountAddress.sampleMainnet.random().string),
                                 RequestedNumber(
                                     RequestedNumber.Quantifier.AtLeast,
                                     1
@@ -49,9 +48,9 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                         )
                     )
                 )
-                authorizedDApp
+                savedDApp
             }
-            InitialState.SavedDapp -> authorizedDApp
+            InitialState.SavedDapp -> savedDApp
         }
     }
 
@@ -59,7 +58,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         return flow {
             emit(
                 listOf(
-                    with(DApp.sample()) {
+                    with(DApp.sampleMainnet()) {
                         Network.AuthorizedDapp(
                             dAppAddress.networkId.discriminant.toInt(), dAppAddress.string, name, listOf(
                                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
@@ -77,7 +76,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
                             )
                         )
                     },
-                    with(DApp.sample.other()) {
+                    with(DApp.sampleMainnet.other()) {
                         Network.AuthorizedDapp(
                             dAppAddress.networkId.discriminant.toInt(), dAppAddress.string, name, listOf(
                                 Network.AuthorizedDapp.AuthorizedPersonaSimple(
@@ -101,7 +100,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     }
 
     override suspend fun updateOrCreateAuthorizedDApp(authorizedDApp: Network.AuthorizedDapp) {
-        this.authorizedDApp = authorizedDApp
+        this.savedDApp = authorizedDApp
     }
 
     override suspend fun getDAppConnectedPersona(
@@ -116,7 +115,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         personaAddress: String,
         numberOfAccounts: Int,
         quantifier: RequestedNumber.Quantifier
-    ): List<String> {
+    ): List<AccountAddress> {
         return emptyList()
     }
 
@@ -133,7 +132,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         personaAddress: String,
         sharedAccounts: Shared<String>
     ): Network.AuthorizedDapp {
-        return checkNotNull(authorizedDApp)
+        return checkNotNull(savedDApp)
     }
 
     override suspend fun deletePersonaForDapp(dAppDefinitionAddress: AccountAddress, personaAddress: String) {

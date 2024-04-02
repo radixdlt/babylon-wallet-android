@@ -28,6 +28,7 @@ import com.babylon.wallet.android.presentation.transaction.submit.TransactionSub
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
@@ -180,14 +181,14 @@ class TransactionReviewViewModel @Inject constructor(
         val signersCount = state.value.defaultSignersCount
 
         val updatedFeePayerResult = feePayerSearchResult?.copy(
-            selectedAccountAddress = selectedFeePayer.address,
+            selectedAccountAddress = AccountAddress.init(selectedFeePayer.address),
             candidates = feePayerSearchResult.candidates
         )
 
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
         val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.feePayerCandidates()
             .orEmpty().any { accountAddress ->
-                accountAddress == selectedFeePayer.address
+                accountAddress.string == selectedFeePayer.address
             }
 
         val updatedSignersCount = if (selectedFeePayerInvolvedInTransaction) signersCount else signersCount + 1
@@ -326,7 +327,7 @@ class TransactionReviewViewModel @Inject constructor(
                 val candidateAddress = feePayers.selectedAccountAddress ?: return true
 
                 val xrdInCandidateAccount = feePayers.candidates.find {
-                    it.account.address == candidateAddress
+                    it.account.address == candidateAddress.string
                 }?.xrdAmount ?: BigDecimal.ZERO
 
                 // Calculate how many XRD have been used from accounts withdrawn from
@@ -529,7 +530,7 @@ data class AccountWithDepositSettingsChanges(
 
 @Suppress("MagicNumber")
 sealed interface AccountWithPredictedGuarantee {
-    val address: String
+    val address: AccountAddress
     val transferable: TransferableAsset.Fungible
     val instructionIndex: Long
     val guaranteeAmountString: String
@@ -595,12 +596,12 @@ sealed interface AccountWithPredictedGuarantee {
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
     ) : AccountWithPredictedGuarantee {
-        override val address: String
-            get() = account.address
+        override val address: AccountAddress
+            get() = AccountAddress.init(account.address)
     }
 
     data class Other(
-        override val address: String,
+        override val address: AccountAddress,
         override val transferable: TransferableAsset.Fungible,
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
@@ -609,19 +610,19 @@ sealed interface AccountWithPredictedGuarantee {
 
 sealed interface AccountWithTransferableResources {
 
-    val address: String
+    val address: AccountAddress
     val resources: List<Transferable>
 
     data class Owned(
         val account: Network.Account,
         override val resources: List<Transferable>
     ) : AccountWithTransferableResources {
-        override val address: String
-            get() = account.address
+        override val address: AccountAddress
+            get() = AccountAddress.init(account.address)
     }
 
     data class Other(
-        override val address: String,
+        override val address: AccountAddress,
         override val resources: List<Transferable>
     ) : AccountWithTransferableResources
 
@@ -661,8 +662,8 @@ sealed interface AccountWithTransferableResources {
             private val ownedAccountsOrder: List<Network.Account>
         ) : Comparator<AccountWithTransferableResources> {
             override fun compare(thisAccount: AccountWithTransferableResources?, otherAccount: AccountWithTransferableResources?): Int {
-                val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.address }
-                val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.address }
+                val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.address?.string }
+                val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.address?.string }
 
                 return if (indexOfThisAccount == -1 && indexOfOtherAccount >= 0) {
                     1 // The other account is owned, so it takes higher priority

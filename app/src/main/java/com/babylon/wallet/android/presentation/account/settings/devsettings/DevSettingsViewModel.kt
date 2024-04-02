@@ -16,6 +16,8 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -70,15 +72,16 @@ class DevSettingsViewModel @Inject constructor(
 
     private fun loadAccount() {
         viewModelScope.launch {
-            getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accounts -> accounts.firstOrNull { it.address == args.address } }
-                .collect { account ->
-                    _state.update { state ->
-                        state.copy(
-                            account = account,
-                            hasAuthKey = account.hasAuthSigning()
-                        )
-                    }
+            getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accounts ->
+                accounts.firstOrNull { it.address == args.address.string }
+            }.collect { account ->
+                _state.update { state ->
+                    state.copy(
+                        account = account,
+                        hasAuthKey = account.hasAuthSigning()
+                    )
                 }
+            }
         }
     }
 
@@ -160,7 +163,7 @@ class DevSettingsViewModel @Inject constructor(
 
 data class DevSettingsUiState(
     val account: Network.Account? = null,
-    val accountAddress: String,
+    val accountAddress: AccountAddress,
     val faucetState: FaucetState = FaucetState.Unavailable,
     val isFreeXRDLoading: Boolean = false,
     val isLoading: Boolean = false,

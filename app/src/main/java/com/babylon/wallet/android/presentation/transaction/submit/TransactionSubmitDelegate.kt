@@ -20,6 +20,7 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.TransactionGuarantee
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
 import kotlinx.coroutines.CoroutineScope
@@ -126,7 +127,7 @@ class TransactionSubmitDelegate @Inject constructor(
     private suspend fun signAndSubmit(
         transactionRequest: MessageFromDataChannel.IncomingRequest.TransactionRequest,
         signTransactionUseCase: SignTransactionUseCase,
-        feePayerAddress: String,
+        feePayerAddress: AccountAddress?,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ) {
         _state.update { it.copy(isSubmitting = true) }

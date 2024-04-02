@@ -8,6 +8,7 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
@@ -111,6 +112,6 @@ class ValidatorUnstakeProcessor @Inject constructor(
             } else {
                 executionSummary.resolveDepositingAsset(claimedResource, assets, defaultDepositGuarantees)
             }
-        }.toAccountWithTransferableResources(claimsPerAddress.key, involvedOwnedAccounts)
+        }.toAccountWithTransferableResources(AccountAddress.init(claimsPerAddress.key), involvedOwnedAccounts)
     }
 }

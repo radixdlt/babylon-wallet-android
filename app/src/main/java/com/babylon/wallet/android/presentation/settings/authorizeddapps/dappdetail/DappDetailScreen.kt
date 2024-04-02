@@ -80,6 +80,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -744,10 +745,10 @@ fun DappDetailContentPreview() {
                 loading = false,
                 personas = persistentListOf(SampleDataProvider().samplePersona()),
                 dAppWithResources = DAppWithResources(
-                    dApp = DApp.sample()
+                    dApp = DApp.sampleMainnet()
                 ),
                 sharedPersonaAccounts = persistentListOf(
-                    AccountItemUiModel("account_tdx_efgh", "Account1", 0)
+                    AccountItemUiModel(AccountAddress.sampleMainnet.random(), "Account1", 0)
                 ),
                 selectedSheetState = null
             ),
@@ -771,7 +772,7 @@ fun PersonaDetailsSheetPreview() {
         PersonaDetailsSheet(
             persona = PersonaUiModel(SampleDataProvider().samplePersona()),
             sharedPersonaAccounts = persistentListOf(
-                AccountItemUiModel("account_tdx_efgh", "Account1", 0)
+                AccountItemUiModel(AccountAddress.sampleMainnet.random(), "Account1", 0)
             ),
             onCloseClick = {},
             dappName = "dApp",

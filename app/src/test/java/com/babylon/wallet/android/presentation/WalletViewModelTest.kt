@@ -55,7 +55,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
 
-    private val sampleProfile = profile(accounts = identifiedArrayListOf(account(address = "adr_1", name = "primary")))
+    private val sampleProfile = profile(accounts = identifiedArrayListOf(account(name = "primary")))
     private val sampleXrdResource = Resource.FungibleResource(
         address = XrdResource.address(networkId = Radix.Network.mainnet.id),
         ownedAmount = BigDecimal.TEN,

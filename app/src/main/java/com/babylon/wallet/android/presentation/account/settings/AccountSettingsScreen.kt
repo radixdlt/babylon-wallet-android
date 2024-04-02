@@ -41,7 +41,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
@@ -50,6 +49,9 @@ import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsIte
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -60,7 +62,7 @@ fun AccountSettingsScreen(
     viewModel: AccountSettingsViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onSettingItemClick: (AccountSettingItem, address: String) -> Unit,
+    onSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
     onHideAccountClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -201,7 +203,7 @@ private fun AccountSettingsContent(
     modifier: Modifier = Modifier,
     settingsSections: ImmutableList<AccountSettingsSection>,
     onSettingClick: (AccountSettingItem) -> Unit,
-    accountAddress: String,
+    accountAddress: AccountAddress,
     onHideAccount: () -> Unit
 ) {
     Scaffold(
@@ -223,7 +225,7 @@ private fun AccountSettingsContent(
         ) {
             item {
                 ActionableAddressView(
-                    address = accountAddress,
+                    address = accountAddress.string,
                     modifier = Modifier.padding(
                         horizontal = RadixTheme.dimensions.paddingLarge,
                         vertical = RadixTheme.dimensions.paddingSmall
@@ -368,7 +370,7 @@ private fun RenameAccountSheet(
 
 @Composable
 private fun AddressQRCodeSheet(
-    accountAddress: String,
+    accountAddress: AccountAddress,
     dismissAddressQRCodeSheet: () -> Unit
 ) {
     Column(modifier = Modifier.navigationBarsPadding()) {
@@ -406,7 +408,7 @@ fun AccountSettingsPreview() {
                 )
             ),
             onSettingClick = {},
-            accountAddress = SampleDataProvider().randomAddress(),
+            accountAddress = AccountAddress.sampleMainnet.random(),
             onHideAccount = {}
         )
     }

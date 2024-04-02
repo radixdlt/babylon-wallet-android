@@ -8,20 +8,23 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import org.jetbrains.annotations.VisibleForTesting
 
 @VisibleForTesting
 internal const val ARG_ACCOUNT_ID = "arg_account_id"
 const val ROUTE_TRANSFER = "transfer/{$ARG_ACCOUNT_ID}"
 
-internal class TransferArgs(val accountId: String) {
+internal class TransferArgs(val accountId: AccountAddress) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_ACCOUNT_ID]) as String
+        AccountAddress.init(checkNotNull(savedStateHandle[ARG_ACCOUNT_ID]) as String)
     )
 }
 
-fun NavController.transfer(accountId: String) {
-    navigate("transfer/$accountId")
+fun NavController.transfer(accountId: AccountAddress) {
+    navigate("transfer/${accountId.string}")
 }
 
 fun NavGraphBuilder.transferScreen(

@@ -14,10 +14,10 @@ import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.resources.metadata.accountType
-import java.math.BigDecimal
 import java.time.Instant
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -49,7 +49,7 @@ interface StateDao {
         WHERE address = :accountAddress
     """
     )
-    fun getAccountStateVersion(accountAddress: String): Long?
+    fun getAccountStateVersion(accountAddress: AccountAddress): Long?
 
     @Query(
         """
@@ -91,17 +91,18 @@ interface StateDao {
             val item = pair.first
             val ledgerState = pair.second
 
+            val accountAddress = AccountAddress.init(item.address)
             val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = ledgerState.stateVersion)
             val allResources = item.fungibleResources?.items?.map { fungibleItem ->
-                fungibleItem.asAccountResourceJoin(item.address, syncInfo)
+                fungibleItem.asAccountResourceJoin(accountAddress, syncInfo)
             }.orEmpty() + item.nonFungibleResources?.items?.map { nonFungibleItem ->
-                nonFungibleItem.asAccountResourceJoin(item.address, syncInfo)
+                nonFungibleItem.asAccountResourceJoin(accountAddress, syncInfo)
             }.orEmpty()
 
             val accountMetadata = item.explicitMetadata?.toMetadata()
             insertAccountDetails(
                 AccountEntity(
-                    address = item.address,
+                    address = accountAddress,
                     accountType = accountMetadata?.accountType(),
                     synced = syncInfo.synced,
                     stateVersion = syncInfo.accountStateVersion
@@ -134,7 +135,7 @@ interface StateDao {
         WHERE address = :accountAddress
     """
     )
-    fun updateAccountFirstTransactionDate(accountAddress: String, firstTransactionDate: Instant?)
+    fun updateAccountFirstTransactionDate(accountAddress: AccountAddress, firstTransactionDate: Instant?)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPoolDetails(pools: List<PoolEntity>)
@@ -201,7 +202,7 @@ interface StateDao {
             AccountNFTJoin.state_version = :stateVersion
         """
     )
-    fun getOwnedNfts(accountAddress: String, resourceAddress: ResourceAddress, stateVersion: Long): List<NFTEntity>
+    fun getOwnedNfts(accountAddress: AccountAddress, resourceAddress: ResourceAddress, stateVersion: Long): List<NFTEntity>
 
     @Query(
         """
@@ -210,7 +211,7 @@ interface StateDao {
         WHERE AccountResourceJoin.account_address = :accountAddress AND AccountResourceJoin.resource_address = :resourceAddress
     """
     )
-    fun updateNextCursor(accountAddress: String, resourceAddress: ResourceAddress, cursor: String?)
+    fun updateNextCursor(accountAddress: AccountAddress, resourceAddress: ResourceAddress, cursor: String?)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAccountNFTsJoin(accountNFTsJoin: List<AccountNFTJoin>)
@@ -220,7 +221,7 @@ interface StateDao {
 
     @Transaction
     fun insertAccountNFTsJoin(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         resourceAddress: ResourceAddress,
         cursor: String?,
         nfts: List<NFTEntity>,
@@ -248,7 +249,7 @@ interface StateDao {
             state_version = (SELECT state_version FROM AccountEntity WHERE address = :accountAddress)
     """
     )
-    fun getAccountResourceJoin(resourceAddress: ResourceAddress, accountAddress: String): AccountResourceJoin?
+    fun getAccountResourceJoin(resourceAddress: ResourceAddress, accountAddress: AccountAddress): AccountResourceJoin?
 
     @Query(
         """
@@ -268,7 +269,7 @@ interface StateDao {
 
     @Transaction
     fun storeStakeDetails(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         stateVersion: Long,
         lsuList: List<ResourceEntity>,
         claims: List<NFTEntity>
@@ -292,7 +293,7 @@ interface StateDao {
 
     @Transaction
     fun storeStakeClaims(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         stateVersion: Long,
         claims: List<NFTEntity>
     ) {
