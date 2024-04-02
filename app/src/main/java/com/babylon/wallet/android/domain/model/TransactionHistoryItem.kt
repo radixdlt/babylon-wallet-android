@@ -6,6 +6,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.ManifestClass
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -59,7 +60,7 @@ data class TransactionHistoryItem(
 ) {
     val deposited: List<BalanceChange>
         get() = balanceChanges.filter {
-            if (it.entityAddress != accountAddress.string) return@filter false
+            if (it.entityAddress != accountAddress) return@filter false
             when (it) {
                 is BalanceChange.FungibleBalanceChange -> it.balanceChange.signum() == 1
                 is BalanceChange.NonFungibleBalanceChange -> it.addedIds.isNotEmpty()
@@ -67,7 +68,7 @@ data class TransactionHistoryItem(
         }
     val withdrawn: List<BalanceChange>
         get() = balanceChanges.filter {
-            if (it.entityAddress != accountAddress.string) return@filter false
+            if (it.entityAddress != accountAddress) return@filter false
             when (it) {
                 is BalanceChange.FungibleBalanceChange -> it.balanceChange.signum() == -1
                 is BalanceChange.NonFungibleBalanceChange -> it.removedIds.isNotEmpty()
@@ -102,11 +103,11 @@ data class HistoryFilters(
 sealed interface BalanceChange : Comparable<BalanceChange> {
 
     val asset: Asset?
-    val entityAddress: String
+    val entityAddress: AccountAddress
 
     data class FungibleBalanceChange(
         val balanceChange: BigDecimal,
-        override val entityAddress: String,
+        override val entityAddress: AccountAddress,
         override val asset: Asset.Fungible? = null
     ) : BalanceChange {
         @Suppress("UnsafeCallOnNullableType", "ReturnCount", "MagicNumber")
@@ -128,7 +129,7 @@ sealed interface BalanceChange : Comparable<BalanceChange> {
     data class NonFungibleBalanceChange(
         val removedIds: List<String>,
         val addedIds: List<String>,
-        override val entityAddress: String,
+        override val entityAddress: AccountAddress,
         override val asset: Asset.NonFungible? = null
     ) : BalanceChange {
         @Suppress("UnsafeCallOnNullableType", "ReturnCount", "MagicNumber")
@@ -178,7 +179,7 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
     val fungibleFungibleBalanceChanges = fungibleBalanceChanges.map { item ->
         BalanceChange.FungibleBalanceChange(
             item.balanceChange.toBigDecimal(),
-            item.entityAddress,
+            AccountAddress.init(item.entityAddress),
             when (val asset = assets.filterIsInstance<Asset.Fungible>().find { it.resource.address.string == item.resourceAddress }) {
                 is LiquidStakeUnit -> asset.copy(
                     fungibleResource = asset.fungibleResource.copy(
@@ -220,7 +221,7 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
         BalanceChange.NonFungibleBalanceChange(
             item.removed,
             item.added,
-            item.entityAddress,
+            AccountAddress.init(item.entityAddress),
             relatedAsset
         )
     }
