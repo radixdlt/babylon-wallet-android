@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
@@ -318,18 +319,27 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             ResourceAddress.init(address).takeIf { it.networkId.discriminant.toInt() == currentNetworkId }
         }.getOrNull()
         val validatedNftAddress = runCatching {
-            // TODO ask that
-//            NonFungibleResourceAddress.init(address).takeIf { it.networkId.discriminant.toInt() == currentNetworkId }
             NonFungibleGlobalId.init(address).takeIf { it.resourceAddress.networkId.discriminant.toInt() == currentNetworkId }
         }.getOrNull()
+
+        val badgeAddress = if (validatedFungibleAddress != null) {
+            ResourceOrNonFungible.Resource(validatedFungibleAddress)
+        } else if (validatedNftAddress != null) {
+            ResourceOrNonFungible.NonFungible(validatedNftAddress)
+        } else {
+            null
+        }
+
         _state.update { state ->
             val updatedDepositor = state.depositorToAdd.copy(
-                depositorAddress = when {
-                    validatedFungibleAddress != null -> ThirdPartyDeposits.DepositorAddress.ResourceAddress(validatedFungibleAddress.string)
-                    validatedNftAddress != null -> ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(validatedNftAddress.string)
+                depositorAddress = when (badgeAddress) {
+                    is ResourceOrNonFungible.Resource -> ThirdPartyDeposits.DepositorAddress.ResourceAddress(badgeAddress.value.string)
+                    is ResourceOrNonFungible.NonFungible -> ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(
+                        badgeAddress.value.string
+                    )
                     else -> null
                 },
-                addressValid = validatedFungibleAddress != null || validatedNftAddress != null,
+                addressValid = badgeAddress != null,
                 addressToDisplay = address
             )
             state.copy(depositorToAdd = updatedDepositor)
