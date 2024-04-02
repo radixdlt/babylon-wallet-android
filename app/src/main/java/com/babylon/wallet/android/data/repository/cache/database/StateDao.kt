@@ -118,17 +118,6 @@ interface StateDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertOrIgnoreResources(resources: List<ResourceEntity>)
 
-    @Query(
-        """
-        UPDATE ResourceEntity SET
-        divisibility = :divisibility,
-        behaviours = :behaviours,
-        supply = :supply
-        WHERE address = :resourceAddress
-    """
-    )
-    fun updateResourceEntity(resourceAddress: String, divisibility: Int?, behaviours: BehavioursColumn?, supply: BigDecimal?)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAccountResourcesPortfolio(accountPortfolios: List<AccountResourceJoin>)
 
