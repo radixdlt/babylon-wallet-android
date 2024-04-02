@@ -71,7 +71,7 @@ data class PoolWithResourceResponse(
     @ColumnInfo("pool_entity_address")
     val address: PoolAddress,
     @ColumnInfo("pool_unit_address")
-    val poolUnitAddress: String,
+    val poolUnitAddress: ResourceAddress,
     @ColumnInfo("account_state_version")
     val accountStateVersion: Long?,
     @ColumnInfo("pool_metadata")

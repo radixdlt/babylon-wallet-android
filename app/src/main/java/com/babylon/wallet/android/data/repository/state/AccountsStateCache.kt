@@ -241,7 +241,7 @@ class AccountsStateCache @Inject constructor(
             val cachedValidators = dao.getCachedValidators(allValidatorAddresses, stateVersion).toMutableMap()
             val newValidators = runCatching {
                 api.fetchValidators(
-                    (allValidatorAddresses - cachedValidators.keys).map { it.string }.toSet(),
+                    allValidatorAddresses - cachedValidators.keys,
                     stateVersion
                 ).validators.asValidators().onEach {
                     cachedValidators[it.address] = it
@@ -262,7 +262,7 @@ class AccountsStateCache @Inject constructor(
                 logger.d("\uD83D\uDCBD Inserting pools")
 
                 val newPools = runCatching {
-                    api.fetchPools(unknownPools.map { it.string }.toSet(), stateVersion)
+                    api.fetchPools(unknownPools.toSet(), stateVersion)
                 }.onFailure { error ->
                     cacheErrors.value = error
                 }.getOrNull() ?: return@transform

@@ -372,7 +372,7 @@ class StateRepositoryImpl @Inject constructor(
             }
             val unknownPools = poolAddresses - cachedPools.map { it.address }.toSet()
             if (unknownPools.isNotEmpty()) {
-                val newPools = stateApi.fetchPools(unknownPools.map { it.string }.toSet(), stateVersion)
+                val newPools = stateApi.fetchPools(unknownPools.toSet(), stateVersion)
                 if (newPools.poolItems.isNotEmpty()) {
                     val fetchedStateVersion = requireNotNull(newPools.stateVersion)
                     val join = newPools.poolItems.asPoolsResourcesJoin(SyncInfo(InstantGenerator(), fetchedStateVersion))
@@ -401,7 +401,7 @@ class StateRepositoryImpl @Inject constructor(
             val unknownAddresses = validatorAddresses - cachedValidators.map { it.address }.toSet()
             if (unknownAddresses.isNotEmpty()) {
                 val response = stateApi.fetchValidators(
-                    validatorsAddresses = unknownAddresses.map { it.string }.toSet(),
+                    validatorsAddresses = unknownAddresses,
                     stateVersion = stateVersion
                 )
                 val details = response.validators.asValidators()
@@ -429,7 +429,7 @@ class StateRepositoryImpl @Inject constructor(
             val unknownIds = localIds - cachedItems?.map { it.localId }.orEmpty().toSet()
 
             val result = mutableListOf<Resource.NonFungibleResource.Item>()
-            stateApi.paginateNonFungibles(resourceAddress.string, nonFungibleIds = unknownIds.map { it.string }, onPage = { response ->
+            stateApi.paginateNonFungibles(resourceAddress, nonFungibleIds = unknownIds, onPage = { response ->
                 val item = response.nonFungibleIds
                 val entities = item.map { it.asEntity(resourceAddress, InstantGenerator()) }
                 stateDao.insertNFTs(entities)
