@@ -42,6 +42,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedG
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Owned
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
@@ -88,7 +89,7 @@ fun TransactionAccountWithGuaranteesCard(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
             ActionableAddressView(
-                address = accountWithGuarantee.address,
+                address = accountWithGuarantee.address.string,
                 textStyle = RadixTheme.typography.body1Regular,
                 textColor = RadixTheme.colors.white,
                 iconColor = RadixTheme.colors.white

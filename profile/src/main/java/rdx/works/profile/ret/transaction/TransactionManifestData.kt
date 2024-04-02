@@ -6,6 +6,7 @@ import com.radixdlt.ret.Message
 import com.radixdlt.ret.MessageContent
 import com.radixdlt.ret.PlainTextMessage
 import com.radixdlt.ret.TransactionManifest
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Blob
 import com.radixdlt.sargon.Blobs
 import com.radixdlt.sargon.NetworkId
@@ -54,9 +55,11 @@ data class TransactionManifestData(
         )
     }
 
-    fun feePayerCandidates(): List<String> {
+    fun feePayerCandidates(): List<AccountAddress> {
         val summary = manifest.summary(networkId.toUByte())
-        return (summary.accountsWithdrawnFrom + summary.accountsDepositedInto + summary.accountsRequiringAuth).map { it.addressString() }
+        return (summary.accountsWithdrawnFrom + summary.accountsDepositedInto + summary.accountsRequiringAuth).map {
+            AccountAddress.init(it.addressString())
+        }
     }
 
     // Currently the only method that exposes RET

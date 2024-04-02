@@ -1,5 +1,6 @@
 package rdx.works.profile.domain
 
+import com.radixdlt.sargon.AccountAddress
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -16,7 +17,7 @@ class ChangeEntityVisibilityUseCase @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
-    suspend fun hideAccount(entityAddress: String) {
+    suspend fun hideAccount(entityAddress: AccountAddress) {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
             val updatedProfile = profile.hideAccount(address = entityAddress)

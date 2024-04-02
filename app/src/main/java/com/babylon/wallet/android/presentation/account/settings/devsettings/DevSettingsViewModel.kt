@@ -10,6 +10,7 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.AccountAddress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
@@ -55,15 +56,16 @@ class DevSettingsViewModel @Inject constructor(
 
     private fun loadAccount() {
         viewModelScope.launch {
-            getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accounts -> accounts.firstOrNull { it.address == args.address } }
-                .collect { account ->
-                    _state.update { state ->
-                        state.copy(
-                            account = account,
-                            hasAuthKey = account.hasAuthSigning()
-                        )
-                    }
+            getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accounts ->
+                accounts.firstOrNull { it.address == args.address.string }
+            }.collect { account ->
+                _state.update { state ->
+                    state.copy(
+                        account = account,
+                        hasAuthKey = account.hasAuthSigning()
+                    )
                 }
+            }
         }
     }
 
@@ -122,7 +124,7 @@ class DevSettingsViewModel @Inject constructor(
 
 data class DevSettingsUiState(
     val account: Network.Account? = null,
-    val accountAddress: String,
+    val accountAddress: AccountAddress,
     val isLoading: Boolean = false,
     val hasAuthKey: Boolean = false,
     val interactionState: InteractionState? = null,

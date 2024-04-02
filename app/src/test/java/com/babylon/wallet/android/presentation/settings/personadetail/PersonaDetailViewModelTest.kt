@@ -13,7 +13,6 @@ import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.ARG_PERSONA_ADDRESS
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.PersonaDetailViewModel
 import com.babylon.wallet.android.utils.AppEventBus
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -73,8 +72,8 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
                 )
             )
         )
-        val dApp = DApp.sample()
-        val dAppOther = DApp.sample.other()
+        val dApp = DApp.sampleMainnet()
+        val dAppOther = DApp.sampleMainnet.other()
         coEvery { getDAppsUseCase(dApp.dAppAddress, false) } returns Result.success(dApp)
         coEvery { getDAppsUseCase(dAppOther.dAppAddress, false) } returns Result.success(dAppOther)
     }

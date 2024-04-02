@@ -7,6 +7,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -60,7 +61,7 @@ class PoolRedemptionProcessor @Inject constructor(
                         )
                     )
                 }
-            }.toAccountWithTransferableResources(withdrawsPerAddress.key, involvedOwnedAccounts)
+            }.toAccountWithTransferableResources(AccountAddress.init(withdrawsPerAddress.key), involvedOwnedAccounts)
         }.sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
         return PreviewType.Transfer.Pool(
             from = from,

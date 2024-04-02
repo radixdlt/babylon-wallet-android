@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.mockdata
 
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.NonFungibleResourceAddress
 import com.radixdlt.sargon.PoolAddress
@@ -34,10 +35,10 @@ import java.math.BigDecimal
 
 fun account(
     name: String = "account-name",
-    address: String = "address-$name",
+    address: AccountAddress = AccountAddress.sampleMainnet.random(),
     networkId: NetworkId = Radix.Gateway.default.network.networkId()
 ) = Network.Account(
-    address = address,
+    address = address.string,
     appearanceID = 1,
     displayName = name,
     networkID = networkId.value,

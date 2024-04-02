@@ -40,6 +40,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.radixdlt.sargon.AccountAddress
 
 @Composable
 fun CreateAccountScreen(
@@ -47,9 +48,9 @@ fun CreateAccountScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     onContinueClick: (
-        accountId: String,
+        accountId: AccountAddress,
         requestSource: CreateAccountRequestSource?,
-    ) -> Unit = { _: String, _: CreateAccountRequestSource? -> },
+    ) -> Unit = { _: AccountAddress, _: CreateAccountRequestSource? -> },
     onAddLedgerDevice: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
+import com.radixdlt.sargon.AccountAddress
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -19,7 +20,7 @@ class VerifyAddressOnLedgerUseCase @Inject constructor(
 ) {
 
     @Suppress("ReturnCount")
-    suspend operator fun invoke(address: String): Result<Unit> {
+    suspend operator fun invoke(address: AccountAddress): Result<Unit> {
         val account = getProfileUseCase.accountOnCurrentNetwork(
             withAddress = address
         ) ?: return Result.failure(Exception("No account with address: $address"))

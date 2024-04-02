@@ -2,6 +2,8 @@
 
 package rdx.works.profile.domain
 
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -127,9 +129,9 @@ suspend fun GetProfileUseCase.factorSourceByIdValue(
 suspend fun GetProfileUseCase.accountsOnCurrentNetwork() = activeAccountsOnCurrentNetwork.first()
 
 suspend fun GetProfileUseCase.accountOnCurrentNetwork(
-    withAddress: String
+    withAddress: AccountAddress
 ) = accountsOnCurrentNetwork().firstOrNull { account ->
-    account.address == withAddress
+    account.address == withAddress.string
 }
 
 suspend fun GetProfileUseCase.currentNetworkAccountHashes(): Set<ByteArray> {

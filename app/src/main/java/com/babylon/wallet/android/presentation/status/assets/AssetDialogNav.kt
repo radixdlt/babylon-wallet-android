@@ -8,6 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
@@ -33,9 +34,9 @@ fun NavController.fungibleAssetDialog(
     resourceAddress: ResourceAddress,
     amounts: Map<ResourceAddress, BigDecimal> = emptyMap(),
     isNewlyCreated: Boolean = false,
-    underAccountAddress: String? = null,
+    underAccountAddress: AccountAddress? = null,
 ) {
-    val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=$underAccountAddress" else ""
+    val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=${underAccountAddress.string}" else ""
     val fungibleAmounts = Serializer.kotlinxSerializationJson.encodeToString(FungibleAmounts(amounts.mapKeys { it.key.string }))
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_FUNGIBLE" +
@@ -50,10 +51,10 @@ fun NavController.nftAssetDialog(
     resourceAddress: ResourceAddress,
     localId: NonFungibleLocalId? = null,
     isNewlyCreated: Boolean = false,
-    underAccountAddress: String? = null
+    underAccountAddress: AccountAddress? = null
 ) {
     val localIdParam = if (localId != null) "&$ARG_LOCAL_ID=${URLEncoder.encode(localId.string, Charsets.UTF_8.name())}" else ""
-    val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=$underAccountAddress" else ""
+    val underAccountAddressParam = if (underAccountAddress != null) "&$ARG_UNDER_ACCOUNT_ADDRESS=${underAccountAddress.string}" else ""
     navigate(
         route = "$ROUTE/$ARG_RESOURCE_TYPE_VALUE_NFT" +
             "?${ARG_RESOURCE_ADDRESS}=${resourceAddress.string}" +
@@ -71,12 +72,12 @@ private data class FungibleAmounts(
 sealed interface AssetDialogArgs {
     val resourceAddress: ResourceAddress
     val isNewlyCreated: Boolean
-    val underAccountAddress: String?
+    val underAccountAddress: AccountAddress?
 
     data class Fungible(
         override val resourceAddress: ResourceAddress,
         override val isNewlyCreated: Boolean,
-        override val underAccountAddress: String?,
+        override val underAccountAddress: AccountAddress?,
         private val amounts: Map<String, BigDecimal>,
     ) : AssetDialogArgs {
 
@@ -86,7 +87,7 @@ sealed interface AssetDialogArgs {
     data class NFT(
         override val resourceAddress: ResourceAddress,
         override val isNewlyCreated: Boolean,
-        override val underAccountAddress: String?,
+        override val underAccountAddress: AccountAddress?,
         val localId: NonFungibleLocalId?
     ) : AssetDialogArgs
 
@@ -99,7 +100,7 @@ sealed interface AssetDialogArgs {
                     Fungible(
                         resourceAddress = ResourceAddress.init(requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS])),
                         isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
-                        underAccountAddress = savedStateHandle[ARG_UNDER_ACCOUNT_ADDRESS],
+                        underAccountAddress = savedStateHandle.get<String>(ARG_UNDER_ACCOUNT_ADDRESS)?.let { AccountAddress.init(it) },
                         amounts = fungibleAmounts.amounts
                     )
                 }
@@ -107,7 +108,7 @@ sealed interface AssetDialogArgs {
                 ARG_RESOURCE_TYPE_VALUE_NFT -> NFT(
                     resourceAddress = ResourceAddress.init(requireNotNull(savedStateHandle[ARG_RESOURCE_ADDRESS])),
                     isNewlyCreated = requireNotNull(savedStateHandle[ARG_NEWLY_CREATED]),
-                    underAccountAddress = savedStateHandle[ARG_UNDER_ACCOUNT_ADDRESS],
+                    underAccountAddress = savedStateHandle.get<String>(ARG_UNDER_ACCOUNT_ADDRESS)?.let { AccountAddress.init(it) },
                     localId = savedStateHandle.get<String>(ARG_LOCAL_ID)?.let { NonFungibleLocalId.init(it) }
                 )
 

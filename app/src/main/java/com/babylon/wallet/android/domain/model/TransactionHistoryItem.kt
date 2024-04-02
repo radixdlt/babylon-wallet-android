@@ -5,6 +5,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.CommittedTransac
 import com.babylon.wallet.android.data.gateway.generated.models.ManifestClass
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -47,7 +48,7 @@ data class TransactionHistoryData(
 }
 
 data class TransactionHistoryItem(
-    val accountAddress: String,
+    val accountAddress: AccountAddress,
     val txId: String,
     val feePaid: BigDecimal,
     private val balanceChanges: List<BalanceChange>,
@@ -58,7 +59,7 @@ data class TransactionHistoryItem(
 ) {
     val deposited: List<BalanceChange>
         get() = balanceChanges.filter {
-            if (it.entityAddress != accountAddress) return@filter false
+            if (it.entityAddress != accountAddress.string) return@filter false
             when (it) {
                 is BalanceChange.FungibleBalanceChange -> it.balanceChange.signum() == 1
                 is BalanceChange.NonFungibleBalanceChange -> it.addedIds.isNotEmpty()
@@ -66,7 +67,7 @@ data class TransactionHistoryItem(
         }
     val withdrawn: List<BalanceChange>
         get() = balanceChanges.filter {
-            if (it.entityAddress != accountAddress) return@filter false
+            if (it.entityAddress != accountAddress.string) return@filter false
             when (it) {
                 is BalanceChange.FungibleBalanceChange -> it.balanceChange.signum() == -1
                 is BalanceChange.NonFungibleBalanceChange -> it.removedIds.isNotEmpty()
@@ -237,7 +238,7 @@ enum class TransactionClass {
     PoolRedemption
 }
 
-fun CommittedTransactionInfo.toDomainModel(accountAddress: String, assets: List<Asset>): TransactionHistoryItem {
+fun CommittedTransactionInfo.toDomainModel(accountAddress: AccountAddress, assets: List<Asset>): TransactionHistoryItem {
     return TransactionHistoryItem(
         accountAddress = accountAddress,
         txId = intentHash.orEmpty(),

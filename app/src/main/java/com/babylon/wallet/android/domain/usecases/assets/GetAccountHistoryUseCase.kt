@@ -6,6 +6,7 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.TransactionHistoryData
 import com.babylon.wallet.android.domain.model.toDomainModel
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
@@ -22,7 +23,7 @@ class GetAccountHistoryUseCase @Inject constructor(
 ) {
 
     suspend fun getHistory(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         filters: HistoryFilters
     ): Result<TransactionHistoryData> {
         return streamRepository.getAccountHistory(accountAddress, filters, null).mapCatching { response ->
@@ -40,7 +41,7 @@ class GetAccountHistoryUseCase @Inject constructor(
     }
 
     suspend fun getHistoryChunk(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         filters: HistoryFilters
     ): Result<TransactionHistoryData> {
         return withContext(ioDispatcher) {
@@ -129,7 +130,7 @@ class GetAccountHistoryUseCase @Inject constructor(
     }
 
     suspend fun loadMore(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         transactionHistoryData: TransactionHistoryData,
         prepend: Boolean = false
     ): Result<TransactionHistoryData> {

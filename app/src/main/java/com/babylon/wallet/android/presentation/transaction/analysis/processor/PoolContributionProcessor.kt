@@ -7,6 +7,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -81,7 +82,7 @@ class PoolContributionProcessor @Inject constructor(
                         guaranteeType = guaranteeType,
                     )
                 }
-            }.toAccountWithTransferableResources(depositsPerAddress.key, involvedOwnedAccounts)
+            }.toAccountWithTransferableResources(AccountAddress.init(depositsPerAddress.key), involvedOwnedAccounts)
         }
         return to
     }

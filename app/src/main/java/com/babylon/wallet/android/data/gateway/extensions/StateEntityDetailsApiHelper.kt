@@ -252,14 +252,14 @@ suspend fun StateApi.fetchVaultDetails(vaultAddresses: Set<VaultAddress>): Map<V
 }
 
 suspend fun StateApi.getNextNftItems(
-    accountAddress: String,
+    accountAddress: AccountAddress,
     resourceAddress: ResourceAddress,
     vaultAddress: VaultAddress,
     nextCursor: String?,
     stateVersion: Long
 ): Pair<String?, List<StateNonFungibleDetailsResponseItem>> = entityNonFungibleIdsPage(
     StateEntityNonFungibleIdsPageRequest(
-        address = accountAddress,
+        address = accountAddress.string,
         vaultAddress = vaultAddress.string,
         resourceAddress = resourceAddress.string,
         cursor = nextCursor,

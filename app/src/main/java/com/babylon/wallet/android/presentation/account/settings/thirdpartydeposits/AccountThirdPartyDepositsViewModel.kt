@@ -124,7 +124,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
             runCatching {
                 TransactionManifest.thirdPartyDepositUpdate(
-                    accountAddress = AccountAddress.init(args.address),
+                    accountAddress = args.address,
                     from = com.radixdlt.sargon.ThirdPartyDeposits(
                         depositRule = currentThirdPartyDeposits.depositRule.toSargon(),
                         assetsExceptionList = currentThirdPartyDeposits.assetsExceptionList?.map { it.toSargon() }.orEmpty(),
@@ -355,7 +355,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     private fun loadAccount() {
         viewModelScope.launch {
-            getProfileUseCase.activeAccountsOnCurrentNetwork.map { accounts -> accounts.first { it.address == args.address } }
+            getProfileUseCase.activeAccountsOnCurrentNetwork.map { accounts -> accounts.first { it.address == args.address.string } }
                 .collect { account ->
                     _state.update { state ->
                         state.copy(
@@ -416,7 +416,7 @@ sealed class AssetType {
 
 data class AccountThirdPartyDepositsUiState(
     val account: Network.Account? = null,
-    val accountAddress: String,
+    val accountAddress: AccountAddress,
     val updatedThirdPartyDepositSettings: ThirdPartyDeposits? = null,
     val canUpdate: Boolean = false,
     val deleteDialogState: DeleteDialogState = DeleteDialogState.None,

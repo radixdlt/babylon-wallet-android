@@ -40,7 +40,7 @@ interface DAppConnectionRepository {
         personaAddress: String,
         numberOfAccounts: Int,
         quantifier: RequestedNumber.Quantifier
-    ): List<String>
+    ): List<AccountAddress>
 
     suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: AccountAddress,
@@ -119,14 +119,14 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         personaAddress: String,
         numberOfAccounts: Int,
         quantifier: RequestedNumber.Quantifier
-    ): List<String> {
+    ): List<AccountAddress> {
         val sharedAccounts = getAuthorizedDapp(
             dAppDefinitionAddress
         )?.referencesToAuthorizedPersonas?.firstOrNull {
             it.identityAddress == personaAddress
         }?.sharedAccounts
         return if (quantifier == sharedAccounts?.request?.quantifier && numberOfAccounts == sharedAccounts.request.quantity) {
-            sharedAccounts.ids
+            sharedAccounts.ids.map { AccountAddress.init(it) }
         } else {
             emptyList()
         }

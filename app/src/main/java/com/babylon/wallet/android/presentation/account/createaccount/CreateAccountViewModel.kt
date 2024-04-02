@@ -16,6 +16,8 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.utils.decodeUtf8
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
@@ -172,7 +174,7 @@ class CreateAccountViewModel @Inject constructor(
 
         sendEvent(
             CreateAccountEvent.Complete(
-                accountId = accountId,
+                accountId = AccountAddress.init(accountId),
                 requestSource = args.requestSource
             )
         )
@@ -209,7 +211,7 @@ class CreateAccountViewModel @Inject constructor(
 
 internal sealed interface CreateAccountEvent : OneOffEvent {
     data class Complete(
-        val accountId: String,
+        val accountId: AccountAddress,
         val requestSource: CreateAccountRequestSource?,
     ) : CreateAccountEvent
 

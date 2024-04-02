@@ -19,9 +19,10 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -137,7 +138,7 @@ class AccountsStateCache @Inject constructor(
         val xrdAddress = XrdResource.address(networkId = accounts.first().networkID)
 
         val accountsWithXRDVaults = accounts.associateWith { account ->
-            dao.getAccountResourceJoin(accountAddress = account.address, resourceAddress = xrdAddress)?.vaultAddress
+            dao.getAccountResourceJoin(accountAddress = AccountAddress.init(account.address), resourceAddress = xrdAddress)?.vaultAddress
         }
 
         runCatching {
@@ -408,14 +409,15 @@ class AccountsStateCache @Inject constructor(
             account = account,
             details = details,
             assets = details?.stateVersion?.let { stateVersion ->
+                val accountAddress = AccountAddress.init(account.address)
                 val nonFungibles = assets?.nonFungibles?.map { nonFungible ->
-                    val items = dao.getOwnedNfts(account.address, nonFungible.collection.address, stateVersion)
+                    val items = dao.getOwnedNfts(accountAddress, nonFungible.collection.address, stateVersion)
                         .map { it.toItem() }.sorted()
                     nonFungible.copy(collection = nonFungible.collection.copy(items = items))
                 }.orEmpty()
 
                 val updatedClaims = assets?.stakeClaims?.map { stakeClaim ->
-                    val items = dao.getOwnedNfts(account.address, stakeClaim.resourceAddress, stateVersion)
+                    val items = dao.getOwnedNfts(accountAddress, stakeClaim.resourceAddress, stateVersion)
                         .map { it.toItem() }
                         .sorted()
                     stakeClaim.copy(nonFungibleResource = stakeClaim.nonFungibleResource.copy(items = items))

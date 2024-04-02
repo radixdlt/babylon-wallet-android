@@ -137,7 +137,7 @@ fun AuthorizedDAppsContentPreview() {
         AuthorizedDAppsContent(
             onBackClick = {},
             state = AuthorizedDappsUiState(
-                dApps = DApp.sample.all.toImmutableList()
+                dApps = DApp.sampleMainnet.all.toImmutableList()
             ),
             onDAppClick = {},
             onMessageShown = {}

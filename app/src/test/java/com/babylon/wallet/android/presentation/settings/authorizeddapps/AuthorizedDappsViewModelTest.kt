@@ -30,7 +30,7 @@ internal class AuthorizedDappsViewModelTest : StateViewModelTest<AuthorizedDapps
     override fun setUp() {
         super.setUp()
 
-        coEvery { getDAppsUseCase(any<Set<AccountAddress>>(), false) } returns Result.success(DApp.sample.all)
+        coEvery { getDAppsUseCase(any<Set<AccountAddress>>(), false) } returns Result.success(DApp.sampleMainnet.all)
     }
 
     @Test

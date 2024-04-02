@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ResourceAddress
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.ValidatorWithStakes
@@ -16,7 +17,7 @@ class GetLSUDetailsUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
-    suspend operator fun invoke(resourceAddress: ResourceAddress, accountAddress: String): Result<ValidatorWithStakes> =
+    suspend operator fun invoke(resourceAddress: ResourceAddress, accountAddress: AccountAddress): Result<ValidatorWithStakes> =
         stateRepository.getResources(
             addresses = setOf(resourceAddress),
             underAccountAddress = accountAddress,

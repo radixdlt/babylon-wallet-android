@@ -38,7 +38,7 @@ open class StateRepositoryFake : StateRepository {
     override suspend fun updateStakeClaims(account: Network.Account, claims: List<StakeClaim>): Result<List<StakeClaim>> =
         Result.success(claims)
 
-    override suspend fun getResources(addresses: Set<ResourceAddress>, underAccountAddress: String?, withDetails: Boolean): Result<List<Resource>> =
+    override suspend fun getResources(addresses: Set<ResourceAddress>, underAccountAddress: AccountAddress?, withDetails: Boolean): Result<List<Resource>> =
         Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>> = Result.failure(RuntimeException("Not implemented"))
