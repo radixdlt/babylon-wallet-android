@@ -10,7 +10,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionDetai
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.HistoryFilters
-import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.toManifestClass
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -113,7 +112,7 @@ class StreamRepositoryImpl @Inject constructor(
             manifestClassFilter = filters.transactionClass?.toManifestClass()?.let {
                 StreamTransactionsRequestAllOfManifestClassFilter(
                     propertyClass = it,
-                    matchOnlyMostSpecific = filters.transactionClass != TransactionClass.Transfer
+                    matchOnlyMostSpecific = true
                 )
             },
             manifestResourcesFilter = filters.resource?.let { listOf(it.resourceAddress) },
