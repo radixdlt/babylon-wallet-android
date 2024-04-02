@@ -34,6 +34,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.toISO8601String
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -626,7 +627,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     editedDapp = editedDapp?.updateDappAuthorizedPersonaSharedAccounts(
                         selectedPersona.address,
                         Shared(
-                            selectedAccounts.map { it.address },
+                            selectedAccounts.map { it.address.string },
                             RequestedNumber(
                                 handledRequest.numberOfValues.toProfileShareAccountsQuantifier(),
                                 handledRequest.numberOfValues.quantity

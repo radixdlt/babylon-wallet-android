@@ -2,6 +2,9 @@ package com.babylon.wallet.android.mockdata
 
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.IdentifiedArrayList
 import rdx.works.core.InstantGenerator
@@ -32,7 +35,10 @@ import rdx.works.profile.domain.TestData
 import java.time.Instant
 
 fun profile(
-    accounts: IdentifiedArrayList<Network.Account> = identifiedArrayListOf(account("acc-1"), account("acc-2")),
+    accounts: IdentifiedArrayList<Network.Account> = identifiedArrayListOf(
+        account(AccountAddress.sampleMainnet.random().string),
+        account(AccountAddress.sampleMainnet.random().string)
+    ),
     personas: IdentifiedArrayList<Network.Persona> = identifiedArrayListOf(SampleDataProvider().samplePersona()),
     dApps: List<Network.AuthorizedDapp> = emptyList(),
     p2pLinks: List<P2PLink> = emptyList(),
@@ -50,7 +56,7 @@ fun profile(
         display = Display.default,
         security = Security.default,
         gateways = Gateways(gateway.url, listOf(gateway)),
-        p2pLinks = emptyList()
+        p2pLinks = p2pLinks
     ),
     factorSources = identifiedArrayListOf(
         DeviceFactorSource.babylon(

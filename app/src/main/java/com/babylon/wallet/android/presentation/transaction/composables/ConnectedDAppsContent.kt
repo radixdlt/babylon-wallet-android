@@ -136,7 +136,7 @@ fun ConnectedDAppsContent(
 fun ConnectedDAppsContentPreview() {
     ConnectedDAppsContent(
         persistentListOf(
-            ComponentAddress.sampleMainnet() to DApp.sample(),
+            ComponentAddress.sampleMainnet() to DApp.sampleMainnet(),
             ComponentAddress.sampleMainnet.other() to null
         ),
         onDAppClick = {},

@@ -72,6 +72,8 @@ import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.networkId
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.core.domain.resources.XrdResource
@@ -230,14 +232,14 @@ fun NavigationHost(
                     navController.fungibleAssetDialog(
                         resourceAddress = resource.address,
                         amounts = resourceWithAmount,
-                        underAccountAddress = account.address
+                        underAccountAddress = AccountAddress.init(account.address)
                     )
                 },
                 onNonFungibleResourceClick = { resource, item, account ->
                     navController.nftAssetDialog(
                         resourceAddress = resource.address,
                         localId = item.localId,
-                        underAccountAddress = account.address
+                        underAccountAddress = AccountAddress.init(account.address)
                     )
                 },
                 onTransferClick = { accountId ->

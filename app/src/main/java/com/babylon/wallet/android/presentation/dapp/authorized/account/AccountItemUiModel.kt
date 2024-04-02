@@ -1,17 +1,20 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.account
 
 import com.babylon.wallet.android.data.dapp.model.AccountsRequestResponseItem
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import rdx.works.profile.data.model.pernetwork.Network
 
 data class AccountItemUiModel(
-    val address: String,
+    val address: AccountAddress,
     val displayName: String?,
     val appearanceID: Int,
     val isSelected: Boolean = false
 )
 
 fun Network.Account.toUiModel(isSelected: Boolean = false) = AccountItemUiModel(
-    address = address,
+    address = AccountAddress.init(address),
     displayName = displayName,
     appearanceID = appearanceID,
     isSelected = isSelected
@@ -24,7 +27,7 @@ fun List<AccountItemUiModel>.toDataModel(): AccountsRequestResponseItem? {
 
     val accounts = map { accountItemUiModel ->
         AccountsRequestResponseItem.Account(
-            address = accountItemUiModel.address,
+            address = accountItemUiModel.address.string,
             label = accountItemUiModel.displayName.orEmpty(),
             appearanceId = accountItemUiModel.appearanceID
         )

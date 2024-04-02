@@ -102,6 +102,7 @@ import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -715,7 +716,7 @@ private fun ImportCompletePage(
                         Modifier.fillMaxWidth(0.8f),
                         item.appearanceID,
                         item.displayName.orEmpty(),
-                        item.address
+                        item.address.string
                     )
                 } else {
                     SimpleAccountCard(

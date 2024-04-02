@@ -2,12 +2,13 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import com.radixdlt.sargon.AccountAddress
 import rdx.works.core.domain.resources.metadata.AccountType
 import java.time.Instant
 
 @Entity(primaryKeys = ["address"])
 data class AccountEntity(
-    val address: String,
+    val address: AccountAddress,
     @ColumnInfo("account_type")
     val accountType: AccountType?,
     val synced: Instant?,

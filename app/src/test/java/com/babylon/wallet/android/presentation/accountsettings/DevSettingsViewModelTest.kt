@@ -7,6 +7,9 @@ import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.settings.ARG_ACCOUNT_SETTINGS_ADDRESS
 import com.babylon.wallet.android.presentation.account.settings.devsettings.DevSettingsViewModel
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.emptyFlow
@@ -25,7 +28,7 @@ internal class DevSettingsViewModelTest : StateViewModelTest<DevSettingsViewMode
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val rolaClient = mockk<ROLAClient>()
     private val sampleProfile = sampleDataProvider.sampleProfile()
-    private val sampleAddress = sampleProfile.currentNetwork!!.accounts.first().address
+    private val sampleAddress = AccountAddress.init(sampleProfile.currentNetwork!!.accounts.first().address)
 
     override fun initVM(): DevSettingsViewModel {
         return DevSettingsViewModel(
@@ -42,7 +45,7 @@ internal class DevSettingsViewModelTest : StateViewModelTest<DevSettingsViewMode
     override fun setUp() {
         super.setUp()
         every { getProfileUseCase() } returns flowOf(sampleDataProvider.sampleProfile())
-        every { savedStateHandle.get<String>(ARG_ACCOUNT_SETTINGS_ADDRESS) } returns sampleAddress
+        every { savedStateHandle.get<String>(ARG_ACCOUNT_SETTINGS_ADDRESS) } returns sampleAddress.string
         every { rolaClient.signingState } returns emptyFlow()
     }
 }

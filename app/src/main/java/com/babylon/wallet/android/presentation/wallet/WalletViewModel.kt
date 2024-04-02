@@ -19,6 +19,8 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -234,7 +236,7 @@ class WalletViewModel @Inject constructor(
 
     fun onApplySecuritySettings(account: Network.Account, securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
-            val factorSourceId = getProfileUseCase.accountOnCurrentNetwork(account.address)
+            val factorSourceId = getProfileUseCase.accountOnCurrentNetwork(AccountAddress.init(account.address))
                 ?.factorSourceId as? FactorSourceID.FromHash ?: return@launch
 
             when (securityPromptType) {

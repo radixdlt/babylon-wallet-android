@@ -38,7 +38,7 @@ import java.math.BigDecimal
 )
 data class AccountResourceJoin(
     @ColumnInfo("account_address")
-    val accountAddress: String,
+    val accountAddress: AccountAddress,
     @ColumnInfo("resource_address", index = true)
     val resourceAddress: ResourceAddress,
     val amount: BigDecimal,
@@ -56,7 +56,7 @@ data class AccountResourceJoin(
 
     companion object {
         fun FungibleResourcesCollectionItem.asAccountResourceJoin(
-            accountAddress: String,
+            accountAddress: AccountAddress,
             syncInfo: SyncInfo
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
@@ -68,7 +68,7 @@ data class AccountResourceJoin(
         ) to asEntity(syncInfo.synced)
 
         fun NonFungibleResourcesCollectionItem.asAccountResourceJoin(
-            accountAddress: String,
+            accountAddress: AccountAddress,
             syncInfo: SyncInfo
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
@@ -94,7 +94,7 @@ data class AccountResourceJoin(
 )
 data class AccountNFTJoin(
     @ColumnInfo("account_address")
-    val accountAddress: String,
+    val accountAddress: AccountAddress,
     @ColumnInfo("resource_address")
     val resourceAddress: ResourceAddress,
     @ColumnInfo("local_id")
@@ -105,7 +105,7 @@ data class AccountNFTJoin(
 
     companion object {
         fun StateNonFungibleDetailsResponseItem.asAccountNFTJoin(
-            accountAddress: String,
+            accountAddress: AccountAddress,
             resourceAddress: ResourceAddress,
             syncInfo: SyncInfo
         ): Pair<AccountNFTJoin, NFTEntity> = AccountNFTJoin(

@@ -3,15 +3,15 @@
 package rdx.works.profile.olympiaimport
 
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.LegacyOlympiaAccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toBabylonAddress
 import okio.ByteString.Companion.decodeBase64
-import rdx.works.core.AddressHelper
 import rdx.works.core.Identified
 import rdx.works.core.compressedPublicKeyHashBytes
-import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.ret.crypto.PublicKey
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -21,15 +21,12 @@ private const val OuterSeparator = "~"
 private const val EndOfAccountName = "}"
 private const val AccountNameForbiddenCharsReplacement = "_"
 
-class OlympiaWalletDataParser @Inject constructor(
-    private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase
-) {
+class OlympiaWalletDataParser @Inject constructor() {
 
-    suspend fun parseOlympiaWalletAccountData(
+    fun parseOlympiaWalletAccountData(
         olympiaWalletDataChunks: Collection<String>,
         existingAccountHashes: Set<ByteArray> = emptySet()
     ): OlympiaWalletData? {
-        val currentNetworkId = getCurrentGatewayUseCase.invoke().network.networkId()
         val headerToPayloadList = olympiaWalletDataChunks.map { payloadChunk ->
             val headerAndPayload = payloadChunk.split(HeaderSeparator)
             val headerChunks = headerAndPayload[0].split(InnerSeparator)
@@ -40,7 +37,7 @@ class OlympiaWalletDataParser @Inject constructor(
         return if (olympiaWalletDataChunks.size == header.payloadCount) {
             try {
                 val accountsToMigrate = fullPayload.split(OuterSeparator).map { singleAccountData ->
-                    parseSingleAccount(singleAccountData, currentNetworkId, existingAccountHashes)
+                    parseSingleAccount(singleAccountData, existingAccountHashes)
                 }.toSet()
                 return OlympiaWalletData(header.mnemonicWordCount, accountsToMigrate)
             } catch (e: Exception) {
@@ -54,13 +51,12 @@ class OlympiaWalletDataParser @Inject constructor(
 
     private fun parseSingleAccount(
         singleAccountData: String,
-        currentNetworkId: NetworkId,
         existingAccountHashes: Set<ByteArray>
     ): OlympiaAccountDetails {
         val singleAccountDataChunks = singleAccountData.split(InnerSeparator)
         val type = requireNotNull(OlympiaAccountType.from(singleAccountDataChunks[0]))
         val publicKeyHex = requireNotNull(singleAccountDataChunks[1].decodeBase64()?.hex())
-        val publicKey = PublicKey.Secp256k1(publicKeyHex.decodeHex())
+
         val publicKeyHash = publicKeyHex.compressedPublicKeyHashBytes()
         val parsedIndex = requireNotNull(singleAccountDataChunks[2].toInt())
         val name = if (singleAccountDataChunks.size == 4) {
@@ -77,11 +73,8 @@ class OlympiaWalletDataParser @Inject constructor(
             ""
         }.ifEmpty { "Unnamed Olympia account $parsedIndex" }
 
-        val olympiaAddress = publicKey.deriveOlympiaAccountAddress()
-        val newBabylonAddress = AddressHelper.accountAddressFromOlympia(
-            olympiaAddress = olympiaAddress,
-            forNetworkId = currentNetworkId.value
-        )
+        val olympiaAddress = LegacyOlympiaAccountAddress.init(com.radixdlt.sargon.PublicKey.Secp256k1.init(hex = publicKeyHex))
+        val newBabylonAddress = olympiaAddress.toBabylonAddress()
 
         return OlympiaAccountDetails(
             index = parsedIndex,
@@ -139,16 +132,16 @@ data class ChunkInfo(
 data class OlympiaAccountDetails(
     val index: Int,
     val type: OlympiaAccountType,
-    val address: String,
+    val address: LegacyOlympiaAccountAddress,
     val publicKey: String,
     val accountName: String,
     val derivationPath: DerivationPath,
-    val newBabylonAddress: String,
+    val newBabylonAddress: AccountAddress,
     val appearanceId: Int,
     val alreadyImported: Boolean = false
 ) : Identified {
     override val identifier: String
-        get() = newBabylonAddress
+        get() = newBabylonAddress.string
 }
 
 enum class OlympiaAccountType {

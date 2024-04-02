@@ -49,7 +49,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         coEvery { preferencesManager.firstPersonaCreated } returns flow {
             emit(true)
         }
-        every { savedStateHandle.get<String>(ARG_DAPP_DEFINITION_ADDRESS) } returns DApp.sample().dAppAddress.string
+        every { savedStateHandle.get<String>(ARG_DAPP_DEFINITION_ADDRESS) } returns DApp.sampleMainnet().dAppAddress.string
         every { getProfileUseCase() } returns flowOf(
             profile(
                 personas = identifiedArrayListOf(

@@ -62,7 +62,7 @@ class SearchFeePayersUseCaseTest {
 
             assertEquals(
                 TransactionFeePayers(
-                    selectedAccountAddress = account1.address,
+                    selectedAccountAddress = AccountAddress.init(account1.address),
                     candidates = listOf(
                         TransactionFeePayers.FeePayerCandidate(account1, BigDecimal(100)),
                         TransactionFeePayers.FeePayerCandidate(account2, BigDecimal.ZERO)
@@ -92,8 +92,8 @@ class SearchFeePayersUseCaseTest {
         }
 
     companion object {
-        private val account1 = account(name = "account1", address = "account_rdx12x20vgu94d96g3demdumxl6yjpvm0jy8dhrr03g75299ghxrwq76uh")
-        private val account2 = account(name = "account2", address = "account_rdx12x20vgu94d96g3demdumxl6yjpvm0jy8dhrr03g75299ghxrwq73uh")
+        private val account1 = account(name = "account1", address = AccountAddress.sampleMainnet.random())
+        private val account2 = account(name = "account2", address = AccountAddress.sampleMainnet.random())
 
         private fun manifestDataWithAddress(
             account: Network.Account
@@ -173,7 +173,7 @@ class SearchFeePayersUseCaseTest {
 
             override suspend fun getResources(
                 addresses: Set<ResourceAddress>,
-                underAccountAddress: String?,
+                underAccountAddress: AccountAddress?,
                 withDetails: Boolean
             ): Result<List<Resource>> {
                 error("Not needed")

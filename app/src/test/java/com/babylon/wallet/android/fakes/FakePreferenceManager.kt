@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.fakes
 
 import androidx.datastore.preferences.core.Preferences
+import com.radixdlt.sargon.AccountAddress
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import rdx.works.core.preferences.PreferencesManager
@@ -62,11 +63,11 @@ class FakePreferenceManager : PreferencesManager {
         TODO("Not yet implemented")
     }
 
-    override fun getLastUsedEpochFlow(address: String): Flow<Long?> {
+    override fun getLastUsedEpochFlow(address: AccountAddress): Flow<Long?> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun updateEpoch(account: String, epoch: Long) {
+    override suspend fun updateEpoch(account: AccountAddress, epoch: Long) {
         TODO("Not yet implemented")
     }
 

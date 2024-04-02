@@ -18,6 +18,7 @@ import com.radixdlt.ret.ResourceOrNonFungible
 import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -606,10 +607,10 @@ private fun Map.Entry<String, MetadataValue?>.toMetadata(): Metadata? = when (va
 }
 
 fun List<Transferable>.toAccountWithTransferableResources(
-    accountAddress: String,
+    accountAddress: AccountAddress,
     ownedAccounts: List<Network.Account>
 ): AccountWithTransferableResources {
-    val ownedAccount = ownedAccounts.find { it.address == accountAddress }
+    val ownedAccount = ownedAccounts.find { it.address == accountAddress.string }
     return if (ownedAccount != null) {
         AccountWithTransferableResources.Owned(ownedAccount, this)
     } else {
@@ -668,7 +669,7 @@ fun ExecutionSummary.toWithdrawingAccountsWithTransferableAssets(
         }.map {
             Transferable.Withdrawing(it)
         }.toAccountWithTransferableResources(
-            withdrawEntry.key,
+            AccountAddress.init(withdrawEntry.key),
             allOwnedAccounts
         )
     }.sortedWith(AccountWithTransferableResources.Companion.Sorter(allOwnedAccounts))
@@ -700,7 +701,7 @@ fun ExecutionSummary.toDepositingAccountsWithTransferableAssets(
     withdrawEntry.value.map { resource ->
         resolveDepositingAsset(resource, involvedAssets, defaultGuarantee)
     }.toAccountWithTransferableResources(
-        withdrawEntry.key,
+        AccountAddress.init(withdrawEntry.key),
         allOwnedAccounts
     )
 }.sortedWith(AccountWithTransferableResources.Companion.Sorter(allOwnedAccounts))

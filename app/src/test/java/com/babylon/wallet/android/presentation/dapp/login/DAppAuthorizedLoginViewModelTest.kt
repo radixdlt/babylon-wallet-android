@@ -139,22 +139,6 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         )
     )
 
-    private val usePersonaRequestOngoingDataOnly = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "1",
-        interactionId = "1",
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET.discriminant.toInt(),
-            "",
-            AccountAddress.sampleMainnet().string,
-            false
-        ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
-        ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
-            isRequestingName = true,
-            isOngoing = true
-        )
-    )
-
     private val usePersonaRequestOneTimeAccounts = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         remoteConnectorId = "1",
         interactionId = "1",
@@ -256,7 +240,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         vm.oneOffEvent.test {
             assert(expectMostRecentItem() is Event.DisplayPermission)
         }
-        vm.onAccountsSelected(listOf(AccountItemUiModel("random address", "account 1", 0)), false)
+        vm.onAccountsSelected(listOf(AccountItemUiModel(AccountAddress.sampleMainnet(), "account 1", 0)), false)
         advanceUntilIdle()
         vm.oneOffEvent.test {
             val mostRecentItem = expectMostRecentItem()
@@ -281,7 +265,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOngoingPlusOngoingData
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
         coEvery { dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(any(), any(), any(), any()) } returns listOf(
-            SampleDataProvider().randomAddress()
+            AccountAddress.sampleMainnet.random()
         )
         val vm = vm.value
         advanceUntilIdle()
@@ -328,7 +312,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
 
         override suspend fun getResources(
             addresses: Set<ResourceAddress>,
-            underAccountAddress: String?,
+            underAccountAddress: AccountAddress?,
             withDetails: Boolean
         ): Result<List<Resource>> {
             return Result.success(emptyList())

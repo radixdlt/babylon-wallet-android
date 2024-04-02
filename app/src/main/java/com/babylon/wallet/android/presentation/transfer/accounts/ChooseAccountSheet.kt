@@ -57,6 +57,8 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -304,7 +306,7 @@ private fun ChooseAccountContent(
                         }
                     },
                 accountName = accountItem.displayName,
-                address = accountItem.address,
+                address = AccountAddress.init(accountItem.address),
                 checked = state.isOwnedAccountSelected(account = accountItem),
                 isSingleChoice = true,
                 radioButtonClicked = {

@@ -8,7 +8,6 @@ import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransaction
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.modifyLockFee
 import rdx.works.core.NonceGenerator
 import rdx.works.core.mapError
@@ -96,7 +95,7 @@ class SignTransactionUseCase @Inject constructor(
         val lockFee: BigDecimal,
         val tipPercentage: UShort,
         val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
-        val feePayerAddress: String? = null
+        val feePayerAddress: AccountAddress? = null
     ) {
 
         val manifestWithLockFee: TransactionManifestData
@@ -105,7 +104,7 @@ class SignTransactionUseCase @Inject constructor(
             } else {
                 TransactionManifestData.from(
                     manifest = manifest.manifestSargon.modifyLockFee(
-                        addressOfFeePayer = AccountAddress.init(feePayerAddress),
+                        addressOfFeePayer = feePayerAddress,
                         fee = lockFee.toDecimal192()
                     ),
                     message = manifest.message

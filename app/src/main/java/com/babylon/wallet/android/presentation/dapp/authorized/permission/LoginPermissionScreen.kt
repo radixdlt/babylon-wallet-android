@@ -218,7 +218,7 @@ fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         LoginPermissionContent(
             onContinueClick = {},
-            dapp = DApp.sample(),
+            dapp = DApp.sampleMainnet(),
             onBackClick = {},
             numberOfAccounts = 2,
             isExactAccountsCount = false,
@@ -234,7 +234,7 @@ fun LoginPermissionContentFirstTimePreview() {
     RadixWalletTheme {
         LoginPermissionContent(
             onContinueClick = {},
-            dapp = DApp.sample(),
+            dapp = DApp.sampleMainnet(),
             onBackClick = {},
             numberOfAccounts = 2,
             isExactAccountsCount = false,

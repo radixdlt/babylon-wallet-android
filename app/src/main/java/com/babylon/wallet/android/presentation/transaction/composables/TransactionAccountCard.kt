@@ -32,6 +32,9 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.profile.data.model.pernetwork.Network
@@ -144,12 +147,12 @@ fun AccountDepositAccountCardHeader(account: Network.Account, modifier: Modifier
                 shape = RadixTheme.shapes.roundedRectTopMedium
             )
             .padding(RadixTheme.dimensions.paddingMedium),
-        address = account.address
+        address = AccountAddress.init(account.address)
     )
 }
 
 @Composable
-private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String, address: String) {
+private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String, address: AccountAddress) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier,
@@ -164,7 +167,7 @@ private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         ActionableAddressView(
-            address = address,
+            address = address.string,
             textStyle = RadixTheme.typography.body2Regular,
             textColor = RadixTheme.colors.white,
             iconColor = RadixTheme.colors.white

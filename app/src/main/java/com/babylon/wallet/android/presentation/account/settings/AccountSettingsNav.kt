@@ -10,29 +10,32 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 
 @VisibleForTesting
 internal const val ARG_ACCOUNT_SETTINGS_ADDRESS = "arg_account_settings_address"
 
 internal class AccountSettingsArgs(
-    val address: String
+    val address: AccountAddress
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_ACCOUNT_SETTINGS_ADDRESS]) as String
+        AccountAddress.init(checkNotNull(savedStateHandle[ARG_ACCOUNT_SETTINGS_ADDRESS]) as String)
     )
 }
 
 fun NavController.accountSettings(
-    address: String
+    address: AccountAddress
 ) {
-    navigate("account_settings_route/$address") {
+    navigate("account_settings_route/${address.string}") {
         launchSingleTop = true
     }
 }
 
 fun NavGraphBuilder.accountSettings(
     onBackClick: () -> Unit,
-    onAccountSettingItemClick: (AccountSettingItem, address: String) -> Unit,
+    onAccountSettingItemClick: (AccountSettingItem, address: AccountAddress) -> Unit,
     onHideAccountClick: () -> Unit
 ) {
     composable(

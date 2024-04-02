@@ -54,7 +54,7 @@ data class DApp(
 
     companion object {
         @VisibleForTesting
-        val sample: Sample<DApp> = object : Sample<DApp> {
+        val sampleMainnet: Sample<DApp> = object : Sample<DApp> {
             override fun invoke(): DApp = DApp(
                 dAppAddress = AccountAddress.sampleMainnet(),
                 metadata = listOf(

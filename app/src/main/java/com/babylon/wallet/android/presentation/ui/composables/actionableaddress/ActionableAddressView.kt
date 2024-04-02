@@ -50,6 +50,8 @@ import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
 import com.babylon.wallet.android.utils.openUrl
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -142,7 +144,10 @@ fun ActionableAddressView(
 
             // Resolve if address is ledger and attach another action
             if (actionableAddress.type == ActionableAddress.Type.Global.ACCOUNT) {
-                if (useCaseProvider.profileUseCase().accountOnCurrentNetwork(actionableAddress.address)?.isLedgerAccount == true) {
+                if (useCaseProvider.profileUseCase().accountOnCurrentNetwork(
+                        AccountAddress.init(actionableAddress.address)
+                    )?.isLedgerAccount == true
+                ) {
                     val verifyOnLedgerAction = PopupActionItem(
                         name = context.getString(R.string.addressAction_verifyAddressLedger),
                         icon = com.babylon.wallet.android.designsystem.R.drawable.ic_ledger_hardware_wallets
@@ -341,7 +346,7 @@ private sealed interface OnAction {
                     modifier = Modifier
                         .background(RadixTheme.colors.defaultBackground)
                 ) {
-                    AccountQRCodeView(accountAddress = actionableAddress.address)
+                    AccountQRCodeView(accountAddress = AccountAddress.init(actionableAddress.address))
                 }
             }
         }
@@ -390,7 +395,7 @@ private sealed interface OnAction {
         ) : CallbackBasedAction {
             override fun onAction(context: Context) {
                 applicationScope.launch {
-                    val result = verifyAddressOnLedgerUseCase(actionableAddress.address)
+                    val result = verifyAddressOnLedgerUseCase(AccountAddress.init(actionableAddress.address))
                     withContext(Dispatchers.Main) {
                         result.onSuccess {
                             Toast.makeText(
