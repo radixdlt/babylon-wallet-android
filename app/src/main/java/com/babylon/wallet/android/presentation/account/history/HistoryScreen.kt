@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
@@ -418,8 +419,9 @@ fun HistoryContent(
     }
 
     if (state.shouldShowFiltersSheet) {
-        DefaultModalSheetLayout(modifier = Modifier.imePadding(), sheetState = bottomSheetState, sheetContent = {
+        DefaultModalSheetLayout(sheetState = bottomSheetState, sheetContent = {
             FiltersDialog(
+                modifier = Modifier.navigationBarsPadding(),
                 state = state,
                 onDismiss = {
                     onShowFilters(false)
