@@ -97,7 +97,7 @@ jobs:
   unit_tests:
     # Unit tests depend on sargon-desktop which currently is only supporting mac os
     name: "Unit tests"
-    runs-on: macos-13
+    runs-on: macos-13-arm64
 
     steps:
       - uses: RDXWorks-actions/checkout@main
@@ -144,7 +144,7 @@ jobs:
   static_analysis:
     name: "Static analysis and SonarCloud"
     # jacoco runs unit tests and since they depend on sargon-desktop we need mac os
-    runs-on: macos-13
+    runs-on: macos-13-arm64
     continue-on-error: true
     steps:
       - uses: RDXWorks-actions/checkout@main
