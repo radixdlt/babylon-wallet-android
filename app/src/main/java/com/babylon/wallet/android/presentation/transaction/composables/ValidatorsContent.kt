@@ -36,6 +36,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.resources.Validator
@@ -126,6 +127,7 @@ fun ValidatorsContent(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun StakingToValidatorsContentPreview() {
