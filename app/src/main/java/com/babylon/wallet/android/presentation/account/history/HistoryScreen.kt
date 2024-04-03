@@ -322,7 +322,7 @@ fun HistoryContent(
                                         }
 
                                         is HistoryItem.Transaction -> {
-                                            item {
+                                            item(key = historyItem.key) {
                                                 if (index == firstTxItemIndex && state.loadMoreState == State.LoadingMoreState.Up) {
                                                     LoadingItemPlaceholder(
                                                         modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingMedium)
