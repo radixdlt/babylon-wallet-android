@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -112,7 +113,8 @@ fun DefaultSettingsItem(
                 Icon(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(id = it),
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = Color.Unspecified
                 )
             }
         },
