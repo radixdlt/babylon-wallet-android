@@ -15,9 +15,6 @@ object AddressHelper {
         }
     }
 
-    fun publicKeyHash(accountAddress: String) =
-        accountAddress.toAddressOrNull()?.bytes()?.takeLast(PUBLIC_KEY_HASH_LENGTH)?.toByteArray()
-
     private fun String.toAddressOrNull() = runCatching { EngineAddress(this) }
         .getOrNull()
 }

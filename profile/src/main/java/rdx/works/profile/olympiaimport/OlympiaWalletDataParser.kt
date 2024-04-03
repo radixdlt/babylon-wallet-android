@@ -8,10 +8,14 @@ import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toBabylonAddress
+import com.radixdlt.sargon.extensions.wasMigratedFromLegacyOlympia
 import okio.ByteString.Companion.decodeBase64
 import rdx.works.core.Identified
 import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.accountsOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -21,11 +25,12 @@ private const val OuterSeparator = "~"
 private const val EndOfAccountName = "}"
 private const val AccountNameForbiddenCharsReplacement = "_"
 
-class OlympiaWalletDataParser @Inject constructor() {
+class OlympiaWalletDataParser @Inject constructor(
+    private val getProfileUseCase: GetProfileUseCase
+) {
 
-    fun parseOlympiaWalletAccountData(
-        olympiaWalletDataChunks: Collection<String>,
-        existingAccountHashes: Set<ByteArray> = emptySet()
+    suspend fun parseOlympiaWalletAccountData(
+        olympiaWalletDataChunks: Collection<String>
     ): OlympiaWalletData? {
         val headerToPayloadList = olympiaWalletDataChunks.map { payloadChunk ->
             val headerAndPayload = payloadChunk.split(HeaderSeparator)
@@ -36,8 +41,11 @@ class OlympiaWalletDataParser @Inject constructor() {
         val header = headerToPayloadList.first().first
         return if (olympiaWalletDataChunks.size == header.payloadCount) {
             try {
+                val importedAccountAddresses = getProfileUseCase.accountsOnCurrentNetwork().map {
+                    AccountAddress.init(it.address)
+                }
                 val accountsToMigrate = fullPayload.split(OuterSeparator).map { singleAccountData ->
-                    parseSingleAccount(singleAccountData, existingAccountHashes)
+                    parseSingleAccount(singleAccountData, importedAccountAddresses)
                 }.toSet()
                 return OlympiaWalletData(header.mnemonicWordCount, accountsToMigrate)
             } catch (e: Exception) {
@@ -51,13 +59,12 @@ class OlympiaWalletDataParser @Inject constructor() {
 
     private fun parseSingleAccount(
         singleAccountData: String,
-        existingAccountHashes: Set<ByteArray>
+        importedAccountAddresses: List<AccountAddress>
     ): OlympiaAccountDetails {
         val singleAccountDataChunks = singleAccountData.split(InnerSeparator)
         val type = requireNotNull(OlympiaAccountType.from(singleAccountDataChunks[0]))
         val publicKeyHex = requireNotNull(singleAccountDataChunks[1].decodeBase64()?.hex())
 
-        val publicKeyHash = publicKeyHex.compressedPublicKeyHashBytes()
         val parsedIndex = requireNotNull(singleAccountDataChunks[2].toInt())
         val name = if (singleAccountDataChunks.size == 4) {
             singleAccountDataChunks[3]
@@ -75,6 +82,7 @@ class OlympiaWalletDataParser @Inject constructor() {
 
         val olympiaAddress = LegacyOlympiaAccountAddress.init(com.radixdlt.sargon.PublicKey.Secp256k1.init(hex = publicKeyHex))
         val newBabylonAddress = olympiaAddress.toBabylonAddress()
+        val alreadyImported = importedAccountAddresses.any { it.wasMigratedFromLegacyOlympia(olympiaAddress) }
 
         return OlympiaAccountDetails(
             index = parsedIndex,
@@ -83,7 +91,7 @@ class OlympiaWalletDataParser @Inject constructor() {
             publicKey = publicKeyHex,
             accountName = name,
             derivationPath = DerivationPath.forLegacyOlympia(accountIndex = parsedIndex),
-            alreadyImported = existingAccountHashes.containsWithEqualityCheck(publicKeyHash),
+            alreadyImported = alreadyImported,
             newBabylonAddress = newBabylonAddress,
             appearanceId = parsedIndex % AccountGradientList.size
         )

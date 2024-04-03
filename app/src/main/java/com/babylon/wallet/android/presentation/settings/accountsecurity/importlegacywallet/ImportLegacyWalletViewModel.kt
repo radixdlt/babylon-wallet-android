@@ -44,7 +44,6 @@ import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.GetFactorSourceIdForOlympiaAccountsUseCase
 import rdx.works.profile.domain.account.MigrateOlympiaAccountsUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
-import rdx.works.profile.domain.currentNetworkAccountHashes
 import rdx.works.profile.domain.factorSources
 import rdx.works.profile.domain.p2pLinks
 import rdx.works.profile.olympiaimport.ChunkInfo
@@ -169,10 +168,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            val olympiaWalletData = olympiaWalletDataParser.parseOlympiaWalletAccountData(
-                olympiaWalletDataChunks = scannedData,
-                existingAccountHashes = getProfileUseCase.currentNetworkAccountHashes()
-            )
+            val olympiaWalletData = olympiaWalletDataParser.parseOlympiaWalletAccountData(olympiaWalletDataChunks = scannedData)
             olympiaWalletData?.let { data ->
                 this@ImportLegacyWalletViewModel.olympiaWalletData = data
                 seedPhraseInputDelegate.setSeedPhraseSize(data.mnemonicWordCount)
