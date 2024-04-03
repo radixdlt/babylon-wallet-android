@@ -47,6 +47,7 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
@@ -314,6 +315,7 @@ private fun Modifier.checkRenderedOutside(
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AssetsContentRowPreview() {

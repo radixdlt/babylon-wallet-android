@@ -20,6 +20,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -91,6 +92,7 @@ fun LegacyAccountCard(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = false)
 @Composable
 fun LegacyAccountCardPreview() {

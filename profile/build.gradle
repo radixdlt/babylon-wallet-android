@@ -37,6 +37,13 @@ android {
         // It is now used to not make the unit tests fail because of the Log class
         unitTests.returnDefaultValues = true
     }
+    afterEvaluate {
+        tasks.configureEach { task ->
+            if (task.name.contains("Test") && task.name.contains("compile")) {
+                kotlinOptions.freeCompilerArgs += '-Xopt-in=com.radixdlt.sargon.annotation.UsesSampleValues'
+            }
+        }
+    }
 }
 
 dependencies {

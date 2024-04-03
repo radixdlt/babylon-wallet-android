@@ -39,6 +39,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.DApp
 
 @Composable
@@ -212,6 +213,7 @@ private fun PermissionRequestHeader(
     )
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun LoginPermissionContentPreview() {
@@ -228,6 +230,7 @@ fun LoginPermissionContentPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun LoginPermissionContentFirstTimePreview() {

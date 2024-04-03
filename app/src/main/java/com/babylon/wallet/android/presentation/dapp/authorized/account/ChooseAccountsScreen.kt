@@ -22,6 +22,7 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
@@ -142,6 +143,7 @@ private fun HandleOneOffEvents(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun ChooseAccountContentPreview() {

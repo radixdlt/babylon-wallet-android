@@ -20,6 +20,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 
@@ -87,6 +88,7 @@ fun AccountSelectionCard(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun DAppAccountCardPreview() {
@@ -102,6 +104,7 @@ fun DAppAccountCardPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f)
 @Composable
@@ -118,6 +121,7 @@ fun DAppAccountCardLargeFontPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun DAppAccountCardSingleChoicePreview() {

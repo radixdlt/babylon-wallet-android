@@ -1,8 +1,8 @@
 package rdx.works.core.domain.assets
 
 import android.net.Uri
-import androidx.annotation.VisibleForTesting
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.SampleWithRandomValues
 import rdx.works.core.divideWithDivisibility
@@ -50,7 +50,7 @@ data class LiquidStakeUnit(
     }
 
     companion object {
-        @VisibleForTesting
+        @UsesSampleValues
         val sampleMainnet: SampleWithRandomValues<LiquidStakeUnit> = object : SampleWithRandomValues<LiquidStakeUnit> {
             override fun invoke(): LiquidStakeUnit = with(Validator.sampleMainnet()) {
                 LiquidStakeUnit(

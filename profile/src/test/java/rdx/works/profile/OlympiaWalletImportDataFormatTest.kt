@@ -28,14 +28,12 @@ internal class OlympiaWalletExportFormatTest {
 
     private lateinit var testVectors: List<TestVector>
 
-    private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getProfileUseCase = mockk<GetProfileUseCase>()
 
-    private val parser = OlympiaWalletDataParser(getCurrentGatewayUseCase)
+    private val parser = OlympiaWalletDataParser()
 
     @Before
     fun setUp() {
-        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway("", Radix.Gateway.default.network)
         coEvery { getProfileUseCase() } returns flowOf(
             Profile.init("", DeviceInfo(name = "", manufacturer = "", model = ""), Instant.now())
         )

@@ -13,6 +13,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -52,6 +53,7 @@ fun PoolTypeContent(
     )
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun PoolTypePreview() {
