@@ -4,6 +4,7 @@ import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.toBabylonAddress
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -13,6 +14,7 @@ import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
 
+@UsesSampleValues
 object MockUiProvider {
 
     val seedPhraseWords = persistentListOf(

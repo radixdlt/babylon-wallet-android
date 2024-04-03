@@ -61,6 +61,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -468,6 +469,7 @@ private fun ImageRequest.Builder.applyCorrectDecoderBasedOnMimeType() = apply {
     }
 }
 
+@UsesSampleValues
 @Composable
 @Preview(name = "Fungibles Preview")
 fun FungibleResourcesPreview() {
@@ -524,6 +526,7 @@ fun FungibleResourcesPreview() {
     }
 }
 
+@UsesSampleValues
 @Composable
 @Preview(name = "NonFungibles Preview")
 fun NonFungibleResourcesPreview() {
@@ -616,6 +619,7 @@ fun NonFungibleResourcesPreview() {
     }
 }
 
+@UsesSampleValues
 @Composable
 @Preview(name = "NFTs Preview")
 fun NFTsPreview() {

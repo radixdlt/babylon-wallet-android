@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposi
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
@@ -89,6 +90,7 @@ class SampleDataProvider {
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
     )
 
+    @UsesSampleValues
     val transferableDepositing = Transferable.Depositing(
         transferable = TransferableAsset.Fungible.Token(
             amount = BigDecimal(69),
@@ -97,6 +99,7 @@ class SampleDataProvider {
         )
     )
 
+    @UsesSampleValues
     val transferableDepositingLsu = Transferable.Depositing(
         transferable = TransferableAsset.Fungible.LSUAsset(
             amount = BigDecimal(69),
@@ -108,6 +111,7 @@ class SampleDataProvider {
         )
     )
 
+    @UsesSampleValues
     val accountWithTransferableResourcesOwned = AccountWithTransferableResources.Owned(
         account = Network.Account(
             address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",
@@ -145,6 +149,7 @@ class SampleDataProvider {
         resources = listOf(transferableDepositing)
     )
 
+    @UsesSampleValues
     val accountWithTransferableResourceLsu = AccountWithTransferableResources.Owned(
         account = Network.Account(
             address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",
@@ -182,6 +187,7 @@ class SampleDataProvider {
         resources = listOf(transferableDepositingLsu)
     )
 
+    @UsesSampleValues
     val accountWithTransferablePool = AccountWithTransferableResources.Owned(
         account = Network.Account(
             address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",

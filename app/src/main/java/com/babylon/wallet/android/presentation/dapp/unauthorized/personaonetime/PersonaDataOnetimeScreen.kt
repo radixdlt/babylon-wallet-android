@@ -52,6 +52,7 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
@@ -251,6 +252,7 @@ private fun PermissionRequestHeader(
     )
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun LoginPermissionContentPreview() {

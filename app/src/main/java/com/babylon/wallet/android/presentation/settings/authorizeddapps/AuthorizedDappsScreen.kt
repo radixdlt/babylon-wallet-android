@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.toImmutableList
 import rdx.works.core.domain.DApp
 
@@ -130,6 +131,7 @@ private fun AuthorizedDAppsContent(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun AuthorizedDAppsContentPreview() {

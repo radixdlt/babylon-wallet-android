@@ -53,6 +53,7 @@ import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -307,6 +308,7 @@ private fun NonFungibleSpendingAsset(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun SpendingAssetItemsPreview() {

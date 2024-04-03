@@ -1,7 +1,7 @@
 package rdx.works.core.domain.assets
 
-import androidx.annotation.VisibleForTesting
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.SampleWithRandomValues
 import rdx.works.core.divideWithDivisibility
@@ -42,7 +42,7 @@ data class PoolUnit(
     }
 
     companion object {
-        @VisibleForTesting
+        @UsesSampleValues
         val sampleMainnet: SampleWithRandomValues<PoolUnit> = object : SampleWithRandomValues<PoolUnit> {
             override fun invoke(): PoolUnit = with(Pool.sampleMainnet()) {
                 PoolUnit(

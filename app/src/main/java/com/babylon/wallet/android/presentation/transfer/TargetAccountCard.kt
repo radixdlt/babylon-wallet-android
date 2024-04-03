@@ -36,6 +36,7 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.persistentSetOf
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.resources.Resource
@@ -243,6 +244,7 @@ fun TargetAccountCard(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun TargetAccountCardPreview() {

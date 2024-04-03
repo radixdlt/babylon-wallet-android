@@ -1,8 +1,8 @@
 package rdx.works.core.domain
 
 import android.net.Uri
-import androidx.annotation.VisibleForTesting
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.Sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -53,7 +53,7 @@ data class DApp(
     }
 
     companion object {
-        @VisibleForTesting
+        @UsesSampleValues
         val sampleMainnet: Sample<DApp> = object : Sample<DApp> {
             override fun invoke(): DApp = DApp(
                 dAppAddress = AccountAddress.sampleMainnet(),

@@ -50,6 +50,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
@@ -390,6 +391,7 @@ private fun AddressQRCodeSheet(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun AccountSettingsPreview() {
