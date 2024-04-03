@@ -77,6 +77,13 @@ fun AccountSettingsScreen(
                 }
                 showHideAccountPrompt = false
             },
+            title = {
+                Text(
+                    text = stringResource(id = R.string.accountSettings_hideThisAccount),
+                    style = RadixTheme.typography.body1Header,
+                    color = RadixTheme.colors.gray1
+                )
+            },
             message = {
                 Text(
                     text = stringResource(id = R.string.accountSettings_hideAccountConfirmation),
@@ -279,7 +286,7 @@ private fun AccountSettingsContent(
                         horizontal = RadixTheme.dimensions.paddingLarge,
                         vertical = RadixTheme.dimensions.paddingDefault
                     ),
-                    text = stringResource(R.string.accountSettings_hideThisAccount),
+                    text = stringResource(R.string.accountSettings_hideAccount_button),
                     onClick = onHideAccount
                 )
             }
