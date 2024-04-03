@@ -12,6 +12,7 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Resource
@@ -45,6 +46,7 @@ fun TransferTypeContent(
     )
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun TransactionPreviewTypePreview() {

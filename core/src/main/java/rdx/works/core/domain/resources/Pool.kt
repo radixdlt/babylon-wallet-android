@@ -1,8 +1,8 @@
 package rdx.works.core.domain.resources
 
-import androidx.annotation.VisibleForTesting
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.SampleWithRandomValues
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -19,7 +19,7 @@ data class Pool(
 ) {
 
     companion object {
-        @VisibleForTesting
+        @UsesSampleValues
         val sampleMainnet: SampleWithRandomValues<Pool> = object : SampleWithRandomValues<Pool> {
             override fun invoke(): Pool = Pool(
                 address = PoolAddress.sampleMainnet(),

@@ -30,6 +30,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
@@ -134,6 +135,7 @@ private fun SeedPhraseWordInput(
     )
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun SeedPhraseInputVerificationFormPreview() {

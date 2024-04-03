@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
@@ -175,6 +176,7 @@ private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String
     }
 }
 
+@UsesSampleValues
 @Preview("default")
 @Preview("large font", fontScale = 2f)
 @Preview(showBackground = true)

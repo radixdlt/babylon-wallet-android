@@ -1,9 +1,9 @@
 package rdx.works.core.domain.resources
 
 import android.net.Uri
-import androidx.annotation.VisibleForTesting
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.Sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -31,7 +31,7 @@ data class Validator(
         get() = metadata.description()
 
     companion object {
-        @VisibleForTesting
+        @UsesSampleValues
         val sampleMainnet: Sample<Validator> = object : Sample<Validator> {
             override fun invoke(): Validator = Validator(
                 address = ValidatorAddress.sampleMainnet(),

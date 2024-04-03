@@ -38,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
@@ -274,6 +275,7 @@ private fun AccountRuleChangeRow(resource: Resource?, modifier: Modifier = Modif
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountDepositSettingsTypeContentPreview() {
@@ -337,6 +339,7 @@ fun AccountDepositSettingsTypeContentPreviewJustRule() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountDepositSettingsTypeContentPreviewJustAssetChanges() {
@@ -370,6 +373,7 @@ fun AccountDepositSettingsTypeContentPreviewJustAssetChanges() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountDepositSettingsTypeContentPreviewJustDepositorChanges() {

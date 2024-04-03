@@ -102,6 +102,7 @@ import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -852,6 +853,7 @@ private fun VerifyWithYourSeedPhrasePage(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun AccountListPagePreview() {
@@ -865,6 +867,7 @@ fun AccountListPagePreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun InputSeedPhrasePagePreview() {
@@ -923,6 +926,7 @@ fun HardwareImportNoAccountsLeftPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun ImportCompletePagePreview() {

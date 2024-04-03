@@ -36,6 +36,7 @@ import com.babylon.wallet.android.presentation.ui.composables.InvolvedComponentD
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -131,6 +132,7 @@ fun ConnectedDAppsContent(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun ConnectedDAppsContentPreview() {

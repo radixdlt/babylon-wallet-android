@@ -1,9 +1,9 @@
 package rdx.works.core.domain.assets
 
 import android.net.Uri
-import androidx.annotation.VisibleForTesting
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.Sample
 import rdx.works.core.domain.resources.ExplicitMetadataKey
@@ -37,7 +37,7 @@ data class StakeClaim(
     fun readyToClaimNFTs(epoch: Long) = nonFungibleResource.items.filter { it.isReadyToClaim(epoch) }
 
     companion object {
-        @VisibleForTesting
+        @UsesSampleValues
         val sampleMainnet: Sample<StakeClaim> = object : Sample<StakeClaim> {
             override fun invoke(): StakeClaim = with(Validator.sampleMainnet()) {
                 StakeClaim(

@@ -1,13 +1,13 @@
 package rdx.works.core.domain.resources
 
 import android.net.Uri
-import androidx.annotation.VisibleForTesting
 import com.radixdlt.derivation.model.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.intId
 import com.radixdlt.sargon.extensions.networkId
@@ -310,9 +310,8 @@ object XrdResource {
 }
 
 @Suppress("MagicNumber")
-@VisibleForTesting
+@UsesSampleValues
 val Resource.FungibleResource.Companion.sampleMainnet
-    @VisibleForTesting
     get() = object : SampleWithRandomValues<Resource.FungibleResource> {
         override fun invoke(): Resource.FungibleResource = Resource.FungibleResource(
             address = ResourceAddress.sampleMainnet.xrd,
@@ -368,9 +367,8 @@ val Resource.FungibleResource.Companion.sampleMainnet
         )
     }
 
-@VisibleForTesting
+@UsesSampleValues
 val Resource.NonFungibleResource.Companion.sampleMainnet
-    @VisibleForTesting
     get() = object : SampleWithRandomValues<Resource.NonFungibleResource> {
         override fun invoke(): Resource.NonFungibleResource = Resource.NonFungibleResource(
             address = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
