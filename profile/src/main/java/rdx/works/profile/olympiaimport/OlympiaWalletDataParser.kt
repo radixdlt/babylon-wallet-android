@@ -11,9 +11,7 @@ import com.radixdlt.sargon.extensions.toBabylonAddress
 import com.radixdlt.sargon.extensions.wasMigratedFromLegacyOlympia
 import okio.ByteString.Companion.decodeBase64
 import rdx.works.core.Identified
-import rdx.works.core.compressedPublicKeyHashBytes
 import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import timber.log.Timber
