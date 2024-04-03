@@ -20,6 +20,15 @@ static def getCommitHash() {
 ext.keystoreProperties = { isDebug ->
     def fileName = (isDebug) ? "../config/signing/debug/keystore.properties"
             : "../config/signing/release/keystore.properties"
+    return loadFileProperties(fileName)
+}
+
+ext.secretProperties = {
+    def fileName = "../config/secrets/secrets.properties"
+    return loadFileProperties(fileName)
+}
+
+ext.loadFileProperties = { fileName ->
     try {
         def properties = new Properties()
         properties.load(new FileInputStream(file(fileName)))
@@ -28,6 +37,15 @@ ext.keystoreProperties = { isDebug ->
     } catch (Exception ignored) {
         return null
     }
+}
+
+ext.buildConfigProperty = { properties, name ->
+    "\"${propertyOrEmpty(properties, name)}\""
+}
+
+ext.propertyOrEmpty = { properties, name ->
+    def property = properties[name]
+    return property != null ? property : ""
 }
 
 android {
@@ -65,6 +83,10 @@ android {
         buildConfigField "String", "NPS_SURVEY_URL", '"https://dev-wallet-net-promoter-score.radixdlt.com/"'
         buildConfigField "String", "REFINER_FORM_UUID", '"281622a0-dc6b-11ee-8fd1-23c96056fbd2"'
         resValue "string", "app_name", "Radix Wallet"
+
+        def properties = secretProperties()
+        buildConfigField "String", "APPS_FLYER_DEV_KEY", buildConfigProperty(properties, 'appsFlyerDevKey')
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary true
@@ -231,6 +253,10 @@ dependencies {
     implementation project(path: ':peerdroid')
     implementation project(path: ':profile')
     implementation project(path: ':designsystem')
+
+    // Analytics
+    implementation libs.appsFlyer
+    implementation libs.installReferrer
 
     testImplementation libs.junit
     testImplementation libs.mockk

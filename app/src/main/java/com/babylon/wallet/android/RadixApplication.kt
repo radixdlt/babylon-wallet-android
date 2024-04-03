@@ -1,6 +1,7 @@
 package com.babylon.wallet.android
 
 import android.app.Application
+import com.appsflyer.AppsFlyerLib
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
@@ -12,5 +13,10 @@ class RadixApplication : Application() {
         if (BuildConfig.DEBUG_MODE) {
             Timber.plant(Timber.DebugTree())
         }
+
+        AppsFlyerLib.getInstance()
+            .init(BuildConfig.APPS_FLYER_DEV_KEY, null, this)
+            .apply { setDebugLog(BuildConfig.DEBUG_MODE) }
+            .start(this)
     }
 }
