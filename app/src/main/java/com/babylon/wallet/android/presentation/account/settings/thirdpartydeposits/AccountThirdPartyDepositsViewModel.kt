@@ -176,8 +176,8 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     fun onAddAssetException() {
         val assetExceptionToAdd = state.value.assetExceptionToAdd
         val updatedAssetExceptionsUiModels = (
-            state.value.assetExceptionsUiModels.orEmpty() + listOf(assetExceptionToAdd)
-            ).toPersistentList()
+                state.value.assetExceptionsUiModels.orEmpty() + listOf(assetExceptionToAdd)
+                ).toPersistentList()
         _state.update { state ->
             state.copy(
                 updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(
@@ -187,47 +187,46 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 assetExceptionToAdd = AssetType.AssetException()
             )
         }
-        loadAssets(setOf(assetExceptionToAdd.assetException.address))
+        loadAssets(setOf(ResourceAddress.init(assetExceptionToAdd.assetException.address)))
         checkIfSettingsChanged()
     }
 
-    private fun loadAssets(addresses: Set<String>) = viewModelScope.launch {
-        getResourcesUseCase(addresses = addresses.map { ResourceAddress.init(it) }.toSet())
-            .onSuccess { resources ->
-                val loadedResourcesAddresses = resources.map { it.address.string }.toSet()
-                _state.update { state ->
-                    state.copy(
-                        assetExceptionsUiModels = state.assetExceptionsUiModels?.mapWhen(
-                            predicate = {
-                                loadedResourcesAddresses.contains(it.assetException.address)
+    private fun loadAssets(addresses: Set<ResourceAddress>) = viewModelScope.launch {
+        getResourcesUseCase(addresses = addresses).onSuccess { resources ->
+            val loadedResourcesAddresses = resources.map { it.address }.toSet()
+            _state.update { state ->
+                state.copy(
+                    assetExceptionsUiModels = state.assetExceptionsUiModels?.mapWhen(
+                        predicate = {
+                            loadedResourcesAddresses.contains(ResourceAddress.init(it.assetException.address))
+                        }
+                    ) { assetException ->
+                        when (
+                            val resource = resources.firstOrNull {
+                                it.address.string == assetException.assetException.address
                             }
-                        ) { assetException ->
-                            when (
-                                val resource = resources.firstOrNull {
-                                    it.address.string == assetException.assetException.address
-                                }
-                            ) {
-                                is Resource -> assetException.copy(resource = resource)
-                                else -> assetException
+                        ) {
+                            is Resource -> assetException.copy(resource = resource)
+                            else -> assetException
+                        }
+                    }?.toPersistentList(),
+                    allowedDepositorsUiModels = state.allowedDepositorsUiModels?.mapWhen(
+                        predicate = {
+                            loadedResourcesAddresses.contains(it.depositorAddress?.resourceAddress())
+                        }
+                    ) { depositor ->
+                        when (
+                            val resource = resources.firstOrNull {
+                                it.address == depositor.depositorAddress?.resourceAddress()
                             }
-                        }?.toPersistentList(),
-                        allowedDepositorsUiModels = state.allowedDepositorsUiModels?.mapWhen(
-                            predicate = {
-                                loadedResourcesAddresses.contains(it.depositorAddress?.resourceAddress())
-                            }
-                        ) { depositor ->
-                            when (
-                                val resource = resources.firstOrNull {
-                                    it.address.string == depositor.depositorAddress?.resourceAddress()
-                                }
-                            ) {
-                                is Resource -> depositor.copy(resource = resource)
-                                else -> depositor
-                            }
-                        }?.toPersistentList(),
-                    )
-                }
+                        ) {
+                            is Resource -> depositor.copy(resource = resource)
+                            else -> depositor
+                        }
+                    }?.toPersistentList(),
+                )
             }
+        }
     }
 
     fun onAddDepositor() {
@@ -337,6 +336,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     is ResourceOrNonFungible.NonFungible -> ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(
                         badgeAddress.value.string
                     )
+
                     else -> null
                 },
                 addressValid = badgeAddress != null,
@@ -371,13 +371,11 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     }
                     checkIfSettingsChanged()
                     loadAssets(
-                        (
-                            account.onLedgerSettings.thirdPartyDeposits.assetsExceptionList?.map {
-                                it.address
-                            }.orEmpty() + account.onLedgerSettings.thirdPartyDeposits.depositorsAllowList?.map {
-                                it.resourceAddress()
-                            }.orEmpty()
-                            ).toSet()
+                        addresses = account.onLedgerSettings.thirdPartyDeposits.assetsExceptionList?.map {
+                            ResourceAddress.init(it.address)
+                        }.orEmpty().toSet() + account.onLedgerSettings.thirdPartyDeposits.depositorsAllowList?.map {
+                            it.resourceAddress()
+                        }.orEmpty().toSet()
                     )
                 }
         }
@@ -455,9 +453,14 @@ sealed interface SelectedDepositsSheetState {
     data object AddDepositor : SelectedDepositsSheetState
 }
 
-fun ThirdPartyDeposits.DepositorAddress.resourceAddress(): String {
+fun ThirdPartyDeposits.DepositorAddress.resourceAddress(): ResourceAddress {
     return when (this) {
-        is ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID -> AddressHelper.globalId(address)
-        is ThirdPartyDeposits.DepositorAddress.ResourceAddress -> address
+        is ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID -> ResourceOrNonFungible.NonFungible(
+            NonFungibleGlobalId.init(address)
+        ).value.resourceAddress
+
+        is ThirdPartyDeposits.DepositorAddress.ResourceAddress -> ResourceOrNonFungible.Resource(
+            ResourceAddress.init(address)
+        ).value
     }
 }

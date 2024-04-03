@@ -30,7 +30,9 @@ import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -535,7 +537,7 @@ class StateRepositoryImpl @Inject constructor(
         val currentNetworkId = getProfileUseCase.currentNetwork()?.networkID ?: Radix.Gateway.default.network.id
 
         return stateDao.getAccountStateVersions().filter {
-            AddressHelper.networkIdOrNull(it.address) == currentNetworkId
+            it.address.networkId.discriminant.toInt() == currentNetworkId
         }.maxByOrNull { it.stateVersion }?.stateVersion
     }
 }
