@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceOrNonFungible
@@ -30,9 +31,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.AddressHelper
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
@@ -297,9 +298,10 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun assetExceptionAddressTyped(address: String) {
         val currentNetworkId = state.value.account?.networkID ?: return
-        val isAddressValid = runCatching {
-            ResourceAddress.init(address).takeIf { it.networkId.discriminant.toInt() == currentNetworkId }
-        }.getOrNull() != null
+        val isAddressValid = ResourceAddress.validatedOnNetworkOrNull(
+            validating = address,
+            networkId = NetworkId.init(discriminant = currentNetworkId.toUByte())
+        ) != null
         val alreadyAdded = state.value.assetExceptionsUiModels?.any { it.assetException.address == address } == true
 
         _state.update { state ->
@@ -314,15 +316,17 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun depositorAddressTyped(address: String) {
         val currentNetworkId = state.value.account?.networkID ?: return
-        val validatedFungibleAddress = runCatching {
-            ResourceAddress.init(address).takeIf { it.networkId.discriminant.toInt() == currentNetworkId }
-        }.getOrNull()
-        val validatedNftAddress = runCatching {
-            NonFungibleGlobalId.init(address).takeIf { it.resourceAddress.networkId.discriminant.toInt() == currentNetworkId }
-        }.getOrNull()
+        val validatedResourceAddress = ResourceAddress.validatedOnNetworkOrNull(
+            validating = address,
+            networkId = NetworkId.init(discriminant = currentNetworkId.toUByte())
+        )
+        val validatedNftAddress = NonFungibleGlobalId.validatedOnNetworkOrNull(
+            validating = address,
+            networkId = NetworkId.init(discriminant = currentNetworkId.toUByte())
+        )
 
-        val badgeAddress = if (validatedFungibleAddress != null) {
-            ResourceOrNonFungible.Resource(validatedFungibleAddress)
+        val badgeAddress = if (validatedResourceAddress != null) {
+            ResourceOrNonFungible.Resource(validatedResourceAddress)
         } else if (validatedNftAddress != null) {
             ResourceOrNonFungible.NonFungible(validatedNftAddress)
         } else {
@@ -336,7 +340,6 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                     is ResourceOrNonFungible.NonFungible -> ThirdPartyDeposits.DepositorAddress.NonFungibleGlobalID(
                         badgeAddress.value.string
                     )
-
                     else -> null
                 },
                 addressValid = badgeAddress != null,
