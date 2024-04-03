@@ -1,7 +1,13 @@
 package rdx.works.profile.data.model.extensions
 
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
-import rdx.works.core.AddressHelper
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.LegacyOlympiaAccountAddress
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toBabylonAddress
+import com.radixdlt.sargon.extensions.toBagOfBytes
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
@@ -13,7 +19,6 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.derivationPathEntityIndex
 import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.ret.crypto.PublicKey
 
 @Suppress("LongParameterList")
 fun Profile.createAccount(
@@ -27,12 +32,11 @@ fun Profile.createAccount(
     appearanceID: Int? = null // optional - used for account recovery
 ): Network.Account {
     val address = if (isForLegacyOlympia.not()) {
-        PublicKey.Ed25519(compressedPublicKey).deriveAccountAddress(onNetworkId.value)
+        val publicKey = PublicKey.Ed25519.init(bytes = compressedPublicKey.toBagOfBytes())
+        AccountAddress.init(publicKey, com.radixdlt.sargon.NetworkId.init(onNetworkId.value.toUByte()))
     } else {
-        AddressHelper.accountAddressFromOlympia(
-            olympiaAddress = PublicKey.Secp256k1(compressedPublicKey).deriveOlympiaAccountAddress(),
-            forNetworkId = onNetworkId.value
-        )
+        val publicKey = PublicKey.Secp256k1.init(bytes = compressedPublicKey.toBagOfBytes())
+        LegacyOlympiaAccountAddress.init(publicKey).toBabylonAddress()
     }
 
     val unsecuredSecurityState = SecurityState.unsecured(
@@ -42,7 +46,7 @@ fun Profile.createAccount(
     )
 
     return Network.Account(
-        address = address,
+        address = address.string,
         appearanceID = if (appearanceID == null) { // then take the next ID based on the accounts of the existing network
             nextAppearanceId(forNetworkId = onNetworkId)
         } else {
@@ -69,8 +73,11 @@ fun initializeAccount(
     factorSource: FactorSource.CreatingEntity,
     onLedgerSettings: Network.Account.OnLedgerSettings
 ): Network.Account {
-    val address = PublicKey.Ed25519(compressedPublicKey).deriveAccountAddress(networkId = onNetworkId.value)
-
+    val publicKey = PublicKey.Ed25519.init(bytes = compressedPublicKey.toBagOfBytes())
+    val accountAddress = AccountAddress.init(
+        publicKey = publicKey,
+        networkId = com.radixdlt.sargon.NetworkId.init(discriminant = onNetworkId.value.toUByte())
+    )
     val unsecuredSecurityState = SecurityState.unsecured(
         publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
         derivationPath = derivationPath,
@@ -78,7 +85,7 @@ fun initializeAccount(
     )
 
     return Network.Account(
-        address = address,
+        address = accountAddress.string,
         appearanceID = derivationPath.derivationPathEntityIndex() % AccountGradientList.count(),
         displayName = displayName,
         networkID = onNetworkId.value,
