@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
@@ -113,7 +114,7 @@ data class PoolWithResourceResponse(
 
 data class AccountStateVersion(
     @ColumnInfo("address")
-    val address: String,
+    val address: AccountAddress,
     @ColumnInfo("state_version")
     val stateVersion: Long
 )
