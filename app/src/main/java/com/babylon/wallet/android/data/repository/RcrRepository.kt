@@ -3,7 +3,6 @@ package com.babylon.wallet.android.data.repository
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
 import com.babylon.wallet.android.data.gateway.apis.RcrApi
 import com.babylon.wallet.android.data.gateway.model.RcrRequest
-import com.babylon.wallet.android.data.gateway.model.RcrResponse
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -16,9 +15,11 @@ import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
 interface RcrRepository {
-    suspend fun sendResponse(sessionId: String, data: String): Result<RcrResponse>
+    suspend fun sendResponse(sessionId: String, data: String): Result<Unit>
     suspend fun getRequest(sessionId: String, interactionId: String): Result<WalletInteraction>
-    suspend fun sendTest(sessionId: String, data: String): Result<RcrResponse>
+    suspend fun sendTest(sessionId: String, data: String): Result<Unit>
+
+    suspend fun getRequestTest(sessionId: String, interactionId: String): Result<List<String>>
 }
 
 class RcrRepositoryImpl @Inject constructor(
@@ -31,9 +32,8 @@ class RcrRepositoryImpl @Inject constructor(
 
     override suspend fun getRequest(sessionId: String, interactionId: String) = withContext(ioDispatcher) {
         api.executeRequest(RcrRequest.GetRequests(sessionId)).toResult().mapCatching { response ->
-            val encryptedData = response.data ?: throw IllegalStateException("No data in response")
             val dappLink = dappLinkRepository.getDappLinks().getOrThrow().first { it.sessionId == sessionId }
-            encryptedData.map { d ->
+            response.map { d ->
                 val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.value.decodeHex()).getOrThrow()
                 val decryptedRequestString = String(decryptedBytes, StandardCharsets.UTF_8)
                 json.decodeFromString<WalletInteraction>(decryptedRequestString)
@@ -44,10 +44,16 @@ class RcrRepositoryImpl @Inject constructor(
     override suspend fun sendResponse(sessionId: String, data: String) = withContext(ioDispatcher) {
         val dappLink = dappLinkRepository.getDappLinks().getOrThrow().first { it.sessionId == sessionId }
         val encryptedData = data.toByteArray().encrypt(dappLink.secret.value.decodeHex()).getOrThrow().toHexString()
-        api.executeRequest(RcrRequest.SendRequest(sessionId, encryptedData)).toResult()
+        api.executeRequest(RcrRequest.SendRequest(sessionId, encryptedData)).toResult().map { }
     }
 
     override suspend fun sendTest(sessionId: String, data: String) = withContext(ioDispatcher) {
-        api.executeRequest(RcrRequest.SendRequest(sessionId, data)).toResult()
+        api.executeRequest(RcrRequest.SendRequest(sessionId, data)).toResult().map { }
+    }
+
+    override suspend fun getRequestTest(sessionId: String, interactionId: String) = withContext(ioDispatcher) {
+        api.executeRequest(RcrRequest.GetRequests(sessionId)).toResult().mapCatching { response ->
+            response ?: throw IllegalStateException("No data in response")
+        }
     }
 }
