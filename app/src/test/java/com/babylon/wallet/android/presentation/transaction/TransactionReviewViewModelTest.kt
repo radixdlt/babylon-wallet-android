@@ -49,9 +49,9 @@ import com.radixdlt.ret.FeeSummary
 import com.radixdlt.ret.NewEntities
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.CompiledNotarizedIntent
+import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
@@ -82,7 +82,9 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Badge
+import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.logNonFatalException
 import rdx.works.core.toIdentifiedArrayList
@@ -90,8 +92,6 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.ret.crypto.PrivateKey
-import rdx.works.core.domain.TransactionManifestData
-import rdx.works.profile.ret.transaction.TransactionSigner
 import java.math.BigDecimal
 import java.util.Locale
 
@@ -158,7 +158,12 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         )
     )
-    private val sampleTxId = SignedIntentHash.sample()
+    private val sampleIntentHash = IntentHash.sample()
+    private val notarizationResult = NotarizationResult(
+        intentHash = sampleIntentHash,
+        compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
+        endEpoch = 50u
+    )
     private val sampleRequestId = "requestId1"
     private val sampleTransactionManifestData = mockk<TransactionManifestData>().apply {
         every { networkId } returns Radix.Gateway.nebunet.network.id
@@ -238,19 +243,11 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { logNonFatalException(any()) } just Runs
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
-        coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(
-            SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId.bech32EncodedTxId, 50u)
-        )
+        coEvery { submitTransactionUseCase(any()) } returns Result.success(notarizationResult)
         coEvery { getTransactionBadgesUseCase(any()) } returns Result.success(listOf(
             Badge(address = ResourceAddress.sampleMainnet())
         ))
-        coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(
-            TransactionSigner.Notarization(
-                txIdHash = sampleTxId,
-                notarizedTransactionIntentHex = CompiledNotarizedIntent.sample(),
-                endEpoch = 50u
-            )
-        )
+        coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(notarizationResult)
         coEvery { signTransactionUseCase.signingState } returns emptyFlow()
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
@@ -260,7 +257,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
-                txId = sampleTxId.bech32EncodedTxId
+                txId = sampleIntentHash.bech32EncodedTxId
             )
         } returns Result.success(Unit)
         coEvery {
@@ -325,7 +322,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
-                txId = sampleTxId.bech32EncodedTxId
+                txId = sampleIntentHash.bech32EncodedTxId
             )
         }
     }

@@ -55,7 +55,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
-import com.radixdlt.sargon.SignedIntentHash
+import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.roundToInt
@@ -350,7 +350,7 @@ fun FailureDialogContent(
         }
 
         val transactionId = remember(transactionAddress) {
-            runCatching { SignedIntentHash.init(transactionAddress) }.getOrNull()
+            runCatching { IntentHash.init(transactionAddress) }.getOrNull()
         }
         if (transactionId != null) {
             Row(

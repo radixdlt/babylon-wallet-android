@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.then
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateways
@@ -55,22 +56,18 @@ class GetFreeXrdUseCase @Inject constructor(
                         tipPercentage = TIP_PERCENTAGE
                     ),
                     deviceBiometricAuthenticationProvider = { true }
-                ).mapCatching { notarization ->
-                    submitTransactionUseCase(
-                        notarization.txIdHash,
-                        notarization.notarizedTransactionIntentHex,
-                        endEpoch = notarization.endEpoch
-                    ).getOrThrow()
-                }.onSuccess { submitTransactionResult ->
+                ).then { notarization ->
+                    submitTransactionUseCase(notarizationResult = notarization)
+                }.onSuccess { notarization ->
                     pollTransactionStatusUseCase(
-                        txID = submitTransactionResult.txId,
+                        txID = notarization.intentHash.bech32EncodedTxId,
                         requestId = "",
-                        endEpoch = submitTransactionResult.endEpoch
+                        endEpoch = notarization.endEpoch
                     ).result.onSuccess {
                         preferencesManager.updateEpoch(address, epoch)
                     }
-                }.mapCatching {
-                    it.txId
+                }.mapCatching { notarization ->
+                    notarization.intentHash.bech32EncodedTxId
                 }
             } ?: Result.failure(
                 exception = epochResult.exceptionOrNull() ?: RadixWalletException.PrepareTransactionException.PrepareNotarizedTransaction()

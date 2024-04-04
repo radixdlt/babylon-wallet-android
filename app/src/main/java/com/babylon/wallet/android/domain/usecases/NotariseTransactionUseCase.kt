@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException
-import com.radixdlt.sargon.CompiledNotarizedIntent
 import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.IntentSignature
 import com.radixdlt.sargon.IntentSignatures
@@ -19,16 +18,18 @@ import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.mapError
 import javax.inject.Inject
 
 class NotariseTransactionUseCase @Inject constructor() {
 
+    @Suppress("ReturnCount")
     suspend operator fun invoke(
         request: Request,
         signatureGatherer: SignatureGatherer
-    ): Result<Notarization> {
-        val intent =  runCatching {
+    ): Result<NotarizationResult> {
+        val intent = runCatching {
             TransactionIntent(
                 header = TransactionHeader(
                     networkId = request.manifestData.networkIdSargon,
@@ -65,9 +66,9 @@ class NotariseTransactionUseCase @Inject constructor() {
                 notarySignature = NotarySignature.init(signature)
             )
 
-            Notarization(
-                txIdHash = notarizedTransaction.signedIntent.hash(),
-                notarizedTransactionIntentHex = notarizedTransaction.compile(),
+            NotarizationResult(
+                intentHash = notarizedTransaction.signedIntent.intent.hash(),
+                compiledNotarizedIntent = notarizedTransaction.compile(),
                 endEpoch = request.endEpoch
             )
         }.mapError { error ->
@@ -85,17 +86,10 @@ class NotariseTransactionUseCase @Inject constructor() {
         val tipPercentage: UShort
     )
 
-    data class Notarization(
-        val txIdHash: SignedIntentHash,
-        val notarizedTransactionIntentHex: CompiledNotarizedIntent,
-        val endEpoch: Epoch
-    )
-
     interface SignatureGatherer {
 
         suspend fun gatherSignatures(intent: TransactionIntent): Result<List<SignatureWithPublicKey>>
 
         suspend fun notarise(signedIntentHash: SignedIntentHash): Result<Signature>
     }
-
 }

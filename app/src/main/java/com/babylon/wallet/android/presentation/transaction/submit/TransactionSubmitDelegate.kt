@@ -141,39 +141,35 @@ class TransactionSubmitDelegate @Inject constructor(
                 feePayerAddress = feePayerAddress
             ),
             deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-        ).then { notarisation ->
-            submitTransactionUseCase(
-                signedIntentHash = notarisation.txIdHash,
-                compiledNotarizedIntent = notarisation.notarizedTransactionIntentHex,
-                endEpoch = notarisation.endEpoch
-            )
-        }.onSuccess { submitTransactionResult ->
+        ).then { notarizationResult ->
+            submitTransactionUseCase(notarizationResult = notarizationResult)
+        }.onSuccess { notarisation ->
             _state.update {
                 it.copy(
                     isSubmitting = false,
-                    endEpoch = submitTransactionResult.endEpoch
+                    endEpoch = notarisation.endEpoch
                 )
             }
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.InProgress(
                     requestId = transactionRequest.requestId,
-                    transactionId = submitTransactionResult.txId,
+                    transactionId = notarisation.intentHash.bech32EncodedTxId,
                     isInternal = transactionRequest.isInternal,
                     blockUntilComplete = transactionRequest.blockUntilComplete
                 )
             )
             transactionStatusClient.pollTransactionStatus(
-                txID = submitTransactionResult.txId,
+                txID = notarisation.intentHash.bech32EncodedTxId,
                 requestId = transactionRequest.requestId,
                 transactionType = transactionRequest.transactionType,
-                endEpoch = submitTransactionResult.endEpoch
+                endEpoch = notarisation.endEpoch
             )
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionRequest.isInternal) {
                 dAppMessenger.sendTransactionWriteResponseSuccess(
                     remoteConnectorId = transactionRequest.remoteConnectorId,
                     requestId = transactionRequest.requestId,
-                    txId = submitTransactionResult.txId
+                    txId = notarisation.intentHash.bech32EncodedTxId
                 )
             }
         }.onFailure { throwable ->

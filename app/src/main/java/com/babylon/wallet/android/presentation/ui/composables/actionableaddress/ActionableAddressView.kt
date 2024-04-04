@@ -58,10 +58,10 @@ import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.AddressFormat
+import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
-import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.formatted
@@ -145,7 +145,7 @@ fun ActionableAddressView(
 @Composable
 fun ActionableAddressView(
     modifier: Modifier = Modifier,
-    transactionId: SignedIntentHash,
+    transactionId: IntentHash,
     truncateAddress: Boolean = true,
     visitableInDashboard: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
@@ -592,7 +592,7 @@ sealed interface ActionableAddress {
     }
 
     data class TransactionId(
-        val hash: SignedIntentHash
+        val hash: IntentHash
     ) : ActionableAddress {
 
         override fun copyable(): String = hash.formatted(format = AddressFormat.RAW)
