@@ -5,7 +5,9 @@ import com.radixdlt.ret.Instructions
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Blob
 import com.radixdlt.sargon.Blobs
+import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.PlaintextMessage
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
@@ -13,6 +15,7 @@ import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.instructionsString
 import com.radixdlt.sargon.extensions.networkId
+import com.radixdlt.sargon.extensions.plaintext
 import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.sargon.extensions.toList
 import rdx.works.core.toByteArray
@@ -44,6 +47,14 @@ data class TransactionManifestData(
             blobs = Blobs.init(blobs = blobs.map { Blob.init(it.toBagOfBytes()) })
         )
     }
+
+    val messageSargon: Message = when (message) {
+        TransactionMessage.None -> Message.None
+        is TransactionMessage.Public -> Message.plaintext(message.message)
+    }
+
+    val networkIdSargon: NetworkId
+        get() = NetworkId.init(discriminant = networkId.toUByte())
 
     fun entitiesRequiringAuth(): EntitiesRequiringAuth {
         val summary = engineManifest.summary(networkId = networkId.toUByte())

@@ -143,8 +143,8 @@ class TransactionSubmitDelegate @Inject constructor(
             deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         ).then { notarisation ->
             submitTransactionUseCase(
-                txIDHash = notarisation.txIdHash,
-                notarizedTransactionHex = notarisation.notarizedTransactionIntentHex,
+                signedIntentHash = notarisation.txIdHash,
+                compiledNotarizedIntent = notarisation.notarizedTransactionIntentHex,
                 endEpoch = notarisation.endEpoch
             )
         }.onSuccess { submitTransactionResult ->

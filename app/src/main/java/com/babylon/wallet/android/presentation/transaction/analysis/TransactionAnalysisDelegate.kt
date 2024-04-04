@@ -17,8 +17,10 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.sargon.Nonce
+import com.radixdlt.sargon.extensions.secureRandom
+import com.radixdlt.sargon.extensions.value
 import kotlinx.coroutines.flow.update
-import rdx.works.core.NonceGenerator
 import rdx.works.core.decodeHex
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.then
@@ -82,18 +84,18 @@ class TransactionAnalysisDelegate @Inject constructor(
         notaryAndSigners: NotaryAndSigners
     ): Result<TransactionPreviewResponse> {
         val (startEpochInclusive, endEpochExclusive) = with(transactionRepository.getLedgerEpoch()) {
-            val epoch = this.getOrNull() ?: return@with (0L to 0L)
+            val epoch = this.getOrNull() ?: return@with (0.toULong() to 0.toULong())
 
-            (epoch to epoch + 1L)
+            (epoch to epoch + 1.toULong())
         }
 
         return transactionRepository.getTransactionPreview(
             TransactionPreviewRequest(
                 manifest = manifestData.instructions,
-                startEpochInclusive = startEpochInclusive,
-                endEpochExclusive = endEpochExclusive,
+                startEpochInclusive = startEpochInclusive.toLong(),
+                endEpochExclusive = endEpochExclusive.toLong(),
                 tipPercentage = 0,
-                nonce = NonceGenerator().toLong(),
+                nonce = Nonce.secureRandom().value.toLong(),
                 signerPublicKeys = notaryAndSigners.signersPublicKeys().map { it.asGatewayPublicKey() },
                 flags = TransactionPreviewRequestFlags(
                     useFreeCredit = true,

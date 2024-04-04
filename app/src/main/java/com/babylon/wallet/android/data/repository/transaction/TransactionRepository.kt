@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatu
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitRequest
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitResponse
 import com.babylon.wallet.android.data.repository.toResult
+import com.radixdlt.sargon.Epoch
 import javax.inject.Inject
 
 // TODO translate from network models to domain models
@@ -17,7 +18,7 @@ interface TransactionRepository {
 
     suspend fun getTransactionStatus(identifier: String): Result<TransactionStatusResponse>
 
-    suspend fun getLedgerEpoch(): Result<Long>
+    suspend fun getLedgerEpoch(): Result<Epoch>
 
     suspend fun getTransactionPreview(body: TransactionPreviewRequest): Result<TransactionPreviewResponse>
 }
@@ -25,8 +26,8 @@ interface TransactionRepository {
 // TODO translate from network models to domain models
 class TransactionRepositoryImpl @Inject constructor(private val transactionApi: TransactionApi) : TransactionRepository {
 
-    override suspend fun getLedgerEpoch(): Result<Long> {
-        return transactionApi.transactionConstruction().toResult().map { it.ledgerState.epoch }
+    override suspend fun getLedgerEpoch(): Result<Epoch> {
+        return transactionApi.transactionConstruction().toResult().map { it.ledgerState.epoch.toULong() }
     }
 
     override suspend fun submitTransaction(notarizedTransaction: String): Result<TransactionSubmitResponse> {

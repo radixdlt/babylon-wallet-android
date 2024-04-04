@@ -1,21 +1,22 @@
 package rdx.works.profile.ret.transaction
 
-import com.radixdlt.hex.extensions.toHexString
-import com.radixdlt.ret.Intent
-import com.radixdlt.ret.Message
-import com.radixdlt.ret.MessageContent
-import com.radixdlt.ret.NotarizedTransaction
-import com.radixdlt.ret.PlainTextMessage
-import com.radixdlt.ret.SignedIntent
-import com.radixdlt.ret.TransactionHeader
+import com.radixdlt.sargon.CompiledNotarizedIntent
+import com.radixdlt.sargon.Epoch
+import com.radixdlt.sargon.IntentSignature
+import com.radixdlt.sargon.IntentSignatures
+import com.radixdlt.sargon.Nonce
+import com.radixdlt.sargon.NotarizedTransaction
+import com.radixdlt.sargon.NotarySignature
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
 import com.radixdlt.sargon.SignatureWithPublicKey
-import com.radixdlt.sargon.extensions.bytes
-import com.radixdlt.sargon.extensions.publicKey
-import com.radixdlt.sargon.extensions.signature
+import com.radixdlt.sargon.SignedIntent
+import com.radixdlt.sargon.SignedIntentHash
+import com.radixdlt.sargon.TransactionIntent
+import com.radixdlt.sargon.extensions.compile
+import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.toByteArray
 import javax.inject.Inject
 
 interface TransactionSigner {
@@ -29,22 +30,23 @@ interface TransactionSigner {
         val manifestData: TransactionManifestData,
         val notaryPublicKey: PublicKey,
         val notaryIsSignatory: Boolean,
-        val startEpoch: ULong,
-        val endEpoch: ULong,
-        val nonce: UInt,
+        val startEpoch: Epoch,
+        val endEpoch: Epoch,
+        val nonce: Nonce,
         val tipPercentage: UShort
     )
+
     data class Notarization(
-        val txIdHash: String,
-        val notarizedTransactionIntentHex: String,
-        val endEpoch: ULong
+        val txIdHash: SignedIntentHash,
+        val notarizedTransactionIntentHex: CompiledNotarizedIntent,
+        val endEpoch: Epoch
     )
 
     interface SignatureGatherer {
 
-        suspend fun gatherSignatures(dataToSign: ByteArray, hashedDataToSign: ByteArray): Result<List<SignatureWithPublicKey>>
+        suspend fun gatherSignatures(intent: TransactionIntent): Result<List<SignatureWithPublicKey>>
 
-        suspend fun notarise(signedIntentHash: ByteArray): Result<Signature>
+        suspend fun notarise(signedIntentHash: SignedIntentHash): Result<Signature>
     }
 
     sealed class Error : Throwable() {
@@ -61,101 +63,66 @@ class TransactionSignerImpl @Inject constructor() : TransactionSigner {
         signatureGatherer: TransactionSigner.SignatureGatherer
     ): Result<TransactionSigner.Notarization> {
         // Build header
-        val header = TransactionHeader(
-            networkId = request.manifestData.networkId.toUByte(),
+        val header = com.radixdlt.sargon.TransactionHeader(
+            networkId = request.manifestData.networkIdSargon,
             startEpochInclusive = request.startEpoch,
             endEpochExclusive = request.endEpoch,
             nonce = request.nonce,
-            notaryPublicKey = when (request.notaryPublicKey) {
-                is PublicKey.Ed25519 -> com.radixdlt.ret.PublicKey.Ed25519(request.notaryPublicKey.bytes.toByteArray())
-                is PublicKey.Secp256k1 -> com.radixdlt.ret.PublicKey.Secp256k1(request.notaryPublicKey.bytes.toByteArray())
-            },
+            notaryPublicKey = request.notaryPublicKey,
             notaryIsSignatory = request.notaryIsSignatory,
             tipPercentage = request.tipPercentage
         )
 
         // Create intent
         val transactionIntent = runCatching {
-            Intent(
+            TransactionIntent(
                 header = header,
-                manifest = request.manifestData.engineManifest,
-                message = when (val message = request.manifestData.message) {
-                    is TransactionManifestData.TransactionMessage.Public -> Message.PlainText(
-                        value = PlainTextMessage(
-                            mimeType = "text/plain",
-                            message = MessageContent.Str(message.message)
-                        )
-                    )
-                    TransactionManifestData.TransactionMessage.None -> Message.None
-                }
+                manifest = request.manifestData.manifestSargon,
+                message = request.manifestData.messageSargon
             )
         }.getOrElse {
             return Result.failure(TransactionSigner.Error.Sign())
         }
 
-        val transactionIntentHash = runCatching { transactionIntent.intentHash() }.getOrElse {
-            return Result.failure(TransactionSigner.Error.Sign())
-        }
-
-        val compiledTransactionIntent = runCatching { transactionIntent.compile() }.getOrElse {
-            return Result.failure(TransactionSigner.Error.Prepare())
-        }
-
         // Sign intent
         val signatures = signatureGatherer.gatherSignatures(
-            dataToSign = compiledTransactionIntent,
-            hashedDataToSign = transactionIntentHash.bytes()
+            intent = transactionIntent
         ).getOrElse { throwable ->
             return Result.failure(TransactionSigner.Error.Sign(throwable))
         }
         val signedTransactionIntent = runCatching {
             SignedIntent(
                 intent = transactionIntent,
-                intentSignatures = signatures.map {
-                    val signatureBytes = it.signature.bytes.toByteArray()
-                    val publicKeyBytes = it.publicKey.bytes.toByteArray()
-                    when (it) {
-                        is SignatureWithPublicKey.Ed25519 -> com.radixdlt.ret.SignatureWithPublicKey.Ed25519(
-                            signature = signatureBytes,
-                            publicKey = publicKeyBytes
-                        )
-                        is SignatureWithPublicKey.Secp256k1 -> com.radixdlt.ret.SignatureWithPublicKey.Secp256k1(
-                            signature = signatureBytes
-                        )
-                    }
-                }
+                intentSignatures = IntentSignatures(signatures = signatures.map { IntentSignature.init(it) })
             )
         }.getOrElse {
             return Result.failure(TransactionSigner.Error.Sign(it))
         }
 
         val signedIntentHash = runCatching {
-            signedTransactionIntent.signedIntentHash()
+            signedTransactionIntent.hash()
         }.getOrElse { error ->
             return Result.failure(TransactionSigner.Error.Prepare(error))
         }
 
         // Notarise signed intent
-        val notarySignature = signatureGatherer.notarise(signedIntentHash = signedIntentHash.bytes()).getOrElse {
+        val notarySignature = signatureGatherer.notarise(signedIntentHash = signedIntentHash).getOrElse {
             return Result.failure(it)
         }
 
-        val compiledNotarizedIntent = runCatching {
+        val notarisedTransaction = runCatching {
             NotarizedTransaction(
                 signedIntent = signedTransactionIntent,
-                notarySignature = when (notarySignature) {
-                    is Signature.Ed25519 -> com.radixdlt.ret.Signature.Ed25519(notarySignature.bytes.toByteArray())
-                    is Signature.Secp256k1 -> com.radixdlt.ret.Signature.Secp256k1(notarySignature.bytes.toByteArray())
-                }
-            ).compile()
+                notarySignature = NotarySignature.init(notarySignature)
+            )
         }.getOrElse { e ->
             return Result.failure(TransactionSigner.Error.Prepare(e))
         }
 
         return Result.success(
             TransactionSigner.Notarization(
-                txIdHash = transactionIntentHash.asStr(),
-                notarizedTransactionIntentHex = compiledNotarizedIntent.toHexString(),
+                txIdHash = notarisedTransaction.signedIntent.hash(),
+                notarizedTransactionIntentHex = notarisedTransaction.compile(),
                 endEpoch = header.endEpochExclusive
             )
         )

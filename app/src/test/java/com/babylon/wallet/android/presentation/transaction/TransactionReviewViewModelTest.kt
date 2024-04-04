@@ -48,10 +48,13 @@ import com.radixdlt.ret.FeeLocks
 import com.radixdlt.ret.FeeSummary
 import com.radixdlt.ret.NewEntities
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.CompiledNotarizedIntent
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -155,7 +158,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         )
     )
-    private val sampleTxId = "txId1"
+    private val sampleTxId = SignedIntentHash.sample()
     private val sampleRequestId = "requestId1"
     private val sampleTransactionManifestData = mockk<TransactionManifestData>().apply {
         every { networkId } returns Radix.Gateway.nebunet.network.id
@@ -236,24 +239,28 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
         coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(
-            SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, 50u)
+            SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId.bech32EncodedTxId, 50u)
         )
         coEvery { getTransactionBadgesUseCase(any()) } returns Result.success(listOf(
             Badge(address = ResourceAddress.sampleMainnet())
         ))
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(
-            TransactionSigner.Notarization(txIdHash = sampleTxId, notarizedTransactionIntentHex = "",  endEpoch = 50u)
+            TransactionSigner.Notarization(
+                txIdHash = sampleTxId,
+                notarizedTransactionIntentHex = CompiledNotarizedIntent.sample(),
+                endEpoch = 50u
+            )
         )
         coEvery { signTransactionUseCase.signingState } returns emptyFlow()
         coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
-        coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0L)
+        coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
         coEvery { transactionRepository.getTransactionPreview(any()) } returns Result.success(previewResponse())
         coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
-                txId = sampleTxId
+                txId = sampleTxId.bech32EncodedTxId
             )
         } returns Result.success(Unit)
         coEvery {
@@ -318,7 +325,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
-                txId = sampleTxId
+                txId = sampleTxId.bech32EncodedTxId
             )
         }
     }
