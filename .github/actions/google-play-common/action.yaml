@@ -46,6 +46,16 @@ runs:
       secret_name: "github-actions/radixdlt/babylon-wallet-android/google-play-console/secrets"
       parse_json: true
 
+  - name: Fetch AppsFlyer credentials
+    uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+    with:
+      role_name: '${{ inputs.role_name }}'
+      app_name: 'wallet-android-flyers'
+      step_name: 'release'
+      secret_prefix: 'GH'
+      secret_name: "github-actions/radixdlt/babylon-wallet-android/apps-flyer-secret"
+      parse_json: true
+
   - name: Fetch Google service account credentials
     uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
     with:
@@ -66,10 +76,16 @@ runs:
       secret_name: "github-actions/radixdlt/babylon-wallet-android/google-play-console/keystore-asc"
       parse_json: false
 
+  - name: Output AppsFlyer secret to file
+    shell: bash
+    run: |
+      mkdir -p config/signing/
+      echo "appsFlyerDevKey=${{ env.GH_APPS_FLYER_DEV_KEY }}" > config/secrets/secrets.properties
+
   - name: Decode release keystore credentials
     shell: bash
     run: |
-      mkdir config/signing/release
+      mkdir -p config/signing/release
       echo "${{ env.GH_KEYSTORE_ENCRYPTED_BASE64 }}" > keystore.asc
       gpg -d --passphrase "${{ env.GH_KEYSTORE_PASSPHRASE }}" --batch keystore.asc > config/signing/release/keystore.jks
 
