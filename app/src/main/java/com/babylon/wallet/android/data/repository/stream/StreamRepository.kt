@@ -79,13 +79,16 @@ class StreamRepositoryImpl @Inject constructor(
         } else {
             null
         }
+        val genesisSelector = filters.genesisTxDate?.let { genesisDate ->
+            LedgerStateSelector(timestamp = genesisDate.toOffsetDateTime())
+        }
         val ascending = filters.sortOrder == HistoryFilters.SortOrder.Asc
         return StreamTransactionsRequest(
             optIns = TransactionDetailsOptIns(balanceChanges = true),
             cursor = cursor,
             limitPerPage = StreamRepository.PAGE_SIZE,
             atLedgerState = if (ascending) null else ledgerState,
-            fromLedgerState = if (ascending) ledgerState else null,
+            fromLedgerState = if (ascending) ledgerState else genesisSelector,
             order = when (filters.sortOrder) {
                 HistoryFilters.SortOrder.Asc -> StreamTransactionsRequest.Order.asc
                 HistoryFilters.SortOrder.Desc -> StreamTransactionsRequest.Order.desc

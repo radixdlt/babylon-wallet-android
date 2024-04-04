@@ -17,6 +17,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 @Composable
 fun DefaultPullToRefreshContainer(
     modifier: Modifier = Modifier,
+    canRefresh: Boolean = true,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     content: @Composable () -> Unit
@@ -28,7 +29,7 @@ fun DefaultPullToRefreshContainer(
     )
     Box(
         modifier = modifier
-            .pullRefresh(pullToRefreshState)
+            .pullRefresh(pullToRefreshState, enabled = canRefresh)
             .navigationBarsPadding()
             .statusBarsPadding()
     ) {

@@ -26,6 +26,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -54,6 +55,37 @@ class HistoryViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     init {
+        loadFirstTransactionDate()
+        observeAccount()
+    }
+
+    private fun loadFirstTransactionDate() {
+        // we load first transaction date first before we load history for the 1st time, to use this date in request filters
+        viewModelScope.launch {
+            getProfileUseCase.accountOnCurrentNetwork(args.accountAddress)?.let { account ->
+                getWalletAssetsUseCase(listOf(account), false).catch { error ->
+                    _state.update {
+                        it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
+                    }
+                }.mapNotNull { it.firstOrNull() }.mapNotNull { accountWithAssets ->
+                    if (accountWithAssets.details?.firstTransactionDate == null) {
+                        updateAccountFirstTransactionDateUseCase(args.accountAddress).getOrThrow()
+                    } else {
+                        accountWithAssets.details.firstTransactionDate
+                    }
+                }.catch { error ->
+                    _state.update {
+                        it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
+                    }
+                }.firstOrNull()?.let { genesisTxInstant ->
+                    computeTimeFilters(genesisTxInstant)
+                    loadHistory()
+                }
+            }
+        }
+    }
+
+    private fun observeAccount() {
         viewModelScope.launch {
             getProfileUseCase.accountOnCurrentNetwork(args.accountAddress)?.let { account ->
                 _state.update {
@@ -65,24 +97,17 @@ class HistoryViewModel @Inject constructor(
                     }
                 }.mapNotNull { it.firstOrNull() }.collectLatest { accountWithAssets ->
                     _state.update { state ->
-                        state.copy(
-                            accountWithAssets = state.accountWithAssets?.copy(assets = accountWithAssets.assets)
-                        )
-                    }
-                    if (accountWithAssets.details?.firstTransactionDate == null) {
-                        updateAccountFirstTransactionDateUseCase(args.accountAddress)
-                    } else {
-                        computeTimeFilters(accountWithAssets.details.firstTransactionDate)
+                        state.copy(accountWithAssets = accountWithAssets)
                     }
                 }
             }
         }
-        loadHistory()
     }
 
     private fun loadHistory() {
+        val filters = _state.value.filters
         viewModelScope.launch {
-            getAccountHistoryUseCase.getHistory(args.accountAddress, _state.value.filters).onSuccess { historyData ->
+            getAccountHistoryUseCase.getHistory(args.accountAddress, filters).onSuccess { historyData ->
                 updateStateWith(historyData)
                 _state.value.historyItems?.firstOrNull()?.dateTime?.let { selectDate(it) }
             }.onFailure { error ->
@@ -137,7 +162,11 @@ class HistoryViewModel @Inject constructor(
 
     fun onRefresh() {
         _state.update { it.copy(isRefreshing = true, content = State.Content.Loading) }
-        loadHistory()
+        if (_state.value.loadedGenesisTxInstant) {
+            loadHistory()
+        } else {
+            loadFirstTransactionDate()
+        }
     }
 
     fun onShowFiltersDialog(visible: Boolean) {
@@ -399,6 +428,9 @@ data class State(
             is Content.Loaded -> content.historyData
             else -> null
         }
+
+    val loadedGenesisTxInstant: Boolean
+        get() = accountWithAssets?.details?.firstTransactionDate != null
 
     val shouldShowFiltersButton: Boolean
         get() = content is Content.Loaded || filters.isAnyFilterSet
