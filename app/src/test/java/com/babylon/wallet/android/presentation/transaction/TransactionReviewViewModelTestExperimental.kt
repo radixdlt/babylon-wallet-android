@@ -22,16 +22,19 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AssetsTransfersRecipient
+import com.radixdlt.sargon.CompiledNotarizedIntent
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PerRecipientAssetTransfer
 import com.radixdlt.sargon.PerRecipientAssetTransfers
 import com.radixdlt.sargon.PerRecipientFungibleTransfer
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.perRecipientTransfers
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.xrd
+import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -77,7 +80,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     }
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val transactionRepository = mockk<TransactionRepository>().apply {
-        coEvery { getLedgerEpoch() } returns Result.success(1000)
+        coEvery { getLedgerEpoch() } returns Result.success(1000.toULong())
         coEvery { getTransactionPreview(any()) } returns Result.success(
             TransactionPreviewResponse(
                 encodedReceipt = "",
@@ -128,7 +131,11 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         coEvery { stateRepository.getOwnedXRD(testProfile.networks.first().accounts) } returns Result.success(
             testProfile.networks.first().accounts.associateWith { BigDecimal.TEN }
         )
-        val notarisation = TransactionSigner.Notarization(txIdHash = "tx_id", notarizedTransactionIntentHex = "intent_hash", endEpoch = 0u)
+        val notarisation = TransactionSigner.Notarization(
+            txIdHash = SignedIntentHash.sample(),
+            notarizedTransactionIntentHex = CompiledNotarizedIntent.sample(),
+            endEpoch = 0u
+        )
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(notarisation)
         coEvery { transactionRepository.submitTransaction(any()) } returns Result.success(TransactionSubmitResponse(duplicate = false))
 

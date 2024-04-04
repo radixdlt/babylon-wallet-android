@@ -2,7 +2,10 @@ package com.babylon.wallet.android.data.transaction
 
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
+import com.radixdlt.sargon.SignedIntentHash
+import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.init
+import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -11,7 +14,7 @@ import rdx.works.profile.ret.crypto.PrivateKey
 
 data class NotaryAndSigners(
     val signers: List<Entity>,
-    val ephemeralNotaryPrivateKey: PrivateKey
+    private val ephemeralNotaryPrivateKey: PrivateKey
 ) {
     val notaryIsSignatory: Boolean
         get() = signers.isEmpty()
@@ -36,7 +39,7 @@ data class NotaryAndSigners(
         }
     }
 
-    fun signWithNotary(hashedData: ByteArray): Signature {
-        return ephemeralNotaryPrivateKey.signToSignature(hashedData)
+    fun signWithNotary(signedIntentHash: SignedIntentHash): Signature {
+        return ephemeralNotaryPrivateKey.signToSignature(signedIntentHash.hash.bytes.toByteArray())
     }
 }

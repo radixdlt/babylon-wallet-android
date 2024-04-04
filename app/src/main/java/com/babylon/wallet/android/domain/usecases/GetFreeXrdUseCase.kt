@@ -90,10 +90,7 @@ class GetFreeXrdUseCase @Inject constructor(
             val isEnabled = transactionRepository.getLedgerEpoch().getOrNull()?.let { currentEpoch ->
                 when {
                     currentEpoch < lastUsedEpoch -> true // edge case ledger was reset - allow
-                    else -> {
-                        val threshold = 1
-                        currentEpoch - lastUsedEpoch >= threshold
-                    }
+                    else -> currentEpoch - lastUsedEpoch >= 1.toULong()
                 }
             } ?: false
             FaucetState.Available(isEnabled = isEnabled)
