@@ -39,7 +39,7 @@ class M2MViewModel @Inject constructor(
 
     init {
         when {
-            args.interactionId != null && args.sessionId != null-> {
+            args.interactionId != null && args.sessionId != null -> {
                 viewModelScope.launch {
                     rcrRepository.getRequest(args.sessionId, args.interactionId).mapCatching { walletInteraction ->
                         val domainModel = walletInteraction.toDomainModel("")
@@ -68,7 +68,6 @@ class M2MViewModel @Inject constructor(
                                     sessionId = args.sessionId.orEmpty(),
                                     x25519PrivateKeyCompressed = HexCoded32Bytes(keyPair.first)
                                 )
-                                rcrRepository.sendTest("abc", "abc")
                                 _state.update { it.copy(dappLink = dappLink) }
                                 dappLinkRepository.saveDappLink(dappLink).onSuccess {
                                     sendEvent(Event.OpenUrl("$origin?sessionId=${args.sessionId}&publicKey=$publicKeyHex&secret=$secret${dAppDefinitions.callbackPath}"))
