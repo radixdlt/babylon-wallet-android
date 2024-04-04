@@ -1,18 +1,13 @@
 package com.babylon.wallet.android.data.transaction
 
-import com.radixdlt.crypto.ec.EllipticCurveType
-import com.radixdlt.crypto.toECKeyPair
-import com.radixdlt.hex.extensions.hexToByteArray
-import com.radixdlt.hex.model.HexString
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.Signature
+import com.radixdlt.sargon.extensions.init
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.ret.crypto.PrivateKey
-import rdx.works.profile.ret.crypto.PublicKey
-import rdx.works.profile.ret.crypto.PublicKey.Companion.toPublicKey
-import rdx.works.profile.ret.crypto.Signature
-import com.radixdlt.model.PrivateKey as SLIP10PrivateKey
 
 data class NotaryAndSigners(
     val signers: List<Entity>,
@@ -21,13 +16,11 @@ data class NotaryAndSigners(
     val notaryIsSignatory: Boolean
         get() = signers.isEmpty()
 
-    fun notaryPublicKey(): PublicKey {
-        return SLIP10PrivateKey(ephemeralNotaryPrivateKey.toByteArray(), EllipticCurveType.Ed25519)
-            .toECKeyPair()
-            .toPublicKey()
+    fun notaryPublicKeyNew(): PublicKey {
+        return ephemeralNotaryPrivateKey.publicKey()
     }
 
-    fun signersPublicKeys() = signers.map { signer ->
+    fun signersPublicKeys(): List<PublicKey> = signers.map { signer ->
         when (val securityState = signer.securityState) {
             is SecurityState.Unsecured -> {
                 val publicKey = when (val badge = securityState.unsecuredEntityControl.transactionSigning.badge) {
@@ -36,12 +29,8 @@ data class NotaryAndSigners(
                     }
                 }
                 when (publicKey.curve) {
-                    Slip10Curve.CURVE_25519 -> PublicKey.Ed25519(
-                        value = HexString(publicKey.compressedData).hexToByteArray()
-                    )
-                    Slip10Curve.SECP_256K1 -> PublicKey.Secp256k1(
-                        value = HexString(publicKey.compressedData).hexToByteArray()
-                    )
+                    Slip10Curve.CURVE_25519 -> PublicKey.Ed25519.init(hex = publicKey.compressedData)
+                    Slip10Curve.SECP_256K1 -> PublicKey.Secp256k1.init(hex = publicKey.compressedData)
                 }
             }
         }

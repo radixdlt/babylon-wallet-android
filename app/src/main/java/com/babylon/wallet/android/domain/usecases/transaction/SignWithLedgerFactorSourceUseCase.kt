@@ -5,9 +5,13 @@ import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.LedgerDeviceModel.Companion.getLedgerDeviceModel
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.Signature
+import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.decodeHex
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.extensions.updateLastUsed
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -18,7 +22,6 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import javax.inject.Inject
 
 typealias SignatureProviderResult = Result<List<MessageFromDataChannel.LedgerResponse.SignatureOfSigner>>
@@ -142,14 +145,15 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
                 when (signatureOfSigner.derivedPublicKey.curve) {
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Curve25519 -> {
                         SignatureWithPublicKey.Ed25519(
-                            signature = signatureOfSigner.signature.decodeHex(),
-                            publicKey = signatureOfSigner.derivedPublicKey.publicKeyHex.decodeHex()
+                            signature = Signature.Ed25519.init(signatureOfSigner.signature.hexToBagOfBytes()).value,
+                            publicKey = PublicKey.Ed25519.init(signatureOfSigner.derivedPublicKey.publicKeyHex).value
                         )
                     }
 
                     MessageFromDataChannel.LedgerResponse.DerivedPublicKey.Curve.Secp256k1 -> {
                         SignatureWithPublicKey.Secp256k1(
-                            signature = signatureOfSigner.signature.decodeHex()
+                            signature = Signature.Secp256k1.init(signatureOfSigner.signature.hexToBagOfBytes()).value,
+                            publicKey = PublicKey.Secp256k1.init(signatureOfSigner.derivedPublicKey.publicKeyHex).value
                         )
                     }
                 }

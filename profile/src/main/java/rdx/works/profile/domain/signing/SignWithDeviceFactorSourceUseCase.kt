@@ -1,5 +1,6 @@
 package rdx.works.profile.domain.signing
 
+import com.radixdlt.sargon.SignatureWithPublicKey
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.deriveExtendedKey
 import rdx.works.profile.data.model.extensions.updateLastUsed
@@ -13,7 +14,6 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.ret.crypto.PrivateKey.Companion.toPrivateKey
-import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import javax.inject.Inject
 
 class SignWithDeviceFactorSourceUseCase @Inject constructor(

@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.PublicKeyHash
+import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
@@ -18,7 +19,6 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
-import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import rdx.works.profile.sargon.toSargon
 import javax.inject.Inject
 

@@ -14,8 +14,6 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.mapError
 import rdx.works.core.then
 import rdx.works.profile.ret.crypto.PrivateKey
-import rdx.works.profile.ret.crypto.Signature
-import rdx.works.profile.ret.crypto.SignatureWithPublicKey
 import rdx.works.profile.ret.transaction.TransactionSigner
 import rdx.works.profile.sargon.toDecimal192
 import java.math.BigDecimal
@@ -60,7 +58,7 @@ class SignTransactionUseCase @Inject constructor(
             transactionSigner.notarise(
                 request = TransactionSigner.Request(
                     manifestData = manifestWithLockFee,
-                    notaryPublicKey = notarySignersAndEpoch.first.notaryPublicKey(),
+                    notaryPublicKey = notarySignersAndEpoch.first.notaryPublicKeyNew(),
                     notaryIsSignatory = notarySignersAndEpoch.first.notaryIsSignatory,
                     startEpoch = notarySignersAndEpoch.second,
                     endEpoch = notarySignersAndEpoch.second + EPOCH_WINDOW,
@@ -120,7 +118,10 @@ class SignTransactionUseCase @Inject constructor(
         private val deviceBiometricAuthenticationProvider: suspend () -> Boolean,
         private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
     ) : TransactionSigner.SignatureGatherer {
-        override suspend fun gatherSignatures(dataToSign: ByteArray, hashedDataToSign: ByteArray): Result<List<SignatureWithPublicKey>> {
+        override suspend fun gatherSignatures(
+            dataToSign: ByteArray,
+            hashedDataToSign: ByteArray
+        ): Result<List<com.radixdlt.sargon.SignatureWithPublicKey>> {
             return collectSignersSignaturesUseCase(
                 signers = notaryAndSigners.signers,
                 signRequest = SignRequest.SignTransactionRequest(
@@ -131,7 +132,7 @@ class SignTransactionUseCase @Inject constructor(
             )
         }
 
-        override suspend fun notarise(signedIntentHash: ByteArray): Result<Signature> = runCatching {
+        override suspend fun notarise(signedIntentHash: ByteArray): Result<com.radixdlt.sargon.Signature> = runCatching {
             notaryAndSigners.signWithNotary(hashedData = signedIntentHash)
         }
     }
