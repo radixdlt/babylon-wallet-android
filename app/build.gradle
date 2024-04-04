@@ -88,7 +88,7 @@ android {
         resValue "string", "app_name", "Radix Wallet"
 
         def properties = secretProperties()
-        buildConfigField "String", "APPS_FLYER_DEV_KEY", buildConfigProperty(properties, 'appsFlyerDevKey')
+        buildConfigField "String", "APPS_FLYER_KEY", buildConfigProperty(properties, 'appsFlyerDevKey')
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

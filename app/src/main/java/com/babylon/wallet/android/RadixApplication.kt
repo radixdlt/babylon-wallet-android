@@ -15,7 +15,7 @@ class RadixApplication : Application() {
         }
 
         AppsFlyerLib.getInstance()
-            .init(BuildConfig.APPS_FLYER_DEV_KEY, null, this)
+            .init(BuildConfig.APPS_FLYER_KEY, null, this)
             .apply { setDebugLog(BuildConfig.DEBUG_MODE) }
             .start(this)
     }
