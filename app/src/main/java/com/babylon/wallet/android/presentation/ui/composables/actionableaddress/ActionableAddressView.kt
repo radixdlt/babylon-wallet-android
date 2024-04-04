@@ -190,16 +190,18 @@ private fun ActionableAddressView(
                 Radix.Network.mainnet.id
             }.let { NetworkId.init(discriminant = it.toUByte()) }
 
-            val copyAction = PopupActionItem(
-                name = context.getString(
-                    when (address) {
-                        is ActionableAddress.TransactionId -> R.string.addressAction_copyTransactionId
-                        is ActionableAddress.LocalId, is ActionableAddress.GlobalId -> R.string.addressAction_copyNftId
-                        else -> R.string.addressAction_copyAddress
-                    }
-                ),
-                icon = R.drawable.ic_copy
-            ) { OnAction.CallbackBasedAction.CopyToClipboard(address) }
+            val copyAction = address.copyable()?.let {
+                PopupActionItem(
+                    name = context.getString(
+                        when (address) {
+                            is ActionableAddress.TransactionId -> R.string.addressAction_copyTransactionId
+                            is ActionableAddress.GlobalId -> R.string.addressAction_copyNftId
+                            else -> R.string.addressAction_copyAddress
+                        }
+                    ),
+                    icon = R.drawable.ic_copy
+                ) { OnAction.CallbackBasedAction.CopyToClipboard(address) }
+            }
 
             val openExternalAction = address
                 .takeIf { visitableInDashboard }
@@ -225,15 +227,20 @@ private fun ActionableAddressView(
             } else {
                 copyAction
             }
+
             val secondary = listOf(
                 qrAction,
                 if (primary == openExternalAction) null else openExternalAction
             ).mapNotNull { it }
 
-            actions = PopupActions(
-                primary = primary,
-                secondary = secondary
-            )
+            actions = if (primary != null) {
+                PopupActions(
+                    primary = primary,
+                    secondary = secondary
+                )
+            } else {
+                null
+            }
 
             // Resolve if address is ledger and attach another action
             address.asAccountAddress?.let { accountAddress ->
@@ -281,7 +288,11 @@ private fun ActionableAddressView(
                         }
                     }
                 },
-                onLongClick = { isDropdownMenuExpanded = true }
+                onLongClick = {
+                    if (actions != null) {
+                        isDropdownMenuExpanded = true
+                    }
+                }
             )
         ) {
             val textRef = createRef()
@@ -293,7 +304,7 @@ private fun ActionableAddressView(
 
             val inlineContentId = "icon"
             val inlinedText = buildAnnotatedString {
-                append(address.formatted(format = if (truncateAddress) AddressFormat.DEFAULT else AddressFormat.FULL))
+                append(address.displayable(truncated = truncateAddress))
                 if (!truncateAddress) {
                     append(" ")
                     appendInlineContent(inlineContentId)
@@ -455,7 +466,7 @@ private sealed interface OnAction {
 
                     val clipData = ClipData.newPlainText(
                         "Radix Address",
-                        actionableAddress.formatted(format = AddressFormat.RAW)
+                        actionableAddress.copyable()
                     )
 
                     clipboardManager.setPrimaryClip(clipData)
@@ -511,7 +522,9 @@ private sealed interface OnAction {
 @VisibleForTesting
 sealed interface ActionableAddress {
 
-    fun formatted(format: AddressFormat = AddressFormat.DEFAULT): String
+    fun copyable(): String?
+
+    fun displayable(truncated: Boolean): String
 
     fun dashboardSuffix(): String?
 
@@ -530,7 +543,11 @@ sealed interface ActionableAddress {
     data class Address(
         val address: com.radixdlt.sargon.Address
     ) : ActionableAddress {
-        override fun formatted(format: AddressFormat): String = address.formatted(format = format)
+
+        override fun copyable(): String = address.formatted(format = AddressFormat.RAW)
+
+        override fun displayable(truncated: Boolean): String =
+            address.formatted(if (truncated) AddressFormat.DEFAULT else AddressFormat.FULL)
 
         override fun dashboardSuffix(): String? = when (address) {
             is com.radixdlt.sargon.Address.AccessController -> null
@@ -550,7 +567,13 @@ sealed interface ActionableAddress {
     data class GlobalId(
         val address: NonFungibleGlobalId
     ) : ActionableAddress {
-        override fun formatted(format: AddressFormat): String = address.formatted(format = format)
+
+        // The full raw address is copied
+        override fun copyable(): String = address.formatted(AddressFormat.RAW)
+
+        // In case of global id, we should only display the local id, but we can copy the full-raw global id address
+        override fun displayable(truncated: Boolean): String =
+            address.nonFungibleLocalId.formatted(if (truncated) AddressFormat.DEFAULT else AddressFormat.FULL)
 
         override fun dashboardSuffix(): String = "nft/${address.string.encodeUtf8()}"
     }
@@ -558,14 +581,24 @@ sealed interface ActionableAddress {
     data class LocalId(
         val address: NonFungibleLocalId
     ) : ActionableAddress {
-        override fun formatted(format: AddressFormat): String = address.formatted(format = format)
+
+        // Currently only global IDs can be copied
+        override fun copyable(): String? = null
+
+        override fun displayable(truncated: Boolean): String =
+            address.formatted(if (truncated) AddressFormat.DEFAULT else AddressFormat.FULL)
+
         override fun dashboardSuffix(): String? = null
     }
 
     data class TransactionId(
         val hash: SignedIntentHash
     ) : ActionableAddress {
-        override fun formatted(format: AddressFormat): String = hash.formatted(format = format)
+
+        override fun copyable(): String = hash.formatted(format = AddressFormat.RAW)
+
+        override fun displayable(truncated: Boolean): String = hash.formatted(if (truncated) AddressFormat.DEFAULT else AddressFormat.FULL)
+
         override fun dashboardSuffix(): String = "transaction/${hash.bech32EncodedTxId.encodeUtf8()}"
     }
 }
