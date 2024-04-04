@@ -5,11 +5,11 @@ import com.babylon.wallet.android.utils.encodeUtf8
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.PackageAddress
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
@@ -32,7 +32,7 @@ internal class AddressDashboardUrlTest(
         }.getOrNull() ?: runCatching {
             ActionableAddress.GlobalId(NonFungibleGlobalId.init(address))
         }.getOrNull() ?: runCatching {
-            ActionableAddress.TransactionId(SignedIntentHash.init(address))
+            ActionableAddress.TransactionId(IntentHash.init(address))
         }.getOrNull()
 
         assertEquals(url, actionableAddress?.dashboardUrl(networkId = NetworkId.MAINNET))
@@ -60,7 +60,7 @@ internal class AddressDashboardUrlTest(
         private val RESOURCE_NFT_ADDRESS = NonFungibleGlobalId.sample().string
         private val ACCOUNT_ADDRESS = AccountAddress.sampleMainnet().string
         private val PACKAGE_ADDRESS = PackageAddress.sampleMainnet().string
-        private val TRANSACTION_ADDRESS = SignedIntentHash.sample().bech32EncodedTxId
+        private val TRANSACTION_ADDRESS = IntentHash.sample().bech32EncodedTxId
         private val COMPONENT_ADDRESS = ComponentAddress.sampleMainnet().string
     }
 }

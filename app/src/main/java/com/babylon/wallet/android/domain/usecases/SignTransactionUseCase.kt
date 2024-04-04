@@ -15,6 +15,7 @@ import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.extensions.modifyLockFee
 import com.radixdlt.sargon.extensions.secureRandom
 import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.then
 import rdx.works.profile.ret.crypto.PrivateKey
 import rdx.works.profile.sargon.toDecimal192
@@ -39,7 +40,7 @@ class SignTransactionUseCase @Inject constructor(
     suspend fun sign(
         request: Request,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ): Result<NotariseTransactionUseCase.Notarization> {
+    ): Result<NotarizationResult> {
         val manifestWithLockFee = request.manifestWithLockFee
 
         val entitiesRequiringAuth = manifestWithLockFee.entitiesRequiringAuth()
