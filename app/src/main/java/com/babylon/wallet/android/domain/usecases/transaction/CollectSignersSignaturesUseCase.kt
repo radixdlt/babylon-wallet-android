@@ -4,12 +4,17 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.TransactionIntent
+import com.radixdlt.sargon.extensions.bytes
+import com.radixdlt.sargon.extensions.compile
+import com.radixdlt.sargon.extensions.hash
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.blake2Hash
 import rdx.works.core.decodeHex
+import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
@@ -110,9 +115,11 @@ sealed interface SignRequest {
     val hashedDataToSign: ByteArray
 
     class SignTransactionRequest(
-        override val dataToSign: ByteArray,
-        override val hashedDataToSign: ByteArray
-    ) : SignRequest
+        intent: TransactionIntent
+    ) : SignRequest {
+        override val dataToSign: ByteArray = intent.compile().toByteArray()
+        override val hashedDataToSign: ByteArray = intent.hash().hash.bytes.toByteArray()
+    }
 
     class SignAuthChallengeRequest(
         val challengeHex: String,

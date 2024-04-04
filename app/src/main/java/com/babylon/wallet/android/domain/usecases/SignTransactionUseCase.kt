@@ -8,8 +8,13 @@ import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransaction
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Nonce
+import com.radixdlt.sargon.Signature
+import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.SignedIntentHash
+import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.extensions.modifyLockFee
-import rdx.works.core.NonceGenerator
+import com.radixdlt.sargon.extensions.secureRandom
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.mapError
 import rdx.works.core.then
@@ -62,7 +67,7 @@ class SignTransactionUseCase @Inject constructor(
                     notaryIsSignatory = notarySignersAndEpoch.first.notaryIsSignatory,
                     startEpoch = notarySignersAndEpoch.second,
                     endEpoch = notarySignersAndEpoch.second + EPOCH_WINDOW,
-                    nonce = NonceGenerator(),
+                    nonce = Nonce.secureRandom(),
                     tipPercentage = request.tipPercentage
                 ),
                 signatureGatherer = WalletSignatureGatherer(
@@ -118,22 +123,18 @@ class SignTransactionUseCase @Inject constructor(
         private val deviceBiometricAuthenticationProvider: suspend () -> Boolean,
         private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
     ) : TransactionSigner.SignatureGatherer {
-        override suspend fun gatherSignatures(
-            dataToSign: ByteArray,
-            hashedDataToSign: ByteArray
-        ): Result<List<com.radixdlt.sargon.SignatureWithPublicKey>> {
-            return collectSignersSignaturesUseCase(
+        override suspend fun gatherSignatures(intent: TransactionIntent): Result<List<SignatureWithPublicKey>> = runCatching {
+            SignRequest.SignTransactionRequest(intent = intent)
+        }.then { signRequest ->
+            collectSignersSignaturesUseCase(
                 signers = notaryAndSigners.signers,
-                signRequest = SignRequest.SignTransactionRequest(
-                    dataToSign = dataToSign,
-                    hashedDataToSign = hashedDataToSign
-                ),
+                signRequest = signRequest,
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             )
         }
 
-        override suspend fun notarise(signedIntentHash: ByteArray): Result<com.radixdlt.sargon.Signature> = runCatching {
-            notaryAndSigners.signWithNotary(hashedData = signedIntentHash)
+        override suspend fun notarise(signedIntentHash: SignedIntentHash): Result<Signature> = runCatching {
+            notaryAndSigners.signWithNotary(signedIntentHash = signedIntentHash)
         }
     }
 }

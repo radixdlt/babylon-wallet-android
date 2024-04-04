@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Epoch
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
@@ -48,9 +49,9 @@ interface PreferencesManager {
     suspend fun enableCrashReporting(enabled: Boolean)
 
     suspend fun setRadixBannerVisibility(isVisible: Boolean)
-    fun getLastUsedEpochFlow(address: AccountAddress): Flow<Long?>
+    fun getLastUsedEpochFlow(address: AccountAddress): Flow<Epoch?>
 
-    suspend fun updateEpoch(account: AccountAddress, epoch: Long)
+    suspend fun updateEpoch(account: AccountAddress, epoch: Epoch)
 
     suspend fun markDeviceRootedDialogShown()
 
@@ -164,24 +165,24 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
-    override fun getLastUsedEpochFlow(address: AccountAddress): Flow<Long?> {
+    override fun getLastUsedEpochFlow(address: AccountAddress): Flow<Epoch?> {
         return dataStore.data
             .map { preferences ->
                 val mapString = preferences[KEY_ACCOUNT_TO_EPOCH_MAP]
                 val map = mapString?.let {
                     Json.decodeFromString<Map<String, Long>>(it)
                 }.orEmpty()
-                map[address.string]
+                map[address.string]?.toULong()
             }
     }
 
-    override suspend fun updateEpoch(account: AccountAddress, epoch: Long) {
+    override suspend fun updateEpoch(account: AccountAddress, epoch: Epoch) {
         dataStore.edit { preferences ->
             val mapString = preferences[KEY_ACCOUNT_TO_EPOCH_MAP]
             val map = mapString?.let {
                 Json.decodeFromString<Map<String, Long>>(it)
             }?.toMutableMap() ?: mutableMapOf()
-            map[account.string] = epoch
+            map[account.string] = epoch.toLong()
             preferences[KEY_ACCOUNT_TO_EPOCH_MAP] = Json.encodeToString<Map<String, Long>>(map)
         }
     }
