@@ -255,10 +255,6 @@ class AccountRecoveryScanViewModel @Inject constructor(
         }
     }
 
-    fun onMessageShown() {
-        _state.update { it.copy(uiMessage = null) }
-    }
-
     companion object {
         const val ACCOUNTS_PER_SCAN = 50
     }
