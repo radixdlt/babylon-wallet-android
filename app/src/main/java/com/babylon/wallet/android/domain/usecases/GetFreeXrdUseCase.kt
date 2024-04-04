@@ -14,11 +14,11 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateways
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import java.math.BigDecimal
 import javax.inject.Inject
 

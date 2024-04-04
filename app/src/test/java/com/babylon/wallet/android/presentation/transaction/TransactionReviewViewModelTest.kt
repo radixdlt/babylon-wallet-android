@@ -87,7 +87,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.ret.crypto.PrivateKey
-import rdx.works.profile.ret.transaction.TransactionManifestData
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.profile.ret.transaction.TransactionSigner
 import java.math.BigDecimal
 import java.util.Locale

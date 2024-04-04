@@ -42,7 +42,7 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.ret.transaction.TransactionManifestData
+import rdx.works.core.domain.TransactionManifestData
 import java.math.BigDecimal
 
 class SearchFeePayersUseCaseTest {

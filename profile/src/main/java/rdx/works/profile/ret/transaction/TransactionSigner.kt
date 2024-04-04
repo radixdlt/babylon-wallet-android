@@ -2,9 +2,13 @@ package rdx.works.profile.ret.transaction
 
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.ret.Intent
+import com.radixdlt.ret.Message
+import com.radixdlt.ret.MessageContent
 import com.radixdlt.ret.NotarizedTransaction
+import com.radixdlt.ret.PlainTextMessage
 import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.profile.ret.crypto.PublicKey
 import rdx.works.profile.ret.crypto.Signature
 import rdx.works.profile.ret.crypto.SignatureWithPublicKey
@@ -81,8 +85,16 @@ class TransactionSignerImpl @Inject constructor() : TransactionSigner {
         val transactionIntent = runCatching {
             Intent(
                 header = header,
-                manifest = request.manifestData.manifest,
-                message = request.manifestData.engineMessage
+                manifest = request.manifestData.engineManifest,
+                message = when (val message = request.manifestData.message) {
+                    is TransactionManifestData.TransactionMessage.Public -> Message.PlainText(
+                        value = PlainTextMessage(
+                            mimeType = "text/plain",
+                            message = MessageContent.Str(message.message)
+                        )
+                    )
+                    TransactionManifestData.TransactionMessage.None -> Message.None
+                }
             )
         }.getOrElse {
             return Result.failure(TransactionSigner.Error.Sign())

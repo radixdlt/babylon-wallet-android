@@ -8,10 +8,10 @@ import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.stakesClaim
 import com.radixdlt.sargon.extensions.string
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.sargon.toDecimal192
 import java.math.BigDecimal
 import javax.inject.Inject

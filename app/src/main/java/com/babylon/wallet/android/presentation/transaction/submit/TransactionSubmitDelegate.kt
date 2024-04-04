@@ -27,11 +27,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.logNonFatalException
 import rdx.works.core.then
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.sargon.toDecimal192
 import timber.log.Timber
 import javax.inject.Inject
