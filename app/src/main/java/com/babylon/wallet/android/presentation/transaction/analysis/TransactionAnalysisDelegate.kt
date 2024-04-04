@@ -101,7 +101,7 @@ class TransactionAnalysisDelegate @Inject constructor(
                     skipEpochCheck = false
                 ),
                 blobsHex = manifestData.blobs.map { it.toHexString() },
-                notaryPublicKey = notaryAndSigners.notaryPublicKey().asGatewayPublicKey(),
+                notaryPublicKey = notaryAndSigners.notaryPublicKeyNew().asGatewayPublicKey(),
                 notaryIsSignatory = notaryAndSigners.notaryIsSignatory
             )
         ).fold(
