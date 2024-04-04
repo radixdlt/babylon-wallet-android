@@ -13,7 +13,6 @@ import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
-import rdx.works.core.AddressHelper
 import rdx.works.core.domain.assets.AssetBehaviours
 import rdx.works.core.domain.resources.XrdResource
 import java.math.BigDecimal
