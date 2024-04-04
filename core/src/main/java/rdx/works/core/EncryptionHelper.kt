@@ -12,6 +12,15 @@ import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import android.security.keystore.KeyProperties.PURPOSE_DECRYPT
 import android.security.keystore.KeyProperties.PURPOSE_ENCRYPT
 import android.util.Base64
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair
+import org.bouncycastle.crypto.agreement.X25519Agreement
+import org.bouncycastle.crypto.generators.X25519KeyPairGenerator
+import org.bouncycastle.crypto.params.X25519KeyGenerationParameters
+import org.bouncycastle.crypto.params.X25519PrivateKeyParameters
+import org.bouncycastle.crypto.params.X25519PublicKeyParameters
 import rdx.works.core.KeystoreManager.Companion.KEY_ALIAS_MNEMONIC
 import rdx.works.core.KeystoreManager.Companion.KEY_ALIAS_PROFILE
 import rdx.works.core.KeystoreManager.Companion.PROVIDER
@@ -26,6 +35,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
+
 
 /**
  * The implementation of these methods are heavily based on this:
@@ -184,4 +194,68 @@ sealed class KeySpec(val alias: String) {
     class Profile(alias: String = KEY_ALIAS_PROFILE) : KeySpec(alias)
     class Mnemonic(alias: String = KEY_ALIAS_MNEMONIC) : KeySpec(alias)
     class Cache(alias: String) : KeySpec(alias)
+}
+
+@Suppress("MagicNumber")
+fun String.decodeHex(): ByteArray {
+    check(length % 2 == 0) { "Must have an even length" }
+
+    return chunked(2)
+        .map { it.toInt(16).toByte() }
+        .toByteArray()
+}
+
+fun generateX25519TestVectors(): String {
+    val result = mutableListOf<X25519TestVector>()
+    repeat(10) {
+        val kp1 = generateX25519KeyPair().getOrThrow()
+        val kp2 = generateX25519KeyPair().getOrThrow()
+        val secret1 = generateX25519SharedSecret(kp1.first.decodeHex(), kp2.second.decodeHex()).getOrThrow()
+        val secret2 = generateX25519SharedSecret(kp2.first.decodeHex(), kp1.second.decodeHex()).getOrThrow()
+        if (secret1 != secret2) {
+            throw IllegalStateException("Secrets do not match")
+        }
+        result.add(
+            X25519TestVector(
+                kp1.first,
+                kp1.second,
+                kp2.first,
+                kp2.second,
+                secret1
+            )
+        )
+    }
+    return Json.encodeToString(result)
+}
+
+@Serializable
+data class X25519TestVector(
+    val privateKey1: String,
+    val publicKey1: String,
+    val privateKey2: String,
+    val publicKey2: String,
+    val sharedSecret: String
+)
+
+fun generateX25519KeyPair(): Result<Pair<String, String>> {
+    return runCatching {
+        val generator = X25519KeyPairGenerator()
+        val params = X25519KeyGenerationParameters(SecureRandom())
+        generator.init(params)
+        val keypair1: AsymmetricCipherKeyPair = generator.generateKeyPair()
+        val priv1 = keypair1.private as X25519PrivateKeyParameters
+        val pub1 = keypair1.public as X25519PublicKeyParameters
+        Pair(priv1.encoded.toHexString(), pub1.encoded.toHexString())
+    }
+}
+
+fun generateX25519SharedSecret(privateKeyCompressed: ByteArray, publicKeyCompressed: ByteArray): Result<String> {
+    return runCatching {
+        val agreement = X25519Agreement().apply {
+            init(X25519PrivateKeyParameters(privateKeyCompressed))
+        }
+        val secret = ByteArray(agreement.agreementSize)
+        agreement.calculateAgreement(X25519PublicKeyParameters(publicKeyCompressed), secret, 0)
+        secret.toHexString()
+    }
 }

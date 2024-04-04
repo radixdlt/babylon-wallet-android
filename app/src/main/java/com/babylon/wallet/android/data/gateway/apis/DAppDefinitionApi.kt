@@ -8,5 +8,5 @@ import retrofit2.http.GET
 interface DAppDefinitionApi {
 
     @GET(BuildConfig.WELL_KNOWN_URL_SUFFIX)
-    fun wellKnownDAppDefinition(): Call<WellKnownDAppDefinitionResponse>
+    fun wellKnownDefinition(): Call<WellKnownDAppDefinitionResponse>
 }
