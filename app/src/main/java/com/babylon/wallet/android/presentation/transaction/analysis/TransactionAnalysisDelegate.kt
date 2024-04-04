@@ -20,8 +20,8 @@ import com.radixdlt.ret.ExecutionSummary
 import kotlinx.coroutines.flow.update
 import rdx.works.core.NonceGenerator
 import rdx.works.core.decodeHex
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.then
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import timber.log.Timber
 import javax.inject.Inject
 

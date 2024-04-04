@@ -5,8 +5,8 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.hex.decode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.profile.ret.transaction.TransactionManifestData
-import rdx.works.profile.ret.transaction.TransactionManifestData.TransactionMessage
+import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.TransactionManifestData.TransactionMessage
 
 @Serializable
 data class WalletInteraction(

@@ -3,9 +3,9 @@ package com.babylon.wallet.android.domain.usecases
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.radixdlt.sargon.extensions.string
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import java.math.BigDecimal
 import javax.inject.Inject
 

@@ -42,7 +42,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.ret.transaction.TransactionManifestData
+import rdx.works.core.domain.TransactionManifestData
 
 internal fun TransactionReviewViewModelTestExperimental.testViewModel(
     transactionRepository: TransactionRepository,
