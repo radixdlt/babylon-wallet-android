@@ -23,6 +23,7 @@ import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AssetsTransfersRecipient
 import com.radixdlt.sargon.CompiledNotarizedIntent
+import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PerRecipientAssetTransfer
 import com.radixdlt.sargon.PerRecipientAssetTransfers
@@ -55,7 +56,7 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.core.domain.TransactionManifestData
-import rdx.works.profile.ret.transaction.TransactionSigner
+import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.profile.sargon.toSargon
 import java.math.BigDecimal
 import java.util.Locale
@@ -131,9 +132,9 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         coEvery { stateRepository.getOwnedXRD(testProfile.networks.first().accounts) } returns Result.success(
             testProfile.networks.first().accounts.associateWith { BigDecimal.TEN }
         )
-        val notarisation = TransactionSigner.Notarization(
-            txIdHash = SignedIntentHash.sample(),
-            notarizedTransactionIntentHex = CompiledNotarizedIntent.sample(),
+        val notarisation = NotarizationResult(
+            intentHash = IntentHash.sample(),
+            compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
             endEpoch = 0u
         )
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(notarisation)

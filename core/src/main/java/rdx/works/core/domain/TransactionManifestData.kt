@@ -7,7 +7,6 @@ import com.radixdlt.sargon.Blob
 import com.radixdlt.sargon.Blobs
 import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.PlaintextMessage
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
