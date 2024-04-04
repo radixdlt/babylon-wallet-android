@@ -44,8 +44,11 @@ ext.buildConfigProperty = { properties, name ->
 }
 
 ext.propertyOrEmpty = { properties, name ->
+    def fallback = ""
+    if (properties == null) return fallback
+
     def property = properties[name]
-    return property != null ? property : ""
+    return property != null ? property : fallback
 }
 
 android {
