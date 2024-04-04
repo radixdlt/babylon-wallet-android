@@ -26,6 +26,7 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesD
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -208,9 +209,9 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    fun onUnknownComponentsClick(unknownComponentAddresses: ImmutableList<String>) {
+    fun onUnknownAddressesClick(unknownAddresses: ImmutableList<Address>) {
         _state.update {
-            it.copy(sheetState = State.Sheet.UnknownComponents(unknownComponentAddresses))
+            it.copy(sheetState = State.Sheet.UnknownAddresses(unknownAddresses))
         }
     }
 
@@ -401,8 +402,8 @@ class TransactionReviewViewModel @Inject constructor(
                 }
             }
 
-            data class UnknownComponents(
-                val unknownComponentAddresses: ImmutableList<String>
+            data class UnknownAddresses(
+                val unknownAddresses: ImmutableList<Address>
             ) : Sheet
         }
     }

@@ -60,6 +60,7 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBa
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableList
@@ -290,12 +291,14 @@ fun AssetsContent(
                             .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        ActionableAddressView(
-                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
-                            address = accountAddress?.string.orEmpty(),
-                            textStyle = RadixTheme.typography.body2HighImportance,
-                            textColor = RadixTheme.colors.white
-                        )
+                        accountAddress?.let {
+                            ActionableAddressView(
+                                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
+                                address = Address.Account(it),
+                                textStyle = RadixTheme.typography.body2HighImportance,
+                                textColor = RadixTheme.colors.white
+                            )
+                        }
 
                         if (state.isFiatBalancesEnabled) {
                             TotalFiatBalanceView(

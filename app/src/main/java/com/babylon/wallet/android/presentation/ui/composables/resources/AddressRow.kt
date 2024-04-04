@@ -10,12 +10,13 @@ import androidx.compose.ui.res.stringResource
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.Address
 
 @Composable
 fun AddressRow(
     modifier: Modifier = Modifier,
     label: String = stringResource(id = R.string.assetDetails_resourceAddress),
-    address: String,
+    address: Address,
     isNewlyCreatedEntity: Boolean = false
 ) {
     Row(

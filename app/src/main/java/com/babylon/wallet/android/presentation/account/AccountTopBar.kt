@@ -31,6 +31,9 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.composables.toText
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.extensions.init
 
 /**
  * TODO
@@ -43,11 +46,11 @@ fun AccountTopBar(
     lazyListState: LazyListState,
     onBackClick: () -> Unit,
     onAccountPreferenceClick: (String) -> Unit,
-    onTransferClick: (String) -> Unit,
+    onTransferClick: (AccountAddress) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit
 ) {
     val accountAddress = remember(state.accountWithAssets) {
-        state.accountWithAssets?.account?.address.orEmpty()
+        state.accountWithAssets?.account?.address?.let { AccountAddress.init(it) }
     }
 
     val progressTargetValue by remember {
@@ -105,14 +108,16 @@ fun AccountTopBar(
         }
 
         if (progress != 1f) {
-            ActionableAddressView(
-                address = accountAddress,
-                modifier = Modifier
-                    .layoutId("accountAddressView")
-                    .padding(bottom = RadixTheme.dimensions.paddingXXLarge),
-                textStyle = RadixTheme.typography.body2HighImportance,
-                textColor = RadixTheme.colors.white
-            )
+            if (accountAddress != null) {
+                ActionableAddressView(
+                    address = Address.Account(accountAddress),
+                    modifier = Modifier
+                        .layoutId("accountAddressView")
+                        .padding(bottom = RadixTheme.dimensions.paddingXXLarge),
+                    textStyle = RadixTheme.typography.body2HighImportance,
+                    textColor = RadixTheme.colors.white
+                )
+            }
 
             AnimatedVisibility(
                 modifier = Modifier
@@ -124,7 +129,11 @@ fun AccountTopBar(
             ) {
                 RadixSecondaryButton(
                     text = stringResource(id = R.string.account_transfer),
-                    onClick = { onTransferClick(accountAddress) },
+                    onClick = {
+                        if (accountAddress != null) {
+                            onTransferClick(accountAddress)
+                        }
+                    },
                     containerColor = RadixTheme.colors.white.copy(alpha = 0.2f),
                     contentColor = RadixTheme.colors.white,
                     shape = RadixTheme.shapes.circle,
