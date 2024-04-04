@@ -86,6 +86,22 @@ jobs:
           secret_name: "github-actions/common/snyk-credentials"
           parse_json: true
 
+      - name: Fetch AppsFlyer credentials
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          app_name: 'wallet-android'
+          step_name: 'sbom-flyers'
+          secret_prefix: 'GH'
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/apps-flyer-secret"
+          parse_json: true
+
+      - name: Output AppsFlyer secret to file
+        shell: bash
+        run: |
+          mkdir -p config/secrets/
+          echo "appsFlyerDevKey=${{ env.GH_APPS_FLYER_DEV_KEY }}" > config/secrets/secrets.properties
+
       - name: Generate SBOM # check SBOM can be generated but nothing is done with it
         uses: RDXWorks-actions/snyk-actions/gradle-jdk17@master
         with:
@@ -125,6 +141,22 @@ jobs:
           secret_prefix: 'GH'
           secret_name: "github-actions/radixdlt/babylon-wallet-android/crashlytics"
           parse_json: true
+
+      - name: Fetch AppsFlyer credentials
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          app_name: 'wallet-android'
+          step_name: 'unit-flyers'
+          secret_prefix: 'GH'
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/apps-flyer-secret"
+          parse_json: true
+
+      - name: Output AppsFlyer secret to file
+        shell: bash
+        run: |
+          mkdir -p config/secrets/
+          echo "appsFlyerDevKey=${{ env.GH_APPS_FLYER_DEV_KEY }}" > config/secrets/secrets.properties
 
       - name: Decode Firebase Crashlytics json
         uses: RDXWorks-actions/base64-to-file@main
@@ -191,6 +223,22 @@ jobs:
           fileName: "google-services.json"
           fileDir: "app/"
           encodedString: ${{ env.GH_CRASHLYTICS_GOOGLE_SERVICES_JSON_FILE_BASE64 }}
+
+      - name: Fetch AppsFlyer credentials
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          app_name: 'wallet-android'
+          step_name: 'sonar-flyers'
+          secret_prefix: 'GH'
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/apps-flyer-secret"
+          parse_json: true
+
+      - name: Output AppsFlyer secret to file
+        shell: bash
+        run: |
+          mkdir -p config/secrets/
+          echo "appsFlyerDevKey=${{ env.GH_APPS_FLYER_DEV_KEY }}" > config/secrets/secrets.properties
 
       - name: Export vars
         run: |
@@ -260,6 +308,22 @@ jobs:
           fileName: "google-services.json"
           fileDir: "app/"
           encodedString: ${{ env.GH_CRASHLYTICS_GOOGLE_SERVICES_JSON_FILE_BASE64 }}
+
+      - name: Fetch AppsFlyer credentials
+        uses: radixdlt/public-iac-resuable-artifacts/fetch-secrets@main
+        with:
+          role_name: '${{ secrets.ANDROID_WALLET_SECRETS_READ_IAM_ROLE }}'
+          app_name: 'wallet-android'
+          step_name: 'build-flyers'
+          secret_prefix: 'GH'
+          secret_name: "github-actions/radixdlt/babylon-wallet-android/apps-flyer-secret"
+          parse_json: true
+
+      - name: Output AppsFlyer secret to file
+        shell: bash
+        run: |
+          mkdir -p config/secrets/
+          echo "appsFlyerDevKey=${{ env.GH_APPS_FLYER_DEV_KEY }}" > config/secrets/secrets.properties
 
       - name: "Build"
         run: |
