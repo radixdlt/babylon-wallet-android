@@ -4,6 +4,11 @@ package rdx.works.profile.ret.crypto
 
 import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.model.ECKeyPair
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.Signature
+import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toBagOfBytes
 import org.bouncycastle.asn1.x9.X9ECParameters
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.digests.SHA256Digest
@@ -29,6 +34,16 @@ import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.SecureRandom
 import java.security.Security
+
+private typealias EngineSignature = com.radixdlt.ret.Signature
+private typealias EngineSignature_Ed25519 = com.radixdlt.ret.Signature.Ed25519
+private typealias EngineSignature_Secp256k1 = com.radixdlt.ret.Signature.Secp256k1
+private typealias EnginePublicKey = com.radixdlt.ret.PublicKey
+private typealias EnginePublicKey_Ed25519 = com.radixdlt.ret.PublicKey.Ed25519
+private typealias EnginePublicKey_Secp256k1 = com.radixdlt.ret.PublicKey.Secp256k1
+private typealias EngineSignatureWithPublicKey = com.radixdlt.ret.SignatureWithPublicKey
+private typealias EngineSignatureWithPublicKey_Ed25519 = com.radixdlt.ret.SignatureWithPublicKey.Ed25519
+private typealias EngineSignatureWithPublicKey_Secp256k1 = com.radixdlt.ret.SignatureWithPublicKey.Secp256k1
 
 /**
  * A class that provides key-pair and signature abstraction to all the supported curves used for
@@ -175,11 +190,14 @@ sealed class PrivateKey {
         }
 
         override fun signToSignature(hashedData: ByteArray): Signature.Secp256k1 {
-            return Signature.Secp256k1(sign(hashedData))
+            return Signature.Secp256k1.init(sign(hashedData).toBagOfBytes())
         }
 
         override fun signToSignatureWithPublicKey(hashedData: ByteArray): SignatureWithPublicKey.Secp256k1 {
-            return SignatureWithPublicKey.Secp256k1(signToSignature(hashedData).value)
+            return SignatureWithPublicKey.Secp256k1(
+                publicKey = publicKey().value,
+                signature = signToSignature(hashedData).value
+            )
         }
 
         // Private Key repr methods
@@ -191,7 +209,7 @@ sealed class PrivateKey {
         // Public Key methods
 
         override fun publicKey(): PublicKey.Secp256k1 {
-            return PublicKey.Secp256k1(publicKeyByteArray(true))
+            return PublicKey.Secp256k1.init(publicKeyByteArray(true).toBagOfBytes())
         }
 
         private fun publicKeyByteArray(compressed: Boolean): ByteArray {
@@ -308,11 +326,14 @@ sealed class PrivateKey {
         }
 
         override fun signToSignature(hashedData: ByteArray): Signature.Ed25519 {
-            return Signature.Ed25519(sign(hashedData))
+            return Signature.Ed25519.init(sign(hashedData).toBagOfBytes())
         }
 
         override fun signToSignatureWithPublicKey(hashedData: ByteArray): SignatureWithPublicKey.Ed25519 {
-            return SignatureWithPublicKey.Ed25519(signToSignature(hashedData).value, publicKey().value)
+            return SignatureWithPublicKey.Ed25519(
+                publicKey = publicKey().value,
+                signature = signToSignature(hashedData).value
+            )
         }
 
         // Private Key repr methods
@@ -321,10 +342,10 @@ sealed class PrivateKey {
             return privateKey.encoded
         }
 
-        // Public Key methods
+        // Public Key methods2
 
         override fun publicKey(): PublicKey.Ed25519 {
-            return PublicKey.Ed25519(publicKey.encoded)
+            return PublicKey.Ed25519.init(publicKey.encoded.toBagOfBytes())
         }
 
         override fun equals(other: Any?): Boolean {

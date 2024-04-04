@@ -8,22 +8,15 @@ import com.radixdlt.ret.NotarizedTransaction
 import com.radixdlt.ret.PlainTextMessage
 import com.radixdlt.ret.SignedIntent
 import com.radixdlt.ret.TransactionHeader
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.Signature
+import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.bytes
+import com.radixdlt.sargon.extensions.publicKey
+import com.radixdlt.sargon.extensions.signature
 import rdx.works.core.domain.TransactionManifestData
-import rdx.works.profile.ret.crypto.PublicKey
-import rdx.works.profile.ret.crypto.Signature
-import rdx.works.profile.ret.crypto.SignatureWithPublicKey
+import rdx.works.core.toByteArray
 import javax.inject.Inject
-import kotlin.Boolean
-import kotlin.ByteArray
-import kotlin.Result
-import kotlin.String
-import kotlin.Throwable
-import kotlin.UInt
-import kotlin.ULong
-import kotlin.UShort
-import kotlin.getOrElse
-import kotlin.runCatching
-import kotlin.toUByte
 
 interface TransactionSigner {
 
@@ -74,8 +67,8 @@ class TransactionSignerImpl @Inject constructor() : TransactionSigner {
             endEpochExclusive = request.endEpoch,
             nonce = request.nonce,
             notaryPublicKey = when (request.notaryPublicKey) {
-                is PublicKey.Ed25519 -> com.radixdlt.ret.PublicKey.Ed25519(request.notaryPublicKey.value)
-                is PublicKey.Secp256k1 -> com.radixdlt.ret.PublicKey.Secp256k1(request.notaryPublicKey.value)
+                is PublicKey.Ed25519 -> com.radixdlt.ret.PublicKey.Ed25519(request.notaryPublicKey.bytes.toByteArray())
+                is PublicKey.Secp256k1 -> com.radixdlt.ret.PublicKey.Secp256k1(request.notaryPublicKey.bytes.toByteArray())
             },
             notaryIsSignatory = request.notaryIsSignatory,
             tipPercentage = request.tipPercentage
@@ -119,9 +112,16 @@ class TransactionSignerImpl @Inject constructor() : TransactionSigner {
             SignedIntent(
                 intent = transactionIntent,
                 intentSignatures = signatures.map {
+                    val signatureBytes = it.signature.bytes.toByteArray()
+                    val publicKeyBytes = it.publicKey.bytes.toByteArray()
                     when (it) {
-                        is SignatureWithPublicKey.Ed25519 -> com.radixdlt.ret.SignatureWithPublicKey.Ed25519(it.signature, it.publicKey)
-                        is SignatureWithPublicKey.Secp256k1 -> com.radixdlt.ret.SignatureWithPublicKey.Secp256k1(it.signature)
+                        is SignatureWithPublicKey.Ed25519 -> com.radixdlt.ret.SignatureWithPublicKey.Ed25519(
+                            signature = signatureBytes,
+                            publicKey = publicKeyBytes
+                        )
+                        is SignatureWithPublicKey.Secp256k1 -> com.radixdlt.ret.SignatureWithPublicKey.Secp256k1(
+                            signature = signatureBytes
+                        )
                     }
                 }
             )
@@ -144,8 +144,8 @@ class TransactionSignerImpl @Inject constructor() : TransactionSigner {
             NotarizedTransaction(
                 signedIntent = signedTransactionIntent,
                 notarySignature = when (notarySignature) {
-                    is Signature.Ed25519 -> com.radixdlt.ret.Signature.Ed25519(notarySignature.value)
-                    is Signature.Secp256k1 -> com.radixdlt.ret.Signature.Secp256k1(notarySignature.value)
+                    is Signature.Ed25519 -> com.radixdlt.ret.Signature.Ed25519(notarySignature.bytes.toByteArray())
+                    is Signature.Secp256k1 -> com.radixdlt.ret.Signature.Secp256k1(notarySignature.bytes.toByteArray())
                 }
             ).compile()
         }.getOrElse { e ->
