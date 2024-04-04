@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.TransactionConfig.EPOCH_WINDOW
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.sargon.AccountAddress
@@ -16,17 +15,15 @@ import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.extensions.modifyLockFee
 import com.radixdlt.sargon.extensions.secureRandom
 import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.mapError
 import rdx.works.core.then
 import rdx.works.profile.ret.crypto.PrivateKey
-import rdx.works.profile.ret.transaction.TransactionSigner
 import rdx.works.profile.sargon.toDecimal192
 import java.math.BigDecimal
 import javax.inject.Inject
 
 class SignTransactionUseCase @Inject constructor(
     private val transactionRepository: TransactionRepository,
-    private val transactionSigner: TransactionSigner,
+    private val notariseTransactionUseCase: NotariseTransactionUseCase,
     private val resolveNotaryAndSignersUseCase: ResolveNotaryAndSignersUseCase,
     private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase
 ) {
@@ -42,7 +39,7 @@ class SignTransactionUseCase @Inject constructor(
     suspend fun sign(
         request: Request,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ): Result<TransactionSigner.Notarization> {
+    ): Result<NotariseTransactionUseCase.Notarization> {
         val manifestWithLockFee = request.manifestWithLockFee
 
         val entitiesRequiringAuth = manifestWithLockFee.entitiesRequiringAuth()
@@ -53,15 +50,15 @@ class SignTransactionUseCase @Inject constructor(
         ).then { notaryAndSigners ->
             transactionRepository.getLedgerEpoch().fold(
                 onSuccess = {
-                    Result.success(notaryAndSigners to it.toULong())
+                    Result.success(notaryAndSigners to it)
                 },
                 onFailure = {
                     Result.failure(RadixWalletException.DappRequestException.GetEpoch)
                 }
             )
         }.then { notarySignersAndEpoch ->
-            transactionSigner.notarise(
-                request = TransactionSigner.Request(
+            notariseTransactionUseCase(
+                request = NotariseTransactionUseCase.Request(
                     manifestData = manifestWithLockFee,
                     notaryPublicKey = notarySignersAndEpoch.first.notaryPublicKeyNew(),
                     notaryIsSignatory = notarySignersAndEpoch.first.notaryIsSignatory,
@@ -75,21 +72,7 @@ class SignTransactionUseCase @Inject constructor(
                     deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider,
                     collectSignersSignaturesUseCase = collectSignersSignaturesUseCase
                 ),
-            ).mapError { error ->
-                when (error) {
-                    is TransactionSigner.Error -> {
-                        if (error.cause is RadixWalletException) {
-                            return@mapError error.cause as RadixWalletException
-                        }
-
-                        when (error) {
-                            is TransactionSigner.Error.Prepare -> PrepareTransactionException.PrepareNotarizedTransaction(error.cause)
-                            is TransactionSigner.Error.Sign -> PrepareTransactionException.SignCompiledTransactionIntent(error.cause)
-                        }
-                    }
-                    else -> error
-                }
-            }
+            )
         }
     }
 
@@ -122,7 +105,7 @@ class SignTransactionUseCase @Inject constructor(
         private val notaryAndSigners: NotaryAndSigners,
         private val deviceBiometricAuthenticationProvider: suspend () -> Boolean,
         private val collectSignersSignaturesUseCase: CollectSignersSignaturesUseCase,
-    ) : TransactionSigner.SignatureGatherer {
+    ) : NotariseTransactionUseCase.SignatureGatherer {
         override suspend fun gatherSignatures(intent: TransactionIntent): Result<List<SignatureWithPublicKey>> = runCatching {
             SignRequest.SignTransactionRequest(intent = intent)
         }.then { signRequest ->
