@@ -17,9 +17,7 @@ import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.thirdPartyDepositUpdate
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +30,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.core.mapWhen
@@ -40,7 +39,6 @@ import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.UpdateProfileThirdPartySettingsUseCase
 import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.sargon.toSargon
 import javax.inject.Inject
 

@@ -10,12 +10,12 @@ import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.modifyLockFee
 import rdx.works.core.NonceGenerator
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.mapError
 import rdx.works.core.then
 import rdx.works.profile.ret.crypto.PrivateKey
 import rdx.works.profile.ret.crypto.Signature
 import rdx.works.profile.ret.crypto.SignatureWithPublicKey
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.ret.transaction.TransactionSigner
 import rdx.works.profile.sargon.toDecimal192
 import java.math.BigDecimal

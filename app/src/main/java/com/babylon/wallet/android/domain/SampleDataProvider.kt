@@ -9,14 +9,14 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.radixdlt.extensions.removeLeadingZero
-import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.TransactionManifestData.TransactionMessage
+import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.LiquidStakeUnit
-import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.sampleMainnet
@@ -47,9 +47,6 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.TestData
-import rdx.works.profile.ret.transaction.TransactionManifestData
-import rdx.works.profile.ret.transaction.TransactionManifestData.TransactionMessage
-import rdx.works.profile.ret.transaction.TransactionVersion
 import java.math.BigDecimal
 
 class SampleDataProvider {

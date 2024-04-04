@@ -65,12 +65,12 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.TransactionManifestData.TransactionMessage
+import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.ret.transaction.TransactionManifestData
-import rdx.works.profile.ret.transaction.TransactionManifestData.TransactionMessage
-import rdx.works.profile.ret.transaction.TransactionVersion
 
 @Composable
 fun TransactionReviewScreen(

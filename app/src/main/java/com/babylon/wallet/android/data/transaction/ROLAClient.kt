@@ -13,12 +13,12 @@ import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.setOwnerKeysHashes
 import kotlinx.coroutines.flow.merge
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 import rdx.works.profile.ret.crypto.SignatureWithPublicKey
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.sargon.toSargon
 import javax.inject.Inject
 
