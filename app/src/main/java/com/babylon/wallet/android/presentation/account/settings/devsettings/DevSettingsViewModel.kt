@@ -8,16 +8,9 @@ import com.babylon.wallet.android.data.manifest.prepareInternalTransactionReques
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.ROLAClient
-import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.usecases.FaucetState
-import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.common.StateViewModel
-import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.utils.AppEvent
-import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
@@ -34,15 +27,12 @@ import javax.inject.Inject
 @Suppress("LongParameterList", "TooManyFunctions")
 @HiltViewModel
 class DevSettingsViewModel @Inject constructor(
-    private val getFreeXrdUseCase: GetFreeXrdUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val rolaClient: ROLAClient,
     private val incomingRequestRepository: IncomingRequestRepository,
     private val addAuthSigningFactorInstanceUseCase: AddAuthSigningFactorInstanceUseCase,
     private val transactionStatusClient: TransactionStatusClient,
-    @ApplicationScope private val appScope: CoroutineScope,
-    savedStateHandle: SavedStateHandle,
-    private val appEventBus: AppEventBus,
+    savedStateHandle: SavedStateHandle
 ) : StateViewModel<DevSettingsUiState>() {
 
     private val args = DevSettingsArgs(savedStateHandle)
@@ -61,11 +51,6 @@ class DevSettingsViewModel @Inject constructor(
                 }
             }
         }
-        viewModelScope.launch {
-            getFreeXrdUseCase.getFaucetState(args.address).collect { faucetState ->
-                _state.update { it.copy(faucetState = faucetState) }
-            }
-        }
     }
 
     private fun loadAccount() {
@@ -80,29 +65,6 @@ class DevSettingsViewModel @Inject constructor(
                     }
                 }
         }
-    }
-
-    fun onGetFreeXrdClick() {
-        if (state.value.faucetState !is FaucetState.Available) return
-
-        appScope.launch {
-            _state.update { it.copy(isFreeXRDLoading = true) }
-            getFreeXrdUseCase(address = args.address).onSuccess { _ ->
-                _state.update { it.copy(isFreeXRDLoading = false) }
-                appEventBus.sendEvent(AppEvent.RefreshResourcesNeeded)
-            }.onFailure { error ->
-                _state.update {
-                    it.copy(
-                        isFreeXRDLoading = false,
-                        error = UiMessage.ErrorMessage(error = error)
-                    )
-                }
-            }
-        }
-    }
-
-    fun onMessageShown() {
-        _state.update { it.copy(error = null) }
     }
 
     fun onCreateAndUploadAuthKey() {
@@ -162,10 +124,7 @@ class DevSettingsViewModel @Inject constructor(
 data class DevSettingsUiState(
     val account: Network.Account? = null,
     val accountAddress: String,
-    val faucetState: FaucetState = FaucetState.Unavailable,
-    val isFreeXRDLoading: Boolean = false,
     val isLoading: Boolean = false,
-    val error: UiMessage? = null,
     val hasAuthKey: Boolean = false,
     val interactionState: InteractionState? = null,
 ) : UiState

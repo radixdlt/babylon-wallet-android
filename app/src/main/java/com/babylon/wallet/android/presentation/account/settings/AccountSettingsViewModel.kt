@@ -3,18 +3,23 @@ package com.babylon.wallet.android.presentation.account.settings
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig
+import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.usecases.FaucetState
 import com.babylon.wallet.android.domain.usecases.GetFreeXrdUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
@@ -29,11 +34,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AccountSettingsViewModel @Inject constructor(
-    private val getFreeXrdUseCase: GetFreeXrdUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val renameAccountDisplayNameUseCase: RenameAccountDisplayNameUseCase,
     savedStateHandle: SavedStateHandle,
-    private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase
+    private val changeEntityVisibilityUseCase: ChangeEntityVisibilityUseCase,
+    private val getFreeXrdUseCase: GetFreeXrdUseCase,
+    @ApplicationScope private val appScope: CoroutineScope,
+    private val appEventBus: AppEventBus
 ) : StateViewModel<AccountPreferenceUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountSettingsArgs(savedStateHandle)
@@ -45,30 +52,30 @@ class AccountSettingsViewModel @Inject constructor(
     init {
         loadAccount()
         viewModelScope.launch {
-            getFreeXrdUseCase.getFaucetState(args.address).collect { faucetState ->
-                if (shouldShowDeveloperSettings(faucetState)) {
-                    val developerSectionExist = state.value.settingsSections.any {
-                        it is AccountSettingsSection.DevelopmentSection
-                    }
-                    if (developerSectionExist) return@collect
-                    _state.update {
-                        it.copy(
-                            settingsSections = (
-                                it.settingsSections + AccountSettingsSection.DevelopmentSection(
-                                    listOf(
-                                        AccountSettingItem.DevSettings
-                                    )
-                                )
-                                ).toPersistentList()
+            if (!BuildConfig.DEBUG_MODE) return@launch
+
+            val developerSectionExist = state.value.settingsSections.any {
+                it is AccountSettingsSection.DevelopmentSection
+            }
+            if (developerSectionExist) return@launch
+            _state.update {
+                it.copy(
+                    settingsSections = (
+                        it.settingsSections + AccountSettingsSection.DevelopmentSection(
+                            listOf(
+                                AccountSettingItem.DevSettings
+                            )
                         )
-                    }
-                }
+                        ).toPersistentList()
+                )
+            }
+        }
+        viewModelScope.launch {
+            getFreeXrdUseCase.getFaucetState(args.address).collect { faucetState ->
+                _state.update { it.copy(faucetState = faucetState) }
             }
         }
     }
-
-    private fun shouldShowDeveloperSettings(faucetState: FaucetState) =
-        faucetState is FaucetState.Available || BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
 
     private fun loadAccount() {
         viewModelScope.launch {
@@ -132,6 +139,29 @@ class AccountSettingsViewModel @Inject constructor(
         }
     }
 
+    fun onGetFreeXrdClick() {
+        if (state.value.faucetState !is FaucetState.Available) return
+
+        appScope.launch {
+            _state.update { it.copy(isFreeXRDLoading = true) }
+            getFreeXrdUseCase(address = args.address).onSuccess { _ ->
+                _state.update { it.copy(isFreeXRDLoading = false) }
+                appEventBus.sendEvent(AppEvent.RefreshResourcesNeeded)
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        isFreeXRDLoading = false,
+                        error = UiMessage.ErrorMessage(error = error)
+                    )
+                }
+            }
+        }
+    }
+
+    fun onMessageShown() {
+        _state.update { it.copy(error = null) }
+    }
+
     fun onHideAccount() {
         viewModelScope.launch {
             changeEntityVisibilityUseCase.hideAccount(state.value.accountAddress)
@@ -152,7 +182,10 @@ data class AccountPreferenceUiState(
     val accountNameChanged: String = "",
     val isNewNameValid: Boolean = false,
     val isNewNameLengthMoreThanTheMaximum: Boolean = false,
-    val bottomSheetContent: BottomSheetContent = BottomSheetContent.None
+    val bottomSheetContent: BottomSheetContent = BottomSheetContent.None,
+    val error: UiMessage? = null,
+    val faucetState: FaucetState = FaucetState.Unavailable,
+    val isFreeXRDLoading: Boolean = false
 ) : UiState {
 
     val isBottomSheetVisible: Boolean
