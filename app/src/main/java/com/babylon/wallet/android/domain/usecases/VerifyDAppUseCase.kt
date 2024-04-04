@@ -77,7 +77,7 @@ class VerifyDAppUseCase @Inject constructor(
         !isRelatedWith(origin) -> Result.failure(RadixWalletException.DappVerificationException.UnknownWebsite)
         else ->
             wellKnownDAppDefinitionRepository
-                .getWellKnownDAppDefinitions(origin)
+                .getWellKnownDAppDefinitionAddresses(origin)
                 .map { dAppDefinitions -> dAppDefinitions.contains(dAppAddress) }
     }
 }

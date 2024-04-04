@@ -1,6 +1,8 @@
 package com.babylon.wallet.android
 
 import android.animation.ObjectAnimator
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.animation.AnticipateInterpolator
@@ -95,6 +97,10 @@ class MainActivity : FragmentActivity() {
                 }
             }
         }
+        // ATTENTION: This was auto-generated to handle app links.
+        val appLinkIntent: Intent = intent
+        val appLinkAction: String? = appLinkIntent.action
+        val appLinkData: Uri? = appLinkIntent.data
     }
 
     private fun setSplashExitAnimation(splashScreen: SplashScreen) {

@@ -107,7 +107,7 @@ class HistoryViewModel @Inject constructor(
                     _state.update {
                         it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
                     }
-                }.mapNotNull { it.firstOrNull() }.collectLatest { accountWithAssets ->
+                }.mapNotNull { it.firstOrNull() }.mapNotNull { accountWithAssets ->
                     _state.update { state ->
                         state.copy(accountWithAssets = accountWithAssets)
                     }
@@ -203,7 +203,7 @@ class HistoryViewModel @Inject constructor(
     fun onTimeFilterSelected(timeFilterItem: State.MonthFilter) {
         val existingIndex = _state.value.historyItems?.indexOfFirst {
             it.dateTime?.isAfter(timeFilterItem.start) == true &&
-                it.dateTime?.isBefore(timeFilterItem.end) == true
+                    it.dateTime?.isBefore(timeFilterItem.end) == true
         }
         if (existingIndex == null || existingIndex == -1) {
             viewModelScope.launch {
@@ -283,6 +283,7 @@ class HistoryViewModel @Inject constructor(
                     Timber.d("History: Nothing to load at the top")
                     return
                 }
+                Timber.d("History: Loading more at the top, cursor ${_state.value.historyData?.prevCursorId}")
                 _state.update { it.copy(loadMoreState = State.LoadingMoreState.Up) }
                 viewModelScope.launch {
                     _state.value.historyData?.let { currentData ->
@@ -301,6 +302,7 @@ class HistoryViewModel @Inject constructor(
                     Timber.d("History: Nothing to load at the bottom")
                     return
                 }
+                Timber.d("History: Loading more at the bottom, cursor ${_state.value.historyData?.nextCursorId}")
                 _state.update { it.copy(loadMoreState = State.LoadingMoreState.Down) }
                 viewModelScope.launch {
                     _state.value.historyData?.let { currentData ->

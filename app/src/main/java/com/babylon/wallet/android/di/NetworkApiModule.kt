@@ -3,6 +3,7 @@ package com.babylon.wallet.android.di
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.PeerdroidClientImpl
+import com.babylon.wallet.android.data.gateway.apis.RcrApi
 import com.babylon.wallet.android.data.gateway.apis.StateApi
 import com.babylon.wallet.android.data.gateway.apis.StreamApi
 import com.babylon.wallet.android.data.gateway.apis.TokenPriceApi
@@ -128,6 +129,16 @@ object NetworkApiModule {
         @JsonConverterFactory jsonConverterFactory: Converter.Factory
     ): NPSSurveyApi = buildApi(
         baseUrl = BuildConfig.NPS_SURVEY_URL,
+        okHttpClient = okHttpClient,
+        jsonConverterFactory = jsonConverterFactory
+    )
+
+    @Provides
+    fun provideRcrApi(
+        @SimpleHttpClient okHttpClient: OkHttpClient,
+        @JsonConverterFactory jsonConverterFactory: Converter.Factory
+    ): RcrApi = buildApi(
+        baseUrl = BuildConfig.RCR_URL,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )

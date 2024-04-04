@@ -6,8 +6,12 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.LedgerMessengerImpl
+import com.babylon.wallet.android.data.repository.DappLinkRepository
+import com.babylon.wallet.android.data.repository.DappLinkRepositoryImpl
 import com.babylon.wallet.android.data.repository.NPSSurveyRepository
 import com.babylon.wallet.android.data.repository.NPSSurveyRepositoryImpl
+import com.babylon.wallet.android.data.repository.RcrRepository
+import com.babylon.wallet.android.data.repository.RcrRepositoryImpl
 import com.babylon.wallet.android.data.repository.cache.HttpCache
 import com.babylon.wallet.android.data.repository.cache.HttpCacheImpl
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
@@ -123,4 +127,15 @@ interface DataModule {
     fun bindAppEventBus(
         appEventBus: AppEventBusImpl
     ): AppEventBus
+
+    @Binds
+    fun bindRamsRepository(
+        ramsRepository: RcrRepositoryImpl
+    ): RcrRepository
+
+    @Binds
+    @Singleton
+    fun bindDappLinkRepository(
+        dappLinkRepository: DappLinkRepositoryImpl
+    ): DappLinkRepository
 }
