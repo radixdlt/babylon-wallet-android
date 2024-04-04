@@ -38,8 +38,8 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlin
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.extensions.networkId
-import com.radixdlt.sargon.extensions.string
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -160,19 +160,20 @@ fun LSUDialogContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            address = resourceAddress.string
+            address = Address.Resource(resourceAddress)
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        AddressRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingSmall)
-                .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
-                .radixPlaceholder(visible = lsu == null),
-            label = stringResource(id = R.string.assetDetails_validator),
-            address = lsu?.validator?.address?.string.orEmpty()
-        )
+        if (lsu != null) {
+            AddressRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingSmall)
+                    .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2),
+                label = stringResource(id = R.string.assetDetails_validator),
+                address = Address.Validator(lsu.validator.address)
+            )
+        }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
         AssetMetadataRow(

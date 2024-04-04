@@ -177,8 +177,8 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     fun onAddAssetException() {
         val assetExceptionToAdd = state.value.assetExceptionToAdd
         val updatedAssetExceptionsUiModels = (
-                state.value.assetExceptionsUiModels.orEmpty() + listOf(assetExceptionToAdd)
-                ).toPersistentList()
+            state.value.assetExceptionsUiModels.orEmpty() + listOf(assetExceptionToAdd)
+            ).toPersistentList()
         _state.update { state ->
             state.copy(
                 updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(

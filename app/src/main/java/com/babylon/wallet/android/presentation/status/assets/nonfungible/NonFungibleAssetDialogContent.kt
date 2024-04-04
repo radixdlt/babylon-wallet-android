@@ -40,6 +40,7 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.WorthXRD
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.string
@@ -122,7 +123,7 @@ fun NonFungibleAssetDialogContent(
                 ) {
                     ActionableAddressView(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingDefault),
-                        address = item.globalId.string,
+                        globalId = item.globalId,
                         visitableInDashboard = !isNewlyCreated,
                         textStyle = RadixTheme.typography.body1HighImportance,
                         textColor = RadixTheme.colors.gray1
@@ -220,7 +221,7 @@ fun NonFungibleAssetDialogContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                address = resourceAddress.string,
+                address = Address.Resource(resourceAddress),
                 isNewlyCreatedEntity = isNewlyCreated
             )
             if (!asset?.resource?.name.isNullOrBlank() && localId != null) {

@@ -19,7 +19,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.extensions.init
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -43,7 +45,7 @@ fun SimpleAccountCard(
                 overflow = TextOverflow.Ellipsis
             )
             ActionableAddressView(
-                address = account.address.string,
+                address = Address.Account(account.address),
                 textStyle = RadixTheme.typography.body2HighImportance,
                 textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
             )
@@ -63,7 +65,7 @@ fun SimpleAccountCard(
                 overflow = TextOverflow.Ellipsis
             )
             ActionableAddressView(
-                address = account.address.string,
+                address = Address.Account(account.address),
                 textStyle = RadixTheme.typography.body2HighImportance,
                 textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
             )
@@ -98,7 +100,7 @@ fun SimpleAccountCard(
             overflow = TextOverflow.Ellipsis
         )
         ActionableAddressView(
-            address = account.address,
+            address = Address.Account(AccountAddress.init(account.address)),
             textStyle = RadixTheme.typography.body2HighImportance,
             textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
         )

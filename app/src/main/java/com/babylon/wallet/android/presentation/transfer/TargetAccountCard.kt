@@ -36,7 +36,10 @@ import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.init
 import kotlinx.collections.immutable.persistentSetOf
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.resources.Resource
@@ -140,7 +143,7 @@ fun TargetAccountCard(
             Spacer(modifier = Modifier.weight(1f))
             if (targetAccount.isAddressValid) {
                 ActionableAddressView(
-                    address = targetAccount.address,
+                    address = Address.Account(AccountAddress.init(targetAccount.address)),
                     textStyle = RadixTheme.typography.body2HighImportance,
                     textColor = RadixTheme.colors.white.copy(alpha = 0.8f),
                     iconColor = RadixTheme.colors.white.copy(alpha = 0.8f)

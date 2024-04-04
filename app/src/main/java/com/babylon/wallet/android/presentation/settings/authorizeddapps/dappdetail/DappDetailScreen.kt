@@ -79,8 +79,8 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -474,7 +474,7 @@ fun DappDefinitionAddressRow(
         )
 
         ActionableAddressView(
-            address = dappDefinitionAddress.string,
+            address = Address.Account(dappDefinitionAddress),
             textStyle = RadixTheme.typography.body1Regular,
             textColor = RadixTheme.colors.gray1
         )

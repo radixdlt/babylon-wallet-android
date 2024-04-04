@@ -37,7 +37,6 @@ import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import rdx.works.core.AddressHelper
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.LiquidStakeUnit
