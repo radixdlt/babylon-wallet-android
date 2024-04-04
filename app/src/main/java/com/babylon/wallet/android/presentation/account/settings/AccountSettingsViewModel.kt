@@ -33,6 +33,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
+@Suppress("LongParameterList")
 class AccountSettingsViewModel @Inject constructor(
     private val getFreeXrdUseCase: GetFreeXrdUseCase,
     private val getProfileUseCase: GetProfileUseCase,
