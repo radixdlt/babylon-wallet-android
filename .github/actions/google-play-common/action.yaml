@@ -79,7 +79,7 @@ runs:
   - name: Output AppsFlyer secret to file
     shell: bash
     run: |
-      mkdir -p config/signing/
+      mkdir -p config/secrets/
       echo "appsFlyerDevKey=${{ env.GH_APPS_FLYER_DEV_KEY }}" > config/secrets/secrets.properties
 
   - name: Decode release keystore credentials
