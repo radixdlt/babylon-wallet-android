@@ -1,11 +1,23 @@
 package com.babylon.wallet.android.presentation.model
 
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.babylon.wallet.android.utils.encodeUtf8
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.PackageAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.SignedIntentHash
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import rdx.works.profile.derivation.model.NetworkId
 
 @RunWith(Parameterized::class)
 internal class AddressDashboardUrlTest(
@@ -15,7 +27,15 @@ internal class AddressDashboardUrlTest(
 
     @Test
     fun `convert of address to dashboard url`() {
-        assertEquals(url, ActionableAddress(address).toDashboardUrl(networkId = NetworkId.Mainnet))
+        val actionableAddress = runCatching {
+            ActionableAddress.Address(Address.init(address))
+        }.getOrNull() ?: runCatching {
+            ActionableAddress.GlobalId(NonFungibleGlobalId.init(address))
+        }.getOrNull() ?: runCatching {
+            ActionableAddress.TransactionId(SignedIntentHash.init(address))
+        }.getOrNull()
+
+        assertEquals(url, actionableAddress?.dashboardUrl(networkId = NetworkId.MAINNET))
     }
 
 
@@ -29,25 +49,18 @@ internal class AddressDashboardUrlTest(
                 arrayOf(ACCOUNT_ADDRESS, "$BASE_MAIN_URL/account/$ACCOUNT_ADDRESS"),
                 arrayOf(PACKAGE_ADDRESS, "$BASE_MAIN_URL/package/$PACKAGE_ADDRESS"),
                 arrayOf(
-                    "txid_tdx_e_106vpmdem94zr2x4yt2rf4l935d26pzrnlmz6wzwrwgz8s6jpyhmsa5ze2x",
-                    "$BASE_MAIN_URL/transaction/txid_tdx_e_106vpmdem94zr2x4yt2rf4l935d26pzrnlmz6wzwrwgz8s6jpyhmsa5ze2x"
-                ),
-                arrayOf(
-                    "txid_tdx_22_1t0sdhcc6usx8sun36cd95jn6xlwzt4mw3gctz5r5yp94fjss9u3syuqcxg",
-                    "$BASE_MAIN_URL/transaction/txid_tdx_22_1t0sdhcc6usx8sun36cd95jn6xlwzt4mw3gctz5r5yp94fjss9u3syuqcxg"
+                    TRANSACTION_ADDRESS, "$BASE_MAIN_URL/transaction/$TRANSACTION_ADDRESS"
                 ),
                 arrayOf(COMPONENT_ADDRESS, "$BASE_MAIN_URL/component/$COMPONENT_ADDRESS"),
-                arrayOf(UNKNOWN_ADDRESS, "$BASE_MAIN_URL/$UNKNOWN_ADDRESS")
             )
         }
 
         private const val BASE_MAIN_URL = "https://dashboard.radixdlt.com"
-        private const val RESOURCE_ADDRESS = "resource_tdx_e_1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxx8rpsmc"
-        private const val RESOURCE_NFT_ADDRESS = "resource_tdx_e_1t45e0q75zln8jk5z3vyxp88hrugj5p7alr8spspv2r79lv0px6rpdg:#1#"
-        private const val ACCOUNT_ADDRESS = "account_tdx_e_12xg8lhnkj986aza4kecg4e06d5tn0x4lsu2jxa84xhrld6y8shfzls"
-        private const val PACKAGE_ADDRESS = "package_tdx_e_1pkgxxxxxxxxxresrcexxxxxxxxx000538436477xxxxxxxxxptqk7h"
-        private const val TRANSACTION_ADDRESS = "txid_tdx_e_106vpmdem94zr2x4yt2rf4l935d26pzrnlmz6wzwrwgz8s6jpyhmsa5ze2x"
-        private const val COMPONENT_ADDRESS = "component_tdx_e_1cptxxxxxxxxxfaucetxxxxxxxxx000527798379xxxxxxxxxnp0l9m"
-        private const val UNKNOWN_ADDRESS = "unknown_tdx_e_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp"
+        private val RESOURCE_ADDRESS = ResourceAddress.sampleMainnet().string
+        private val RESOURCE_NFT_ADDRESS = NonFungibleGlobalId.sample().string
+        private val ACCOUNT_ADDRESS = AccountAddress.sampleMainnet().string
+        private val PACKAGE_ADDRESS = PackageAddress.sampleMainnet().string
+        private val TRANSACTION_ADDRESS = SignedIntentHash.sample().bech32EncodedTxId
+        private val COMPONENT_ADDRESS = ComponentAddress.sampleMainnet().string
     }
 }

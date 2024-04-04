@@ -20,8 +20,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 
 @Composable
@@ -57,7 +57,7 @@ fun AccountSelectionCard(
             }
 
             ActionableAddressView(
-                address = address.string,
+                address = Address.Account(address),
                 textStyle = RadixTheme.typography.body2HighImportance,
                 textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
             )
