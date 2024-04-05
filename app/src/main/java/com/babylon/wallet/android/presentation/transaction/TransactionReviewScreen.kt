@@ -484,8 +484,8 @@ fun TransactionPreviewContentPreview() {
             onBackClick = {},
             state = State(
                 request = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                    remoteConnectorId = "",
-                    requestId = "",
+                    remoteEntityId = MessageFromDataChannel.RemoteEntityID.ConnectorId(""),
+                    interactionId = "",
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
                         networkId = NetworkId.MAINNET,

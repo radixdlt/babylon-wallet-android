@@ -62,13 +62,13 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
                 requestQueue.add(requestItem)
             }
             handleNextRequest()
-            Timber.d("🗂 new incoming request with id ${incomingRequest.id} added in list, so size now is ${getAmountOfRequests()}")
+            Timber.d("🗂 new incoming request with id ${incomingRequest.interactionId} added in list, so size now is ${getAmountOfRequests()}")
         }
     }
 
     override suspend fun requestHandled(requestId: String) {
         mutex.withLock {
-            requestQueue.removeIf { it is QueueItem.RequestItem && it.incomingRequest.id == requestId }
+            requestQueue.removeIf { it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId }
             handleNextRequest()
             Timber.d("🗂 request $requestId handled so size of list is now: ${getAmountOfRequests()}")
         }
@@ -104,7 +104,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
 
     override fun getUnauthorizedRequest(requestId: String): IncomingRequest.UnauthorizedRequest? {
         val queueItem = requestQueue.find {
-            it is QueueItem.RequestItem && it.incomingRequest.id == requestId && it.incomingRequest is IncomingRequest.UnauthorizedRequest
+            it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId && it.incomingRequest is IncomingRequest.UnauthorizedRequest
         }
         if (queueItem == null) {
             Timber.w("Unauthorized request with id $requestId is null")
@@ -114,7 +114,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
 
     override fun getTransactionWriteRequest(requestId: String): IncomingRequest.TransactionRequest? {
         val queueItem = requestQueue.find {
-            it is QueueItem.RequestItem && it.incomingRequest.id == requestId && it.incomingRequest is IncomingRequest.TransactionRequest
+            it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId && it.incomingRequest is IncomingRequest.TransactionRequest
         }
         if (queueItem == null) {
             Timber.w("Transaction request with id $requestId is null")
@@ -124,7 +124,7 @@ class IncomingRequestRepositoryImpl @Inject constructor() : IncomingRequestRepos
 
     override fun getAuthorizedRequest(requestId: String): IncomingRequest.AuthorizedRequest? {
         val queueItem = requestQueue.find {
-            it is QueueItem.RequestItem && it.incomingRequest.id == requestId && it.incomingRequest is IncomingRequest.AuthorizedRequest
+            it is QueueItem.RequestItem && it.incomingRequest.interactionId == requestId && it.incomingRequest is IncomingRequest.AuthorizedRequest
         }
         if (queueItem == null) {
             Timber.w("Authorized request with id $requestId is null")

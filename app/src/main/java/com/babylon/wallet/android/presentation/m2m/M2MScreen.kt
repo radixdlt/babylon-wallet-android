@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,7 +46,7 @@ fun M2MContent(
 ) {
     Box(modifier = modifier.padding(RadixTheme.dimensions.paddingDefault)) {
         Column(
-            modifier = modifier,
+            modifier = modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium, Alignment.CenterVertically)
         ) {
             Text(
@@ -63,6 +66,14 @@ fun M2MContent(
                     text = "Radix Connect URL: $it",
                     style = RadixTheme.typography.body1Header
                 )
+            }
+            state.receivedRequests.forEach { requestString ->
+                SelectionContainer {
+                    Text(
+                        text = "Received Request: $requestString",
+                        style = RadixTheme.typography.body1Header
+                    )
+                }
             }
         }
     }

@@ -69,7 +69,7 @@ fun WalletApp(
                     when (val incomingRequest = event.request) {
                         is MessageFromDataChannel.IncomingRequest.TransactionRequest -> {
                             navController.transactionReview(
-                                requestId = incomingRequest.requestId
+                                requestId = incomingRequest.interactionId
                             )
                         }
 

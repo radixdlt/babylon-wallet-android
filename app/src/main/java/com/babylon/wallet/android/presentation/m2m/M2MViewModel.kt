@@ -7,6 +7,7 @@ import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.data.repository.DappLinkRepository
 import com.babylon.wallet.android.data.repository.RcrRepository
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -39,47 +40,53 @@ class M2MViewModel @Inject constructor(
 
     init {
         when {
-            args.interactionId != null && args.sessionId != null -> {
+            args.isValidRequest() -> {
                 viewModelScope.launch {
-                    rcrRepository.getRequest(args.sessionId, args.interactionId).mapCatching { walletInteraction ->
-                        val domainModel = walletInteraction.toDomainModel("")
-                        incomingRequestRepository.add(domainModel)
+                    val dappLink = dappLinkRepository.getDappLink(args.sessionId!!)
+                    _state.update { it.copy(dappLink = dappLink.getOrNull()) }
+                    rcrRepository.getRequest(args.sessionId, args.interactionId!!).mapCatching { walletInteraction ->
+                        walletInteraction.toDomainModel(MessageFromDataChannel.RemoteEntityID.RadixMobileConnectRemoteEntityId(args.sessionId))
+                    }.onSuccess { request ->
+                        incomingRequestRepository.add(request)
+                    }.onFailure {
+                        Timber.d(it)
                     }
                 }
             }
 
-            else -> {
-                args.origin?.let { origin ->
-                    viewModelScope.launch {
-                        _state.update { it.copy(loadingRadixConnectUrl = true) }
-                        wellKnownDAppDefinitionRepository.getWellDappDefinitions(origin).onSuccess { dAppDefinitions ->
-                            val dappDefinition = dAppDefinitions.dAppDefinitions.firstOrNull()
-                            delay(500)
-                            dappDefinition?.let {
-                                val keyPair = generateX25519KeyPair().getOrNull() ?: return@let
-                                val publicKeyHex = keyPair.second
-                                val receivedPublicKey = args.publicKey!!.decodeHex()
-                                val secret =
-                                    generateX25519SharedSecret(keyPair.first.decodeHex(), receivedPublicKey).getOrNull() ?: return@let
-                                val dappLink = DappLink(
-                                    origin = args.origin,
-                                    dAppDefinitionAddress = dappDefinition.dAppDefinitionAddress,
-                                    secret = HexCoded32Bytes(secret),
-                                    sessionId = args.sessionId.orEmpty(),
-                                    x25519PrivateKeyCompressed = HexCoded32Bytes(keyPair.first)
-                                )
-                                _state.update { it.copy(dappLink = dappLink) }
-                                dappLinkRepository.saveDappLink(dappLink).onSuccess {
-                                    sendEvent(Event.OpenUrl("$origin?sessionId=${args.sessionId}&publicKey=$publicKeyHex&secret=$secret${dAppDefinitions.callbackPath}"))
-                                }.onFailure {
-                                    Timber.d(it)
-                                }
+            args.isValidConnect() -> {
+                viewModelScope.launch {
+                    _state.update { it.copy(loadingRadixConnectUrl = true) }
+                    wellKnownDAppDefinitionRepository.getWellDappDefinitions(args.origin!!).onSuccess { dAppDefinitions ->
+                        val dappDefinition = dAppDefinitions.dAppDefinitions.firstOrNull()
+                        delay(500)
+                        dappDefinition?.let {
+                            val keyPair = generateX25519KeyPair().getOrNull() ?: return@let
+                            val publicKeyHex = keyPair.second
+                            val receivedPublicKey = args.publicKey!!.decodeHex()
+                            val secret =
+                                generateX25519SharedSecret(keyPair.first.decodeHex(), receivedPublicKey).getOrNull() ?: return@let
+                            val dappLink = DappLink(
+                                origin = args.origin,
+                                dAppDefinitionAddress = dappDefinition.dAppDefinitionAddress,
+                                secret = HexCoded32Bytes(secret),
+                                sessionId = args.sessionId.orEmpty(),
+                                x25519PrivateKeyCompressed = HexCoded32Bytes(keyPair.first),
+                                callbackPath = dAppDefinitions.callbackPath
+                            )
+                            _state.update { it.copy(dappLink = dappLink) }
+                            dappLinkRepository.saveDappLink(dappLink).onSuccess {
+                                sendEvent(Event.OpenUrl("${args.origin}?sessionId=${args.sessionId}&publicKey=$publicKeyHex&secret=$secret${dAppDefinitions.callbackPath}"))
+                            }.onFailure {
+                                Timber.d(it)
                             }
-                        }.onFailure {}
-                        _state.update { it.copy(loadingRadixConnectUrl = false) }
-                    }
+                        }
+                    }.onFailure {}
+                    _state.update { it.copy(loadingRadixConnectUrl = false) }
                 }
             }
+
+            else -> {}
         }
     }
 
@@ -92,5 +99,6 @@ data class State(
     val dappLink: DappLink? = null,
     val radixConnectUrl: String? = null,
     val receivedPublicKey: String? = null,
-    val loadingRadixConnectUrl: Boolean = false
+    val loadingRadixConnectUrl: Boolean = false,
+    val receivedRequests: List<String> = emptyList()
 ) : UiState

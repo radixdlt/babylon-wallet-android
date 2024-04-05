@@ -20,9 +20,24 @@ import rdx.works.core.sargon.PersonaDataField
 
 sealed interface MessageFromDataChannel {
 
+    sealed interface RemoteEntityID {
+
+        val value: String
+
+        data class RadixMobileConnectRemoteEntityId(val id: String) : RemoteEntityID {
+            override val value: String
+                get() = id
+        }
+
+        data class ConnectorId(val id: String) : RemoteEntityID {
+            override val value: String
+                get() = id
+        }
+    }
+
     sealed class IncomingRequest(
-        open val remoteConnectorId: String, // from which remote CE comes the message
-        val id: String, // the id of the request
+        open val remoteEntityId: RemoteEntityID, // from which remote CE comes the message
+        open val interactionId: String, // the id of the request
         val metadata: RequestMetadata
     ) : MessageFromDataChannel {
 
@@ -37,8 +52,8 @@ sealed interface MessageFromDataChannel {
             }
 
         data class AuthorizedRequest(
-            override val remoteConnectorId: String, // from which remote CE comes the message
-            val interactionId: String,
+            override val remoteEntityId: RemoteEntityID, // from which remote CE comes the message
+            override val interactionId: String,
             val requestMetadata: RequestMetadata,
             val authRequest: AuthRequest,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
@@ -46,21 +61,21 @@ sealed interface MessageFromDataChannel {
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null,
             val ongoingPersonaDataRequestItem: PersonaRequestItem? = null,
             val resetRequestItem: ResetRequestItem? = null
-        ) : IncomingRequest(remoteConnectorId, interactionId, requestMetadata) {
+        ) : IncomingRequest(remoteEntityId, interactionId, requestMetadata) {
 
             fun needSignatures(): Boolean {
                 return authRequest is AuthRequest.LoginRequest.WithChallenge ||
-                    ongoingAccountsRequestItem?.challenge != null ||
-                    oneTimeAccountsRequestItem?.challenge != null
+                        ongoingAccountsRequestItem?.challenge != null ||
+                        oneTimeAccountsRequestItem?.challenge != null
             }
 
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
-                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
+                        (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
             fun isInternalRequest(): Boolean {
-                return remoteConnectorId.isEmpty()
+                return remoteEntityId.value.isEmpty()
             }
 
             private fun isUsePersonaAuth(): Boolean {
@@ -77,12 +92,12 @@ sealed interface MessageFromDataChannel {
 
             fun hasOnlyAuthItem(): Boolean {
                 return ongoingAccountsRequestItem == null && ongoingPersonaDataRequestItem == null &&
-                    oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
+                        oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
             }
 
             fun isValidRequest(): Boolean {
                 return ongoingAccountsRequestItem?.isValidRequestItem() != false &&
-                    oneTimeAccountsRequestItem?.isValidRequestItem() != false
+                        oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
 
             sealed interface AuthRequest {
@@ -95,15 +110,20 @@ sealed interface MessageFromDataChannel {
                     val identityAddress: IdentityAddress = IdentityAddress.init(personaAddress)
                 }
             }
+
+            data class ResetRequestItem(
+                val accounts: Boolean,
+                val personaData: Boolean
+            )
         }
 
         data class UnauthorizedRequest(
-            override val remoteConnectorId: String, // from which remote CE comes the message
-            val interactionId: String,
+            override val remoteEntityId: RemoteEntityID, // from which remote CE comes the message
+            override val interactionId: String,
             val requestMetadata: RequestMetadata,
             val oneTimeAccountsRequestItem: AccountsRequestItem? = null,
             val oneTimePersonaDataRequestItem: PersonaRequestItem? = null
-        ) : IncomingRequest(remoteConnectorId, interactionId, requestMetadata) {
+        ) : IncomingRequest(remoteEntityId, interactionId, requestMetadata) {
             fun isValidRequest(): Boolean {
                 return oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
@@ -114,12 +134,12 @@ sealed interface MessageFromDataChannel {
         }
 
         data class TransactionRequest(
-            override val remoteConnectorId: String, // from which remote CE comes the message
-            val requestId: String,
+            override val remoteEntityId: RemoteEntityID, // from which remote CE comes the message
+            override val interactionId: String,
             val transactionManifestData: TransactionManifestData,
             val requestMetadata: RequestMetadata,
             val transactionType: TransactionType = TransactionType.Generic
-        ) : IncomingRequest(remoteConnectorId, requestId, requestMetadata)
+        ) : IncomingRequest(remoteEntityId, interactionId, requestMetadata)
 
         data class RequestMetadata(
             val networkId: NetworkId,
@@ -163,11 +183,6 @@ sealed interface MessageFromDataChannel {
                 return isRequestingName || numberOfRequestedPhoneNumbers != null || numberOfRequestedEmailAddresses != null
             }
         }
-
-        data class ResetRequestItem(
-            val accounts: Boolean,
-            val personaData: Boolean
-        )
 
         @Parcelize
         @Serializable
@@ -304,4 +319,10 @@ fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields()
             }
         }
     )
+}
+
+sealed interface IncomingRequestResponse {
+    data object Failure : IncomingRequestResponse
+    data class SuccessRadixMobileConnect(val redirectUrl: String) : IncomingRequestResponse
+    data object SuccessCE : IncomingRequestResponse
 }

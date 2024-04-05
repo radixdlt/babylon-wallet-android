@@ -205,7 +205,7 @@ class DappDetailViewModel @Inject constructor(
                         authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable().getBy(persona.address)?.sharedAccounts
                     )
                     val request = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-                        remoteConnectorId = "",
+                        remoteEntityId = MessageFromDataChannel.RemoteEntityID.ConnectorId(""),
                         interactionId = UUIDGenerator.uuid().toString(),
                         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
                             authorizedDapp.networkId,
@@ -224,7 +224,7 @@ class DappDetailViewModel @Inject constructor(
                             ),
                             challenge = null
                         ),
-                        resetRequestItem = MessageFromDataChannel.IncomingRequest.ResetRequestItem(
+                        resetRequestItem = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.ResetRequestItem(
                             accounts = true,
                             personaData = false
                         )

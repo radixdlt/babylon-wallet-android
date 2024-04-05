@@ -15,6 +15,8 @@ import javax.inject.Inject
 
 interface DappLinkRepository {
     suspend fun getDappLinks(): Result<List<DappLink>>
+
+    suspend fun getDappLink(sessionId: String): Result<DappLink>
     suspend fun saveDappLink(link: DappLink): Result<Unit>
 }
 
@@ -32,6 +34,13 @@ class DappLinkRepositoryImpl @Inject constructor(
             } else {
                 json.decodeFromString<IdentifiedArrayList<DappLink>>(linksSerialized)
             }
+        }
+    }
+
+    override suspend fun getDappLink(sessionId: String): Result<DappLink> {
+        return getDappLinks().mapCatching { links ->
+            links.firstOrNull { it.sessionId == sessionId }
+                ?: throw IllegalStateException("No dapp link found for session id $sessionId")
         }
     }
 
