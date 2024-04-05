@@ -99,7 +99,7 @@ sealed interface SettingsItem {
             return when (this) {
                 LinkedConnectors -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 Gateways -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateways
-                EntityHiding -> com.babylon.wallet.android.designsystem.R.drawable.ic_entity_hiding
+                EntityHiding -> com.babylon.wallet.android.designsystem.R.drawable.ic_entity
                 else -> null
             }
         }

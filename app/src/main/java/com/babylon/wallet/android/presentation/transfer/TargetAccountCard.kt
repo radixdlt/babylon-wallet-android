@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -28,7 +30,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
@@ -38,6 +39,7 @@ import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
 import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import kotlinx.collections.immutable.persistentSetOf
 import rdx.works.core.UUIDGenerator
@@ -65,7 +67,13 @@ fun TargetAccountCard(
             )
     ) {
         val cardModifier = when (targetAccount) {
-            is TargetAccount.Skeleton -> Modifier
+            is TargetAccount.Skeleton ->
+                Modifier
+                    .clip(RadixTheme.shapes.roundedRectTopMedium)
+                    .clickable {
+                        onChooseAccountClick()
+                    }
+
             is TargetAccount.Owned ->
                 Modifier
                     .background(
@@ -95,12 +103,23 @@ fun TargetAccountCard(
         ) {
             when (targetAccount) {
                 is TargetAccount.Skeleton -> {
-                    RadixTextButton(
-                        text = stringResource(id = R.string.assetTransfer_receivingAccount_chooseAccountButton),
-                        textStyle = RadixTheme.typography.body1Header,
-                        contentColor = RadixTheme.colors.gray2,
-                        onClick = onChooseAccountClick
-                    )
+                    Row(
+                        modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(18.dp),
+                            painter = painterResource(id = DSR.ic_entity),
+                            tint = RadixTheme.colors.blue1,
+                            contentDescription = null
+                        )
+                        Text(
+                            text = stringResource(id = R.string.assetTransfer_receivingAccount_chooseAccountButton),
+                            style = RadixTheme.typography.body1Header,
+                            color = RadixTheme.colors.blue1,
+                        )
+                    }
                 }
 
                 is TargetAccount.Other -> {
@@ -146,6 +165,10 @@ fun TargetAccountCard(
 
         Column(
             modifier = Modifier
+                .clip(RadixTheme.shapes.roundedRectBottomMedium)
+                .clickable {
+                    onAddAssetsClick()
+                }
                 .fillMaxWidth()
                 .heightIn(min = 68.dp)
                 .background(
@@ -214,10 +237,11 @@ fun TargetAccountCard(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
 
-            RadixTextButton(
-                text = stringResource(id = R.string.assetTransfer_receivingAccount_addAssetsButton),
-                contentColor = RadixTheme.colors.gray2,
-                onClick = onAddAssetsClick
+            Text(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingMedium),
+                style = RadixTheme.typography.body1Header,
+                text = " + " + stringResource(id = R.string.assetTransfer_receivingAccount_addAssetsButton),
+                color = RadixTheme.colors.blue1
             )
         }
     }
