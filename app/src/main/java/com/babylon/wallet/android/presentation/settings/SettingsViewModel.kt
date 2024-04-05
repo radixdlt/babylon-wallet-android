@@ -14,6 +14,8 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSet
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
 import com.babylon.wallet.android.utils.Constants
+import com.radixdlt.sargon.SargonBuildInformation
+import com.radixdlt.sargon.extensions.Sargon
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -28,6 +30,7 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.extensions.isCurrentNetworkMainnet
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -88,5 +91,17 @@ class SettingsViewModel @Inject constructor(
 }
 
 data class SettingsUiState(
-    val settings: ImmutableList<SettingsItem.TopLevelSettings>,
-)
+    val settings: ImmutableList<SettingsItem.TopLevelSettings>
+) {
+
+    val debugBuildInformation: DebugBuildInformation?
+        get() = if (EXPERIMENTAL_FEATURES_ENABLED) DebugBuildInformation else null
+}
+
+data object DebugBuildInformation {
+
+    val sargonInfo: SargonBuildInformation = Sargon.buildInformation.apply {
+        Timber.d(this.dependencies.toString())
+    }
+    val signalingServer: String = rdx.works.peerdroid.BuildConfig.SIGNALING_SERVER_URL
+}
