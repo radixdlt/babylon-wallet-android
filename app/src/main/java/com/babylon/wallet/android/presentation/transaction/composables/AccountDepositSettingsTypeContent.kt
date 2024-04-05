@@ -320,6 +320,7 @@ fun AccountDepositSettingsTypeContentPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountDepositSettingsTypeContentPreviewJustRule() {
