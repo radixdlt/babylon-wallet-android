@@ -63,6 +63,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.annotation.UsesSampleValues
 
 @Composable
 fun RestoreMnemonicsScreen(
@@ -444,6 +445,7 @@ private fun isSuggestionsVisible(state: RestoreMnemonicsViewModel.State): Boolea
     return state.seedPhraseState.wordAutocompleteCandidates.isNotEmpty() && keyboardVisible
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun RestoreMnemonicsIntroContent() {
@@ -454,7 +456,6 @@ fun RestoreMnemonicsIntroContent() {
                     RecoverableFactorSource(
                         associatedAccounts = List(5) { index ->
                             SampleDataProvider().sampleAccount(
-                                address = "rdx_abcdefg$index",
                                 name = "Account $index",
                                 appearanceId = index
                             )
@@ -476,6 +477,7 @@ fun RestoreMnemonicsIntroContent() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun RestoreMnemonicsSeedPhraseContent() {
@@ -486,7 +488,6 @@ fun RestoreMnemonicsSeedPhraseContent() {
                     RecoverableFactorSource(
                         associatedAccounts = List(5) { index ->
                             SampleDataProvider().sampleAccount(
-                                address = "rdx_abcdefg$index",
                                 name = "Account $index",
                                 appearanceId = index
                             )
@@ -508,6 +509,7 @@ fun RestoreMnemonicsSeedPhraseContent() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun RestoreMnemonicsNoMainSeedPhraseContent() {
@@ -518,7 +520,6 @@ fun RestoreMnemonicsNoMainSeedPhraseContent() {
                     RecoverableFactorSource(
                         associatedAccounts = List(5) { index ->
                             SampleDataProvider().sampleAccount(
-                                address = "rdx_abcdefg$index",
                                 name = "Account $index",
                                 appearanceId = index
                             )

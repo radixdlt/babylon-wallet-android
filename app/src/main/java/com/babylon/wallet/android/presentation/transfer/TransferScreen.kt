@@ -54,6 +54,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.coroutines.launch
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.resources.Resource
@@ -428,6 +429,7 @@ private fun SyncSheetState(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun TransferContentPreview() {
@@ -439,7 +441,6 @@ fun TransferContentPreview() {
             onBackClick = {},
             state = State(
                 fromAccount = SampleDataProvider().sampleAccount(
-                    address = "rdx_t_12382918379821",
                     name = "Savings account"
                 )
             ),

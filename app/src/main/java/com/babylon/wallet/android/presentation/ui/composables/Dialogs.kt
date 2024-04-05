@@ -349,7 +349,9 @@ fun FailureDialogContent(
             )
         }
 
-        val transactionId = runCatching { SignedIntentHash.init(transactionAddress) }.getOrNull()
+        val transactionId = remember(transactionAddress) {
+            runCatching { SignedIntentHash.init(transactionAddress) }.getOrNull()
+        }
         if (transactionId != null) {
             Row(
                 modifier = Modifier.fillMaxWidth(),

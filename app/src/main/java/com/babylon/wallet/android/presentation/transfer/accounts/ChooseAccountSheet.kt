@@ -306,7 +306,9 @@ private fun ChooseAccountContent(
                         }
                     },
                 accountName = accountItem.displayName,
-                address = AccountAddress.init(accountItem.address),
+                address = remember(accountItem.address) {
+                    AccountAddress.init(accountItem.address)
+                },
                 checked = state.isOwnedAccountSelected(account = accountItem),
                 isSingleChoice = true,
                 radioButtonClicked = {

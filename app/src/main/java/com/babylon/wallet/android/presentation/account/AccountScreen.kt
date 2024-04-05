@@ -61,6 +61,7 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableList
@@ -449,6 +450,7 @@ private fun HistoryButton(
     )
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountContentPreview() {
@@ -480,6 +482,7 @@ fun AccountContentPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountContentWithFiatBalancesDisabledPreview() {

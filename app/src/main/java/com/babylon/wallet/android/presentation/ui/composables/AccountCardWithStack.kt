@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -59,7 +60,9 @@ fun AccountCardWithStack(
                     color = Color.White
                 )
 
-                val address = runCatching { AccountAddress.init(accountAddress) }.getOrNull()
+                val address = remember(accountAddress) {
+                    runCatching { AccountAddress.init(accountAddress) }.getOrNull()
+                }
                 if (address != null) {
                     ActionableAddressView(
                         address = Address.Account(address),

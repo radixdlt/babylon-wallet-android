@@ -375,7 +375,9 @@ private fun InactiveAccountsPage(
                         onAccountSelected(account)
                     },
                 accountName = Constants.DEFAULT_ACCOUNT_NAME,
-                address = AccountAddress.init(account.data.address),
+                address = remember(account.data.address) {
+                    AccountAddress.init(account.data.address)
+                },
                 checked = account.selected,
                 isSingleChoice = false,
                 radioButtonClicked = {

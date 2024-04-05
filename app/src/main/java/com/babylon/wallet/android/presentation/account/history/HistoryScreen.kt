@@ -92,6 +92,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT
 import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT_THIS_YEAR
 import com.babylon.wallet.android.utils.openUrl
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -652,6 +653,7 @@ data class ScrollInfo(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun HistoryContentPreview() {
@@ -664,7 +666,6 @@ fun HistoryContentPreview() {
             state = State(
                 accountWithAssets = AccountWithAssets(
                     SampleDataProvider().sampleAccount(
-                        address = "rdx_t_12382918379821",
                         name = "Savings account"
                     )
                 ),
