@@ -9,7 +9,10 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.TransactionManifestData
@@ -258,8 +261,9 @@ class SampleDataProvider {
         )
     )
 
+    @UsesSampleValues
     fun sampleAccount(
-        address: String = "fj3489fj348f",
+        address: String = AccountAddress.sampleMainnet.random().string,
         name: String = "my account",
         factorSourceId: FactorSource.FactorSourceID.FromHash = FactorSource.FactorSourceID.FromHash(
             kind = FactorSourceKind.DEVICE,
@@ -342,9 +346,10 @@ class SampleDataProvider {
         )
     }
 
+    @UsesSampleValues
     fun sampleAccountWithoutResources(
         name: String = "my account",
-        address: String = randomAddress()
+        address: String = AccountAddress.sampleMainnet.random().string
     ): AccountWithAssets {
         return AccountWithAssets(
             account = sampleAccount(

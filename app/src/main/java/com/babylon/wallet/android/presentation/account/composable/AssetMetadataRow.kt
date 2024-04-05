@@ -164,17 +164,23 @@ fun Metadata.ValueView(
 
             MetadataType.Address -> ActionableAddressView(
                 modifier = modifier,
-                address = Address.init(value)
+                address = remember(value) {
+                    Address.init(value)
+                }
             )
 
             MetadataType.NonFungibleGlobalId -> ActionableAddressView(
                 modifier = modifier,
-                globalId = NonFungibleGlobalId.init(value)
+                globalId = remember(value) {
+                    NonFungibleGlobalId.init(value)
+                }
             )
 
             MetadataType.NonFungibleLocalId -> ActionableAddressView(
                 modifier = modifier,
-                localId = NonFungibleLocalId.init(value)
+                localId = remember(value) {
+                    NonFungibleLocalId.init(value)
+                }
             )
 
             MetadataType.Decimal -> Text(
