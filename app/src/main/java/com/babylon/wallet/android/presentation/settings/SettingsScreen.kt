@@ -356,7 +356,7 @@ private fun DebugBuildInformation(
         )
         VersionInformation(
             dependencyName = "SigServer",
-            dependencyVersion = buildInfo.signalingServer
+            dependencyVersion = buildInfo.SIGNALING_SERVER
         )
     }
 }
