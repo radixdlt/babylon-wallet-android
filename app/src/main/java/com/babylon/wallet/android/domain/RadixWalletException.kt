@@ -266,8 +266,8 @@ fun RadixWalletException.DappRequestException.toUserFriendlyMessage(context: Con
         is RadixWalletException.DappRequestException.WrongNetwork -> {
             context.getString(
                 R.string.dAppRequest_requestWrongNetworkAlert_message,
-                currentNetworkName,
-                requestNetworkName
+                requestNetworkName,
+                currentNetworkName
             )
         }
 
