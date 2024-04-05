@@ -27,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -67,7 +68,7 @@ class HistoryViewModel @Inject constructor(
                     _state.update {
                         it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
                     }
-                }.mapNotNull { it.firstOrNull() }.mapNotNull { accountWithAssets ->
+                }.mapNotNull { it.firstOrNull() }.map { accountWithAssets ->
                     if (accountWithAssets.details?.firstTransactionDate == null) {
                         updateAccountFirstTransactionDateUseCase(args.accountAddress).getOrThrow()
                     } else {
@@ -77,8 +78,8 @@ class HistoryViewModel @Inject constructor(
                     _state.update {
                         it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
                     }
-                }.firstOrNull()?.let { genesisTxInstant ->
-                    computeTimeFilters(genesisTxInstant)
+                }.firstOrNull().let { genesisTxInstant ->
+                    genesisTxInstant?.let { computeTimeFilters(it) }
                     loadHistory()
                 }
             }
