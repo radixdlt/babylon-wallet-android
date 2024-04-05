@@ -100,8 +100,8 @@ data class SettingsUiState(
 
 data object DebugBuildInformation {
 
+    const val SIGNALING_SERVER: String = rdx.works.peerdroid.BuildConfig.SIGNALING_SERVER_URL
     val sargonInfo: SargonBuildInformation = Sargon.buildInformation.apply {
         Timber.d(this.dependencies.toString())
     }
-    val signalingServer: String = rdx.works.peerdroid.BuildConfig.SIGNALING_SERVER_URL
 }
