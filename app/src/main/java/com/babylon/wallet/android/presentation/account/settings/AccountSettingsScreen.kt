@@ -20,6 +20,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -30,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -42,14 +44,20 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.usecases.FaucetState
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
+import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.babylon.wallet.android.utils.BiometricAuthenticationResult
+import com.babylon.wallet.android.utils.biometricAuthenticate
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -111,6 +119,8 @@ fun AccountSettingsScreen(
 
     AccountSettingsContent(
         onBackClick = onBackClick,
+        onMessageShown = viewModel::onMessageShown,
+        error = state.error,
         accountName = state.accountName,
         onShowRenameAccountClick = {
             scope.launch {
@@ -130,6 +140,9 @@ fun AccountSettingsScreen(
             onSettingItemClick(it, state.accountAddress)
         },
         accountAddress = state.accountAddress,
+        onGetFreeXrdClick = viewModel::onGetFreeXrdClick,
+        faucetState = state.faucetState,
+        isXrdLoading = state.isFreeXRDLoading,
         onHideAccount = {
             showHideAccountPrompt = true
         }
@@ -195,6 +208,8 @@ fun AccountSettingsScreen(
 @Composable
 private fun AccountSettingsContent(
     onBackClick: () -> Unit,
+    onMessageShown: () -> Unit,
+    error: UiMessage?,
     accountName: String,
     onShowRenameAccountClick: () -> Unit,
     onShowAddressQRCodeClick: () -> Unit,
@@ -202,8 +217,17 @@ private fun AccountSettingsContent(
     settingsSections: ImmutableList<AccountSettingsSection>,
     onSettingClick: (AccountSettingItem) -> Unit,
     accountAddress: String,
+    onGetFreeXrdClick: () -> Unit,
+    faucetState: FaucetState,
+    isXrdLoading: Boolean,
     onHideAccount: () -> Unit
 ) {
+    val snackBarHostState = remember { SnackbarHostState() }
+    SnackbarUIMessage(
+        message = error,
+        snackbarHostState = snackBarHostState,
+        onMessageShown = onMessageShown
+    )
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -211,6 +235,12 @@ private fun AccountSettingsContent(
                 title = stringResource(R.string.accountSettings_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBars
+            )
+        },
+        snackbarHost = {
+            RadixSnackbarHost(
+                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+                hostState = snackBarHostState
             )
         },
         containerColor = RadixTheme.colors.gray5
@@ -281,10 +311,56 @@ private fun AccountSettingsContent(
                 }
             }
             item {
+                if (faucetState is FaucetState.Available) {
+                    val context = LocalContext.current
+
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+
+                    RadixSecondaryButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = RadixTheme.dimensions.paddingLarge,
+                                end = RadixTheme.dimensions.paddingLarge,
+                                top = RadixTheme.dimensions.paddingDefault
+                            ),
+                        text = stringResource(R.string.accountSettings_getXrdTestTokens),
+                        onClick = {
+                            context.biometricAuthenticate { result ->
+                                if (result == BiometricAuthenticationResult.Succeeded) {
+                                    onGetFreeXrdClick()
+                                }
+                            }
+                        },
+                        isLoading = isXrdLoading,
+                        enabled = !isXrdLoading && faucetState.isEnabled
+                    )
+
+                    if (isXrdLoading) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = RadixTheme.dimensions.paddingXXXXLarge,
+                                    vertical = RadixTheme.dimensions.paddingSmall
+                                ),
+                            text = stringResource(R.string.accountSettings_loadingPrompt),
+                            style = RadixTheme.typography.body2Regular,
+                            color = RadixTheme.colors.gray1
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
+                } else {
+                    Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
+                }
+            }
+            item {
                 WarningButton(
                     modifier = Modifier.padding(
-                        horizontal = RadixTheme.dimensions.paddingLarge,
-                        vertical = RadixTheme.dimensions.paddingDefault
+                        start = RadixTheme.dimensions.paddingLarge,
+                        end = RadixTheme.dimensions.paddingLarge,
+                        bottom = RadixTheme.dimensions.paddingDefault
                     ),
                     text = stringResource(R.string.accountSettings_hideAccount_button),
                     onClick = onHideAccount
@@ -394,6 +470,8 @@ fun AccountSettingsPreview() {
     RadixWalletTheme {
         AccountSettingsContent(
             onBackClick = {},
+            onMessageShown = {},
+            error = null,
             accountName = "my cool account",
             onShowRenameAccountClick = {},
             onShowAddressQRCodeClick = {},
@@ -407,6 +485,9 @@ fun AccountSettingsPreview() {
             ),
             onSettingClick = {},
             accountAddress = SampleDataProvider().randomAddress(),
+            onGetFreeXrdClick = {},
+            faucetState = FaucetState.Available(isEnabled = true),
+            isXrdLoading = false,
             onHideAccount = {}
         )
     }
