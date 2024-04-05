@@ -163,7 +163,7 @@ class HistoryViewModel @Inject constructor(
 
     fun onRefresh() {
         _state.update { it.copy(isRefreshing = true, content = State.Content.Loading) }
-        if (_state.value.loadedGenesisTxInstant) {
+        if (_state.value.isGenesisTxInstantLoaded) {
             loadHistory()
         } else {
             loadFirstTransactionDate()
@@ -430,7 +430,7 @@ data class State(
             else -> null
         }
 
-    val loadedGenesisTxInstant: Boolean
+    val isGenesisTxInstantLoaded: Boolean
         get() = accountWithAssets?.details?.firstTransactionDate != null
 
     val shouldShowFiltersButton: Boolean

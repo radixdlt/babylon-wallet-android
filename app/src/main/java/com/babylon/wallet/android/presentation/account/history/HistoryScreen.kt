@@ -95,6 +95,7 @@ import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT_THIS_YEAR
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
@@ -632,10 +633,10 @@ private fun MonitorListScroll(
         }
     }
     LaunchedEffect(state, loadMoreUp) {
-        snapshotFlow { loadMoreUp }.distinctUntilChanged().collect { loadMoreUp ->
-            if (loadMoreUp) {
-                onLoadMore(ScrollInfo.Direction.UP)
-            }
+        snapshotFlow { loadMoreUp }.distinctUntilChanged().filter { loadMoreUp ->
+            loadMoreUp
+        }.collect {
+            onLoadMore(ScrollInfo.Direction.UP)
         }
     }
 }
