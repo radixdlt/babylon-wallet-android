@@ -49,24 +49,28 @@ class GenerateProfileUseCase @Inject constructor(
         deviceFactorSource: FactorSource.Device,
         mnemonicWithPassphrase: MnemonicWithPassphrase,
         accounts: Accounts
-    ): Profile {
-        val accountsList = accounts.asList()
-        val networkId = accountsList.firstOrNull()?.networkId ?: NetworkId.MAINNET
-        return when (val state = profileRepository.profileState.first()) {
-            is ProfileState.Restored -> state.profile
-            else -> withContext(defaultDispatcher) {
-                val profile = Profile.init(
-                    deviceFactorSource = deviceFactorSource,
-                    creatingDeviceName = deviceInfoRepository.getDeviceInfo().displayName
-                ).addAccounts(
-                    accounts = accountsList,
-                    onNetwork = networkId
-                )
-                profileRepository.saveProfile(profile)
-                mnemonicRepository.saveMnemonic(deviceFactorSource.value.id.asGeneral(), mnemonicWithPassphrase)
-                preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())
-
-                profile
+    ): Result<Profile> {
+        return runCatching {
+            val accountsList = accounts.asList()
+            val networkId = accountsList.firstOrNull()?.networkId ?: NetworkId.MAINNET
+            when (val state = profileRepository.profileState.first()) {
+                is ProfileState.Restored -> state.profile
+                else -> withContext(defaultDispatcher) {
+                    val profile = Profile.init(
+                        deviceFactorSource = deviceFactorSource,
+                        creatingDeviceName = deviceInfoRepository.getDeviceInfo().displayName
+                    ).addAccounts(
+                        accounts = accountsList,
+                        onNetwork = networkId
+                    )
+                    mnemonicRepository.saveMnemonic(deviceFactorSource.value.id.asGeneral(), mnemonicWithPassphrase).fold(onSuccess = {
+                        profileRepository.saveProfile(profile)
+                        preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())
+                        Result.success(profile)
+                    }, onFailure = { error ->
+                        Result.failure(ProfileException.SecureStorageAccess)
+                    }).getOrThrow()
+                }
             }
         }
     }

@@ -211,17 +211,20 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 _state.update { it.copy(isScanningNetwork = true) }
                 val bdfs = state.value.recoveryFactorSource
                 val accounts = state.value.activeAccounts +
-                    state.value.inactiveAccounts.filter { it.selected }.map { it.data }
+                        state.value.inactiveAccounts.filter { it.selected }.map { it.data }
                 generateProfileUseCase.derived(
                     deviceFactorSource = bdfs as FactorSource.Device,
                     mnemonicWithPassphrase = givenTempMnemonic!!,
                     accounts = Accounts(accounts)
-                )
-                sendEvent(Event.RecoverComplete)
+                ).onSuccess {
+                    sendEvent(Event.RecoverComplete)
+                }.onFailure { error ->
+                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error), isScanningNetwork = false) }
+                }
             } else {
                 _state.update { it.copy(isScanningNetwork = true) }
                 val accounts = state.value.activeAccounts +
-                    state.value.inactiveAccounts.filter { it.selected }.map { it.data }
+                        state.value.inactiveAccounts.filter { it.selected }.map { it.data }
                 if (accounts.isNotEmpty()) {
                     addRecoveredAccountsToProfileUseCase(accounts = accounts)
                     sendEvent(Event.RecoverComplete)
