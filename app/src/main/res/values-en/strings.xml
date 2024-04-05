@@ -155,7 +155,7 @@
   <string name="accountSettings_specificAssetsDeposits_allowDepositorsNoResources">Add a specific badge by its resource address to allow all deposits from its holder.</string>
   <string name="accountSettings_specificAssetsDeposits_allowDepositors">The holder of the following badges may always deposit accounts to this account.</string>
   <string name="accountSettings_specificAssetsDeposits_resourceListPicker">Select exception list</string>
-  <string name="accountSettings_specificAssetsDeposits_modificationDisabledForRecoveredAccount">⚠️ Sorry, this Account\'s third-party exceptions and depositor lists are in an unknown state and cannot be viewed or edited because it was imported using only a seed phrase or Ledger. A forthcoming wallet update will enable viewing and editing of these lists.</string>
+  <string name="accountSettings_specificAssetsDeposits_modificationDisabledForRecoveredAccount">Sorry, this Account\'s third-party exceptions and depositor lists are in an unknown state and cannot be viewed or edited because it was imported using only a seed phrase or Ledger. A forthcoming wallet update will enable viewing and editing of these lists.</string>
   <string name="accountSettings_showAssets_text">Asset creators can add tags to them. You can choose which tags you want to see in this Account.</string>
   <string name="accountSettings_showAssets_selectShown">Select the ones you’d like shown on all your assets.</string>
   <string name="accountSettings_showAssets_recommended">Recommended</string>
