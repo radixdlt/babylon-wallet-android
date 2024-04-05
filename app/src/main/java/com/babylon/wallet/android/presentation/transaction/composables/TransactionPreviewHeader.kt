@@ -40,8 +40,6 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionVersion
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.ret.transaction.TransactionManifestData
-import rdx.works.profile.ret.transaction.TransactionVersion
 
 @Composable
 fun TransactionPreviewHeader(
