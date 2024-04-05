@@ -51,6 +51,8 @@ zxing = "3.5.2"
 apacheCommonsValidator = "1.7"
 jsonAssert = "1.5.1"
 firebaseCrashlytics = "18.5.1"
+appsFlyer = "6.13.0"
+installReferrer = "2.2"
 
 androidApplicationPlugin = "8.2.2"
 androidLibraryPlugin = "8.2.2"
@@ -142,6 +144,8 @@ zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
 apacheCommonsValidator = { module = "commons-validator:commons-validator", version.ref = "apacheCommonsValidator" }
 jsonAssert = { module = "org.skyscreamer:jsonassert", version.ref = "jsonAssert" }
 firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics", version.ref = "firebaseCrashlytics" }
+appsFlyer = { module = "com.appsflyer:af-android-sdk", version.ref = "appsFlyer" }
+installReferrer = { module = "com.android.installreferrer:installreferrer", version.ref = "installReferrer" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplicationPlugin" }
 android-library = { id = "com.android.library", version.ref = "androidLibraryPlugin" }
