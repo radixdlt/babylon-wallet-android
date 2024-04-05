@@ -81,7 +81,8 @@ data class HistoryFilters(
     val transactionType: TransactionType? = null,
     val resource: Resource? = null,
     val transactionClass: TransactionClass? = null,
-    val sortOrder: SortOrder = SortOrder.Desc
+    val sortOrder: SortOrder = SortOrder.Desc,
+    val genesisTxDate: ZonedDateTime? = null
 ) {
 
     enum class SortOrder {

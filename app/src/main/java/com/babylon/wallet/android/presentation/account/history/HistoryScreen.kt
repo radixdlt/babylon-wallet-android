@@ -94,8 +94,9 @@ import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT
 import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT_THIS_YEAR
 import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -210,28 +211,27 @@ fun HistoryContent(
     )
     LaunchedEffect(state.timeFilterItems.size) {
         if (state.timeFilterItems.isNotEmpty()) {
-            Timber.d("History: Scrolling to last item")
             timeFilterScrollState.scrollToItem(state.timeFilterItems.lastIndex)
         }
     }
     MonitorListScroll(state = listState, onLoadMore = { direction ->
         when (direction) {
             ScrollInfo.Direction.UP -> {
-                if (state.canLoadMoreUp) {
-                    onLoadMore(ScrollInfo.Direction.UP)
-                }
+                onLoadMore(ScrollInfo.Direction.UP)
             }
 
             ScrollInfo.Direction.DOWN -> {
-                if (state.canLoadMoreDown) {
-                    onLoadMore(ScrollInfo.Direction.DOWN)
-                }
+                onLoadMore(ScrollInfo.Direction.DOWN)
             }
         }
     }, onScrollEvent = {
         onScrollEvent(it)
     })
-    DefaultPullToRefreshContainer(isRefreshing = state.isRefreshing, onRefresh = onRefresh) {
+    DefaultPullToRefreshContainer(
+        isRefreshing = state.isRefreshing,
+        onRefresh = onRefresh,
+        canRefresh = state.shouldEnableUserInteraction
+    ) {
         Scaffold(
             modifier = modifier.imePadding(),
             topBar = {
@@ -597,8 +597,11 @@ private fun MonitorListScroll(
             state.layoutInfo.totalItemsCount > 0 && lastItem.index >= threshold
         }
     }
-    val loadMoreUp by remember(state) {
+    val loadMoreUp by remember(state, scrollingUp) {
         derivedStateOf {
+            if (!scrollingUp) {
+                return@derivedStateOf false
+            }
             val firstItem = state.layoutInfo.visibleItemsInfo.firstOrNull() ?: return@derivedStateOf false
             state.layoutInfo.totalItemsCount > 0 && firstItem.index <= loadThreshold
         }
@@ -629,8 +632,10 @@ private fun MonitorListScroll(
             onLoadMore(ScrollInfo.Direction.DOWN)
         }
     }
-    LaunchedEffect(loadMoreUp) {
-        if (loadMoreUp) {
+    LaunchedEffect(state, loadMoreUp) {
+        snapshotFlow { loadMoreUp }.distinctUntilChanged().filter { loadMoreUp ->
+            loadMoreUp
+        }.collect {
             onLoadMore(ScrollInfo.Direction.UP)
         }
     }
