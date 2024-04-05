@@ -1,16 +1,17 @@
 package com.babylon.wallet.android.data.repository
 
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
+import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.gateway.apis.RcrApi
 import com.babylon.wallet.android.data.gateway.model.RcrRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 import rdx.works.core.decodeHex
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import rdx.works.core.toHexString
+import timber.log.Timber
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
 
@@ -24,7 +25,6 @@ interface RcrRepository {
 
 class RcrRepositoryImpl @Inject constructor(
     private val api: RcrApi,
-    private val json: Json,
     private val dappLinkRepository: DappLinkRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 
@@ -36,7 +36,8 @@ class RcrRepositoryImpl @Inject constructor(
             response.map { d ->
                 val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.value.decodeHex()).getOrThrow()
                 val decryptedRequestString = String(decryptedBytes, StandardCharsets.UTF_8)
-                json.decodeFromString<WalletInteraction>(decryptedRequestString)
+                Timber.d("Received request $decryptedRequestString")
+                peerdroidRequestJson.decodeFromString<WalletInteraction>(decryptedRequestString)
             }.find { it.interactionId == interactionId } ?: throw IllegalStateException("No interaction with id $interactionId")
         }
     }
@@ -53,7 +54,11 @@ class RcrRepositoryImpl @Inject constructor(
 
     override suspend fun getRequestTest(sessionId: String, interactionId: String) = withContext(ioDispatcher) {
         api.executeRequest(RcrRequest.GetRequests(sessionId)).toResult().mapCatching { response ->
-            response ?: throw IllegalStateException("No data in response")
+            val dappLink = dappLinkRepository.getDappLinks().getOrThrow().first { it.sessionId == sessionId }
+            response.map { d ->
+                val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.value.decodeHex()).getOrThrow()
+                String(decryptedBytes, StandardCharsets.UTF_8)
+            }
         }
     }
 }

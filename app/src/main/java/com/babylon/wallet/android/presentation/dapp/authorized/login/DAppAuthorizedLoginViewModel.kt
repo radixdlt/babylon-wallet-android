@@ -2,13 +2,14 @@ package com.babylon.wallet.android.presentation.dapp.authorized.login
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
+import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.domain.model.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
@@ -16,6 +17,7 @@ import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toRequestedNumberQuantifier
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -69,7 +71,7 @@ import javax.inject.Inject
 class DAppAuthorizedLoginViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val appEventBus: AppEventBus,
-    private val dAppMessenger: DappMessenger,
+    private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val dAppConnectionRepository: DAppConnectionRepository,
     private val getProfileUseCase: GetProfileUseCase,
     private val getCurrentGatewayUseCase: GetCurrentGatewayUseCase,
@@ -226,7 +228,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             }
 
             ongoingPersonaDataRequestItem != null &&
-                ongoingPersonaDataRequestItem.isValid() && (!ongoingDataAlreadyGranted || resetPersonaData) -> {
+                    ongoingPersonaDataRequestItem.isValid() && (!ongoingDataAlreadyGranted || resetPersonaData) -> {
                 _state.update { state ->
                     state.copy(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
@@ -276,12 +278,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 is RadixWalletException.LedgerCommunicationException, is RadixWalletException.SignatureCancelled -> {}
 
                 else -> {
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        remoteConnectorId = request.remoteConnectorId,
-                        requestId = args.interactionId,
-                        error = exception.ceError,
-                        message = exception.getDappMessage()
-                    )
+                    respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
                     _state.update { it.copy(failureDialog = FailureDialogState.Open(exception)) }
                 }
             }
@@ -590,13 +587,9 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     fun onAbortDappLogin(walletWalletErrorType: WalletErrorType = WalletErrorType.RejectedByUser) {
         viewModelScope.launch {
             if (request.isInternalRequest()) {
-                incomingRequestRepository.requestHandled(request.id)
+                incomingRequestRepository.requestHandled(request.interactionId)
             } else {
-                dAppMessenger.sendWalletInteractionResponseFailure(
-                    remoteConnectorId = request.remoteConnectorId,
-                    requestId = args.interactionId,
-                    error = walletWalletErrorType
-                )
+                respondToIncomingRequestUseCase.respondWithFailure(request, walletWalletErrorType)
             }
             sendEvent(Event.CloseLoginFlow)
             incomingRequestRepository.requestHandled(requestId = args.interactionId)
@@ -715,11 +708,45 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     ongoingSharedPersonaData = state.value.selectedOngoingPersonaData,
                     onetimeSharedPersonaData = state.value.selectedOnetimePersonaData,
                     deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+                ).mapCatching { response ->
+                    respondToIncomingRequestUseCase.respondWithSuccess(request, response).getOrThrow()
+                }.onSuccess { result ->
+                    mutex.withLock {
+                        editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
+                    }
+                    if (result is IncomingRequestResponse.SuccessRadixMobileConnect) {
+                        sendEvent(Event.OpenUrl(result.redirectUrl))
+                    } else if (!request.isInternalRequest()) {
+                        appEventBus.sendEvent(
+                            AppEvent.Status.DappInteraction(
+                                requestId = request.interactionId,
+                                dAppName = state.value.dapp?.name
+                            )
+                        )
+                    }
+                    sendEvent(Event.LoginFlowCompleted)
+                }.onFailure { throwable ->
+                    handleRequestError(throwable)
+                    if (abortOnFailure) {
+                        onAbortDappLogin()
+                    }
+                }
+
+
+                buildAuthorizedDappResponseUseCase(
+                    request = request,
+                    selectedPersona = selectedPersona,
+                    oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull {
+                        getProfileUseCase.accountOnCurrentNetwork(it.address)
+                    },
+                    ongoingAccounts = state.value.selectedAccountsOngoing.mapNotNull {
+                        getProfileUseCase.accountOnCurrentNetwork(it.address)
+                    },
+                    ongoingSharedPersonaData = state.value.selectedOngoingPersonaData,
+                    onetimeSharedPersonaData = state.value.selectedOnetimePersonaData,
+                    deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
                 ).onSuccess { response ->
-                    dAppMessenger.sendWalletInteractionSuccessResponse(
-                        remoteConnectorId = request.remoteConnectorId,
-                        response = response
-                    )
+                    respondToIncomingRequestUseCase.respondWithSuccess(request, response)
                     mutex.withLock {
                         editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                     }
@@ -749,6 +776,7 @@ sealed interface Event : OneOffEvent {
     data class RequestCompletionBiometricPrompt(val isSignatureRequired: Boolean) : Event
 
     data object LoginFlowCompleted : Event
+    data class OpenUrl(val url: String) : Event
 
     data class DisplayPermission(
         val numberOfAccounts: Int,

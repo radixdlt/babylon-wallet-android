@@ -90,7 +90,7 @@ data class WalletTransactionItems(
 }
 
 fun WalletTransactionItems.SendTransactionItem.toDomainModel(
-    remoteConnectorId: String, // from which CE comes the message
+    remoteConnectorId: MessageFromDataChannel.RemoteEntityID, // from which CE comes the message
     requestId: String,
     metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
 ) = MessageFromDataChannel.IncomingRequest.TransactionRequest(
@@ -106,7 +106,7 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
     requestMetadata = metadata
 )
 
-fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataChannel.IncomingRequest {
+fun WalletInteraction.toDomainModel(remoteEntityId: MessageFromDataChannel.RemoteEntityID): MessageFromDataChannel.IncomingRequest {
     try {
         val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             networkId = NetworkId.init(discriminant = metadata.networkId.toUByte()),
@@ -116,15 +116,15 @@ fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataC
         )
         return when (items) {
             is WalletTransactionItems -> {
-                items.send.toDomainModel(remoteConnectorId, interactionId, metadata)
+                items.send.toDomainModel(remoteEntityId, interactionId, metadata)
             }
 
             is WalletAuthorizedRequestItems -> {
-                items.parseAuthorizedRequest(remoteConnectorId, interactionId, metadata)
+                items.parseAuthorizedRequest(remoteEntityId, interactionId, metadata)
             }
 
             is WalletUnauthorizedRequestItems -> {
-                items.parseUnauthorizedRequest(remoteConnectorId, interactionId, metadata)
+                items.parseUnauthorizedRequest(remoteEntityId, interactionId, metadata)
             }
         }
     } catch (e: Exception) {
@@ -133,12 +133,12 @@ fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataC
 }
 
 private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
-    remoteConnectorId: String,
+    remoteEntityId: MessageFromDataChannel.RemoteEntityID,
     requestId: String,
     metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
 ): MessageFromDataChannel.IncomingRequest.UnauthorizedRequest {
     return MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
-        remoteConnectorId = remoteConnectorId,
+        remoteEntityId = remoteEntityId,
         interactionId = requestId,
         requestMetadata = metadata,
         oneTimeAccountsRequestItem = oneTimeAccounts?.toDomainModel(),
@@ -147,7 +147,7 @@ private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
 }
 
 private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
-    remoteConnectorId: String,
+    remoteEntityId: MessageFromDataChannel.RemoteEntityID,
     requestId: String,
     metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
 ): MessageFromDataChannel.IncomingRequest {
@@ -156,7 +156,7 @@ private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
         is AuthUsePersonaRequestItem -> auth.toDomainModel()
     }
     return MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = remoteConnectorId,
+        remoteEntityId = remoteEntityId,
         interactionId = requestId,
         requestMetadata = metadata,
         authRequest = auth,

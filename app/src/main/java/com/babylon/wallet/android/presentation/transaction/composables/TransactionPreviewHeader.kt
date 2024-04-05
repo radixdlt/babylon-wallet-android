@@ -177,8 +177,8 @@ fun TransactionPreviewHeaderPreview() {
             onBackClick = {},
             state = State(
                 request = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                    remoteConnectorId = "",
-                    requestId = "",
+                    remoteEntityId = MessageFromDataChannel.RemoteEntityID.ConnectorId(""),
+                    interactionId = "",
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
                         networkId = Gateway.default.network.id,

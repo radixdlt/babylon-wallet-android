@@ -2,13 +2,13 @@ package com.babylon.wallet.android.presentation.status.transaction
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.toConnectorExtensionError
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -31,7 +31,7 @@ import javax.inject.Inject
 class TransactionStatusDialogViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val transactionStatusClient: TransactionStatusClient,
-    private val dAppMessenger: DappMessenger,
+    private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val appEventBus: AppEventBus,
     private val exceptionMessageProvider: ExceptionMessageProvider,
     savedStateHandle: SavedStateHandle
@@ -94,9 +94,8 @@ class TransactionStatusDialogViewModel @Inject constructor(
                     if (!status.isInternal) {
                         (error as? RadixWalletException.TransactionSubmitException)?.let { exception ->
                             incomingRequestRepository.getTransactionWriteRequest(status.requestId)?.let { transactionRequest ->
-                                dAppMessenger.sendWalletInteractionResponseFailure(
-                                    remoteConnectorId = transactionRequest.remoteConnectorId,
-                                    requestId = status.requestId,
+                                respondToIncomingRequestUseCase.respondWithFailure(
+                                    request = transactionRequest,
                                     error = exception.ceError,
                                     message = exception.getDappMessage()
                                 )

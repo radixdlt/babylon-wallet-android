@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
@@ -37,7 +36,7 @@ import javax.inject.Inject
  */
 class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     private val dAppConnectionRepository: DAppConnectionRepository,
-    private val dAppMessenger: DappMessenger,
+    private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val getProfileUseCase: GetProfileUseCase,
     private val buildAuthorizedDappResponseUseCase: BuildAuthorizedDappResponseUseCase
 ) {
@@ -96,7 +95,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                                 persona
                             )
                             operationResult = result.map { dAppName ->
-                                DAppData(requestId = request.id, name = dAppName)
+                                DAppData(requestId = request.interactionId, name = dAppName)
                             }
                         }
 
@@ -115,7 +114,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                                     authorizedDApp = authorizedDapp
                                 )
                                 operationResult = result.map { dAppName ->
-                                    DAppData(requestId = request.id, name = dAppName)
+                                    DAppData(requestId = request.interactionId, name = dAppName)
                                 }
                             }
                         }
@@ -127,10 +126,9 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     }
 
     private suspend fun respondWithInvalidPersona(incomingRequest: AuthorizedRequest) {
-        dAppMessenger.sendWalletInteractionResponseFailure(
-            incomingRequest.remoteConnectorId,
-            incomingRequest.interactionId,
-            WalletErrorType.InvalidPersona
+        respondToIncomingRequestUseCase.respondWithFailure(
+            request = incomingRequest,
+            error = WalletErrorType.InvalidPersona
         )
     }
 
@@ -209,8 +207,8 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
             ongoingAccounts = selectedAccounts.map { it.data },
             ongoingSharedPersonaData = selectedPersonaData
         ).mapCatching { response ->
-            return dAppMessenger.sendWalletInteractionSuccessResponse(
-                remoteConnectorId = request.remoteConnectorId,
+            return respondToIncomingRequestUseCase.respondWithSuccess(
+                request = request,
                 response = response
             ).getOrNull()?.let {
                 val updatedDApp = updateDAppPersonaWithLastUsedTimestamp(authorizedDApp, persona.address)

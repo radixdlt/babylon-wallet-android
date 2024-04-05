@@ -104,7 +104,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     private val samplePersona = sampleProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.personas.first()
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "remoteConnectorId",
+        remoteEntityId = "remoteConnectorId",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
@@ -125,7 +125,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     )
 
     private val usePersonaRequestOngoing = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "remoteConnectorId",
+        remoteEntityId = "remoteConnectorId",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
@@ -144,7 +144,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     )
 
     private val usePersonaRequestOngoingPlusOngoingData = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "1",
+        remoteEntityId = "1",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
@@ -166,8 +166,24 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         )
     )
 
+    private val usePersonaRequestOngoingDataOnly = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+        remoteEntityId = "1",
+        interactionId = "1",
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+            11,
+            "",
+            "address",
+            false
+        ),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
+        ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
+            isRequestingName = true,
+            isOngoing = true
+        )
+    )
+
     private val usePersonaRequestOneTimeAccounts = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "1",
+        remoteEntityId = "1",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,
@@ -186,7 +202,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     )
 
     private val usePersonaRequestOneTimeAccountsAndData = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "1",
+        remoteEntityId = "1",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             NetworkId.MAINNET,

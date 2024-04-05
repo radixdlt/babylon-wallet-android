@@ -8,7 +8,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
-import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 
 private const val ARG_DAPP_ORIGIN = "origin"
 private const val ARG_PUBLIC_KEY = "publicKey"
@@ -29,12 +28,19 @@ internal class M2MArgs(val publicKey: String?, val sessionId: String?, val origi
         savedStateHandle.get<String>(ARG_DAPP_ORIGIN),
         savedStateHandle.get<String>(ARG_INTERACTION_ID)
     )
+
+    fun isValidRequest(): Boolean {
+        return sessionId != null && interactionId != null
+    }
+
+    fun isValidConnect(): Boolean {
+        return origin != null && publicKey != null && sessionId != null
+    }
 }
 
 fun NavGraphBuilder.m2mScreen(
     onBackClick: () -> Unit
 ) {
-    markAsHighPriority(route = ROUTE)
     composable(
         route = ROUTE,
         deepLinks = listOf(

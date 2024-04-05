@@ -12,6 +12,6 @@ data class ResetRequestItem(
     val personaData: Boolean
 )
 
-fun ResetRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.ResetRequestItem {
-    return MessageFromDataChannel.IncomingRequest.ResetRequestItem(accounts, personaData)
+fun ResetRequestItem.toDomainModel(): MessageFromDataChannel.IncomingRequest.AuthorizedRequest.ResetRequestItem {
+    return MessageFromDataChannel.IncomingRequest.AuthorizedRequest.ResetRequestItem(accounts, personaData)
 }

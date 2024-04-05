@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases
 
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
@@ -20,7 +19,7 @@ import javax.inject.Inject
 class VerifyDAppUseCase @Inject constructor(
     private val stateRepository: StateRepository,
     private val wellKnownDAppDefinitionRepository: WellKnownDAppDefinitionRepository,
-    private val dAppMessenger: DappMessenger,
+    private val respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
     private val getProfileUseCase: GetProfileUseCase
 ) {
 
@@ -40,19 +39,13 @@ class VerifyDAppUseCase @Inject constructor(
         } else {
             validateTwoWayLink(
                 origin = request.metadata.origin,
-                dAppDefinitionAddress = dAppDefinitionAddress
-            )
-                .onFailure { error ->
-                    error.asRadixWalletException()?.let { radixWalletException ->
-                        val walletErrorType = radixWalletException.toConnectorExtensionError() ?: return@let
-                        dAppMessenger.sendWalletInteractionResponseFailure(
-                            remoteConnectorId = request.remoteConnectorId,
-                            requestId = request.id,
-                            error = walletErrorType,
-                            message = radixWalletException.getDappMessage()
-                        )
-                    }
+                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
+            ).onFailure { error ->
+                error.asRadixWalletException()?.let { radixWalletException ->
+                    val walletErrorType = radixWalletException.toConnectorExtensionError() ?: return@let
+                    respondToIncomingRequestUseCase.respondWithFailure(request, walletErrorType, radixWalletException.getDappMessage())
                 }
+            }
         }
     }
 

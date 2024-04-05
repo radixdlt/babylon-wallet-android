@@ -137,7 +137,12 @@ class PeerdroidClientImpl @Inject constructor(
     ): MessageFromDataChannel {
         return try {
             when (val payload = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)) {
-                is WalletInteraction -> payload.toDomainModel(remoteConnectorId = remoteConnectorId)
+                is WalletInteraction -> payload.toDomainModel(
+                    remoteEntityId = MessageFromDataChannel.RemoteEntityID.ConnectorId(
+                        remoteConnectorId
+                    )
+                )
+
                 else -> (payload as LedgerInteractionResponse).toDomainModel()
             }
         } catch (serializationException: SerializationException) {

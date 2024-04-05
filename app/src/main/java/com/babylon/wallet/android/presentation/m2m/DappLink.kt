@@ -16,7 +16,9 @@ data class DappLink(
     @SerialName("sessionId")
     val sessionId: String,
     @SerialName("privateKey")
-    val x25519PrivateKeyCompressed: HexCoded32Bytes
+    val x25519PrivateKeyCompressed: HexCoded32Bytes,
+    @SerialName("callbackPath")
+    val callbackPath: String? = null
 ) : Identified {
     override val identifier: String
         get() = dAppDefinitionAddress
