@@ -25,15 +25,19 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.assets.ValidatorDetail
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.isXrd
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.mapWhen
 import rdx.works.core.multiplyWithDivisibility
 import rdx.works.profile.data.model.pernetwork.Network
@@ -93,7 +97,7 @@ class TransactionReviewViewModel @Inject constructor(
 
             if (!request.isInternal) {
                 viewModelScope.launch {
-                    getDAppsUseCase(request.requestMetadata.dAppDefinitionAddress, false).onSuccess { dApp ->
+                    getDAppsUseCase(AccountAddress.init(request.requestMetadata.dAppDefinitionAddress), false).onSuccess { dApp ->
                         _state.update { it.copy(proposingDApp = dApp) }
                     }
                 }
@@ -178,14 +182,14 @@ class TransactionReviewViewModel @Inject constructor(
         val signersCount = state.value.defaultSignersCount
 
         val updatedFeePayerResult = feePayerSearchResult?.copy(
-            selectedAccountAddress = selectedFeePayer.address,
+            selectedAccountAddress = AccountAddress.init(selectedFeePayer.address),
             candidates = feePayerSearchResult.candidates
         )
 
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
         val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.feePayerCandidates()
             .orEmpty().any { accountAddress ->
-                accountAddress == selectedFeePayer.address
+                accountAddress.string == selectedFeePayer.address
             }
 
         val updatedSignersCount = if (selectedFeePayerInvolvedInTransaction) signersCount else signersCount + 1
@@ -205,9 +209,9 @@ class TransactionReviewViewModel @Inject constructor(
         }
     }
 
-    fun onUnknownComponentsClick(unknownComponentAddresses: ImmutableList<String>) {
+    fun onUnknownAddressesClick(unknownAddresses: ImmutableList<Address>) {
         _state.update {
-            it.copy(sheetState = State.Sheet.UnknownComponents(unknownComponentAddresses))
+            it.copy(sheetState = State.Sheet.UnknownAddresses(unknownAddresses))
         }
     }
 
@@ -324,7 +328,7 @@ class TransactionReviewViewModel @Inject constructor(
                 val candidateAddress = feePayers.selectedAccountAddress ?: return true
 
                 val xrdInCandidateAccount = feePayers.candidates.find {
-                    it.account.address == candidateAddress
+                    it.account.address == candidateAddress.string
                 }?.xrdAmount ?: BigDecimal.ZERO
 
                 // Calculate how many XRD have been used from accounts withdrawn from
@@ -398,8 +402,8 @@ class TransactionReviewViewModel @Inject constructor(
                 }
             }
 
-            data class UnknownComponents(
-                val unknownComponentAddresses: ImmutableList<String>
+            data class UnknownAddresses(
+                val unknownAddresses: ImmutableList<Address>
             ) : Sheet
         }
     }
@@ -463,7 +467,7 @@ sealed interface PreviewType {
         data class Staking(
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
-            val validators: List<ValidatorDetail>,
+            val validators: List<Validator>,
             val actionType: ActionType
         ) : Transfer {
             enum class ActionType {
@@ -492,7 +496,7 @@ sealed interface PreviewType {
             override val from: List<AccountWithTransferableResources>,
             override val to: List<AccountWithTransferableResources>,
             val badges: List<Badge> = emptyList(),
-            val dApps: List<Pair<String, DApp?>> = emptyList()
+            val dApps: List<Pair<ComponentAddress, DApp?>> = emptyList()
         ) : Transfer
     }
 }
@@ -527,7 +531,7 @@ data class AccountWithDepositSettingsChanges(
 
 @Suppress("MagicNumber")
 sealed interface AccountWithPredictedGuarantee {
-    val address: String
+    val address: AccountAddress
     val transferable: TransferableAsset.Fungible
     val instructionIndex: Long
     val guaranteeAmountString: String
@@ -593,12 +597,12 @@ sealed interface AccountWithPredictedGuarantee {
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
     ) : AccountWithPredictedGuarantee {
-        override val address: String
-            get() = account.address
+        override val address: AccountAddress
+            get() = AccountAddress.init(account.address)
     }
 
     data class Other(
-        override val address: String,
+        override val address: AccountAddress,
         override val transferable: TransferableAsset.Fungible,
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
@@ -607,19 +611,19 @@ sealed interface AccountWithPredictedGuarantee {
 
 sealed interface AccountWithTransferableResources {
 
-    val address: String
+    val address: AccountAddress
     val resources: List<Transferable>
 
     data class Owned(
         val account: Network.Account,
         override val resources: List<Transferable>
     ) : AccountWithTransferableResources {
-        override val address: String
-            get() = account.address
+        override val address: AccountAddress
+            get() = AccountAddress.init(account.address)
     }
 
     data class Other(
-        override val address: String,
+        override val address: AccountAddress,
         override val resources: List<Transferable>
     ) : AccountWithTransferableResources
 
@@ -659,8 +663,8 @@ sealed interface AccountWithTransferableResources {
             private val ownedAccountsOrder: List<Network.Account>
         ) : Comparator<AccountWithTransferableResources> {
             override fun compare(thisAccount: AccountWithTransferableResources?, otherAccount: AccountWithTransferableResources?): Int {
-                val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.address }
-                val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.address }
+                val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.address?.string }
+                val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.address?.string }
 
                 return if (indexOfThisAccount == -1 && indexOfOtherAccount >= 0) {
                     1 // The other account is owned, so it takes higher priority

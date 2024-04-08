@@ -9,7 +9,6 @@ import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AssetsTransfersRecipient
-import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PerAssetFungibleResource
 import com.radixdlt.sargon.PerAssetFungibleTransfer
 import com.radixdlt.sargon.PerAssetNonFungibleTransfer
@@ -21,10 +20,10 @@ import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.perAssetTransfers
 import kotlinx.coroutines.flow.update
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.sargon.toDecimal192
 import rdx.works.profile.sargon.toSargon
 import timber.log.Timber
@@ -76,7 +75,7 @@ class PrepareManifestDelegate @Inject constructor(
                 val listOfExistingTransfers = perFungibleAssetTransfers.getOrPut(asset.resource) { mutableListOf() }
                 listOfExistingTransfers.add(
                     PerAssetFungibleTransfer(
-                        useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(asset.address, accountsAbleToSign),
+                        useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(asset.resourceAddress, accountsAbleToSign),
                         amount = asset.amountDecimal.toDecimal192(),
                         recipient = targetAccount.toAssetTransfersRecipient()
                     )
@@ -87,7 +86,7 @@ class PrepareManifestDelegate @Inject constructor(
         return perFungibleAssetTransfers.map { entry ->
             PerAssetTransfersOfFungibleResource(
                 resource = PerAssetFungibleResource(
-                    resourceAddress = ResourceAddress.init(entry.key.resourceAddress),
+                    resourceAddress = entry.key.address,
                     divisibility = entry.key.divisibility?.toUByte()
                 ),
                 transfers = entry.value
@@ -110,8 +109,8 @@ class PrepareManifestDelegate @Inject constructor(
                 val perNFTAssetTransfer = perNFTAssetTransfers.getOrPut(entry.key) { mutableListOf() }
                 perNFTAssetTransfer.add(
                     PerAssetNonFungibleTransfer(
-                        useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(entry.key.resourceAddress, accountsAbleToSign),
-                        nonFungibleLocalIds = entry.value.map { NonFungibleLocalId.init(it.localId.code) },
+                        useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(entry.key.address, accountsAbleToSign),
+                        nonFungibleLocalIds = entry.value.map { it.localId },
                         recipient = targetAccount.toAssetTransfersRecipient()
                     )
                 )
@@ -120,7 +119,7 @@ class PrepareManifestDelegate @Inject constructor(
 
         return perNFTAssetTransfers.map { entry ->
             PerAssetTransfersOfNonFungibleResource(
-                resource = ResourceAddress.init(validatingAddress = entry.key.resourceAddress),
+                resource = entry.key.address,
                 transfers = entry.value
             )
         }
@@ -141,6 +140,8 @@ class PrepareManifestDelegate @Inject constructor(
                 )
         }
 
-    private fun TargetAccount.useTryDepositOrAbort(resourceAddress: String, accountsAbleToSign: List<TargetAccount.Owned>): Boolean =
-        this !in accountsAbleToSign || !isSignatureRequiredForTransfer(resourceAddress)
+    private fun TargetAccount.useTryDepositOrAbort(
+        resourceAddress: ResourceAddress,
+        accountsAbleToSign: List<TargetAccount.Owned>
+    ): Boolean = this !in accountsAbleToSign || !isSignatureRequiredForTransfer(resourceAddress)
 }

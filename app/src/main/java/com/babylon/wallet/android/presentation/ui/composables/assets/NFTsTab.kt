@@ -31,6 +31,8 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.nftsTab(
@@ -49,7 +51,7 @@ fun LazyListScope.nftsTab(
 
     assetsViewData.nonFungibleCollections.forEach { nonFungible ->
         item(
-            key = nonFungible.collection.resourceAddress,
+            key = nonFungible.collection.address.string,
             contentType = { "collection" }
         ) {
             NFTHeader(
@@ -60,8 +62,8 @@ fun LazyListScope.nftsTab(
         }
 
         items(
-            count = if (!state.isCollapsed(nonFungible.collection.resourceAddress)) nonFungible.collection.amount.toInt() else 0,
-            key = { index -> "${nonFungible.collection.resourceAddress}$index" },
+            count = if (!state.isCollapsed(nonFungible.collection.address.string)) nonFungible.collection.amount.toInt() else 0,
+            key = { index -> "${nonFungible.collection.address}$index" },
             contentType = { "nft" }
         ) { index ->
             NFTItem(index, nonFungible.collection, action)
@@ -111,7 +113,7 @@ private fun NFTHeader(
     state: AssetsViewState,
     action: AssetsViewAction
 ) {
-    val isCollapsed = state.isCollapsed(collection.resourceAddress)
+    val isCollapsed = state.isCollapsed(collection.address.string)
     CollapsibleAssetCard(
         modifier = Modifier
             .padding(horizontal = RadixTheme.dimensions.paddingDefault)
@@ -123,7 +125,7 @@ private fun NFTHeader(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    action.onCollectionClick(collection.resourceAddress)
+                    action.onCollectionClick(collection.address.string)
                 }
                 .padding(RadixTheme.dimensions.paddingLarge),
             verticalAlignment = Alignment.CenterVertically,
@@ -175,7 +177,7 @@ private fun NonFungibleResourceItem(
                     }
 
                     is AssetsViewAction.Selection -> {
-                        action.onNFTCheckChanged(collection, item, !action.isSelected(item.globalAddress))
+                        action.onNFTCheckChanged(collection, item, !action.isSelected(item.globalId))
                     }
                 }
             }
@@ -202,7 +204,7 @@ private fun NonFungibleResourceItem(
 
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = item.localId.displayable,
+                text = item.localId.formatted(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray2
             )
@@ -210,7 +212,7 @@ private fun NonFungibleResourceItem(
 
         if (action is AssetsViewAction.Selection) {
             val isSelected = remember(item, action) {
-                action.isSelected(item.globalAddress)
+                action.isSelected(item.globalId)
             }
             AssetsViewCheckBox(
                 isSelected = isSelected,

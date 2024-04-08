@@ -7,9 +7,12 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.NonFungibleGlobalId
 import com.radixdlt.ret.ResourceIndicator
-import com.radixdlt.ret.nonFungibleLocalIdFromStr
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -62,13 +65,16 @@ class ValidatorUnstakeProcessor @Inject constructor(
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         claimsPerAddress.value.map { claimedResource ->
             val resourceAddress = claimedResource.resourceAddress
-            val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No resource found")
+            val asset = assets.find { it.resource.address == resourceAddress } ?: error("No resource found")
             if (asset is StakeClaim) {
                 claimedResource as? ResourceIndicator.NonFungible
                     ?: error("No non-fungible indicator found")
                 val stakeClaimNftItems = claimedResource.nonFungibleLocalIds.map { localId ->
-                    val globalId = NonFungibleGlobalId.fromParts(claimedResource.resourceAddress, nonFungibleLocalIdFromStr(localId.code))
-                    val claimNFTData = claimsNonFungibleData.find { it.nonFungibleGlobalId.asStr() == globalId.asStr() }?.data
+                    val globalId = NonFungibleGlobalId(
+                        resourceAddress = ResourceAddress.init(claimedResource.resourceAddress.asStr()),
+                        nonFungibleLocalId = localId,
+                    )
+                    val claimNFTData = claimsNonFungibleData.find { it.nonFungibleGlobalId.asStr() == globalId.string }?.data
                         ?: error("No claim data found")
                     val claimAmount = claimNFTData.claimAmount.asStr().toBigDecimal()
                     val claimEpoch = claimNFTData.claimEpoch
@@ -97,7 +103,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
                             validator = asset.validator
                         ),
                         xrdWorthPerNftItem = stakeClaimNftItems.associate {
-                            it.first.localId.displayable to it.second
+                            it.first.localId to it.second
                         },
                         isNewlyCreated = true
                     ),
@@ -106,6 +112,6 @@ class ValidatorUnstakeProcessor @Inject constructor(
             } else {
                 executionSummary.resolveDepositingAsset(claimedResource, assets, defaultDepositGuarantees)
             }
-        }.toAccountWithTransferableResources(claimsPerAddress.key, involvedOwnedAccounts)
+        }.toAccountWithTransferableResources(AccountAddress.init(claimsPerAddress.key), involvedOwnedAccounts)
     }
 }

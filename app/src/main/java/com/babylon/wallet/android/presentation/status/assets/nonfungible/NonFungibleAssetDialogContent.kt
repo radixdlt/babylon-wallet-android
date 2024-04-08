@@ -40,6 +40,10 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.WorthXRD
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.StakeClaim
@@ -50,8 +54,8 @@ import rdx.works.profile.data.model.pernetwork.Network
 @Composable
 fun NonFungibleAssetDialogContent(
     modifier: Modifier = Modifier,
-    resourceAddress: String,
-    localId: String?,
+    resourceAddress: ResourceAddress,
+    localId: NonFungibleLocalId?,
     asset: Asset.NonFungible?,
     price: AssetPrice.StakeClaimPrice?,
     isLoadingBalance: Boolean,
@@ -119,7 +123,7 @@ fun NonFungibleAssetDialogContent(
                 ) {
                     ActionableAddressView(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingDefault),
-                        address = item.globalAddress,
+                        globalId = item.globalId,
                         visitableInDashboard = !isNewlyCreated,
                         textStyle = RadixTheme.typography.body1HighImportance,
                         textColor = RadixTheme.colors.gray1
@@ -217,7 +221,7 @@ fun NonFungibleAssetDialogContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingXXLarge),
-                address = resourceAddress,
+                address = Address.Resource(resourceAddress),
                 isNewlyCreatedEntity = isNewlyCreated
             )
             if (!asset?.resource?.name.isNullOrBlank() && localId != null) {

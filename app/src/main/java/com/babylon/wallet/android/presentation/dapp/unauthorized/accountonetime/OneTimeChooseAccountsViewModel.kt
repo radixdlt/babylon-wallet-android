@@ -9,6 +9,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -41,7 +42,7 @@ class OneTimeChooseAccountsViewModel @Inject constructor(
                 // remains once the user returns from the account creation flow
                 val accountItems = accounts.map { account ->
                     val currentAccountItemState = _state.value.availableAccountItems.find { accountItemUiModel ->
-                        accountItemUiModel.address == account.address
+                        accountItemUiModel.address.string == account.address
                     }
                     account.toUiModel(currentAccountItemState?.isSelected ?: false)
                 }

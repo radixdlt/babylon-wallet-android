@@ -1,10 +1,11 @@
 package com.babylon.wallet.android.data.transaction.model
 
+import com.radixdlt.sargon.AccountAddress
 import rdx.works.profile.data.model.pernetwork.Network
 import java.math.BigDecimal
 
 data class TransactionFeePayers(
-    val selectedAccountAddress: String? = null,
+    val selectedAccountAddress: AccountAddress? = null,
     val candidates: List<FeePayerCandidate> = emptyList(),
 ) {
     data class FeePayerCandidate(

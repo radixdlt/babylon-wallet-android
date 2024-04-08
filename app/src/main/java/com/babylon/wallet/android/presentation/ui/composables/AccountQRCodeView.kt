@@ -22,7 +22,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.formatted
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
@@ -34,7 +35,7 @@ import rdx.works.profile.domain.accountOnCurrentNetwork
 @Composable
 fun AccountQRCodeView(
     modifier: Modifier = Modifier,
-    accountAddress: String,
+    accountAddress: AccountAddress,
 ) {
     val context = LocalContext.current.applicationContext
     val useCaseProvider = remember(context) {
@@ -81,7 +82,7 @@ fun AccountQRCodeView(
                 )
 
                 Text(
-                    text = accountAddress.truncatedHash(),
+                    text = accountAddress.formatted(),
                     color = RadixTheme.colors.white.copy(alpha = 0.8f),
                     maxLines = 1,
                     style = RadixTheme.typography.body2HighImportance

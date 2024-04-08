@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.data.gateway.model
 
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntity
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
@@ -26,7 +28,7 @@ data class TokenPriceResponse(
         fun List<TokenPriceResponse>.asEntities(): List<TokenPriceEntity> {
             return map { tokenPrice ->
                 TokenPriceEntity(
-                    resourceAddress = tokenPrice.resourceAddress,
+                    resourceAddress = ResourceAddress.init(tokenPrice.resourceAddress),
                     price = tokenPrice.price.toBigDecimal(),
                     currency = tokenPrice.currency,
                     synced = InstantGenerator()

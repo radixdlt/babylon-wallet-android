@@ -4,14 +4,17 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.resources.Resource
 import java.time.Instant
 
 @Entity(primaryKeys = ["address", "local_id"])
 data class NFTEntity(
-    val address: String,
+    val address: ResourceAddress,
     @ColumnInfo("local_id")
-    val localId: String,
+    val localId: NonFungibleLocalId,
     @ColumnInfo("metadata")
     val metadata: MetadataColumn?,
     val synced: Instant
@@ -19,18 +22,18 @@ data class NFTEntity(
 
     fun toItem() = Resource.NonFungibleResource.Item(
         collectionAddress = address,
-        localId = Resource.NonFungibleResource.Item.ID.from(localId),
+        localId = localId,
         metadata = metadata?.metadata.orEmpty()
     )
 
     companion object {
         fun StateNonFungibleDetailsResponseItem.asEntity(
-            resourceAddress: String,
+            resourceAddress: ResourceAddress,
             synced: Instant
         ): NFTEntity {
             return NFTEntity(
                 address = resourceAddress,
-                localId = nonFungibleId,
+                localId = NonFungibleLocalId.init(nonFungibleId),
                 metadata = toMetadata().takeIf {
                     it.isNotEmpty()
                 }?.let {
@@ -42,7 +45,7 @@ data class NFTEntity(
 
         fun Resource.NonFungibleResource.Item.asEntity(synced: Instant) = NFTEntity(
             address = collectionAddress,
-            localId = localId.code,
+            localId = localId,
             metadata = metadata.takeIf {
                 it.isNotEmpty()
             }?.let {

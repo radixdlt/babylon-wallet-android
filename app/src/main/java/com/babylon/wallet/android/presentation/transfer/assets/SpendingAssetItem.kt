@@ -51,12 +51,18 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.sampleMainnet
 import java.math.BigDecimal
 
 @Composable
@@ -269,7 +275,7 @@ private fun NonFungibleSpendingAsset(
         Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingDefault))
         Column {
             Text(
-                text = nft.localId.displayable,
+                text = nft.localId.formatted(),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2Regular
             )
@@ -302,6 +308,7 @@ private fun NonFungibleSpendingAsset(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun SpendingAssetItemsPreview() {
@@ -314,14 +321,7 @@ fun SpendingAssetItemsPreview() {
             var firstAmount by remember { mutableStateOf("") }
             SpendingAssetItem(
                 asset = SpendingAsset.Fungible(
-                    Resource.FungibleResource(
-                        resourceAddress = "resource_rdx_abcd",
-                        ownedAmount = BigDecimal.TEN,
-                        metadata = listOf(
-                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Radix", MetadataType.String),
-                            Metadata.Primitive(ExplicitMetadataKey.SYMBOL.key, XrdResource.SYMBOL, MetadataType.String),
-                        )
-                    ),
+                    Resource.FungibleResource.sampleMainnet(),
                     amountString = firstAmount,
                 ),
                 onAmountTyped = {
@@ -335,14 +335,7 @@ fun SpendingAssetItemsPreview() {
             var secondAmount by remember { mutableStateOf("3.4") }
             SpendingAssetItem(
                 asset = SpendingAsset.Fungible(
-                    resource = Resource.FungibleResource(
-                        resourceAddress = "resource_rdx_abcd",
-                        ownedAmount = BigDecimal.TEN,
-                        metadata = listOf(
-                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Radix", MetadataType.String),
-                            Metadata.Primitive(ExplicitMetadataKey.SYMBOL.key, XrdResource.SYMBOL, MetadataType.String),
-                        )
-                    ),
+                    resource = Resource.FungibleResource.sampleMainnet.other(),
                     amountString = secondAmount,
                     exceedingBalance = secondAmount.toBigDecimalOrNull()?.compareTo(BigDecimal.TEN) == 1
                 ),
@@ -355,8 +348,8 @@ fun SpendingAssetItemsPreview() {
             )
 
             val item = Resource.NonFungibleResource.Item(
-                collectionAddress = "resource_rdx_abcd",
-                localId = Resource.NonFungibleResource.Item.ID.from("<dbooker_dunk_39>"),
+                collectionAddress = ResourceAddress.sampleMainnet.random(),
+                localId = NonFungibleLocalId.init("<dbooker_dunk_39>"),
                 metadata = listOf(
                     Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, "Local item with ID 39", valueType = MetadataType.String),
                     Metadata.Primitive(
@@ -366,14 +359,14 @@ fun SpendingAssetItemsPreview() {
                     )
                 )
             )
-            val collection = Resource.NonFungibleResource(
-                resourceAddress = "resource_rdx_abcd",
-                amount = 1,
-                items = listOf(item),
-                metadata = listOf(
-                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "NFT Collection", MetadataType.String),
+            val collection = Resource.NonFungibleResource.sampleMainnet().let {
+                it.copy(
+                    amount = it.amount + 1,
+                    items = it.items.toMutableList().apply {
+                        add(item)
+                    }
                 )
-            )
+            }
             SpendingAssetItem(
                 asset = SpendingAsset.NFT(
                     resource = collection,

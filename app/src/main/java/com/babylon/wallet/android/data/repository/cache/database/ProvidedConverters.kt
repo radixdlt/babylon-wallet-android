@@ -2,6 +2,14 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.VaultAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -66,5 +74,71 @@ class StateDatabaseConverters {
     @TypeConverter
     fun instantToLong(date: Instant?): Long? {
         return date?.toEpochMilli()
+    }
+
+    // ResourceAddress
+    @TypeConverter
+    fun stringToResourceAddress(resourceAddress: String?): ResourceAddress? {
+        return resourceAddress?.let { ResourceAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun resourceAddressToString(resourceAddress: ResourceAddress?): String? {
+        return resourceAddress?.string
+    }
+
+    // AccountAddress
+    @TypeConverter
+    fun stringToAccountAddress(accountAddress: String?): AccountAddress? {
+        return accountAddress?.let { AccountAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun accountAddressToString(accountAddress: AccountAddress?): String? {
+        return accountAddress?.string
+    }
+
+    // ValidatorAddress
+    @TypeConverter
+    fun stringToValidatorAddress(validatorAddress: String?): ValidatorAddress? {
+        return validatorAddress?.let { ValidatorAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun validatorAddressToString(validatorAddress: ValidatorAddress?): String? {
+        return validatorAddress?.string
+    }
+
+    // PoolAddress
+    @TypeConverter
+    fun stringToPoolAddress(poolAddress: String?): PoolAddress? {
+        return poolAddress?.let { PoolAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun poolAddressToString(poolAddress: PoolAddress?): String? {
+        return poolAddress?.string
+    }
+
+    // NonFungibleLocalId
+    @TypeConverter
+    fun stringToNonFungibleLocalId(localId: String?): NonFungibleLocalId? {
+        return localId?.let { NonFungibleLocalId.init(it) }
+    }
+
+    @TypeConverter
+    fun nonFungibleLocalIdToString(localId: NonFungibleLocalId?): String? {
+        return localId?.string
+    }
+
+    // VaultAddress
+    @TypeConverter
+    fun stringToVaultAddress(vaultAddress: String?): VaultAddress? {
+        return vaultAddress?.let { VaultAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun vaultAddressToString(vaultAddress: VaultAddress?): String? {
+        return vaultAddress?.string
     }
 }

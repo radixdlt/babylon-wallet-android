@@ -52,12 +52,10 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.resources.ExplicitMetadataKey
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -254,18 +252,14 @@ private fun PermissionRequestHeader(
     )
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         PersonaDataOnetimeContent(
             onContinueClick = {},
-            dapp = DApp(
-                dAppAddress = "account_tdx_abc",
-                metadata = listOf(
-                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Collabo.fi", MetadataType.String)
-                )
-            ),
+            dapp = DApp.sampleMainnet(),
             onBackClick = {},
             modifier = Modifier.fillMaxSize(),
             isFirstScreenInFlow = false,

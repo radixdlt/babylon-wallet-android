@@ -24,18 +24,21 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.core.AddressHelper
 
 @Composable
-fun UnknownComponentsSheetContent(
+fun UnknownAddressesSheetContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    unknownComponentAddresses: ImmutableList<String>
+    unknownAddresses: ImmutableList<Address>
 ) {
-    val isPools = remember(unknownComponentAddresses) {
-        unknownComponentAddresses.all { AddressHelper.isPool(it) }
+    val isPools = remember(unknownAddresses) {
+        unknownAddresses.all { it is Address.Pool }
     }
 
     Column(modifier = modifier) {
@@ -45,13 +48,13 @@ fun UnknownComponentsSheetContent(
                 .padding(vertical = RadixTheme.dimensions.paddingSmall),
             title = stringResource(
                 id = if (isPools) R.string.transactionReview_unknownPools else R.string.transactionReview_unknownComponents,
-                unknownComponentAddresses.size
+                unknownAddresses.size
             ),
             onDismissRequest = onBackClick
         )
         HorizontalDivider(color = RadixTheme.colors.gray5)
         LazyColumn {
-            itemsIndexed(unknownComponentAddresses) { index, unknownComponentAddress ->
+            itemsIndexed(unknownAddresses) { index, unknownComponentAddress ->
                 Column {
                     Row(
                         modifier = Modifier
@@ -67,14 +70,11 @@ fun UnknownComponentsSheetContent(
                         )
 
                         Column {
-                            val isPool = remember(unknownComponentAddress) {
-                                AddressHelper.isPool(unknownComponentAddress)
-                            }
                             Text(
-                                text = if (isPool) {
-                                    stringResource(id = R.string.common_pool)
-                                } else {
-                                    stringResource(id = R.string.common_component)
+                                text = when (unknownComponentAddress) {
+                                    is Address.Pool -> stringResource(id = R.string.common_pool)
+                                    is Address.Component -> stringResource(id = R.string.common_component)
+                                    else -> stringResource(id = R.string.empty)
                                 },
                                 style = RadixTheme.typography.body1Header,
                                 color = RadixTheme.colors.gray1,
@@ -89,7 +89,7 @@ fun UnknownComponentsSheetContent(
                         }
                     }
 
-                    if (index != unknownComponentAddresses.lastIndex) {
+                    if (index != unknownAddresses.lastIndex) {
                         HorizontalDivider(
                             modifier = Modifier.fillMaxWidth(),
                             color = RadixTheme.colors.gray5
@@ -101,15 +101,16 @@ fun UnknownComponentsSheetContent(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun UnknownDAppComponentsSheetContentPreview() {
     RadixWalletTheme {
-        UnknownComponentsSheetContent(
+        UnknownAddressesSheetContent(
             onBackClick = {},
-            unknownComponentAddresses = persistentListOf(
-                "component_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z96qp",
-                "component_tdx_b_1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8z16qp"
+            unknownAddresses = persistentListOf(
+                Address.Component(ComponentAddress.sampleMainnet()),
+                Address.Component(ComponentAddress.sampleMainnet.other())
             )
         )
     }

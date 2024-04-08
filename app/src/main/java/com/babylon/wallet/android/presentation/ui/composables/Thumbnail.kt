@@ -58,24 +58,28 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
-import rdx.works.core.domain.assets.ValidatorDetail
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.isXrd
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.iconUrl
 import rdx.works.core.domain.resources.metadata.name
+import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.core.toEncodedString
 import rdx.works.profile.data.model.pernetwork.Network
-import java.math.BigDecimal
 import kotlin.math.absoluteValue
 
 object Thumbnail {
@@ -175,7 +179,7 @@ object Thumbnail {
             SubcomposeAsyncImage(
                 modifier = modifier,
                 model = request,
-                contentDescription = nft.localId.displayable,
+                contentDescription = nft.localId.formatted(),
                 onState = { painterState = it }
             ) {
                 Image(
@@ -316,7 +320,7 @@ object Thumbnail {
     @Composable
     fun Validator(
         modifier: Modifier = Modifier,
-        validator: ValidatorDetail
+        validator: Validator
     ) {
         Custom(
             modifier = modifier,
@@ -465,6 +469,7 @@ private fun ImageRequest.Builder.applyCorrectDecoderBasedOnMimeType() = apply {
     }
 }
 
+@UsesSampleValues
 @Composable
 @Preview(name = "Fungibles Preview")
 fun FungibleResourcesPreview() {
@@ -479,47 +484,49 @@ fun FungibleResourcesPreview() {
             Text(text = "With correct url")
             Thumbnail.Fungible(
                 modifier = Modifier.size(100.dp),
-                token = Resource.FungibleResource(
-                    resourceAddress = SampleDataProvider().randomAddress(),
-                    ownedAmount = BigDecimal.ZERO,
-                    metadata = listOf(
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.ICON_URL.key,
-                            value = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png",
-                            valueType = MetadataType.Url
-                        )
+                token = Resource.FungibleResource.sampleMainnet().let {
+                    it.copy(
+                        metadata = it.metadata.toMutableList().apply {
+                            add(
+                                Metadata.Primitive(
+                                    key = ExplicitMetadataKey.ICON_URL.key,
+                                    value = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png",
+                                    valueType = MetadataType.Url
+                                )
+                            )
+                        }
                     )
-                )
+                }
             )
 
             Text(text = "With no url")
             Thumbnail.Fungible(
                 modifier = Modifier.size(100.dp),
-                token = Resource.FungibleResource(
-                    resourceAddress = SampleDataProvider().randomAddress(),
-                    ownedAmount = BigDecimal.ZERO
-                )
+                token = Resource.FungibleResource.sampleMainnet.other()
             )
 
             Text(text = "With malformed image")
             Thumbnail.Fungible(
                 modifier = Modifier.size(100.dp),
-                token = Resource.FungibleResource(
-                    resourceAddress = SampleDataProvider().randomAddress(),
-                    ownedAmount = BigDecimal.ZERO,
-                    metadata = listOf(
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.ICON_URL.key,
-                            value = "https://upload.wikimedia.org/wikipedia/commons/thumb/",
-                            valueType = MetadataType.Url
-                        )
+                token = Resource.FungibleResource.sampleMainnet().let {
+                    it.copy(
+                        metadata = it.metadata.toMutableList().apply {
+                            add(
+                                Metadata.Primitive(
+                                    key = ExplicitMetadataKey.ICON_URL.key,
+                                    value = "https://upload.wikimedia.org/wikipedia/commons/thumb/",
+                                    valueType = MetadataType.Url
+                                )
+                            )
+                        }
                     )
-                )
+                }
             )
         }
     }
 }
 
+@UsesSampleValues
 @Composable
 @Preview(name = "NonFungibles Preview")
 fun NonFungibleResourcesPreview() {
@@ -534,18 +541,19 @@ fun NonFungibleResourcesPreview() {
             Text(text = "With correct url")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 val withUrl = remember {
-                    Resource.NonFungibleResource(
-                        resourceAddress = SampleDataProvider().randomAddress(),
-                        amount = 0,
-                        items = emptyList(),
-                        metadata = listOf(
-                            Metadata.Primitive(
-                                ExplicitMetadataKey.ICON_URL.key,
-                                "https://upload.wikimedia.org/wikipedia/commons/b/be/VeKings.png",
-                                MetadataType.Url
-                            )
+                    Resource.NonFungibleResource.sampleMainnet().let {
+                        it.copy(
+                            metadata = it.metadata.toMutableList().apply {
+                                add(
+                                    Metadata.Primitive(
+                                        key = ExplicitMetadataKey.ICON_URL.key,
+                                        value = "https://upload.wikimedia.org/wikipedia/commons/b/be/VeKings.png",
+                                        valueType = MetadataType.Url
+                                    )
+                                )
+                            }
                         )
-                    )
+                    }
                 }
 
                 Thumbnail.NonFungible(
@@ -563,11 +571,7 @@ fun NonFungibleResourcesPreview() {
             Text(text = "With no url")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 val withNoUrl = remember {
-                    Resource.NonFungibleResource(
-                        resourceAddress = SampleDataProvider().randomAddress(),
-                        amount = 0,
-                        items = emptyList()
-                    )
+                    Resource.NonFungibleResource.sampleMainnet()
                 }
 
                 Thumbnail.NonFungible(
@@ -585,18 +589,19 @@ fun NonFungibleResourcesPreview() {
             Text(text = "With malformed image")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 val error = remember {
-                    Resource.NonFungibleResource(
-                        resourceAddress = SampleDataProvider().randomAddress(),
-                        amount = 0,
-                        items = emptyList(),
-                        metadata = listOf(
-                            Metadata.Primitive(
-                                ExplicitMetadataKey.ICON_URL.key,
-                                "https://upload.wikimedia.org/wikipedia/commons/",
-                                MetadataType.Url
-                            ),
+                    Resource.NonFungibleResource.sampleMainnet().let {
+                        it.copy(
+                            metadata = it.metadata.toMutableList().apply {
+                                add(
+                                    Metadata.Primitive(
+                                        key = ExplicitMetadataKey.ICON_URL.key,
+                                        value = "https://upload.wikimedia.org/wikipedia/commons/",
+                                        valueType = MetadataType.Url
+                                    )
+                                )
+                            }
                         )
-                    )
+                    }
                 }
 
                 Thumbnail.NonFungible(
@@ -614,6 +619,7 @@ fun NonFungibleResourcesPreview() {
     }
 }
 
+@UsesSampleValues
 @Composable
 @Preview(name = "NFTs Preview")
 fun NFTsPreview() {
@@ -630,8 +636,8 @@ fun NFTsPreview() {
             Thumbnail.NFT(
                 modifier = Modifier.fillMaxWidth(),
                 nft = Resource.NonFungibleResource.Item(
-                    collectionAddress = SampleDataProvider().randomAddress(),
-                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                    collectionAddress = ResourceAddress.sampleMainnet.random(),
+                    localId = NonFungibleLocalId.sample(),
                     metadata = listOf(
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
@@ -646,8 +652,8 @@ fun NFTsPreview() {
             Thumbnail.NFT(
                 modifier = Modifier.fillMaxWidth(),
                 nft = Resource.NonFungibleResource.Item(
-                    collectionAddress = SampleDataProvider().randomAddress(),
-                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                    collectionAddress = ResourceAddress.sampleMainnet.random(),
+                    localId = NonFungibleLocalId.sample(),
                     metadata = listOf(
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
@@ -663,8 +669,8 @@ fun NFTsPreview() {
             Thumbnail.NFT(
                 modifier = Modifier.fillMaxWidth(),
                 nft = Resource.NonFungibleResource.Item(
-                    collectionAddress = SampleDataProvider().randomAddress(),
-                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                    collectionAddress = ResourceAddress.sampleMainnet.random(),
+                    localId = NonFungibleLocalId.sample(),
                     metadata = listOf(
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
@@ -680,8 +686,8 @@ fun NFTsPreview() {
             Thumbnail.NFT(
                 modifier = Modifier.fillMaxWidth(),
                 nft = Resource.NonFungibleResource.Item(
-                    collectionAddress = SampleDataProvider().randomAddress(),
-                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                    collectionAddress = ResourceAddress.sampleMainnet.random(),
+                    localId = NonFungibleLocalId.sample(),
                     metadata = listOf(
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,
@@ -696,8 +702,8 @@ fun NFTsPreview() {
             Thumbnail.NFT(
                 modifier = Modifier.fillMaxWidth(),
                 nft = Resource.NonFungibleResource.Item(
-                    collectionAddress = SampleDataProvider().randomAddress(),
-                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
+                    collectionAddress = ResourceAddress.sampleMainnet.random(),
+                    localId = NonFungibleLocalId.sample(),
                     metadata = listOf(
                         Metadata.Primitive(
                             key = ExplicitMetadataKey.KEY_IMAGE_URL.key,

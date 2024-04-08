@@ -19,6 +19,10 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -45,10 +49,10 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.assets.ValidatorDetail
 import rdx.works.core.domain.resources.AccountDetails
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.AccountType
 import rdx.works.core.domain.resources.metadata.poolUnit
@@ -134,7 +138,7 @@ class AccountsStateCache @Inject constructor(
         val xrdAddress = XrdResource.address(networkId = accounts.first().networkID)
 
         val accountsWithXRDVaults = accounts.associateWith { account ->
-            dao.getAccountResourceJoin(accountAddress = account.address, resourceAddress = xrdAddress)?.vaultAddress
+            dao.getAccountResourceJoin(accountAddress = AccountAddress.init(account.address), resourceAddress = xrdAddress)?.vaultAddress
         }
 
         runCatching {
@@ -259,7 +263,7 @@ class AccountsStateCache @Inject constructor(
                 logger.d("\uD83D\uDCBD Inserting pools")
 
                 val newPools = runCatching {
-                    api.fetchPools(unknownPools, stateVersion)
+                    api.fetchPools(unknownPools.toSet(), stateVersion)
                 }.onFailure { error ->
                     cacheErrors.value = error
                 }.getOrNull() ?: return@transform
@@ -301,7 +305,7 @@ class AccountsStateCache @Inject constructor(
 
         fun poolAddresses() = fungibles.mapNotNull { it.poolAddress }.toSet()
 
-        fun validatorAddresses(): Set<String> = fungibles.mapNotNull {
+        fun validatorAddresses(): Set<ValidatorAddress> = fungibles.mapNotNull {
             it.validatorAddress
         }.toSet() + nonFungibles.mapNotNull {
             it.validatorAddress
@@ -310,8 +314,8 @@ class AccountsStateCache @Inject constructor(
         @Suppress("LongMethod")
         fun toAccountAddressWithAssets(
             accountAddress: String,
-            pools: Map<String, Pool>,
-            validators: Map<String, ValidatorDetail>
+            pools: Map<PoolAddress, Pool>,
+            validators: Map<ValidatorAddress, Validator>
         ): AccountAddressWithAssets? {
             if (stateVersion == null) return null
 
@@ -332,7 +336,7 @@ class AccountsStateCache @Inject constructor(
                 val pool = pools[fungible.poolAddress]?.takeIf { pool ->
                     // The fungible claims that it is part of the poolAddress.
                     // We need to check if pool points back to this resource
-                    pool.metadata.poolUnit() == fungible.resourceAddress
+                    pool.metadata.poolUnit() == fungible.address
                 }
                 if (pool != null) {
                     resultingPoolUnits.add(
@@ -345,7 +349,7 @@ class AccountsStateCache @Inject constructor(
                     fungiblesIterator.remove()
                 }
 
-                val validatorDetails = stakeUnitAddressToValidator[fungible.resourceAddress]?.takeIf { validator ->
+                val validatorDetails = stakeUnitAddressToValidator[fungible.address]?.takeIf { validator ->
                     // The fungible claims that it is a LSU,
                     // so we need to check if the validator points back to this resource
                     validator.address == fungible.validatorAddress
@@ -362,7 +366,9 @@ class AccountsStateCache @Inject constructor(
             while (nonFungiblesIterator.hasNext()) {
                 val nonFungible = nonFungiblesIterator.next()
 
-                val validatorDetails = claimTokenAddressToValidator[nonFungible.resourceAddress]?.takeIf { validator ->
+                val validatorDetails = claimTokenAddressToValidator[
+                    nonFungible.address
+                ]?.takeIf { validator ->
                     // The non-fungible claims that it is a claim token,
                     // so we need to check if the validator points back to this resource
                     validator.address == nonFungible.validatorAddress
@@ -403,14 +409,15 @@ class AccountsStateCache @Inject constructor(
             account = account,
             details = details,
             assets = details?.stateVersion?.let { stateVersion ->
+                val accountAddress = AccountAddress.init(account.address)
                 val nonFungibles = assets?.nonFungibles?.map { nonFungible ->
-                    val items = dao.getOwnedNfts(account.address, nonFungible.collection.resourceAddress, stateVersion)
+                    val items = dao.getOwnedNfts(accountAddress, nonFungible.collection.address, stateVersion)
                         .map { it.toItem() }.sorted()
                     nonFungible.copy(collection = nonFungible.collection.copy(items = items))
                 }.orEmpty()
 
                 val updatedClaims = assets?.stakeClaims?.map { stakeClaim ->
-                    val items = dao.getOwnedNfts(account.address, stakeClaim.resourceAddress, stateVersion)
+                    val items = dao.getOwnedNfts(accountAddress, stakeClaim.resourceAddress, stateVersion)
                         .map { it.toItem() }
                         .sorted()
                     stakeClaim.copy(nonFungibleResource = stakeClaim.nonFungibleResource.copy(items = items))

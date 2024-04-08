@@ -10,8 +10,9 @@ import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.utils.isValidHttpsUrl
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.first
-import rdx.works.core.AddressHelper
 import rdx.works.core.domain.DApp
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
@@ -26,7 +27,7 @@ class VerifyDAppUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(request: IncomingRequest): Result<Boolean> {
-        if (!AddressHelper.isValid(address = request.metadata.dAppDefinitionAddress)) {
+        val dAppDefinitionAddress = runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.getOrElse {
             dAppMessenger.sendWalletInteractionResponseFailure(
                 remoteConnectorId = request.remoteConnectorId,
                 requestId = request.id,
@@ -41,24 +42,25 @@ class VerifyDAppUseCase @Inject constructor(
         } else {
             validateTwoWayLink(
                 origin = request.metadata.origin,
-                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
-            ).onFailure { error ->
-                error.asRadixWalletException()?.let { radixWalletException ->
-                    val walletErrorType = radixWalletException.toConnectorExtensionError() ?: return@let
-                    dAppMessenger.sendWalletInteractionResponseFailure(
-                        remoteConnectorId = request.remoteConnectorId,
-                        requestId = request.id,
-                        error = walletErrorType,
-                        message = radixWalletException.getDappMessage()
-                    )
+                dAppDefinitionAddress = dAppDefinitionAddress
+            )
+                .onFailure { error ->
+                    error.asRadixWalletException()?.let { radixWalletException ->
+                        val walletErrorType = radixWalletException.toConnectorExtensionError() ?: return@let
+                        dAppMessenger.sendWalletInteractionResponseFailure(
+                            remoteConnectorId = request.remoteConnectorId,
+                            requestId = request.id,
+                            error = walletErrorType,
+                            message = radixWalletException.getDappMessage()
+                        )
+                    }
                 }
-            }
         }
     }
 
     private suspend fun validateTwoWayLink(
         origin: String,
-        dAppDefinitionAddress: String
+        dAppDefinitionAddress: AccountAddress
     ): Result<Boolean> = if (origin.isValidHttpsUrl()) {
         stateRepository.getDAppsDetails(
             definitionAddresses = listOf(dAppDefinitionAddress),

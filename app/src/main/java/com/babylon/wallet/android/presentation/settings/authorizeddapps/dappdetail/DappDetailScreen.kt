@@ -62,6 +62,7 @@ import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -77,16 +78,17 @@ import com.babylon.wallet.android.presentation.ui.composables.card.PersonaCard
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openUrl
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.profile.data.model.pernetwork.Network
 import java.util.Locale
 
@@ -457,7 +459,7 @@ private fun DappDetails(
 
 @Composable
 fun DappDefinitionAddressRow(
-    dappDefinitionAddress: String,
+    dappDefinitionAddress: AccountAddress,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -472,7 +474,7 @@ fun DappDefinitionAddressRow(
         )
 
         ActionableAddressView(
-            address = dappDefinitionAddress,
+            address = Address.Account(dappDefinitionAddress),
             textStyle = RadixTheme.typography.body1Regular,
             textColor = RadixTheme.colors.gray1
         )
@@ -508,7 +510,9 @@ fun DAppWebsiteAddressRow(
             horizontalArrangement = Arrangement.spacedBy(dimensions.paddingSmall)
         ) {
             Text(
-                modifier = Modifier.weight(1f).radixPlaceholder(visible = website == null),
+                modifier = Modifier
+                    .weight(1f)
+                    .radixPlaceholder(visible = website == null),
                 text = website.orEmpty(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.blue1
@@ -732,41 +736,21 @@ private fun PersonaDetailList(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun DappDetailContentPreview() {
-    RadixWalletTheme {
+    RadixWalletPreviewTheme {
         DappDetailContent(
             onBackClick = {},
             state = DappDetailUiState(
                 loading = false,
                 personas = persistentListOf(SampleDataProvider().samplePersona()),
                 dAppWithResources = DAppWithResources(
-                    dApp = DApp(
-                        dAppAddress = "account_tdx_abc",
-                        metadata = listOf(
-                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Dapp", MetadataType.String),
-                            Metadata.Primitive(ExplicitMetadataKey.DESCRIPTION.key, "Description", MetadataType.String),
-                            Metadata.Collection(
-                                ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                                listOf(
-                                    Metadata.Primitive(
-                                        ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                                        "https://hammunet-dashboard.rdx-works-main.extratools.works",
-                                        MetadataType.Url
-                                    ),
-                                    Metadata.Primitive(
-                                        ExplicitMetadataKey.CLAIMED_WEBSITES.key,
-                                        "https://ansharnet-dashboard.rdx-works-main.extratools.works",
-                                        MetadataType.Url
-                                    ),
-                                )
-                            ),
-                        )
-                    )
+                    dApp = DApp.sampleMainnet()
                 ),
                 sharedPersonaAccounts = persistentListOf(
-                    AccountItemUiModel("account_tdx_efgh", "Account1", 0)
+                    AccountItemUiModel(AccountAddress.sampleMainnet.random(), "Account1", 0)
                 ),
                 selectedSheetState = null
             ),
@@ -783,6 +767,7 @@ fun DappDetailContentPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun PersonaDetailsSheetPreview() {
@@ -790,7 +775,7 @@ fun PersonaDetailsSheetPreview() {
         PersonaDetailsSheet(
             persona = PersonaUiModel(SampleDataProvider().samplePersona()),
             sharedPersonaAccounts = persistentListOf(
-                AccountItemUiModel("account_tdx_efgh", "Account1", 0)
+                AccountItemUiModel(AccountAddress.sampleMainnet.random(), "Account1", 0)
             ),
             onCloseClick = {},
             dappName = "dApp",

@@ -19,7 +19,6 @@ import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
@@ -51,9 +50,7 @@ class AssetDialogViewModel @Inject constructor(
                 nonFungibleIds = when (args) {
                     is AssetDialogArgs.Fungible -> mapOf()
                     is AssetDialogArgs.NFT -> mapOf(
-                        args.resourceAddress to args.localId?.let {
-                            setOf(Resource.NonFungibleResource.Item.ID.from(it))
-                        }.orEmpty()
+                        args.resourceAddress to args.localId?.let { setOf(it) }.orEmpty()
                     )
                 }
             ).mapCatching { assets ->
@@ -63,7 +60,7 @@ class AssetDialogViewModel @Inject constructor(
                         val fungibleArgs = (args as? AssetDialogArgs.Fungible) ?: return@mapCatching asset
 
                         val resourceWithAmount = asset.resource.copy(
-                            ownedAmount = fungibleArgs.fungibleAmountOf(asset.resource.resourceAddress)
+                            ownedAmount = fungibleArgs.fungibleAmountOf(asset.resource.address)
                         )
                         when (asset) {
                             is LiquidStakeUnit -> asset.copy(fungibleResource = resourceWithAmount)

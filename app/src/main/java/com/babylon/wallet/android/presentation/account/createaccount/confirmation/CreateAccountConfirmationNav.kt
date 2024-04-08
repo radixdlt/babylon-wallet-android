@@ -9,6 +9,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 
 @VisibleForTesting
 internal const val ARG_ACCOUNT_ID = "arg_account_id"
@@ -18,15 +21,15 @@ internal const val ARG_REQUEST_SOURCE = "arg_request_source"
 
 private const val ROUTE = "account_completion_route/{$ARG_REQUEST_SOURCE}/{$ARG_ACCOUNT_ID}"
 
-internal class CreateAccountConfirmationArgs(val accountId: String, val requestSource: CreateAccountRequestSource) {
+internal class CreateAccountConfirmationArgs(val accountId: AccountAddress, val requestSource: CreateAccountRequestSource) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_ACCOUNT_ID]) as String,
+        AccountAddress.init(checkNotNull(savedStateHandle[ARG_ACCOUNT_ID]) as String),
         checkNotNull(savedStateHandle[ARG_REQUEST_SOURCE]) as CreateAccountRequestSource
     )
 }
 
-fun NavController.createAccountConfirmationScreen(accountId: String, requestSource: CreateAccountRequestSource) {
-    navigate("account_completion_route/$requestSource/$accountId")
+fun NavController.createAccountConfirmationScreen(accountId: AccountAddress, requestSource: CreateAccountRequestSource) {
+    navigate("account_completion_route/$requestSource/${accountId.string}")
 }
 
 enum class CreateAccountRequestSource {

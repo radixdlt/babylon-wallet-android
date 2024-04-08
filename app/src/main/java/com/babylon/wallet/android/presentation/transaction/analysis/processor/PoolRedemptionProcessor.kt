@@ -7,6 +7,10 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.profile.domain.GetProfileUseCase
@@ -32,16 +36,16 @@ class PoolRedemptionProcessor @Inject constructor(
         val from = summary.accountWithdraws.map { withdrawsPerAddress ->
             withdrawsPerAddress.value.map { withdraw ->
                 val resourceAddress = withdraw.resourceAddress
-                val poolUnit = assets.find { it.resource.resourceAddress == resourceAddress } as? PoolUnit
+                val poolUnit = assets.find { it.resource.address == resourceAddress } as? PoolUnit
                 if (poolUnit == null) {
                     summary.resolveDepositingAsset(withdraw, assets, defaultDepositGuarantees)
                 } else {
                     val redemptions = classification.poolRedemptions.filter {
-                        it.poolUnitsResourceAddress.addressString() == resourceAddress
+                        it.poolUnitsResourceAddress.addressString() == resourceAddress.string
                     }
                     val redemptionResourceAddresses = redemptions.first().redeemedResources.keys
                     val poolUnitAmount = redemptions.find {
-                        it.poolUnitsResourceAddress.addressString() == poolUnit.resourceAddress
+                        it.poolUnitsResourceAddress.addressString() == poolUnit.resourceAddress.string
                     }?.poolUnitsAmount?.asStr()?.toBigDecimalOrNull()
                     Transferable.Withdrawing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(
@@ -49,14 +53,15 @@ class PoolRedemptionProcessor @Inject constructor(
                             unit = poolUnit.copy(
                                 stake = poolUnit.stake.copy(ownedAmount = poolUnitAmount)
                             ),
-                            redemptionResourceAddresses.associateWith { contributedResourceAddress ->
-                                redemptions.mapNotNull { it.redeemedResources[contributedResourceAddress]?.asStr()?.toBigDecimal() }
-                                    .sumOf { it }
+                            redemptionResourceAddresses.associate { contributedResourceAddress ->
+                                ResourceAddress.init(contributedResourceAddress) to redemptions.mapNotNull {
+                                    it.redeemedResources[contributedResourceAddress]?.asStr()?.toBigDecimal()
+                                }.sumOf { it }
                             }
                         )
                     )
                 }
-            }.toAccountWithTransferableResources(withdrawsPerAddress.key, involvedOwnedAccounts)
+            }.toAccountWithTransferableResources(AccountAddress.init(withdrawsPerAddress.key), involvedOwnedAccounts)
         }.sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
         return PreviewType.Transfer.Pool(
             from = from,

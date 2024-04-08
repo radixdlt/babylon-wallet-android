@@ -20,19 +20,18 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
-import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.TransactionGuarantee
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.modifyAddGuarantees
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.logNonFatalException
 import rdx.works.core.then
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import rdx.works.profile.sargon.toDecimal192
 import timber.log.Timber
 import javax.inject.Inject
@@ -128,7 +127,7 @@ class TransactionSubmitDelegate @Inject constructor(
     private suspend fun signAndSubmit(
         transactionRequest: MessageFromDataChannel.IncomingRequest.TransactionRequest,
         signTransactionUseCase: SignTransactionUseCase,
-        feePayerAddress: String,
+        feePayerAddress: AccountAddress?,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ) {
         _state.update { it.copy(isSubmitting = true) }
@@ -267,7 +266,7 @@ class TransactionSubmitDelegate @Inject constructor(
             TransactionGuarantee(
                 amount = assertion.amount.toDecimal192(),
                 instructionIndex = assertion.instructionIndex.toULong(),
-                resourceAddress = ResourceAddress.init(resource.resourceAddress),
+                resourceAddress = resource.address,
                 resourceDivisibility = resource.divisibility?.toUByte()
             )
         }

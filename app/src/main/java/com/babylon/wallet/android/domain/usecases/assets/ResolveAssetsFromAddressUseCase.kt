@@ -1,23 +1,27 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.assets.ValidatorDetail
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 import javax.inject.Inject
 
 class ResolveAssetsFromAddressUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
     suspend operator fun invoke(
-        fungibleAddresses: Set<String>,
-        nonFungibleIds: Map<String, Set<Resource.NonFungibleResource.Item.ID>>
+        fungibleAddresses: Set<ResourceAddress>,
+        nonFungibleIds: Map<ResourceAddress, Set<NonFungibleLocalId>>
     ): Result<List<Asset>> = stateRepository
         .getResources(
             addresses = fungibleAddresses + nonFungibleIds.keys,
@@ -25,12 +29,12 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
             withDetails = true
         ).mapCatching { resources ->
             val nfts = nonFungibleIds.mapValues { entry ->
-                stateRepository.getNFTDetails(entry.key, entry.value.map { it.code }.toSet()).getOrThrow()
+                stateRepository.getNFTDetails(entry.key, entry.value.toSet()).getOrThrow()
             }
 
             val fungibles = resources.filterIsInstance<Resource.FungibleResource>()
             val nonFungibles = resources.filterIsInstance<Resource.NonFungibleResource>().map { collection ->
-                collection.copy(items = nfts[collection.resourceAddress].orEmpty())
+                collection.copy(items = nfts[collection.address].orEmpty())
             }
 
             val poolAddresses = fungibles.mapNotNull { it.poolAddress }.toSet()
@@ -47,15 +51,15 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
             }
         }
 
-    private fun Resource.asAsset(pools: Map<String, Pool>, validators: Map<String, ValidatorDetail>): Asset = when (this) {
+    private fun Resource.asAsset(pools: Map<PoolAddress, Pool>, validators: Map<ValidatorAddress, Validator>): Asset = when (this) {
         is Resource.FungibleResource -> {
-            if (poolAddress?.isNotEmpty() == true) {
+            if (poolAddress != null) {
                 val pool = pools[poolAddress] ?: error("Pool not found")
                 PoolUnit(
                     stake = this,
                     pool = pool
                 )
-            } else if (validatorAddress?.isNotEmpty() == true) {
+            } else if (validatorAddress != null) {
                 val validator = validators[validatorAddress] ?: error("Validator not found")
                 LiquidStakeUnit(
                     fungibleResource = this,
@@ -67,7 +71,7 @@ class ResolveAssetsFromAddressUseCase @Inject constructor(
         }
 
         is Resource.NonFungibleResource -> {
-            if (validatorAddress.isNullOrEmpty()) {
+            if (validatorAddress == null) {
                 NonFungibleCollection(
                     collection = this
                 )

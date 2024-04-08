@@ -19,11 +19,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 
 @Composable
 fun AccountSelectionCard(
     accountName: String,
-    address: String,
+    address: AccountAddress,
     checked: Boolean,
     isSingleChoice: Boolean,
     radioButtonClicked: () -> Unit,
@@ -53,7 +57,7 @@ fun AccountSelectionCard(
             }
 
             ActionableAddressView(
-                address = address,
+                address = Address.Account(address),
                 textStyle = RadixTheme.typography.body2HighImportance,
                 textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
             )
@@ -84,13 +88,14 @@ fun AccountSelectionCard(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun DAppAccountCardPreview() {
     RadixWalletTheme {
         AccountSelectionCard(
             accountName = "Account name",
-            address = "jf932j9f32o",
+            address = AccountAddress.sampleMainnet.random(),
             isSingleChoice = false,
             radioButtonClicked = {},
             checked = true,
@@ -99,6 +104,7 @@ fun DAppAccountCardPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f)
 @Composable
@@ -106,7 +112,7 @@ fun DAppAccountCardLargeFontPreview() {
     RadixWalletTheme {
         AccountSelectionCard(
             accountName = "Account name",
-            address = "jf932j9f32o",
+            address = AccountAddress.sampleMainnet.random(),
             isSingleChoice = false,
             radioButtonClicked = {},
             checked = true,
@@ -115,13 +121,14 @@ fun DAppAccountCardLargeFontPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun DAppAccountCardSingleChoicePreview() {
     RadixWalletTheme {
         AccountSelectionCard(
             accountName = "Account name",
-            address = "jf932j9f32o",
+            address = AccountAddress.sampleMainnet.random(),
             isSingleChoice = true,
             radioButtonClicked = {},
             checked = true,

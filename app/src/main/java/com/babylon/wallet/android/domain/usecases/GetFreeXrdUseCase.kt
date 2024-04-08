@@ -10,16 +10,15 @@ import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionU
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.faucet
-import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateways
-import rdx.works.profile.ret.transaction.TransactionManifestData
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -34,12 +33,12 @@ class GetFreeXrdUseCase @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) {
 
-    suspend operator fun invoke(address: String): Result<String> {
+    suspend operator fun invoke(address: AccountAddress): Result<String> {
         return withContext(ioDispatcher) {
             val manifest = runCatching {
                 TransactionManifest.faucet(
                     includeLockFeeInstruction = true,
-                    addressOfReceivingAccount = AccountAddress.init(validatingAddress = address)
+                    addressOfReceivingAccount = address
                 )
             }.mapCatching {
                 TransactionManifestData.from(manifest = it)
@@ -79,7 +78,7 @@ class GetFreeXrdUseCase @Inject constructor(
         }
     }
 
-    fun getFaucetState(address: String): Flow<FaucetState> = combine(
+    fun getFaucetState(address: AccountAddress): Flow<FaucetState> = combine(
         getProfileUseCase.gateways,
         preferencesManager.getLastUsedEpochFlow(address)
     ) { gateways, lastUsedEpoch ->

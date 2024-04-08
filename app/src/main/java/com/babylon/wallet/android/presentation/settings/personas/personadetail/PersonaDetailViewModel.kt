@@ -13,6 +13,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -62,7 +64,7 @@ class PersonaDetailViewModel @Inject constructor(
             }.collect { personaToDApps ->
                 val metadataResults = personaToDApps.second.map { authorizedDApp ->
                     getDAppsUseCase.invoke(
-                        definitionAddress = authorizedDApp.dAppDefinitionAddress,
+                        definitionAddress = AccountAddress.init(authorizedDApp.dAppDefinitionAddress),
                         needMostRecentData = false
                     ).getOrNull()
                 }

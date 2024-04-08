@@ -9,10 +9,15 @@ import com.babylon.wallet.android.data.gateway.extensions.toMetadata
 import com.babylon.wallet.android.data.gateway.generated.models.LedgerState
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.AccountResourceJoin.Companion.asAccountResourceJoin
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.resources.metadata.accountType
-import java.math.BigDecimal
 import java.time.Instant
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -44,7 +49,7 @@ interface StateDao {
         WHERE address = :accountAddress
     """
     )
-    fun getAccountStateVersion(accountAddress: String): Long?
+    fun getAccountStateVersion(accountAddress: AccountAddress): Long?
 
     @Query(
         """
@@ -86,17 +91,18 @@ interface StateDao {
             val item = pair.first
             val ledgerState = pair.second
 
+            val accountAddress = AccountAddress.init(item.address)
             val syncInfo = SyncInfo(synced = InstantGenerator(), accountStateVersion = ledgerState.stateVersion)
             val allResources = item.fungibleResources?.items?.map { fungibleItem ->
-                fungibleItem.asAccountResourceJoin(item.address, syncInfo)
+                fungibleItem.asAccountResourceJoin(accountAddress, syncInfo)
             }.orEmpty() + item.nonFungibleResources?.items?.map { nonFungibleItem ->
-                nonFungibleItem.asAccountResourceJoin(item.address, syncInfo)
+                nonFungibleItem.asAccountResourceJoin(accountAddress, syncInfo)
             }.orEmpty()
 
             val accountMetadata = item.explicitMetadata?.toMetadata()
             insertAccountDetails(
                 AccountEntity(
-                    address = item.address,
+                    address = accountAddress,
                     accountType = accountMetadata?.accountType(),
                     synced = syncInfo.synced,
                     stateVersion = syncInfo.accountStateVersion
@@ -112,17 +118,6 @@ interface StateDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertOrIgnoreResources(resources: List<ResourceEntity>)
-
-    @Query(
-        """
-        UPDATE ResourceEntity SET
-        divisibility = :divisibility,
-        behaviours = :behaviours,
-        supply = :supply
-        WHERE address = :resourceAddress
-    """
-    )
-    fun updateResourceEntity(resourceAddress: String, divisibility: Int?, behaviours: BehavioursColumn?, supply: BigDecimal?)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAccountResourcesPortfolio(accountPortfolios: List<AccountResourceJoin>)
@@ -140,7 +135,7 @@ interface StateDao {
         WHERE address = :accountAddress
     """
     )
-    fun updateAccountFirstTransactionDate(accountAddress: String, firstTransactionDate: Instant?)
+    fun updateAccountFirstTransactionDate(accountAddress: AccountAddress, firstTransactionDate: Instant?)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertPoolDetails(pools: List<PoolEntity>)
@@ -166,7 +161,7 @@ interface StateDao {
         WHERE PoolEntity.address IN (:addresses) AND account_state_version = :atStateVersion
     """
     )
-    fun getPoolDetails(addresses: Set<String>, atStateVersion: Long): List<PoolWithResourceResponse>
+    fun getPoolDetails(addresses: Set<PoolAddress>, atStateVersion: Long): List<PoolWithResourceResponse>
 
     @Query(
         """
@@ -175,7 +170,7 @@ interface StateDao {
             WHERE PoolDAppJoin.pool_address = :poolAddress
         """
     )
-    fun getPoolAssociatedDApp(poolAddress: String): DAppEntity?
+    fun getPoolAssociatedDApp(poolAddress: PoolAddress): DAppEntity?
 
     @Query(
         """
@@ -184,7 +179,7 @@ interface StateDao {
         WHERE RE.pool_address = :poolAddress AND RE.divisibility IS NOT NULL AND RE.supply IS NOT NULL AND RE.synced >= :minValidity
     """
     )
-    fun getPoolResource(poolAddress: String, minValidity: Long): ResourceEntity?
+    fun getPoolResource(poolAddress: PoolAddress, minValidity: Long): ResourceEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertValidators(validators: List<ValidatorEntity>)
@@ -195,7 +190,7 @@ interface StateDao {
         WHERE address in (:addresses) AND state_version = :atStateVersion
     """
     )
-    fun getValidators(addresses: Set<String>, atStateVersion: Long): List<ValidatorEntity>
+    fun getValidators(addresses: Set<ValidatorAddress>, atStateVersion: Long): List<ValidatorEntity>
 
     @Query(
         """
@@ -207,7 +202,7 @@ interface StateDao {
             AccountNFTJoin.state_version = :stateVersion
         """
     )
-    fun getOwnedNfts(accountAddress: String, resourceAddress: String, stateVersion: Long): List<NFTEntity>
+    fun getOwnedNfts(accountAddress: AccountAddress, resourceAddress: ResourceAddress, stateVersion: Long): List<NFTEntity>
 
     @Query(
         """
@@ -216,7 +211,7 @@ interface StateDao {
         WHERE AccountResourceJoin.account_address = :accountAddress AND AccountResourceJoin.resource_address = :resourceAddress
     """
     )
-    fun updateNextCursor(accountAddress: String, resourceAddress: String, cursor: String?)
+    fun updateNextCursor(accountAddress: AccountAddress, resourceAddress: ResourceAddress, cursor: String?)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAccountNFTsJoin(accountNFTsJoin: List<AccountNFTJoin>)
@@ -226,8 +221,8 @@ interface StateDao {
 
     @Transaction
     fun insertAccountNFTsJoin(
-        accountAddress: String,
-        resourceAddress: String,
+        accountAddress: AccountAddress,
+        resourceAddress: ResourceAddress,
         cursor: String?,
         nfts: List<NFTEntity>,
         accountNFTsJoin: List<AccountNFTJoin>,
@@ -243,7 +238,7 @@ interface StateDao {
         WHERE address = :resourceAddress AND synced >= :minValidity
     """
     )
-    fun getResourceDetails(resourceAddress: String, minValidity: Long): ResourceEntity?
+    fun getResourceDetails(resourceAddress: ResourceAddress, minValidity: Long): ResourceEntity?
 
     @Query(
         """
@@ -254,7 +249,7 @@ interface StateDao {
             state_version = (SELECT state_version FROM AccountEntity WHERE address = :accountAddress)
     """
     )
-    fun getAccountResourceJoin(resourceAddress: String, accountAddress: String): AccountResourceJoin?
+    fun getAccountResourceJoin(resourceAddress: ResourceAddress, accountAddress: AccountAddress): AccountResourceJoin?
 
     @Query(
         """
@@ -262,7 +257,7 @@ interface StateDao {
         WHERE address = :resourceAddress AND local_id = :localId and synced >= :minValidity
     """
     )
-    fun getNFTDetails(resourceAddress: String, localId: String, minValidity: Long): NFTEntity?
+    fun getNFTDetails(resourceAddress: ResourceAddress, localId: NonFungibleLocalId, minValidity: Long): NFTEntity?
 
     @Query(
         """
@@ -270,11 +265,11 @@ interface StateDao {
         WHERE address = :resourceAddress AND local_id in (:localIds) and synced >= :minValidity
     """
     )
-    fun getNFTDetails(resourceAddress: String, localIds: Set<String>, minValidity: Long): List<NFTEntity>?
+    fun getNFTDetails(resourceAddress: ResourceAddress, localIds: Set<NonFungibleLocalId>, minValidity: Long): List<NFTEntity>?
 
     @Transaction
     fun storeStakeDetails(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         stateVersion: Long,
         lsuList: List<ResourceEntity>,
         claims: List<NFTEntity>
@@ -298,7 +293,7 @@ interface StateDao {
 
     @Transaction
     fun storeStakeClaims(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         stateVersion: Long,
         claims: List<NFTEntity>
     ) {
@@ -324,7 +319,7 @@ interface StateDao {
         AND synced >= :minValidity
     """
     )
-    fun getDApps(definitionAddresses: List<String>, minValidity: Long): List<DAppEntity>
+    fun getDApps(definitionAddresses: List<AccountAddress>, minValidity: Long): List<DAppEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertDApps(dApps: List<DAppEntity>)

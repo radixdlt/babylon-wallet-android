@@ -1,6 +1,8 @@
 package com.babylon.wallet.core.domain.assets
 
 import com.radixdlt.derivation.model.NetworkId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.samples.sampleMainnet
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 import rdx.works.core.domain.assets.Asset
@@ -18,7 +20,7 @@ class TokensPriceSorterTest {
 
     private val xrdToken = Token(
         resource = Resource.FungibleResource(
-            resourceAddress = XrdResource.address(networkId = NetworkId.Mainnet.value),
+            address = XrdResource.address(networkId = NetworkId.Mainnet.value),
             ownedAmount = null,
             metadata = listOf(
                 Metadata.Primitive("name", "Radix", MetadataType.String),
@@ -28,7 +30,7 @@ class TokensPriceSorterTest {
     )
     private val otherToken1 = Token(
         resource = Resource.FungibleResource(
-            resourceAddress = "rdx_other1",
+            address = ResourceAddress.sampleMainnet.random(),
             ownedAmount = null,
             metadata = listOf(
                 Metadata.Primitive("name", "Other 1", MetadataType.String),
@@ -38,7 +40,7 @@ class TokensPriceSorterTest {
     )
     private val otherToken2 = Token(
         resource = Resource.FungibleResource(
-            resourceAddress = "rdx_other2",
+            address = ResourceAddress.sampleMainnet.random(),
             ownedAmount = null,
             metadata = listOf(
                 Metadata.Primitive("name", "Other 2", MetadataType.String),
@@ -48,7 +50,7 @@ class TokensPriceSorterTest {
     )
     private val otherToken3 = Token(
         resource = Resource.FungibleResource(
-            resourceAddress = "rdx_other3",
+            address = ResourceAddress.sampleMainnet.random(),
             ownedAmount = null,
             metadata = listOf(
                 Metadata.Primitive("name", "Other 3", MetadataType.String),

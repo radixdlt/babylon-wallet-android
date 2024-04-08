@@ -122,7 +122,7 @@ fun TransferablePoolUnitItemContent(
                     )
                     Text(
                         modifier = Modifier.weight(1f),
-                        text = transferablePoolUnit.contributionPerResource[item.resourceAddress]?.displayableQuantity().orEmpty(),
+                        text = transferablePoolUnit.contributionPerResource[item.address]?.displayableQuantity().orEmpty(),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1,
                         textAlign = TextAlign.End,

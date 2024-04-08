@@ -42,8 +42,12 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedG
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Owned
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 import java.math.BigDecimal
 
 @Composable
@@ -87,7 +91,7 @@ fun TransactionAccountWithGuaranteesCard(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
             ActionableAddressView(
-                address = accountWithGuarantee.address,
+                address = Address.Account(accountWithGuarantee.address),
                 textStyle = RadixTheme.typography.body1Regular,
                 textColor = RadixTheme.colors.white,
                 iconColor = RadixTheme.colors.white
@@ -236,6 +240,7 @@ fun TransactionAccountWithGuaranteesCard(
     }
 }
 
+@UsesSampleValues
 @Preview("default")
 @Preview("large font", fontScale = 2f)
 @Preview(showBackground = true)
@@ -248,7 +253,7 @@ fun TransactionAccountWithGuaranteesCardPreview() {
                     account = SampleDataProvider().sampleAccount(),
                     transferable = TransferableAsset.Fungible.Token(
                         amount = BigDecimal.TEN,
-                        resource = SampleDataProvider().sampleFungibleResources()[0],
+                        resource = Resource.FungibleResource.sampleMainnet(),
                         isNewlyCreated = false
                     ),
                     instructionIndex = 1L,

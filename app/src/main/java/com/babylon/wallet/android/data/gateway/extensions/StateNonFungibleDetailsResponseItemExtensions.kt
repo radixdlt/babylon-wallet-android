@@ -25,7 +25,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScry
 import com.babylon.wallet.android.data.gateway.generated.models.ProgrammaticScryptoSborValueU8
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.utils.isValidUrl
-import rdx.works.core.AddressHelper
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
@@ -48,6 +49,18 @@ fun StateNonFungibleDetailsResponseItem.toMetadata(): List<Metadata> {
     return fields.mapNotNull { it.toMetadata() }
 }
 
+private fun ProgrammaticScryptoSborValueString.isValidUrl(): Boolean = value.isValidUrl()
+
+private fun String.isValidAddress(): Boolean = runCatching {
+    Address.init(validatingAddress = this)
+}.getOrNull() != null
+
+private fun ProgrammaticScryptoSborValueString.isValidAddress(): Boolean = value.isValidAddress()
+
+private fun ProgrammaticScryptoSborValueReference.isValidAddress(): Boolean = value.isValidAddress()
+
+private fun ProgrammaticScryptoSborValueOwn.isValidAddress(): Boolean = value.isValidAddress()
+
 @Suppress("CyclomaticComplexMethod", "LongMethod")
 private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = false): Metadata? = fieldName?.let { key ->
     when (val sborValue = this) {
@@ -61,9 +74,9 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
             } else if (!isCollection && key in urlNFDataKeys) {
                 MetadataType.Url
             } else {
-                if (sborValue.value.isValidUrl()) {
+                if (sborValue.isValidUrl()) {
                     MetadataType.Url
-                } else if (AddressHelper.isValid(sborValue.value)) {
+                } else if (sborValue.isValidAddress()) {
                     MetadataType.Address
                 } else {
                     MetadataType.String
@@ -189,7 +202,7 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
             values = sborValue.fields.mapNotNull { it.toMetadata(isCollection = true) }
         )
 
-        is ProgrammaticScryptoSborValueReference -> if (AddressHelper.isValid(sborValue.value)) {
+        is ProgrammaticScryptoSborValueReference -> if (sborValue.isValidAddress()) {
             Metadata.Primitive(
                 key = key,
                 value = sborValue.value,
@@ -199,7 +212,7 @@ private fun ProgrammaticScryptoSborValue.toMetadata(isCollection: Boolean = fals
             null
         }
 
-        is ProgrammaticScryptoSborValueOwn -> if (AddressHelper.isValid(sborValue.value)) {
+        is ProgrammaticScryptoSborValueOwn -> if (sborValue.isValidAddress()) {
             Metadata.Primitive(
                 key = key,
                 value = sborValue.value,

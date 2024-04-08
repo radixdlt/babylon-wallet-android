@@ -130,6 +130,13 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+    afterEvaluate {
+        tasks.configureEach { task ->
+            if (task.name.contains("Test") && task.name.contains("compile")) {
+                kotlinOptions.freeCompilerArgs += '-Xopt-in=com.radixdlt.sargon.annotation.UsesSampleValues'
+            }
+        }
+    }
     namespace 'com.babylon.wallet.android'
 }
 
@@ -247,6 +254,12 @@ dependencies {
     implementation libs.composeUiToolingPreview
     debugImplementation libs.composeUiTooling
     debugImplementation libs.composeUiTestManifest
+
+    // Needed for compose previews to run with Sargon
+    debugRuntimeOnly(libs.sargonDesktop) {
+        exclude(group: "net.java.dev.jna")
+    }
+    // Needed for unit tests to run with Sargon
     testRuntimeOnly libs.sargonDesktop
 }
 
@@ -272,11 +285,12 @@ task buildDefaultLanguage {
     copy {
         from('src/main/res/values-en/strings.xml') {
             filter {
-                line -> if (line.isEmpty()) {
-                    '\\n\\n'
-                } else {
-                    line
-                }
+                line ->
+                    if (line.isEmpty()) {
+                        '\\n\\n'
+                    } else {
+                        line
+                    }
             }
         }
         into 'src/main/res/values/'

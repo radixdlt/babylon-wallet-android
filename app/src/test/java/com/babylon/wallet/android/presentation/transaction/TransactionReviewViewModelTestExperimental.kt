@@ -51,7 +51,7 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.ret.transaction.TransactionManifestData
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.profile.ret.transaction.TransactionSigner
 import rdx.works.profile.sargon.toSargon
 import java.math.BigDecimal

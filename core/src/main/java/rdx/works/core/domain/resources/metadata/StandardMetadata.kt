@@ -4,7 +4,10 @@ package rdx.works.core.domain.resources.metadata
 
 import android.net.Uri
 import androidx.core.net.toUri
-import rdx.works.core.AddressHelper
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import java.math.BigDecimal
 
@@ -51,29 +54,25 @@ fun List<Metadata>.keyImageUrl(): Uri? = findPrimitive(
     type = MetadataType.Url
 )?.value?.toUri()
 
-fun List<Metadata>.validatorAddress(): String? = findPrimitive(
+fun List<Metadata>.validatorAddress(): ValidatorAddress? = findPrimitive(
     key = ExplicitMetadataKey.VALIDATOR,
     type = MetadataType.Address
-)?.value?.takeIf { value ->
-    AddressHelper.isValidator(value)
-}
+)?.value?.let { runCatching { ValidatorAddress.init(it) }.getOrNull() }
 
-fun List<Metadata>.poolAddress(): String? = findPrimitive(
+fun List<Metadata>.poolAddress(): PoolAddress? = findPrimitive(
     key = ExplicitMetadataKey.POOL,
     type = MetadataType.Address
-)?.value?.takeIf { value ->
-    AddressHelper.isPool(value)
-}
+)?.value?.let { runCatching { PoolAddress.init(it) }.getOrNull() }
 
 fun List<Metadata>.ownerBadge(): OwnerBadge? = findPrimitive(
     key = ExplicitMetadataKey.OWNER_BADGE,
     type = MetadataType.NonFungibleLocalId
 )?.let { OwnerBadge(it.value, it.lastUpdatedAtStateVersion) }
 
-fun List<Metadata>.poolUnit(): String? = findPrimitive(
+fun List<Metadata>.poolUnit(): ResourceAddress? = findPrimitive(
     key = ExplicitMetadataKey.POOL_UNIT,
     type = MetadataType.Address
-)?.value
+)?.value?.let { runCatching { ResourceAddress.init(it) }.getOrNull() }
 
 fun List<Metadata>.claimAmount(): BigDecimal? = findPrimitive(
     key = ExplicitMetadataKey.CLAIM_AMOUNT,
@@ -85,11 +84,6 @@ fun List<Metadata>.claimEpoch(): Long? = findPrimitive(
     type = MetadataType.Integer(signed = false, size = MetadataType.Integer.Size.LONG)
 )?.value?.toLongOrNull()
 
-fun List<Metadata>.claimNFTAddress(): String? = findPrimitive(
-    key = ExplicitMetadataKey.CLAIM_NFT,
-    type = MetadataType.Address
-)?.value
-
 fun List<Metadata>.accountType(): AccountType? = findPrimitive(
     key = ExplicitMetadataKey.ACCOUNT_TYPE,
     type = MetadataType.String
@@ -100,34 +94,12 @@ fun List<Metadata>.tags(): List<String>? = findCollection(
     type = MetadataType.String
 )?.map { it.value }
 
-fun List<Metadata>.dAppDefinitions(): List<String> {
-    val dAppDefinitions = findCollection(
-        key = ExplicitMetadataKey.DAPP_DEFINITIONS,
-        type = MetadataType.Address
-    )?.map { it.value }.orEmpty()
-
-    val single = findPrimitive(
-        key = ExplicitMetadataKey.DAPP_DEFINITION,
-        type = MetadataType.Address
-    )?.value
-    return if (single != null) {
-        dAppDefinitions + single
-    } else {
-        dAppDefinitions
-    }
-}
-
 fun List<Metadata>.dAppDefinition(): String? {
     return findPrimitive(
         key = ExplicitMetadataKey.DAPP_DEFINITION,
         type = MetadataType.Address
     )?.value
 }
-
-fun List<Metadata>.relatedWebsites(): List<String>? = findCollection(
-    key = ExplicitMetadataKey.RELATED_WEBSITES,
-    type = MetadataType.Url
-)?.map { it.value }
 
 fun List<Metadata>.claimedWebsites(): List<String>? = findCollection(
     key = ExplicitMetadataKey.CLAIMED_WEBSITES,

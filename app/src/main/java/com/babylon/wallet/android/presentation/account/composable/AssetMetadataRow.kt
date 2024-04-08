@@ -24,6 +24,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.ui.composables.ExpandableText
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.utils.openUrl
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
@@ -158,9 +162,25 @@ fun Metadata.ValueView(
                 )
             }
 
-            MetadataType.Address, MetadataType.NonFungibleGlobalId, MetadataType.NonFungibleLocalId -> ActionableAddressView(
+            MetadataType.Address -> ActionableAddressView(
                 modifier = modifier,
-                address = value
+                address = remember(value) {
+                    Address.init(value)
+                }
+            )
+
+            MetadataType.NonFungibleGlobalId -> ActionableAddressView(
+                modifier = modifier,
+                globalId = remember(value) {
+                    NonFungibleGlobalId.init(value)
+                }
+            )
+
+            MetadataType.NonFungibleLocalId -> ActionableAddressView(
+                modifier = modifier,
+                localId = remember(value) {
+                    NonFungibleLocalId.init(value)
+                }
             )
 
             MetadataType.Decimal -> Text(

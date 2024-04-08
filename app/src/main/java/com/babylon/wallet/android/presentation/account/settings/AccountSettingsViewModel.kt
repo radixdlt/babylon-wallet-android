@@ -11,6 +11,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -73,7 +75,7 @@ class AccountSettingsViewModel @Inject constructor(
     private fun loadAccount() {
         viewModelScope.launch {
             getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accounts ->
-                accounts.firstOrNull { it.address == args.address }
+                accounts.firstOrNull { it.address == args.address.string }
             }.collect { account ->
                 _state.update { state ->
                     state.copy(
@@ -99,7 +101,7 @@ class AccountSettingsViewModel @Inject constructor(
     fun onRenameAccountNameConfirm() {
         viewModelScope.launch {
             val accountToRename = getProfileUseCase.activeAccountsOnCurrentNetwork.first().find {
-                args.address == it.address
+                args.address.string == it.address
             }
             accountToRename?.let {
                 val newAccountName = _state.value.accountNameChanged.trim()
@@ -147,7 +149,7 @@ sealed interface Event : OneOffEvent {
 data class AccountPreferenceUiState(
     val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
     val account: Network.Account? = null,
-    val accountAddress: String,
+    val accountAddress: AccountAddress,
     val accountName: String = "",
     val accountNameChanged: String = "",
     val isNewNameValid: Boolean = false,

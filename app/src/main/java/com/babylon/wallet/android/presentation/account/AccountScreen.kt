@@ -59,6 +59,11 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBa
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -72,15 +77,15 @@ import rdx.works.profile.data.model.pernetwork.Network
 @Composable
 fun AccountScreen(
     viewModel: AccountViewModel,
-    onAccountPreferenceClick: (address: String) -> Unit,
+    onAccountPreferenceClick: (address: AccountAddress) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
     onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
     onNavigateToMnemonicRestore: () -> Unit,
     onFungibleResourceClick: (Resource.FungibleResource, Network.Account) -> Unit,
     onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Network.Account) -> Unit,
-    onTransferClick: (String) -> Unit,
-    onHistoryClick: (String) -> Unit
+    onTransferClick: (AccountAddress) -> Unit,
+    onHistoryClick: (AccountAddress) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(Unit) {
@@ -129,10 +134,10 @@ private fun AccountScreenContent(
     modifier: Modifier = Modifier,
     state: AccountUiState,
     onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
-    onAccountPreferenceClick: (address: String) -> Unit,
+    onAccountPreferenceClick: (address: AccountAddress) -> Unit,
     onBackClick: () -> Unit,
     onRefresh: () -> Unit,
-    onTransferClick: (String) -> Unit,
+    onTransferClick: (AccountAddress) -> Unit,
     onMessageShown: () -> Unit,
     onTabClick: (AssetsTab) -> Unit,
     onCollectionClick: (String) -> Unit,
@@ -144,7 +149,7 @@ private fun AccountScreenContent(
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
     onStakesRequest: () -> Unit,
     onClaimClick: (List<StakeClaim>) -> Unit,
-    onHistoryClick: (String) -> Unit
+    onHistoryClick: (AccountAddress) -> Unit
 ) {
     val gradient = remember(state.accountWithAssets) {
         val appearanceId = state.accountWithAssets?.account?.appearanceID ?: 0
@@ -177,7 +182,9 @@ private fun AccountScreenContent(
                         // https://radixdlt.atlassian.net/browse/ABW-2504
                         ThrottleIconButton(
                             onClick = {
-                                onAccountPreferenceClick(state.accountWithAssets?.account?.address.orEmpty())
+                                state.accountWithAssets?.account?.let {
+                                    onAccountPreferenceClick(AccountAddress.init(it.address))
+                                }
                             },
                             thresholdMs = 1000L
                         ) {
@@ -244,8 +251,8 @@ fun AssetsContent(
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
     gradient: ImmutableList<Color>,
-    onTransferClick: (String) -> Unit,
-    onHistoryClick: (String) -> Unit,
+    onTransferClick: (AccountAddress) -> Unit,
+    onHistoryClick: (AccountAddress) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
     onLSUUnitClicked: (LiquidStakeUnit) -> Unit,
     onNextNFTsPageRequest: (Resource.NonFungibleResource) -> Unit,
@@ -257,7 +264,7 @@ fun AssetsContent(
         color = RadixTheme.colors.gray5
     ) {
         val accountAddress = remember(state.accountWithAssets) {
-            state.accountWithAssets?.account?.address.orEmpty()
+            state.accountWithAssets?.account?.let { AccountAddress.init(it.address) }
         }
 
         val assetsViewData = remember(state.accountWithAssets?.assets, state.assetsWithAssetsPrices, state.epoch) {
@@ -285,12 +292,14 @@ fun AssetsContent(
                             .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        ActionableAddressView(
-                            modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
-                            address = accountAddress,
-                            textStyle = RadixTheme.typography.body2HighImportance,
-                            textColor = RadixTheme.colors.white
-                        )
+                        accountAddress?.let {
+                            ActionableAddressView(
+                                modifier = Modifier.padding(bottom = RadixTheme.dimensions.paddingSmall),
+                                address = Address.Account(it),
+                                textStyle = RadixTheme.typography.body2HighImportance,
+                                textColor = RadixTheme.colors.white
+                            )
+                        }
 
                         if (state.isFiatBalancesEnabled) {
                             TotalFiatBalanceView(
@@ -320,17 +329,20 @@ fun AssetsContent(
                                     .padding(horizontal = RadixTheme.dimensions.paddingXSmall),
                                 horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
                             ) {
-                                HistoryButton(
-                                    modifier = Modifier.weight(1f),
-                                    onHistoryClick = {
-                                        onHistoryClick(accountAddress)
-                                    }
-                                )
-                                TransferButton(
-                                    modifier = Modifier.weight(1f),
-                                    accountAddress = accountAddress,
-                                    onTransferClick = onTransferClick
-                                )
+                                if (accountAddress != null) {
+                                    HistoryButton(
+                                        modifier = Modifier.weight(1f),
+                                        onHistoryClick = {
+                                            onHistoryClick(accountAddress)
+                                        }
+                                    )
+
+                                    TransferButton(
+                                        modifier = Modifier.weight(1f),
+                                        accountAddress = accountAddress,
+                                        onTransferClick = onTransferClick
+                                    )
+                                }
                             }
                         }
 
@@ -394,8 +406,8 @@ fun AssetsContent(
 @Composable
 private fun TransferButton(
     modifier: Modifier = Modifier,
-    accountAddress: String,
-    onTransferClick: (String) -> Unit
+    accountAddress: AccountAddress,
+    onTransferClick: (AccountAddress) -> Unit
 ) {
     RadixSecondaryButton(
         modifier = modifier,
@@ -438,6 +450,7 @@ private fun HistoryButton(
     )
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountContentPreview() {
@@ -469,6 +482,7 @@ fun AccountContentPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountContentWithFiatBalancesDisabledPreview() {

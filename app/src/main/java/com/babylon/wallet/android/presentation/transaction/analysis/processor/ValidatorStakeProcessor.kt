@@ -8,6 +8,9 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.first
 import rdx.works.core.divideWithDivisibility
 import rdx.works.core.domain.assets.Asset
@@ -58,14 +61,14 @@ class ValidatorStakeProcessor @Inject constructor(
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         depositsPerAccount.value.map { depositedResource ->
             val asset = assets.find {
-                it.resource.resourceAddress == depositedResource.resourceAddress
+                it.resource.address == depositedResource.resourceAddress
             } ?: error("No asset found")
             if (asset is LiquidStakeUnit) {
                 resolveLSU(asset, depositedResource, defaultDepositGuarantees)
             } else {
                 executionSummary.resolveDepositingAsset(depositedResource, assets, defaultDepositGuarantees)
             }
-        }.toAccountWithTransferableResources(depositsPerAccount.key, involvedOwnedAccounts)
+        }.toAccountWithTransferableResources(AccountAddress.init(depositsPerAccount.key), involvedOwnedAccounts)
     }
 
     private fun DetailedManifestClass.ValidatorStake.resolveLSU(
@@ -73,7 +76,7 @@ class ValidatorStakeProcessor @Inject constructor(
         depositedResource: ResourceIndicator,
         defaultDepositGuarantees: Double
     ): Transferable.Depositing {
-        val relatedStakes = validatorStakes.filter { it.liquidStakeUnitAddress.addressString() == asset.resourceAddress }
+        val relatedStakes = validatorStakes.filter { it.liquidStakeUnitAddress.addressString() == asset.resourceAddress.string }
         val totalStakedLsuForAccount = relatedStakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() }
         val totalStakeXrdWorthForAccount = relatedStakes.sumOf { it.xrdAmount.asStr().toBigDecimal() }
         val lsuAmount = depositedResource.amount

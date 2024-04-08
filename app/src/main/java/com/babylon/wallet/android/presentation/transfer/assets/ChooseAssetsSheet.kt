@@ -94,8 +94,12 @@ fun ChooseAssetsSheet(
         },
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
-        val selectedAssets = remember(state.targetAccount.spendingAssets) {
-            state.targetAccount.spendingAssets.map { it.address }
+        val selectedResources = remember(state.targetAccount.spendingAssets) {
+            state.targetAccount.spendingAssets.filterIsInstance<SpendingAsset.Fungible>().map { it.resourceAddress }
+        }
+
+        val selectedNFTs = remember(state.targetAccount.spendingAssets) {
+            state.targetAccount.spendingAssets.filterIsInstance<SpendingAsset.NFT>().map { it.item.globalId }
         }
 
         val assetsViewData = remember(state.assets, state.assetsWithAssetsPrices, state.epoch) {
@@ -120,7 +124,8 @@ fun ChooseAssetsSheet(
                 },
                 state = state.assetsViewState,
                 action = AssetsViewAction.Selection(
-                    selectedResources = selectedAssets,
+                    selectedResources = selectedResources,
+                    selectedNFTs = selectedNFTs,
                     onFungibleCheckChanged = { fungible, isChecked ->
                         onAssetSelectionChanged(SpendingAsset.Fungible(resource = fungible), isChecked)
                     },

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -19,6 +20,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import rdx.works.profile.data.model.pernetwork.Network
 
 fun LazyListScope.feePayerSelectionContent(
@@ -55,7 +58,9 @@ fun LazyListScope.feePayerSelectionContent(
                     onPayerSelected(candidate.account)
                 },
             accountName = candidate.account.displayName,
-            address = candidate.account.address,
+            address = remember(candidate.account.address) {
+                AccountAddress.init(candidate.account.address)
+            },
             checked = false,
             isSingleChoice = true,
             radioButtonClicked = {

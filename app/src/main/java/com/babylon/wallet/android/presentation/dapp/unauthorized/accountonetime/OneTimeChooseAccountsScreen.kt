@@ -23,11 +23,11 @@ import com.babylon.wallet.android.presentation.ui.composables.ChooseAccountConte
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.resources.ExplicitMetadataKey
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
 
 @Composable
 fun OneTimeChooseAccountsScreen(
@@ -121,6 +121,7 @@ fun OneTimeChooseAccountsScreen(
     )
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun OneTimeAccountContentPreview() {
@@ -132,25 +133,20 @@ fun OneTimeAccountContentPreview() {
             accountItems = persistentListOf(
                 AccountItemUiModel(
                     displayName = "Account name 1",
-                    address = "fdj209d9320",
+                    address = AccountAddress.sampleMainnet.random(),
                     appearanceID = 1,
                     isSelected = true
                 ),
                 AccountItemUiModel(
                     displayName = "Account name 2",
-                    address = "342f23f2",
+                    address = AccountAddress.sampleMainnet.random(),
                     appearanceID = 1,
                     isSelected = false
                 )
             ),
             onAccountSelect = {},
             onCreateNewAccount = {},
-            dapp = DApp(
-                dAppAddress = "account_tdx_abc",
-                metadata = listOf(
-                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "dApp", MetadataType.String)
-                )
-            ),
+            dapp = DApp.sampleMainnet(),
             isOneTime = true,
             isSingleChoice = false,
             numberOfAccounts = 1,

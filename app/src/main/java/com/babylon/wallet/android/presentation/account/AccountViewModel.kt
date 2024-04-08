@@ -27,6 +27,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.ResourceAddress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -258,7 +259,7 @@ class AccountViewModel @Inject constructor(
 
     fun onNextNftPageRequest(resource: Resource.NonFungibleResource) {
         val account = state.value.accountWithAssets?.account ?: return
-        if (!state.value.isRefreshing && resource.resourceAddress !in state.value.nonFungiblesWithPendingNFTs) {
+        if (!state.value.isRefreshing && resource.address !in state.value.nonFungiblesWithPendingNFTs) {
             _state.update { state -> state.onNFTsLoading(resource) }
             viewModelScope.launch {
                 getNextNFTsPageUseCase(account, resource)
@@ -349,7 +350,7 @@ data class AccountUiState(
     val isFiatBalancesEnabled: Boolean = true,
     val assetsWithAssetsPrices: Map<Asset, AssetPrice?>? = null,
     private val hasFailedToFetchPricesForAccount: Boolean = false,
-    val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
+    val nonFungiblesWithPendingNFTs: Set<ResourceAddress> = setOf(),
     val pendingStakeUnits: Boolean = false,
     val securityPromptType: SecurityPromptType? = null,
     val assetsViewState: AssetsViewState = AssetsViewState.init(),
@@ -383,7 +384,7 @@ data class AccountUiState(
         get() = accountWithAssets?.assets != null
 
     fun onNFTsLoading(forResource: Resource.NonFungibleResource): AccountUiState {
-        return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.resourceAddress)
+        return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.address)
     }
 
     fun onNFTsReceived(forResource: Resource.NonFungibleResource): AccountUiState {
@@ -393,21 +394,21 @@ data class AccountUiState(
                 assets = accountWithAssets.assets.copy(
                     nonFungibles = accountWithAssets.assets.nonFungibles.mapWhen(
                         predicate = {
-                            it.collection.resourceAddress == forResource.resourceAddress &&
+                            it.collection.address == forResource.address &&
                                 it.collection.items.size < forResource.items.size
                         },
                         mutation = { NonFungibleCollection(forResource) }
                     )
                 )
             ),
-            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress
+            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address
         )
     }
 
     fun onNFTsError(forResource: Resource.NonFungibleResource, error: Throwable): AccountUiState {
         if (accountWithAssets?.assets?.nonFungibles == null) return this
         return copy(
-            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress,
+            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address,
             uiMessage = UiMessage.ErrorMessage(error = error)
         )
     }

@@ -4,9 +4,10 @@ import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.bip39.toSeed
 import com.radixdlt.crypto.ec.EllipticCurveType
 import com.radixdlt.crypto.getCompressedPublicKey
-import com.radixdlt.ret.OlympiaNetwork
-import com.radixdlt.ret.PublicKey
-import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
+import com.radixdlt.sargon.LegacyOlympiaAccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toBabylonAddress
+import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.slip10.toKey
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -143,18 +144,16 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         val accounts = (0..10).map { index ->
             val derivationPath = DerivationPath.forLegacyOlympia(accountIndex = index)
             val publicKey = seed.toKey(derivationPath.path, EllipticCurveType.Secp256k1).keyPair.getCompressedPublicKey()
-            val address = deriveOlympiaAccountAddressFromPublicKey(
-                PublicKey.Secp256k1(publicKey),
-                OlympiaNetwork.MAINNET
-            )
+
+            val olympiaAddress = LegacyOlympiaAccountAddress.init(com.radixdlt.sargon.PublicKey.Secp256k1.init(publicKey.toBagOfBytes()))
             OlympiaAccountDetails(
                 index = index,
                 type = if (index % 2 == 0) OlympiaAccountType.Software else OlympiaAccountType.Hardware,
-                address = address.asStr(),
+                address = olympiaAddress,
                 publicKey = publicKey.toHexString(),
                 accountName = "Olympia $index",
                 derivationPath = derivationPath,
-                newBabylonAddress = "empty",
+                newBabylonAddress = olympiaAddress.toBabylonAddress(),
                 appearanceId = index
             )
         }

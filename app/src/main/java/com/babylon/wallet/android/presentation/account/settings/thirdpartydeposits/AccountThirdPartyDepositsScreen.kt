@@ -47,6 +47,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.AccountAddress
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -54,7 +55,7 @@ fun AccountThirdPartyDepositsScreen(
     viewModel: AccountThirdPartyDepositsViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onAssetSpecificRulesClick: (String) -> Unit,
+    onAssetSpecificRulesClick: (AccountAddress) -> Unit,
     onSpecificDepositorsClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

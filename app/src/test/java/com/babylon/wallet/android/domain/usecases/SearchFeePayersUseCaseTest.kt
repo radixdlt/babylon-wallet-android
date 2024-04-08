@@ -8,12 +8,16 @@ import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AssetsTransfersRecipient
+import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PerAssetFungibleResource
 import com.radixdlt.sargon.PerAssetFungibleTransfer
 import com.radixdlt.sargon.PerAssetTransfers
 import com.radixdlt.sargon.PerAssetTransfersOfFungibleResource
+import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.perAssetTransfers
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -25,7 +29,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.StakeClaim
-import rdx.works.core.domain.assets.ValidatorDetail
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
@@ -38,7 +42,7 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.ret.transaction.TransactionManifestData
+import rdx.works.core.domain.TransactionManifestData
 import java.math.BigDecimal
 
 class SearchFeePayersUseCaseTest {
@@ -58,7 +62,7 @@ class SearchFeePayersUseCaseTest {
 
             assertEquals(
                 TransactionFeePayers(
-                    selectedAccountAddress = account1.address,
+                    selectedAccountAddress = AccountAddress.init(account1.address),
                     candidates = listOf(
                         TransactionFeePayers.FeePayerCandidate(account1, BigDecimal(100)),
                         TransactionFeePayers.FeePayerCandidate(account2, BigDecimal.ZERO)
@@ -88,8 +92,8 @@ class SearchFeePayersUseCaseTest {
         }
 
     companion object {
-        private val account1 = account(name = "account1", address = "account_rdx12x20vgu94d96g3demdumxl6yjpvm0jy8dhrr03g75299ghxrwq76uh")
-        private val account2 = account(name = "account2", address = "account_rdx12x20vgu94d96g3demdumxl6yjpvm0jy8dhrr03g75299ghxrwq73uh")
+        private val account1 = account(name = "account1", address = AccountAddress.sampleMainnet.random())
+        private val account2 = account(name = "account2", address = AccountAddress.sampleMainnet.random())
 
         private fun manifestDataWithAddress(
             account: Network.Account
@@ -100,7 +104,7 @@ class SearchFeePayersUseCaseTest {
                     fungibleResources = listOf(
                         PerAssetTransfersOfFungibleResource(
                             resource = PerAssetFungibleResource(
-                                resourceAddress = ResourceAddress.init(XrdResource.address(networkId = account.networkID)),
+                                resourceAddress = XrdResource.address(networkId = account.networkID),
                                 divisibility = 18.toUByte()
                             ),
                             transfers = listOf(
@@ -168,24 +172,24 @@ class SearchFeePayersUseCaseTest {
             }
 
             override suspend fun getResources(
-                addresses: Set<String>,
-                underAccountAddress: String?,
+                addresses: Set<ResourceAddress>,
+                underAccountAddress: AccountAddress?,
                 withDetails: Boolean
             ): Result<List<Resource>> {
                 error("Not needed")
             }
 
-            override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> {
+            override suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>> {
                 error("Not needed")
             }
 
-            override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> {
+            override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> {
                 error("Not needed")
             }
 
             override suspend fun getNFTDetails(
-                resourceAddress: String,
-                localIds: Set<String>
+                resourceAddress: ResourceAddress,
+                localIds: Set<NonFungibleLocalId>
             ): Result<List<Resource.NonFungibleResource.Item>> {
                 error("Not needed")
             }
@@ -203,7 +207,11 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getDAppsDetails(definitionAddresses: List<String>, isRefreshing: Boolean): Result<List<DApp>> {
+            override suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>> {
+                error("Not needed")
+            }
+
+            override suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>> {
                 error("Not needed")
             }
 

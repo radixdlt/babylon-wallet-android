@@ -5,8 +5,6 @@ package com.babylon.wallet.android.designsystem.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Colors
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Shapes
 import androidx.compose.material.Typography
@@ -366,16 +364,6 @@ fun RadixWalletTheme(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun RadixWalletPreviewTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit,
-) {
-    CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-        RadixWalletTheme(darkTheme, content)
     }
 }
 

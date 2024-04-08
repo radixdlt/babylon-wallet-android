@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ResourceAddress
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import rdx.works.core.domain.resources.Resource
@@ -15,8 +17,8 @@ class ObserveResourceUseCase @Inject constructor(
 ) {
 
     operator fun invoke(
-        resourceAddress: String,
-        accountAddress: String? = null,
+        resourceAddress: ResourceAddress,
+        accountAddress: AccountAddress? = null,
         withDetails: Boolean = true
     ): Flow<Resource> = flow {
         val resource = stateRepository.getResources(

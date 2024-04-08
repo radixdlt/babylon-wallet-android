@@ -18,6 +18,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.model.toQuantifierUsedInRequest
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -52,7 +54,7 @@ class DappDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            dAppWithAssociatedResourcesUseCase.invoke(
+            dAppWithAssociatedResourcesUseCase(
                 definitionAddress = args.dappDefinitionAddress,
                 needMostRecentData = false
             ).onSuccess { dAppWithAssociatedResources ->
@@ -127,7 +129,7 @@ class DappDetailViewModel @Inject constructor(
         val personaSimple =
             authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
         val sharedAccounts = personaSimple?.sharedAccounts?.ids?.mapNotNull {
-            getProfileUseCase.accountOnCurrentNetwork(it)?.toUiModel()
+            getProfileUseCase.accountOnCurrentNetwork(AccountAddress.init(it))?.toUiModel()
         }.orEmpty()
         val requiredKinds = personaSimple?.sharedPersonaData?.alreadyGrantedIds().orEmpty().mapNotNull {
             persona.personaData.getDataFieldKind(it)

@@ -2,12 +2,25 @@ package rdx.works.core.domain.resources
 
 import android.net.Uri
 import com.radixdlt.derivation.model.NetworkId
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.intId
+import com.radixdlt.sargon.extensions.networkId
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.xrd
+import com.radixdlt.sargon.samples.SampleWithRandomValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import rdx.works.core.AddressHelper
 import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.assets.AssetBehaviours
 import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.claimAmount
 import rdx.works.core.domain.resources.metadata.claimEpoch
 import rdx.works.core.domain.resources.metadata.description
@@ -19,12 +32,14 @@ import rdx.works.core.domain.resources.metadata.symbol
 import rdx.works.core.domain.resources.metadata.tags
 import rdx.works.core.domain.resources.metadata.validatorAddress
 import java.math.BigDecimal
+import kotlin.random.Random
 
 sealed class Resource {
-    abstract val resourceAddress: String
-    abstract val validatorAddress: String?
+    abstract val address: ResourceAddress
+    abstract val validatorAddress: ValidatorAddress?
     abstract val name: String
     abstract val iconUrl: Uri?
+    abstract val metadata: List<Metadata>
 
     val isDetailsAvailable: Boolean
         get() = when (this) {
@@ -33,12 +48,12 @@ sealed class Resource {
         }
 
     data class FungibleResource(
-        override val resourceAddress: String,
+        override val address: ResourceAddress,
         val ownedAmount: BigDecimal?,
         private val assetBehaviours: AssetBehaviours? = null,
         val currentSupply: BigDecimal? = null,
         val divisibility: Int? = null,
-        val metadata: List<Metadata> = emptyList()
+        override val metadata: List<Metadata> = emptyList()
     ) : Resource(), Comparable<FungibleResource> {
         override val name: String by lazy {
             metadata.name().orEmpty().truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
@@ -56,12 +71,16 @@ sealed class Resource {
             metadata.iconUrl()
         }
 
-        override val validatorAddress: String? by lazy {
+        override val validatorAddress: ValidatorAddress? by lazy {
             metadata.validatorAddress()
         }
 
-        val poolAddress: String? by lazy {
+        val poolAddress: PoolAddress? by lazy {
             metadata.poolAddress()
+        }
+
+        val isXrd: Boolean by lazy {
+            ResourceAddress.xrd(address.networkId) == address
         }
 
         val tags: ImmutableList<Tag> by lazy {
@@ -123,7 +142,7 @@ sealed class Resource {
             return if (symbolDiff != 0) {
                 symbolDiff
             } else {
-                resourceAddress.compareTo(other.resourceAddress)
+                address.string.compareTo(other.address.string)
             }
         }
 
@@ -131,12 +150,12 @@ sealed class Resource {
     }
 
     data class NonFungibleResource(
-        override val resourceAddress: String,
+        override val address: ResourceAddress,
         val amount: Long,
         private val assetBehaviours: AssetBehaviours? = null,
         val items: List<Item>,
         val currentSupply: Int? = null,
-        val metadata: List<Metadata> = emptyList(),
+        override val metadata: List<Metadata> = emptyList(),
     ) : Resource(), Comparable<NonFungibleResource> {
         override val name: String by lazy {
             metadata.name().orEmpty().truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
@@ -156,7 +175,7 @@ sealed class Resource {
             }.take(TAGS_MAX).toImmutableList()
         }
 
-        override val validatorAddress: String? by lazy {
+        override val validatorAddress: ValidatorAddress? by lazy {
             metadata.validatorAddress()
         }
 
@@ -169,18 +188,22 @@ sealed class Resource {
                 name == null && otherName != null -> 1
                 name != null && otherName == null -> -1
                 name != null && otherName != null -> name.compareTo(otherName)
-                else -> resourceAddress.compareTo(other.resourceAddress)
+                else -> address.string.compareTo(other.address.string)
             }
         }
 
         data class Item(
-            val collectionAddress: String,
-            val localId: ID,
+            val collectionAddress: ResourceAddress,
+            val localId: NonFungibleLocalId,
             val metadata: List<Metadata> = emptyList()
         ) : Comparable<Item> {
 
-            val globalAddress: String
-                get() = "$collectionAddress:${localId.code}"
+            val globalId: NonFungibleGlobalId by lazy {
+                NonFungibleGlobalId(
+                    resourceAddress = collectionAddress,
+                    nonFungibleLocalId = localId
+                )
+            }
 
             val name: String? by lazy {
                 metadata.name()?.truncate(maxNumberOfCharacters = NAME_MAX_CHARS)
@@ -219,95 +242,41 @@ sealed class Resource {
             }
 
             override fun compareTo(other: Item): Int = when (localId) {
-                is ID.StringType -> (other.localId as? ID.StringType)?.compareTo(localId) ?: -1
-                is ID.IntegerType -> (other.localId as? ID.IntegerType)?.compareTo(localId) ?: -1
-                is ID.BytesType -> (other.localId as? ID.BytesType)?.compareTo(localId) ?: -1
-                is ID.RUIDType -> (other.localId as? ID.RUIDType)?.compareTo(localId) ?: -1
-            }
+                is NonFungibleLocalId.Str -> {
+                    val otherStr = other.localId as? NonFungibleLocalId.Str
 
-            sealed class ID {
-                abstract val prefix: String
-                abstract val suffix: String
-
-                abstract val displayable: String
-
-                val code: String
-                    get() = "$prefix$displayable$suffix"
-
-                data class StringType(
-                    private val id: String
-                ) : ID(), Comparable<StringType> {
-                    override val prefix: String = PREFIX
-                    override val suffix: String = SUFFIX
-
-                    override val displayable: String
-                        get() = id
-
-                    override fun compareTo(other: StringType): Int = other.id.compareTo(id)
-
-                    companion object {
-                        const val PREFIX = "<"
-                        const val SUFFIX = ">"
+                    if (otherStr != null) {
+                        localId.string.compareTo(otherStr.string)
+                    } else {
+                        -1
                     }
                 }
+                is NonFungibleLocalId.Ruid -> {
+                    val otherRuid = other.localId as? NonFungibleLocalId.Ruid
 
-                data class IntegerType(
-                    private val id: ULong
-                ) : ID(), Comparable<IntegerType> {
-                    override val prefix: String = PREFIX
-                    override val suffix: String = SUFFIX
-
-                    override val displayable: String
-                        get() = id.toString()
-
-                    override fun compareTo(other: IntegerType): Int = other.id.compareTo(id)
-
-                    companion object {
-                        const val PREFIX = "#"
-                        const val SUFFIX = "#"
+                    if (otherRuid != null) {
+                        localId.string.compareTo(otherRuid.string)
+                    } else {
+                        -1
                     }
                 }
+                is NonFungibleLocalId.Bytes -> {
+                    val otherBytes = other.localId as? NonFungibleLocalId.Bytes
 
-                data class BytesType(
-                    private val id: String
-                ) : ID(), Comparable<BytesType> {
-                    override val prefix: String = PREFIX
-                    override val suffix: String = SUFFIX
-                    override val displayable: String
-                        get() = id
-
-                    override fun compareTo(other: BytesType): Int = other.id.compareTo(id)
-
-                    companion object {
-                        const val PREFIX = "["
-                        const val SUFFIX = "]"
+                    if (otherBytes != null) {
+                        localId.string.compareTo(otherBytes.string)
+                    } else {
+                        -1
                     }
                 }
+                is NonFungibleLocalId.Integer -> {
+                    val otherInteger = (other.localId as? NonFungibleLocalId.Integer)
 
-                data class RUIDType(
-                    private val id: String
-                ) : ID(), Comparable<RUIDType> {
-                    override val prefix: String = PREFIX
-                    override val suffix: String = SUFFIX
-                    override val displayable: String
-                        get() = id
-
-                    override fun compareTo(other: RUIDType): Int = other.id.compareTo(id)
-
-                    companion object {
-                        const val PREFIX = "{"
-                        const val SUFFIX = "}"
+                    if (otherInteger != null) {
+                        localId.value.compareTo(otherInteger.value)
+                    } else {
+                        -1
                     }
-                }
-
-                companion object {
-                    /**
-                     * Infers the type of the [Item].[ID] from its surrounding delimiter
-                     *
-                     * More info https://docs-babylon.radixdlt.com/main/reference-materials/resource-addressing.html
-                     * #_non_fungibles_individual_units_of_non_fungible_resources
-                     */
-                    fun from(value: String): ID = AddressHelper.localId(value)
                 }
             }
         }
@@ -331,18 +300,135 @@ private fun String.truncate(maxNumberOfCharacters: Int, addEllipsis: Boolean = t
 object XrdResource {
     const val SYMBOL = "XRD"
 
-    fun address(networkId: Int): String {
-        return AddressHelper.xrdAddress(forNetworkId = networkId)
+    fun address(networkId: Int): ResourceAddress {
+        return ResourceAddress.xrd(com.radixdlt.sargon.NetworkId.init(discriminant = networkId.toUByte()))
     }
 
-    fun addressesPerNetwork(): Map<Int, String> = NetworkId.entries.associate { entry ->
+    fun addressesPerNetwork(): Map<Int, ResourceAddress> = NetworkId.entries.associate { entry ->
         entry.value to address(networkId = entry.value)
     }
 }
 
-val Resource.FungibleResource.isXrd: Boolean
-    get() {
-        val networkIdValue = AddressHelper.networkIdOrNull(resourceAddress) ?: return false
+@Suppress("MagicNumber")
+@UsesSampleValues
+val Resource.FungibleResource.Companion.sampleMainnet
+    get() = object : SampleWithRandomValues<Resource.FungibleResource> {
+        override fun invoke(): Resource.FungibleResource = Resource.FungibleResource(
+            address = ResourceAddress.sampleMainnet.xrd,
+            ownedAmount = BigDecimal.TEN,
+            metadata = listOf(
+                Metadata.Primitive(
+                    key = ExplicitMetadataKey.NAME.key,
+                    value = "Radix",
+                    valueType = MetadataType.String
+                ),
+                Metadata.Primitive(
+                    key = ExplicitMetadataKey.SYMBOL.key,
+                    value = "XRD",
+                    valueType = MetadataType.String
+                )
+            )
+        )
 
-        return XrdResource.address(networkId = networkIdValue) == resourceAddress
+        override fun other(): Resource.FungibleResource = Resource.FungibleResource(
+            address = ResourceAddress.sampleMainnet.candy,
+            ownedAmount = BigDecimal.valueOf(100),
+            metadata = listOf(
+                Metadata.Primitive(
+                    key = ExplicitMetadataKey.NAME.key,
+                    value = "Candy",
+                    valueType = MetadataType.String
+                ),
+                Metadata.Primitive(
+                    key = ExplicitMetadataKey.SYMBOL.key,
+                    value = "CND",
+                    valueType = MetadataType.String
+                )
+            )
+        )
+
+        override fun random(): Resource.FungibleResource = Resource.FungibleResource(
+            address = ResourceAddress.sampleMainnet.random(),
+            ownedAmount = BigDecimal.valueOf(Random.nextLong(10000)),
+            metadata = with(Random.nextInt()) {
+                listOf(
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.NAME.key,
+                        value = "Random $this resource",
+                        valueType = MetadataType.String
+                    ),
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.SYMBOL.key,
+                        value = "RND$this",
+                        valueType = MetadataType.String
+                    )
+                )
+            }
+        )
+    }
+
+@UsesSampleValues
+val Resource.NonFungibleResource.Companion.sampleMainnet
+    get() = object : SampleWithRandomValues<Resource.NonFungibleResource> {
+        override fun invoke(): Resource.NonFungibleResource = Resource.NonFungibleResource(
+            address = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
+            amount = 2,
+            metadata = listOf(
+                Metadata.Primitive(
+                    key = ExplicitMetadataKey.NAME.key,
+                    value = "Collection 1",
+                    valueType = MetadataType.String
+                )
+            ),
+            items = listOf(
+                Resource.NonFungibleResource.Item(
+                    collectionAddress = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
+                    localId = NonFungibleLocalId.intId(0.toULong())
+                ),
+                Resource.NonFungibleResource.Item(
+                    collectionAddress = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
+                    localId = NonFungibleLocalId.intId(1.toULong())
+                )
+            )
+        )
+
+        override fun other(): Resource.NonFungibleResource = with(ResourceAddress.sampleMainnet.random()) {
+            Resource.NonFungibleResource(
+                address = this,
+                amount = 1,
+                metadata = listOf(
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.NAME.key,
+                        value = "Collection 2",
+                        valueType = MetadataType.String
+                    )
+                ),
+                items = listOf(
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = this,
+                        localId = NonFungibleLocalId.intId(0.toULong())
+                    )
+                )
+            )
+        }
+
+        override fun random(): Resource.NonFungibleResource = with(ResourceAddress.sampleMainnet.random()) {
+            Resource.NonFungibleResource(
+                address = this,
+                amount = 1,
+                metadata = listOf(
+                    Metadata.Primitive(
+                        key = ExplicitMetadataKey.NAME.key,
+                        value = "Collection ${Random.nextInt()}",
+                        valueType = MetadataType.String
+                    )
+                ),
+                items = listOf(
+                    Resource.NonFungibleResource.Item(
+                        collectionAddress = this,
+                        localId = NonFungibleLocalId.intId(0.toULong())
+                    )
+                )
+            )
+        }
     }

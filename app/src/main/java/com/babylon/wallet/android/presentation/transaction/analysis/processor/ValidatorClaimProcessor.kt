@@ -8,6 +8,8 @@ import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -68,7 +70,7 @@ class ValidatorClaimProcessor @Inject constructor(
         return executionSummary.accountWithdraws.map { claimsPerAddress ->
             claimsPerAddress.value.map { resourceIndicator ->
                 val resourceAddress = resourceIndicator.resourceAddress
-                val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No asset found")
+                val asset = assets.find { it.resource.address == resourceAddress } ?: error("No asset found")
                 if (asset is StakeClaim) {
                     val nonFungibleIndicator = resourceIndicator as? ResourceIndicator.NonFungible
                         ?: error("No non-fungible resource claim found")
@@ -88,14 +90,14 @@ class ValidatorClaimProcessor @Inject constructor(
                                 validator = asset.validator
                             ),
                             xrdWorthPerNftItem = items.associate {
-                                it.first.localId.displayable to it.second
+                                it.first.localId to it.second
                             }
                         )
                     )
                 } else {
                     executionSummary.resolveDepositingAsset(resourceIndicator, assets, defaultDepositGuarantees)
                 }
-            }.toAccountWithTransferableResources(claimsPerAddress.key, involvedOwnedAccounts)
+            }.toAccountWithTransferableResources(AccountAddress.init(claimsPerAddress.key), involvedOwnedAccounts)
         }
     }
 }

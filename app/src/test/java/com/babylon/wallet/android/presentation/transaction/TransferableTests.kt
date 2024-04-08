@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import com.babylon.wallet.android.mockdata.account
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
 
@@ -11,20 +13,20 @@ class TransferableTests {
         val ownedAccounts = listOf(
             account(
                 name = "First",
-                address = "account_tdx_2_12xyvakf7h0jjf4qhxy0egjmr5a6kh5ww4xd3tmvxvegu3tn9xhzjhd"
+                address = AccountAddress.init("account_tdx_2_12xyvakf7h0jjf4qhxy0egjmr5a6kh5ww4xd3tmvxvegu3tn9xhzjhd")
             ),
             account(
                 name = "Second",
-                address = "account_tdx_2_12xp0styrk298hzu2jamhw4f7uks6hlqkyzsp8flutmjj2tl8xr5n9a"
+                address = AccountAddress.init("account_tdx_2_12xp0styrk298hzu2jamhw4f7uks6hlqkyzsp8flutmjj2tl8xr5n9a")
             ),
         )
         val input = listOf(
             AccountWithTransferableResources.Other(
-                address = "account_tdx_2_1296p46pzdgwk3lveujxyjuszr3jw5glu2ekkdx5prh6hf9c337zruu",
+                address = AccountAddress.init("account_tdx_2_1296p46pzdgwk3lveujxyjuszr3jw5glu2ekkdx5prh6hf9c337zruu"),
                 resources = listOf()
             ),
             AccountWithTransferableResources.Other(
-                address = "account_tdx_2_12yrl5dff059mtfekkjegudlcg4q2f4wvrhgz5dgfveym9kvn8lnkrq",
+                address = AccountAddress.init("account_tdx_2_12yrl5dff059mtfekkjegudlcg4q2f4wvrhgz5dgfveym9kvn8lnkrq"),
                 resources = listOf()
             ),
             AccountWithTransferableResources.Owned(
@@ -50,11 +52,11 @@ class TransferableTests {
                     resources = listOf()
                 ),
                 AccountWithTransferableResources.Other(
-                    address = "account_tdx_2_1296p46pzdgwk3lveujxyjuszr3jw5glu2ekkdx5prh6hf9c337zruu",
+                    address = AccountAddress.init("account_tdx_2_1296p46pzdgwk3lveujxyjuszr3jw5glu2ekkdx5prh6hf9c337zruu"),
                     resources = listOf()
                 ),
                 AccountWithTransferableResources.Other(
-                    address = "account_tdx_2_12yrl5dff059mtfekkjegudlcg4q2f4wvrhgz5dgfveym9kvn8lnkrq",
+                    address = AccountAddress.init("account_tdx_2_12yrl5dff059mtfekkjegudlcg4q2f4wvrhgz5dgfveym9kvn8lnkrq"),
                     resources = listOf()
                 )
             ),

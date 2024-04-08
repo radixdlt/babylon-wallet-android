@@ -2,6 +2,10 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.resources.AccountDetails
 import rdx.works.core.domain.resources.metadata.AccountType
 import java.math.BigDecimal
@@ -23,12 +27,12 @@ data class AccountPortfolioResponse(
 
     // From ResourceEntity (@Embed does not work here since making ResourceEntity nullable does not work)
     @ColumnInfo("address")
-    private val resourceAddress: String?,
+    private val resourceAddress: ResourceAddress?,
     private val type: ResourceEntityType?,
     @ColumnInfo("validator_address")
-    private val validatorAddress: String?,
+    private val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
-    private val poolAddress: String?,
+    private val poolAddress: PoolAddress?,
     private val divisibility: Int?,
     private val behaviours: BehavioursColumn?,
     private val supply: BigDecimal?,
@@ -66,9 +70,9 @@ data class AccountPortfolioResponse(
 
 data class PoolWithResourceResponse(
     @ColumnInfo("pool_entity_address")
-    val address: String,
+    val address: PoolAddress,
     @ColumnInfo("pool_unit_address")
-    val poolUnitAddress: String,
+    val poolUnitAddress: ResourceAddress,
     @ColumnInfo("account_state_version")
     val accountStateVersion: Long?,
     @ColumnInfo("pool_metadata")
@@ -77,12 +81,12 @@ data class PoolWithResourceResponse(
 
     // From ResourceEntity (@Embed does not work here since making ResourceEntity nullable does not work)
     @ColumnInfo("address")
-    private val resourceAddress: String?,
+    private val resourceAddress: ResourceAddress?,
     private val type: ResourceEntityType?,
     @ColumnInfo("validator_address")
-    private val validatorAddress: String?,
+    private val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
-    private val poolAddress: String?,
+    private val poolAddress: PoolAddress?,
     private val divisibility: Int?,
     private val behaviours: BehavioursColumn?,
     private val supply: BigDecimal?,
@@ -110,7 +114,7 @@ data class PoolWithResourceResponse(
 
 data class AccountStateVersion(
     @ColumnInfo("address")
-    val address: String,
+    val address: AccountAddress,
     @ColumnInfo("state_version")
     val stateVersion: Long
 )

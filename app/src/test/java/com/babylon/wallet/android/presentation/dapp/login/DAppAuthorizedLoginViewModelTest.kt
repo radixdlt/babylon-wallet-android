@@ -5,19 +5,10 @@ package com.babylon.wallet.android.presentation.dapp.login
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import rdx.works.core.domain.resources.ExplicitMetadataKey
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.SampleDataProvider
-import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import rdx.works.core.domain.assets.ValidatorDetail
-import rdx.works.core.domain.assets.ValidatorWithStakes
-import rdx.works.core.domain.resources.Pool
-import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.resources.metadata.MetadataType
-import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DappMessengerFake
@@ -29,6 +20,17 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.ARG_INTERAC
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -42,7 +44,16 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
+import rdx.works.core.domain.DApp
 import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Entity
@@ -63,15 +74,15 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     private val dAppMessenger = DappMessengerFake()
     private val dAppConnectionRepository = spyk<DAppConnectionRepositoryFake> { DAppConnectionRepositoryFake() }
 
-    private val samplePersona = SampleDataProvider().samplePersona(personaAddress = "address1")
+    private val samplePersona = SampleDataProvider().samplePersona(personaAddress = IdentityAddress.sampleMainnet().string)
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         remoteConnectorId = "remoteConnectorId",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            11,
+            NetworkId.MAINNET.discriminant.toInt(),
             "",
-            "address",
+            AccountAddress.sampleMainnet().string,
             false
         ),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
@@ -90,12 +101,12 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         remoteConnectorId = "remoteConnectorId",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            11,
+            NetworkId.MAINNET.discriminant.toInt(),
             "",
-            "address",
+            AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             true, MessageFromDataChannel.IncomingRequest.NumberOfValues(
                 1,
@@ -109,12 +120,12 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         remoteConnectorId = "1",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            11,
+            NetworkId.MAINNET.discriminant.toInt(),
             "",
-            "address",
+            AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             true, MessageFromDataChannel.IncomingRequest.NumberOfValues(
                 1,
@@ -128,32 +139,16 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         )
     )
 
-    private val usePersonaRequestOngoingDataOnly = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
-        remoteConnectorId = "1",
-        interactionId = "1",
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            11,
-            "",
-            "address",
-            false
-        ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
-        ongoingPersonaDataRequestItem = MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
-            isRequestingName = true,
-            isOngoing = true
-        )
-    )
-
     private val usePersonaRequestOneTimeAccounts = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         remoteConnectorId = "1",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            11,
+            NetworkId.MAINNET.discriminant.toInt(),
             "",
-            "address",
+            AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
         oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             false, MessageFromDataChannel.IncomingRequest.NumberOfValues(
                 1,
@@ -167,12 +162,12 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         remoteConnectorId = "1",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            11,
+            NetworkId.MAINNET.discriminant.toInt(),
             "",
-            "address",
+            AccountAddress.sampleMainnet().string,
             false
         ),
-        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest("address1"),
+        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(IdentityAddress.sampleMainnet().string),
         oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             false, MessageFromDataChannel.IncomingRequest.NumberOfValues(
                 1,
@@ -204,7 +199,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     override fun setUp() {
         super.setUp()
         every { savedStateHandle.get<String>(ARG_INTERACTION_ID) } returns "1"
-        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
+        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.mainnet
         every { buildAuthorizedDappResponseUseCase.signingState } returns emptyFlow()
         coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any(),) } returns Result.success(any())
         every { getProfileUseCase() } returns flowOf(
@@ -212,8 +207,8 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
                 personas = identifiedArrayListOf(samplePersona),
                 dApps = listOf(
                     Network.AuthorizedDapp(
-                        networkID = Radix.Gateway.nebunet.network.id,
-                        dAppDefinitionAddress = "dapp_address",
+                        networkID = Radix.Gateway.mainnet.network.id,
+                        dAppDefinitionAddress = AccountAddress.sampleMainnet().string,
                         displayName = "1",
                         referencesToAuthorizedPersonas = emptyList()
                     )
@@ -245,7 +240,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         vm.oneOffEvent.test {
             assert(expectMostRecentItem() is Event.DisplayPermission)
         }
-        vm.onAccountsSelected(listOf(AccountItemUiModel("random address", "account 1", 0)), false)
+        vm.onAccountsSelected(listOf(AccountItemUiModel(AccountAddress.sampleMainnet(), "account 1", 0)), false)
         advanceUntilIdle()
         vm.oneOffEvent.test {
             val mostRecentItem = expectMostRecentItem()
@@ -270,7 +265,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns usePersonaRequestOngoingPlusOngoingData
         dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
         coEvery { dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(any(), any(), any(), any()) } returns listOf(
-            SampleDataProvider().randomAddress()
+            AccountAddress.sampleMainnet.random()
         )
         val vm = vm.value
         advanceUntilIdle()
@@ -316,24 +311,24 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         }
 
         override suspend fun getResources(
-            addresses: Set<String>,
-            underAccountAddress: String?,
+            addresses: Set<ResourceAddress>,
+            underAccountAddress: AccountAddress?,
             withDetails: Boolean
         ): Result<List<Resource>> {
             return Result.success(emptyList())
         }
 
-        override suspend fun getPools(poolAddresses: Set<String>): Result<List<Pool>> {
+        override suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>> {
             error("Not needed")
         }
 
-        override suspend fun getValidators(validatorAddresses: Set<String>): Result<List<ValidatorDetail>> {
+        override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> {
             error("Not needed")
         }
 
         override suspend fun getNFTDetails(
-            resourceAddress: String,
-            localIds: Set<String>
+            resourceAddress: ResourceAddress,
+            localIds: Set<NonFungibleLocalId>
         ): Result<List<Resource.NonFungibleResource.Item>> {
             error("Not needed")
         }
@@ -346,17 +341,21 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             error("Not needed")
         }
 
-        override suspend fun getDAppsDetails(definitionAddresses: List<String>, isRefreshing: Boolean): Result<List<DApp>> {
+        override suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>> {
             return Result.success(
-                listOf(
+                definitionAddresses.mapIndexed { index, accountAddress ->
                     DApp(
-                        dAppAddress = "dapp_address",
+                        dAppAddress = accountAddress,
                         metadata = listOf(
-                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "dApp", MetadataType.String)
+                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "dApp $index", MetadataType.String)
                         )
                     )
-                )
+                }
             )
+        }
+
+        override suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>> {
+            error("Not needed")
         }
 
         override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit> {

@@ -9,20 +9,23 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import org.jetbrains.annotations.VisibleForTesting
 
 @VisibleForTesting
 internal const val ARG_ACCOUNT_ADDRESS = "arg_account_address"
 const val ROUTE_HISTORY = "history/{$ARG_ACCOUNT_ADDRESS}"
 
-internal class HistoryArgs(val accountAddress: String) {
+internal class HistoryArgs(val accountAddress: AccountAddress) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_ACCOUNT_ADDRESS]) as String
+        AccountAddress.init(checkNotNull(savedStateHandle[ARG_ACCOUNT_ADDRESS]))
     )
 }
 
-fun NavController.history(accountAddress: String) {
-    navigate("history/$accountAddress")
+fun NavController.history(accountAddress: AccountAddress) {
+    navigate("history/${accountAddress.string}")
 }
 
 fun NavGraphBuilder.history(

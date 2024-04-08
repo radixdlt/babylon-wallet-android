@@ -38,6 +38,7 @@ import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.FiatPrice
@@ -74,7 +75,7 @@ fun LazyListScope.stakingTab(
 
         assetsViewData.validatorsWithStakes.forEachIndexed { index, validatorWithStakes ->
             item(
-                key = validatorWithStakes.validatorDetail.address,
+                key = validatorWithStakes.validator.address.string,
                 contentType = { "validator-header" }
             ) {
                 ValidatorDetails(
@@ -342,7 +343,7 @@ fun ValidatorDetails(
             }
             cards
         }
-        val isCollapsed = state.isCollapsed(validatorWithStakes.validatorDetail.address)
+        val isCollapsed = state.isCollapsed(validatorWithStakes.validator.address.string)
         CollapsibleAssetCard(
             modifier = modifier
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
@@ -353,7 +354,7 @@ fun ValidatorDetails(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        action.onCollectionClick(validatorWithStakes.validatorDetail.address)
+                        action.onCollectionClick(validatorWithStakes.validator.address.string)
                     }
                     .padding(RadixTheme.dimensions.paddingLarge),
                 validatorWithStakes = validatorWithStakes
@@ -615,13 +616,13 @@ private fun ValidatorHeader(
     ) {
         Thumbnail.Validator(
             modifier = Modifier.size(44.dp),
-            validator = validatorWithStakes.validatorDetail
+            validator = validatorWithStakes.validator
         )
         Column(
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
         ) {
             Text(
-                text = validatorWithStakes.validatorDetail.name,
+                text = validatorWithStakes.validator.name,
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1
@@ -673,7 +674,7 @@ private fun ClaimWorth(
                     action.onNFTCheckChanged(
                         claimCollection,
                         claimNft,
-                        !action.isSelected(claimNft.globalAddress)
+                        !action.isSelected(claimNft.globalId)
                     )
                 }
             }
@@ -683,7 +684,7 @@ private fun ClaimWorth(
         trailingContent = if (action is AssetsViewAction.Selection) {
             {
                 val isSelected = remember(claimNft, action) {
-                    action.isSelected(claimNft.globalAddress)
+                    action.isSelected(claimNft.globalId)
                 }
                 AssetsViewCheckBox(
                     isSelected = isSelected,

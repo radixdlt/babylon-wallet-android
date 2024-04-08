@@ -47,6 +47,12 @@ import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.FeeLocks
 import com.radixdlt.ret.FeeSummary
 import com.radixdlt.ret.NewEntities
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -73,7 +79,6 @@ import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.DApp
-import rdx.works.core.domain.assets.ValidatorDetail
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.logNonFatalException
@@ -82,7 +87,7 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.ret.crypto.PrivateKey
-import rdx.works.profile.ret.transaction.TransactionManifestData
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.profile.ret.transaction.TransactionSigner
 import java.math.BigDecimal
 import java.util.Locale
@@ -167,28 +172,24 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         requestId = sampleRequestId,
         transactionManifestData = sampleTransactionManifestData,
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            networkId = Radix.Gateway.nebunet.network.id,
+            networkId = NetworkId.MAINNET.discriminant.toInt(),
             origin = "https://test.origin.com",
-            dAppDefinitionAddress = "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa",
+            dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
             isInternal = false
         ),
         transactionType = com.babylon.wallet.android.data.dapp.model.TransactionType.Generic
     )
     private val fromAccount = account(
-        address = "account_tdx_19jd32jd3928jd3892jd329",
         name = "From Account"
     )
     private val otherAccounts = identifiedArrayListOf(
         account(
-            address = "account_tdx_3j892dj3289dj32d2d2d2d9",
             name = "To Account 1"
         ),
         account(
-            address = "account_tdx_39jfc32jd932ke9023j89r9",
             name = "To Account 2"
         ),
         account(
-            address = "account_tdx_12901829jd9281jd189jd98",
             name = "To account 3"
         )
     )
@@ -224,9 +225,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     @Before
     override fun setUp() = runTest {
         super.setUp()
+        val dApp = DApp.sampleMainnet()
         coEvery {
-            getDAppsUseCase("account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa", false)
-        } returns Result.success(DApp("account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa"))
+            getDAppsUseCase(dApp.dAppAddress, false)
+        } returns Result.success(dApp)
         every { exceptionMessageProvider.throwableMessage(any()) } returns ""
         every { deviceCapabilityHelper.isDeviceSecure() } returns true
         mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
@@ -236,14 +238,14 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(
             SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, 50u)
         )
-        coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
-            Badge(address = "")
-        )
+        coEvery { getTransactionBadgesUseCase(any()) } returns Result.success(listOf(
+            Badge(address = ResourceAddress.sampleMainnet())
+        ))
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(
             TransactionSigner.Notarization(txIdHash = sampleTxId, notarizedTransactionIntentHex = "",  endEpoch = 50u)
         )
         coEvery { signTransactionUseCase.signingState } returns emptyFlow()
-        coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers("feePayer"))
+        coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
         coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0L)
         coEvery { transactionRepository.getTransactionPreview(any()) } returns Result.success(previewResponse())
         coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs

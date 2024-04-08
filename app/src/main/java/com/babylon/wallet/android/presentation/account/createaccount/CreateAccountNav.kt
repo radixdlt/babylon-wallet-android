@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.account.createaccount.confirmatio
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.utils.Constants
+import com.radixdlt.sargon.AccountAddress
 
 @VisibleForTesting
 const val ARG_NETWORK_URL = "arg_network_url"
@@ -71,7 +72,7 @@ fun NavController.createAccountScreen(
 
 fun NavGraphBuilder.createAccountScreen(
     onBackClick: () -> Unit,
-    onContinueClick: (accountId: String, requestSource: CreateAccountRequestSource?) -> Unit,
+    onContinueClick: (accountId: AccountAddress, requestSource: CreateAccountRequestSource?) -> Unit,
     onAddLedgerDevice: () -> Unit
 ) {
     markAsHighPriority(route = ROUTE_CREATE_ACCOUNT)

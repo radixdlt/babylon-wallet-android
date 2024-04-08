@@ -38,7 +38,8 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlin
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import rdx.works.core.AddressHelper
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.extensions.networkId
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -124,7 +125,7 @@ fun LSUDialogContent(
 
         val xrdWorth = remember(args, lsu) {
             val xrdResourceAddress = runCatching {
-                val networkId = AddressHelper.networkId(args.resourceAddress)
+                val networkId = args.resourceAddress.networkId.value.toInt()
                 XrdResource.address(networkId = networkId)
             }.getOrNull()
 
@@ -159,19 +160,20 @@ fun LSUDialogContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            address = resourceAddress
+            address = Address.Resource(resourceAddress)
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
-        AddressRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = RadixTheme.dimensions.paddingSmall)
-                .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
-                .radixPlaceholder(visible = lsu == null),
-            label = stringResource(id = R.string.assetDetails_validator),
-            address = lsu?.validator?.address.orEmpty()
-        )
+        if (lsu != null) {
+            AddressRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = RadixTheme.dimensions.paddingSmall)
+                    .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2),
+                label = stringResource(id = R.string.assetDetails_validator),
+                address = Address.Validator(lsu.validator.address)
+            )
+        }
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
         AssetMetadataRow(
@@ -249,7 +251,7 @@ private fun LSUResourceValue(
         Thumbnail.Fungible(
             modifier = Modifier.size(44.dp),
             token = Resource.FungibleResource(
-                resourceAddress = XrdResource.address(Radix.Gateway.default.network.networkId().value),
+                address = XrdResource.address(Radix.Gateway.default.network.networkId().value),
                 ownedAmount = null
             )
         )

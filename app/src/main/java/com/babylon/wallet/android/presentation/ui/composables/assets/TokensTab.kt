@@ -23,6 +23,7 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.resources.Resource
@@ -60,7 +61,7 @@ fun LazyListScope.tokensTab(
 
     itemsIndexed(
         items = assetsViewData.nonXrdTokens,
-        key = { _, token -> token.resource.resourceAddress },
+        key = { _, token -> token.resource.address.string },
         itemContent = { index, token ->
             AssetCard(
                 modifier = Modifier
@@ -105,7 +106,7 @@ private fun FungibleResourceItem(
                     }
 
                     is AssetsViewAction.Selection -> {
-                        action.onFungibleCheckChanged(resource, !action.isSelected(resource.resourceAddress))
+                        action.onFungibleCheckChanged(resource, !action.isSelected(resource.address))
                     }
                 }
             }
@@ -155,7 +156,7 @@ private fun FungibleResourceItem(
 
         if (action is AssetsViewAction.Selection) {
             val isSelected = remember(resource, action) {
-                action.isSelected(resource.resourceAddress)
+                action.isSelected(resource.address)
             }
             AssetsViewCheckBox(
                 isSelected = isSelected,

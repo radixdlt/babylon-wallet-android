@@ -36,6 +36,10 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
@@ -143,7 +147,9 @@ fun AccountCardView(
         }
 
         ActionableAddressView(
-            address = accountWithAssets.account.address,
+            address = remember(accountWithAssets.account.address) {
+                Address.Account(AccountAddress.init(accountWithAssets.account.address))
+            },
             modifier = Modifier.constrainAs(addressLabel) {
                 top.linkTo(nameLabel.bottom, margin = 8.dp)
                 start.linkTo(parent.start)
@@ -259,6 +265,7 @@ private fun WalletUiState.AccountTag.toLabel(context: Context): String {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountCardPreview() {
@@ -287,6 +294,7 @@ fun AccountCardPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountCardWithLongNameAndShortTotalValuePreview() {
@@ -317,6 +325,7 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountCardWithLongNameAndLongTotalValuePreview() {
@@ -347,6 +356,7 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
@@ -379,6 +389,7 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountCardLoadingPreview() {
