@@ -38,14 +38,19 @@ import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.string
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.extensions.times
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.formatted
+import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
-import java.math.BigDecimal
+import rdx.works.core.domain.toDouble
 
 fun LazyListScope.stakingTab(
     assetsViewData: AssetsViewData,
@@ -155,7 +160,7 @@ private fun StakingSummary(
         val stakedFiatPrice = remember(stakeSummary, oneXrdPrice) {
             if (stakeSummary != null && oneXrdPrice != null && stakeSummary.hasStakedValue) {
                 FiatPrice(
-                    price = stakeSummary.staked.multiply(oneXrdPrice.price.toBigDecimal()).toDouble(),
+                    price = stakeSummary.staked.times(oneXrdPrice.price.toDecimal192()).toDouble(),
                     currency = oneXrdPrice.currency
                 )
             } else {
@@ -164,9 +169,9 @@ private fun StakingSummary(
         }
 
         val unstakingFiatPrice = remember(stakeSummary, oneXrdPrice) {
-            if (stakeSummary != null && oneXrdPrice != null && stakeSummary.unstaking > BigDecimal.ZERO) {
+            if (stakeSummary != null && oneXrdPrice != null && stakeSummary.unstaking > 0.toDecimal192()) {
                 FiatPrice(
-                    price = stakeSummary.unstaking.multiply(oneXrdPrice.price.toBigDecimal()).toDouble(),
+                    price = stakeSummary.unstaking.times(oneXrdPrice.price.toDecimal192()).toDouble(),
                     currency = oneXrdPrice.currency
                 )
             } else {
@@ -177,7 +182,7 @@ private fun StakingSummary(
         val readyToClaimFiatPrice = remember(stakeSummary, oneXrdPrice) {
             if (stakeSummary != null && oneXrdPrice != null && stakeSummary.hasReadyToClaimValue) {
                 FiatPrice(
-                    price = stakeSummary.readyToClaim.multiply(oneXrdPrice.price.toBigDecimal()).toDouble(),
+                    price = stakeSummary.readyToClaim.times(oneXrdPrice.price.toDecimal192()).toDouble(),
                     currency = oneXrdPrice.currency
                 )
             } else {
@@ -235,7 +240,7 @@ private fun StakeAmount(
     modifier: Modifier = Modifier,
     label: String,
     isLoadingBalance: Boolean,
-    amount: BigDecimal?,
+    amount: Decimal192?,
     fiatPrice: FiatPrice?,
     labelStyle: TextStyle = RadixTheme.typography.body2HighImportance.copy(
         color = RadixTheme.colors.gray2
@@ -263,7 +268,7 @@ private fun StakeAmount(
             horizontalAlignment = Alignment.End
         ) {
             Text(
-                text = amount?.let { "${it.displayableQuantity()} ${XrdResource.SYMBOL}" }.orEmpty(),
+                text = amount?.let { "${it.formatted()} ${XrdResource.SYMBOL}" }.orEmpty(),
                 style = amountStyle,
                 textAlign = TextAlign.End
             )
@@ -333,9 +338,9 @@ fun ValidatorDetails(
     Column {
         val collapsedCardsCount = remember(validatorWithStakes) {
             var cards = 0
-            val stake = validatorWithStakes.liquidStakeUnit?.fungibleResource?.ownedAmount ?: BigDecimal.ZERO
+            val stake = validatorWithStakes.liquidStakeUnit?.fungibleResource?.ownedAmount.orZero()
             val claims = validatorWithStakes.stakeClaimNft?.nonFungibleResource?.amount ?: 0L
-            if (stake > BigDecimal.ZERO) {
+            if (stake > 0.toDecimal192()) {
                 cards += 1
             }
             if (claims > 0) {
@@ -632,7 +637,7 @@ private fun ValidatorHeader(
                 if (validatorWithStakes.liquidStakeUnit != null) {
                     validatorWithStakes.stakeValue()
                 } else {
-                    BigDecimal.ZERO
+                    0.toDecimal192()
                 }
             }
 
@@ -641,7 +646,7 @@ private fun ValidatorHeader(
                     .fillMaxWidth()
                     .radixPlaceholder(visible = stakedAmount == null),
                 text = stakedAmount?.let {
-                    "${stringResource(id = R.string.account_staking_currentStake, it.displayableQuantity())} ${XrdResource.SYMBOL}"
+                    "${stringResource(id = R.string.account_staking_currentStake, it.formatted())} ${XrdResource.SYMBOL}"
                 }.orEmpty(),
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray2,
@@ -707,7 +712,7 @@ private fun ClaimWorth(
 @Composable
 fun WorthXRD(
     modifier: Modifier = Modifier,
-    amount: BigDecimal?,
+    amount: Decimal192?,
     fiatPrice: FiatPrice?,
     isLoadingBalance: Boolean,
     trailingContent: @Composable (() -> Unit)? = null
@@ -753,7 +758,7 @@ fun WorthXRD(
         ) {
             Text(
                 modifier = Modifier.fillMaxWidth(),
-                text = amount?.displayableQuantity().orEmpty(),
+                text = amount?.formatted().orEmpty(),
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.End,
@@ -785,7 +790,7 @@ fun WorthXRD(
 fun WorthXRDPreview() {
     RadixWalletPreviewTheme {
         WorthXRD(
-            amount = BigDecimal.valueOf(4362.67),
+            amount = 4362.67.toDecimal192(),
             fiatPrice = null,
             isLoadingBalance = true,
         )

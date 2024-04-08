@@ -39,14 +39,15 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.AddressR
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.networkId
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.profile.data.model.apppreferences.Radix
-import java.math.BigDecimal
 
 @Composable
 fun LSUDialogContent(
@@ -209,8 +210,8 @@ fun LSUDialogContent(
                     ),
                 text = when (val supply = lsu?.fungibleResource?.currentSupply) {
                     null -> stringResource(id = R.string.empty)
-                    BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                    else -> supply.displayableQuantity()
+                    0.toDecimal192() -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                    else -> supply.formatted()
                 },
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
@@ -234,7 +235,7 @@ fun LSUDialogContent(
 @Composable
 private fun LSUResourceValue(
     modifier: Modifier = Modifier,
-    amount: BigDecimal?,
+    amount: Decimal192?,
     price: AssetPrice.LSUPrice?,
     isLoadingBalance: Boolean
 ) {
@@ -268,7 +269,7 @@ private fun LSUResourceValue(
                 modifier = Modifier
                     .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(visible = amount == null),
-                text = amount?.displayableQuantity().orEmpty(),
+                text = amount?.formatted().orEmpty(),
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.End,

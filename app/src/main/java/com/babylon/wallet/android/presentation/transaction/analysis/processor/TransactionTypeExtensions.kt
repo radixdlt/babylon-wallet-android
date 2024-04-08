@@ -19,22 +19,25 @@ import com.radixdlt.ret.ResourceSpecifier
 import com.radixdlt.ret.nonFungibleLocalIdAsStr
 import com.radixdlt.ret.nonFungibleLocalIdFromStr
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.sumOf
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.pernetwork.Network
-import java.math.BigDecimal
 
 fun ExecutionSummary.involvedFungibleAddresses(excludeNewlyCreated: Boolean = true): Set<ResourceAddress> {
     val withdrawIndicators = accountWithdraws.values.flatten().filterIsInstance<ResourceIndicator.Fungible>()
@@ -72,20 +75,20 @@ val ResourceIndicator.resourceAddress: ResourceAddress
         is ResourceIndicator.NonFungible -> ResourceAddress.init(resourceAddress.addressString())
     }
 
-val ResourceIndicator.amount: BigDecimal
+val ResourceIndicator.amount: Decimal192
     get() = when (this) {
         is ResourceIndicator.Fungible -> {
             when (val specificIndicator = indicator) {
                 is FungibleResourceIndicator.Guaranteed -> {
-                    specificIndicator.amount.asStr().toBigDecimal()
+                    specificIndicator.amount.asStr().toDecimal192()
                 }
 
-                is FungibleResourceIndicator.Predicted -> specificIndicator.predictedAmount.value.asStr().toBigDecimal()
+                is FungibleResourceIndicator.Predicted -> specificIndicator.predictedAmount.value.asStr().toDecimal192()
             }
         }
 
         is ResourceIndicator.NonFungible -> {
-            BigDecimal(nonFungibleLocalIds.size)
+            nonFungibleLocalIds.size.toDecimal192()
         }
     }
 
@@ -127,7 +130,7 @@ val ResourceOrNonFungible.resourceAddress: String
 
 fun ResourceIndicator.toTransferableAsset(
     assets: List<Asset>,
-    aggregateAmount: BigDecimal? = null
+    aggregateAmount: Decimal192? = null
 ): TransferableAsset = when (this) {
     is ResourceIndicator.Fungible -> toTransferableAsset(assets, aggregateAmount)
     is ResourceIndicator.NonFungible -> toTransferableAsset(assets)
@@ -136,7 +139,7 @@ fun ResourceIndicator.toTransferableAsset(
 @Suppress("CyclomaticComplexMethod")
 private fun ResourceIndicator.Fungible.toTransferableAsset(
     assets: List<Asset>,
-    aggregateAmount: BigDecimal? = null
+    aggregateAmount: Decimal192? = null
 ): TransferableAsset.Fungible = when (val asset = assets.find { it.resource.address.string == resourceAddress.addressString() }) {
     is PoolUnit -> {
         val assetWithAmount = asset.copy(
@@ -147,7 +150,7 @@ private fun ResourceIndicator.Fungible.toTransferableAsset(
             amount = aggregateAmount ?: amount,
             unit = assetWithAmount,
             contributionPerResource = assetWithAmount.pool?.resources?.associate {
-                it.address to (assetWithAmount.resourceRedemptionValue(it) ?: BigDecimal.ZERO)
+                it.address to (assetWithAmount.resourceRedemptionValue(it).orZero())
             }.orEmpty(),
             isNewlyCreated = false
         )
@@ -158,7 +161,7 @@ private fun ResourceIndicator.Fungible.toTransferableAsset(
         TransferableAsset.Fungible.LSUAsset(
             amount = aggregateAmount ?: amount,
             lsu = assetWithAmount,
-            xrdWorth = assetWithAmount.stakeValueInXRD(asset.validator.totalXrdStake) ?: BigDecimal.ZERO,
+            xrdWorth = assetWithAmount.stakeValueInXRD(asset.validator.totalXrdStake).orZero(),
             isNewlyCreated = false
         )
     }
@@ -201,7 +204,7 @@ private fun ResourceIndicator.NonFungible.toTransferableAsset(
 
         TransferableAsset.NonFungible.StakeClaimAssets(
             claim = assetWithItems,
-            xrdWorthPerNftItem = items.associate { it.localId to (it.claimAmountXrd ?: BigDecimal.ZERO) },
+            xrdWorthPerNftItem = items.associate { it.localId to it.claimAmountXrd.orZero() },
             isNewlyCreated = false
         )
     }
@@ -249,7 +252,7 @@ fun ResourceIndicator.newlyCreatedMetadata(summary: ExecutionSummary) = summary.
 
 fun ResourceIndicator.toNewlyCreatedTransferableAsset(
     metadata: Map<String, MetadataValue?>,
-    aggregateAmount: BigDecimal? = null
+    aggregateAmount: Decimal192? = null
 ): TransferableAsset {
     val metadataItems = metadata.toMetadata()
 
@@ -285,10 +288,10 @@ fun ResourceIndicator.toNewlyCreatedTransferableAsset(
     }
 }
 
-private val ResourceIndicator.Fungible.amount: BigDecimal
+private val ResourceIndicator.Fungible.amount: Decimal192
     get() = when (val specificIndicator = indicator) {
-        is FungibleResourceIndicator.Guaranteed -> specificIndicator.amount.asStr().toBigDecimal()
-        is FungibleResourceIndicator.Predicted -> specificIndicator.predictedAmount.value.asStr().toBigDecimal()
+        is FungibleResourceIndicator.Guaranteed -> specificIndicator.amount.asStr().toDecimal192()
+        is FungibleResourceIndicator.Predicted -> specificIndicator.predictedAmount.value.asStr().toDecimal192()
     }
 
 val ResourceIndicator.NonFungible.nonFungibleLocalIds: List<com.radixdlt.sargon.NonFungibleLocalId>
@@ -679,7 +682,7 @@ fun ExecutionSummary.resolveDepositingAsset(
     resourceIndicator: ResourceIndicator,
     involvedAssets: List<Asset>,
     defaultDepositGuarantee: Double,
-    aggregateAmount: BigDecimal? = null
+    aggregateAmount: Decimal192? = null
 ): Transferable.Depositing {
     val asset = if (resourceIndicator.isNewlyCreated(summary = this)) {
         resourceIndicator.toNewlyCreatedTransferableAsset(resourceIndicator.newlyCreatedMetadata(summary = this))

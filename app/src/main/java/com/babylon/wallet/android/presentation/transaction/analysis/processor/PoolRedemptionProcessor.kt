@@ -11,8 +11,11 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.sumOf
+import rdx.works.core.domain.toDecimal192OrNull
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
@@ -46,16 +49,16 @@ class PoolRedemptionProcessor @Inject constructor(
                     val redemptionResourceAddresses = redemptions.first().redeemedResources.keys
                     val poolUnitAmount = redemptions.find {
                         it.poolUnitsResourceAddress.addressString() == poolUnit.resourceAddress.string
-                    }?.poolUnitsAmount?.asStr()?.toBigDecimalOrNull()
+                    }?.poolUnitsAmount?.asStr()?.toDecimal192OrNull()
                     Transferable.Withdrawing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(
-                            amount = redemptions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
+                            amount = redemptions.map { it.poolUnitsAmount.asStr().toDecimal192() }.sumOf { it },
                             unit = poolUnit.copy(
                                 stake = poolUnit.stake.copy(ownedAmount = poolUnitAmount)
                             ),
                             redemptionResourceAddresses.associate { contributedResourceAddress ->
                                 ResourceAddress.init(contributedResourceAddress) to redemptions.mapNotNull {
-                                    it.redeemedResources[contributedResourceAddress]?.asStr()?.toBigDecimal()
+                                    it.redeemedResources[contributedResourceAddress]?.asStr()?.toDecimal192()
                                 }.sumOf { it }
                             }
                         )

@@ -16,7 +16,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.formatted
 
 @Composable
 fun VerticalAmountSection(transferable: Transferable, modifier: Modifier = Modifier) {
@@ -40,7 +40,7 @@ fun VerticalAmountSection(transferable: Transferable, modifier: Modifier = Modif
         (transferable.transferable as? TransferableAsset.Fungible)?.let {
             Text(
                 modifier = Modifier,
-                text = it.amount.displayableQuantity(),
+                text = it.amount.formatted(),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
@@ -61,7 +61,7 @@ fun VerticalAmountSection(transferable: Transferable, modifier: Modifier = Modif
             )
             Text(
                 modifier = Modifier,
-                text = guaranteedQuantity.amount.displayableQuantity(),
+                text = guaranteedQuantity.amount.formatted(),
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray2,
                 maxLines = 1,

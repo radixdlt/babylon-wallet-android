@@ -1,19 +1,20 @@
 package rdx.works.core.domain.assets
 
 import android.net.Uri
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.div
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.samples.SampleWithRandomValues
-import rdx.works.core.divideWithDivisibility
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.sampleMainnet
-import rdx.works.core.multiplyWithDivisibility
-import java.math.BigDecimal
+import rdx.works.core.domain.roundedWith
 
 data class LiquidStakeUnit(
     val fungibleResource: Resource.FungibleResource,
@@ -32,21 +33,21 @@ data class LiquidStakeUnit(
     val iconUrl: Uri?
         get() = fungibleResource.iconUrl
 
-    private val percentageOwned: BigDecimal?
+    private val percentageOwned: Decimal192?
         get() {
-            if (fungibleResource.currentSupply == null) return null
+            val supply = fungibleResource.currentSupply ?: return null
+            val amount = fungibleResource.ownedAmount ?: return null
 
-            return fungibleResource.ownedAmount?.divideWithDivisibility(
-                fungibleResource.currentSupply,
-                fungibleResource.divisibility
-            )
+            return (amount / supply).roundedWith(divisibility = fungibleResource.divisibility)
         }
 
-    fun stakeValue(): BigDecimal? = stakeValueInXRD(validator.totalXrdStake)
+    fun stakeValue(): Decimal192? = stakeValueInXRD(validator.totalXrdStake)
 
-    fun stakeValueInXRD(totalXrdStake: BigDecimal?): BigDecimal? {
+    fun stakeValueInXRD(totalXrdStake: Decimal192?): Decimal192? {
         if (totalXrdStake == null) return null
-        return percentageOwned?.multiplyWithDivisibility(totalXrdStake, fungibleResource.divisibility)
+        val percentage = percentageOwned ?: return null
+
+        return (percentage * totalXrdStake).roundedWith(divisibility = fungibleResource.divisibility)
     }
 
     companion object {

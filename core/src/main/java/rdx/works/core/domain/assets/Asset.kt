@@ -1,8 +1,12 @@
 package rdx.works.core.domain.assets
 
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.compareTo
+import com.radixdlt.sargon.extensions.isZero
+import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
-import java.math.BigDecimal
 
 sealed interface Asset {
     val resource: Resource
@@ -41,10 +45,10 @@ data class Assets(
     // is "Only accept known"
 
     val ownedXrd: Token? by lazy {
-        tokens.find { it.resource.isXrd && it.resource.ownedAmount != BigDecimal.ZERO }
+        tokens.find { it.resource.isXrd && !it.resource.ownedAmount.orZero().isZero }
     }
     val ownedNonXrdTokens: List<Token> by lazy {
-        tokens.filterNot { it.resource.isXrd || it.resource.ownedAmount == BigDecimal.ZERO }
+        tokens.filterNot { it.resource.isXrd || it.resource.ownedAmount.orZero().isZero }
     }
     val ownedTokens: List<Token> by lazy {
         ownedXrd?.let { listOf(it) + ownedNonXrdTokens } ?: ownedNonXrdTokens
@@ -55,7 +59,7 @@ data class Assets(
     }
 
     val ownedLiquidStakeUnits: List<LiquidStakeUnit> by lazy {
-        liquidStakeUnits.filter { it.fungibleResource.ownedAmount != BigDecimal.ZERO }
+        liquidStakeUnits.filter { !it.fungibleResource.ownedAmount.orZero().isZero }
     }
 
     val ownedStakeClaims: List<StakeClaim> by lazy {
@@ -63,7 +67,7 @@ data class Assets(
     }
 
     val ownedPoolUnits: List<PoolUnit> by lazy {
-        poolUnits.filterNot { it.stake.ownedAmount == BigDecimal.ZERO }
+        poolUnits.filterNot { it.stake.ownedAmount.orZero().isZero }
     }
 
     // knownResources of an account is when
@@ -98,12 +102,12 @@ data class ValidatorWithStakes(
             (stakeClaimNft == null || stakeClaimNft.nonFungibleResource.amount.toInt() == stakeClaimNft.nonFungibleResource.items.size)
 
     val hasLSU: Boolean
-        get() = liquidStakeUnit != null && (liquidStakeUnit.fungibleResource.ownedAmount ?: BigDecimal.ZERO) > BigDecimal.ZERO
+        get() = liquidStakeUnit != null && liquidStakeUnit.fungibleResource.ownedAmount.orZero() > 0.toDecimal192()
 
     val hasClaims: Boolean
         get() = stakeClaimNft != null && stakeClaimNft.nonFungibleResource.amount > 0L
 
-    fun stakeValue(): BigDecimal? {
+    fun stakeValue(): Decimal192? {
         if (validator.totalXrdStake == null) return null
         return liquidStakeUnit?.stakeValueInXRD(validator.totalXrdStake)
     }
@@ -152,13 +156,13 @@ data class ValidatorWithStakes(
 }
 
 data class StakeSummary(
-    val staked: BigDecimal,
-    val unstaking: BigDecimal,
-    val readyToClaim: BigDecimal
+    val staked: Decimal192,
+    val unstaking: Decimal192,
+    val readyToClaim: Decimal192
 ) {
     val hasStakedValue: Boolean
-        get() = staked > BigDecimal.ZERO
+        get() = staked > 0.toDecimal192()
 
     val hasReadyToClaimValue: Boolean
-        get() = readyToClaim > BigDecimal.ZERO
+        get() = readyToClaim > 0.toDecimal192()
 }

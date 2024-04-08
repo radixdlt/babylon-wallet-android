@@ -12,6 +12,7 @@ import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
@@ -50,7 +51,6 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.TestData
-import java.math.BigDecimal
 
 class SampleDataProvider {
 
@@ -93,7 +93,7 @@ class SampleDataProvider {
     @UsesSampleValues
     val transferableDepositing = Transferable.Depositing(
         transferable = TransferableAsset.Fungible.Token(
-            amount = BigDecimal(69),
+            amount = 69.toDecimal192(),
             resource = Resource.FungibleResource.sampleMainnet(),
             isNewlyCreated = true
         )
@@ -102,12 +102,12 @@ class SampleDataProvider {
     @UsesSampleValues
     val transferableDepositingLsu = Transferable.Depositing(
         transferable = TransferableAsset.Fungible.LSUAsset(
-            amount = BigDecimal(69),
+            amount = 69.toDecimal192(),
             lsu = LiquidStakeUnit(
                 Resource.FungibleResource.sampleMainnet(),
                 Validator.sampleMainnet()
             ),
-            xrdWorth = BigDecimal(1000)
+            xrdWorth = 1000.toDecimal192()
         )
     )
 

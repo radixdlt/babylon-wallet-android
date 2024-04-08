@@ -11,9 +11,12 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.sumOf
+import rdx.works.core.domain.toDecimal192OrNull
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -65,15 +68,15 @@ class PoolContributionProcessor @Inject constructor(
                     val guaranteeType = deposit.guaranteeType(defaultDepositGuarantee)
                     val poolUnitAmount = contributions.find {
                         it.poolUnitsResourceAddress.addressString() == poolUnit.resourceAddress.string
-                    }?.poolUnitsAmount?.asStr()?.toBigDecimalOrNull()
+                    }?.poolUnitsAmount?.asStr()?.toDecimal192OrNull()
                     val contributionPerResource = contributedResourceAddresses.associate { contributedResourceAddress ->
                         ResourceAddress.init(contributedResourceAddress) to contributions.mapNotNull {
-                            it.contributedResources[contributedResourceAddress]?.asStr()?.toBigDecimal()
+                            it.contributedResources[contributedResourceAddress]?.asStr()?.toDecimal192()
                         }.sumOf { it }
                     }
                     Transferable.Depositing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(
-                            amount = contributions.map { it.poolUnitsAmount.asStr().toBigDecimal() }.sumOf { it },
+                            amount = contributions.map { it.poolUnitsAmount.asStr().toDecimal192() }.sumOf { it },
                             unit = poolUnit.copy(
                                 stake = poolUnit.stake.copy(ownedAmount = poolUnitAmount)
                             ),

@@ -50,14 +50,13 @@ import org.junit.Test
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.profile.sargon.toSargon
-import java.math.BigDecimal
 import java.util.Locale
 import java.util.UUID
 
@@ -129,7 +128,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     fun `transaction approval success`() = runTest {
         mockManifestInput(manifestData = simpleXRDTransfer(testProfile))
         coEvery { stateRepository.getOwnedXRD(testProfile.networks.first().accounts) } returns Result.success(
-            testProfile.networks.first().accounts.associateWith { BigDecimal.TEN }
+            testProfile.networks.first().accounts.associateWith { 10.toDecimal192() }
         )
         val notarization = NotarizationResult(
             intentHash = IntentHash.sample(),

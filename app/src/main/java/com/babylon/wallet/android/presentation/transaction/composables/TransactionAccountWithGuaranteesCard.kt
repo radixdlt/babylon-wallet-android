@@ -44,11 +44,10 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.string
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
-import java.math.BigDecimal
 
 @Composable
 fun TransactionAccountWithGuaranteesCard(
@@ -145,7 +144,7 @@ fun TransactionAccountWithGuaranteesCard(
                         )
                         Text(
                             modifier = Modifier,
-                            text = accountWithGuarantee.transferable.amount.displayableQuantity(),
+                            text = accountWithGuarantee.transferable.amount.formatted(),
                             style = RadixTheme.typography.secondaryHeader,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
@@ -165,7 +164,7 @@ fun TransactionAccountWithGuaranteesCard(
                         )
                         Text(
                             modifier = Modifier,
-                            text = accountWithGuarantee.guaranteedAmount.displayableQuantity(),
+                            text = accountWithGuarantee.guaranteedAmount.formatted(),
                             style = RadixTheme.typography.body2HighImportance,
                             color = RadixTheme.colors.gray2,
                             maxLines = 1,
@@ -252,7 +251,7 @@ fun TransactionAccountWithGuaranteesCardPreview() {
                 Owned(
                     account = SampleDataProvider().sampleAccount(),
                     transferable = TransferableAsset.Fungible.Token(
-                        amount = BigDecimal.TEN,
+                        amount = 10.toDecimal192(),
                         resource = Resource.FungibleResource.sampleMainnet(),
                         isNewlyCreated = false
                     ),

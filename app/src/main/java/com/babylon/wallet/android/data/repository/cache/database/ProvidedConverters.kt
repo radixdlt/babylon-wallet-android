@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository.cache.database
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
@@ -15,7 +16,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.resources.metadata.Metadata
-import java.math.BigDecimal
+import rdx.works.core.domain.toDecimal192OrNull
 import java.time.Instant
 
 @Serializable
@@ -54,15 +55,15 @@ class StateDatabaseConverters {
         return column?.let { json.encodeToString(it.metadata) }
     }
 
-    // BigDecimal
+    // Decimal192
     @TypeConverter
-    fun stringToBigDecimal(string: String?): BigDecimal? {
-        return string?.toBigDecimalOrNull()
+    fun stringToDecimal192(string: String?): Decimal192? {
+        return string?.toDecimal192OrNull()
     }
 
     @TypeConverter
-    fun bigDecimalToString(decimal: BigDecimal?): String? {
-        return decimal?.toPlainString()
+    fun decimal192ToString(decimal: Decimal192?): String? {
+        return decimal?.string
     }
 
     // Instant

@@ -24,8 +24,8 @@ import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.extensions.string
-import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.tokensTab(
@@ -134,7 +134,7 @@ private fun FungibleResourceItem(
         resource.ownedAmount?.let { amount ->
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = amount.displayableQuantity(),
+                    text = amount.formatted(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2

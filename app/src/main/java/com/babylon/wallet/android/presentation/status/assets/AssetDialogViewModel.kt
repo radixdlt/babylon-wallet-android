@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUs
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.Decimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -23,7 +24,6 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import timber.log.Timber
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -180,10 +180,10 @@ class AssetDialogViewModel @Inject constructor(
             }
 
         sealed class ClaimState {
-            abstract val amount: BigDecimal
+            abstract val amount: Decimal192
 
             data class Unstaking(
-                override val amount: BigDecimal,
+                override val amount: Decimal192,
                 private val current: Long,
                 private val claim: Long
             ) : ClaimState() {
@@ -192,7 +192,7 @@ class AssetDialogViewModel @Inject constructor(
             }
 
             data class ReadyToClaim(
-                override val amount: BigDecimal
+                override val amount: Decimal192
             ) : ClaimState()
 
             companion object {

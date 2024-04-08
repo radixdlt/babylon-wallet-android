@@ -10,6 +10,7 @@ import com.radixdlt.sargon.extensions.intId
 import com.radixdlt.sargon.extensions.ruidId
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.stringId
+import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
 import junit.framework.TestCase.assertEquals
 import org.junit.Assert
@@ -21,7 +22,6 @@ import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
-import java.math.BigDecimal
 
 class ResourceTests {
 
@@ -204,7 +204,7 @@ class ResourceTests {
         symbol: String?
     ) = Resource.FungibleResource(
         address = address,
-        ownedAmount = BigDecimal(1234.5678),
+        ownedAmount = 1234.5678.toDecimal192(),
         assetBehaviours = setOf(
             AssetBehaviour.SUPPLY_FLEXIBLE,
             AssetBehaviour.INFORMATION_CHANGEABLE

@@ -9,14 +9,17 @@ import com.radixdlt.ret.DetailedManifestClass
 import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.ResourceIndicator
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.div
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.times
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.first
-import rdx.works.core.divideWithDivisibility
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.multiplyWithDivisibility
+import rdx.works.core.domain.roundedWith
+import rdx.works.core.domain.sumOf
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -77,11 +80,10 @@ class ValidatorStakeProcessor @Inject constructor(
         defaultDepositGuarantees: Double
     ): Transferable.Depositing {
         val relatedStakes = validatorStakes.filter { it.liquidStakeUnitAddress.addressString() == asset.resourceAddress.string }
-        val totalStakedLsuForAccount = relatedStakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() }
-        val totalStakeXrdWorthForAccount = relatedStakes.sumOf { it.xrdAmount.asStr().toBigDecimal() }
+        val totalStakedLsuForAccount = relatedStakes.sumOf { it.liquidStakeUnitAmount.asStr().toDecimal192() }
+        val totalStakeXrdWorthForAccount = relatedStakes.sumOf { it.xrdAmount.asStr().toDecimal192() }
         val lsuAmount = depositedResource.amount
-        val xrdWorth = lsuAmount.divideWithDivisibility(totalStakedLsuForAccount, asset.resource.divisibility)
-            .multiplyWithDivisibility(totalStakeXrdWorthForAccount, asset.resource.divisibility)
+        val xrdWorth = ((lsuAmount / totalStakedLsuForAccount) * totalStakeXrdWorthForAccount).roundedWith(asset.resource.divisibility)
         val guaranteeType = depositedResource.guaranteeType(defaultDepositGuarantees)
         return Transferable.Depositing(
             transferable = TransferableAsset.Fungible.LSUAsset(

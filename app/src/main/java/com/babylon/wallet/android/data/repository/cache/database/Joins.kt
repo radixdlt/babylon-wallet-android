@@ -13,12 +13,13 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.VaultAddress
 import com.radixdlt.sargon.extensions.init
-import java.math.BigDecimal
+import com.radixdlt.sargon.extensions.toDecimal192
 
 @Entity(
     primaryKeys = ["account_address", "resource_address"],
@@ -41,7 +42,7 @@ data class AccountResourceJoin(
     val accountAddress: AccountAddress,
     @ColumnInfo("resource_address", index = true)
     val resourceAddress: ResourceAddress,
-    val amount: BigDecimal,
+    val amount: Decimal192,
     @ColumnInfo("state_version")
     val stateVersion: Long,
     @ColumnInfo("vault_address")
@@ -73,7 +74,7 @@ data class AccountResourceJoin(
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
             resourceAddress = ResourceAddress.init(resourceAddress),
-            amount = amount.toBigDecimal(),
+            amount = amount.toDecimal192(),
             stateVersion = syncInfo.accountStateVersion,
             vaultAddress = vaultAddress?.let { VaultAddress.init(it) },
             nextCursor = null
@@ -140,7 +141,7 @@ data class PoolResourceJoin(
     val poolAddress: PoolAddress,
     @ColumnInfo("resource_address")
     val resourceAddress: ResourceAddress,
-    val amount: BigDecimal?,
+    val amount: Decimal192?,
     @ColumnInfo("state_version")
     val stateVersion: Long
 ) {

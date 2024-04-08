@@ -28,9 +28,10 @@ import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.extensions.init
-import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.toDecimal192OrNull
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -186,7 +187,7 @@ fun Metadata.ValueView(
             MetadataType.Decimal -> Text(
                 modifier = modifier,
                 // If value is unable to transform to big decimal we just display raw value
-                text = value.toBigDecimalOrNull()?.displayableQuantity() ?: value,
+                text = value.toDecimal192OrNull()?.formatted() ?: value,
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
                 textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,

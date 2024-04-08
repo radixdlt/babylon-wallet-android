@@ -28,24 +28,31 @@ import com.babylon.wallet.android.presentation.transaction.submit.TransactionSub
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.clamped
+import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.minus
+import com.radixdlt.sargon.extensions.plus
+import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.times
+import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
+import rdx.works.core.domain.roundedWith
 import rdx.works.core.mapWhen
-import rdx.works.core.multiplyWithDivisibility
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.ret.crypto.PrivateKey
-import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -329,7 +336,7 @@ class TransactionReviewViewModel @Inject constructor(
 
                 val xrdInCandidateAccount = feePayers.candidates.find {
                     it.account.address == candidateAddress.string
-                }?.xrdAmount ?: BigDecimal.ZERO
+                }?.xrdAmount.orZero()
 
                 // Calculate how many XRD have been used from accounts withdrawn from
                 // In cases were it is not a transfer type, then it means the user
@@ -342,18 +349,18 @@ class TransactionReviewViewModel @Inject constructor(
                                 it.transferable
                             }.filterIsInstance<TransferableAsset.Fungible.Token>().find { it.resource.isXrd }
 
-                            xrdResourceWithdrawn?.amount ?: BigDecimal.ZERO
+                            xrdResourceWithdrawn?.amount.orZero()
                         } else {
-                            BigDecimal.ZERO
+                            0.toDecimal192()
                         }
                     }
                     // On-purpose made this check exhaustive, future types may involve accounts spending XRD
-                    is PreviewType.AccountsDepositSettings -> BigDecimal.ZERO
-                    is PreviewType.NonConforming -> BigDecimal.ZERO
-                    is PreviewType.None -> BigDecimal.ZERO
-                    is PreviewType.UnacceptableManifest -> BigDecimal.ZERO
-                    is PreviewType.Transfer.Pool -> BigDecimal.ZERO
-                    is PreviewType.Transfer.Staking -> BigDecimal.ZERO
+                    is PreviewType.AccountsDepositSettings -> 0.toDecimal192()
+                    is PreviewType.NonConforming -> 0.toDecimal192()
+                    is PreviewType.None -> 0.toDecimal192()
+                    is PreviewType.UnacceptableManifest -> 0.toDecimal192()
+                    is PreviewType.Transfer.Pool -> 0.toDecimal192()
+                    is PreviewType.Transfer.Staking -> 0.toDecimal192()
                 }
 
                 return xrdInCandidateAccount - xrdUsed < transactionFees.transactionFeeToLock
@@ -540,10 +547,10 @@ sealed interface AccountWithPredictedGuarantee {
         @FloatRange(from = 0.0)
         get() = (guaranteeAmountString.toDoubleOrNull() ?: 0.0).div(100.0)
 
-    val guaranteedAmount: BigDecimal
-        get() = transferable.amount.multiplyWithDivisibility(guaranteeOffsetDecimal.toBigDecimal(), divisibility)
+    val guaranteedAmount: Decimal192
+        get() = (transferable.amount * guaranteeOffsetDecimal.toDecimal192()).roundedWith(divisibility)
 
-    private val divisibility: Int?
+    private val divisibility: UByte?
         get() = when (val asset = transferable) {
             is TransferableAsset.Fungible.Token -> {
                 asset.resource.divisibility
@@ -557,8 +564,7 @@ sealed interface AccountWithPredictedGuarantee {
         }
 
     fun increase(): AccountWithPredictedGuarantee {
-        val newOffset = (guaranteeOffsetDecimal.toBigDecimal().plus(BigDecimal(0.001)))
-            .multiply(BigDecimal(100)).setScale(1, RoundingMode.HALF_EVEN)
+        val newOffset = (guaranteeOffsetDecimal.toDecimal192().plus(0.001.toDecimal192()) * 100.toDecimal192()).rounded(decimalPlaces = 1u)
         return when (this) {
             is Other -> copy(guaranteeAmountString = newOffset.toString())
             is Owned -> copy(guaranteeAmountString = newOffset.toString())
@@ -566,10 +572,8 @@ sealed interface AccountWithPredictedGuarantee {
     }
 
     fun decrease(): AccountWithPredictedGuarantee {
-        val newOffset = (
-            guaranteeOffsetDecimal.toBigDecimal().minus(BigDecimal(0.001))
-                .coerceAtLeast(BigDecimal.ZERO).multiply(BigDecimal(100))
-            ).setScale(1, RoundingMode.HALF_EVEN)
+        val newOffset =
+            (guaranteeOffsetDecimal.toDecimal192().minus(0.001.toDecimal192()).clamped * 100.toDecimal192()).rounded(decimalPlaces = 1u)
         return when (this) {
             is Other -> copy(guaranteeAmountString = newOffset.toString())
             is Owned -> copy(guaranteeAmountString = newOffset.toString())

@@ -10,10 +10,10 @@ import com.radixdlt.sargon.extensions.stakesClaim
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.sumOf
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.sargon.toDecimal192
-import java.math.BigDecimal
 import javax.inject.Inject
 
 private typealias SargonStakeClaim = com.radixdlt.sargon.StakeClaim
@@ -38,7 +38,7 @@ class SendClaimRequestUseCase @Inject constructor(
                         resourceAddress = NonFungibleResourceAddress.init(claim.resourceAddress.string),
                         validatorAddress = claim.validatorAddress,
                         ids = nfts.map { it.localId },
-                        amount = nfts.sumOf { it.claimAmountXrd ?: BigDecimal.ZERO }.toDecimal192(),
+                        amount = nfts.sumOf { it.claimAmountXrd.orZero() },
                     )
                 }
             )
@@ -65,7 +65,7 @@ class SendClaimRequestUseCase @Inject constructor(
                         resourceAddress = NonFungibleResourceAddress.init(claim.resourceAddress.string),
                         validatorAddress = claim.validatorAddress,
                         ids = listOf(nft.localId),
-                        amount = (nft.claimAmountXrd ?: BigDecimal.ZERO).toDecimal192(),
+                        amount = nft.claimAmountXrd.orZero(),
                     )
                 )
             )

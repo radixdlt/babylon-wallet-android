@@ -22,6 +22,7 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleLocalId
@@ -60,7 +61,6 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import java.math.BigDecimal
 
 class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginViewModel>() {
 
@@ -333,7 +333,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             error("Not needed")
         }
 
-        override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> {
+        override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, Decimal192>> {
             error("Not needed")
         }
 

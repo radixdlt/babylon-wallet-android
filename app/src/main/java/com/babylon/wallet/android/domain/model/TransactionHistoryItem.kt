@@ -7,16 +7,22 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalan
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.abs
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.isNegative
+import com.radixdlt.sargon.extensions.isPositive
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Resource
-import java.math.BigDecimal
+import rdx.works.core.domain.toDecimal192OrNull
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -52,7 +58,7 @@ data class TransactionHistoryData(
 data class TransactionHistoryItem(
     val accountAddress: AccountAddress,
     val txId: String,
-    val feePaid: BigDecimal,
+    val feePaid: Decimal192,
     private val balanceChanges: List<BalanceChange>,
     val transactionClass: TransactionClass?,
     val timestamp: Instant?,
@@ -63,7 +69,7 @@ data class TransactionHistoryItem(
         get() = balanceChanges.filter {
             if (it.entityAddress.string != accountAddress.string) return@filter false
             when (it) {
-                is BalanceChange.FungibleBalanceChange -> it.balanceChange.signum() == 1
+                is BalanceChange.FungibleBalanceChange -> it.balanceChange.isPositive
                 is BalanceChange.NonFungibleBalanceChange -> it.addedIds.isNotEmpty()
             }
         }
@@ -71,7 +77,7 @@ data class TransactionHistoryItem(
         get() = balanceChanges.filter {
             if (it.entityAddress.string != accountAddress.string) return@filter false
             when (it) {
-                is BalanceChange.FungibleBalanceChange -> it.balanceChange.signum() == -1
+                is BalanceChange.FungibleBalanceChange -> it.balanceChange.isNegative
                 is BalanceChange.NonFungibleBalanceChange -> it.removedIds.isNotEmpty()
             }
         }
@@ -107,7 +113,7 @@ sealed interface BalanceChange : Comparable<BalanceChange> {
     val entityAddress: Address
 
     data class FungibleBalanceChange(
-        val balanceChange: BigDecimal,
+        val balanceChange: Decimal192,
         override val entityAddress: Address,
         override val asset: Asset.Fungible? = null
     ) : BalanceChange {
@@ -179,17 +185,17 @@ fun TransactionClass.toManifestClass(): ManifestClass {
 fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceChange> {
     val fungibleFungibleBalanceChanges = fungibleBalanceChanges.map { item ->
         BalanceChange.FungibleBalanceChange(
-            item.balanceChange.toBigDecimal(),
+            item.balanceChange.toDecimal192(),
             Address.init(item.entityAddress),
             when (val asset = assets.filterIsInstance<Asset.Fungible>().find { it.resource.address.string == item.resourceAddress }) {
                 is LiquidStakeUnit -> asset.copy(
                     fungibleResource = asset.fungibleResource.copy(
-                        ownedAmount = item.balanceChange.toBigDecimal().abs()
+                        ownedAmount = item.balanceChange.toDecimal192().abs()
                     )
                 )
 
-                is PoolUnit -> asset.copy(stake = asset.stake.copy(ownedAmount = item.balanceChange.toBigDecimal().abs()))
-                is Token -> asset.copy(resource = asset.resource.copy(ownedAmount = item.balanceChange.toBigDecimal().abs()))
+                is PoolUnit -> asset.copy(stake = asset.stake.copy(ownedAmount = item.balanceChange.toDecimal192().abs()))
+                is Token -> asset.copy(resource = asset.resource.copy(ownedAmount = item.balanceChange.toDecimal192().abs()))
                 null -> null
             }
         )
@@ -244,7 +250,7 @@ fun CommittedTransactionInfo.toDomainModel(accountAddress: AccountAddress, asset
     return TransactionHistoryItem(
         accountAddress = accountAddress,
         txId = intentHash.orEmpty(),
-        feePaid = feePaid?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+        feePaid = feePaid?.toDecimal192OrNull().orZero(),
         balanceChanges = balanceChanges?.toDomainModel(assets = assets).orEmpty(),
         transactionClass = manifestClasses?.firstOrNull()?.toTransactionClass(),
         timestamp = confirmedAt?.toInstant(),

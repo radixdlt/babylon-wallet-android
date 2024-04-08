@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionU
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.faucet
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -20,7 +21,6 @@ import rdx.works.core.then
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateways
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -52,7 +52,7 @@ class GetFreeXrdUseCase @Inject constructor(
                 signTransactionUseCase.sign(
                     request = SignTransactionUseCase.Request(
                         manifest = manifest,
-                        lockFee = BigDecimal.valueOf(TransactionConfig.DEFAULT_LOCK_FEE),
+                        lockFee = TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192(),
                         tipPercentage = TIP_PERCENTAGE
                     ),
                     deviceBiometricAuthenticationProvider = { true }

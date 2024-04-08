@@ -37,6 +37,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.profile.data.model.pernetwork.Network
@@ -192,7 +193,7 @@ fun TransactionAccountCardPreview() {
                 resources = listOf(
                     Transferable.Withdrawing(
                         transferable = TransferableAsset.Fungible.Token(
-                            amount = "689.203".toBigDecimal(),
+                            amount = 689.203.toDecimal192(),
                             resource = Resource.FungibleResource.sampleMainnet(),
                             isNewlyCreated = false
                         )
