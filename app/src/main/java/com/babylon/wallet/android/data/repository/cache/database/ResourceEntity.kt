@@ -14,18 +14,19 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.poolAddress
 import rdx.works.core.domain.resources.metadata.validatorAddress
-import java.math.BigDecimal
 import java.time.Instant
 
 enum class ResourceEntityType {
@@ -44,12 +45,12 @@ data class ResourceEntity(
     val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
     val poolAddress: PoolAddress?,
-    val supply: BigDecimal?,
+    val supply: Decimal192?,
     val synced: Instant
 ) {
 
     @Suppress("CyclomaticComplexMethod")
-    fun toResource(amount: BigDecimal?): Resource {
+    fun toResource(amount: Decimal192?): Resource {
         val validatorAndPoolMetadata = listOf(
             validatorAddress?.let {
                 Metadata.Primitive(ExplicitMetadataKey.VALIDATOR.key, it.string, MetadataType.Address)
@@ -66,7 +67,7 @@ data class ResourceEntity(
                     ownedAmount = amount,
                     assetBehaviours = behaviours?.behaviours?.toSet(),
                     currentSupply = supply,
-                    divisibility = divisibility,
+                    divisibility = divisibility?.toUByte(),
                     metadata = metadata?.metadata.orEmpty() + validatorAndPoolMetadata
                 )
             }
@@ -74,10 +75,10 @@ data class ResourceEntity(
             ResourceEntityType.NON_FUNGIBLE -> {
                 Resource.NonFungibleResource(
                     address = address,
-                    amount = amount?.toLong() ?: 0L,
+                    amount = amount?.string?.toLongOrNull() ?: 0L,
                     assetBehaviours = behaviours?.behaviours?.toSet(),
                     items = emptyList(),
-                    currentSupply = supply?.toInt(),
+                    currentSupply = supply?.string?.toIntOrNull(),
                     metadata = metadata?.metadata.orEmpty() + validatorAndPoolMetadata
                 )
             }
@@ -89,7 +90,7 @@ data class ResourceEntity(
             is Resource.FungibleResource -> ResourceEntity(
                 address = address,
                 type = ResourceEntityType.FUNGIBLE,
-                divisibility = divisibility,
+                divisibility = divisibility?.toInt(),
                 behaviours = behaviours?.let { BehavioursColumn(it) },
                 supply = currentSupply,
                 validatorAddress = metadata.validatorAddress(),
@@ -105,7 +106,7 @@ data class ResourceEntity(
                 address = address,
                 type = ResourceEntityType.NON_FUNGIBLE,
                 behaviours = behaviours?.let { BehavioursColumn(it) },
-                supply = currentSupply?.toBigDecimal(),
+                supply = currentSupply?.toDecimal192(),
                 divisibility = null,
                 validatorAddress = metadata.validatorAddress(),
                 poolAddress = metadata.poolAddress(),
@@ -172,9 +173,9 @@ data class ResourceEntity(
             return ResourceEntity(
                 address = address,
                 type = type,
-                divisibility = details?.divisibility(),
+                divisibility = details?.divisibility()?.toInt(),
                 behaviours = details?.let { BehavioursColumn(it.extractBehaviours()) },
-                supply = details?.totalSupply()?.toBigDecimalOrNull(),
+                supply = details?.totalSupply(),
                 validatorAddress = metadata.validatorAddress(),
                 poolAddress = metadata.poolAddress(),
                 metadata = metadata

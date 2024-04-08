@@ -8,6 +8,7 @@ import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
@@ -16,10 +17,10 @@ import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.profile.data.model.apppreferences.Radix
@@ -31,7 +32,6 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
-import java.math.BigDecimal
 
 fun account(
     name: String = "account-name",
@@ -98,7 +98,7 @@ val mockAccountsWithMockAssets = listOf(
                 Token(
                     resource = Resource.FungibleResource(
                         address = mockResourceAddress1,
-                        ownedAmount = BigDecimal(0.757), // Total fiat value: 0.757 * 0.070098 = 0.053064186
+                        ownedAmount = 0.757.toDecimal192(), // Total fiat value: 0.757 * 0.070098 = 0.053064186
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Token1", valueType = MetadataType.String)
                         )
@@ -107,7 +107,7 @@ val mockAccountsWithMockAssets = listOf(
                 Token(
                     resource = Resource.FungibleResource(
                         address = mockResourceAddress3,
-                        ownedAmount = BigDecimal(1066), // Total fiat value: 1066 * 15 = 15990
+                        ownedAmount = 1066.toDecimal192(), // Total fiat value: 1066 * 15 = 15990
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Token3", valueType = MetadataType.String)
                         )
@@ -116,7 +116,7 @@ val mockAccountsWithMockAssets = listOf(
                 Token(
                     resource = Resource.FungibleResource(
                         address = mockResourceAddress4,
-                        ownedAmount = BigDecimal(96), // Total fiat value: 96 * 1150000 = 110400000
+                        ownedAmount = 96.toDecimal192(), // Total fiat value: 96 * 1150000 = 110400000
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Token4", valueType = MetadataType.String)
                         )
@@ -125,7 +125,7 @@ val mockAccountsWithMockAssets = listOf(
                 Token(
                     resource = Resource.FungibleResource(
                         address = mockSomeOtherResource,
-                        ownedAmount = BigDecimal(10), // Total fiat value: 0 because not included in prices list
+                        ownedAmount = 10.toDecimal192(), // Total fiat value: 0 because not included in prices list
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "OtherToken", valueType = MetadataType.String)
                         )
@@ -136,9 +136,9 @@ val mockAccountsWithMockAssets = listOf(
                 PoolUnit( // Total fiat value of pools unit: 20.4990492704 + 1801.0568522 = 1821.55590147
                     stake = Resource.FungibleResource(
                         address = mockStakeFungibleResourceAddress1,
-                        ownedAmount = BigDecimal(31953.48992),
-                        currentSupply = BigDecimal(5954986.901239),
-                        divisibility=18,
+                        ownedAmount = 31953.48992.toDecimal192(),
+                        currentSupply = 5954986.901239.toDecimal192(),
+                        divisibility= 18u,
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "cool pool unit", valueType = MetadataType.String),
                             Metadata.Primitive(key = ExplicitMetadataKey.POOL.key, value = mockPoolAddress1.string, valueType = MetadataType.Address)
@@ -159,14 +159,14 @@ val mockAccountsWithMockAssets = listOf(
                         resources = listOf(
                             Resource.FungibleResource(
                                 address = mockResourceAddress5,
-                                ownedAmount = BigDecimal(7640578.24036), // Total fiat value: ((31953.48992 * 7640578.24036) / 5954986.901239) * 0.0005 = 20.4990492704
+                                ownedAmount = 7640578.24036.toDecimal192(), // Total fiat value: ((31953.48992 * 7640578.24036) / 5954986.901239) * 0.0005 = 20.4990492704
                                 metadata = listOf(
                                     Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Token5", valueType = MetadataType.String)
                                 )
                             ),
                             Resource.FungibleResource(
                                 address = mockResourceAddress1,
-                                ownedAmount = BigDecimal(4788332.57973), // Total fiat value: ((31953.48992 * 4788332.57973) / 5954986.901239) * 0.070098 = 1801.0568522
+                                ownedAmount = 4788332.57973.toDecimal192(), // Total fiat value: ((31953.48992 * 4788332.57973) / 5954986.901239) * 0.070098 = 1801.0568522
                                 metadata = listOf(
                                     Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Token1", valueType = MetadataType.String)
                                 )
@@ -177,9 +177,9 @@ val mockAccountsWithMockAssets = listOf(
                 PoolUnit( // Total fiat value of pool unit: 61948.1268952
                     stake = Resource.FungibleResource(
                         address = mockStakeFungibleResourceAddress2,
-                        ownedAmount = BigDecimal(31953.48992),
-                        currentSupply = BigDecimal(5954986.901239),
-                        divisibility=18,
+                        ownedAmount = 31953.48992.toDecimal192(),
+                        currentSupply = 5954986.901239.toDecimal192(),
+                        divisibility = 18u,
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "cool pool unit", valueType = MetadataType.String),
                             Metadata.Primitive(key = ExplicitMetadataKey.POOL.key, value = mockPoolAddress2.string, valueType = MetadataType.Address)
@@ -199,7 +199,7 @@ val mockAccountsWithMockAssets = listOf(
                         resources = listOf(
                             Resource.FungibleResource(
                                 address = mockResourceAddressXRD,
-                                ownedAmount = BigDecimal(7640578.24036), // Total fiat value: ((31953.48992 * 7640578.24036) / 5954986.901239) * 1.511 = 61948.1268952
+                                ownedAmount = 7640578.24036.toDecimal192(), // Total fiat value: ((31953.48992 * 7640578.24036) / 5954986.901239) * 1.511 = 61948.1268952
                                 metadata = listOf(
                                     Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Token5", valueType = MetadataType.String)
                                 )
@@ -212,22 +212,22 @@ val mockAccountsWithMockAssets = listOf(
                 LiquidStakeUnit(
                     fungibleResource = Resource.FungibleResource(
                         address = mockLSUAddress1,
-                        ownedAmount = BigDecimal(1266.009), // Total fiat value: 1266.009 * 0.51 = 645.66459
+                        ownedAmount = 1266.009.toDecimal192(), // Total fiat value: 1266.009 * 0.51 = 645.66459
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "TokenXRD", valueType = MetadataType.String)
                         )
                     ),
-                    validator = Validator.sampleMainnet().copy(totalXrdStake = BigDecimal(99))
+                    validator = Validator.sampleMainnet().copy(totalXrdStake = 99.toDecimal192())
                 ),
                 LiquidStakeUnit(
                     fungibleResource = Resource.FungibleResource(
                         address = mockLSUAddress2,
-                        ownedAmount = BigDecimal(16), // Total fiat value: 16 * 80.091 = 1281.456
+                        ownedAmount = 16.toDecimal192(), // Total fiat value: 16 * 80.091 = 1281.456
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "TokenXRD", valueType = MetadataType.String)
                         )
                     ),
-                    validator = Validator.sampleMainnet.other().copy(totalXrdStake = BigDecimal(909))
+                    validator = Validator.sampleMainnet.other().copy(totalXrdStake = 909.toDecimal192())
                 )
             )
         )
@@ -246,7 +246,7 @@ val mockAccountsWithMockAssets = listOf(
                 Token(
                     resource = Resource.FungibleResource(
                         address = mockResourceAddress4,
-                        ownedAmount = BigDecimal(0.757), // Total fiat value: 0.757 * 1150000 = 870550
+                        ownedAmount = 0.757.toDecimal192(), // Total fiat value: 0.757 * 1150000 = 870550
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "Token4", valueType = MetadataType.String)
                         )
@@ -255,7 +255,7 @@ val mockAccountsWithMockAssets = listOf(
                 Token(
                     resource = Resource.FungibleResource(
                         address = mockResourceAddressXRD,
-                        ownedAmount = BigDecimal(10), // Total fiat value: 10 * 1.511 = 15.11
+                        ownedAmount = 10.toDecimal192(), // Total fiat value: 10 * 1.511 = 15.11
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "TokenXRD", valueType = MetadataType.String)
                         )
@@ -301,7 +301,7 @@ val mockAccountsWithMockAssets = listOf(
                         )
                     ),
                     validator = Validator.sampleMainnet().copy(
-                        totalXrdStake = BigDecimal(27335.0901),
+                        totalXrdStake = 27335.0901.toDecimal192(),
                         claimTokenResourceAddress = mockNFTAddressForStakeClaim1
                     )
                 ),
@@ -331,7 +331,7 @@ val mockAccountsWithMockAssets = listOf(
                         )
                     ),
                     validator = Validator.sampleMainnet.other().copy(
-                        totalXrdStake = BigDecimal(11075),
+                        totalXrdStake = 11075.toDecimal192(),
                         claimTokenResourceAddress = mockNFTAddressForStakeClaim2,
                     )
                 )

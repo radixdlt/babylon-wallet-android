@@ -34,10 +34,10 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.AddressR
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.Token
-import java.math.BigDecimal
+import rdx.works.core.domain.formatted
 
 @Composable
 fun FungibleDialogContent(
@@ -142,8 +142,8 @@ fun FungibleDialogContent(
                         .radixPlaceholder(visible = token?.resource?.currentSupply == null),
                     text = when (val supply = token?.resource?.currentSupply) {
                         null -> ""
-                        BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                        else -> supply.displayableQuantity()
+                        0.toDecimal192() -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                        else -> supply.formatted()
                     },
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,

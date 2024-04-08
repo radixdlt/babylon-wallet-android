@@ -5,8 +5,9 @@ import android.icu.number.Precision
 import android.icu.text.NumberFormat
 import android.icu.util.Currency
 import android.os.Build
+import com.radixdlt.sargon.Decimal192
 import rdx.works.core.domain.resources.Resource
-import java.math.BigDecimal
+import rdx.works.core.domain.toDouble
 import java.util.Locale
 
 data class FiatPrice(
@@ -14,7 +15,7 @@ data class FiatPrice(
     val currency: SupportedCurrency
 ) {
 
-    operator fun times(value: BigDecimal): FiatPrice = times(value.toDouble())
+    operator fun times(value: Decimal192): FiatPrice = times(value.toDouble())
 
     operator fun times(value: Double): FiatPrice = FiatPrice(
         price = price * value,
@@ -66,7 +67,7 @@ sealed class AssetPrice {
         override val price: FiatPrice?,
         val oneXrdPrice: FiatPrice?
     ) : AssetPrice() {
-        fun xrdPrice(xrdBalance: BigDecimal): FiatPrice? = oneXrdPrice?.let { it * xrdBalance }
+        fun xrdPrice(xrdBalance: Decimal192): FiatPrice? = oneXrdPrice?.let { it * xrdBalance }
     }
 
     data class StakeClaimPrice(

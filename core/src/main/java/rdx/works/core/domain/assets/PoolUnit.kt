@@ -1,17 +1,21 @@
 package rdx.works.core.domain.assets
 
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.div
+import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.samples.SampleWithRandomValues
-import rdx.works.core.divideWithDivisibility
+import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.sampleMainnet
-import java.math.BigDecimal
+import rdx.works.core.domain.roundedWith
 
 data class PoolUnit(
     val stake: Resource.FungibleResource,
@@ -28,14 +32,12 @@ data class PoolUnit(
             stake.symbol
         }
 
-    fun resourceRedemptionValue(item: Resource.FungibleResource): BigDecimal? {
+    fun resourceRedemptionValue(item: Resource.FungibleResource): Decimal192? {
         val resourceVaultBalance = pool?.resources?.find { it.address == item.address }?.ownedAmount ?: return null
-        val poolUnitSupply = stake.currentSupply ?: BigDecimal.ZERO
+        val poolUnitSupply = stake.currentSupply.orZero()
         val stakeAmount = stake.ownedAmount
-        return if (stakeAmount != null && stake.divisibility != null && poolUnitSupply != BigDecimal.ZERO) {
-            stakeAmount
-                .multiply(resourceVaultBalance)
-                .divideWithDivisibility(poolUnitSupply, stake.divisibility)
+        return if (stakeAmount != null && stake.divisibility != null && !poolUnitSupply.isZero) {
+            ((stakeAmount * resourceVaultBalance) / poolUnitSupply).roundedWith(divisibility = stake.divisibility)
         } else {
             null
         }

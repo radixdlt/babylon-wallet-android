@@ -24,7 +24,6 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.sargon.toDecimal192
 import rdx.works.profile.sargon.toSargon
 import timber.log.Timber
 import javax.inject.Inject
@@ -76,7 +75,7 @@ class PrepareManifestDelegate @Inject constructor(
                 listOfExistingTransfers.add(
                     PerAssetFungibleTransfer(
                         useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(asset.resourceAddress, accountsAbleToSign),
-                        amount = asset.amountDecimal.toDecimal192(),
+                        amount = asset.amountDecimal,
                         recipient = targetAccount.toAssetTransfersRecipient()
                     )
                 )

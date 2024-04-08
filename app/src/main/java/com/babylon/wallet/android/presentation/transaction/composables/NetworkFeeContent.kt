@@ -21,7 +21,7 @@ import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
-import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.formatted
 
 @Composable
 fun NetworkFeeContent(
@@ -64,7 +64,7 @@ fun NetworkFeeContent(
                     ),
                 text = stringResource(
                     id = R.string.transactionReview_xrdAmount,
-                    fees.transactionFeeToLock.displayableQuantity()
+                    fees.transactionFeeToLock.formatted()
                 ),
                 style = RadixTheme.typography.body1Link,
                 color = RadixTheme.colors.gray1

@@ -1,13 +1,15 @@
 package com.babylon.wallet.android.domain.model
 
 import androidx.annotation.FloatRange
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.times
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.resources.Resource
-import java.math.BigDecimal
 
 sealed interface Transferable {
     val transferable: TransferableAsset
@@ -27,15 +29,15 @@ sealed interface Transferable {
 
                     when (val transferable = transferable) {
                         is TransferableAsset.Fungible.Token -> GuaranteeAssertion.ForAmount(
-                            amount = transferable.amount * predicted.guaranteeOffset.toBigDecimal(),
+                            amount = transferable.amount * predicted.guaranteeOffset.toDecimal192(),
                             instructionIndex = predicted.instructionIndex
                         )
                         is TransferableAsset.Fungible.PoolUnitAsset -> GuaranteeAssertion.ForAmount(
-                            amount = transferable.amount * predicted.guaranteeOffset.toBigDecimal(),
+                            amount = transferable.amount * predicted.guaranteeOffset.toDecimal192(),
                             instructionIndex = predicted.instructionIndex
                         )
                         is TransferableAsset.Fungible.LSUAsset -> GuaranteeAssertion.ForAmount(
-                            amount = transferable.amount * predicted.guaranteeOffset.toBigDecimal(),
+                            amount = transferable.amount * predicted.guaranteeOffset.toDecimal192(),
                             instructionIndex = predicted.instructionIndex
                         )
                         is TransferableAsset.NonFungible.NFTAssets -> GuaranteeAssertion.ForNFT(
@@ -88,7 +90,7 @@ sealed interface GuaranteeAssertion {
     val instructionIndex: Long
 
     data class ForAmount(
-        val amount: BigDecimal,
+        val amount: Decimal192,
         override val instructionIndex: Long
     ) : GuaranteeAssertion
 
@@ -119,17 +121,17 @@ sealed interface TransferableAsset {
     val isNewlyCreated: Boolean
 
     sealed class Fungible : TransferableAsset {
-        abstract val amount: BigDecimal
+        abstract val amount: Decimal192
         data class Token(
-            override val amount: BigDecimal,
+            override val amount: Decimal192,
             override val resource: Resource.FungibleResource,
             override val isNewlyCreated: Boolean
         ) : Fungible()
 
         data class LSUAsset(
-            override val amount: BigDecimal,
+            override val amount: Decimal192,
             val lsu: LiquidStakeUnit,
-            val xrdWorth: BigDecimal,
+            val xrdWorth: Decimal192,
             override val isNewlyCreated: Boolean = false
         ) : Fungible() {
             override val resource: Resource.FungibleResource
@@ -137,9 +139,9 @@ sealed interface TransferableAsset {
         }
 
         data class PoolUnitAsset(
-            override val amount: BigDecimal,
+            override val amount: Decimal192,
             val unit: PoolUnit,
-            val contributionPerResource: Map<ResourceAddress, BigDecimal>,
+            val contributionPerResource: Map<ResourceAddress, Decimal192>,
             override val isNewlyCreated: Boolean = false
         ) : Fungible() {
             override val resource: Resource.FungibleResource
@@ -155,7 +157,7 @@ sealed interface TransferableAsset {
 
         data class StakeClaimAssets(
             val claim: StakeClaim,
-            val xrdWorthPerNftItem: Map<NonFungibleLocalId, BigDecimal>,
+            val xrdWorthPerNftItem: Map<NonFungibleLocalId, Decimal192>,
             override val isNewlyCreated: Boolean = false
         ) : NonFungible() {
             override val resource: Resource.NonFungibleResource

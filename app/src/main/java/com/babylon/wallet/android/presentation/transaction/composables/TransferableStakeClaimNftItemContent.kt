@@ -29,7 +29,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 
@@ -122,7 +122,7 @@ fun TransferableStakeClaimNftItemContent(
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = transferable.xrdWorthPerNftItem[item.localId]?.displayableQuantity().orEmpty(),
+                    text = transferable.xrdWorthPerNftItem[item.localId]?.formatted().orEmpty(),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End,

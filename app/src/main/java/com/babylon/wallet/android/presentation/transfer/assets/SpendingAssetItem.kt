@@ -54,16 +54,18 @@ import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
-import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.sampleMainnet
-import java.math.BigDecimal
+import rdx.works.core.domain.toDecimal192OrNull
 
 @Composable
 fun SpendingAssetItem(
@@ -241,7 +243,7 @@ private fun ColumnScope.FungibleSpendingAsset(
 
             resource.ownedAmount?.let { amount ->
                 Text(
-                    text = "- Balance: ${amount.displayableQuantity()}",
+                    text = "- Balance: ${amount.formatted()}",
                     style = RadixTheme.typography.body2HighImportance.copy(
                         color = RadixTheme.colors.gray2,
                         fontSize = 12.sp
@@ -337,7 +339,7 @@ fun SpendingAssetItemsPreview() {
                 asset = SpendingAsset.Fungible(
                     resource = Resource.FungibleResource.sampleMainnet.other(),
                     amountString = secondAmount,
-                    exceedingBalance = secondAmount.toBigDecimalOrNull()?.compareTo(BigDecimal.TEN) == 1
+                    exceedingBalance = secondAmount.toDecimal192OrNull()?.compareTo(10.toDecimal192()) == 1
                 ),
                 onAmountTyped = {
                     secondAmount = it

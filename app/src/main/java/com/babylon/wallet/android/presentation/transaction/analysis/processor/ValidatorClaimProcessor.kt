@@ -14,13 +14,13 @@ import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.currentNetwork
-import java.math.BigDecimal
 import javax.inject.Inject
 
 class ValidatorClaimProcessor @Inject constructor(
@@ -77,7 +77,7 @@ class ValidatorClaimProcessor @Inject constructor(
                     val items = nonFungibleIndicator.nonFungibleLocalIds.map { localId ->
                         val claimAmount = stakeClaimNfts.find {
                             resourceAddress == it.collectionAddress && localId == it.localId
-                        }?.claimAmountXrd ?: BigDecimal.ZERO
+                        }?.claimAmountXrd.orZero()
                         Resource.NonFungibleResource.Item(
                             collectionAddress = resourceAddress,
                             localId = localId

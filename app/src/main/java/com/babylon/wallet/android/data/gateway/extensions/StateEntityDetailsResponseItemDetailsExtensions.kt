@@ -8,6 +8,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.VaultAddress
 import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
@@ -15,19 +16,19 @@ import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.AssetBehaviours
 import rdx.works.core.domain.resources.XrdResource
-import java.math.BigDecimal
+import rdx.works.core.domain.toDecimal192OrNull
 
-fun StateEntityDetailsResponseItemDetails.totalSupply(): String? {
+fun StateEntityDetailsResponseItemDetails.totalSupply(): Decimal192? {
     return when (val details = this) {
-        is StateEntityDetailsResponseFungibleResourceDetails -> details.totalSupply
-        is StateEntityDetailsResponseNonFungibleResourceDetails -> details.totalSupply
+        is StateEntityDetailsResponseFungibleResourceDetails -> details.totalSupply.toDecimal192OrNull()
+        is StateEntityDetailsResponseNonFungibleResourceDetails -> details.totalSupply.toDecimal192OrNull()
         else -> null
     }
 }
 
-fun StateEntityDetailsResponseItemDetails.divisibility(): Int? {
+fun StateEntityDetailsResponseItemDetails.divisibility(): UByte? {
     return when (val details = this) {
-        is StateEntityDetailsResponseFungibleResourceDetails -> details.divisibility
+        is StateEntityDetailsResponseFungibleResourceDetails -> details.divisibility.toUByte()
         else -> null
     }
 }
@@ -38,7 +39,7 @@ val StateEntityDetailsResponseItemDetails.xrdVaultAddress: String?
         else -> null
     }
 
-val StateEntityDetailsResponseItem.totalXRDStake: BigDecimal?
+val StateEntityDetailsResponseItem.totalXRDStake: Decimal192?
     get() {
         val xrdVaultAddress = details?.xrdVaultAddress?.let { runCatching { VaultAddress.init(it) }.getOrNull() } ?: return null
 
@@ -47,7 +48,7 @@ val StateEntityDetailsResponseItem.totalXRDStake: BigDecimal?
         }
 
         return if (xrdResource is FungibleResourcesCollectionItemVaultAggregated) {
-            xrdResource.vaults.items.find { it.vaultAddress == xrdVaultAddress.string }?.amount?.toBigDecimal()
+            xrdResource.vaults.items.find { it.vaultAddress == xrdVaultAddress.string }?.amountDecimal
         } else {
             null
         }

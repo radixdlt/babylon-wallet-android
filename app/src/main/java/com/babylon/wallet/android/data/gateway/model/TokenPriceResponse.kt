@@ -29,7 +29,7 @@ data class TokenPriceResponse(
             return map { tokenPrice ->
                 TokenPriceEntity(
                     resourceAddress = ResourceAddress.init(tokenPrice.resourceAddress),
-                    price = tokenPrice.price.toBigDecimal(),
+                    price = tokenPrice.price,
                     currency = tokenPrice.currency,
                     synced = InstantGenerator()
                 )

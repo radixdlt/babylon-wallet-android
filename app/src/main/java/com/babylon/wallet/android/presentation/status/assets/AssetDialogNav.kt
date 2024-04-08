@@ -9,6 +9,7 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
@@ -16,7 +17,6 @@ import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
-import java.math.BigDecimal
 import java.net.URLEncoder
 
 private const val ROUTE = "asset_dialog"
@@ -32,7 +32,7 @@ private const val ARG_RESOURCE_TYPE_VALUE_NFT = "nft"
 
 fun NavController.fungibleAssetDialog(
     resourceAddress: ResourceAddress,
-    amounts: Map<ResourceAddress, BigDecimal> = emptyMap(),
+    amounts: Map<ResourceAddress, Decimal192> = emptyMap(),
     isNewlyCreated: Boolean = false,
     underAccountAddress: AccountAddress? = null,
 ) {
@@ -66,7 +66,7 @@ fun NavController.nftAssetDialog(
 
 @Serializable
 private data class FungibleAmounts(
-    val amounts: Map<String, @Contextual BigDecimal>
+    val amounts: Map<String, @Contextual Decimal192>
 )
 
 sealed interface AssetDialogArgs {
@@ -78,10 +78,10 @@ sealed interface AssetDialogArgs {
         override val resourceAddress: ResourceAddress,
         override val isNewlyCreated: Boolean,
         override val underAccountAddress: AccountAddress?,
-        private val amounts: Map<String, BigDecimal>,
+        private val amounts: Map<String, Decimal192>,
     ) : AssetDialogArgs {
 
-        fun fungibleAmountOf(address: ResourceAddress): BigDecimal? = amounts[address.string]
+        fun fungibleAmountOf(address: ResourceAddress): Decimal192? = amounts[address.string]
     }
 
     data class NFT(

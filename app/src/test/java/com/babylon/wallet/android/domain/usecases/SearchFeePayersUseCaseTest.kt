@@ -9,6 +9,7 @@ import com.babylon.wallet.android.mockdata.profile
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AssetsTransfersRecipient
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PerAssetFungibleResource
 import com.radixdlt.sargon.PerAssetFungibleTransfer
@@ -28,11 +29,12 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.assets.StakeClaim
-import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import rdx.works.core.identifiedArrayListOf
@@ -42,8 +44,6 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.core.domain.TransactionManifestData
-import java.math.BigDecimal
 
 class SearchFeePayersUseCaseTest {
 
@@ -58,14 +58,14 @@ class SearchFeePayersUseCaseTest {
         runTest {
             val manifestData = manifestDataWithAddress(account1)
 
-            val result = useCase(manifestData, TransactionConfig.DEFAULT_LOCK_FEE.toBigDecimal()).getOrThrow()
+            val result = useCase(manifestData, TransactionConfig.DEFAULT_LOCK_FEE.toDecimal192()).getOrThrow()
 
             assertEquals(
                 TransactionFeePayers(
                     selectedAccountAddress = AccountAddress.init(account1.address),
                     candidates = listOf(
-                        TransactionFeePayers.FeePayerCandidate(account1, BigDecimal(100)),
-                        TransactionFeePayers.FeePayerCandidate(account2, BigDecimal.ZERO)
+                        TransactionFeePayers.FeePayerCandidate(account1, 100.toDecimal192()),
+                        TransactionFeePayers.FeePayerCandidate(account2, 0.toDecimal192())
                     )
                 ),
                 result
@@ -77,14 +77,14 @@ class SearchFeePayersUseCaseTest {
         runTest {
             val manifestData = manifestDataWithAddress(account1)
 
-            val result = useCase(manifestData, BigDecimal(200)).getOrThrow()
+            val result = useCase(manifestData, 200.toDecimal192()).getOrThrow()
 
             assertEquals(
                 TransactionFeePayers(
                     selectedAccountAddress = null,
                     candidates = listOf(
-                        TransactionFeePayers.FeePayerCandidate(account1, BigDecimal(100)),
-                        TransactionFeePayers.FeePayerCandidate(account2, BigDecimal.ZERO)
+                        TransactionFeePayers.FeePayerCandidate(account1, 100.toDecimal192()),
+                        TransactionFeePayers.FeePayerCandidate(account2, 0.toDecimal192())
                     )
                 ),
                 result
@@ -194,11 +194,11 @@ class SearchFeePayersUseCaseTest {
                 error("Not needed")
             }
 
-            override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> {
+            override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, Decimal192>> {
                 return Result.success(
                     mapOf(
-                        account1 to BigDecimal(100),
-                        account2 to BigDecimal.ZERO
+                        account1 to 100.toDecimal192(),
+                        account2 to 0.toDecimal192()
                     )
                 )
             }

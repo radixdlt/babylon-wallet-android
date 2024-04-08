@@ -9,13 +9,13 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import rdx.works.core.displayableQuantity
-import java.math.BigDecimal
+import com.radixdlt.sargon.Decimal192
+import rdx.works.core.domain.formatted
 
 @Composable
 fun TokenBalance(
     modifier: Modifier = Modifier,
-    amount: BigDecimal?,
+    amount: Decimal192?,
     symbol: String,
     align: TextAlign = TextAlign.Center
 ) {
@@ -24,7 +24,7 @@ fun TokenBalance(
             modifier = modifier,
             text = buildAnnotatedString {
                 if (amount != null) {
-                    append(amount.displayableQuantity())
+                    append(amount.formatted())
                     withStyle(style = RadixTheme.typography.header.toSpanStyle()) {
                         append(" $symbol")
                     }

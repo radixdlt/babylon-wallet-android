@@ -43,7 +43,7 @@ data class TokensAndLsusPricesResponse(
             val lsus = this.lsus.map { lsuPrice ->
                 TokenPriceEntity(
                     resourceAddress = ResourceAddress.init(lsuPrice.resourceAddress),
-                    price = lsuPrice.usdPrice.toBigDecimal(),
+                    price = lsuPrice.usdPrice,
                     currency = SupportedCurrency.USD.code,
                     synced = instantGenerator
                 )
@@ -51,7 +51,7 @@ data class TokensAndLsusPricesResponse(
             val tokens = this.tokens.map { tokenPrice ->
                 TokenPriceEntity(
                     resourceAddress = ResourceAddress.init(tokenPrice.resourceAddress),
-                    price = tokenPrice.usdPrice.toBigDecimal(),
+                    price = tokenPrice.usdPrice,
                     currency = SupportedCurrency.USD.code,
                     synced = instantGenerator
                 )

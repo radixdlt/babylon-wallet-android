@@ -25,6 +25,7 @@ import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
@@ -53,7 +54,6 @@ import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.currentNetwork
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -82,7 +82,7 @@ interface StateRepository {
         localIds: Set<NonFungibleLocalId>
     ): Result<List<Resource.NonFungibleResource.Item>>
 
-    suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>>
+    suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, Decimal192>>
 
     suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>>
 
@@ -446,7 +446,7 @@ class StateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, BigDecimal>> =
+    override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, Decimal192>> =
         accountsStateCache.getOwnedXRD(accounts = accounts)
 
     override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>> = runCatching {

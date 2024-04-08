@@ -10,8 +10,15 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDele
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.clamped
+import com.radixdlt.sargon.extensions.compareTo
+import com.radixdlt.sargon.extensions.isZero
+import com.radixdlt.sargon.extensions.minus
+import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -28,7 +35,10 @@ import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.sumOf
+import rdx.works.core.domain.toDecimal192OrNull
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules
@@ -36,7 +46,6 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -109,10 +118,10 @@ class TransferViewModel @Inject constructor(
         val spentAmount = _state.value.targetAccounts
             .filterNot { it.address == account.address }
             .sumOf { it.amountSpent(fungibleAsset) }
-        val remainingAmount = (maxAmount - spentAmount).coerceAtLeast(BigDecimal.ZERO)
-        val remainingAmountString = remainingAmount.toPlainString()
+        val remainingAmount = (maxAmount - spentAmount).clamped
+        val remainingAmountString = remainingAmount.string
 
-        if (fungibleAsset.resource.isXrd && remainingAmount > BigDecimal.ZERO) {
+        if (fungibleAsset.resource.isXrd && remainingAmount > 0.toDecimal192()) {
             _state.update {
                 it.copy(
                     maxXrdError = State.MaxAmountMessage(
@@ -145,7 +154,7 @@ class TransferViewModel @Inject constructor(
                 state.updateAssetAmount(
                     account = maxXrdError.account,
                     asset = fungibleAsset,
-                    amountString = remainingAmountString.toPlainString()
+                    amountString = remainingAmountString.string
                 )
                     .copy(
                         maxXrdError = null
@@ -162,7 +171,7 @@ class TransferViewModel @Inject constructor(
                     state.updateAssetAmount(
                         account = maxXrdError.account,
                         asset = fungibleAsset,
-                        amountString = maxXrdError.maxAccountAmount.toPlainString()
+                        amountString = maxXrdError.maxAccountAmount.string
                     )
                         .copy(
                             maxXrdError = null
@@ -315,14 +324,14 @@ class TransferViewModel @Inject constructor(
         ).withCheckedBalances()
 
         private fun withCheckedBalances(): State {
-            val fungibleBalances = mutableMapOf<Resource.FungibleResource, BigDecimal>()
+            val fungibleBalances = mutableMapOf<Resource.FungibleResource, Decimal192>()
             val nonFungibleBalances = mutableMapOf<Resource.NonFungibleResource.Item, Int>()
 
             targetAccounts
                 .map { it.spendingAssets.filterIsInstance<SpendingAsset.Fungible>() }
                 .flatten()
                 .forEach { fungible ->
-                    val spentAmount = fungibleBalances[fungible.resource] ?: BigDecimal.ZERO
+                    val spentAmount = fungibleBalances[fungible.resource].orZero()
                     fungibleBalances[fungible.resource] = spentAmount + fungible.amountDecimal
                 }
 
@@ -342,8 +351,8 @@ class TransferViewModel @Inject constructor(
                                 is SpendingAsset.Fungible -> asset.copy(
                                     exceedingBalance = fungibleBalances.getOrDefault(
                                         asset.resource,
-                                        BigDecimal.ZERO
-                                    ) > asset.resource.ownedAmount
+                                        0.toDecimal192()
+                                    ) > asset.resource.ownedAmount.orZero()
                                 )
 
                                 is SpendingAsset.NFT -> asset.copy(
@@ -463,15 +472,15 @@ class TransferViewModel @Inject constructor(
         }
 
         data class MaxAmountMessage(
-            val maxAccountAmount: BigDecimal,
+            val maxAccountAmount: Decimal192,
             val account: TargetAccount,
             val asset: SpendingAsset
         ) {
-            val amountWithoutFees: BigDecimal
-                get() = maxAccountAmount - BigDecimal.ONE
+            val amountWithoutFees: Decimal192
+                get() = maxAccountAmount - 1.toDecimal192()
 
             val maxAccountAmountLessThanFee: Boolean
-                get() = maxAccountAmount < BigDecimal.ONE
+                get() = maxAccountAmount < 1.toDecimal192()
         }
     }
 }
@@ -500,10 +509,10 @@ sealed class TargetAccount {
     val factorSourceId: FactorSource.FactorSourceID.FromHash?
         get() = (this as? Owned)?.account?.factorSourceId as? FactorSource.FactorSourceID.FromHash
 
-    fun amountSpent(fungibleAsset: SpendingAsset.Fungible): BigDecimal = spendingAssets
+    fun amountSpent(fungibleAsset: SpendingAsset.Fungible): Decimal192 = spendingAssets
         .filterIsInstance<SpendingAsset.Fungible>()
         .find { it.resourceAddress == fungibleAsset.resourceAddress }
-        ?.amountDecimal ?: BigDecimal.ZERO
+        ?.amountDecimal.orZero()
 
     fun updateAssets(onUpdate: (ImmutableSet<SpendingAsset>) -> ImmutableSet<SpendingAsset>): TargetAccount {
         return when (this) {
@@ -597,10 +606,10 @@ sealed class SpendingAsset {
             get() = resourceAddress.string
 
         override val isValidForSubmission: Boolean
-            get() = !exceedingBalance && amountString.isNotEmpty() && (resource.isXrd || amountDecimal != BigDecimal.ZERO)
+            get() = !exceedingBalance && amountString.isNotEmpty() && (resource.isXrd || !amountDecimal.isZero)
 
-        val amountDecimal: BigDecimal
-            get() = amountString.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val amountDecimal: Decimal192
+            get() = amountString.toDecimal192OrNull().orZero()
     }
 
     data class NFT(

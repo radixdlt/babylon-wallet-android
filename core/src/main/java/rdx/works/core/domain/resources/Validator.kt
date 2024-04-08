@@ -1,10 +1,12 @@
 package rdx.works.core.domain.resources
 
 import android.net.Uri
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.Sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.resources.metadata.Metadata
@@ -12,11 +14,10 @@ import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.description
 import rdx.works.core.domain.resources.metadata.iconUrl
 import rdx.works.core.domain.resources.metadata.name
-import java.math.BigDecimal
 
 data class Validator(
     val address: ValidatorAddress,
-    val totalXrdStake: BigDecimal?,
+    val totalXrdStake: Decimal192?,
     val stakeUnitResourceAddress: ResourceAddress? = null,
     val claimTokenResourceAddress: ResourceAddress? = null,
     val metadata: List<Metadata> = emptyList()
@@ -35,7 +36,7 @@ data class Validator(
         val sampleMainnet: Sample<Validator> = object : Sample<Validator> {
             override fun invoke(): Validator = Validator(
                 address = ValidatorAddress.sampleMainnet(),
-                totalXrdStake = 10000.toBigDecimal(),
+                totalXrdStake = 10000.toDecimal192(),
                 stakeUnitResourceAddress = ResourceAddress.sampleMainnet.candy,
                 claimTokenResourceAddress = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
                 metadata = listOf(
@@ -64,7 +65,7 @@ data class Validator(
 
             override fun other(): Validator = Validator(
                 address = ValidatorAddress.sampleMainnet(),
-                totalXrdStake = 20000.toBigDecimal(),
+                totalXrdStake = 20000.toDecimal192(),
                 stakeUnitResourceAddress = ResourceAddress.sampleMainnet.candy,
                 claimTokenResourceAddress = ResourceAddress.sampleMainnet.nonFungibleGCMembership,
                 metadata = listOf(

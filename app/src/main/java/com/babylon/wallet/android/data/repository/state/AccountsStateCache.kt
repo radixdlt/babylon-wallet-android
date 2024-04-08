@@ -49,6 +49,7 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.AccountDetails
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
@@ -61,7 +62,6 @@ import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import timber.log.Timber
-import java.math.BigDecimal
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -145,7 +145,7 @@ class AccountsStateCache @Inject constructor(
             val vaultsWithAmounts = api.fetchVaultDetails(accountsWithXRDVaults.mapNotNull { it.value }.toSet())
 
             accountsWithXRDVaults.mapValues { entry ->
-                entry.value?.let { vaultsWithAmounts[it] } ?: BigDecimal.ZERO
+                entry.value?.let { vaultsWithAmounts[it] }.orZero()
             }
         }
     }

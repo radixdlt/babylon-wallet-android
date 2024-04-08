@@ -56,7 +56,7 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.coroutines.launch
-import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -163,11 +163,11 @@ fun TransferContent(
                 messageText = stringResource(id = R.string.assetTransfer_maxAmountDialog_body),
                 confirmText = stringResource(
                     id = R.string.assetTransfer_maxAmountDialog_sendAllButton,
-                    error.maxAccountAmount.displayableQuantity()
+                    error.maxAccountAmount.formatted()
                 ),
                 dismissText = stringResource(
                     id = R.string.assetTransfer_maxAmountDialog_saveXrdForFeeButton,
-                    error.amountWithoutFees.displayableQuantity()
+                    error.amountWithoutFees.formatted()
                 )
             )
         }

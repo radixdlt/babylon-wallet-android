@@ -32,7 +32,6 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.logNonFatalException
 import rdx.works.core.then
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.sargon.toDecimal192
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -260,7 +259,7 @@ class TransactionSubmitDelegate @Inject constructor(
             val assertion = transferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount ?: return@mapNotNull null
             val resource = transferable.transferable.resource as? Resource.FungibleResource ?: return@mapNotNull null
             TransactionGuarantee(
-                amount = assertion.amount.toDecimal192(),
+                amount = assertion.amount,
                 instructionIndex = assertion.instructionIndex.toULong(),
                 resourceAddress = resource.address,
                 resourceDivisibility = resource.divisibility?.toUByte()

@@ -2,6 +2,7 @@ package rdx.works.core.domain.resources
 
 import android.net.Uri
 import com.radixdlt.derivation.model.NetworkId
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
@@ -12,8 +13,10 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.intId
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.xrd
 import com.radixdlt.sargon.samples.SampleWithRandomValues
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -31,7 +34,6 @@ import rdx.works.core.domain.resources.metadata.poolAddress
 import rdx.works.core.domain.resources.metadata.symbol
 import rdx.works.core.domain.resources.metadata.tags
 import rdx.works.core.domain.resources.metadata.validatorAddress
-import java.math.BigDecimal
 import kotlin.random.Random
 
 sealed class Resource {
@@ -49,10 +51,10 @@ sealed class Resource {
 
     data class FungibleResource(
         override val address: ResourceAddress,
-        val ownedAmount: BigDecimal?,
+        val ownedAmount: Decimal192?,
         private val assetBehaviours: AssetBehaviours? = null,
-        val currentSupply: BigDecimal? = null,
-        val divisibility: Int? = null,
+        val currentSupply: Decimal192? = null,
+        val divisibility: UByte? = null,
         override val metadata: List<Metadata> = emptyList()
     ) : Resource(), Comparable<FungibleResource> {
         override val name: String by lazy {
@@ -217,7 +219,7 @@ sealed class Resource {
                 metadata.keyImageUrl()
             }
 
-            val claimAmountXrd: BigDecimal? by lazy {
+            val claimAmountXrd: Decimal192? by lazy {
                 metadata.claimAmount()
             }
 
@@ -315,7 +317,7 @@ val Resource.FungibleResource.Companion.sampleMainnet
     get() = object : SampleWithRandomValues<Resource.FungibleResource> {
         override fun invoke(): Resource.FungibleResource = Resource.FungibleResource(
             address = ResourceAddress.sampleMainnet.xrd,
-            ownedAmount = BigDecimal.TEN,
+            ownedAmount = Decimal192.sample(),
             metadata = listOf(
                 Metadata.Primitive(
                     key = ExplicitMetadataKey.NAME.key,
@@ -332,7 +334,7 @@ val Resource.FungibleResource.Companion.sampleMainnet
 
         override fun other(): Resource.FungibleResource = Resource.FungibleResource(
             address = ResourceAddress.sampleMainnet.candy,
-            ownedAmount = BigDecimal.valueOf(100),
+            ownedAmount = Decimal192.sample.other(),
             metadata = listOf(
                 Metadata.Primitive(
                     key = ExplicitMetadataKey.NAME.key,
@@ -349,7 +351,7 @@ val Resource.FungibleResource.Companion.sampleMainnet
 
         override fun random(): Resource.FungibleResource = Resource.FungibleResource(
             address = ResourceAddress.sampleMainnet.random(),
-            ownedAmount = BigDecimal.valueOf(Random.nextLong(10000)),
+            ownedAmount = Random.nextDouble().toDecimal192(),
             metadata = with(Random.nextInt()) {
                 listOf(
                     Metadata.Primitive(

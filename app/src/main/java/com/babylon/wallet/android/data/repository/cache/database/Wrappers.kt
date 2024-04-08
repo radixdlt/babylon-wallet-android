@@ -3,12 +3,12 @@ package com.babylon.wallet.android.data.repository.cache.database
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.resources.AccountDetails
 import rdx.works.core.domain.resources.metadata.AccountType
-import java.math.BigDecimal
 import java.time.Instant
 
 data class AccountPortfolioResponse(
@@ -23,7 +23,7 @@ data class AccountPortfolioResponse(
     @ColumnInfo("first_transaction_date")
     val firstTransactionDate: Instant?,
     // From AccountResourceJoin
-    val amount: BigDecimal?,
+    val amount: Decimal192?,
 
     // From ResourceEntity (@Embed does not work here since making ResourceEntity nullable does not work)
     @ColumnInfo("address")
@@ -35,7 +35,7 @@ data class AccountPortfolioResponse(
     private val poolAddress: PoolAddress?,
     private val divisibility: Int?,
     private val behaviours: BehavioursColumn?,
-    private val supply: BigDecimal?,
+    private val supply: Decimal192?,
     private val metadata: MetadataColumn?,
     @ColumnInfo("synced")
     private val resourceSynced: Instant?
@@ -77,7 +77,7 @@ data class PoolWithResourceResponse(
     val accountStateVersion: Long?,
     @ColumnInfo("pool_metadata")
     val poolMetadata: MetadataColumn?,
-    val amount: BigDecimal?,
+    val amount: Decimal192?,
 
     // From ResourceEntity (@Embed does not work here since making ResourceEntity nullable does not work)
     @ColumnInfo("address")
@@ -89,7 +89,7 @@ data class PoolWithResourceResponse(
     private val poolAddress: PoolAddress?,
     private val divisibility: Int?,
     private val behaviours: BehavioursColumn?,
-    private val supply: BigDecimal?,
+    private val supply: Decimal192?,
     private val metadata: MetadataColumn?,
     @ColumnInfo("synced")
     private val resourceSynced: Instant?

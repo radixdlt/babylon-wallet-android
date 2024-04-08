@@ -26,14 +26,14 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
-import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.Resource
-import java.math.BigDecimal
 
 fun LazyListScope.poolUnitsTab(
     assetsViewData: AssetsViewData,
@@ -159,7 +159,7 @@ private fun PoolUnitItem(
 @Composable
 fun PoolResourcesValues(
     modifier: Modifier = Modifier,
-    resources: ImmutableMap<Resource.FungibleResource, BigDecimal?>,
+    resources: ImmutableMap<Resource.FungibleResource, Decimal192?>,
     poolUnitPrice: AssetPrice.PoolUnitPrice?,
     isLoadingBalance: Boolean,
     isCompact: Boolean = true
@@ -189,7 +189,7 @@ fun PoolResourcesValues(
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = resourceWithAmount.value?.displayableQuantity().orEmpty(),
+                        text = resourceWithAmount.value?.formatted().orEmpty(),
                         style = if (isCompact) RadixTheme.typography.body1HighImportance else RadixTheme.typography.secondaryHeader,
                         color = RadixTheme.colors.gray1,
                         maxLines = 1

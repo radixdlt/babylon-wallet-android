@@ -13,6 +13,7 @@ import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -76,7 +77,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
                     )
                     val claimNFTData = claimsNonFungibleData.find { it.nonFungibleGlobalId.asStr() == globalId.string }?.data
                         ?: error("No claim data found")
-                    val claimAmount = claimNFTData.claimAmount.asStr().toBigDecimal()
+                    val claimAmount = claimNFTData.claimAmount.asStr().toDecimal192()
                     val claimEpoch = claimNFTData.claimEpoch
                     Resource.NonFungibleResource.Item(
                         collectionAddress = resourceAddress,
@@ -84,7 +85,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
                         metadata = listOf(
                             Metadata.Primitive(
                                 ExplicitMetadataKey.CLAIM_AMOUNT.key,
-                                claimAmount.toPlainString(),
+                                claimAmount.string,
                                 MetadataType.Decimal
                             ),
                             Metadata.Primitive(

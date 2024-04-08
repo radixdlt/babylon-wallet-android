@@ -33,7 +33,8 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.extensions.string
+import rdx.works.core.domain.formatted
 import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -427,7 +428,7 @@ fun NetworkFeesDefaultView(
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.defaultTransactionFee?.displayableQuantity().orEmpty()
+                        transactionFees?.defaultTransactionFee?.formatted().orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
@@ -615,7 +616,7 @@ fun NetworkFeesAdvancedView(
                     color = RadixTheme.colors.gray2
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                val effectiveTip = transactionFees?.effectiveTip?.displayableQuantity().orEmpty()
+                val effectiveTip = transactionFees?.effectiveTip?.formatted().orEmpty()
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
@@ -671,7 +672,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.feePaddingAmountForCalculation?.displayableQuantity().orEmpty()
+                        transactionFees?.feePaddingAmountForCalculation?.formatted().orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
@@ -788,7 +789,7 @@ fun NetworkFeesAdvancedView(
                 Text(
                     text = stringResource(
                         id = R.string.transactionReview_xrdAmount,
-                        transactionFees?.transactionFeeToLock?.displayableQuantity().orEmpty()
+                        transactionFees?.transactionFeeToLock?.formatted().orEmpty()
                     ),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,

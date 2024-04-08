@@ -53,7 +53,9 @@ import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.Runs
@@ -80,7 +82,6 @@ import org.junit.Test
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
-import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Badge
@@ -92,7 +93,6 @@ import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.profile.ret.crypto.PrivateKey
-import java.math.BigDecimal
 import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -397,7 +397,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         advanceUntilIdle()
         vm.onFeePaddingAmountChanged(feePaddingAmount)
 
-        assertEquals(BigDecimal(expectedFeeLock), vm.state.value.transactionFees.transactionFeeToLock)
+        assertEquals(expectedFeeLock.toDecimal192(), vm.state.value.transactionFees.transactionFeeToLock)
     }
 
     @Test
@@ -405,7 +405,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         val tipPercentage = "25"
 
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "0.9019403"
+        val expectedFeeLock = 0.9019403.toDecimal192()
 
         every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
@@ -427,7 +427,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         advanceUntilIdle()
         vm.onTipPercentageChanged(tipPercentage)
 
-        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity())
+        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
     }
 
     @Test
@@ -436,7 +436,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         val tipPercentage = "25"
 
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "2.3678038"
+        val expectedFeeLock = 2.3678038.toDecimal192()
 
         every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
@@ -459,7 +459,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         vm.onFeePaddingAmountChanged(feePaddingAmount)
         vm.onTipPercentageChanged(tipPercentage)
 
-        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity())
+        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
     }
 
     private fun previewResponse() = TransactionPreviewResponse(

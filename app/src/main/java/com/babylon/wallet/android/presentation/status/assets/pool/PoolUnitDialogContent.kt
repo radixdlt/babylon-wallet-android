@@ -36,11 +36,11 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.AddressR
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.collections.immutable.toImmutableMap
-import rdx.works.core.displayableQuantity
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.PoolUnit
-import java.math.BigDecimal
+import rdx.works.core.domain.formatted
 
 @Composable
 fun PoolUnitDialogContent(
@@ -185,8 +185,8 @@ fun PoolUnitDialogContent(
                     .radixPlaceholder(visible = poolUnit?.stake?.currentSupply == null),
                 text = when (val supply = poolUnit?.stake?.currentSupply) {
                     null -> stringResource(id = R.string.empty)
-                    BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                    else -> supply.displayableQuantity()
+                    0.toDecimal192() -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                    else -> supply.formatted()
                 },
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,

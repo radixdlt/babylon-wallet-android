@@ -13,7 +13,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.formatted
+import rdx.works.core.domain.formattedPlain
 import rdx.works.profile.ret.crypto.PrivateKey
 
 class FeesResolverTest {
@@ -73,7 +74,7 @@ class FeesResolverTest {
 
         assertEquals("0.1283795", fees.networkFeeDisplayed)
         assertEquals("0.2", fees.defaultRoyaltyFeesDisplayed)
-        assertEquals("0.3283795", fees.defaultTransactionFee.displayableQuantity())
+        assertEquals("0.3283795", fees.defaultTransactionFee.formatted())
     }
 
     @Test
@@ -99,7 +100,7 @@ class FeesResolverTest {
 
         assertEquals("0.5283795", fees.networkFeeDisplayed)
         assertEquals("0.2", fees.defaultRoyaltyFeesDisplayed)
-        assertEquals("0.7283795", fees.defaultTransactionFee.displayableQuantity())
+        assertEquals("0.7283795", fees.defaultTransactionFee.formatted())
     }
 
     @Test
@@ -125,7 +126,7 @@ class FeesResolverTest {
 
         assertEquals("0.0283795", fees.networkFeeDisplayed)
         assertEquals("0.2", fees.defaultRoyaltyFeesDisplayed)
-        assertEquals("0.2283795", fees.defaultTransactionFee.displayableQuantity())
+        assertEquals("0.2283795", fees.defaultTransactionFee.formatted())
     }
 
     @Test
@@ -151,7 +152,7 @@ class FeesResolverTest {
 
         assertNull(fees.networkFeeDisplayed)
         assertEquals("0", fees.defaultRoyaltyFeesDisplayed)
-        assertEquals("0", fees.defaultTransactionFee.displayableQuantity())
+        assertEquals("0", fees.defaultTransactionFee.formattedPlain())
     }
 
     @Test
@@ -189,6 +190,6 @@ class FeesResolverTest {
 
         assertEquals("1.040813", fees.networkFeeDisplayed)
         assertEquals("0.2", fees.defaultRoyaltyFeesDisplayed)
-        assertEquals("1.240813", fees.defaultTransactionFee.displayableQuantity())
+        assertEquals("1.240813", fees.defaultTransactionFee.formatted())
     }
 }

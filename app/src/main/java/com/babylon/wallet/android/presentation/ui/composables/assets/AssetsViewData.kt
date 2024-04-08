@@ -9,7 +9,8 @@ import rdx.works.core.domain.assets.StakeSummary
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.assets.TokensPriceSorter
 import rdx.works.core.domain.assets.ValidatorWithStakes
-import java.math.BigDecimal
+import rdx.works.core.domain.orZero
+import rdx.works.core.domain.sumOf
 
 data class AssetsViewData(
     val epoch: Long?,
@@ -37,16 +38,12 @@ data class AssetsViewData(
         if (epoch == null || validatorsWithStakes.any { !it.isDetailsAvailable }) return@lazy null
 
         StakeSummary(
-            staked = validatorsWithStakes.sumOf { it.stakeValue() ?: BigDecimal.ZERO },
+            staked = validatorsWithStakes.sumOf { it.stakeValue().orZero() },
             unstaking = validatorsWithStakes.sumOf { validator ->
-                validator.stakeClaimNft?.unstakingNFTs(epoch)?.sumOf { item ->
-                    item.claimAmountXrd ?: BigDecimal.ZERO
-                } ?: BigDecimal.ZERO
+                validator.stakeClaimNft?.unstakingNFTs(epoch)?.sumOf { item -> item.claimAmountXrd.orZero() }.orZero()
             },
             readyToClaim = validatorsWithStakes.sumOf { validator ->
-                validator.stakeClaimNft?.readyToClaimNFTs(epoch)?.sumOf { item ->
-                    item.claimAmountXrd ?: BigDecimal.ZERO
-                } ?: BigDecimal.ZERO
+                validator.stakeClaimNft?.readyToClaimNFTs(epoch)?.sumOf { item -> item.claimAmountXrd.orZero() }.orZero()
             }
         )
     }

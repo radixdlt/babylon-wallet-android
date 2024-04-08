@@ -23,6 +23,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.repository.toResult
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
@@ -37,7 +38,7 @@ import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.metadata.claimedEntities
 import rdx.works.core.domain.resources.metadata.dAppDefinition
 import rdx.works.core.domain.resources.metadata.poolUnit
-import java.math.BigDecimal
+import rdx.works.core.domain.toDecimal192OrNull
 
 const val ENTITY_DETAILS_PAGE_LIMIT = 20
 const val NFT_DETAILS_PAGE_LIMIT = 50
@@ -239,12 +240,12 @@ data class ValidatorsResponse(
     val stateVersion: Long? = null
 )
 
-suspend fun StateApi.fetchVaultDetails(vaultAddresses: Set<VaultAddress>): Map<VaultAddress, BigDecimal> {
-    val vaultAmount = mutableMapOf<VaultAddress, BigDecimal>()
+suspend fun StateApi.fetchVaultDetails(vaultAddresses: Set<VaultAddress>): Map<VaultAddress, Decimal192> {
+    val vaultAmount = mutableMapOf<VaultAddress, Decimal192>()
     paginateDetails(vaultAddresses.map { it.string }.toSet()) { page ->
         page.items.forEach { item ->
             val vaultDetails = item.details as? StateEntityDetailsResponseFungibleVaultDetails ?: return@forEach
-            val amount = vaultDetails.balance.amount.toBigDecimalOrNull() ?: return@forEach
+            val amount = vaultDetails.balance.amount.toDecimal192OrNull() ?: return@forEach
             vaultAmount[VaultAddress.init(vaultDetails.balance.vaultAddress)] = amount
         }
     }

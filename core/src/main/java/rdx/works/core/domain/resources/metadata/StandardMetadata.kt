@@ -4,12 +4,13 @@ package rdx.works.core.domain.resources.metadata
 
 import android.net.Uri
 import androidx.core.net.toUri
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.resources.ExplicitMetadataKey
-import java.math.BigDecimal
+import rdx.works.core.domain.toDecimal192OrNull
 
 private fun List<Metadata>.findPrimitive(key: ExplicitMetadataKey, type: MetadataType): Metadata.Primitive? = find {
     it.key == key.key && (it as? Metadata.Primitive)?.valueType == type
@@ -74,10 +75,10 @@ fun List<Metadata>.poolUnit(): ResourceAddress? = findPrimitive(
     type = MetadataType.Address
 )?.value?.let { runCatching { ResourceAddress.init(it) }.getOrNull() }
 
-fun List<Metadata>.claimAmount(): BigDecimal? = findPrimitive(
+fun List<Metadata>.claimAmount(): Decimal192? = findPrimitive(
     key = ExplicitMetadataKey.CLAIM_AMOUNT,
     type = MetadataType.Decimal
-)?.value?.toBigDecimalOrNull()
+)?.value?.toDecimal192OrNull()
 
 fun List<Metadata>.claimEpoch(): Long? = findPrimitive(
     key = ExplicitMetadataKey.CLAIM_EPOCH,
