@@ -1,12 +1,12 @@
 package rdx.works.core
 
-import com.radixdlt.ret.hash
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.toBagOfBytes
 
 @OptIn(ExperimentalUnsignedTypes::class)
 fun List<UByte>.toByteArray() = toUByteArray().toByteArray()
 
-fun ByteArray.blake2Hash(): ByteArray = hash(data = this).bytes()
-
-fun String.blake2Hash(): ByteArray = toByteArray().blake2Hash()
+fun ByteArray.hash(): Exactly32Bytes = toBagOfBytes().hash()
 
 fun ByteArray.toHexString(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }

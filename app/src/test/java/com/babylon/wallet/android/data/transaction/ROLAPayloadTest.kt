@@ -2,13 +2,18 @@ package com.babylon.wallet.android.data.transaction
 
 import android.util.Log
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
+import com.radixdlt.sargon.extensions.bytes
+import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.toBagOfBytes
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.blake2Hash
 import rdx.works.core.decodeHex
+import rdx.works.core.hash
+import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
 import java.io.File
 
@@ -37,9 +42,10 @@ internal class ROLAPayloadTest {
             testVectors = origins.flatMap { origin ->
                 accounts.flatMap { accountAddress ->
                     (0 until 10).map { seed ->
-                        val challenge = (origin.toByteArray() + accountAddress.toByteArray() + seed.toUByte().toByte()).blake2Hash()
+                        val challenge = (origin.toByteArray() + accountAddress.toByteArray() + seed.toUByte().toByte()).toBagOfBytes()
+                            .hash().bytes.toByteArray()
                         val payloadHex = SignRequest.SignAuthChallengeRequest(challenge.toHexString(), origin, accountAddress).payloadHex
-                        val blakeHashOfPayload = payloadHex.decodeHex().blake2Hash().toHexString()
+                        val blakeHashOfPayload = payloadHex.decodeHex().hash().hex
                         TestVector(payloadHex, blakeHashOfPayload, accountAddress, origin, challenge.toHexString())
                     }
                 }
@@ -59,7 +65,7 @@ internal class ROLAPayloadTest {
             )
 
             Assert.assertEquals(testVector.payloadToHash, signRequest.payloadHex)
-            Assert.assertEquals(testVector.blakeHashOfPayload, signRequest.dataToSign.blake2Hash().toHexString())
+            Assert.assertEquals(testVector.blakeHashOfPayload, signRequest.dataToSign.hash().hex)
         }
     }
 

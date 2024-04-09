@@ -1,11 +1,11 @@
 package rdx.works.peerdroid.messagechunking
 
+import com.radixdlt.sargon.extensions.hex
 import io.ktor.util.decodeBase64String
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
 import org.junit.Test
-import rdx.works.core.blake2Hash
-import rdx.works.core.toHexString
+import rdx.works.core.hash
 import rdx.works.peerdroid.data.PackageDto
 import kotlin.random.Random
 import kotlin.test.assertEquals
@@ -71,7 +71,7 @@ class MessageSplitterTest {
         // then
         val metadataPackage = result.first() as PackageDto.MetaData
 
-        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.blake2Hash().toHexString()))
+        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.hash().hex))
     }
 
     @Test
@@ -119,7 +119,7 @@ class MessageSplitterTest {
         // then
         val metadataPackage = result.first() as PackageDto.MetaData
 
-        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.blake2Hash().toHexString()))
+        Assert.assertTrue(metadataPackage.hashOfMessage.contentEquals(byteArray.hash().hex))
     }
 
     @Test

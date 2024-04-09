@@ -11,7 +11,8 @@ import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
-import com.radixdlt.hex.extensions.toHexString
+import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.hex
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
@@ -22,7 +23,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.core.blake2Hash
+import rdx.works.core.hash
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
@@ -115,7 +116,7 @@ class PeerdroidClientImpl @Inject constructor(
             connectionPassword = connectionPassword
         )
         encryptionKey?.let {
-            val connectionIdHolder = ConnectionIdHolder(id = it.blake2Hash().toHexString())
+            val connectionIdHolder = ConnectionIdHolder(id = it.hash().hex)
             peerdroidConnector.deleteConnector(connectionIdHolder)
         } ?: Timber.e("\uD83E\uDD16 Failed to delete connector because connection password is wrong")
     }

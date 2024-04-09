@@ -1,8 +1,8 @@
 package rdx.works.profile.data.utils
 
 import com.radixdlt.extensions.removeLeadingZero
-import com.radixdlt.hex.extensions.toHexString
-import rdx.works.core.blake2Hash
+import com.radixdlt.sargon.extensions.hex
+import rdx.works.core.hash
 
 /**
  * Return Strong and unique identifier for FactorSourceID / FactorInstanceID
@@ -12,4 +12,4 @@ import rdx.works.core.blake2Hash
  * (by adding zero byte at front, to be the same size as for Secp256k1 elliptic curve)
  * Then we use blake2 hash and get hex version.
 */
-fun ByteArray.hashToFactorId(): String = removeLeadingZero().blake2Hash().toHexString()
+fun ByteArray.hashToFactorId(): String = removeLeadingZero().hash().hex

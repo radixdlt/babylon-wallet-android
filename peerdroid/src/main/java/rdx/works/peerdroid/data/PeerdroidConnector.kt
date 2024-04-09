@@ -3,6 +3,8 @@
 package rdx.works.peerdroid.data
 
 import android.content.Context
+import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
@@ -29,8 +31,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import rdx.works.core.blake2Hash
-import rdx.works.core.toHexString
+import rdx.works.core.hash
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
@@ -108,7 +109,7 @@ internal class PeerdroidConnectorImpl(
         get() = _peerConnectionStatus
 
     override suspend fun connectToConnectorExtension(encryptionKey: ByteArray): Result<Unit> {
-        val connectionId = encryptionKey.blake2Hash().toHexString()
+        val connectionId = encryptionKey.hash().hex
 
         return withContext(ioDispatcher) {
             if (mapOfWebSockets.containsKey(ConnectionIdHolder(id = connectionId))) {
