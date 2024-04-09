@@ -1,5 +1,8 @@
 package com.babylon.wallet.android.data.repository.cache
 
+import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.toBagOfBytes
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -12,8 +15,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import rdx.works.core.InstantGenerator
-import rdx.works.core.blake2Hash
-import rdx.works.core.toHexString
+import rdx.works.core.hash
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import retrofit2.Call
@@ -38,7 +40,7 @@ internal class HttpCacheTest {
         coEvery { getCurrentGatewayUseCaseMock() } returns Radix.Gateway(url, Radix.Network.nebunet)
         val mockApiCall = mockApiCall(method = method, url = url)
         val mockSerializer = mockk<KSerializer<FakeResponse>>()
-        val key = arrayOf(method, url, "").contentToString().blake2Hash().toHexString()
+        val key = arrayOf(method, url, "").contentToString().toByteArray().hash().hex
 
         testedClass.store(mockApiCall, value, mockSerializer)
 

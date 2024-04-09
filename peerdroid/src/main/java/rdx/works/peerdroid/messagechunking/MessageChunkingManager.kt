@@ -1,7 +1,7 @@
 package rdx.works.peerdroid.messagechunking
 
-import rdx.works.core.blake2Hash
-import rdx.works.core.toHexString
+import com.radixdlt.sargon.extensions.hex
+import rdx.works.core.hash
 import rdx.works.peerdroid.data.PackageDto
 import timber.log.Timber
 
@@ -22,7 +22,7 @@ fun verifyAssembledMessage(
     expectedHashOfMessage: String
 ): Result<Unit> {
     return try {
-        if (!expectedHashOfMessage.contentEquals(assembledMessage.blake2Hash().toHexString())) {
+        if (!expectedHashOfMessage.contentEquals(assembledMessage.hash().hex)) {
             Timber.d("📯 🧱 failed to verify hash of assembled message: hash mismatch")
             Result.failure<Throwable>(
                 Throwable(ERROR_MESSAGE_HASHES_MISMATCH)

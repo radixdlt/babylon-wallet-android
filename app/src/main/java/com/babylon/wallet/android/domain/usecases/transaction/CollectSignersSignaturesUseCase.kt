@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
-import rdx.works.core.blake2Hash
 import rdx.works.core.decodeHex
+import rdx.works.core.hash
 import rdx.works.core.toByteArray
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
@@ -138,7 +138,7 @@ sealed interface SignRequest {
             get() = dataToSign.toHexString()
 
         override val hashedDataToSign: ByteArray
-            get() = dataToSign.blake2Hash()
+            get() = dataToSign.hash().bytes.toByteArray()
 
         companion object {
             const val ROLA_PAYLOAD_PREFIX = 0x52

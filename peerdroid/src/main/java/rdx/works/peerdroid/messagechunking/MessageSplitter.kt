@@ -1,9 +1,9 @@
 package rdx.works.peerdroid.messagechunking
 
+import com.radixdlt.sargon.extensions.hex
 import io.ktor.util.encodeBase64
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.blake2Hash
-import rdx.works.core.toHexString
+import rdx.works.core.hash
 import rdx.works.peerdroid.data.PackageDto
 import timber.log.Timber
 
@@ -30,7 +30,7 @@ fun ByteArray.splitMessage(chunkSize: Int): List<PackageDto> {
             PackageDto.MetaData(
                 messageId = messageId,
                 chunkCount = packages.count(),
-                hashOfMessage = blake2Hash().toHexString(),
+                hashOfMessage = hash().hex,
                 messageByteCount = messageSize
             )
         )
@@ -39,7 +39,7 @@ fun ByteArray.splitMessage(chunkSize: Int): List<PackageDto> {
             PackageDto.MetaData(
                 messageId = messageId,
                 chunkCount = 1,
-                hashOfMessage = blake2Hash().toHexString(),
+                hashOfMessage = hash().hex,
                 messageByteCount = messageSize
             )
         )

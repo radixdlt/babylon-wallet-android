@@ -1,6 +1,7 @@
 package rdx.works.peerdroid.data
 
 import android.content.Context
+import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
@@ -14,8 +15,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
-import rdx.works.core.blake2Hash
-import rdx.works.core.toHexString
+import rdx.works.core.hash
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
@@ -62,7 +62,7 @@ internal class PeerdroidLinkImpl(
         addConnectionDeferred = CompletableDeferred()
         peerConnectionDeferred = CompletableDeferred()
         // get connection id from encryption key
-        val connectionId = encryptionKey.blake2Hash().toHexString()
+        val connectionId = encryptionKey.hash().hex
         Timber.d("\uD83D\uDDFC️ start process to add a new link connector with connectionId: $connectionId")
 
         withContext(ioDispatcher) {

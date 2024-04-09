@@ -1,10 +1,10 @@
 package rdx.works.peerdroid.messagechunking
 
+import com.radixdlt.sargon.extensions.hex
 import org.junit.Assert
 import org.junit.Ignore
 import org.junit.Test
-import rdx.works.core.blake2Hash
-import rdx.works.core.toHexString
+import rdx.works.core.hash
 import rdx.works.peerdroid.data.PackageDto
 import kotlin.random.Random
 
@@ -16,7 +16,7 @@ class MessageChunkingTest {
         // given
         val oneMb = 1024 * 1024
         val oneMbByteArray = Random.nextBytes(oneMb)
-        val hashOfMessage = "abc".toByteArray().blake2Hash().toHexString()
+        val hashOfMessage = "abc".toByteArray().hash().hex
 
         // when
         val chunks = splitMessage(oneMbByteArray)
