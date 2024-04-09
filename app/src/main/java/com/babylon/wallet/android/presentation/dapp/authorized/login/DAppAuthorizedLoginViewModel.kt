@@ -263,7 +263,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleRequestError(exception: Throwable) {
+    private fun handleRequestError(exception: Throwable) {
         if (exception is RadixWalletException.DappRequestException) {
             logNonFatalException(exception)
             when (exception.cause) {
@@ -286,6 +286,13 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
+        val exception = (_state.value.failureDialog as? FailureDialogState.Open)?.dappRequestException ?: return@launch
+        respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
+            .onSuccess {
+                if (it is IncomingRequestResponse.SuccessRadixMobileConnect) {
+                    sendEvent(Event.OpenUrl(it.redirectUrl))
+                }
+            }
         _state.update { it.copy(failureDialog = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.interactionId)
@@ -586,13 +593,16 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     fun onAbortDappLogin(walletWalletErrorType: WalletErrorType = WalletErrorType.RejectedByUser) {
         viewModelScope.launch {
-            if (request.isInternalRequest()) {
-                incomingRequestRepository.requestHandled(request.interactionId)
-            } else {
+            incomingRequestRepository.requestHandled(request.interactionId)
+            if (!request.isInternal) {
                 respondToIncomingRequestUseCase.respondWithFailure(request, walletWalletErrorType)
+                    .onSuccess {
+                        if (it is IncomingRequestResponse.SuccessRadixMobileConnect) {
+                            sendEvent(Event.OpenUrl(it.redirectUrl))
+                        }
+                    }
             }
             sendEvent(Event.CloseLoginFlow)
-            incomingRequestRepository.requestHandled(requestId = args.interactionId)
         }
     }
 
@@ -689,7 +699,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         viewModelScope.launch {
             val selectedPersona = state.value.selectedPersona?.persona
             requireNotNull(selectedPersona)
-            if (request.isInternalRequest()) {
+            if (request.isInternal) {
                 mutex.withLock {
                     editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                 }
@@ -716,7 +726,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     }
                     if (result is IncomingRequestResponse.SuccessRadixMobileConnect) {
                         sendEvent(Event.OpenUrl(result.redirectUrl))
-                    } else if (!request.isInternalRequest()) {
+                    } else if (!request.isInternal) {
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
                                 requestId = request.interactionId,
@@ -725,40 +735,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         )
                     }
                     sendEvent(Event.LoginFlowCompleted)
-                }.onFailure { throwable ->
-                    handleRequestError(throwable)
-                    if (abortOnFailure) {
-                        onAbortDappLogin()
-                    }
-                }
-
-
-                buildAuthorizedDappResponseUseCase(
-                    request = request,
-                    selectedPersona = selectedPersona,
-                    oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull {
-                        getProfileUseCase.accountOnCurrentNetwork(it.address)
-                    },
-                    ongoingAccounts = state.value.selectedAccountsOngoing.mapNotNull {
-                        getProfileUseCase.accountOnCurrentNetwork(it.address)
-                    },
-                    ongoingSharedPersonaData = state.value.selectedOngoingPersonaData,
-                    onetimeSharedPersonaData = state.value.selectedOnetimePersonaData,
-                    deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-                ).onSuccess { response ->
-                    respondToIncomingRequestUseCase.respondWithSuccess(request, response)
-                    mutex.withLock {
-                        editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
-                    }
-                    sendEvent(Event.LoginFlowCompleted)
-                    if (!request.isInternalRequest()) {
-                        appEventBus.sendEvent(
-                            AppEvent.Status.DappInteraction(
-                                requestId = request.interactionId,
-                                dAppName = state.value.dapp?.name
-                            )
-                        )
-                    }
                 }.onFailure { throwable ->
                     handleRequestError(throwable)
                     if (abortOnFailure) {

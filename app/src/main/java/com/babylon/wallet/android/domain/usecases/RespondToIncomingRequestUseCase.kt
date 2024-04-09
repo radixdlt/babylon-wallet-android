@@ -1,20 +1,24 @@
 package com.babylon.wallet.android.domain.usecases
 
+import android.net.Uri
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
+import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
+import com.babylon.wallet.android.data.dapp.model.WalletTransactionResponseItems
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.repository.DappLinkRepository
 import com.babylon.wallet.android.data.repository.RcrRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.presentation.m2m.DappLink
+import com.babylon.wallet.android.utils.Constants
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
-import rdx.works.core.decodeHex
-import rdx.works.core.encrypt
-import rdx.works.core.toHexString
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class RespondToIncomingRequestUseCase @Inject constructor(
@@ -30,13 +34,18 @@ class RespondToIncomingRequestUseCase @Inject constructor(
         message: String? = null
     ) =
         withContext(ioDispatcher) {
+            val payload = Json.encodeToString(
+                WalletInteractionFailureResponse(
+                    interactionId = request.interactionId,
+                    error = error,
+                    message = message
+                )
+            )
             when (request.remoteEntityId) {
                 is MessageFromDataChannel.RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendWalletInteractionResponseFailure(
                         remoteConnectorId = request.remoteEntityId.value,
-                        requestId = request.interactionId,
-                        error = error,
-                        message = message
+                        payload = payload
                     ).fold(onSuccess = {
                         Result.success(IncomingRequestResponse.SuccessCE)
                     }, onFailure = {
@@ -45,13 +54,17 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                 }
 
                 is MessageFromDataChannel.RemoteEntityID.RadixMobileConnectRemoteEntityId -> {
+                    val link =
+                        dAppLinkRepository.getDappLink(request.remoteEntityId.value).getOrNull() ?: return@withContext Result.failure(
+                            IllegalStateException("No dapp link found for session id ${request.remoteEntityId.value}")
+                        )
                     rcrRepository.sendResponse(
                         sessionId = request.remoteEntityId.value,
-                        data = error.name
+                        data = payload
                     ).fold(onSuccess = {
                         Result.success(
                             IncomingRequestResponse.SuccessRadixMobileConnect(
-                                "${request.metadata.origin}?sessionId=${request.remoteEntityId.value}&interactionId=${request.interactionId}"
+                                buildResponseRedirectUrl(request, link)
                             )
                         )
                     }, onFailure = {
@@ -83,16 +96,13 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                         dAppLinkRepository.getDappLink(request.remoteEntityId.value).getOrNull() ?: return@withContext Result.failure(
                             IllegalStateException("No dapp link found for session id ${request.remoteEntityId.value}")
                         )
-                    val encryptedData =
-                        peerdroidRequestJson.encodeToString(response).toByteArray().encrypt(link.secret.value.decodeHex()).getOrThrow()
-                            .toHexString()
                     rcrRepository.sendResponse(
                         sessionId = request.remoteEntityId.value,
-                        data = encryptedData
+                        data = peerdroidRequestJson.encodeToString(response)
                     ).fold(onSuccess = {
                         Result.success(
                             IncomingRequestResponse.SuccessRadixMobileConnect(
-                                "${link.origin}?sessionId=${request.remoteEntityId.value}${link.callbackPath}"
+                                buildResponseRedirectUrl(request, link)
                             )
                         )
                     }, onFailure = {
@@ -107,27 +117,46 @@ class RespondToIncomingRequestUseCase @Inject constructor(
         txId: String
     ) =
         withContext(ioDispatcher) {
+            val response: WalletInteractionResponse = WalletInteractionSuccessResponse(
+                interactionId = request.interactionId,
+                items = WalletTransactionResponseItems(WalletTransactionResponseItems.SendTransactionResponseItem(txId))
+            )
+            val payload = peerdroidRequestJson.encodeToString(response)
             when (request.remoteEntityId) {
                 is MessageFromDataChannel.RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendTransactionWriteResponseSuccess(
                         remoteConnectorId = request.remoteEntityId.value,
-                        requestId = request.interactionId,
-                        txId = txId
+                        payload = payload
                     )
                 }
 
                 is MessageFromDataChannel.RemoteEntityID.RadixMobileConnectRemoteEntityId -> {
-//                    dAppLinkRepository.getDappLink(request.remoteEntityId.value).mapCatching { link ->
-//                        val encryptedData =
-//                            peerdroidRequestJson.encodeToString(response).toByteArray().encrypt(link.secret.value.decodeHex()).getOrThrow()
-//                                .toHexString()
-//                        rcrRepository.sendResponse(
-//                            sessionId = request.remoteEntityId.value,
-//                            data = encryptedData
-//                        ).getOrThrow()
-//                    }
+                    val link =
+                        dAppLinkRepository.getDappLink(request.remoteEntityId.value).getOrNull() ?: return@withContext Result.failure(
+                            IllegalStateException("No dapp link found for session id ${request.remoteEntityId.value}")
+                        )
+                    rcrRepository.sendResponse(
+                        sessionId = request.remoteEntityId.value,
+                        data = payload
+                    ).fold(onSuccess = {
+                        Result.success(
+                            IncomingRequestResponse.SuccessRadixMobileConnect(
+                                buildResponseRedirectUrl(request, link)
+                            )
+                        )
+                    }, onFailure = {
+                        Result.failure(it)
+                    })
                 }
             }
         }
 
+    private fun buildResponseRedirectUrl(
+        request: MessageFromDataChannel.IncomingRequest,
+        link: DappLink
+    ) = Uri.parse(request.metadata.origin).buildUpon().apply {
+        appendQueryParameter(Constants.RadixMobileConnect.CONNECT_URL_PARAM_SESSION_ID, request.remoteEntityId.value)
+        appendQueryParameter(Constants.RadixMobileConnect.CONNECT_URL_PARAM_INTERACTION_ID, request.interactionId)
+        fragment(link.callbackPath?.replace("#", ""))
+    }.build().toString()
 }

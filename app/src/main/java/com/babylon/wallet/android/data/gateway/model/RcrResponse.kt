@@ -19,9 +19,10 @@ object RcrResponseSerializer : KSerializer<RcrResponse> {
     override val descriptor: SerialDescriptor
         get() = delegateSerializer.descriptor
 
+    @Suppress("SwallowedException")
     override fun deserialize(decoder: Decoder): RcrResponse {
         return try {
-            val items = decoder.decodeNullableSerializableValue(delegateSerializer) ?: emptyList()
+            val items = decoder.decodeNullableSerializableValue(delegateSerializer).orEmpty()
             RcrResponse().apply {
                 addAll(items)
             }

@@ -9,5 +9,4 @@ import retrofit2.http.POST
 interface RcrApi {
     @POST("api/v1")
     fun executeRequest(@Body request: RcrRequest): Call<RcrResponse>
-
 }
