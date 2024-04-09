@@ -10,6 +10,9 @@ import com.babylon.wallet.android.presentation.account.settings.AccountSettingsV
 import com.babylon.wallet.android.presentation.account.settings.Event
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -39,7 +42,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     private val renameAccountDisplayNameUseCase = mockk<RenameAccountDisplayNameUseCase>()
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
     private val sampleProfile = sampleDataProvider.sampleProfile()
-    private val sampleAddress = sampleProfile.currentNetwork!!.accounts.first().address
+    private val sampleAddress = AccountAddress.init(sampleProfile.currentNetwork!!.accounts.first().address)
     private val eventBus = mockk<AppEventBus>()
     private val sampleTxId = "txId1"
 
@@ -61,7 +64,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         every { getFreeXrdUseCase.getFaucetState(any()) } returns flowOf(FaucetState.Available(true))
         coEvery { getFreeXrdUseCase(any()) } returns Result.success(sampleTxId)
         every { getProfileUseCase() } returns flowOf(sampleDataProvider.sampleProfile())
-        every { savedStateHandle.get<String>(ARG_ACCOUNT_SETTINGS_ADDRESS) } returns sampleAddress
+        every { savedStateHandle.get<String>(ARG_ACCOUNT_SETTINGS_ADDRESS) } returns sampleAddress.string
         coEvery { changeEntityVisibilityUseCase.hideAccount(any()) } just Runs
         coEvery { eventBus.sendEvent(any()) } just Runs
     }
