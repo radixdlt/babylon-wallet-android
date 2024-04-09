@@ -3,8 +3,8 @@ package rdx.works.core.domain.assets
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.isZero
+import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.toDecimal192
-import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 

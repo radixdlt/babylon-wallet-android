@@ -1,5 +1,7 @@
 package com.babylon.wallet.android.presentation.ui.composables.assets
 
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.sumOf
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.Assets
@@ -9,8 +11,6 @@ import rdx.works.core.domain.assets.StakeSummary
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.assets.TokensPriceSorter
 import rdx.works.core.domain.assets.ValidatorWithStakes
-import rdx.works.core.domain.orZero
-import rdx.works.core.domain.sumOf
 
 data class AssetsViewData(
     val epoch: Long?,

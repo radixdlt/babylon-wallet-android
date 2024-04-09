@@ -28,7 +28,7 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.name
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import rdx.works.core.domain.formatted
+import com.radixdlt.sargon.extensions.formatted
 
 @Composable
 fun TransferablePoolUnitItemContent(

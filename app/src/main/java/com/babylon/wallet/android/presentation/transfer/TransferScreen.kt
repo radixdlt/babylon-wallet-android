@@ -55,8 +55,8 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.formatted
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.pernetwork.Network
 

@@ -21,7 +21,7 @@ import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
-import rdx.works.core.domain.formatted
+import com.radixdlt.sargon.extensions.formatted
 
 @Composable
 fun NetworkFeeContent(

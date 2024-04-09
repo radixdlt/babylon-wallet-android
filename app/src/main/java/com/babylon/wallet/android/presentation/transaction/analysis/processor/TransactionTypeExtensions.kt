@@ -22,7 +22,9 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -30,12 +32,10 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Resource.NonFungibleResource.Item
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
-import rdx.works.core.domain.sumOf
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.pernetwork.Network
 

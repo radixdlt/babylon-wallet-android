@@ -11,12 +11,12 @@ import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.VaultAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.domain.assets.AssetBehaviour
 import rdx.works.core.domain.resources.metadata.Metadata
-import rdx.works.core.domain.toDecimal192OrNull
 import java.time.Instant
 
 @Serializable

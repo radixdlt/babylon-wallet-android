@@ -34,10 +34,10 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.AddressR
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.formatted
 
 @Composable
 fun FungibleDialogContent(

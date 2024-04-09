@@ -33,8 +33,8 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.string
-import rdx.works.core.domain.formatted
 import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalFoundationApi::class)

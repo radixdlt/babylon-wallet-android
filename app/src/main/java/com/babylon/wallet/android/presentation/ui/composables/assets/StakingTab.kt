@@ -40,14 +40,14 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.compareTo
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.ValidatorWithStakes
-import rdx.works.core.domain.formatted
-import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.toDouble

@@ -31,6 +31,7 @@ import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.VaultAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -38,7 +39,6 @@ import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.metadata.claimedEntities
 import rdx.works.core.domain.resources.metadata.dAppDefinition
 import rdx.works.core.domain.resources.metadata.poolUnit
-import rdx.works.core.domain.toDecimal192OrNull
 
 const val ENTITY_DETAILS_PAGE_LIMIT = 20
 const val NFT_DETAILS_PAGE_LIMIT = 50

@@ -5,8 +5,8 @@ import com.babylon.wallet.android.data.gateway.generated.models.FungibleResource
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregated
 import com.babylon.wallet.android.data.gateway.generated.models.FungibleResourcesCollectionItemVaultAggregatedVaultItem
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
-import rdx.works.core.domain.sumOf
 
 val FungibleResourcesCollectionItem.amountDecimal: Decimal192
     get() = when (this) {

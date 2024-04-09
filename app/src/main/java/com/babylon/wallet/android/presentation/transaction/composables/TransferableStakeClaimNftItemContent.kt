@@ -29,7 +29,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import rdx.works.core.domain.formatted
+import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 

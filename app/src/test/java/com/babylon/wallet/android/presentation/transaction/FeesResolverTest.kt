@@ -9,12 +9,12 @@ import com.radixdlt.ret.ExecutionSummary
 import com.radixdlt.ret.FeeLocks
 import com.radixdlt.ret.FeeSummary
 import com.radixdlt.ret.NewEntities
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.formattedPlain
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import rdx.works.core.domain.formatted
-import rdx.works.core.domain.formattedPlain
 import rdx.works.profile.ret.crypto.PrivateKey
 
 class FeesResolverTest {

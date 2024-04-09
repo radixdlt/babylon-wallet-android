@@ -9,8 +9,8 @@ import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import rdx.works.core.domain.resources.ExplicitMetadataKey
-import rdx.works.core.domain.toDecimal192OrNull
 
 private fun List<Metadata>.findPrimitive(key: ExplicitMetadataKey, type: MetadataType): Metadata.Primitive? = find {
     it.key == key.key && (it as? Metadata.Primitive)?.valueType == type

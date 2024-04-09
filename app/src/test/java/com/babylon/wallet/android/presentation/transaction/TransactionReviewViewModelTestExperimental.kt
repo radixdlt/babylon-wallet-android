@@ -21,7 +21,7 @@ import com.babylon.wallet.android.presentation.transaction.vectors.testViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.AssetsTransfersRecipient
+import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.CompiledNotarizedIntent
 import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
@@ -186,7 +186,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
                 addressOfSender = AccountAddress.init(withProfile.networks.first().accounts.first().address),
                 transfers = listOf(
                     PerRecipientAssetTransfer(
-                        recipient = AssetsTransfersRecipient.MyOwnAccount(value = withProfile.networks.first().accounts[1].toSargon()),
+                        recipient = AccountOrAddressOf.ProfileAccount(value = withProfile.networks.first().accounts[1].toSargon()),
                         fungibles = listOf(
                             PerRecipientFungibleTransfer(
                                 useTryDepositOrAbort = false,

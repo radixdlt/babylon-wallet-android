@@ -5,10 +5,10 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.div
 import com.radixdlt.sargon.extensions.isZero
+import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.samples.SampleWithRandomValues
-import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource

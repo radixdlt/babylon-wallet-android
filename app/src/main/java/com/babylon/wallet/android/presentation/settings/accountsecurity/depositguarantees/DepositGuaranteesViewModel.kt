@@ -7,15 +7,15 @@ import com.babylon.wallet.android.presentation.settings.accountsecurity.depositg
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.div
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.formatted
-import rdx.works.core.domain.toDecimal192OrNull
 import rdx.works.core.domain.toDouble
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.defaultDepositGuarantee

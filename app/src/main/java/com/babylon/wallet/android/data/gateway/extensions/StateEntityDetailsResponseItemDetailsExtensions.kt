@@ -14,9 +14,9 @@ import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import rdx.works.core.domain.assets.AssetBehaviours
 import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.domain.toDecimal192OrNull
 
 fun StateEntityDetailsResponseItemDetails.totalSupply(): Decimal192? {
     return when (val details = this) {
