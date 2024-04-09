@@ -143,33 +143,33 @@ class TransactionSubmitDelegate @Inject constructor(
             deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         ).then { notarizationResult ->
             submitTransactionUseCase(notarizationResult = notarizationResult)
-        }.onSuccess { notarisation ->
+        }.onSuccess { notarization ->
             _state.update {
                 it.copy(
                     isSubmitting = false,
-                    endEpoch = notarisation.endEpoch
+                    endEpoch = notarization.endEpoch
                 )
             }
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.InProgress(
                     requestId = transactionRequest.requestId,
-                    transactionId = notarisation.intentHash.bech32EncodedTxId,
+                    transactionId = notarization.intentHash.bech32EncodedTxId,
                     isInternal = transactionRequest.isInternal,
                     blockUntilComplete = transactionRequest.blockUntilComplete
                 )
             )
             transactionStatusClient.pollTransactionStatus(
-                txID = notarisation.intentHash.bech32EncodedTxId,
+                txID = notarization.intentHash.bech32EncodedTxId,
                 requestId = transactionRequest.requestId,
                 transactionType = transactionRequest.transactionType,
-                endEpoch = notarisation.endEpoch
+                endEpoch = notarization.endEpoch
             )
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionRequest.isInternal) {
                 dAppMessenger.sendTransactionWriteResponseSuccess(
                     remoteConnectorId = transactionRequest.remoteConnectorId,
                     requestId = transactionRequest.requestId,
-                    txId = notarisation.intentHash.bech32EncodedTxId
+                    txId = notarization.intentHash.bech32EncodedTxId
                 )
             }
         }.onFailure { throwable ->
