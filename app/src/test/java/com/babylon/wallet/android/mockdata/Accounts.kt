@@ -2,10 +2,12 @@ package com.babylon.wallet.android.mockdata
 
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.NonFungibleResourceAddress
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.MAX_DIVISIBILITY
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -17,6 +19,7 @@ import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Divisibility
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
@@ -138,7 +141,7 @@ val mockAccountsWithMockAssets = listOf(
                         address = mockStakeFungibleResourceAddress1,
                         ownedAmount = 31953.48992.toDecimal192(),
                         currentSupply = 5954986.901239.toDecimal192(),
-                        divisibility= 18u,
+                        divisibility= Divisibility(Decimal192.MAX_DIVISIBILITY),
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "cool pool unit", valueType = MetadataType.String),
                             Metadata.Primitive(key = ExplicitMetadataKey.POOL.key, value = mockPoolAddress1.string, valueType = MetadataType.Address)
@@ -179,7 +182,7 @@ val mockAccountsWithMockAssets = listOf(
                         address = mockStakeFungibleResourceAddress2,
                         ownedAmount = 31953.48992.toDecimal192(),
                         currentSupply = 5954986.901239.toDecimal192(),
-                        divisibility = 18u,
+                        divisibility = Divisibility(Decimal192.MAX_DIVISIBILITY),
                         metadata = listOf(
                             Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "cool pool unit", valueType = MetadataType.String),
                             Metadata.Primitive(key = ExplicitMetadataKey.POOL.key, value = mockPoolAddress2.string, valueType = MetadataType.Address)
