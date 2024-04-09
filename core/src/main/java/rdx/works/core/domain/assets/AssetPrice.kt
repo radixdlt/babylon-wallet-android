@@ -6,18 +6,20 @@ import android.icu.text.NumberFormat
 import android.icu.util.Currency
 import android.os.Build
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.isZero
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.sumOf
+import com.radixdlt.sargon.extensions.times
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.toDouble
 import java.util.Locale
 
 data class FiatPrice(
-    val price: Double,
+    val price: Decimal192,
     val currency: SupportedCurrency
 ) {
 
-    operator fun times(value: Decimal192): FiatPrice = times(value.toDouble())
-
-    operator fun times(value: Double): FiatPrice = FiatPrice(
+    operator fun times(value: Decimal192): FiatPrice = FiatPrice(
         price = price * value,
         currency = currency
     )
@@ -29,22 +31,22 @@ data class FiatPrice(
                     .unit(Currency.getInstance(currency.name))
                     .locale(Locale.getDefault())
                     .let { localizedNumberFormatter ->
-                        if (price == 0.0) {
+                        if (price.isZero) {
                             localizedNumberFormatter.precision(Precision.fixedFraction(NO_PRECISION))
                         } else {
                             localizedNumberFormatter
                         }
                     }
-                    .format(price)
+                    .format(price.toDouble())
                     .toString()
             } else {
                 val javaCurrency = Currency.getInstance(currency.name)
                 NumberFormat.getCurrencyInstance().apply {
                     currency = javaCurrency
-                    if (price == 0.0) {
+                    if (price.isZero) {
                         maximumFractionDigits = NO_PRECISION
                     }
-                }.format(price)
+                }.format(price.toDouble())
             }
         }
 
@@ -85,7 +87,7 @@ sealed class AssetPrice {
 
                 return FiatPrice(
                     price = prices.values.sumOf { fiatPrice ->
-                        fiatPrice?.price ?: 0.0
+                        fiatPrice?.price.orZero()
                     },
                     currency = currency
                 )
@@ -108,7 +110,7 @@ sealed class AssetPrice {
 
                 return FiatPrice(
                     price = prices.values.sumOf { fiatPrice ->
-                        fiatPrice?.price ?: 0.0
+                        fiatPrice?.price.orZero()
                     },
                     currency = currency
                 )

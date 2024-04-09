@@ -21,6 +21,9 @@ import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.plus
+import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -315,12 +318,12 @@ data class WalletUiState(
             } ?: false
             if (isAnyAccountTotalFailed) return null
 
-            var total = 0.0
+            var total = 0.toDecimal192()
             var currency = SupportedCurrency.USD
             accountsAddressesWithAssetsPrices?.values?.forEach {
                 it?.let { assetsPrices ->
                     assetsPrices.forEach { assetPrice ->
-                        total += assetPrice.price?.price ?: 0.0
+                        total += assetPrice.price?.price.orZero()
                         currency = assetPrice.price?.currency ?: SupportedCurrency.USD
                     }
                 }
@@ -340,7 +343,7 @@ data class WalletUiState(
             it.account.address == accountAddress
         }
         if (accountWithAssets?.assets?.ownsAnyAssetsThatContributeToBalance?.not() == true) {
-            return FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
+            return FiatPrice(price = 0.toDecimal192(), currency = SupportedCurrency.USD)
         }
 
         val assetsPrices = accountsAddressesWithAssetsPrices?.get(accountAddress) ?: return null
@@ -348,15 +351,15 @@ data class WalletUiState(
         val hasAtLeastOnePrice = assetsPrices.any { assetPrice -> assetPrice.price != null }
 
         return if (hasAtLeastOnePrice) {
-            var total = 0.0
+            var total = 0.toDecimal192()
             var currency = SupportedCurrency.USD
             assetsPrices.forEach { assetPrice ->
-                total += assetPrice.price?.price ?: 0.0
+                total += assetPrice.price?.price.orZero()
                 currency = assetPrice.price?.currency ?: SupportedCurrency.USD
             }
             FiatPrice(price = total, currency = currency)
         } else {
-            FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
+            FiatPrice(price = 0.toDecimal192(), currency = SupportedCurrency.USD)
         }
     }
 

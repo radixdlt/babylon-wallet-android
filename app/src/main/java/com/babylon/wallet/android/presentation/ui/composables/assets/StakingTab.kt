@@ -50,7 +50,6 @@ import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.domain.toDouble
 
 fun LazyListScope.stakingTab(
     assetsViewData: AssetsViewData,
@@ -160,7 +159,7 @@ private fun StakingSummary(
         val stakedFiatPrice = remember(stakeSummary, oneXrdPrice) {
             if (stakeSummary != null && oneXrdPrice != null && stakeSummary.hasStakedValue) {
                 FiatPrice(
-                    price = stakeSummary.staked.times(oneXrdPrice.price.toDecimal192()).toDouble(),
+                    price = stakeSummary.staked.times(oneXrdPrice.price),
                     currency = oneXrdPrice.currency
                 )
             } else {
@@ -171,7 +170,7 @@ private fun StakingSummary(
         val unstakingFiatPrice = remember(stakeSummary, oneXrdPrice) {
             if (stakeSummary != null && oneXrdPrice != null && stakeSummary.unstaking > 0.toDecimal192()) {
                 FiatPrice(
-                    price = stakeSummary.unstaking.times(oneXrdPrice.price.toDecimal192()).toDouble(),
+                    price = stakeSummary.unstaking.times(oneXrdPrice.price),
                     currency = oneXrdPrice.currency
                 )
             } else {
@@ -182,7 +181,7 @@ private fun StakingSummary(
         val readyToClaimFiatPrice = remember(stakeSummary, oneXrdPrice) {
             if (stakeSummary != null && oneXrdPrice != null && stakeSummary.hasReadyToClaimValue) {
                 FiatPrice(
-                    price = stakeSummary.readyToClaim.times(oneXrdPrice.price.toDecimal192()).toDouble(),
+                    price = stakeSummary.readyToClaim.times(oneXrdPrice.price),
                     currency = oneXrdPrice.currency
                 )
             } else {

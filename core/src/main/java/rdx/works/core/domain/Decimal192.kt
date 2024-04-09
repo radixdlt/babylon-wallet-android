@@ -18,7 +18,8 @@ fun Decimal192.roundedWith(divisibility: Divisibility?) = if (divisibility != nu
     this
 }
 
-fun Decimal192.toDouble() = this.string.toDouble() // TODO decimal192
+// This will later be migrated to Sargon
+fun Decimal192.toDouble() = string.toDouble()
 
 val Decimal192.Companion.Serializer: KSerializer<Decimal192>
     get() = object : KSerializer<Decimal192> {

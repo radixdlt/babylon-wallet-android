@@ -4,6 +4,12 @@ import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.fakes.FiatPriceRepositoryFake
 import com.babylon.wallet.android.fakes.StateRepositoryFake
 import com.babylon.wallet.android.mockdata.mockAccountsWithMockAssets
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.floor
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.plus
+import com.radixdlt.sargon.extensions.sumOf
+import com.radixdlt.sargon.extensions.toDecimal192
 import io.mockk.mockk
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -50,11 +56,11 @@ class GetFiatValueUseCaseTest {
 
     @Test
     fun `assert total fiat values of owned assets given an account with some tokens, lsus, and pool units`() {
-        val expectedTotalFiatValueOfTokens = 110415990.053
-        val expectedTotalFiatValueOfLSUs = 1927.12059
-        val expectedTotalFiatValueOfPoolUnits = 63769.68279
-        val expectedTotalFiatValueOfStakeClaims = 0.0
-        val expectedTotalFiatValueOfAccount = 110481686.856
+        val expectedTotalFiatValueOfTokens = 110415990.05306.toDecimal192()
+        val expectedTotalFiatValueOfLSUs = 1927.12059.toDecimal192()
+        val expectedTotalFiatValueOfPoolUnits = 63769.68279.toDecimal192()
+        val expectedTotalFiatValueOfStakeClaims = 0.0.toDecimal192()
+        val expectedTotalFiatValueOfAccount = 110481686.85645.toDecimal192()
 
         val accountsWithAssets = mockAccountsWithMockAssets
         val accountWithAssets = accountsWithAssets[0]
@@ -62,46 +68,46 @@ class GetFiatValueUseCaseTest {
         testScope.runTest {
             val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets, isRefreshing = false).getOrThrow()
 
-            val pricesPerAsset: Map<Asset, Double> = assetPricesForAccount.associate { assetPrice ->
-                assetPrice.asset to (assetPrice.price?.price ?: 0.0)
+            val pricesPerAsset: Map<Asset, Decimal192> = assetPricesForAccount.associate { assetPrice ->
+                assetPrice.asset to assetPrice.price?.price.orZero()
             }
 
             val allTokensOfTheAccount = accountWithAssets.assets?.tokens
             val tokensTotalFiatValue = allTokensOfTheAccount?.sumOf {
-                pricesPerAsset[it] ?: 0.0
-            } ?: 0.0
-            assertEquals(expectedTotalFiatValueOfTokens, tokensTotalFiatValue, 0.001)
+                pricesPerAsset[it].orZero()
+            }.orZero().floor(decimalPlaces = 5u)
+            assertEquals(expectedTotalFiatValueOfTokens, tokensTotalFiatValue)
 
             val allLSUsOfTheAccount = accountWithAssets.assets?.liquidStakeUnits
             val lsusTotalFiatValue = allLSUsOfTheAccount?.sumOf {
-                pricesPerAsset[it] ?: 0.0
-            } ?: 0.0
-            assertEquals(expectedTotalFiatValueOfLSUs, lsusTotalFiatValue, 0.001)
+                pricesPerAsset[it].orZero()
+            }.orZero().floor(decimalPlaces = 5u)
+            assertEquals(expectedTotalFiatValueOfLSUs, lsusTotalFiatValue)
 
             val allPoolUnitsOfTheAccount = accountWithAssets.assets?.poolUnits
             val poolUnitsTotalFiatValue = allPoolUnitsOfTheAccount?.sumOf {
-                pricesPerAsset[it] ?: 0.0
-            } ?: 0.0
-            assertEquals(expectedTotalFiatValueOfPoolUnits, poolUnitsTotalFiatValue, 0.001)
+                pricesPerAsset[it].orZero()
+            }.orZero().floor(decimalPlaces = 5u)
+            assertEquals(expectedTotalFiatValueOfPoolUnits, poolUnitsTotalFiatValue)
 
             val allStakeClaimsOfTheAccount = accountWithAssets.assets?.stakeClaims
             val stakeClaimsTotalFiatValue = allStakeClaimsOfTheAccount?.sumOf {
-                pricesPerAsset[it] ?: 0.0
-            } ?: 0.0
-            assertEquals(expectedTotalFiatValueOfStakeClaims, stakeClaimsTotalFiatValue, 0.001)
+                pricesPerAsset[it].orZero()
+            }.orZero().floor(decimalPlaces = 5u)
+            assertEquals(expectedTotalFiatValueOfStakeClaims, stakeClaimsTotalFiatValue)
 
-            val accountTotalFiatValue = pricesPerAsset.values.sumOf { it }
-            assertEquals(expectedTotalFiatValueOfAccount, accountTotalFiatValue, 0.001)
+            val accountTotalFiatValue = pricesPerAsset.values.sumOf { it }.floor(decimalPlaces = 5u)
+            assertEquals(expectedTotalFiatValueOfAccount, accountTotalFiatValue)
         }
     }
 
     @Test
     fun `assert total fiat values of owned assets given an account with some tokens and stake claims`() {
-        val expectedTotalFiatValueOfTokens = 870565.11
-        val expectedTotalFiatValueOfLSUs = 0.0
-        val expectedTotalFiatValueOfPoolUnits = 0.0
-        val expectedTotalFiatValueOfStakeClaims = 3595.15252
-        val expectedTotalFiatValueOfAccount = 874160.26252
+        val expectedTotalFiatValueOfTokens = 870565.11.toDecimal192()
+        val expectedTotalFiatValueOfLSUs = 0.0.toDecimal192()
+        val expectedTotalFiatValueOfPoolUnits = 0.0.toDecimal192()
+        val expectedTotalFiatValueOfStakeClaims = 3595.15252.toDecimal192()
+        val expectedTotalFiatValueOfAccount = 874160.26252.toDecimal192()
 
         val accountsWithAssets = mockAccountsWithMockAssets
         val accountWithAssets = accountsWithAssets[1]
@@ -109,52 +115,52 @@ class GetFiatValueUseCaseTest {
         testScope.runTest {
             val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets, isRefreshing = false).getOrThrow()
 
-            val pricesPerAsset: Map<Asset, Double> = assetPricesForAccount.associate { assetPrice ->
-                assetPrice.asset to (assetPrice.price?.price ?: 0.0)
+            val pricesPerAsset: Map<Asset, Decimal192> = assetPricesForAccount.associate { assetPrice ->
+                assetPrice.asset to assetPrice.price?.price.orZero()
             }
 
             val allTokensOfTheAccount = accountWithAssets.assets?.tokens
             val tokensTotalFiatValue = allTokensOfTheAccount?.sumOf {
-                pricesPerAsset[it] ?: 0.0
-            } ?: 0.0
-            assertEquals(expectedTotalFiatValueOfTokens, tokensTotalFiatValue, 0.001)
+                pricesPerAsset[it].orZero()
+            }.orZero()
+            assertEquals(expectedTotalFiatValueOfTokens, tokensTotalFiatValue)
 
             val allLSUsOfTheAccount = accountWithAssets.assets?.liquidStakeUnits
             val lsusTotalFiatValue = allLSUsOfTheAccount?.sumOf {
-                pricesPerAsset[it] ?: 0.0
-            } ?: 0.0
-            assertEquals(expectedTotalFiatValueOfLSUs, lsusTotalFiatValue, 0.001)
+                pricesPerAsset[it].orZero()
+            }.orZero()
+            assertEquals(expectedTotalFiatValueOfLSUs, lsusTotalFiatValue)
 
             val allPoolUnitsOfTheAccount = accountWithAssets.assets?.poolUnits
             val poolUnitsTotalFiatValue = allPoolUnitsOfTheAccount?.sumOf {
-                pricesPerAsset[it] ?: 0.0
-            } ?: 0.0
-            assertEquals(expectedTotalFiatValueOfPoolUnits, poolUnitsTotalFiatValue, 0.001)
+                pricesPerAsset[it].orZero()
+            }.orZero()
+            assertEquals(expectedTotalFiatValueOfPoolUnits, poolUnitsTotalFiatValue)
 
             val allStakeClaimsOfTheAccount = accountWithAssets.assets?.stakeClaims
             val stakeClaimsTotalFiatValue = allStakeClaimsOfTheAccount?.sumOf {
-                pricesPerAsset[it] ?: 0.0
-            } ?: 0.0
-            assertEquals(expectedTotalFiatValueOfStakeClaims, stakeClaimsTotalFiatValue, 0.001)
+                pricesPerAsset[it].orZero()
+            }.orZero()
+            assertEquals(expectedTotalFiatValueOfStakeClaims, stakeClaimsTotalFiatValue)
 
             val accountTotalFiatValue = pricesPerAsset.values.sumOf { it }
-            assertEquals(expectedTotalFiatValueOfAccount, accountTotalFiatValue, 0.001)
+            assertEquals(expectedTotalFiatValueOfAccount, accountTotalFiatValue)
         }
     }
 
     @Test
     fun `assert the wallet total fiat value given two accounts with multiple assets`() {
-        val expectedTotalFiatValueOfWallet = 111355847.119
+        val expectedTotalFiatValueOfWallet = 111355847.11897.toDecimal192()
 
         val accountsWithAssets = mockAccountsWithMockAssets
-        var actualTotalFiatValueOfWallet = 0.0
+        var actualTotalFiatValueOfWallet = 0.toDecimal192()
 
         testScope.runTest {
             accountsWithAssets.forEach { accountWithAssets ->
                 val assetPricesForAccount = getFiatValueUseCase.forAccount(accountWithAssets, isRefreshing = false).getOrThrow()
 
-                val pricesPerAsset: Map<Asset, Double> = assetPricesForAccount.associate { assetPrice ->
-                    assetPrice.asset to (assetPrice.price?.price ?: 0.0)
+                val pricesPerAsset: Map<Asset, Decimal192> = assetPricesForAccount.associate { assetPrice ->
+                    assetPrice.asset to assetPrice.price?.price.orZero()
                 }
 
                 val accountTotalFiatValue = pricesPerAsset.values.sumOf { it }
@@ -162,7 +168,7 @@ class GetFiatValueUseCaseTest {
                 actualTotalFiatValueOfWallet += accountTotalFiatValue
             }
 
-            assertEquals(expectedTotalFiatValueOfWallet, actualTotalFiatValueOfWallet, 0.001)
+            assertEquals(expectedTotalFiatValueOfWallet, actualTotalFiatValueOfWallet.floor(decimalPlaces = 5u))
         }
     }
 

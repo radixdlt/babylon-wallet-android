@@ -26,6 +26,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.sargon.extensions.isZero
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import java.text.DecimalFormatSymbols
@@ -135,7 +137,7 @@ private fun TotalBalanceContent(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        val shouldShowContentColor = (fiatPrice != null && isPriceVisible && fiatPrice.price != 0.0)
+        val shouldShowContentColor = (fiatPrice != null && isPriceVisible && !fiatPrice.price.isZero)
         Text(
             modifier = Modifier.weight(1f, fill = false),
             text = annotatedFormat,
@@ -181,7 +183,7 @@ fun TotalFiatBalanceZeroPreview() {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
             fiatPrice = FiatPrice(
-                price = 0.0,
+                price = 0.toDecimal192(),
                 currency = SupportedCurrency.USD
             ),
             currency = SupportedCurrency.USD,
@@ -201,7 +203,7 @@ fun TotalFiatBalancePreview() {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
             fiatPrice = FiatPrice(
-                price = 246.608903,
+                price = 246.608903.toDecimal192(),
                 currency = SupportedCurrency.USD
             ),
             currency = SupportedCurrency.USD,
@@ -221,7 +223,7 @@ fun TotalFiatBalanceWithValueLessThanOnePreview() {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
             fiatPrice = FiatPrice(
-                price = 0.608903,
+                price = 0.608903.toDecimal192(),
                 currency = SupportedCurrency.USD
             ),
             currency = SupportedCurrency.USD,
@@ -241,7 +243,7 @@ fun TotalFiatBalanceWithVerySmallValuePreview() {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
             fiatPrice = FiatPrice(
-                price = 0.0000000003,
+                price = 0.0000000003.toDecimal192(),
                 currency = SupportedCurrency.USD
             ),
             currency = SupportedCurrency.USD,
@@ -262,7 +264,7 @@ fun TotalFiatBalanceWithLongValuePreview() {
         TotalFiatBalanceView(
             modifier = Modifier.fillMaxWidth(),
             fiatPrice = FiatPrice(
-                price = 25747534664246.6,
+                price = 25747534664246.6.toDecimal192(),
                 currency = SupportedCurrency.USD
             ),
             currency = SupportedCurrency.USD,
@@ -300,7 +302,7 @@ fun TotalFiatBalanceHiddenPreview() {
             TotalFiatBalanceView(
                 modifier = Modifier.fillMaxWidth(),
                 fiatPrice = FiatPrice(
-                    price = 2246.6,
+                    price = 2246.6.toDecimal192(),
                     currency = SupportedCurrency.USD
                 ),
                 currency = SupportedCurrency.USD,

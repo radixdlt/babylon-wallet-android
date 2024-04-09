@@ -28,6 +28,9 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewS
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.plus
+import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -366,13 +369,13 @@ data class AccountUiState(
         get() {
             if (hasFailedToFetchPricesForAccount) return null
 
-            var total = 0.0
+            var total = 0.toDecimal192()
             var currency = SupportedCurrency.USD
             assetsWithAssetsPrices?.let { assetsWithAssetsPrices ->
                 assetsWithAssetsPrices.values
                     .mapNotNull { it }
                     .forEach { assetPrice ->
-                        total += assetPrice.price?.price ?: 0.0
+                        total += assetPrice.price?.price.orZero()
                         currency = assetPrice.price?.currency ?: SupportedCurrency.USD
                     }
             } ?: return null
