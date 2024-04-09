@@ -16,6 +16,7 @@ import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import rdx.works.core.domain.assets.AssetBehaviours
+import rdx.works.core.domain.resources.Divisibility
 import rdx.works.core.domain.resources.XrdResource
 
 fun StateEntityDetailsResponseItemDetails.totalSupply(): Decimal192? {
@@ -26,9 +27,9 @@ fun StateEntityDetailsResponseItemDetails.totalSupply(): Decimal192? {
     }
 }
 
-fun StateEntityDetailsResponseItemDetails.divisibility(): UByte? {
+fun StateEntityDetailsResponseItemDetails.divisibility(): Divisibility? {
     return when (val details = this) {
-        is StateEntityDetailsResponseFungibleResourceDetails -> details.divisibility.toUByte()
+        is StateEntityDetailsResponseFungibleResourceDetails -> Divisibility(details.divisibility.toUByte())
         else -> null
     }
 }
