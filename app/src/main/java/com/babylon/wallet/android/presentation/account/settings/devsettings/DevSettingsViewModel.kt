@@ -11,6 +11,7 @@ import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
