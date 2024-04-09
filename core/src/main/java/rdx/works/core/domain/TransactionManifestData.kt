@@ -1,25 +1,25 @@
 package rdx.works.core.domain
 
-import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.Instructions
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Blob
 import com.radixdlt.sargon.Blobs
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Message
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.executionSummary
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.instructionsString
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.plaintext
+import com.radixdlt.sargon.extensions.summary
 import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.sargon.extensions.toList
 import rdx.works.core.toByteArray
-
-private typealias EngineManifest = com.radixdlt.ret.TransactionManifest
 
 data class TransactionManifestData(
     val instructions: String,
@@ -28,16 +28,6 @@ data class TransactionManifestData(
     val blobs: List<ByteArray> = emptyList(),
     val version: Long = TransactionVersion.Default.value
 ) {
-
-    val engineManifest: EngineManifest by lazy {
-        EngineManifest(
-            instructions = Instructions.fromString(
-                string = instructions,
-                networkId = networkId.toUByte()
-            ),
-            blobs = blobs
-        )
-    }
 
     val manifestSargon: TransactionManifest by lazy {
         TransactionManifest.init(
@@ -56,23 +46,23 @@ data class TransactionManifestData(
         get() = NetworkId.init(discriminant = networkId.toUByte())
 
     fun entitiesRequiringAuth(): EntitiesRequiringAuth {
-        val summary = engineManifest.summary(networkId = networkId.toUByte())
+        val summary = manifestSargon.summary
 
         return EntitiesRequiringAuth(
-            accounts = summary.accountsRequiringAuth.map { it.addressString() },
-            identities = summary.identitiesRequiringAuth.map { it.addressString() }
+            accounts = summary.addressesOfAccountsRequiringAuth,
+            identities = summary.addressesOfPersonasRequiringAuth
         )
     }
 
     fun feePayerCandidates(): List<AccountAddress> {
-        val summary = engineManifest.summary(networkId.toUByte())
-        return (summary.accountsWithdrawnFrom + summary.accountsDepositedInto + summary.accountsRequiringAuth).map {
-            AccountAddress.init(it.addressString())
-        }
+        val summary = manifestSargon.summary
+        return summary.addressesOfAccountsWithdrawnFrom +
+            summary.addressesOfAccountsDepositedInto +
+            summary.addressesOfAccountsRequiringAuth
     }
 
     // Currently the only method that exposes RET
-    fun executionSummary(encodedReceipt: ByteArray): ExecutionSummary = engineManifest.executionSummary(networkId.toUByte(), encodedReceipt)
+    fun executionSummary(encodedReceipt: ByteArray): ExecutionSummary = manifestSargon.executionSummary(encodedReceipt.toBagOfBytes())
 
     sealed interface TransactionMessage {
 
@@ -87,8 +77,8 @@ data class TransactionManifestData(
     }
 
     data class EntitiesRequiringAuth(
-        val accounts: List<String>,
-        val identities: List<String>
+        val accounts: List<AccountAddress>,
+        val identities: List<IdentityAddress>
     )
 
     companion object {

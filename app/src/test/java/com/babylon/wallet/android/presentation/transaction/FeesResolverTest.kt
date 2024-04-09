@@ -3,14 +3,14 @@ package com.babylon.wallet.android.presentation.transaction
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transaction.analysis.FeesResolver
-import com.radixdlt.ret.Decimal
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.FeeLocks
-import com.radixdlt.ret.FeeSummary
-import com.radixdlt.ret.NewEntities
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.FeeLocks
+import com.radixdlt.sargon.FeeSummary
+import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.formattedPlain
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -21,29 +21,26 @@ class FeesResolverTest {
 
     private val emptyExecutionSummary = ExecutionSummary(
         feeLocks = FeeLocks(
-            lock = Decimal.zero(),
-            contingentLock = Decimal.zero()
+            lock = 0.toDecimal192(),
+            contingentLock = 0.toDecimal192()
         ),
         feeSummary = FeeSummary(
-            executionCost = Decimal.zero(),
-            finalizationCost = Decimal.zero(),
-            storageExpansionCost = Decimal.zero(),
-            royaltyCost = Decimal.zero()
+            executionCost = 0.toDecimal192(),
+            finalizationCost = 0.toDecimal192(),
+            storageExpansionCost = 0.toDecimal192(),
+            royaltyCost = 0.toDecimal192()
         ),
         detailedClassification = listOf(),
         reservedInstructions = listOf(),
-        accountDeposits = mapOf(),
-        accountsRequiringAuth = listOf(),
-        accountWithdraws = mapOf(),
-        encounteredEntities = listOf(),
-        identitiesRequiringAuth = listOf(),
+        deposits = mapOf(),
+        withdrawals = mapOf(),
+        addressesOfAccountsRequiringAuth = listOf(),
+        addressesOfIdentitiesRequiringAuth = listOf(),
+        encounteredComponentAddresses = listOf(),
         newEntities = NewEntities(
-            componentAddresses = listOf(),
-            resourceAddresses = listOf(),
-            packageAddresses = listOf(),
             metadata = mapOf()
         ),
-        presentedProofs = mapOf(),
+        presentedProofs = listOf(),
         newlyCreatedNonFungibles = listOf()
     )
     private val notaryAndSigners = NotaryAndSigners(
@@ -55,14 +52,14 @@ class FeesResolverTest {
     fun `verify network fee royalty and total fee is displayed correctly on default screen 1`() {
         val summary = emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
-                lock = Decimal("0.9"),
-                contingentLock = Decimal.zero()
+                lock = 0.9.toDecimal192(),
+                contingentLock = 0.toDecimal192()
             ),
             feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
+                executionCost = 0.3.toDecimal192(),
+                finalizationCost = 0.3.toDecimal192(),
+                storageExpansionCost = 0.2.toDecimal192(),
+                royaltyCost = 0.2.toDecimal192()
             ),
             detailedClassification = listOf(
                 DetailedManifestClass.General
@@ -81,14 +78,14 @@ class FeesResolverTest {
     fun `verify network fee royalty and total fee is displayed correctly on default screen 2`() = runTest {
         val summary = emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
-                lock = Decimal("0.5"),
-                contingentLock = Decimal.zero()
+                lock = 0.5.toDecimal192(),
+                contingentLock = 0.toDecimal192()
             ),
             feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
+                executionCost = 0.3.toDecimal192(),
+                finalizationCost = 0.3.toDecimal192(),
+                storageExpansionCost = 0.2.toDecimal192(),
+                royaltyCost = 0.2.toDecimal192()
             ),
             detailedClassification = listOf(
                 DetailedManifestClass.General
@@ -107,14 +104,14 @@ class FeesResolverTest {
     fun `verify network fee royalty and total fee is displayed correctly on default screen 3`() = runTest {
         val summary = emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
-                lock = Decimal("1.0"),
-                contingentLock = Decimal.zero()
+                lock = 1.0.toDecimal192(),
+                contingentLock = 0.toDecimal192()
             ),
             feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
+                executionCost = 0.3.toDecimal192(),
+                finalizationCost = 0.3.toDecimal192(),
+                storageExpansionCost = 0.2.toDecimal192(),
+                royaltyCost = 0.2.toDecimal192()
             ),
             detailedClassification = listOf(
                 DetailedManifestClass.General
@@ -133,14 +130,14 @@ class FeesResolverTest {
     fun `verify network fee royalty and total fee is displayed correctly on default screen 4`() = runTest {
         val summary = emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
-                lock = Decimal("1.5"),
-                contingentLock = Decimal.zero()
+                lock = 1.5.toDecimal192(),
+                contingentLock = 0.toDecimal192()
             ),
             feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
+                executionCost = 0.3.toDecimal192(),
+                finalizationCost = 0.3.toDecimal192(),
+                storageExpansionCost = 0.2.toDecimal192(),
+                royaltyCost = 0.2.toDecimal192()
             ),
             detailedClassification = listOf(
                 DetailedManifestClass.General
@@ -159,14 +156,14 @@ class FeesResolverTest {
     fun `verify network fee royalty and total fee is displayed correctly on default screen 4 with one signer account`() = runTest {
         val summary = emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
-                lock = Decimal.zero(),
-                contingentLock = Decimal.zero()
+                lock = 0.toDecimal192(),
+                contingentLock = 0.toDecimal192()
             ),
             feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
+                executionCost = 0.3.toDecimal192(),
+                finalizationCost = 0.3.toDecimal192(),
+                storageExpansionCost = 0.2.toDecimal192(),
+                royaltyCost = 0.2.toDecimal192()
             ),
             detailedClassification = listOf(
                 DetailedManifestClass.General

@@ -5,11 +5,10 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.ResourceIndicator
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.ResourceIndicator
+import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.orZero
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
@@ -67,19 +66,18 @@ class ValidatorClaimProcessor @Inject constructor(
         involvedOwnedAccounts: List<Network.Account>
     ): List<AccountWithTransferableResources> {
         val stakeClaimNfts = assets.filterIsInstance<Asset.NonFungible>().map { it.resource.items }.flatten()
-        return executionSummary.accountWithdraws.map { claimsPerAddress ->
+        return executionSummary.withdrawals.map { claimsPerAddress ->
             claimsPerAddress.value.map { resourceIndicator ->
-                val resourceAddress = resourceIndicator.resourceAddress
-                val asset = assets.find { it.resource.address == resourceAddress } ?: error("No asset found")
+                val asset = assets.find { it.resource.address == resourceIndicator.address } ?: error("No asset found")
                 if (asset is StakeClaim) {
                     val nonFungibleIndicator = resourceIndicator as? ResourceIndicator.NonFungible
                         ?: error("No non-fungible resource claim found")
                     val items = nonFungibleIndicator.nonFungibleLocalIds.map { localId ->
                         val claimAmount = stakeClaimNfts.find {
-                            resourceAddress == it.collectionAddress && localId == it.localId
+                            resourceIndicator.address == it.collectionAddress && localId == it.localId
                         }?.claimAmountXrd.orZero()
                         Resource.NonFungibleResource.Item(
-                            collectionAddress = resourceAddress,
+                            collectionAddress = resourceIndicator.address,
                             localId = localId
                         ) to claimAmount
                     }
@@ -97,7 +95,7 @@ class ValidatorClaimProcessor @Inject constructor(
                 } else {
                     executionSummary.resolveDepositingAsset(resourceIndicator, assets, defaultDepositGuarantees)
                 }
-            }.toAccountWithTransferableResources(AccountAddress.init(claimsPerAddress.key), involvedOwnedAccounts)
+            }.toAccountWithTransferableResources(claimsPerAddress.key, involvedOwnedAccounts)
         }
     }
 }

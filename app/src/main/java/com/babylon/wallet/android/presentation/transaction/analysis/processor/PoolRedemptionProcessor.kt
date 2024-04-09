@@ -5,15 +5,11 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.extensions.address
+import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.sumOf
-import com.radixdlt.sargon.extensions.toDecimal192
-import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.profile.domain.GetProfileUseCase
@@ -36,35 +32,34 @@ class PoolRedemptionProcessor @Inject constructor(
             involvedAssets = assets,
             defaultGuarantee = defaultDepositGuarantees
         )
-        val from = summary.accountWithdraws.map { withdrawsPerAddress ->
+        val from = summary.withdrawals.map { withdrawsPerAddress ->
             withdrawsPerAddress.value.map { withdraw ->
-                val resourceAddress = withdraw.resourceAddress
-                val poolUnit = assets.find { it.resource.address == resourceAddress } as? PoolUnit
+                val poolUnit = assets.find { it.resource.address == withdraw.address } as? PoolUnit
                 if (poolUnit == null) {
                     summary.resolveDepositingAsset(withdraw, assets, defaultDepositGuarantees)
                 } else {
-                    val redemptions = classification.poolRedemptions.filter {
-                        it.poolUnitsResourceAddress.addressString() == resourceAddress.string
+                    val redemptions = classification.poolContributions.filter {
+                        it.poolUnitsResourceAddress == withdraw.address
                     }
                     val redemptionResourceAddresses = redemptions.first().redeemedResources.keys
                     val poolUnitAmount = redemptions.find {
-                        it.poolUnitsResourceAddress.addressString() == poolUnit.resourceAddress.string
-                    }?.poolUnitsAmount?.asStr()?.toDecimal192OrNull()
+                        it.poolUnitsResourceAddress == poolUnit.resourceAddress
+                    }?.poolUnitsAmount.orZero()
                     Transferable.Withdrawing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(
-                            amount = redemptions.map { it.poolUnitsAmount.asStr().toDecimal192() }.sumOf { it },
+                            amount = redemptions.map { it.poolUnitsAmount }.sumOf { it },
                             unit = poolUnit.copy(
                                 stake = poolUnit.stake.copy(ownedAmount = poolUnitAmount)
                             ),
-                            redemptionResourceAddresses.associate { contributedResourceAddress ->
-                                ResourceAddress.init(contributedResourceAddress) to redemptions.mapNotNull {
-                                    it.redeemedResources[contributedResourceAddress]?.asStr()?.toDecimal192()
+                            redemptionResourceAddresses.associateWith { contributedResourceAddress ->
+                                redemptions.mapNotNull {
+                                    it.redeemedResources[contributedResourceAddress]
                                 }.sumOf { it }
                             }
                         )
                     )
                 }
-            }.toAccountWithTransferableResources(AccountAddress.init(withdrawsPerAddress.key), involvedOwnedAccounts)
+            }.toAccountWithTransferableResources(withdrawsPerAddress.key, involvedOwnedAccounts)
         }.sortedWith(AccountWithTransferableResources.Companion.Sorter(involvedOwnedAccounts))
         return PreviewType.Transfer.Pool(
             from = from,

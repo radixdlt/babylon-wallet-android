@@ -41,16 +41,15 @@ import com.babylon.wallet.android.presentation.transaction.submit.TransactionSub
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
-import com.radixdlt.ret.Decimal
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.FeeLocks
-import com.radixdlt.ret.FeeSummary
-import com.radixdlt.ret.NewEntities
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.CompiledNotarizedIntent
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.FeeLocks
+import com.radixdlt.sargon.FeeSummary
 import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.rounded
@@ -204,29 +203,26 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     private val emptyExecutionSummary = ExecutionSummary(
         feeLocks = FeeLocks(
-            lock = Decimal.zero(),
-            contingentLock = Decimal.zero()
+            lock = 0.toDecimal192(),
+            contingentLock = 0.toDecimal192()
         ),
         feeSummary = FeeSummary(
-            executionCost = Decimal.zero(),
-            finalizationCost = Decimal.zero(),
-            storageExpansionCost = Decimal.zero(),
-            royaltyCost = Decimal.zero()
+            executionCost = 0.toDecimal192(),
+            finalizationCost = 0.toDecimal192(),
+            storageExpansionCost = 0.toDecimal192(),
+            royaltyCost = 0.toDecimal192()
         ),
         detailedClassification = listOf(),
         reservedInstructions = listOf(),
-        accountDeposits = mapOf(),
-        accountsRequiringAuth = listOf(),
-        accountWithdraws = mapOf(),
-        encounteredEntities = listOf(),
-        identitiesRequiringAuth = listOf(),
+        deposits = mapOf(),
+        withdrawals = mapOf(),
+        addressesOfAccountsRequiringAuth = listOf(),
+        addressesOfIdentitiesRequiringAuth = listOf(),
+        encounteredComponentAddresses = listOf(),
         newEntities = NewEntities(
-            componentAddresses = listOf(),
-            resourceAddresses = listOf(),
-            packageAddresses = listOf(),
             metadata = mapOf()
         ),
-        presentedProofs = mapOf(),
+        presentedProofs = listOf(),
         newlyCreatedNonFungibles = listOf()
     )
 
@@ -379,14 +375,14 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         val expectedFeeLock = "1.10842739440"
         every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
-                lock = Decimal("1.5"),
-                contingentLock = Decimal.zero()
+                lock = 1.5.toDecimal192(),
+                contingentLock = 0.toDecimal192()
             ),
             feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
+                executionCost = 0.3.toDecimal192(),
+                finalizationCost = 0.3.toDecimal192(),
+                storageExpansionCost = 0.2.toDecimal192(),
+                royaltyCost = 0.2.toDecimal192()
             ),
             detailedClassification = listOf(
                 DetailedManifestClass.General
@@ -409,14 +405,14 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
         every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
-                lock = Decimal("0.5"),
-                contingentLock = Decimal.zero()
+                lock = 0.5.toDecimal192(),
+                contingentLock = 0.toDecimal192()
             ),
             feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
+                executionCost = 0.3.toDecimal192(),
+                finalizationCost = 0.3.toDecimal192(),
+                storageExpansionCost = 0.2.toDecimal192(),
+                royaltyCost = 0.2.toDecimal192()
             ),
             detailedClassification = listOf(
                 DetailedManifestClass.General
@@ -440,14 +436,14 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
         every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
-                lock = Decimal("0.5"),
-                contingentLock = Decimal.zero()
+                lock = 0.5.toDecimal192(),
+                contingentLock = 0.toDecimal192()
             ),
             feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
+                executionCost = 0.3.toDecimal192(),
+                finalizationCost = 0.3.toDecimal192(),
+                storageExpansionCost = 0.2.toDecimal192(),
+                royaltyCost = 0.2.toDecimal192()
             ),
             detailedClassification = listOf(
                 DetailedManifestClass.General
