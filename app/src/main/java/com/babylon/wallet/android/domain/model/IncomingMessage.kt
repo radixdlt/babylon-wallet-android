@@ -18,13 +18,13 @@ import kotlinx.serialization.Serializable
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.sargon.PersonaDataField
 
-sealed interface MessageFromDataChannel {
+sealed interface IncomingMessage {
 
     sealed interface RemoteEntityID {
 
         val value: String
 
-        data class RadixMobileConnectRemoteEntityId(val id: String) : RemoteEntityID {
+        data class RadixMobileConnectRemoteSession(val id: String) : RemoteEntityID {
             override val value: String
                 get() = id
         }
@@ -36,10 +36,10 @@ sealed interface MessageFromDataChannel {
     }
 
     sealed class IncomingRequest(
-        open val remoteEntityId: RemoteEntityID, // from which remote CE comes the message
+        open val remoteEntityId: RemoteEntityID, // from which remote source message came
         open val interactionId: String, // the id of the request
         val metadata: RequestMetadata
-    ) : MessageFromDataChannel {
+    ) : IncomingMessage {
 
         open val isInternal: Boolean
             get() {
@@ -47,7 +47,7 @@ sealed interface MessageFromDataChannel {
             }
 
         val isRcrRequest: Boolean
-            get() = remoteEntityId is RemoteEntityID.RadixMobileConnectRemoteEntityId
+            get() = remoteEntityId is RemoteEntityID.RadixMobileConnectRemoteSession
 
         val blockUntilComplete: Boolean
             get() {
@@ -205,7 +205,7 @@ sealed interface MessageFromDataChannel {
         }
     }
 
-    sealed class LedgerResponse(val id: String) : MessageFromDataChannel {
+    sealed class LedgerResponse(val id: String) : IncomingMessage {
 
         data class DerivedPublicKey(
             val curve: Curve,
@@ -273,9 +273,9 @@ sealed interface MessageFromDataChannel {
         ) : LedgerResponse(interactionId)
     }
 
-    data object ParsingError : MessageFromDataChannel
+    data object ParsingError : IncomingMessage
 
-    data class Error(val exception: RadixWalletException) : MessageFromDataChannel
+    data class Error(val exception: RadixWalletException) : IncomingMessage
 }
 
 fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toRequestedNumberQuantifier(): RequestedNumberQuantifier = when (quantifier) {
@@ -291,7 +291,7 @@ fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDevic
     }
 }
 
-fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields(): RequiredPersonaFields {
+fun IncomingMessage.IncomingRequest.PersonaRequestItem.toRequiredFields(): RequiredPersonaFields {
     return RequiredPersonaFields(
         mutableListOf<RequiredPersonaField>().also {
             if (isRequestingName) {
@@ -300,7 +300,7 @@ fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields()
                         PersonaDataField.Kind.Name,
                         MessageFromDataChannel.IncomingRequest.NumberOfValues(
                             1,
-                            MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                            IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 )

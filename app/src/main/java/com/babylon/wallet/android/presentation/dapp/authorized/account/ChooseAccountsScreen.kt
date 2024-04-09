@@ -19,6 +19,7 @@ import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDia
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
+import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -117,6 +118,7 @@ private fun HandleOneOffEvents(
                 is Event.PersonaDataOngoing -> onPersonaOngoingData(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
                 is Event.CloseLoginFlow -> onLoginFlowComplete()
+                is Event.MobileConnectFlowComplete -> context.openUrl(event.url)
                 is Event.RequestCompletionBiometricPrompt -> {
                     if (event.isSignatureRequired) {
                         completeRequestHandling {

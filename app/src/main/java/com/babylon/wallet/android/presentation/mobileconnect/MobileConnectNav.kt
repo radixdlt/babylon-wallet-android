@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.m2m
+package com.babylon.wallet.android.presentation.mobileconnect
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.lifecycle.SavedStateHandle
@@ -21,7 +21,7 @@ private const val ROUTE_ARGS = "$ARG_PUBLIC_KEY={$ARG_PUBLIC_KEY}" +
 
 private const val ROUTE = "m2m?$ROUTE_ARGS"
 
-fun NavController.m2mScreen(publicKeyHex: String = "", sessionId: String = "", origin: String = "", interactionId: String = "") {
+fun NavController.mobileConnect(publicKeyHex: String = "", sessionId: String = "", origin: String = "", interactionId: String = "") {
     navigate(
         route = "m2m?$$ARG_PUBLIC_KEY={$publicKeyHex}" +
             "&$ARG_SESSION_ID={$sessionId}" +
@@ -30,7 +30,7 @@ fun NavController.m2mScreen(publicKeyHex: String = "", sessionId: String = "", o
     )
 }
 
-internal class M2MArgs(val publicKey: String?, val sessionId: String?, val origin: String?, val interactionId: String? = null) {
+internal class MobileConnectArgs(val publicKey: String?, val sessionId: String?, val origin: String?, val interactionId: String? = null) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         savedStateHandle.get<String>(ARG_PUBLIC_KEY),
         savedStateHandle.get<String>(ARG_SESSION_ID),
@@ -47,7 +47,7 @@ internal class M2MArgs(val publicKey: String?, val sessionId: String?, val origi
     }
 }
 
-fun NavGraphBuilder.m2mScreen(onBackClick: () -> Unit) {
+fun NavGraphBuilder.mobileConnect(onBackClick: () -> Unit) {
     composable(
         route = ROUTE,
         deepLinks = listOf(
@@ -81,6 +81,6 @@ fun NavGraphBuilder.m2mScreen(onBackClick: () -> Unit) {
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {
-        M2MScreen(onBackClick = onBackClick)
+        MobileConnectScreen(onBackClick = onBackClick)
     }
 }

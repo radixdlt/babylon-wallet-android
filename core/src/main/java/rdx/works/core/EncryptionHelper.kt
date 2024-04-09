@@ -200,6 +200,7 @@ fun String.decodeHex(): ByteArray {
         .map { it.toInt(16).toByte() }
         .toByteArray()
 }
+
 fun generateX25519KeyPair(): Result<Pair<String, String>> {
     return runCatching {
         val generator = X25519KeyPairGenerator()
@@ -217,6 +218,7 @@ fun generateX25519SharedSecret(privateKeyCompressed: ByteArray, publicKeyCompres
         val agreement = X25519Agreement().apply {
             init(X25519PrivateKeyParameters(privateKeyCompressed))
         }
+
         val secret = ByteArray(agreement.agreementSize)
         agreement.calculateAgreement(X25519PublicKeyParameters(publicKeyCompressed), secret, 0)
         secret.toHexString()

@@ -2,6 +2,8 @@ package com.babylon.wallet.android.presentation.createaccount.withledger
 
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceUiState
@@ -94,7 +96,7 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
         coEvery { getProfileUseCaseMock() } returns profile
         every { getProfileUseCaseMock.flow } returns flowOf(profile)
         coEvery { ledgerMessengerMock.sendDeviceInfoRequest(any()) } returns Result.success(
-            MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse(
+            IncomingMessage.LedgerResponse.GetDeviceInfoResponse(
                 interactionId = "1",
                 model = MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS,
                 deviceId = firstDeviceId.value.body
@@ -127,7 +129,7 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
         )
         coEvery { getProfileUseCaseMock() } returns profile
         coEvery { ledgerMessengerMock.sendDeviceInfoRequest(any()) } returns Result.success(
-            MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse(
+            IncomingMessage.LedgerResponse.GetDeviceInfoResponse(
                 interactionId = "1",
                 model = MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS,
                 deviceId = ledgerDeviceToAdd.value.id.body

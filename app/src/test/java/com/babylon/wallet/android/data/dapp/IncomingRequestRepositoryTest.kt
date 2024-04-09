@@ -2,6 +2,7 @@ package com.babylon.wallet.android.data.dapp
 
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.sargon.NetworkId
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -21,16 +22,16 @@ class IncomingRequestRepositoryTest {
 
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val amountOfIncomingRequests = 100
-    private val sampleIncomingRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+    private val sampleIncomingRequest = IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = "remoteConnectorId",
         interactionId = UUIDGenerator.uuid().toString(),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
             isOngoing = true,
-            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
                 1,
-                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
             ),
             challenge = null
         )
@@ -67,7 +68,7 @@ class IncomingRequestRepositoryTest {
 
     @Test
     fun `after being handled, next request is set as current`() = runTest {
-        var currentRequest: MessageFromDataChannel.IncomingRequest? = null
+        var currentRequest: IncomingMessage.IncomingRequest? = null
         incomingRequestRepository.currentRequestToHandle
             .onEach { currentRequest = it }
             .launchIn(CoroutineScope(UnconfinedTestDispatcher(testScheduler)))

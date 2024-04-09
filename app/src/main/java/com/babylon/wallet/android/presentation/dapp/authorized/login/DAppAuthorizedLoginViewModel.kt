@@ -9,10 +9,10 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AccountsRequestItem
+import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.IncomingRequestResponse
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toRequestedNumberQuantifier
 import com.babylon.wallet.android.domain.model.toRequiredFields
@@ -228,7 +228,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             }
 
             ongoingPersonaDataRequestItem != null &&
-                    ongoingPersonaDataRequestItem.isValid() && (!ongoingDataAlreadyGranted || resetPersonaData) -> {
+                ongoingPersonaDataRequestItem.isValid() && (!ongoingDataAlreadyGranted || resetPersonaData) -> {
                 _state.update { state ->
                     state.copy(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
@@ -290,7 +290,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
             .onSuccess {
                 if (it is IncomingRequestResponse.SuccessRadixMobileConnect) {
-                    sendEvent(Event.OpenUrl(it.redirectUrl))
+                    sendEvent(Event.MobileConnectFlowComplete(it.redirectUrl))
                 }
             }
         _state.update { it.copy(failureDialog = FailureDialogState.Closed) }
@@ -471,7 +471,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun personaDataAccessAlreadyGranted(
-        requestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem?,
+        requestItem: IncomingMessage.IncomingRequest.PersonaRequestItem?,
         personaAddress: IdentityAddress
     ): Boolean {
         if (requestItem == null) return false
@@ -484,7 +484,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         )
     }
 
-    private fun handleOneTimePersonaDataRequestItem(oneTimePersonaRequestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem) {
+    private fun handleOneTimePersonaDataRequestItem(oneTimePersonaRequestItem: IncomingMessage.IncomingRequest.PersonaRequestItem) {
         viewModelScope.launch {
             sendEvent(
                 Event.PersonaDataOnetime(
@@ -598,7 +598,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 respondToIncomingRequestUseCase.respondWithFailure(request, walletWalletErrorType)
                     .onSuccess {
                         if (it is IncomingRequestResponse.SuccessRadixMobileConnect) {
-                            sendEvent(Event.OpenUrl(it.redirectUrl))
+                            sendEvent(Event.MobileConnectFlowComplete(it.redirectUrl))
                         }
                     }
             }
@@ -725,7 +725,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                     }
                     if (result is IncomingRequestResponse.SuccessRadixMobileConnect) {
-                        sendEvent(Event.OpenUrl(result.redirectUrl))
+                        sendEvent(Event.MobileConnectFlowComplete(result.redirectUrl))
                     } else if (!request.isInternal) {
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
@@ -752,7 +752,7 @@ sealed interface Event : OneOffEvent {
     data class RequestCompletionBiometricPrompt(val isSignatureRequired: Boolean) : Event
 
     data object LoginFlowCompleted : Event
-    data class OpenUrl(val url: String) : Event
+    data class MobileConnectFlowComplete(val url: String) : Event
 
     data class DisplayPermission(
         val numberOfAccounts: Int,

@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -38,9 +38,9 @@ data class PersonaDataName(
     }
 }
 
-fun PersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): MessageFromDataChannel.IncomingRequest.PersonaRequestItem? {
+fun PersonaDataRequestItem.toDomainModel(isOngoing: Boolean = false): IncomingMessage.IncomingRequest.PersonaRequestItem? {
     if (isRequestingName == null && numberOfRequestedPhoneNumbers == null && numberOfRequestedEmailAddresses == null) return null
-    return MessageFromDataChannel.IncomingRequest.PersonaRequestItem(
+    return IncomingMessage.IncomingRequest.PersonaRequestItem(
         isRequestingName = isRequestingName == true,
         numberOfRequestedEmailAddresses = numberOfRequestedEmailAddresses?.toDomainModel(),
         numberOfRequestedPhoneNumbers = numberOfRequestedPhoneNumbers?.toDomainModel(),

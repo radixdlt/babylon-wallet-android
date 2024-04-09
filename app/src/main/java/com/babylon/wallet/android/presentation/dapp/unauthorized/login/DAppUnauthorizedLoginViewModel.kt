@@ -9,8 +9,8 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
 import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.IncomingRequestResponse
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.domain.usecases.BuildUnauthorizedDappResponseUseCase
@@ -65,7 +65,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     private val args = DAppUnauthorizedLoginArgs(savedStateHandle)
 
-    private lateinit var request: MessageFromDataChannel.IncomingRequest.UnauthorizedRequest
+    private lateinit var request: IncomingMessage.IncomingRequest.UnauthorizedRequest
 
     init {
         observeSigningState()
@@ -133,7 +133,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
                             request.oneTimeAccountsRequestItem.numberOfValues.quantity,
                             request.oneTimeAccountsRequestItem.numberOfValues.quantifier
-                                == MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                                == IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }

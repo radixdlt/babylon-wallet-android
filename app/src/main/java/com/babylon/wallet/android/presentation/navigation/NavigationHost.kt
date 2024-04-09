@@ -31,10 +31,11 @@ import com.babylon.wallet.android.presentation.dapp.completion.ChooseAccountsCom
 import com.babylon.wallet.android.presentation.dapp.unauthorized.dappLoginUnauthorizedNavGraph
 import com.babylon.wallet.android.presentation.incompatibleprofile.IncompatibleProfileContent
 import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPATIBLE_PROFILE
-import com.babylon.wallet.android.presentation.m2m.m2mScreen
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
+import com.babylon.wallet.android.presentation.mobileconnect.mobileConnect
+import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ADDRESS
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.cloudbackup.connectCloudBackupScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
@@ -527,7 +528,7 @@ fun NavigationHost(
                 navController.popBackStack()
             }
         )
-        m2mScreen(onBackClick = {
+        mobileConnect(onBackClick = {
             navController.popBackStack()
         })
     }

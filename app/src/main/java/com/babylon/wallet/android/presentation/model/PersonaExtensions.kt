@@ -4,7 +4,7 @@ import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.PersonaDataName
 import com.babylon.wallet.android.data.dapp.model.PersonaDataRequestResponseItem
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.radixdlt.sargon.CollectionOfEmailAddresses
