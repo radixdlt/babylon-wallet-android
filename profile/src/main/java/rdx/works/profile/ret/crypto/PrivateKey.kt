@@ -35,16 +35,6 @@ import java.security.KeyFactory
 import java.security.SecureRandom
 import java.security.Security
 
-private typealias EngineSignature = com.radixdlt.ret.Signature
-private typealias EngineSignature_Ed25519 = com.radixdlt.ret.Signature.Ed25519
-private typealias EngineSignature_Secp256k1 = com.radixdlt.ret.Signature.Secp256k1
-private typealias EnginePublicKey = com.radixdlt.ret.PublicKey
-private typealias EnginePublicKey_Ed25519 = com.radixdlt.ret.PublicKey.Ed25519
-private typealias EnginePublicKey_Secp256k1 = com.radixdlt.ret.PublicKey.Secp256k1
-private typealias EngineSignatureWithPublicKey = com.radixdlt.ret.SignatureWithPublicKey
-private typealias EngineSignatureWithPublicKey_Ed25519 = com.radixdlt.ret.SignatureWithPublicKey.Ed25519
-private typealias EngineSignatureWithPublicKey_Secp256k1 = com.radixdlt.ret.SignatureWithPublicKey.Secp256k1
-
 /**
  * A class that provides key-pair and signature abstraction to all the supported curves used for
  * digital signatures.
