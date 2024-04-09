@@ -133,7 +133,7 @@ class EncryptedPreferencesManager @Inject constructor(
         if (dappLinksEncrypted.isNullOrEmpty()) {
             null
         } else {
-            dappLinksEncrypted.decrypt(KeySpec.Profile())// TODO decrypt with mnemonic key
+            dappLinksEncrypted.decrypt(KeySpec.Profile()) // TODO decrypt with mnemonic key
         }
     }.flowOn(ioDispatcher).firstOrNull()?.getOrNull()
 

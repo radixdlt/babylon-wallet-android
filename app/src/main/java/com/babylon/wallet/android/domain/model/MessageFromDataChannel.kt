@@ -41,10 +41,13 @@ sealed interface MessageFromDataChannel {
         val metadata: RequestMetadata
     ) : MessageFromDataChannel {
 
-        val isInternal: Boolean
+        open val isInternal: Boolean
             get() {
                 return metadata.isInternal
             }
+
+        val isRcrRequest: Boolean
+            get() = remoteEntityId is RemoteEntityID.RadixMobileConnectRemoteEntityId
 
         val blockUntilComplete: Boolean
             get() {
@@ -63,19 +66,20 @@ sealed interface MessageFromDataChannel {
             val resetRequestItem: ResetRequestItem? = null
         ) : IncomingRequest(remoteEntityId, interactionId, requestMetadata) {
 
+            override val isInternal: Boolean
+                get() {
+                    return requestMetadata.isInternal || remoteEntityId.value.isEmpty()
+                }
+
             fun needSignatures(): Boolean {
                 return authRequest is AuthRequest.LoginRequest.WithChallenge ||
-                        ongoingAccountsRequestItem?.challenge != null ||
-                        oneTimeAccountsRequestItem?.challenge != null
+                    ongoingAccountsRequestItem?.challenge != null ||
+                    oneTimeAccountsRequestItem?.challenge != null
             }
 
             fun hasOngoingRequestItemsOnly(): Boolean {
                 return isUsePersonaAuth() && hasNoOneTimeRequestItems() && hasNoResetRequestItem() &&
-                        (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
-            }
-
-            fun isInternalRequest(): Boolean {
-                return remoteEntityId.value.isEmpty()
+                    (ongoingAccountsRequestItem != null || ongoingPersonaDataRequestItem != null)
             }
 
             private fun isUsePersonaAuth(): Boolean {
@@ -92,12 +96,12 @@ sealed interface MessageFromDataChannel {
 
             fun hasOnlyAuthItem(): Boolean {
                 return ongoingAccountsRequestItem == null && ongoingPersonaDataRequestItem == null &&
-                        oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
+                    oneTimeAccountsRequestItem == null && oneTimePersonaDataRequestItem == null
             }
 
             fun isValidRequest(): Boolean {
                 return ongoingAccountsRequestItem?.isValidRequestItem() != false &&
-                        oneTimeAccountsRequestItem?.isValidRequestItem() != false
+                    oneTimeAccountsRequestItem?.isValidRequestItem() != false
             }
 
             sealed interface AuthRequest {

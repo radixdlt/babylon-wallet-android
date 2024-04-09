@@ -12,9 +12,6 @@ import android.security.keystore.KeyProperties.KEY_ALGORITHM_AES
 import android.security.keystore.KeyProperties.PURPOSE_DECRYPT
 import android.security.keystore.KeyProperties.PURPOSE_ENCRYPT
 import android.util.Base64
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.agreement.X25519Agreement
 import org.bouncycastle.crypto.generators.X25519KeyPairGenerator
@@ -35,7 +32,6 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
-
 
 /**
  * The implementation of these methods are heavily based on this:
@@ -204,39 +200,6 @@ fun String.decodeHex(): ByteArray {
         .map { it.toInt(16).toByte() }
         .toByteArray()
 }
-
-fun generateX25519TestVectors(): String {
-    val result = mutableListOf<X25519TestVector>()
-    repeat(10) {
-        val kp1 = generateX25519KeyPair().getOrThrow()
-        val kp2 = generateX25519KeyPair().getOrThrow()
-        val secret1 = generateX25519SharedSecret(kp1.first.decodeHex(), kp2.second.decodeHex()).getOrThrow()
-        val secret2 = generateX25519SharedSecret(kp2.first.decodeHex(), kp1.second.decodeHex()).getOrThrow()
-        if (secret1 != secret2) {
-            throw IllegalStateException("Secrets do not match")
-        }
-        result.add(
-            X25519TestVector(
-                kp1.first,
-                kp1.second,
-                kp2.first,
-                kp2.second,
-                secret1
-            )
-        )
-    }
-    return Json.encodeToString(result)
-}
-
-@Serializable
-data class X25519TestVector(
-    val privateKey1: String,
-    val publicKey1: String,
-    val privateKey2: String,
-    val publicKey2: String,
-    val sharedSecret: String
-)
-
 fun generateX25519KeyPair(): Result<Pair<String, String>> {
     return runCatching {
         val generator = X25519KeyPairGenerator()

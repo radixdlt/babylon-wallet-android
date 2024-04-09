@@ -51,6 +51,7 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -90,6 +91,7 @@ fun PersonaDataOnetimeScreen(
                         }
                     }
                 }
+                is Event.OpenUrl -> context.openUrl(event.url)
                 else -> {}
             }
         }

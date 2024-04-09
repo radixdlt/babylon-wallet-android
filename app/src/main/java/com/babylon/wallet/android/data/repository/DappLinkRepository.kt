@@ -40,7 +40,7 @@ class DappLinkRepositoryImpl @Inject constructor(
     override suspend fun getDappLink(sessionId: String): Result<DappLink> {
         return getDappLinks().mapCatching { links ->
             links.firstOrNull { it.sessionId == sessionId }
-                ?: throw IllegalStateException("No dapp link found for session id $sessionId")
+                ?: error("No dapp link found for session id $sessionId")
         }
     }
 
@@ -62,5 +62,4 @@ class DappLinkRepositoryImpl @Inject constructor(
             }
         }
     }
-
 }

@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,14 +24,18 @@ import com.babylon.wallet.android.utils.openUrl
 fun M2MScreen(
     modifier: Modifier = Modifier,
     viewModel: M2MViewModel = hiltViewModel(),
-    onBackClick: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.oneOffEvent.collect { event ->
             when (event) {
-                is M2MViewModel.Event.OpenUrl -> context.openUrl(event.url)
+                is M2MViewModel.Event.OpenUrl -> {
+                    context.openUrl(event.url)
+                    onBackClick()
+                }
+                M2MViewModel.Event.Close -> onBackClick()
             }
         }
     }
@@ -46,7 +49,7 @@ fun M2MContent(
 ) {
     Box(modifier = modifier.padding(RadixTheme.dimensions.paddingDefault)) {
         Column(
-            modifier = modifier.verticalScroll(rememberScrollState()),
+            modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium, Alignment.CenterVertically)
         ) {
             Text(
@@ -67,17 +70,7 @@ fun M2MContent(
                     style = RadixTheme.typography.body1Header
                 )
             }
-            state.receivedRequests.forEach { requestString ->
-                SelectionContainer {
-                    Text(
-                        text = "Received Request: $requestString",
-                        style = RadixTheme.typography.body1Header
-                    )
-                }
-            }
         }
-    }
-    if (state.loadingRadixConnectUrl) {
         FullscreenCircularProgressContent()
     }
 }

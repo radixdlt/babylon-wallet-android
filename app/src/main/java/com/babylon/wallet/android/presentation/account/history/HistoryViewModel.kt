@@ -107,7 +107,7 @@ class HistoryViewModel @Inject constructor(
                     _state.update {
                         it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
                     }
-                }.mapNotNull { it.firstOrNull() }.mapNotNull { accountWithAssets ->
+                }.mapNotNull { it.firstOrNull() }.collectLatest { accountWithAssets ->
                     _state.update { state ->
                         state.copy(accountWithAssets = accountWithAssets)
                     }
@@ -203,7 +203,7 @@ class HistoryViewModel @Inject constructor(
     fun onTimeFilterSelected(timeFilterItem: State.MonthFilter) {
         val existingIndex = _state.value.historyItems?.indexOfFirst {
             it.dateTime?.isAfter(timeFilterItem.start) == true &&
-                    it.dateTime?.isBefore(timeFilterItem.end) == true
+                it.dateTime?.isBefore(timeFilterItem.end) == true
         }
         if (existingIndex == null || existingIndex == -1) {
             viewModelScope.launch {

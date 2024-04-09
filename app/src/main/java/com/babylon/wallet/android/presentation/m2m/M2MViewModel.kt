@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.m2m
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
@@ -13,8 +14,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.HexCoded32Bytes
@@ -24,6 +25,7 @@ import rdx.works.core.generateX25519SharedSecret
 import timber.log.Timber
 import javax.inject.Inject
 
+@Suppress("UnsafeCallOnNullableType")
 @HiltViewModel
 class M2MViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -42,12 +44,13 @@ class M2MViewModel @Inject constructor(
         when {
             args.isValidRequest() -> {
                 viewModelScope.launch {
-                    val dappLink = dappLinkRepository.getDappLink(args.sessionId!!)
-                    _state.update { it.copy(dappLink = dappLink.getOrNull()) }
-                    rcrRepository.getRequest(args.sessionId, args.interactionId!!).mapCatching { walletInteraction ->
-                        walletInteraction.toDomainModel(MessageFromDataChannel.RemoteEntityID.RadixMobileConnectRemoteEntityId(args.sessionId))
+                    rcrRepository.getRequest(args.sessionId!!, args.interactionId!!).mapCatching { walletInteraction ->
+                        walletInteraction.toDomainModel(
+                            MessageFromDataChannel.RemoteEntityID.RadixMobileConnectRemoteEntityId(args.sessionId)
+                        )
                     }.onSuccess { request ->
                         incomingRequestRepository.add(request)
+                        sendEvent(Event.Close)
                     }.onFailure {
                         Timber.d(it)
                     }
@@ -56,10 +59,9 @@ class M2MViewModel @Inject constructor(
 
             args.isValidConnect() -> {
                 viewModelScope.launch {
-                    _state.update { it.copy(loadingRadixConnectUrl = true) }
+                    _state.update { it.copy(isConnecting = true) }
                     wellKnownDAppDefinitionRepository.getWellDappDefinitions(args.origin!!).onSuccess { dAppDefinitions ->
                         val dappDefinition = dAppDefinitions.dAppDefinitions.firstOrNull()
-                        delay(500)
                         dappDefinition?.let {
                             val keyPair = generateX25519KeyPair().getOrNull() ?: return@let
                             val publicKeyHex = keyPair.second
@@ -74,15 +76,24 @@ class M2MViewModel @Inject constructor(
                                 x25519PrivateKeyCompressed = HexCoded32Bytes(keyPair.first),
                                 callbackPath = dAppDefinitions.callbackPath
                             )
-                            _state.update { it.copy(dappLink = dappLink) }
+                            _state.update { state -> state.copy(dappLink = dappLink) }
                             dappLinkRepository.saveDappLink(dappLink).onSuccess {
-                                sendEvent(Event.OpenUrl("${args.origin}?sessionId=${args.sessionId}&publicKey=$publicKeyHex&secret=$secret${dAppDefinitions.callbackPath}"))
-                            }.onFailure {
-                                Timber.d(it)
+                                sendEvent(
+                                    Event.OpenUrl(
+                                        Uri.parse(args.origin).buildUpon().apply {
+                                            appendQueryParameter(Constants.RadixMobileConnect.CONNECT_URL_PARAM_SESSION_ID, args.sessionId)
+                                            appendQueryParameter(Constants.RadixMobileConnect.CONNECT_URL_PARAM_PUBLIC_KEY, publicKeyHex)
+                                            appendQueryParameter(Constants.RadixMobileConnect.CONNECT_URL_PARAM_SECRET, secret)
+                                            fragment(dAppDefinitions.callbackPath?.replace("#", ""))
+                                        }.build().toString()
+                                    )
+                                )
+                            }.onFailure { error ->
+                                Timber.d(error)
                             }
                         }
                     }.onFailure {}
-                    _state.update { it.copy(loadingRadixConnectUrl = false) }
+                    _state.update { it.copy(isConnecting = false) }
                 }
             }
 
@@ -92,6 +103,7 @@ class M2MViewModel @Inject constructor(
 
     sealed class Event : OneOffEvent {
         data class OpenUrl(val url: String) : Event()
+        data object Close : Event()
     }
 }
 
@@ -99,6 +111,5 @@ data class State(
     val dappLink: DappLink? = null,
     val radixConnectUrl: String? = null,
     val receivedPublicKey: String? = null,
-    val loadingRadixConnectUrl: Boolean = false,
-    val receivedRequests: List<String> = emptyList()
+    val isConnecting: Boolean = false
 ) : UiState

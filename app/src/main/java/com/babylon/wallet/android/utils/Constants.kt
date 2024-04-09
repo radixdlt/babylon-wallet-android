@@ -8,4 +8,12 @@ object Constants {
     const val RADIX_START_PAGE_URL = "https://wallet.radixdlt.com/?wallet=downloaded"
     const val DEFAULT_ACCOUNT_NAME = "Unnamed"
     const val MAX_ITEMS_PER_ENTITY_DETAILS_REQUEST = 20
+
+    object RadixMobileConnect {
+        const val CONNECT_URL_PARAM_PUBLIC_KEY = "publicKey"
+        const val CONNECT_URL_PARAM_SECRET = "secret"
+        const val CONNECT_URL_PARAM_SESSION_ID = "sessionId"
+        const val CONNECT_URL_PARAM_ORIGIN = "origin"
+        const val CONNECT_URL_PARAM_INTERACTION_ID = "interactionId"
+    }
 }

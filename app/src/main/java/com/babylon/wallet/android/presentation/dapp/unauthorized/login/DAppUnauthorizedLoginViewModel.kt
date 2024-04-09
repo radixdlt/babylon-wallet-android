@@ -8,6 +8,8 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
+import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.domain.model.IncomingRequestResponse
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toRequiredFields
@@ -131,7 +133,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
                             request.oneTimeAccountsRequestItem.numberOfValues.quantity,
                             request.oneTimeAccountsRequestItem.numberOfValues.quantifier
-                                    == MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                                == MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }
@@ -151,7 +153,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleRequestError(exception: Throwable) {
+    private fun handleRequestError(exception: Throwable) {
         if (exception is RadixWalletException.DappRequestException) {
             logNonFatalException(exception)
             when (exception.cause) {
@@ -182,6 +184,13 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     }
 
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
+        val exception = (_state.value.failureDialogState as? FailureDialogState.Open)?.dappRequestException ?: return@launch
+        respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
+            .onSuccess {
+                if (it is IncomingRequestResponse.SuccessRadixMobileConnect) {
+                    sendEvent(Event.OpenUrl(it.redirectUrl))
+                }
+            }
         _state.update { it.copy(failureDialogState = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.requestId)
@@ -215,9 +224,13 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
 
     fun onRejectRequest() {
         viewModelScope.launch {
-            respondToIncomingRequestUseCase.respondWithFailure(request, WalletErrorType.RejectedByUser)
-            sendEvent(Event.CloseLoginFlow)
             incomingRequestRepository.requestHandled(requestId = args.requestId)
+            respondToIncomingRequestUseCase.respondWithFailure(request, WalletErrorType.RejectedByUser).onSuccess { response ->
+                if (response is IncomingRequestResponse.SuccessRadixMobileConnect) {
+                    sendEvent(Event.OpenUrl(response.redirectUrl))
+                }
+            }
+            sendEvent(Event.CloseLoginFlow)
         }
     }
 
@@ -250,15 +263,20 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 },
                 onetimeSharedPersonaData = state.value.selectedPersonaData,
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-            ).onSuccess {
-                respondToIncomingRequestUseCase.respondWithSuccess(request, it)
-                sendEvent(Event.LoginFlowCompleted)
-                appEventBus.sendEvent(
-                    AppEvent.Status.DappInteraction(
-                        requestId = request.interactionId,
-                        dAppName = state.value.dapp?.name
+            ).mapCatching {
+                respondToIncomingRequestUseCase.respondWithSuccess(request, it).getOrThrow()
+            }.onSuccess { result ->
+                if (result is IncomingRequestResponse.SuccessRadixMobileConnect) {
+                    sendEvent(Event.OpenUrl(result.redirectUrl))
+                } else if (!request.isInternal) {
+                    appEventBus.sendEvent(
+                        AppEvent.Status.DappInteraction(
+                            requestId = request.interactionId,
+                            dAppName = state.value.dapp?.name
+                        )
                     )
-                )
+                }
+                sendEvent(Event.LoginFlowCompleted)
             }.onFailure { exception ->
                 handleRequestError(exception)
             }
@@ -274,6 +292,8 @@ sealed interface Event : OneOffEvent {
 
     data class RequestCompletionBiometricPrompt(val requestDuringSigning: Boolean) : Event
     data object CloseLoginFlow : Event
+
+    data class OpenUrl(val url: String) : Event
 
     data object LoginFlowCompleted : Event
 

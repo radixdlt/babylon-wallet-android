@@ -13,12 +13,21 @@ private const val ARG_DAPP_ORIGIN = "origin"
 private const val ARG_PUBLIC_KEY = "publicKey"
 private const val ARG_SESSION_ID = "sessionId"
 private const val ARG_INTERACTION_ID = "interactionId"
-private const val ROUTE_ARGS =
-    "$ARG_PUBLIC_KEY={$ARG_PUBLIC_KEY}&$ARG_SESSION_ID={$ARG_SESSION_ID}&$ARG_DAPP_ORIGIN={$ARG_DAPP_ORIGIN}&$ARG_INTERACTION_ID={$ARG_INTERACTION_ID}"
+
+private const val ROUTE_ARGS = "$ARG_PUBLIC_KEY={$ARG_PUBLIC_KEY}" +
+    "&$ARG_SESSION_ID={$ARG_SESSION_ID}" +
+    "&$ARG_DAPP_ORIGIN={$ARG_DAPP_ORIGIN}" +
+    "&$ARG_INTERACTION_ID={$ARG_INTERACTION_ID}"
+
 private const val ROUTE = "m2m?$ROUTE_ARGS"
 
 fun NavController.m2mScreen(publicKeyHex: String = "", sessionId: String = "", origin: String = "", interactionId: String = "") {
-    navigate(route = "m2m?$$ARG_PUBLIC_KEY={$publicKeyHex}&$ARG_SESSION_ID={$sessionId}&$ARG_DAPP_ORIGIN={$origin}&$ARG_INTERACTION_ID={$interactionId}")
+    navigate(
+        route = "m2m?$$ARG_PUBLIC_KEY={$publicKeyHex}" +
+            "&$ARG_SESSION_ID={$sessionId}" +
+            "&$ARG_DAPP_ORIGIN={$origin}" +
+            "&$ARG_INTERACTION_ID={$interactionId}"
+    )
 }
 
 internal class M2MArgs(val publicKey: String?, val sessionId: String?, val origin: String?, val interactionId: String? = null) {
@@ -38,9 +47,7 @@ internal class M2MArgs(val publicKey: String?, val sessionId: String?, val origi
     }
 }
 
-fun NavGraphBuilder.m2mScreen(
-    onBackClick: () -> Unit
-) {
+fun NavGraphBuilder.m2mScreen(onBackClick: () -> Unit) {
     composable(
         route = ROUTE,
         deepLinks = listOf(
@@ -74,9 +81,6 @@ fun NavGraphBuilder.m2mScreen(
             slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
         }
     ) {
-        M2MScreen(
-            onBackClick = onBackClick
-        )
+        M2MScreen(onBackClick = onBackClick)
     }
 }
-
