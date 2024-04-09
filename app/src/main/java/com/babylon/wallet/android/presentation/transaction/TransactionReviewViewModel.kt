@@ -10,7 +10,7 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
@@ -234,7 +234,7 @@ class TransactionReviewViewModel @Inject constructor(
     }
 
     data class State(
-        val request: MessageFromDataChannel.IncomingRequest.TransactionRequest? = null,
+        val request: IncomingMessage.IncomingRequest.TransactionRequest? = null,
         val proposingDApp: DApp? = null,
         val endEpoch: ULong? = null,
         val isLoading: Boolean,
@@ -254,7 +254,7 @@ class TransactionReviewViewModel @Inject constructor(
         val isTransactionDismissed: Boolean = false
     ) : UiState {
 
-        val requestNonNull: MessageFromDataChannel.IncomingRequest.TransactionRequest
+        val requestNonNull: IncomingMessage.IncomingRequest.TransactionRequest
             get() = requireNotNull(request)
 
         fun noneRequiredState(): State = copy(

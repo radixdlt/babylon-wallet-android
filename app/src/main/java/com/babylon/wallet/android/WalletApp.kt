@@ -21,7 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKey
@@ -68,17 +68,17 @@ fun WalletApp(
             when (event) {
                 is MainEvent.IncomingRequestEvent -> {
                     when (val incomingRequest = event.request) {
-                        is MessageFromDataChannel.IncomingRequest.TransactionRequest -> {
+                        is IncomingMessage.IncomingRequest.TransactionRequest -> {
                             navController.transactionReview(
                                 requestId = incomingRequest.interactionId
                             )
                         }
 
-                        is MessageFromDataChannel.IncomingRequest.AuthorizedRequest -> {
+                        is IncomingMessage.IncomingRequest.AuthorizedRequest -> {
                             navController.dAppLoginAuthorized(incomingRequest.interactionId)
                         }
 
-                        is MessageFromDataChannel.IncomingRequest.UnauthorizedRequest -> {
+                        is IncomingMessage.IncomingRequest.UnauthorizedRequest -> {
                             navController.dAppLoginUnauthorized(incomingRequest.interactionId)
                         }
                     }

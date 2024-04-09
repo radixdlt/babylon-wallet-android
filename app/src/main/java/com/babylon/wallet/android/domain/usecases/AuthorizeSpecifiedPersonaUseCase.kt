@@ -2,9 +2,9 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.PersonaRequestItem
+import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
+import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
+import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.PersonaRequestItem
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.toRequestedNumberQuantifier
 import com.babylon.wallet.android.domain.model.toRequiredFields

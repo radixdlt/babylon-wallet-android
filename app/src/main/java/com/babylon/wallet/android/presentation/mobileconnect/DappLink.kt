@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.m2m
+package com.babylon.wallet.android.presentation.mobileconnect
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

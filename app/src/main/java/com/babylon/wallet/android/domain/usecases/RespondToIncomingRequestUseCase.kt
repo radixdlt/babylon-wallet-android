@@ -11,9 +11,9 @@ import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.repository.DappLinkRepository
 import com.babylon.wallet.android.data.repository.RcrRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.IncomingRequestResponse
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.presentation.m2m.DappLink
+import com.babylon.wallet.android.presentation.mobileconnect.DappLink
 import com.babylon.wallet.android.utils.Constants
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -29,7 +29,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
 ) {
 
     suspend fun respondWithFailure(
-        request: MessageFromDataChannel.IncomingRequest,
+        request: IncomingMessage.IncomingRequest,
         error: WalletErrorType,
         message: String? = null
     ) =
@@ -42,7 +42,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                 )
             )
             when (request.remoteEntityId) {
-                is MessageFromDataChannel.RemoteEntityID.ConnectorId -> {
+                is IncomingMessage.RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendWalletInteractionResponseFailure(
                         remoteConnectorId = request.remoteEntityId.value,
                         payload = payload
@@ -53,7 +53,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                     })
                 }
 
-                is MessageFromDataChannel.RemoteEntityID.RadixMobileConnectRemoteEntityId -> {
+                is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
                     val link =
                         dAppLinkRepository.getDappLink(request.remoteEntityId.value).getOrNull() ?: return@withContext Result.failure(
                             IllegalStateException("No dapp link found for session id ${request.remoteEntityId.value}")
@@ -75,12 +75,12 @@ class RespondToIncomingRequestUseCase @Inject constructor(
         }
 
     suspend fun respondWithSuccess(
-        request: MessageFromDataChannel.IncomingRequest,
+        request: IncomingMessage.IncomingRequest,
         response: WalletInteractionResponse
     ) =
         withContext(ioDispatcher) {
             when (request.remoteEntityId) {
-                is MessageFromDataChannel.RemoteEntityID.ConnectorId -> {
+                is IncomingMessage.RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendWalletInteractionSuccessResponse(
                         remoteConnectorId = request.remoteEntityId.value,
                         response = response
@@ -91,7 +91,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
                     })
                 }
 
-                is MessageFromDataChannel.RemoteEntityID.RadixMobileConnectRemoteEntityId -> {
+                is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
                     val link =
                         dAppLinkRepository.getDappLink(request.remoteEntityId.value).getOrNull() ?: return@withContext Result.failure(
                             IllegalStateException("No dapp link found for session id ${request.remoteEntityId.value}")
@@ -113,7 +113,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
         }
 
     suspend fun respondWithSuccess(
-        request: MessageFromDataChannel.IncomingRequest,
+        request: IncomingMessage.IncomingRequest,
         txId: String
     ) =
         withContext(ioDispatcher) {
@@ -123,14 +123,14 @@ class RespondToIncomingRequestUseCase @Inject constructor(
             )
             val payload = peerdroidRequestJson.encodeToString(response)
             when (request.remoteEntityId) {
-                is MessageFromDataChannel.RemoteEntityID.ConnectorId -> {
+                is IncomingMessage.RemoteEntityID.ConnectorId -> {
                     dAppMessenger.sendTransactionWriteResponseSuccess(
                         remoteConnectorId = request.remoteEntityId.value,
                         payload = payload
                     )
                 }
 
-                is MessageFromDataChannel.RemoteEntityID.RadixMobileConnectRemoteEntityId -> {
+                is IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession -> {
                     val link =
                         dAppLinkRepository.getDappLink(request.remoteEntityId.value).getOrNull() ?: return@withContext Result.failure(
                             IllegalStateException("No dapp link found for session id ${request.remoteEntityId.value}")
@@ -152,7 +152,7 @@ class RespondToIncomingRequestUseCase @Inject constructor(
         }
 
     private fun buildResponseRedirectUrl(
-        request: MessageFromDataChannel.IncomingRequest,
+        request: IncomingMessage.IncomingRequest,
         link: DappLink
     ) = Uri.parse(request.metadata.origin).buildUpon().apply {
         appendQueryParameter(Constants.RadixMobileConnect.CONNECT_URL_PARAM_SESSION_ID, request.remoteEntityId.value)

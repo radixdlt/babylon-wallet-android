@@ -33,6 +33,8 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.TwoRowsTopAppBar
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
@@ -176,8 +178,8 @@ fun TransactionPreviewHeaderPreview() {
         TransactionPreviewHeader(
             onBackClick = {},
             state = State(
-                request = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                    remoteEntityId = MessageFromDataChannel.RemoteEntityID.ConnectorId(""),
+                request = IncomingMessage.IncomingRequest.TransactionRequest(
+                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
                     interactionId = "",
                     transactionManifestData = TransactionManifestData(
                         instructions = "",

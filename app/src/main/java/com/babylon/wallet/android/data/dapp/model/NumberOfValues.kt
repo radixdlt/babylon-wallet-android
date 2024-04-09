@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -20,6 +20,6 @@ data class NumberOfValues(
     }
 }
 
-fun NumberOfValues.toDomainModel(): MessageFromDataChannel.IncomingRequest.NumberOfValues {
-    return MessageFromDataChannel.IncomingRequest.NumberOfValues(quantity, quantifier.toDomainModel())
+fun NumberOfValues.toDomainModel(): IncomingMessage.IncomingRequest.NumberOfValues {
+    return IncomingMessage.IncomingRequest.NumberOfValues(quantity, quantifier.toDomainModel())
 }

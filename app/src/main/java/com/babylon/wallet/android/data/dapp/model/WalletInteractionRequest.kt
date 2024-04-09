@@ -1,6 +1,9 @@
 package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.TransactionManifestData
+import com.radixdlt.hex.decode
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
@@ -90,7 +93,7 @@ data class WalletTransactionItems(
 }
 
 fun WalletTransactionItems.SendTransactionItem.toDomainModel(
-    remoteConnectorId: MessageFromDataChannel.RemoteEntityID, // from which CE comes the message
+    remoteConnectorId: IncomingMessage.RemoteEntityID, // from which CE comes the message
     requestId: String,
     metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
 ) = MessageFromDataChannel.IncomingRequest.TransactionRequest(
@@ -106,7 +109,7 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
     requestMetadata = metadata
 )
 
-fun WalletInteraction.toDomainModel(remoteEntityId: MessageFromDataChannel.RemoteEntityID): MessageFromDataChannel.IncomingRequest {
+fun WalletInteraction.toDomainModel(remoteEntityId: IncomingMessage.RemoteEntityID): IncomingMessage.IncomingRequest {
     try {
         val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
             networkId = NetworkId.init(discriminant = metadata.networkId.toUByte()),
@@ -133,11 +136,11 @@ fun WalletInteraction.toDomainModel(remoteEntityId: MessageFromDataChannel.Remot
 }
 
 private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
-    remoteEntityId: MessageFromDataChannel.RemoteEntityID,
+    remoteEntityId: IncomingMessage.RemoteEntityID,
     requestId: String,
-    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
-): MessageFromDataChannel.IncomingRequest.UnauthorizedRequest {
-    return MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
+    metadata: IncomingMessage.IncomingRequest.RequestMetadata
+): IncomingMessage.IncomingRequest.UnauthorizedRequest {
+    return IncomingMessage.IncomingRequest.UnauthorizedRequest(
         remoteEntityId = remoteEntityId,
         interactionId = requestId,
         requestMetadata = metadata,
@@ -147,15 +150,15 @@ private fun WalletUnauthorizedRequestItems.parseUnauthorizedRequest(
 }
 
 private fun WalletAuthorizedRequestItems.parseAuthorizedRequest(
-    remoteEntityId: MessageFromDataChannel.RemoteEntityID,
+    remoteEntityId: IncomingMessage.RemoteEntityID,
     requestId: String,
-    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
-): MessageFromDataChannel.IncomingRequest {
+    metadata: IncomingMessage.IncomingRequest.RequestMetadata
+): IncomingMessage.IncomingRequest {
     val auth = when (this.auth) {
         is AuthLoginRequestItem -> auth.toDomainModel()
         is AuthUsePersonaRequestItem -> auth.toDomainModel()
     }
-    return MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
+    return IncomingMessage.IncomingRequest.AuthorizedRequest(
         remoteEntityId = remoteEntityId,
         interactionId = requestId,
         requestMetadata = metadata,

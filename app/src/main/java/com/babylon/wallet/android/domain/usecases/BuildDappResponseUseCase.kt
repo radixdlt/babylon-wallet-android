@@ -13,8 +13,8 @@ import com.babylon.wallet.android.data.dapp.model.WalletUnauthorizedRequestRespo
 import com.babylon.wallet.android.data.dapp.model.toProof
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.babylon.wallet.android.presentation.model.toPersonaDataRequestResponseItem
 import com.radixdlt.sargon.Account
@@ -32,8 +32,9 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
     val signingState = rolaClient.signingState
 
     protected suspend fun buildAccountsResponseItem(
-        request: MessageFromDataChannel.IncomingRequest,
+        request: IncomingMessage.IncomingRequest,
         accounts: List<Account>,
+        accounts: List<Network.Account>,
         challengeHex: String?,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean,
     ): Result<AccountsRequestResponseItem?> {

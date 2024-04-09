@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.data.repository
 
-import com.babylon.wallet.android.presentation.m2m.DappLink
+import com.babylon.wallet.android.presentation.mobileconnect.DappLink
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
@@ -17,7 +17,7 @@ interface DappLinkRepository {
     suspend fun getDappLinks(): Result<List<DappLink>>
 
     suspend fun getDappLink(sessionId: String): Result<DappLink>
-    suspend fun saveDappLink(link: DappLink): Result<Unit>
+    suspend fun saveDappLink(link: DappLink): Result<DappLink>
 }
 
 class DappLinkRepositoryImpl @Inject constructor(
@@ -44,7 +44,7 @@ class DappLinkRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun saveDappLink(link: DappLink): Result<Unit> {
+    override suspend fun saveDappLink(link: DappLink): Result<DappLink> {
         return runCatching {
             withContext(ioDispatcher) {
                 val links = getDappLinks().getOrThrow()
@@ -59,6 +59,7 @@ class DappLinkRepositoryImpl @Inject constructor(
                 }
                 val linksSerialized = json.encodeToString(updatedLinks)
                 encryptedPreferencesManager.putDappLinks(linksSerialized)
+                link
             }
         }
     }

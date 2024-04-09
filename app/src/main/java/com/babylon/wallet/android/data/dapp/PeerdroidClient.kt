@@ -9,6 +9,10 @@ import com.babylon.wallet.android.data.dapp.model.WalletInteractionFailureRespon
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
+import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.hex
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.sargon.RadixConnectPassword
 import kotlinx.coroutines.CoroutineDispatcher
@@ -47,11 +51,11 @@ interface PeerdroidClient {
         message: String
     ): Result<Unit>
 
-    fun listenForIncomingRequests(): Flow<MessageFromDataChannel.IncomingRequest>
+    fun listenForIncomingRequests(): Flow<IncomingMessage.IncomingRequest>
 
-    fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse>
+    fun listenForLedgerResponses(): Flow<IncomingMessage.LedgerResponse>
 
-    fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error>
+    fun listenForIncomingRequestErrors(): Flow<IncomingMessage.Error>
 
     suspend fun deleteLink(connectionPassword: RadixConnectPassword)
 
@@ -94,7 +98,7 @@ class PeerdroidClientImpl @Inject constructor(
         return peerdroidConnector.sendDataChannelMessageToAllRemoteClients(message)
     }
 
-    private fun listenForIncomingMessages(): Flow<MessageFromDataChannel> {
+    private fun listenForIncomingMessages(): Flow<IncomingMessage> {
         return peerdroidConnector
             .dataChannelMessagesFromRemoteClients
             .filterIsInstance<DataChannelWrapperEvent.MessageFromRemoteConnectionId>()
@@ -110,15 +114,15 @@ class PeerdroidClientImpl @Inject constructor(
             .flowOn(ioDispatcher)
     }
 
-    override fun listenForIncomingRequests(): Flow<MessageFromDataChannel.IncomingRequest> {
+    override fun listenForIncomingRequests(): Flow<IncomingMessage.IncomingRequest> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
-    override fun listenForIncomingRequestErrors(): Flow<MessageFromDataChannel.Error> {
+    override fun listenForIncomingRequestErrors(): Flow<IncomingMessage.Error> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
-    override fun listenForLedgerResponses(): Flow<MessageFromDataChannel.LedgerResponse> {
+    override fun listenForLedgerResponses(): Flow<IncomingMessage.LedgerResponse> {
         return listenForIncomingMessages().filterIsInstance()
     }
 
@@ -134,11 +138,11 @@ class PeerdroidClientImpl @Inject constructor(
     private suspend fun parseIncomingMessage(
         remoteConnectorId: String,
         messageInJsonString: String
-    ): MessageFromDataChannel {
+    ): IncomingMessage {
         return try {
             when (val payload = peerdroidRequestJson.decodeFromString<ConnectorExtensionInteraction>(messageInJsonString)) {
                 is WalletInteraction -> payload.toDomainModel(
-                    remoteEntityId = MessageFromDataChannel.RemoteEntityID.ConnectorId(
+                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(
                         remoteConnectorId
                     )
                 )
@@ -148,7 +152,7 @@ class PeerdroidClientImpl @Inject constructor(
         } catch (serializationException: SerializationException) {
             // TODO a snackbar message error like iOS
             Timber.e("failed to parse incoming message with serialization exception: ${serializationException.localizedMessage}")
-            MessageFromDataChannel.ParsingError
+            IncomingMessage.ParsingError
         } catch (incompatibleRequestVersionException: IncompatibleRequestVersionException) {
             val requestVersion = incompatibleRequestVersionException.requestVersion
             val currentVersion = WalletInteraction.Metadata.VERSION
@@ -157,14 +161,14 @@ class PeerdroidClientImpl @Inject constructor(
                 requestId = incompatibleRequestVersionException.requestId,
                 remoteConnectorId = remoteConnectorId
             )
-            MessageFromDataChannel.ParsingError
+            IncomingMessage.ParsingError
         } catch (e: RadixWalletException.IncomingMessageException.MessageParse) {
-            MessageFromDataChannel.Error(e)
+            IncomingMessage.Error(e)
         } catch (e: RadixWalletException.IncomingMessageException.LedgerResponseParse) {
-            MessageFromDataChannel.Error(e)
+            IncomingMessage.Error(e)
         } catch (exception: Exception) {
             Timber.e("failed to parse incoming message: ${exception.localizedMessage}")
-            MessageFromDataChannel.Error(RadixWalletException.IncomingMessageException.Unknown(exception))
+            IncomingMessage.Error(RadixWalletException.IncomingMessageException.Unknown(exception))
         }
     }
 

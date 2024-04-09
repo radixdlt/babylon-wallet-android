@@ -165,7 +165,7 @@ private fun HandleOneOffEvents(
                 is Event.PersonaDataOngoing -> onPersonaDataOngoing(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
                 is Event.RequestCompletionBiometricPrompt -> onBiometricPrompt(event.isSignatureRequired)
-                is Event.OpenUrl -> context.openUrl(event.url)
+                is Event.MobileConnectFlowComplete -> context.openUrl(event.url)
             }
         }
     }

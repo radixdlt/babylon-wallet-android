@@ -53,6 +53,7 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -82,6 +83,7 @@ fun PersonaDataOnetimeScreen(
         sharedViewModel.oneOffEvent.collect { event ->
             when (event) {
                 is Event.LoginFlowCompleted -> onLoginFlowComplete()
+                is Event.MobileConnectFlowComplete -> context.openUrl(event.url)
                 is Event.RequestCompletionBiometricPrompt -> {
                     if (event.isSignatureRequired) {
                         sharedViewModel.completeRequestHandling(deviceBiometricAuthenticationProvider = {
