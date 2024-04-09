@@ -132,27 +132,6 @@ data class ValidatorWithStakes(
             }
         }
     }
-
-    companion object {
-        fun from(
-            liquidStakeUnits: List<LiquidStakeUnit>,
-            stakeClaims: List<StakeClaim>
-        ): List<ValidatorWithStakes> {
-            val validators = (liquidStakeUnits.map { it.validator } + stakeClaims.map { it.validator }).toSet()
-
-            return validators.mapNotNull { validator ->
-                val lsu = liquidStakeUnits.find { it.validator == validator }
-                val claimCollection = stakeClaims.find { it.validator == validator }
-                if (lsu == null && claimCollection == null) return@mapNotNull null
-
-                ValidatorWithStakes(
-                    validatorDetail = validator,
-                    liquidStakeUnit = lsu,
-                    stakeClaimNft = claimCollection
-                )
-            }
-        }
-    }
 }
 
 data class StakeSummary(
