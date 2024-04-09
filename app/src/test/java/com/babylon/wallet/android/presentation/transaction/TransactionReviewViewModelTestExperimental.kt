@@ -29,7 +29,6 @@ import com.radixdlt.sargon.PerRecipientAssetTransfer
 import com.radixdlt.sargon.PerRecipientAssetTransfers
 import com.radixdlt.sargon.PerRecipientFungibleTransfer
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.perRecipientTransfers
@@ -132,12 +131,12 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         coEvery { stateRepository.getOwnedXRD(testProfile.networks.first().accounts) } returns Result.success(
             testProfile.networks.first().accounts.associateWith { BigDecimal.TEN }
         )
-        val notarisation = NotarizationResult(
+        val notarization = NotarizationResult(
             intentHash = IntentHash.sample(),
             compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
             endEpoch = 0u
         )
-        coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(notarisation)
+        coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(notarization)
         coEvery { transactionRepository.submitTransaction(any()) } returns Result.success(TransactionSubmitResponse(duplicate = false))
 
 
