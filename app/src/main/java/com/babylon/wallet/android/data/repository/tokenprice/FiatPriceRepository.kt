@@ -16,6 +16,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
@@ -192,7 +193,7 @@ class TestnetFiatPriceRepository @Inject constructor(
             addresses.associate { priceRequestAddress ->
                 if (prices.isEmpty()) {
                     // if the token price service (getFiatPrices) returns emptyMap we can't give random price
-                    priceRequestAddress.address to FiatPrice(0.0, currency)
+                    priceRequestAddress.address to FiatPrice(0.toDecimal192(), currency)
                 } else if (priceRequestAddress.address in XrdResource.addressesPerNetwork().values) {
                     priceRequestAddress.address to xrdPrice
                 } else {

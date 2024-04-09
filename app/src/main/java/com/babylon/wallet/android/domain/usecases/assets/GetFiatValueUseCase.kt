@@ -9,7 +9,6 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.times
-import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.FiatPrice
@@ -20,7 +19,6 @@ import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.XrdResource
-import rdx.works.core.domain.toDouble
 import rdx.works.core.then
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
@@ -168,7 +166,7 @@ class GetFiatValueUseCase @Inject constructor(
                 asset = this,
                 price = tokenPrice?.let {
                     FiatPrice(
-                        price = (it.price.toDecimal192() * resource.ownedAmount.orZero()).toDouble(),
+                        price = it.price * resource.ownedAmount.orZero(),
                         currency = it.currency
                     )
                 }
@@ -177,14 +175,14 @@ class GetFiatValueUseCase @Inject constructor(
 
         is LiquidStakeUnit -> {
             val tokenPrice = fiatPrices[resourceAddress]
-            val priceForLSU = tokenPrice?.price?.toDecimal192().orZero()
+            val priceForLSU = tokenPrice?.price.orZero()
             val totalPrice = priceForLSU * fungibleResource.ownedAmount.orZero()
             val xrdPrice = fiatPrices[XrdResource.address(networkId = networkId.value)]?.price
 
             AssetPrice.LSUPrice(
                 asset = this,
                 price = FiatPrice(
-                    price = totalPrice.toDouble(),
+                    price = totalPrice,
                     currency = currency
                 ),
                 oneXrdPrice = xrdPrice?.let {
@@ -203,7 +201,7 @@ class GetFiatValueUseCase @Inject constructor(
 
                 if (poolItemFiatPrice != null && poolItemRedemptionValue != null) {
                     FiatPrice(
-                        price = (poolItemFiatPrice.price.toDecimal192() * poolItemRedemptionValue).toDouble(),
+                        price = poolItemFiatPrice.price * poolItemRedemptionValue,
                         currency = poolItemFiatPrice.currency
                     )
                 } else {
@@ -226,7 +224,7 @@ class GetFiatValueUseCase @Inject constructor(
                 val claimAmountXrd = it.claimAmountXrd
                 if (claimAmountXrd != null && xrdPrice != null) {
                     FiatPrice(
-                        price = (claimAmountXrd * xrdPrice.price.toDecimal192()).toDouble(),
+                        price = claimAmountXrd * xrdPrice.price,
                         currency = xrdPrice.currency
                     )
                 } else {

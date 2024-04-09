@@ -40,6 +40,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
@@ -283,7 +284,7 @@ fun AccountCardPreview() {
                     )
                 ),
                 isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 3450900.899, currency = SupportedCurrency.USD),
+                fiatTotalValue = FiatPrice(price = 3450900.899.toDecimal192(), currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
                 isLoadingBalance = false,
@@ -314,7 +315,7 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     )
                 ),
                 isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 3450.0, currency = SupportedCurrency.USD),
+                fiatTotalValue = FiatPrice(price = 3450.0.toDecimal192(), currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
                 isLoadingBalance = false,
@@ -345,7 +346,7 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     )
                 ),
                 isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 345008999008932.4, currency = SupportedCurrency.USD),
+                fiatTotalValue = FiatPrice(price = 345008999008932.4.toDecimal192(), currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
                 isLoadingBalance = false,
@@ -377,7 +378,7 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         )
                     ),
                     isFiatBalancesEnabled = true,
-                    fiatTotalValue = FiatPrice(price = 34509008998732.4, currency = SupportedCurrency.USD),
+                    fiatTotalValue = FiatPrice(price = 34509008998732.4.toDecimal192(), currency = SupportedCurrency.USD),
                     accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                     isLoadingResources = false,
                     isLoadingBalance = false,
@@ -407,7 +408,7 @@ fun AccountCardLoadingPreview() {
                     )
                 ),
                 isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 3450900899.0, currency = SupportedCurrency.USD),
+                fiatTotalValue = FiatPrice(price = 3450900899.0.toDecimal192(), currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = true,
                 isLoadingBalance = true,

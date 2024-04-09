@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.gateway.model
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntity
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
@@ -29,7 +30,7 @@ data class TokenPriceResponse(
             return map { tokenPrice ->
                 TokenPriceEntity(
                     resourceAddress = ResourceAddress.init(tokenPrice.resourceAddress),
-                    price = tokenPrice.price,
+                    price = tokenPrice.price.toDecimal192(),
                     currency = tokenPrice.currency,
                     synced = InstantGenerator()
                 )

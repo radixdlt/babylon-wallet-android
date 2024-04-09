@@ -1,5 +1,6 @@
 package rdx.works.core.domain.assets
 
+import com.radixdlt.sargon.extensions.toDecimal192
 import java.util.Currency
 
 enum class SupportedCurrency(val code: String) {
@@ -17,7 +18,7 @@ enum class SupportedCurrency(val code: String) {
 
             val symbolEscaped = Regex.escape(symbol)
             return FiatPrice(
-                price = 1.0,
+                price = 1.0.toDecimal192(),
                 currency = this
             ).formatted.replace("[^$symbolEscaped]+".toRegex(), hiddenPriceCharacters)
         }
@@ -28,7 +29,7 @@ enum class SupportedCurrency(val code: String) {
 
             val symbolEscaped = Regex.escape(symbol)
             return FiatPrice(
-                price = 1.0,
+                price = 1.0.toDecimal192(),
                 currency = this
             ).formatted.replace("[^$symbolEscaped]+".toRegex(), errorPriceCharacter)
         }

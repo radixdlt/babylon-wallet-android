@@ -1,5 +1,7 @@
 package rdx.works.core.domain.assets
 
+import com.radixdlt.sargon.extensions.compareTo
+
 class TokensPriceSorter(
     private val pricesPerAsset: Map<Asset, AssetPrice?>?
 ) : Comparator<Token> {

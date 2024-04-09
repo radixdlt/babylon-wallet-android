@@ -2,6 +2,7 @@ package com.babylon.wallet.core.domain.assets
 
 import com.radixdlt.derivation.model.NetworkId
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
 import junit.framework.TestCase.assertEquals
 import org.junit.Test
@@ -75,10 +76,10 @@ class TokensPriceSorterTest {
     @Test
     fun `given some prices, the tokens are sorted based on prices first`() {
         val pricesPerAsset = mapOf<Asset, AssetPrice>(
-            xrdToken to AssetPrice.TokenPrice(xrdToken, FiatPrice(1.0, SupportedCurrency.USD)),
+            xrdToken to AssetPrice.TokenPrice(xrdToken, FiatPrice(1.toDecimal192(), SupportedCurrency.USD)),
             otherToken1 to AssetPrice.TokenPrice(otherToken1, null),
-            otherToken2 to AssetPrice.TokenPrice(otherToken2, FiatPrice(20.0, SupportedCurrency.USD)),
-            otherToken3 to AssetPrice.TokenPrice(otherToken3, FiatPrice(10.0, SupportedCurrency.USD)),
+            otherToken2 to AssetPrice.TokenPrice(otherToken2, FiatPrice(20.toDecimal192(), SupportedCurrency.USD)),
+            otherToken3 to AssetPrice.TokenPrice(otherToken3, FiatPrice(10.toDecimal192(), SupportedCurrency.USD)),
         )
         val sut = TokensPriceSorter(pricesPerAsset = pricesPerAsset)
 
