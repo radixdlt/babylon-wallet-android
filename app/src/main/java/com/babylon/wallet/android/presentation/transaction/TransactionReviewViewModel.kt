@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Badge
+import rdx.works.core.domain.resources.Divisibility
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.roundedWith
@@ -550,7 +551,7 @@ sealed interface AccountWithPredictedGuarantee {
     val guaranteedAmount: Decimal192
         get() = (transferable.amount * guaranteeOffsetDecimal.toDecimal192()).roundedWith(divisibility)
 
-    private val divisibility: UByte?
+    private val divisibility: Divisibility?
         get() = when (val asset = transferable) {
             is TransferableAsset.Fungible.Token -> {
                 asset.resource.divisibility

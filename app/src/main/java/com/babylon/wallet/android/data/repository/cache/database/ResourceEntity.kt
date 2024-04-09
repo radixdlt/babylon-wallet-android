@@ -21,6 +21,7 @@ import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.resources.Divisibility
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.Metadata
@@ -39,7 +40,7 @@ data class ResourceEntity(
     @PrimaryKey val address: ResourceAddress,
     val type: ResourceEntityType,
     val metadata: MetadataColumn?,
-    val divisibility: Int?,
+    val divisibility: Divisibility?,
     val behaviours: BehavioursColumn?,
     @ColumnInfo("validator_address")
     val validatorAddress: ValidatorAddress?,
@@ -67,7 +68,7 @@ data class ResourceEntity(
                     ownedAmount = amount,
                     assetBehaviours = behaviours?.behaviours?.toSet(),
                     currentSupply = supply,
-                    divisibility = divisibility?.toUByte(),
+                    divisibility = divisibility,
                     metadata = metadata?.metadata.orEmpty() + validatorAndPoolMetadata
                 )
             }
@@ -90,7 +91,7 @@ data class ResourceEntity(
             is Resource.FungibleResource -> ResourceEntity(
                 address = address,
                 type = ResourceEntityType.FUNGIBLE,
-                divisibility = divisibility?.toInt(),
+                divisibility = divisibility,
                 behaviours = behaviours?.let { BehavioursColumn(it) },
                 supply = currentSupply,
                 validatorAddress = metadata.validatorAddress(),
@@ -173,7 +174,7 @@ data class ResourceEntity(
             return ResourceEntity(
                 address = address,
                 type = type,
-                divisibility = details?.divisibility()?.toInt(),
+                divisibility = details?.divisibility(),
                 behaviours = details?.let { BehavioursColumn(it.extractBehaviours()) },
                 supply = details?.totalSupply(),
                 validatorAddress = metadata.validatorAddress(),

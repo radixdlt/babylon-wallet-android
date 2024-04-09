@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.domain.assets.AssetBehaviour
+import rdx.works.core.domain.resources.Divisibility
 import rdx.works.core.domain.resources.metadata.Metadata
 import java.time.Instant
 
@@ -141,5 +142,16 @@ class StateDatabaseConverters {
     @TypeConverter
     fun vaultAddressToString(vaultAddress: VaultAddress?): String? {
         return vaultAddress?.string
+    }
+
+    // Divisibility
+    @TypeConverter
+    fun intToDivisibility(divisibility: Int?): Divisibility? {
+        return divisibility?.let { Divisibility(it.toUByte()) }
+    }
+
+    @TypeConverter
+    fun divisibilityToInt(divisibility: Divisibility?): Int? {
+        return divisibility?.value?.toInt()
     }
 }

@@ -54,7 +54,7 @@ sealed class Resource {
         val ownedAmount: Decimal192?,
         private val assetBehaviours: AssetBehaviours? = null,
         val currentSupply: Decimal192? = null,
-        val divisibility: UByte? = null,
+        val divisibility: Divisibility? = null,
         override val metadata: List<Metadata> = emptyList()
     ) : Resource(), Comparable<FungibleResource> {
         override val name: String by lazy {

@@ -8,6 +8,7 @@ import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.domain.resources.AccountDetails
+import rdx.works.core.domain.resources.Divisibility
 import rdx.works.core.domain.resources.metadata.AccountType
 import java.time.Instant
 
@@ -33,7 +34,7 @@ data class AccountPortfolioResponse(
     private val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
     private val poolAddress: PoolAddress?,
-    private val divisibility: Int?,
+    private val divisibility: Divisibility?,
     private val behaviours: BehavioursColumn?,
     private val supply: Decimal192?,
     private val metadata: MetadataColumn?,
@@ -87,7 +88,7 @@ data class PoolWithResourceResponse(
     private val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
     private val poolAddress: PoolAddress?,
-    private val divisibility: Int?,
+    private val divisibility: Divisibility?,
     private val behaviours: BehavioursColumn?,
     private val supply: Decimal192?,
     private val metadata: MetadataColumn?,

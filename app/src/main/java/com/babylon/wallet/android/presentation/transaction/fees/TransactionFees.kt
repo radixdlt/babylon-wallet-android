@@ -139,7 +139,7 @@ data class TransactionFees(
     @Suppress("MagicNumber")
     val feePaddingAmountToDisplay: String
         get() = feePaddingAmount
-            ?: defaultPadding.formatted(totalPlaces = 10u) // TODO decimal192
+            ?: defaultPadding.formatted()
 
     val feePaddingAmountForCalculation: Decimal192
         get() = if (feePaddingAmount.isNullOrEmpty()) {

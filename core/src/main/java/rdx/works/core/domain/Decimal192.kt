@@ -10,9 +10,10 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import rdx.works.core.domain.resources.Divisibility
 
-fun Decimal192.roundedWith(divisibility: UByte?) = if (divisibility != null) {
-    rounded(divisibility) // TODO decimal192
+fun Decimal192.roundedWith(divisibility: Divisibility?) = if (divisibility != null) {
+    rounded(divisibility.value)
 } else {
     this
 }

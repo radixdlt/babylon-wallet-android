@@ -86,7 +86,7 @@ class PrepareManifestDelegate @Inject constructor(
             PerAssetTransfersOfFungibleResource(
                 resource = PerAssetFungibleResource(
                     resourceAddress = entry.key.address,
-                    divisibility = entry.key.divisibility?.toUByte()
+                    divisibility = entry.key.divisibility?.value
                 ),
                 transfers = entry.value
             )
