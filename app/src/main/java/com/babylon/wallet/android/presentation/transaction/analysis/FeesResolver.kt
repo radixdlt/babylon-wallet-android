@@ -4,7 +4,7 @@ import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.guaranteesCount
-import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.toDecimal192
 
@@ -15,11 +15,11 @@ object FeesResolver {
         previewType: PreviewType
     ): TransactionFees {
         return TransactionFees(
-            nonContingentFeeLock = summary.feeLocks.lock.asStr().toDecimal192(),
-            networkExecution = summary.feeSummary.executionCost.asStr().toDecimal192(),
-            networkFinalization = summary.feeSummary.finalizationCost.asStr().toDecimal192(),
-            networkStorage = summary.feeSummary.storageExpansionCost.asStr().toDecimal192(),
-            royalties = summary.feeSummary.royaltyCost.asStr().toDecimal192(),
+            nonContingentFeeLock = summary.feeLocks.lock,
+            networkExecution = summary.feeSummary.executionCost,
+            networkFinalization = summary.feeSummary.finalizationCost,
+            networkStorage = summary.feeSummary.storageExpansionCost,
+            royalties = summary.feeSummary.royaltyCost,
             guaranteesCount = (previewType as? PreviewType.Transfer)?.to?.guaranteesCount() ?: 0,
             notaryIsSignatory = notaryAndSigners.notaryIsSignatory,
             includeLockFee = false, // First its false because we don't know if lock fee is applicable or not yet

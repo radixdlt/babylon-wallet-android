@@ -16,7 +16,7 @@ import com.babylon.wallet.android.presentation.transaction.TransactionErrorMessa
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.PreviewTypeAnalyzer
 import com.radixdlt.hex.extensions.toHexString
-import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.extensions.secureRandom
 import com.radixdlt.sargon.extensions.value

@@ -5,16 +5,13 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.ResourceIndicator
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.ResourceIndicator
+import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.div
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.times
-import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -60,18 +57,18 @@ class ValidatorStakeProcessor @Inject constructor(
         executionSummary: ExecutionSummary,
         assets: List<Asset>,
         involvedOwnedAccounts: List<Network.Account>
-    ) = executionSummary.accountDeposits.map { depositsPerAccount ->
+    ) = executionSummary.deposits.map { depositsPerAccount ->
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         depositsPerAccount.value.map { depositedResource ->
             val asset = assets.find {
-                it.resource.address == depositedResource.resourceAddress
+                it.resource.address == depositedResource.address
             } ?: error("No asset found")
             if (asset is LiquidStakeUnit) {
                 resolveLSU(asset, depositedResource, defaultDepositGuarantees)
             } else {
                 executionSummary.resolveDepositingAsset(depositedResource, assets, defaultDepositGuarantees)
             }
-        }.toAccountWithTransferableResources(AccountAddress.init(depositsPerAccount.key), involvedOwnedAccounts)
+        }.toAccountWithTransferableResources(depositsPerAccount.key, involvedOwnedAccounts)
     }
 
     private fun DetailedManifestClass.ValidatorStake.resolveLSU(
@@ -79,9 +76,9 @@ class ValidatorStakeProcessor @Inject constructor(
         depositedResource: ResourceIndicator,
         defaultDepositGuarantees: Double
     ): Transferable.Depositing {
-        val relatedStakes = validatorStakes.filter { it.liquidStakeUnitAddress.addressString() == asset.resourceAddress.string }
-        val totalStakedLsuForAccount = relatedStakes.sumOf { it.liquidStakeUnitAmount.asStr().toDecimal192() }
-        val totalStakeXrdWorthForAccount = relatedStakes.sumOf { it.xrdAmount.asStr().toDecimal192() }
+        val relatedStakes = validatorStakes.filter { it.liquidStakeUnitAddress == asset.resourceAddress }
+        val totalStakedLsuForAccount = relatedStakes.sumOf { it.liquidStakeUnitAmount }
+        val totalStakeXrdWorthForAccount = relatedStakes.sumOf { it.xrdAmount }
         val lsuAmount = depositedResource.amount
         val xrdWorth = ((lsuAmount / totalStakedLsuForAccount) * totalStakeXrdWorthForAccount).roundedWith(asset.resource.divisibility)
         val guaranteeType = depositedResource.guaranteeType(defaultDepositGuarantees)

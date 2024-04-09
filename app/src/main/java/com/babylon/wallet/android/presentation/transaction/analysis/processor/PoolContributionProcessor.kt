@@ -5,15 +5,11 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.extensions.address
+import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.sumOf
-import com.radixdlt.sargon.extensions.toDecimal192
-import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.PoolUnit
@@ -54,29 +50,28 @@ class PoolContributionProcessor @Inject constructor(
         defaultDepositGuarantee: Double,
         involvedOwnedAccounts: List<Network.Account>
     ): List<AccountWithTransferableResources> {
-        val to = accountDeposits.map { depositsPerAddress ->
+        val to = deposits.map { depositsPerAddress ->
             depositsPerAddress.value.map { deposit ->
-                val resourceAddress = deposit.resourceAddress
-                val poolUnit = assets.find { it.resource.address == resourceAddress } as? PoolUnit
+                val poolUnit = assets.find { it.resource.address == deposit.address } as? PoolUnit
                 if (poolUnit == null) {
                     resolveDepositingAsset(deposit, assets, defaultDepositGuarantee)
                 } else {
                     val contributions = classification.poolContributions.filter {
-                        it.poolUnitsResourceAddress.addressString() == resourceAddress.string
+                        it.poolUnitsResourceAddress == deposit.address
                     }
                     val contributedResourceAddresses = contributions.first().contributedResources.keys
                     val guaranteeType = deposit.guaranteeType(defaultDepositGuarantee)
                     val poolUnitAmount = contributions.find {
-                        it.poolUnitsResourceAddress.addressString() == poolUnit.resourceAddress.string
-                    }?.poolUnitsAmount?.asStr()?.toDecimal192OrNull()
-                    val contributionPerResource = contributedResourceAddresses.associate { contributedResourceAddress ->
-                        ResourceAddress.init(contributedResourceAddress) to contributions.mapNotNull {
-                            it.contributedResources[contributedResourceAddress]?.asStr()?.toDecimal192()
+                        it.poolUnitsResourceAddress == poolUnit.resourceAddress
+                    }?.poolUnitsAmount.orZero()
+                    val contributionPerResource = contributedResourceAddresses.associateWith { contributedResourceAddress ->
+                        contributions.mapNotNull {
+                            it.contributedResources[contributedResourceAddress]
                         }.sumOf { it }
                     }
                     Transferable.Depositing(
                         transferable = TransferableAsset.Fungible.PoolUnitAsset(
-                            amount = contributions.map { it.poolUnitsAmount.asStr().toDecimal192() }.sumOf { it },
+                            amount = contributions.map { it.poolUnitsAmount }.sumOf { it },
                             unit = poolUnit.copy(
                                 stake = poolUnit.stake.copy(ownedAmount = poolUnitAmount)
                             ),
@@ -85,7 +80,7 @@ class PoolContributionProcessor @Inject constructor(
                         guaranteeType = guaranteeType,
                     )
                 }
-            }.toAccountWithTransferableResources(AccountAddress.init(depositsPerAddress.key), involvedOwnedAccounts)
+            }.toAccountWithTransferableResources(depositsPerAddress.key, involvedOwnedAccounts)
         }
         return to
     }
