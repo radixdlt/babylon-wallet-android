@@ -58,14 +58,13 @@ import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import com.radixdlt.sargon.samples.sampleMainnet
-import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.sampleMainnet
-import rdx.works.core.domain.toDecimal192OrNull
 
 @Composable
 fun SpendingAssetItem(
@@ -141,7 +140,7 @@ private fun ColumnScope.FungibleSpendingAsset(
             modifier = Modifier
                 .weight(1f),
             text = resource.displayTitle.ifEmpty {
-                stringResource(id = com.babylon.wallet.android.R.string.transactionReview_unknown)
+                stringResource(id = R.string.transactionReview_unknown)
             },
             style = RadixTheme.typography.body2HighImportance,
             color = RadixTheme.colors.gray1,

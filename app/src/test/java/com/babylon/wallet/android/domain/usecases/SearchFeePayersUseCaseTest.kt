@@ -7,7 +7,7 @@ import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.mockdata.account
 import com.babylon.wallet.android.mockdata.profile
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.AssetsTransfersRecipient
+import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
@@ -111,7 +111,7 @@ class SearchFeePayersUseCaseTest {
                                 PerAssetFungibleTransfer(
                                     useTryDepositOrAbort = true,
                                     amount = 10.toDecimal192(),
-                                    recipient = AssetsTransfersRecipient.ForeignAccount(
+                                    recipient = AccountOrAddressOf.AddressOfExternalAccount(
                                         value = AccountAddress.sampleMainnet()
                                     )
                                 )

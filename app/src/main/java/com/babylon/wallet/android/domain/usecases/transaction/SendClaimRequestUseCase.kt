@@ -6,13 +6,13 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NonFungibleResourceAddress
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.stakesClaim
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.sumOf
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.assets.StakeClaim
-import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.Resource
-import rdx.works.core.domain.sumOf
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 

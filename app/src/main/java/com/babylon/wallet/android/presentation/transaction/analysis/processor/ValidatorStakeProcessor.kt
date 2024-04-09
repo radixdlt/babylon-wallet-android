@@ -12,6 +12,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.div
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.first
@@ -19,7 +20,6 @@ import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.roundedWith
-import rdx.works.core.domain.sumOf
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork

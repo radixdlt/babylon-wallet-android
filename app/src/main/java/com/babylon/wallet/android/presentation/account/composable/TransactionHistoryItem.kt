@@ -38,13 +38,11 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.name
 import com.babylon.wallet.android.utils.timestampHoursMinutes
 import com.radixdlt.sargon.extensions.abs
 import com.radixdlt.sargon.extensions.formatted
-import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.Resource
 import timber.log.Timber
 

@@ -7,6 +7,7 @@ import com.babylon.wallet.android.data.repository.tokenprice.Mainnet
 import com.babylon.wallet.android.data.repository.tokenprice.Testnet
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.Asset
@@ -18,7 +19,6 @@ import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.toDouble
 import rdx.works.core.then

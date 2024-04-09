@@ -27,11 +27,11 @@ import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
-import rdx.works.core.domain.formatted
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
-import rdx.works.core.domain.toDecimal192OrNull
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

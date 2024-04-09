@@ -40,11 +40,11 @@ import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBal
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.toDecimal192
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.LiquidStakeUnit
-import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.profile.data.model.apppreferences.Radix

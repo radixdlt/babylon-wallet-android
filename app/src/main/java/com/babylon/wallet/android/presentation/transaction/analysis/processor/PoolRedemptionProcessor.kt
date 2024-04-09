@@ -11,11 +11,11 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.PoolUnit
-import rdx.works.core.domain.sumOf
-import rdx.works.core.domain.toDecimal192OrNull
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject

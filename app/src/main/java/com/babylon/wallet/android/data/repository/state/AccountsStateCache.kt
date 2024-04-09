@@ -23,6 +23,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.orZero
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -49,7 +50,6 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.core.domain.orZero
 import rdx.works.core.domain.resources.AccountDetails
 import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource

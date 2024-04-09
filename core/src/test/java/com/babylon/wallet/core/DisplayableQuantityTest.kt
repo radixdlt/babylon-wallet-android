@@ -1,5 +1,6 @@
 package com.babylon.wallet.core
 
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.toDecimal192
 import org.junit.Assert
 import org.junit.Rule
@@ -7,7 +8,6 @@ import org.junit.Test
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
-import rdx.works.core.domain.formatted
 import java.util.Locale
 
 class TokenQuantityToDisplayTest {

@@ -8,7 +8,7 @@ import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.AssetsTransfersRecipient
+import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.PerAssetFungibleResource
 import com.radixdlt.sargon.PerAssetFungibleTransfer
 import com.radixdlt.sargon.PerAssetNonFungibleTransfer
@@ -124,9 +124,9 @@ class PrepareManifestDelegate @Inject constructor(
         }
     }
 
-    private fun TargetAccount.toAssetTransfersRecipient(): AssetsTransfersRecipient = when (this) {
-        is TargetAccount.Other -> AssetsTransfersRecipient.ForeignAccount(value = AccountAddress.init(address))
-        is TargetAccount.Owned -> AssetsTransfersRecipient.MyOwnAccount(value = account.toSargon())
+    private fun TargetAccount.toAssetTransfersRecipient(): AccountOrAddressOf = when (this) {
+        is TargetAccount.Other -> AccountOrAddressOf.AddressOfExternalAccount(value = AccountAddress.init(address))
+        is TargetAccount.Owned -> AccountOrAddressOf.ProfileAccount(value = account.toSargon())
         is TargetAccount.Skeleton -> error("Not a valid recipient")
     }
 

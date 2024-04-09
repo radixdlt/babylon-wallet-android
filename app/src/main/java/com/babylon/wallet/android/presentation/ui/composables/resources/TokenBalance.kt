@@ -10,7 +10,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.radixdlt.sargon.Decimal192
-import rdx.works.core.domain.formatted
+import com.radixdlt.sargon.extensions.formatted
 
 @Composable
 fun TokenBalance(

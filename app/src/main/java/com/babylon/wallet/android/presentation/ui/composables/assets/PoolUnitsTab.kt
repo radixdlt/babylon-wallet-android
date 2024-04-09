@@ -27,12 +27,12 @@ import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
 import rdx.works.core.domain.assets.AssetPrice
 import rdx.works.core.domain.assets.PoolUnit
-import rdx.works.core.domain.formatted
 import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.poolUnitsTab(
