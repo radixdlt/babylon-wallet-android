@@ -47,10 +47,16 @@ class DerivePublicKeyViewModel @Inject constructor(
             input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
             when (input.factorSource) {
                 is LedgerHardwareWalletFactorSource -> {
-                    derivePublicKey().onSuccess {
-                        sendEvent(Event.AccessingFactorSourceCompleted)
+                    if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist()) {
+                        derivePublicKey().onSuccess {
+                            sendEvent(Event.AccessingFactorSourceCompleted)
+                        }
+                    } else {
+                        // 1st account created with ledger, so we need to create BDFS too and authenticate first
+                        sendEvent(Event.RequestBiometricPrompt)
                     }
                 }
+
                 is DeviceFactorSource,
                 null -> {
                     sendEvent(Event.RequestBiometricPrompt)
