@@ -44,7 +44,6 @@ android {
 }
 
 dependencies {
-    implementation libs.retAndroid
     implementation libs.slip10
     api libs.sargonAndroid
     implementation libs.ktorCore
@@ -61,7 +60,6 @@ dependencies {
     ksp libs.hiltCompiler
 
     testImplementation libs.junit
-    testImplementation libs.retKotlin
     testRuntimeOnly libs.sargonDesktop
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso

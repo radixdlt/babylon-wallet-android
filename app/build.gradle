@@ -226,7 +226,6 @@ dependencies {
     implementation libs.kotlinxSerialization
 
     //Kotlin toolkit
-    implementation libs.retAndroid
     implementation libs.slip10
 
     //Retrofit & OkHttp
@@ -274,7 +273,6 @@ dependencies {
     testImplementation libs.mockitoKotlin
     testImplementation libs.mockitoInline
     testImplementation libs.turbine
-    testImplementation libs.retKotlin
 
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso
