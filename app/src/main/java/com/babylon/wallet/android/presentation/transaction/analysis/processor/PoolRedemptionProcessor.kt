@@ -38,7 +38,7 @@ class PoolRedemptionProcessor @Inject constructor(
                 if (poolUnit == null) {
                     summary.resolveDepositingAsset(withdraw, assets, defaultDepositGuarantees)
                 } else {
-                    val redemptions = classification.poolContributions.filter {
+                    val redemptions = classification.poolRedemptions.filter {
                         it.poolUnitsResourceAddress == withdraw.address
                     }
                     val redemptionResourceAddresses = redemptions.first().redeemedResources.keys
