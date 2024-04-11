@@ -63,7 +63,7 @@ class CreateAccountConfirmationViewModelTest : StateViewModelTest<CreateAccountC
     @Test
     fun `given profile did not exist, when view model init, verify correct account state and go next`() = runTest {
         // given
-        every { savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE) } returns CreateAccountRequestSource.FirstTime
+        every { savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE) } returns CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
         val viewModel = vm.value
         val event = mutableListOf<CreateAccountConfirmationEvent>()
 
