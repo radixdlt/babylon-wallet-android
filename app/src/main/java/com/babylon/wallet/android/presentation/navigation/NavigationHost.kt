@@ -35,6 +35,8 @@ import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
+import com.babylon.wallet.android.presentation.onboarding.cloudbackupinfo.cloudBackupInfoScreen
+import com.babylon.wallet.android.presentation.onboarding.cloudbackupinfo.navigateToCloudBackupInfoScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.ROUTE_RESTORE_FROM_BACKUP
@@ -111,7 +113,20 @@ fun NavigationHost(
                 navController.popBackStack()
             },
             onAccepted = {
-                navController.createAccountScreen(CreateAccountRequestSource.FirstTime)
+                navController.navigateToCloudBackupInfoScreen()
+            }
+        )
+        cloudBackupInfoScreen(
+            navController = navController,
+            onBackClick = {
+                navController.popBackStack()
+            },
+            onContinueClick = { isWithCloudBackupEnabled ->
+                if (isWithCloudBackupEnabled) {
+                    navController.createAccountScreen(CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled)
+                } else {
+                    navController.createAccountScreen(CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled)
+                }
             }
         )
         restoreFromBackupScreen(
@@ -258,8 +273,8 @@ fun NavigationHost(
             },
             onContinueClick = { accountId, requestSource ->
                 navController.createAccountConfirmationScreen(
-                    accountId,
-                    requestSource ?: CreateAccountRequestSource.FirstTime
+                    accountId = accountId,
+                    requestSource = requestSource ?: CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
                 )
             },
             onAddLedgerDevice = {
