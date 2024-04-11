@@ -193,11 +193,14 @@ sealed interface SettingsItem {
 
         data object LinkConnectionStatusIndicator : DebugSettingsItem
 
+        data object MobileConnectDelay : DebugSettingsItem
+
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
                 InspectProfile -> R.string.settings_debugSettings_inspectProfile
                 LinkConnectionStatusIndicator -> R.string.linkedConnectors_title
+                is MobileConnectDelay -> R.string.settings_debugSettings_mobileConnectDelay
             }
         }
 
@@ -206,13 +209,15 @@ sealed interface SettingsItem {
             return when (this) {
                 InspectProfile -> com.babylon.wallet.android.designsystem.R.drawable.ic_personas
                 LinkConnectionStatusIndicator -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
+                is MobileConnectDelay -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
             }
         }
 
         companion object {
             fun values() = setOf(
                 InspectProfile,
-                LinkConnectionStatusIndicator
+                LinkConnectionStatusIndicator,
+                MobileConnectDelay
             )
         }
     }

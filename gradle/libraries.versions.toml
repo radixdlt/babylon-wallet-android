@@ -40,6 +40,7 @@ mockitoInline = "5.2.0"
 androidXJunit = "1.1.5"
 kotlinTestJunit = "1.9.22"
 espresso = "3.5.1"
+espressoIntents = "3.5.1"
 composeUiTestJunit = "1.6.2"
 composeUiTooling = "1.6.2"
 ktor = "2.3.6"
@@ -134,6 +135,7 @@ mockitoInline = { module = "org.mockito:mockito-inline", version.ref = "mockitoI
 androidXJunit = { module = "androidx.test.ext:junit", version.ref = "androidXJunit" }
 kotlinTestJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlinTestJunit" }
 espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
+espressoIntents = { module = "androidx.test.espresso:espresso-intents", version.ref = "espressoIntents" }
 composeUiTestJunit = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "composeUiTestJunit" }
 composeUiTooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "composeUiTooling" }
 composeUiTestManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose" }
