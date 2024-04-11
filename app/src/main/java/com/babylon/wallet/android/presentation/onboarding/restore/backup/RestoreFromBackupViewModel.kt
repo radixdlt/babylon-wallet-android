@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.onboarding.restore.backup
 
+import android.content.Intent
 import android.net.Uri
+import androidx.activity.result.ActivityResult
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -8,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.googlesignin.GoogleSignInManager
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Profile
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,13 +22,16 @@ import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
 import rdx.works.profile.domain.backup.SaveTemporaryRestoringSnapshotUseCase
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class RestoreFromBackupViewModel @Inject constructor(
     getTemporaryRestoringProfileForBackupUseCase: GetTemporaryRestoringProfileForBackupUseCase,
-    private val saveTemporaryRestoringSnapshotUseCase: SaveTemporaryRestoringSnapshotUseCase
-) : StateViewModel<RestoreFromBackupViewModel.State>(), OneOffEventHandler<RestoreFromBackupViewModel.Event> by OneOffEventHandlerImpl() {
+    private val saveTemporaryRestoringSnapshotUseCase: SaveTemporaryRestoringSnapshotUseCase,
+    private val googleSignInManager: GoogleSignInManager
+) : StateViewModel<RestoreFromBackupViewModel.State>(),
+    OneOffEventHandler<RestoreFromBackupViewModel.RestoreFromBackupEvent> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State()
 
@@ -45,12 +51,13 @@ class RestoreFromBackupViewModel @Inject constructor(
     fun onRestoreFromFile(uri: Uri) = viewModelScope.launch {
         saveTemporaryRestoringSnapshotUseCase.forFile(uri = uri, BackupType.File.PlainText)
             .onSuccess {
-                sendEvent(Event.OnRestoreConfirm(fromCloud = false))
+                sendEvent(RestoreFromBackupEvent.OnRestoreConfirm(fromCloud = false))
             }.onFailure { error ->
                 when (error) {
                     is ProfileException.InvalidPassword -> _state.update {
                         it.copy(passwordSheetState = State.PasswordSheet.Open(file = uri))
                     }
+
                     is ProfileException.InvalidSnapshot -> _state.update {
                         it.copy(uiMessage = UiMessage.InfoMessage.InvalidSnapshot)
                     }
@@ -60,7 +67,7 @@ class RestoreFromBackupViewModel @Inject constructor(
 
     fun onBackClick() {
         if (!state.value.isPasswordSheetVisible) {
-            viewModelScope.launch { sendEvent(Event.OnDismiss) }
+            viewModelScope.launch { sendEvent(RestoreFromBackupEvent.OnDismiss) }
         } else {
             _state.update { it.copy(passwordSheetState = State.PasswordSheet.Closed) }
         }
@@ -68,7 +75,7 @@ class RestoreFromBackupViewModel @Inject constructor(
 
     fun onSubmitClick() = viewModelScope.launch {
         if (state.value.isRestoringProfileChecked) {
-            sendEvent(Event.OnRestoreConfirm(fromCloud = true))
+            sendEvent(RestoreFromBackupEvent.OnRestoreConfirm(fromCloud = true))
         }
     }
 
@@ -97,12 +104,13 @@ class RestoreFromBackupViewModel @Inject constructor(
                     .onSuccess {
                         _state.update { state -> state.copy(passwordSheetState = State.PasswordSheet.Closed) }
                         delay(Constants.DELAY_300_MS)
-                        sendEvent(Event.OnRestoreConfirm(fromCloud = false))
+                        sendEvent(RestoreFromBackupEvent.OnRestoreConfirm(fromCloud = false))
                     }.onFailure { error ->
                         when (error) {
                             is ProfileException.InvalidPassword -> _state.update {
                                 it.copy(passwordSheetState = sheet.copy(isPasswordInvalid = true))
                             }
+
                             is ProfileException.InvalidSnapshot -> _state.update {
                                 it.copy(
                                     passwordSheetState = State.PasswordSheet.Closed,
@@ -117,10 +125,30 @@ class RestoreFromBackupViewModel @Inject constructor(
 
     fun onMessageShown() = _state.update { it.copy(uiMessage = null) }
 
+    fun turnOnCloudBackup() = viewModelScope.launch {
+        val intent = googleSignInManager.createSignInIntent()
+        sendEvent(RestoreFromBackupEvent.SignInToGoogle(intent))
+    }
+
+    fun handleSignInResult(result: ActivityResult) {
+        viewModelScope.launch {
+            googleSignInManager.handleSignInResult(result)
+                .onSuccess { googleAccount ->
+                    _state.update { it.copy(backupEmail = googleAccount.email ?: "!") }
+                    Timber.d("cloud backup is authorized")
+                }
+                .onFailure { exception ->
+                    _state.update { state -> state.copy(backupEmail = "") }
+                    Timber.e("cloud backup authorization failed: ${exception.message}")
+                }
+        }
+    }
+
     data class State(
         val restoringProfile: Profile? = null,
         val isRestoringProfileChecked: Boolean = false,
         val passwordSheetState: PasswordSheet = PasswordSheet.Closed,
+        val backupEmail: String = "",
         val uiMessage: UiMessage? = null
     ) : UiState {
 
@@ -145,8 +173,9 @@ class RestoreFromBackupViewModel @Inject constructor(
         }
     }
 
-    sealed interface Event : OneOffEvent {
-        data object OnDismiss : Event
-        data class OnRestoreConfirm(val fromCloud: Boolean) : Event
+    sealed interface RestoreFromBackupEvent : OneOffEvent {
+        data object OnDismiss : RestoreFromBackupEvent
+        data class OnRestoreConfirm(val fromCloud: Boolean) : RestoreFromBackupEvent
+        data class SignInToGoogle(val signInIntent: Intent) : RestoreFromBackupEvent
     }
 }

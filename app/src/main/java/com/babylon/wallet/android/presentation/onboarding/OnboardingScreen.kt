@@ -49,6 +49,8 @@ fun OnboardingScreen(
                 is OnboardingViewModel.OnBoardingEvent.CreateNewWallet -> {
                     onCreateNewWalletClick()
                 }
+
+                else -> {}
             }
         }
     }
