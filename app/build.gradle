@@ -149,7 +149,8 @@ android {
     }
     packagingOptions {
         resources {
-            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+            exclude("/META-INF/{AL2.0,LGPL2.1}")
+            exclude("META-INF/DEPENDENCIES")
         }
     }
     testOptions {
@@ -187,7 +188,6 @@ dependencies {
     implementation libs.lifecycelRuntimeCompose
     implementation libs.composeUi
     implementation libs.composeRuntime
-    // Foundation (Border, Background, Box, Image, Scroll, shapes, animations, etc.)
     implementation libs.composeFoundation
     implementation libs.composeConstraintLayout
     implementation libs.composeActivity
@@ -196,6 +196,10 @@ dependencies {
     implementation libs.composeMaterial3
     implementation libs.material3WindowSizeClass
     implementation libs.splash
+    implementation libs.playServicesAuth
+    implementation libs.googleApiClient
+    implementation libs.googleApiServicesDrive
+    implementation libs.documentFile
 
     implementation libs.immutableCollections
 

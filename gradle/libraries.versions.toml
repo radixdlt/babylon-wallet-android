@@ -51,6 +51,10 @@ jsonAssert = "1.5.1"
 firebaseCrashlytics = "18.5.1"
 appsFlyer = "6.13.0"
 installReferrer = "2.2"
+playServicesAuth = "21.0.0"
+googleApiClient = "2.3.0"
+googleApiServicesDrive = "v3-rev20240123-2.0.0"
+documentFile = "1.0.1"
 
 androidApplicationPlugin = "8.2.2"
 androidLibraryPlugin = "8.2.2"
@@ -142,6 +146,11 @@ jsonAssert = { module = "org.skyscreamer:jsonassert", version.ref = "jsonAssert"
 firebaseCrashlytics = { module = "com.google.firebase:firebase-crashlytics", version.ref = "firebaseCrashlytics" }
 appsFlyer = { module = "com.appsflyer:af-android-sdk", version.ref = "appsFlyer" }
 installReferrer = { module = "com.android.installreferrer:installreferrer", version.ref = "installReferrer" }
+playServicesAuth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
+googleApiClient = { module = "com.google.api-client:google-api-client-android", version.ref = "googleApiClient" }
+googleApiServicesDrive = { module = "com.google.apis:google-api-services-drive", version.ref = "googleApiServicesDrive" }
+documentFile = { module = "androidx.documentfile:documentfile", version.ref = "documentFile" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidApplicationPlugin" }
 android-library = { id = "com.android.library", version.ref = "androidLibraryPlugin" }
