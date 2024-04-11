@@ -28,14 +28,17 @@ internal class CreateAccountConfirmationArgs(val accountId: AccountAddress, val 
     )
 }
 
-fun NavController.createAccountConfirmationScreen(accountId: AccountAddress, requestSource: CreateAccountRequestSource) {
+fun NavController.createAccountConfirmationScreen(
+    accountId: AccountAddress,
+    requestSource: CreateAccountRequestSource
+) {
     navigate("account_completion_route/$requestSource/${accountId.string}")
 }
 
 enum class CreateAccountRequestSource {
-    AccountsList, ChooseAccount, FirstTime, Gateways;
+    AccountsList, ChooseAccount, FirstTimeWithCloudBackupDisabled, FirstTimeWithCloudBackupEnabled, Gateways;
 
-    fun isFirstTime() = this == FirstTime
+    fun isFirstTime() = (this == FirstTimeWithCloudBackupDisabled || this == FirstTimeWithCloudBackupEnabled)
 }
 
 fun NavGraphBuilder.createAccountConfirmationScreen(

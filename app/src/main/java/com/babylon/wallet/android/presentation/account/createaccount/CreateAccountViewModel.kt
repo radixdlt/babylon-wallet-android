@@ -35,6 +35,7 @@ import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.SwitchNetworkUseCase
 import rdx.works.profile.domain.backup.BackupType
+import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 import javax.inject.Inject
 
@@ -51,6 +52,7 @@ class CreateAccountViewModel @Inject constructor(
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
     private val preferencesManager: PreferencesManager,
     private val switchNetworkUseCase: SwitchNetworkUseCase,
+    private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
     private val appEventBus: AppEventBus
 ) : StateViewModel<CreateAccountViewModel.CreateAccountUiState>(),
     OneOffEventHandler<CreateAccountEvent> by OneOffEventHandlerImpl() {
@@ -166,9 +168,7 @@ class CreateAccountViewModel @Inject constructor(
             )
         }
 
-        if (args.requestSource == CreateAccountRequestSource.FirstTime) {
-            preferencesManager.setRadixBannerVisibility(isVisible = true)
-        }
+        checkAndHandleFirstTimeAccountCreationExtras()
 
         sendEvent(
             CreateAccountEvent.Complete(
@@ -176,6 +176,17 @@ class CreateAccountViewModel @Inject constructor(
                 requestSource = args.requestSource
             )
         )
+    }
+
+    private suspend fun checkAndHandleFirstTimeAccountCreationExtras() {
+        if (args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled ||
+            args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled
+        ) {
+            preferencesManager.setRadixBannerVisibility(isVisible = true)
+
+            val isCloudBackupEnabled = args.requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled
+            changeBackupSettingUseCase(isChecked = isCloudBackupEnabled)
+        }
     }
 
     data class CreateAccountUiState(

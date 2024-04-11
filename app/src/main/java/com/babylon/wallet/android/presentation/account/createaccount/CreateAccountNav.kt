@@ -45,7 +45,7 @@ internal class CreateAccountNavArgs(
 }
 
 fun NavController.createAccountScreen(
-    requestSource: CreateAccountRequestSource = CreateAccountRequestSource.FirstTime,
+    requestSource: CreateAccountRequestSource = CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled,
     networkUrl: Url? = null,
     networkIdToSwitch: NetworkId? = null,
     navOptions: NavOptions? = null
@@ -74,7 +74,7 @@ fun NavGraphBuilder.createAccountScreen(
         arguments = listOf(
             navArgument(ARG_REQUEST_SOURCE) {
                 type = NavType.EnumType(CreateAccountRequestSource::class.java)
-                defaultValue = CreateAccountRequestSource.FirstTime
+                defaultValue = CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled
             },
             navArgument(ARG_NETWORK_URL) {
                 type = NavType.StringType
