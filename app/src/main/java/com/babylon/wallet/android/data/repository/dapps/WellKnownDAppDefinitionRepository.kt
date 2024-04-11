@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 interface WellKnownDAppDefinitionRepository {
 
-    suspend fun getWellDappDefinitions(origin: String): Result<DappDefinitions>
+    suspend fun getWellKnownDappDefinitions(origin: String): Result<DappDefinitions>
     suspend fun getWellKnownDAppDefinitionAddresses(origin: String): Result<List<String>>
 }
 
@@ -35,7 +35,7 @@ class WellKnownDAppDefinitionRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getWellDappDefinitions(origin: String): Result<DappDefinitions> {
+    override suspend fun getWellKnownDappDefinitions(origin: String): Result<DappDefinitions> {
         return withContext(ioDispatcher) {
             getWellKnownDAppDefinitions(origin).map {
                 DappDefinitions(

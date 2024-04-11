@@ -1,13 +1,16 @@
 package com.babylon.wallet.android.presentation.settings.debug
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.presentation.common.StateViewModel
+import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import javax.inject.Inject
@@ -15,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DebugSettingsViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager
-) : ViewModel() {
+) : StateViewModel<DebugSettingsViewModel.State>() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val linkConnectionStatusIndicatorState = preferencesManager
@@ -29,9 +32,35 @@ class DebugSettingsViewModel @Inject constructor(
             initialValue = LinkConnectionStatusIndicator(isEnabled = true)
         )
 
+    init {
+        viewModelScope.launch {
+            val mobileConnectDelaySeconds = preferencesManager.mobileConnectDelaySeconds.firstOrNull() ?: 0
+            _state.update {
+                it.copy(mobileConnectDelaySeconds = mobileConnectDelaySeconds)
+            }
+        }
+    }
+
     fun onLinkConnectionStatusIndicatorToggled(isEnabled: Boolean) = viewModelScope.launch {
         preferencesManager.setLinkConnectionStatusIndicator(isEnabled = isEnabled)
     }
 
+    fun onMobileConnectDelaySecondsChanged(seconds: Int) = viewModelScope.launch {
+        _state.update {
+            it.copy(mobileConnectDelaySeconds = seconds)
+        }
+        preferencesManager.updateMobileConnectDelaySeconds(seconds)
+    }
+
     data class LinkConnectionStatusIndicator(val isEnabled: Boolean)
+
+    data class State(
+        val mobileConnectDelaySeconds: Int = 0,
+    ) : UiState
+
+    override fun initialState(): State {
+        return State()
+    }
 }
+
+

@@ -8,7 +8,9 @@ import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.data.repository.DappLinkRepository
 import com.babylon.wallet.android.data.repository.RcrRepository
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -18,12 +20,16 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.decodeHex
 import rdx.works.core.generateX25519KeyPair
 import rdx.works.core.generateX25519SharedSecret
+import rdx.works.core.preferences.PreferencesManager
+import rdx.works.profile.data.model.ProfileState
+import rdx.works.profile.domain.GetProfileStateUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -34,7 +40,10 @@ class MobileConnectViewModel @Inject constructor(
     private val wellKnownDAppDefinitionRepository: WellKnownDAppDefinitionRepository,
     private val rcrRepository: RcrRepository,
     private val dappLinkRepository: DappLinkRepository,
-    private val incomingRequestRepository: IncomingRequestRepository
+    private val incomingRequestRepository: IncomingRequestRepository,
+    private val profileStateUseCase: GetProfileStateUseCase,
+    private val preferencesManager: PreferencesManager,
+    private val getDAppWithResourcesUseCase: GetDAppWithResourcesUseCase
 ) : StateViewModel<State>(), OneOffEventHandler<MobileConnectViewModel.Event> by OneOffEventHandlerImpl() {
 
     private val args = MobileConnectArgs(savedStateHandle)
@@ -43,76 +52,93 @@ class MobileConnectViewModel @Inject constructor(
     }
 
     init {
-        when {
-            args.isValidRequest() -> {
-                viewModelScope.launch {
-                    rcrRepository.getRequest(args.sessionId!!, args.interactionId!!).mapCatching { walletInteraction ->
-                        walletInteraction.toDomainModel(
-                            IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession(args.sessionId)
-                        )
-                    }.onSuccess { request ->
-                        incomingRequestRepository.add(request)
-                        sendEvent(Event.Close)
-                    }.onFailure {
-                        Timber.d(it)
-                    }
-                }
-            }
-
-            args.isValidConnect() -> {
-                viewModelScope.launch {
-                    wellKnownDAppDefinitionRepository.getWellDappDefinitions(args.origin!!).mapCatching { dAppDefinitions ->
-                        dAppDefinitions.dAppDefinitions.firstOrNull()?.let { dAppDefinition ->
-                            val keyPair = generateX25519KeyPair().getOrNull() ?: error("Failed to generate X25519 key pair")
-                            val publicKeyHex = keyPair.second
-                            val receivedPublicKey = args.publicKey!!.decodeHex()
-                            val secret =
-                                generateX25519SharedSecret(keyPair.first.decodeHex(), receivedPublicKey).getOrNull()
-                                    ?: error("Failed to generate ecdh curve25519 shared secret")
-                            val dappLink = DappLink(
-                                origin = args.origin,
-                                dAppDefinitionAddress = dAppDefinition.dAppDefinitionAddress,
-                                secret = HexCoded32Bytes(secret),
-                                sessionId = args.sessionId.orEmpty(),
-                                x25519PrivateKeyCompressed = HexCoded32Bytes(keyPair.first),
-                                callbackPath = dAppDefinitions.callbackPath
-                            )
-                            dappLinkRepository.saveDappLink(dappLink).getOrThrow() to publicKeyHex
-                        } ?: error("No dApp definition found for origin ${args.origin}")
-                    }.onSuccess { dappLinkToPublicKey ->
-                        sendEvent(
-                            Event.OpenUrl(
-                                Uri.parse(args.origin).buildUpon().apply {
-                                    appendQueryParameter(Constants.RadixMobileConnect.CONNECT_URL_PARAM_SESSION_ID, args.sessionId)
-                                    appendQueryParameter(
-                                        Constants.RadixMobileConnect.CONNECT_URL_PARAM_PUBLIC_KEY,
-                                        dappLinkToPublicKey.second
-                                    )
-                                    appendQueryParameter(
-                                        Constants.RadixMobileConnect.CONNECT_URL_PARAM_SECRET,
-                                        dappLinkToPublicKey.first.secret.value
-                                    )
-                                    fragment(dappLinkToPublicKey.first.callbackPath?.replace("#", ""))
-                                }.build().toString()
-                            )
-                        )
-                    }.onFailure { error ->
-                        _state.update {
-                            it.copy(uiMessage = UiMessage.ErrorMessage(error))
-                        }
-                        delay(Constants.SNACKBAR_SHOW_DURATION_MS)
-                        sendEvent(Event.Close)
-                    }
-                }
-            }
-
-            else -> {
+        viewModelScope.launch {
+            val profileState = profileStateUseCase().firstOrNull()
+            val connectDelaySeconds = preferencesManager.mobileConnectDelaySeconds.firstOrNull() ?: 0
+            val profileInitialized = profileState is ProfileState.Restored && profileState.hasMainnet()
+            if (!profileInitialized) {
                 _state.update {
-                    it.copy(uiMessage = UiMessage.ErrorMessage(IllegalStateException("Invalid dApp request")))
+                    it.copy(isProfileInitialized = false)
                 }
-                viewModelScope.launch {
-                    delay(Constants.SNACKBAR_SHOW_DURATION_MS)
-                    sendEvent(Event.Close)
+                return@launch
+            }
+            when {
+                args.isValidRequest() -> {
+                    _state.update {
+                        it.copy(requestType = State.RequestType.REQUEST)
+                    }
+                    viewModelScope.launch {
+                        rcrRepository.getRequest(args.sessionId!!, args.interactionId!!).mapCatching { walletInteraction ->
+                            walletInteraction.toDomainModel(
+                                IncomingMessage.RemoteEntityID.RadixMobileConnectRemoteSession(args.sessionId)
+                            )
+                        }.onSuccess { request ->
+                            incomingRequestRepository.add(request)
+                            sendEvent(Event.Close)
+                        }.onFailure {
+                            Timber.d(it)
+                        }
+                    }
+                }
+
+                args.isValidConnect() -> {
+                    _state.update {
+                        it.copy(requestType = State.RequestType.CONNECT)
+                    }
+                    viewModelScope.launch {
+                        wellKnownDAppDefinitionRepository.getWellKnownDappDefinitions(args.origin!!).mapCatching { dAppDefinitions ->
+                            dAppDefinitions.dAppDefinitions.firstOrNull()?.let { dAppDefinition ->
+                                getDAppWithResourcesUseCase(dAppDefinition.dAppDefinitionAddress, false).getOrNull()?.dApp?.let { dApp ->
+                                    _state.update { it.copy(dApp = dApp) }
+                                }
+                                delay(connectDelaySeconds * 1000L)
+                                val keyPair = generateX25519KeyPair().getOrNull() ?: error("Failed to generate X25519 key pair")
+                                val publicKeyHex = keyPair.second
+                                val receivedPublicKey = args.publicKey!!.decodeHex()
+                                val secret =
+                                    generateX25519SharedSecret(keyPair.first.decodeHex(), receivedPublicKey).getOrNull()
+                                        ?: error("Failed to generate ecdh curve25519 shared secret")
+                                val dappLink = DappLink(
+                                    origin = args.origin,
+                                    dAppDefinitionAddress = dAppDefinition.dAppDefinitionAddress,
+                                    secret = HexCoded32Bytes(secret),
+                                    sessionId = args.sessionId.orEmpty(),
+                                    x25519PrivateKeyCompressed = HexCoded32Bytes(keyPair.first),
+                                    callbackPath = dAppDefinitions.callbackPath
+                                )
+                                dappLinkRepository.saveDappLink(dappLink).getOrThrow() to publicKeyHex
+                            } ?: error("No dApp definition found for origin ${args.origin}")
+                        }.onSuccess { dappLinkToPublicKey ->
+                            sendEvent(
+                                Event.OpenUrl(
+                                    Uri.parse(args.origin).buildUpon().apply {
+                                        appendQueryParameter(Constants.RadixMobileConnect.CONNECT_URL_PARAM_SESSION_ID, args.sessionId)
+                                        appendQueryParameter(
+                                            Constants.RadixMobileConnect.CONNECT_URL_PARAM_PUBLIC_KEY,
+                                            dappLinkToPublicKey.second
+                                        )
+                                        appendQueryParameter(
+                                            Constants.RadixMobileConnect.CONNECT_URL_PARAM_SECRET,
+                                            dappLinkToPublicKey.first.secret.value
+                                        )
+                                        fragment(dappLinkToPublicKey.first.callbackPath?.replace("#", ""))
+                                    }.build().toString()
+                                )
+                            )
+                        }.onFailure { error ->
+                            _state.update {
+                                it.copy(uiMessage = UiMessage.ErrorMessage(error))
+                            }
+                            delay(Constants.SNACKBAR_SHOW_DURATION_MS)
+                            sendEvent(Event.Close)
+                        }
+                    }
+                }
+
+                else -> {
+                    viewModelScope.launch {
+                        sendEvent(Event.Close)
+                    }
                 }
             }
         }
@@ -129,6 +155,12 @@ class MobileConnectViewModel @Inject constructor(
 }
 
 data class State(
-    val isConnecting: Boolean = false,
-    val uiMessage: UiMessage? = null
-) : UiState
+    val dApp: DApp? = null,
+    val uiMessage: UiMessage? = null,
+    val isProfileInitialized: Boolean = true,
+    val requestType: RequestType? = null
+) : UiState {
+    enum class RequestType {
+        CONNECT, REQUEST
+    }
+}

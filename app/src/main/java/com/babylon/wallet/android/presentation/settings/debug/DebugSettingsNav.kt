@@ -52,6 +52,7 @@ fun NavGraphBuilder.debugSettings(
                     when (item) {
                         InspectProfile -> navController.inspectProfile()
                         SettingsItem.DebugSettingsItem.LinkConnectionStatusIndicator -> {}
+                        SettingsItem.DebugSettingsItem.MobileConnectDelay -> {}
                         SettingsItem.DebugSettingsItem.InspectCloudBackups -> navController.inspectGoogleBackups()
                     }
                 }

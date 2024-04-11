@@ -19,11 +19,11 @@ private const val ROUTE_ARGS = "$ARG_PUBLIC_KEY={$ARG_PUBLIC_KEY}" +
     "&$ARG_DAPP_ORIGIN={$ARG_DAPP_ORIGIN}" +
     "&$ARG_INTERACTION_ID={$ARG_INTERACTION_ID}"
 
-private const val ROUTE = "m2m?$ROUTE_ARGS"
+private const val ROUTE = "mobileConnect?$ROUTE_ARGS"
 
 fun NavController.mobileConnect(publicKeyHex: String = "", sessionId: String = "", origin: String = "", interactionId: String = "") {
     navigate(
-        route = "m2m?$$ARG_PUBLIC_KEY={$publicKeyHex}" +
+        route = "mobileConnect?$$ARG_PUBLIC_KEY={$publicKeyHex}" +
             "&$ARG_SESSION_ID={$sessionId}" +
             "&$ARG_DAPP_ORIGIN={$origin}" +
             "&$ARG_INTERACTION_ID={$interactionId}"

@@ -7,15 +7,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
@@ -30,6 +36,7 @@ fun DebugSettingsScreen(
     onItemClick: (SettingsItem.DebugSettingsItem) -> Unit
 ) {
     val linkConnectionStatusIndicatorState by viewModel.linkConnectionStatusIndicatorState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -71,6 +78,37 @@ fun DebugSettingsScreen(
                                         onItemClick(debugSettingsItem)
                                     }
                                 )
+                                HorizontalDivider(color = RadixTheme.colors.gray5)
+                            }
+
+                            is SettingsItem.DebugSettingsItem.MobileConnectDelay -> {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(all = RadixTheme.dimensions.paddingDefault)
+                                ) {
+                                    Text(
+                                        text = stringResource(id = debugSettingsItem.descriptionRes()),
+                                        style = RadixTheme.typography.body1HighImportance,
+                                        color = RadixTheme.colors.gray2
+                                    )
+                                    RadixTextField(
+                                        modifier = Modifier
+                                            .padding(start = RadixTheme.dimensions.paddingDefault),
+                                        value = state.mobileConnectDelaySeconds.toString(),
+                                        onValueChanged = { value ->
+                                            if (value.isEmpty()) {
+                                                viewModel.onMobileConnectDelaySecondsChanged(0)
+                                            } else if (value.isDigitsOnly()) {
+                                                viewModel.onMobileConnectDelaySecondsChanged(value.toInt())
+                                            }
+                                        },
+                                        keyboardOptions = KeyboardOptions(
+                                            keyboardType = KeyboardType.Number,
+                                            imeAction = ImeAction.Done
+                                        ),
+                                    )
+                                }
                                 HorizontalDivider(color = RadixTheme.colors.gray5)
                             }
                         }

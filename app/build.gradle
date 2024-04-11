@@ -278,6 +278,7 @@ dependencies {
 
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso
+    androidTestImplementation libs.espressoIntents
     androidTestImplementation libs.composeUiTestJunit
 
     implementation libs.composeUiToolingPreview
