@@ -1,6 +1,8 @@
 package com.babylon.wallet.android.presentation.settings.securitycenter.backup
 
+import android.content.Intent
 import android.net.Uri
+import androidx.activity.result.ActivityResult
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.usecases.DeleteWalletUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -9,8 +11,10 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.googlesignin.GoogleSignInManager
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.BackupState
@@ -18,11 +22,11 @@ import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
+import rdx.works.profile.domain.backup.GetCloudProfileSyncStateUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LongParameterList")
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val changeBackupSettingUseCase: ChangeBackupSettingUseCase,
@@ -30,18 +34,39 @@ class BackupViewModel @Inject constructor(
     private val deleteWalletUseCase: DeleteWalletUseCase,
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
-    getBackupStateUseCase: GetBackupStateUseCase
+    private val googleSignInManager: GoogleSignInManager,
+    private val getCloudProfileSyncStateUseCase: GetCloudProfileSyncStateUseCase
 ) : StateViewModel<BackupViewModel.State>(), OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State(
-        backupState = BackupState.Closed,
+        cloudBackupState = State.CloudBackupState.Off(warningMessage = null),
         canAccessSystemBackupSettings = deviceCapabilityHelper.canOpenSystemBackupSettings()
     )
 
     init {
-        viewModelScope.launch {
-            getBackupStateUseCase().collect { backupState ->
-                _state.update { it.copy(backupState = backupState) }
+        observeCloudBackupState()
+    }
+
+    private fun observeCloudBackupState() = viewModelScope.launch {
+        getCloudProfileSyncStateUseCase().collectLatest { isCloudBackupEnabledInProfile ->
+            val signedEmail = googleSignInManager.getSignedInGoogleAccount()?.email // if not null then user is signed in
+
+            if (isCloudBackupEnabledInProfile && signedEmail != null) {
+                _state.update {
+                    it.copy(cloudBackupState = State.CloudBackupState.On(signedEmail = signedEmail))
+                }
+            } else if (isCloudBackupEnabledInProfile) { // authorization has been revoked
+                _state.update {
+                    it.copy(cloudBackupState = State.CloudBackupState.Off(warningMessage = "sign in is required"))
+                }
+            } else if (signedEmail != null) { // cloud back up is authorized but profile is not updated
+                _state.update {
+                    it.copy(cloudBackupState = State.CloudBackupState.Off(warningMessage = "cloud back up is authorized"))
+                }
+            } else {
+                _state.update {
+                    it.copy(cloudBackupState = State.CloudBackupState.Off())
+                }
             }
         }
     }
@@ -54,8 +79,28 @@ class BackupViewModel @Inject constructor(
         }
     }
 
-    fun onBackupSettingChanged(isChecked: Boolean) = viewModelScope.launch {
-        changeBackupSettingUseCase(isChecked)
+    fun onBackupSettingChanged(isOn: Boolean) = viewModelScope.launch {
+        if (isOn) {
+            val intent = googleSignInManager.createSignInIntent()
+            sendEvent(Event.SignInToGoogle(intent))
+        } else {
+            googleSignInManager.revokeAccess()
+            changeBackupSettingUseCase(isChecked = false)
+        }
+    }
+
+    fun handleSignInResult(result: ActivityResult) {
+        viewModelScope.launch {
+            googleSignInManager.handleSignInResult(result)
+                .onSuccess {
+                    changeBackupSettingUseCase(isChecked = true)
+                    Timber.d("cloud backup is authorized")
+                }
+                .onFailure { exception ->
+                    changeBackupSettingUseCase(isChecked = false)
+                    Timber.e("cloud backup authorization failed: ${exception.message}")
+                }
+        }
     }
 
     fun onFileBackupClick() {
@@ -159,7 +204,7 @@ class BackupViewModel @Inject constructor(
     }
 
     data class State(
-        val backupState: BackupState,
+        private val cloudBackupState: CloudBackupState,
         val isExportFileDialogVisible: Boolean = false,
         val encryptSheet: EncryptSheet = EncryptSheet.Closed,
         val deleteWalletDialogVisible: Boolean = false,
@@ -168,11 +213,22 @@ class BackupViewModel @Inject constructor(
         val isLoggedIn: Boolean = false
     ) : UiState {
 
-        val isBackupEnabled: Boolean
-            get() = backupState is BackupState.Open
+        val isCloudBackupEnabled: Boolean
+            get() = cloudBackupState is CloudBackupState.On
+
+        val cloudBackupEmail: String
+            get() = when (cloudBackupState) {
+                is CloudBackupState.On -> cloudBackupState.signedEmail
+                is CloudBackupState.Off -> cloudBackupState.warningMessage.orEmpty()
+            }
 
         val isEncryptSheetVisible: Boolean
             get() = encryptSheet is EncryptSheet.Open
+
+        sealed interface CloudBackupState {
+            data class On(val signedEmail: String) : CloudBackupState
+            data class Off(val warningMessage: String? = null) : CloudBackupState
+        }
 
         sealed interface EncryptSheet {
             data object Closed : EncryptSheet
@@ -202,5 +258,6 @@ class BackupViewModel @Inject constructor(
         data object ProfileDeleted : Event
         data class ChooseExportFile(val fileName: String) : Event
         data class DeleteFile(val file: Uri) : Event
+        data class SignInToGoogle(val signInIntent: Intent) : Event
     }
 }
