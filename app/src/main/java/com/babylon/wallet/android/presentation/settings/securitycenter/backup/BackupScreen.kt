@@ -94,12 +94,11 @@ fun BackupScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
     BackupScreenContent(
         modifier = modifier,
         state = state,
-        onBackupCheckChanged = { isChecked ->
-            viewModel.onBackupSettingChanged(isChecked)
-        },
+        onBackupCheckChanged = viewModel::onBackupSettingChanged,
         onFileBackupClick = viewModel::onFileBackupClick,
         onFileBackupConfirm = viewModel::onFileBackupConfirm,
         onFileBackupDeny = viewModel::onFileBackupDeny,
@@ -116,6 +115,10 @@ fun BackupScreen(
         onDisconnectClick = {}
     )
 
+    val signInLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        viewModel.handleSignInResult(result)
+    }
+
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument(mimeType = "application/json")
     ) { uri ->
@@ -127,13 +130,16 @@ fun BackupScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.oneOffEvent.collect {
-            when (it) {
+        viewModel.oneOffEvent.collect { event ->
+            when (event) {
                 is BackupViewModel.Event.Dismiss -> onClose()
-                is BackupViewModel.Event.ChooseExportFile -> filePickerLauncher.launch(it.fileName)
+                is BackupViewModel.Event.ChooseExportFile -> filePickerLauncher.launch(event.fileName)
                 is BackupViewModel.Event.ProfileDeleted -> onProfileDeleted()
                 is BackupViewModel.Event.DeleteFile -> {
-                    DocumentsContract.deleteDocument(context.contentResolver, it.file)
+                    DocumentsContract.deleteDocument(context.contentResolver, event.file)
+                }
+                is BackupViewModel.Event.SignInToGoogle -> {
+                    signInLauncher.launch(event.signInIntent)
                 }
             }
         }
@@ -765,10 +771,7 @@ private fun EncryptSheet(
             RadixTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(
-                        vertical = RadixTheme.dimensions.paddingDefault,
-                        horizontal = RadixTheme.dimensions.paddingXXLarge
-                    )
+                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                     .onFocusChanged {
                         isConfirmFocused = it.isFocused
                     },
@@ -815,7 +818,7 @@ private fun EncryptSheet(
 fun BackupScreenPreview() {
     RadixWalletTheme {
         BackupScreenContent(
-            state = BackupViewModel.State(backupState = BackupState.Closed),
+            state = BackupViewModel.State(cloudBackupState = BackupViewModel.State.CloudBackupState.Off()),
             onBackupCheckChanged = {},
             onFileBackupClick = {},
             onFileBackupConfirm = {},
