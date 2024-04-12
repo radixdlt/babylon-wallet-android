@@ -13,6 +13,7 @@ import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.model.IncomingRequestResponse
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
@@ -113,8 +114,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
     private val transactionRepository = mockk<TransactionRepository>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
-    private val appEventBus = mockk<AppEventBusImpl>()
     private val respondToIncomingRequestUseCase = mockk<RespondToIncomingRequestUseCase>()
+    private val appEventBus = mockk<AppEventBus>()
     private val deviceCapabilityHelper = mockk<DeviceCapabilityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
@@ -239,20 +240,18 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { transactionRepository.getTransactionPreview(any()) } returns Result.success(previewResponse())
         coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
-            dAppMessenger.sendTransactionWriteResponseSuccess(
-                remoteConnectorId = "remoteConnectorId",
-                requestId = sampleRequestId,
-                txId = sampleIntentHash.bech32EncodedTxId
+            respondToIncomingRequestUseCase.respondWithSuccess(
+                request = any(),
+                txId = any(),
             )
         } returns Result.success(Unit)
         coEvery {
-            dAppMessenger.sendWalletInteractionResponseFailure(
-                remoteConnectorId = "remoteConnectorId",
-                requestId = sampleRequestId,
+            respondToIncomingRequestUseCase.respondWithFailure(
+                request = any(),
                 error = any(),
                 message = any()
             )
-        } returns Result.success(Unit)
+        } returns Result.success(IncomingRequestResponse.SuccessCE)
         coEvery { appEventBus.sendEvent(any()) } returns Unit
         incomingRequestRepository.add(sampleRequest)
         every { getProfileUseCase.flow } returns flowOf(profile)
@@ -282,7 +281,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
                 getProfileUseCase = getProfileUseCase,
             ),
             submit = TransactionSubmitDelegate(
-                dAppMessenger = dAppMessenger,
+                respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
                 getCurrentGatewayUseCase = getCurrentGatewayUseCase,
                 incomingRequestRepository = incomingRequestRepository,
                 appEventBus = appEventBus,
@@ -304,9 +303,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         vm.approveTransaction { true }
         advanceUntilIdle()
         coVerify(exactly = 1) {
-            dAppMessenger.sendTransactionWriteResponseSuccess(
-                remoteConnectorId = "remoteConnectorId",
-                requestId = sampleRequestId,
+            respondToIncomingRequestUseCase.respondWithSuccess(
+                request = sampleRequest,
                 txId = sampleIntentHash.bech32EncodedTxId
             )
         }
@@ -321,9 +319,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         advanceUntilIdle()
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
-            dAppMessenger.sendWalletInteractionResponseFailure(
-                remoteConnectorId = "remoteConnectorId",
-                requestId = sampleRequestId,
+            respondToIncomingRequestUseCase.respondWithFailure(
+                request = sampleRequest,
                 error = capture(errorSlot),
                 message = any()
             )
@@ -344,9 +341,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         val state = vm.state.first()
         val errorSlot = slot<WalletErrorType>()
         coVerify(exactly = 1) {
-            dAppMessenger.sendWalletInteractionResponseFailure(
-                remoteConnectorId = "remoteConnectorId",
-                requestId = sampleRequestId,
+            respondToIncomingRequestUseCase.respondWithFailure(
+                request = sampleRequest,
                 error = capture(errorSlot),
                 message = any()
             )

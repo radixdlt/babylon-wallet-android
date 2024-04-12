@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction.vectors
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.state.StateRepository
@@ -10,6 +9,7 @@ import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
@@ -50,8 +50,8 @@ internal fun TransactionReviewViewModelTestExperimental.testViewModel(
     signTransactionUseCase: SignTransactionUseCase,
     profileRepository: ProfileRepository,
     stateRepository: StateRepository,
-    dAppMessenger: DappMessenger,
-    appEventBus: AppEventBusImpl,
+    respondToIncomingRequestUseCase: RespondToIncomingRequestUseCase,
+    appEventBus: AppEventBus,
     preferencesManager: PreferencesManager,
     exceptionMessageProvider: ExceptionMessageProvider,
     savedStateHandle: SavedStateHandle,
@@ -103,7 +103,7 @@ internal fun TransactionReviewViewModelTestExperimental.testViewModel(
     guarantees = TransactionGuaranteesDelegate(),
     fees = TransactionFeesDelegate(getProfileUseCase = GetProfileUseCase(profileRepository)),
     submit = TransactionSubmitDelegate(
-        dAppMessenger = dAppMessenger,
+        respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
         getCurrentGatewayUseCase = GetCurrentGatewayUseCase(profileRepository),
         incomingRequestRepository = incomingRequestRepository,
         submitTransactionUseCase = SubmitTransactionUseCase(transactionRepository = transactionRepository),
