@@ -102,6 +102,9 @@ class GoogleSignInManager @Inject constructor(
         }
     }
 
+    // IMPORTANT NOTE
+    // This method will return the GoogleSignInAccount even if the access has been revoked from Drive settings.
+    // We must use the Drive api (e.g. accessing the files) in order to get a UserRecoverableAuthIOException.
     fun getSignedInGoogleAccount(): GoogleAccount? {
         return GoogleSignIn.getLastSignedInAccount(applicationContext)?.let {
             GoogleAccount(
