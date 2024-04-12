@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.domain
 
+import com.radixdlt.sargon.AccountAddress
+
 data class DappDefinition(
-    val dAppDefinitionAddress: String
+    val dAppDefinitionAddress: AccountAddress
 )
 
 data class DappDefinitions(

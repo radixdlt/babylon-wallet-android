@@ -122,7 +122,13 @@ class FakePreferenceManager : PreferencesManager {
     }
 
     override val transactionCompleteCounter: Flow<Int>
-        get() = _transactionCompleteCounter
+        get() = TODO("Not yet implemented")
+    override val mobileConnectDelaySeconds: Flow<Int>
+        get() = TODO("Not yet implemented")
+
+    override suspend fun updateMobileConnectDelaySeconds(seconds: Int) {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun incrementTransactionCompleteCounter() {
         _transactionCompleteCounter.emit(_transactionCompleteCounter.value + 1)

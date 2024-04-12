@@ -2,8 +2,6 @@ package com.babylon.wallet.android.presentation.transfer.prepare
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
-import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
@@ -56,8 +54,8 @@ class PrepareManifestDelegate @Inject constructor(
                 }
             ).prepareInternalTransactionRequest()
         }.onSuccess { request ->
-            _state.update { it.copy(transferRequestId = request.requestId) }
-            Timber.d("Manifest for ${request.requestId} prepared:\n${request.transactionManifestData.instructions}")
+            _state.update { it.copy(transferRequestId = request.interactionId) }
+            Timber.d("Manifest for ${request.interactionId} prepared:\n${request.transactionManifestData.instructions}")
             incomingRequestRepository.add(request)
         }.onFailure { error ->
             _state.update { it.copy(error = UiMessage.ErrorMessage(error)) }

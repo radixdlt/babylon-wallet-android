@@ -12,16 +12,12 @@ import com.babylon.wallet.android.data.repository.transaction.TransactionReposit
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.TransactionManifestData
-import com.babylon.wallet.android.domain.model.resources.Badge
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
@@ -117,8 +113,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
     private val transactionRepository = mockk<TransactionRepository>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
-    private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBusImpl>()
+    private val respondToIncomingRequestUseCase = mockk<RespondToIncomingRequestUseCase>()
     private val deviceCapabilityHelper = mockk<DeviceCapabilityHelper>()
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
@@ -177,12 +173,12 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             identities = emptyList()
         )
     }
-    private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-        remoteConnectorId = "remoteConnectorId",
-        requestId = sampleRequestId,
+    private val sampleRequest = IncomingMessage.IncomingRequest.TransactionRequest(
+        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+        interactionId = sampleRequestId,
         transactionManifestData = sampleTransactionManifestData,
-        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            networkId = NetworkId.MAINNET,
+        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
+            networkId = NetworkId.MAINNET.discriminant.toInt(),
             origin = "https://test.origin.com",
             dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
             isInternal = false

@@ -21,7 +21,7 @@ import javax.inject.Inject
 interface WellKnownDAppDefinitionRepository {
 
     suspend fun getWellKnownDappDefinitions(origin: String): Result<DappDefinitions>
-    suspend fun getWellKnownDAppDefinitionAddresses(origin: String): Result<List<String>>
+    suspend fun getWellKnownDAppDefinitionAddresses(origin: String): Result<List<AccountAddress>>
 }
 
 class WellKnownDAppDefinitionRepositoryImpl @Inject constructor(
@@ -29,9 +29,9 @@ class WellKnownDAppDefinitionRepositoryImpl @Inject constructor(
     @JsonConverterFactory private val jsonConverterFactory: Converter.Factory,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : WellKnownDAppDefinitionRepository {
-    override suspend fun getWellKnownDAppDefinitionAddresses(origin: String): Result<List<String>> = withContext(ioDispatcher) {
+    override suspend fun getWellKnownDAppDefinitionAddresses(origin: String): Result<List<AccountAddress>> = withContext(ioDispatcher) {
         getWellKnownDAppDefinitions(origin).map { response ->
-            response.dApps.map { it.dAppDefinitionAddress }
+            response.dApps.map { AccountAddress.init(it.dAppDefinitionAddress) }
         }
     }
 
@@ -39,7 +39,9 @@ class WellKnownDAppDefinitionRepositoryImpl @Inject constructor(
         return withContext(ioDispatcher) {
             getWellKnownDAppDefinitions(origin).map {
                 DappDefinitions(
-                    dAppDefinitions = it.dApps.map { dApp -> DappDefinition(dApp.dAppDefinitionAddress) },
+                    dAppDefinitions = it.dApps.map { dApp ->
+                        DappDefinition(AccountAddress.init(dApp.dAppDefinitionAddress))
+                    },
                     callbackPath = it.callbackPath
                 )
             }

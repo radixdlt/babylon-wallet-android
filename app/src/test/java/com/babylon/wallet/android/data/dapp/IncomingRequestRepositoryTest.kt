@@ -23,7 +23,7 @@ class IncomingRequestRepositoryTest {
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val amountOfIncomingRequests = 100
     private val sampleIncomingRequest = IncomingMessage.IncomingRequest.AuthorizedRequest(
-        remoteEntityId = "remoteConnectorId",
+        remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
         interactionId = UUIDGenerator.uuid().toString(),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge,
@@ -77,16 +77,16 @@ class IncomingRequestRepositoryTest {
         }
         advanceUntilIdle()
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 5)
-        assert(currentRequest?.id == "1")
+        assert(currentRequest?.interactionId == "1")
         incomingRequestRepository.requestHandled("1")
         incomingRequestRepository.requestHandled("2")
         advanceUntilIdle()
-        assert(currentRequest?.id == "3")
+        assert(currentRequest?.interactionId == "3")
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 3)
         incomingRequestRepository.requestHandled("3")
         incomingRequestRepository.requestHandled("4")
         advanceUntilIdle()
-        assert(currentRequest?.id == "5")
+        assert(currentRequest?.interactionId == "5")
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 1)
         incomingRequestRepository.requestHandled("5")
         assertTrue(incomingRequestRepository.getAmountOfRequests() == 0)

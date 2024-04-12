@@ -14,6 +14,6 @@ data class WellKnownDAppDefinitionResponse(
     @Serializable
     data class WellKnownDAppDefinition(
         @SerialName(value = "dAppDefinitionAddress")
-        val dAppDefinitionAddress: String,
+        val dAppDefinitionAddress: String
     )
 }

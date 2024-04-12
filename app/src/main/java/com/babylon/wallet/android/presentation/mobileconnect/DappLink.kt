@@ -1,5 +1,8 @@
 package com.babylon.wallet.android.presentation.mobileconnect
 
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.HexCoded32Bytes
@@ -10,7 +13,7 @@ data class DappLink(
     @SerialName("origin")
     val origin: String,
     @SerialName("dAppDefinitionAddress")
-    val dAppDefinitionAddress: String,
+    private val address: String,
     @SerialName("secret")
     val secret: HexCoded32Bytes,
     @SerialName("sessionId")
@@ -20,6 +23,10 @@ data class DappLink(
     @SerialName("callbackPath")
     val callbackPath: String? = null
 ) : Identified {
+
+    val dAppDefinitionAddress
+        get() = AccountAddress.init(address)
+
     override val identifier: String
-        get() = dAppDefinitionAddress
+        get() = dAppDefinitionAddress.string
 }

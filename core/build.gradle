@@ -52,6 +52,7 @@ dependencies {
     implementation libs.kotlinxSerialization
     implementation libs.firebaseCrashlytics
     implementation libs.immutableCollections
+    implementation libs.crypto
 
     // Datastore
     implementation libs.datastorePreferences

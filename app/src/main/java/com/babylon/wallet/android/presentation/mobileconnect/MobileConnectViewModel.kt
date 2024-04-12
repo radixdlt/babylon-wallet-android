@@ -8,7 +8,6 @@ import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.data.repository.DappLinkRepository
 import com.babylon.wallet.android.data.repository.RcrRepository
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -18,6 +17,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.decodeHex
+import rdx.works.core.domain.DApp
 import rdx.works.core.generateX25519KeyPair
 import rdx.works.core.generateX25519SharedSecret
 import rdx.works.core.preferences.PreferencesManager
@@ -100,7 +101,7 @@ class MobileConnectViewModel @Inject constructor(
                                         ?: error("Failed to generate ecdh curve25519 shared secret")
                                 val dappLink = DappLink(
                                     origin = args.origin,
-                                    dAppDefinitionAddress = dAppDefinition.dAppDefinitionAddress,
+                                    address = dAppDefinition.dAppDefinitionAddress.string,
                                     secret = HexCoded32Bytes(secret),
                                     sessionId = args.sessionId.orEmpty(),
                                     x25519PrivateKeyCompressed = HexCoded32Bytes(keyPair.first),

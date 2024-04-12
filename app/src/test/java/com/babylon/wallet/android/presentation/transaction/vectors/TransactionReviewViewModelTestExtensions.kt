@@ -6,7 +6,7 @@ import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
@@ -135,7 +135,7 @@ internal fun TransactionReviewViewModelTestExperimental.sampleManifest(
 internal fun TransactionReviewViewModelTestExperimental.requestMetadata(
     manifestData: TransactionManifestData,
     dApp: DApp? = null
-) = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+) = IncomingMessage.IncomingRequest.RequestMetadata(
     networkId = manifestData.networkId,
     origin = dApp?.claimedWebsites?.firstOrNull().orEmpty(),
     dAppDefinitionAddress = dApp?.dAppAddress?.string.orEmpty(),
