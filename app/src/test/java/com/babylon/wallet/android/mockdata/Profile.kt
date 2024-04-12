@@ -1,10 +1,16 @@
 package com.babylon.wallet.android.mockdata
 
 import com.babylon.wallet.android.domain.SampleDataProvider
+import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.IdentifiedArrayList
 import rdx.works.core.InstantGenerator
+import rdx.works.core.UUIDGenerator
 import rdx.works.core.identifiedArrayListOf
+import rdx.works.profile.data.model.DeviceInfo
 import rdx.works.profile.data.model.Header
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
@@ -15,13 +21,24 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
+import rdx.works.profile.data.model.compressedPublicKey
+import rdx.works.profile.data.model.extensions.createAccount
+import rdx.works.profile.data.model.extensions.nextAccountIndex
+import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.profile.data.model.pernetwork.addAccounts
+import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.TestData
+import java.time.Instant
 
 fun profile(
-    accounts: IdentifiedArrayList<Network.Account> = identifiedArrayListOf(account("acc-1"), account("acc-2")),
+    accounts: IdentifiedArrayList<Network.Account> = identifiedArrayListOf(
+        account(AccountAddress.sampleMainnet.random().string),
+        account(AccountAddress.sampleMainnet.random().string)
+    ),
     personas: IdentifiedArrayList<Network.Persona> = identifiedArrayListOf(SampleDataProvider().samplePersona()),
     dApps: List<Network.AuthorizedDapp> = emptyList(),
     p2pLinks: List<P2PLink> = emptyList(),
@@ -39,7 +56,7 @@ fun profile(
         display = Display.default,
         security = Security.default,
         gateways = Gateways(gateway.url, listOf(gateway)),
-        p2pLinks = emptyList()
+        p2pLinks = p2pLinks
     ),
     factorSources = identifiedArrayListOf(
         DeviceFactorSource.babylon(
@@ -63,3 +80,58 @@ fun profile(
         )
     )
 )
+
+
+fun createProfile(
+    gateway: Radix.Gateway = Radix.Gateway.default,
+    numberOfAccounts: Int = 2
+): Profile {
+    val gateways = try {
+        Gateways.preset.add(gateway)
+    } catch (exception: Exception) {
+        Gateways.preset
+    }.changeCurrent(gateway)
+
+    val mnemonic = MnemonicWithPassphrase(
+        mnemonic = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote",
+        bip39Passphrase = ""
+    )
+    val factorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonic)
+
+    var profile = Profile.initWithFactorSource(
+        id = UUIDGenerator.uuid().toString(),
+        deviceInfo = DeviceInfo(name = "Unit", manufacturer = "Test", model = "junit"),
+        creationDate = Instant.now(),
+        gateways = gateways,
+        factorSource = factorSource,
+        accounts = identifiedArrayListOf()
+    )
+
+    repeat(numberOfAccounts) { index ->
+        val derivationPath = DerivationPath.forAccount(
+            networkId = gateway.network.networkId(),
+            accountIndex = profile.nextAccountIndex(
+                factorSource = factorSource,
+                derivationPathScheme = DerivationPathScheme.CAP_26,
+                forNetworkId = gateway.network.networkId()
+            ),
+            keyType = KeyType.TRANSACTION_SIGNING
+        )
+
+        profile = profile.addAccounts(
+            accounts = listOf(
+                profile.createAccount(
+                    displayName = "Account$index",
+                    onNetworkId = gateway.network.networkId(),
+                    compressedPublicKey = mnemonic.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero(),
+                    derivationPath = derivationPath,
+                    factorSource = factorSource,
+                    onLedgerSettings = Network.Account.OnLedgerSettings.init()
+                )
+            ),
+            onNetwork = gateway.network.networkId()
+        )
+    }
+
+    return profile
+}

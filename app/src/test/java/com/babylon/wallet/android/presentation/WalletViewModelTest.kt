@@ -3,14 +3,7 @@ package com.babylon.wallet.android.presentation
 import app.cash.turbine.test
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
@@ -19,6 +12,7 @@ import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.wallet.WalletUiState
 import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.extensions.toDecimal192
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -30,15 +24,22 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.BackupState
+import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
-import java.math.BigDecimal
 
 @ExperimentalCoroutinesApi
 class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
@@ -54,10 +55,10 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
 
-    private val sampleProfile = profile(accounts = identifiedArrayListOf(account(address = "adr_1", name = "primary")))
+    private val sampleProfile = profile(accounts = identifiedArrayListOf(account(name = "primary")))
     private val sampleXrdResource = Resource.FungibleResource(
-        resourceAddress = XrdResource.address(),
-        ownedAmount = BigDecimal.TEN,
+        address = XrdResource.address(networkId = Radix.Network.mainnet.id),
+        ownedAmount = 10.toDecimal192(),
         metadata = listOf(
             Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = XrdResource.SYMBOL, valueType = MetadataType.String)
         )

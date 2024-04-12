@@ -7,10 +7,10 @@ import com.babylon.wallet.android.data.gateway.extensions.toProfileDepositRule
 import com.babylon.wallet.android.data.gateway.generated.models.DefaultDepositRule
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsOptIns
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsRequest
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.di.ShortTimeoutStateApi
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
 import com.babylon.wallet.android.utils.Constants
+import rdx.works.core.domain.resources.ExplicitMetadataKey
 import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 

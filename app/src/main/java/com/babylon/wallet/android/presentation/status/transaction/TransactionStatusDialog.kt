@@ -34,6 +34,8 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.FailureDialogContent
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.extensions.init
 
 @Composable
 @Suppress("CyclomaticComplexMethod")
@@ -176,7 +178,7 @@ private fun SuccessContent(
                 )
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
                 ActionableAddressView(
-                    address = transactionAddress,
+                    transactionId = IntentHash.init(transactionAddress),
                     textStyle = RadixTheme.typography.body1Regular,
                     textColor = RadixTheme.colors.gray1
                 )

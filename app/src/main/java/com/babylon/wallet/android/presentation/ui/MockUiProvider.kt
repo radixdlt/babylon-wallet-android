@@ -2,12 +2,19 @@ package com.babylon.wallet.android.presentation.ui
 
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.LegacyOlympiaAccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.toBabylonAddress
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
 
+@UsesSampleValues
 object MockUiProvider {
 
     val seedPhraseWords = persistentListOf(
@@ -71,58 +78,48 @@ object MockUiProvider {
         OlympiaAccountDetails(
             index = 0,
             type = OlympiaAccountType.Software,
-            address = "account_address_1",
+            address = LegacyOlympiaAccountAddress.sample(),
             publicKey = "publicKey1",
             accountName = "account one",
             derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
-            newBabylonAddress = "babylon_account_address_1",
+            newBabylonAddress = LegacyOlympiaAccountAddress.sample().toBabylonAddress(),
             appearanceId = 0
         ),
 
         OlympiaAccountDetails(
             index = 1,
             type = OlympiaAccountType.Hardware,
-            address = "account_address_2",
+            address = LegacyOlympiaAccountAddress.sample.other(),
             publicKey = "publicKey2",
             accountName = "account two",
             derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
-            newBabylonAddress = "babylon_account_address_2",
+            newBabylonAddress = LegacyOlympiaAccountAddress.sample.other().toBabylonAddress(),
             appearanceId = 1
-        ),
-        OlympiaAccountDetails(
-            index = 2,
-            type = OlympiaAccountType.Hardware,
-            address = "account_address_3",
-            publicKey = "publicKey3",
-            accountName = "account three",
-            derivationPath = DerivationPath(path = "path", scheme = DerivationPathScheme.BIP_44_OLYMPIA),
-            newBabylonAddress = "babylon_account_address_3",
-            appearanceId = 3
-        ),
+        )
     )
 
     val accountItemUiModelsList = persistentListOf(
         AccountItemUiModel(
             displayName = "Account name 1",
-            address = "account_address_1",
+            address = AccountAddress.sampleMainnet.random(),
             appearanceID = 1,
             isSelected = true
         ),
         AccountItemUiModel(
             displayName = "Account name 2",
-            address = "account_address_2",
+            address = AccountAddress.sampleMainnet.random(),
             appearanceID = 2,
             isSelected = false
         ),
         AccountItemUiModel(
             displayName = "Account name 3",
-            address = "account_address_3",
+            address = AccountAddress.sampleMainnet.random(),
             appearanceID = 3,
             isSelected = false
         ),
         AccountItemUiModel(
             displayName = "Account name 4",
-            address = "account_address_4",
+            address = AccountAddress.sampleMainnet.random(),
             appearanceID = 4,
             isSelected = false
         )

@@ -33,6 +33,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
+import com.radixdlt.sargon.AccountAddress
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -43,7 +44,7 @@ fun DappAuthorizedLoginScreen(
     navigateToChooseAccount: (Int, Boolean, Boolean, Boolean) -> Unit,
     navigateToPermissions: (Int, Boolean, Boolean, Boolean) -> Unit,
     navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
-    navigateToSelectPersona: (String) -> Unit,
+    navigateToSelectPersona: (AccountAddress) -> Unit,
     navigateToOngoingPersonaData: (String, RequiredPersonaFields) -> Unit,
     onLoginFlowComplete: () -> Unit,
     modifier: Modifier = Modifier

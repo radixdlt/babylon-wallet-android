@@ -11,11 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.Address
+import rdx.works.core.domain.resources.Validator
 
 @Composable
-fun ValidatorDetailsItem(validator: ValidatorDetail, modifier: Modifier = Modifier, iconSize: Dp = 24.dp) {
+fun ValidatorDetailsItem(validator: Validator, modifier: Modifier = Modifier, iconSize: Dp = 24.dp) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier,
@@ -34,7 +35,7 @@ fun ValidatorDetailsItem(validator: ValidatorDetail, modifier: Modifier = Modifi
             )
 
             ActionableAddressView(
-                address = validator.address,
+                address = Address.Validator(validator.address),
                 textStyle = RadixTheme.typography.body2HighImportance,
                 textColor = RadixTheme.colors.gray2
             )

@@ -27,11 +27,11 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.extensions.formatted
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
 
 @Composable
 fun TransferableStakeClaimNftItemContent(
@@ -122,7 +122,7 @@ fun TransferableStakeClaimNftItemContent(
                 )
                 Text(
                     modifier = Modifier.weight(1f),
-                    text = transferable.xrdWorthPerNftItem[item.localId.displayable]?.displayableQuantity().orEmpty(),
+                    text = transferable.xrdWorthPerNftItem[item.localId]?.formatted().orEmpty(),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End,

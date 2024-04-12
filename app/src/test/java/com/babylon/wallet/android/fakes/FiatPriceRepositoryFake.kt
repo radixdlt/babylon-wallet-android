@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.fakes
 
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.mockdata.mockLSUAddress1
 import com.babylon.wallet.android.mockdata.mockLSUAddress2
 import com.babylon.wallet.android.mockdata.mockNFTAddressForStakeClaim1
@@ -13,6 +11,10 @@ import com.babylon.wallet.android.mockdata.mockResourceAddress3
 import com.babylon.wallet.android.mockdata.mockResourceAddress4
 import com.babylon.wallet.android.mockdata.mockResourceAddress5
 import com.babylon.wallet.android.mockdata.mockResourceAddressXRD
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 
 class FiatPriceRepositoryFake : FiatPriceRepository {
 
@@ -26,7 +28,7 @@ class FiatPriceRepositoryFake : FiatPriceRepository {
         addresses: Set<FiatPriceRepository.PriceRequestAddress>,
         currency: SupportedCurrency,
         isRefreshing: Boolean
-    ): Result<Map<String, FiatPrice>> {
+    ): Result<Map<ResourceAddress, FiatPrice>> {
         val all = addresses.map { it.address }
         val results = fiatPrices.filter {
             all.contains(it.key)
@@ -79,13 +81,13 @@ class FiatPriceRepositoryFake : FiatPriceRepository {
     )
 
     companion object {
-        val mockLSUPrice1 = 0.51
-        val mockLSUPrice2 = 80.091
-        val mockResourceXRDPrice = 1.511
-        val mockResource1Price = 0.070098
-        val mockResource2Price = 6.0
-        val mockResource3Price = 15.0
-        val mockResource4Price = 1150000.0
-        val mockResource5Price = 0.0005
+        val mockLSUPrice1 = 0.51.toDecimal192()
+        val mockLSUPrice2 = 80.091.toDecimal192()
+        val mockResourceXRDPrice = 1.511.toDecimal192()
+        val mockResource1Price = 0.070098.toDecimal192()
+        val mockResource2Price = 6.0.toDecimal192()
+        val mockResource3Price = 15.0.toDecimal192()
+        val mockResource4Price = 1150000.0.toDecimal192()
+        val mockResource5Price = 0.0005.toDecimal192()
     }
 }

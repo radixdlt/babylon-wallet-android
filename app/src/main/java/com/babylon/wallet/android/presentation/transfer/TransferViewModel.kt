@@ -2,13 +2,6 @@ package com.babylon.wallet.android.presentation.transfer
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
@@ -17,6 +10,18 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDele
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.clamped
+import com.radixdlt.sargon.extensions.compareTo
+import com.radixdlt.sargon.extensions.isZero
+import com.radixdlt.sargon.extensions.minus
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.plus
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.sumOf
+import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
@@ -28,6 +33,12 @@ import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules
@@ -35,7 +46,6 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -108,10 +118,10 @@ class TransferViewModel @Inject constructor(
         val spentAmount = _state.value.targetAccounts
             .filterNot { it.address == account.address }
             .sumOf { it.amountSpent(fungibleAsset) }
-        val remainingAmount = (maxAmount - spentAmount).coerceAtLeast(BigDecimal.ZERO)
-        val remainingAmountString = remainingAmount.toPlainString()
+        val remainingAmount = (maxAmount - spentAmount).clamped
+        val remainingAmountString = remainingAmount.string
 
-        if (fungibleAsset.resource.isXrd && remainingAmount > BigDecimal.ZERO) {
+        if (fungibleAsset.resource.isXrd && remainingAmount > 0.toDecimal192()) {
             _state.update {
                 it.copy(
                     maxXrdError = State.MaxAmountMessage(
@@ -144,7 +154,7 @@ class TransferViewModel @Inject constructor(
                 state.updateAssetAmount(
                     account = maxXrdError.account,
                     asset = fungibleAsset,
-                    amountString = remainingAmountString.toPlainString()
+                    amountString = remainingAmountString.string
                 )
                     .copy(
                         maxXrdError = null
@@ -161,7 +171,7 @@ class TransferViewModel @Inject constructor(
                     state.updateAssetAmount(
                         account = maxXrdError.account,
                         asset = fungibleAsset,
-                        amountString = maxXrdError.maxAccountAmount.toPlainString()
+                        amountString = maxXrdError.maxAccountAmount.string
                     )
                         .copy(
                             maxXrdError = null
@@ -305,7 +315,7 @@ class TransferViewModel @Inject constructor(
                 mutation = { target ->
                     target.updateAssets { assets ->
                         assets.mapWhen(
-                            predicate = { it.address == asset.address },
+                            predicate = { it.resourceAddress == asset.resourceAddress },
                             mutation = { asset.copy(amountString = amountString) }
                         ).toPersistentSet()
                     }
@@ -314,14 +324,14 @@ class TransferViewModel @Inject constructor(
         ).withCheckedBalances()
 
         private fun withCheckedBalances(): State {
-            val fungibleBalances = mutableMapOf<Resource.FungibleResource, BigDecimal>()
+            val fungibleBalances = mutableMapOf<Resource.FungibleResource, Decimal192>()
             val nonFungibleBalances = mutableMapOf<Resource.NonFungibleResource.Item, Int>()
 
             targetAccounts
                 .map { it.spendingAssets.filterIsInstance<SpendingAsset.Fungible>() }
                 .flatten()
                 .forEach { fungible ->
-                    val spentAmount = fungibleBalances[fungible.resource] ?: BigDecimal.ZERO
+                    val spentAmount = fungibleBalances[fungible.resource].orZero()
                     fungibleBalances[fungible.resource] = spentAmount + fungible.amountDecimal
                 }
 
@@ -341,8 +351,8 @@ class TransferViewModel @Inject constructor(
                                 is SpendingAsset.Fungible -> asset.copy(
                                     exceedingBalance = fungibleBalances.getOrDefault(
                                         asset.resource,
-                                        BigDecimal.ZERO
-                                    ) > asset.resource.ownedAmount
+                                        0.toDecimal192()
+                                    ) > asset.resource.ownedAmount.orZero()
                                 )
 
                                 is SpendingAsset.NFT -> asset.copy(
@@ -388,7 +398,7 @@ class TransferViewModel @Inject constructor(
                 val isFiatBalancesEnabled: Boolean = true,
                 val assetsWithAssetsPrices: Map<Asset, AssetPrice?>? = null,
                 private val initialAssetAddress: ImmutableSet<String>, // Used to compute the difference between chosen assets
-                val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
+                val nonFungiblesWithPendingNFTs: Set<ResourceAddress> = setOf(),
                 val pendingStakeUnits: Boolean = false,
                 val targetAccount: TargetAccount,
                 val assetsViewState: AssetsViewState = AssetsViewState.init(),
@@ -401,7 +411,7 @@ class TransferViewModel @Inject constructor(
 
                 val isSubmitEnabled: Boolean
                     get() {
-                        val currentAssetAddresses = targetAccount.spendingAssets.map { it.address }.toSet()
+                        val currentAssetAddresses = targetAccount.spendingAssets.map { it.resourceAddressOrGlobalId }.toSet()
                         val currentSub = currentAssetAddresses subtract initialAssetAddress
                         val initialSub = initialAssetAddress subtract currentAssetAddresses
                         val result = currentSub union initialSub
@@ -412,7 +422,7 @@ class TransferViewModel @Inject constructor(
                     get() = targetAccount.spendingAssets.size
 
                 fun onNFTsLoading(forResource: Resource.NonFungibleResource): ChooseAssets {
-                    return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.resourceAddress)
+                    return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.address)
                 }
 
                 fun onNFTsReceived(forResource: Resource.NonFungibleResource): ChooseAssets {
@@ -421,20 +431,20 @@ class TransferViewModel @Inject constructor(
                         assets = assets.copy(
                             nonFungibles = assets.nonFungibles.mapWhen(
                                 predicate = {
-                                    it.collection.resourceAddress == forResource.resourceAddress &&
+                                    it.collection.address == forResource.address &&
                                         it.collection.items.size < forResource.items.size
                                 },
                                 mutation = { NonFungibleCollection(forResource) }
                             )
                         ),
-                        nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress
+                        nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address
                     )
                 }
 
                 fun onNFTsError(forResource: Resource.NonFungibleResource, error: Throwable): ChooseAssets {
                     if (assets?.nonFungibles == null) return this
                     return copy(
-                        nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress,
+                        nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address,
                         uiMessage = UiMessage.ErrorMessage(error = error)
                     )
                 }
@@ -449,7 +459,7 @@ class TransferViewModel @Inject constructor(
 
                 companion object {
                     fun init(forTargetAccount: TargetAccount): ChooseAssets = ChooseAssets(
-                        initialAssetAddress = forTargetAccount.spendingAssets.map { it.address }.toPersistentSet(),
+                        initialAssetAddress = forTargetAccount.spendingAssets.map { it.resourceAddressOrGlobalId }.toPersistentSet(),
                         targetAccount = forTargetAccount
                     )
                 }
@@ -462,15 +472,15 @@ class TransferViewModel @Inject constructor(
         }
 
         data class MaxAmountMessage(
-            val maxAccountAmount: BigDecimal,
+            val maxAccountAmount: Decimal192,
             val account: TargetAccount,
             val asset: SpendingAsset
         ) {
-            val amountWithoutFees: BigDecimal
-                get() = maxAccountAmount - BigDecimal.ONE
+            val amountWithoutFees: Decimal192
+                get() = maxAccountAmount - 1.toDecimal192()
 
             val maxAccountAmountLessThanFee: Boolean
-                get() = maxAccountAmount < BigDecimal.ONE
+                get() = maxAccountAmount < 1.toDecimal192()
         }
     }
 }
@@ -480,7 +490,7 @@ sealed class TargetAccount {
     abstract val id: String
     abstract val spendingAssets: ImmutableSet<SpendingAsset>
 
-    abstract fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean
+    abstract fun isSignatureRequiredForTransfer(resourceAddress: ResourceAddress): Boolean
 
     val isAddressValid: Boolean
         get() = when (this) {
@@ -499,10 +509,10 @@ sealed class TargetAccount {
     val factorSourceId: FactorSource.FactorSourceID.FromHash?
         get() = (this as? Owned)?.account?.factorSourceId as? FactorSource.FactorSourceID.FromHash
 
-    fun amountSpent(fungibleAsset: SpendingAsset.Fungible): BigDecimal = spendingAssets
+    fun amountSpent(fungibleAsset: SpendingAsset.Fungible): Decimal192 = spendingAssets
         .filterIsInstance<SpendingAsset.Fungible>()
-        .find { it.address == fungibleAsset.address }
-        ?.amountDecimal ?: BigDecimal.ZERO
+        .find { it.resourceAddress == fungibleAsset.resourceAddress }
+        ?.amountDecimal.orZero()
 
     fun updateAssets(onUpdate: (ImmutableSet<SpendingAsset>) -> ImmutableSet<SpendingAsset>): TargetAccount {
         return when (this) {
@@ -526,7 +536,7 @@ sealed class TargetAccount {
 
     fun removeAsset(asset: SpendingAsset): TargetAccount {
         val newSpendingAssets = spendingAssets.toMutableSet().apply {
-            removeIf { it.address == asset.address }
+            removeIf { it.resourceAddress == asset.resourceAddress }
         }.toPersistentSet()
 
         return when (this) {
@@ -542,7 +552,7 @@ sealed class TargetAccount {
     ) : TargetAccount() {
         override val address: String = ""
 
-        override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean = false
+        override fun isSignatureRequiredForTransfer(resourceAddress: ResourceAddress): Boolean = false
     }
 
     data class Other(
@@ -552,7 +562,7 @@ sealed class TargetAccount {
         override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
 
-        override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean = false
+        override fun isSignatureRequiredForTransfer(resourceAddress: ResourceAddress): Boolean = false
 
         enum class AddressValidity {
             VALID,
@@ -563,16 +573,16 @@ sealed class TargetAccount {
 
     data class Owned(
         val account: Network.Account,
-        val accountAssetsAddresses: List<String> = emptyList(),
+        val accountAssetsAddresses: List<ResourceAddress> = emptyList(),
         override val id: String,
         override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
         override val address: String
             get() = account.address
 
-        override fun isSignatureRequiredForTransfer(forSpendingAsset: SpendingAsset): Boolean {
+        override fun isSignatureRequiredForTransfer(resourceAddress: ResourceAddress): Boolean {
             return account.isSignatureRequiredBasedOnDepositRules(
-                forSpecificAssetAddress = forSpendingAsset.address,
+                forSpecificAssetAddress = resourceAddress,
                 addressesOfAssetsOfTargetAccount = accountAssetsAddresses
             )
         }
@@ -580,7 +590,8 @@ sealed class TargetAccount {
 }
 
 sealed class SpendingAsset {
-    abstract val address: String
+    abstract val resourceAddress: ResourceAddress
+    abstract val resourceAddressOrGlobalId: String
     abstract val isValidForSubmission: Boolean
 
     data class Fungible(
@@ -588,14 +599,17 @@ sealed class SpendingAsset {
         val amountString: String = "",
         val exceedingBalance: Boolean = false
     ) : SpendingAsset() {
-        override val address: String
-            get() = resource.resourceAddress
+        override val resourceAddress: ResourceAddress
+            get() = resource.address
+
+        override val resourceAddressOrGlobalId: String
+            get() = resourceAddress.string
 
         override val isValidForSubmission: Boolean
-            get() = !exceedingBalance && amountString.isNotEmpty() && (resource.isXrd || amountDecimal != BigDecimal.ZERO)
+            get() = !exceedingBalance && amountString.isNotEmpty() && (resource.isXrd || !amountDecimal.isZero)
 
-        val amountDecimal: BigDecimal
-            get() = amountString.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val amountDecimal: Decimal192
+            get() = amountString.toDecimal192OrNull().orZero()
     }
 
     data class NFT(
@@ -603,8 +617,11 @@ sealed class SpendingAsset {
         val item: Resource.NonFungibleResource.Item,
         val exceedingBalance: Boolean = false
     ) : SpendingAsset() {
-        override val address: String
-            get() = item.globalAddress
+        override val resourceAddress: ResourceAddress
+            get() = resource.address
+
+        override val resourceAddressOrGlobalId: String
+            get() = item.globalId.string
 
         override val isValidForSubmission: Boolean
             get() = !exceedingBalance

@@ -1,7 +1,9 @@
 package com.babylon.wallet.android.data.gateway.generated.infrastructure
 
+import com.radixdlt.sargon.Decimal192
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
+import rdx.works.core.domain.Serializer
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.net.URI
@@ -22,6 +24,7 @@ object Serializer {
     val kotlinxSerializationAdapters = SerializersModule {
         contextual(BigDecimal::class, BigDecimalAdapter)
         contextual(BigInteger::class, BigIntegerAdapter)
+        contextual(Decimal192::class, Decimal192.Serializer)
         contextual(LocalDate::class, LocalDateAdapter)
         contextual(LocalDateTime::class, LocalDateTimeAdapter)
         contextual(OffsetDateTime::class, OffsetDateTimeAdapter)

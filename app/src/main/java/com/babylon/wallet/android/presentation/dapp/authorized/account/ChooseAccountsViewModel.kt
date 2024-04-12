@@ -7,6 +7,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -46,7 +47,7 @@ class ChooseAccountsViewModel @Inject constructor(
                 val accountItems = accounts.map { account ->
                     val currentAccountItemState =
                         _state.value.availableAccountItems.find { accountItemUiModel ->
-                            accountItemUiModel.address == account.address
+                            accountItemUiModel.address.string == account.address
                         }
                     account.toUiModel(currentAccountItemState?.isSelected ?: false)
                 }

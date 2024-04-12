@@ -38,27 +38,27 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.White
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.placeholder.shimmer
-import java.math.BigDecimal
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.sampleMainnet
 
 @Composable
 fun AccountAssetsRow(
@@ -315,6 +315,7 @@ private fun Modifier.checkRenderedOutside(
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AssetsContentRowPreview() {
@@ -332,57 +333,26 @@ fun AssetsContentRowPreview() {
         ) {
             AccountAssetsRow(assets = null, isLoading = true)
 
-            val allFungibles = List(117) {
-                Resource.FungibleResource(
-                    resourceAddress = "resource_address",
-                    ownedAmount = BigDecimal.valueOf(237659),
-                    metadata = listOf(
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.NAME.key,
-                            value = "Awesome token",
-                            valueType = MetadataType.String
-                        ),
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.SYMBOL.key,
-                            value = "AWE",
-                            valueType = MetadataType.String
-                        ),
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.ICON_URL.key,
-                            value = "https://c4.wallpaperflare.com/wallpaper/817/534/563/ave-bosque-fantasia-fenix-wallpaper-preview.jpg",
-                            valueType = MetadataType.Url
-                        )
+            val allFungibles = List(117) { _ ->
+                Resource.FungibleResource.sampleMainnet().let {
+                    it.copy(
+                        metadata = it.metadata.toMutableList().apply {
+                            add(
+                                Metadata.Primitive(
+                                    key = ExplicitMetadataKey.ICON_URL.key,
+                                    value = "https://c4.wallpaperflare.com/wallpaper/817/534/563/" +
+                                        "ave-bosque-fantasia-fenix-wallpaper-preview.jpg",
+                                    valueType = MetadataType.Url
+                                )
+                            )
+                        }
                     )
-                )
+                }
             }
 
             val nonFungibles = listOf(
-                Resource.NonFungibleResource(
-                    resourceAddress = "resource_address1",
-                    amount = 1117,
-                    items = List(1117) {
-                        Resource.NonFungibleResource.Item(
-                            collectionAddress = "resource_address1",
-                            localId = Resource.NonFungibleResource.Item.ID.from("<f1_$it>")
-                        )
-                    },
-                    metadata = listOf(
-                        Metadata.Primitive(ExplicitMetadataKey.NAME.key, "F1", MetadataType.String)
-                    )
-                ),
-                Resource.NonFungibleResource(
-                    resourceAddress = "resource_address2",
-                    amount = 3,
-                    items = List(3) {
-                        Resource.NonFungibleResource.Item(
-                            collectionAddress = "resource_address2",
-                            localId = Resource.NonFungibleResource.Item.ID.from("<nba_$it>")
-                        )
-                    },
-                    metadata = listOf(
-                        Metadata.Primitive(ExplicitMetadataKey.NAME.key, "NBA", MetadataType.String)
-                    )
-                )
+                Resource.NonFungibleResource.sampleMainnet(),
+                Resource.NonFungibleResource.sampleMainnet.other()
             )
 
             AccountAssetsRow(
@@ -390,25 +360,10 @@ fun AssetsContentRowPreview() {
                     tokens = allFungibles.map { Token(it) },
                     nonFungibles = nonFungibles.map { NonFungibleCollection(it) },
                     poolUnits = List(120) {
-                        PoolUnit(
-                            stake = Resource.FungibleResource(
-                                resourceAddress = "resource_address_$it",
-                                ownedAmount = BigDecimal.valueOf(237659)
-                            ),
-                            pool = null
-                        )
+                        PoolUnit.sampleMainnet()
                     },
                     liquidStakeUnits = List(100) {
-                        LiquidStakeUnit(
-                            Resource.FungibleResource(
-                                resourceAddress = "resource_address$it",
-                                ownedAmount = BigDecimal.valueOf(237659)
-                            ),
-                            ValidatorDetail(
-                                address = "validator_$it",
-                                totalXrdStake = BigDecimal.TEN
-                            )
-                        )
+                        LiquidStakeUnit.sampleMainnet.random()
                     }
                 ),
                 isLoading = false

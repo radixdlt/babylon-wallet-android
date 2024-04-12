@@ -33,17 +33,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.ValidatorDetailsItem
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import java.math.BigDecimal
+import rdx.works.core.domain.resources.Validator
 
 @Composable
 fun ValidatorsContent(
-    validators: ImmutableList<ValidatorDetail>,
+    validators: ImmutableList<Validator>,
     modifier: Modifier = Modifier,
     text: String
 ) {
@@ -127,6 +127,7 @@ fun ValidatorsContent(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun StakingToValidatorsContentPreview() {
@@ -134,8 +135,8 @@ fun StakingToValidatorsContentPreview() {
         Column {
             ValidatorsContent(
                 persistentListOf(
-                    ValidatorDetail("validator_tdx_19jd32jd3928jd3892jd329", BigDecimal(1000)),
-                    ValidatorDetail("validator_tdx_19jd32jd3928jd3892jd329", BigDecimal(1000000))
+                    Validator.sampleMainnet(),
+                    Validator.sampleMainnet.other()
                 ),
                 text = "Staking to Validators Staking to Validators Staking to Validators Staking to Validators".uppercase()
             )

@@ -44,7 +44,6 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
 import com.babylon.wallet.android.presentation.transfer.accounts.ChooseAccountSheet
@@ -55,8 +54,10 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.formatted
 import kotlinx.coroutines.launch
-import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -162,11 +163,11 @@ fun TransferContent(
                 messageText = stringResource(id = R.string.assetTransfer_maxAmountDialog_body),
                 confirmText = stringResource(
                     id = R.string.assetTransfer_maxAmountDialog_sendAllButton,
-                    error.maxAccountAmount.displayableQuantity()
+                    error.maxAccountAmount.formatted()
                 ),
                 dismissText = stringResource(
                     id = R.string.assetTransfer_maxAmountDialog_saveXrdForFeeButton,
-                    error.amountWithoutFees.displayableQuantity()
+                    error.amountWithoutFees.formatted()
                 )
             )
         }
@@ -428,6 +429,7 @@ private fun SyncSheetState(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun TransferContentPreview() {
@@ -439,7 +441,6 @@ fun TransferContentPreview() {
             onBackClick = {},
             state = State(
                 fromAccount = SampleDataProvider().sampleAccount(
-                    address = "rdx_t_12382918379821",
                     name = "Savings account"
                 )
             ),

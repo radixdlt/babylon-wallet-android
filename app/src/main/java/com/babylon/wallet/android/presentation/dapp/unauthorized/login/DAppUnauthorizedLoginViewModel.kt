@@ -9,7 +9,6 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.domain.model.toRequiredFields
@@ -28,12 +27,15 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toU
 import com.babylon.wallet.android.presentation.model.toPersonaData
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.DApp
 import rdx.works.core.logNonFatalException
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.PersonaData
@@ -82,12 +84,13 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                 )
                 return@launch
             }
-            if (!request.isValidRequest()) {
+            val dAppDefinitionAddress = runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.getOrNull()
+            if (!request.isValidRequest() || dAppDefinitionAddress == null) {
                 handleRequestError(RadixWalletException.DappRequestException.InvalidRequest)
                 return@launch
             }
             stateRepository.getDAppsDetails(
-                definitionAddresses = listOf(request.metadata.dAppDefinitionAddress),
+                definitionAddresses = listOf(dAppDefinitionAddress),
                 isRefreshing = false
             ).onSuccess { dApps ->
                 dApps.firstOrNull()?.let { dApp ->

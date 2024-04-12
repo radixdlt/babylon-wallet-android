@@ -5,20 +5,21 @@ import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUse
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.PublicKeyHash
-import com.radixdlt.ret.SignatureWithPublicKey
-import com.radixdlt.ret.TransactionManifest
+import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.PublicKeyHash
+import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.setOwnerKeysHashes
 import kotlinx.coroutines.flow.merge
-import rdx.works.core.compressedPublicKeyHash
-import rdx.works.core.compressedPublicKeyHashBytes
-import rdx.works.core.ret.BabylonManifestBuilder
-import rdx.works.core.ret.buildSafely
-import rdx.works.profile.data.model.factorsources.Slip10Curve
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
+import rdx.works.profile.sargon.toSargon
 import javax.inject.Inject
 
 class ROLAClient @Inject constructor(
@@ -36,54 +37,43 @@ class ROLAClient @Inject constructor(
         return generateAuthSigningFactorInstanceUseCase(entity)
     }
 
-    suspend fun createAuthKeyManifestWithStringInstructions(
+    suspend fun createAuthKeyManifest(
         entity: Entity,
         authSigningFactorInstance: FactorInstance
-    ): Result<TransactionManifest> {
+    ): Result<TransactionManifestData> {
         val transactionSigningPublicKey = when (val state = entity.securityState) {
             is SecurityState.Unsecured -> {
                 when (val badge = state.unsecuredEntityControl.transactionSigning.badge) {
                     is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-                        badge.publicKey
+                        badge.publicKey.toSargon()
                     }
                 }
             }
         }
-        val ownerKeys = getEntitiesOwnerKeysUseCase(listOf(entity)).getOrNull()?.get(entity)
-        val publicKeyHashes = mutableListOf<FactorInstance.PublicKey>()
-        val ownerKeysHashes = ownerKeys.orEmpty()
         val authSigningPublicKey = when (val badge = authSigningFactorInstance.badge) {
             is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-                badge.publicKey
+                badge.publicKey.toSargon()
             }
         }
-        val authSigningKeyHash = authSigningPublicKey.compressedData.compressedPublicKeyHash()
-        val transactionSigningKeyHash = transactionSigningPublicKey.compressedData.compressedPublicKeyHash()
-        if (ownerKeysHashes.none { it.hex == authSigningKeyHash }) {
-            publicKeyHashes.add(authSigningPublicKey)
-        }
-        if (ownerKeysHashes.none { it.hex == transactionSigningKeyHash }) {
-            publicKeyHashes.add(transactionSigningPublicKey)
-        }
-        return BabylonManifestBuilder()
-            .addSetMetadataInstructionForOwnerKeys(entity.address, publicKeyHashes)
-            .buildSafely(entity.networkID)
-    }
 
-    private fun BabylonManifestBuilder.addSetMetadataInstructionForOwnerKeys(
-        entityAddress: String,
-        ownerPublicKeys: List<FactorInstance.PublicKey>
-    ): BabylonManifestBuilder {
-        return setOwnerKeys(
-            address = Address(entityAddress),
-            ownerKeyHashes = ownerPublicKeys.map { key ->
-                val bytes = key.compressedData.compressedPublicKeyHashBytes()
-                when (key.curve) {
-                    Slip10Curve.SECP_256K1 -> PublicKeyHash.Secp256k1(bytes)
-                    Slip10Curve.CURVE_25519 -> PublicKeyHash.Secp256k1(bytes)
-                }
+        return getEntitiesOwnerKeysUseCase(listOf(entity)).mapCatching { ownerKeysPerEntity ->
+            val ownerKeys = ownerKeysPerEntity[entity].orEmpty()
+            val publicKeys = mutableListOf<PublicKey>()
+            if (ownerKeys.none { it.hex == authSigningPublicKey.hex }) {
+                publicKeys.add(authSigningPublicKey)
             }
-        )
+            if (ownerKeys.none { it.hex == transactionSigningPublicKey.hex }) {
+                publicKeys.add(transactionSigningPublicKey)
+            }
+            publicKeys
+        }.mapCatching { publicKeys ->
+            TransactionManifest.setOwnerKeysHashes(
+                addressOfAccountOrPersona = AddressOfAccountOrPersona.init(validating = entity.address),
+                ownerKeyHashes = publicKeys.map { PublicKeyHash.init(it) }
+            )
+        }.mapCatching {
+            TransactionManifestData.from(manifest = it)
+        }
     }
 
     suspend fun signAuthChallenge(
@@ -105,6 +95,7 @@ class ROLAClient @Inject constructor(
                     throw RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                 }
             }
+
             else -> Result.failure(RadixWalletException.DappRequestException.FailedToSignAuthChallenge(exception))
         }
     }

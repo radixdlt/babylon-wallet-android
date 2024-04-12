@@ -48,20 +48,16 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val mnemonicRepository = mockk<MnemonicRepository>()
 
     private val fromAccount = account(
-        address = "account_tdx_19jd32jd3928jd3892jd329",
         name = "From Account"
     )
     private val otherAccounts = listOf(
         account(
-            address = "account_tdx_3j892dj3289dj32d2d2d2d9",
             name = "To Account 1"
         ),
         account(
-            address = "account_tdx_39jfc32jd932ke9023j89r9",
             name = "To Account 2"
         ),
         account(
-            address = "account_tdx_12901829jd9281jd189jd98",
             name = "To account 3"
         )
     )

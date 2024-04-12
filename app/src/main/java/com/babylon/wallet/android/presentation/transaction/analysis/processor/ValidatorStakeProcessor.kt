@@ -2,18 +2,21 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.ResourceIndicator
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.ResourceIndicator
+import com.radixdlt.sargon.extensions.address
+import com.radixdlt.sargon.extensions.div
+import com.radixdlt.sargon.extensions.sumOf
+import com.radixdlt.sargon.extensions.times
 import kotlinx.coroutines.flow.first
-import rdx.works.core.divideWithDivisibility
-import rdx.works.core.multiplyWithDivisibility
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.roundedWith
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -26,7 +29,7 @@ class ValidatorStakeProcessor @Inject constructor(
 ) : PreviewTypeProcessor<DetailedManifestClass.ValidatorStake> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.ValidatorStake): PreviewType {
         val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
-        val xrdAddress = XrdResource.address(networkId)
+        val xrdAddress = XrdResource.address(networkId.value)
         val assets = resolveAssetsFromAddressUseCase(
             fungibleAddresses = summary.involvedFungibleAddresses() + xrdAddress,
             nonFungibleIds = summary.involvedNonFungibleIds()
@@ -54,11 +57,11 @@ class ValidatorStakeProcessor @Inject constructor(
         executionSummary: ExecutionSummary,
         assets: List<Asset>,
         involvedOwnedAccounts: List<Network.Account>
-    ) = executionSummary.accountDeposits.map { depositsPerAccount ->
+    ) = executionSummary.deposits.map { depositsPerAccount ->
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         depositsPerAccount.value.map { depositedResource ->
             val asset = assets.find {
-                it.resource.resourceAddress == depositedResource.resourceAddress
+                it.resource.address == depositedResource.address
             } ?: error("No asset found")
             if (asset is LiquidStakeUnit) {
                 resolveLSU(asset, depositedResource, defaultDepositGuarantees)
@@ -73,12 +76,11 @@ class ValidatorStakeProcessor @Inject constructor(
         depositedResource: ResourceIndicator,
         defaultDepositGuarantees: Double
     ): Transferable.Depositing {
-        val relatedStakes = validatorStakes.filter { it.liquidStakeUnitAddress.addressString() == asset.resourceAddress }
-        val totalStakedLsuForAccount = relatedStakes.sumOf { it.liquidStakeUnitAmount.asStr().toBigDecimal() }
-        val totalStakeXrdWorthForAccount = relatedStakes.sumOf { it.xrdAmount.asStr().toBigDecimal() }
+        val relatedStakes = validatorStakes.filter { it.liquidStakeUnitAddress == asset.resourceAddress }
+        val totalStakedLsuForAccount = relatedStakes.sumOf { it.liquidStakeUnitAmount }
+        val totalStakeXrdWorthForAccount = relatedStakes.sumOf { it.xrdAmount }
         val lsuAmount = depositedResource.amount
-        val xrdWorth = lsuAmount.divideWithDivisibility(totalStakedLsuForAccount, asset.resource.divisibility)
-            .multiplyWithDivisibility(totalStakeXrdWorthForAccount, asset.resource.divisibility)
+        val xrdWorth = ((lsuAmount / totalStakedLsuForAccount) * totalStakeXrdWorthForAccount).roundedWith(asset.resource.divisibility)
         val guaranteeType = depositedResource.guaranteeType(defaultDepositGuarantees)
         return Transferable.Depositing(
             transferable = TransferableAsset.Fungible.LSUAsset(

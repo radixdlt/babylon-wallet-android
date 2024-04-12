@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
 import javax.inject.Inject
 
 @Suppress("LongParameterList")

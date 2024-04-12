@@ -12,20 +12,23 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.presentation.dapp.authorized.login.ROUTE_DAPP_LOGIN_AUTHORIZED_GRAPH
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 
 @VisibleForTesting
 internal const val ARG_DAPP_DEFINITION_ADDRESS = "dapp_definition_address"
 
 const val ROUTE_SELECT_PERSONA = "select_persona/{$ARG_DAPP_DEFINITION_ADDRESS}"
 
-internal class SelectPersonaArgs(val dappDefinitionAddress: String) {
-    constructor(savedStateHandle: SavedStateHandle) : this(checkNotNull(savedStateHandle[ARG_DAPP_DEFINITION_ADDRESS]) as String)
+internal class SelectPersonaArgs(val dappDefinitionAddress: AccountAddress) {
+    constructor(savedStateHandle: SavedStateHandle) : this(AccountAddress.init(checkNotNull(savedStateHandle[ARG_DAPP_DEFINITION_ADDRESS])))
 }
 
 fun NavController.selectPersona(
-    dappDefinitionAddress: String
+    dappDefinitionAddress: AccountAddress
 ) {
-    navigate("select_persona/$dappDefinitionAddress")
+    navigate("select_persona/${dappDefinitionAddress.string}")
 }
 
 @Suppress("LongParameterList")

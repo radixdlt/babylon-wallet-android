@@ -2,17 +2,16 @@ package com.babylon.wallet.android.presentation.transaction.submit
 
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
-import com.babylon.wallet.android.data.manifest.addAssertions
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.data.transaction.TransactionClient
-import com.babylon.wallet.android.data.transaction.model.TransactionApprovalRequest
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
+import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.toConnectorExtensionError
+import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.PreviewType
@@ -21,13 +20,17 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
-import com.radixdlt.ret.TransactionManifest
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.TransactionGuarantee
+import com.radixdlt.sargon.extensions.modifyAddGuarantees
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.logNonFatalException
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.core.then
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -48,8 +51,9 @@ class TransactionSubmitDelegate @Inject constructor(
 
     private var approvalJob: Job? = null
 
+    @Suppress("SwallowedException")
     fun onSubmit(
-        transactionClient: TransactionClient,
+        signTransactionUseCase: SignTransactionUseCase,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ) {
         // Do not re-submit while submission is in progress
@@ -64,28 +68,32 @@ class TransactionSubmitDelegate @Inject constructor(
                 approvalJob = null
                 val failure = RadixWalletException.DappRequestException.WrongNetwork(currentNetworkId, manifestNetworkId)
                 onDismiss(
-                    transactionClient = transactionClient,
+                    signTransactionUseCase = signTransactionUseCase,
                     exception = failure
                 )
                 return@launch
             }
 
-            _state.update { it.copy(isSubmitting = true) }
+            if (currentState.feePayers?.selectedAccountAddress != null) {
+                val requestWithGuarantees = try {
+                    val request = currentState.requestNonNull
+                    request.copy(transactionManifestData = request.transactionManifestData.attachGuarantees(currentState.previewType))
+                } catch (exception: Exception) {
+                    return@launch reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
+                }
 
-            currentState.requestNonNull.transactionManifestData.toTransactionManifest().onSuccess { manifest ->
-                resolveFeePayerAndSubmit(
-                    transactionClient = transactionClient,
-                    manifest.attachGuarantees(currentState.previewType),
-                    deviceBiometricAuthenticationProvider
+                signAndSubmit(
+                    transactionRequest = requestWithGuarantees,
+                    signTransactionUseCase = signTransactionUseCase,
+                    feePayerAddress = currentState.feePayers.selectedAccountAddress,
+                    deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
                 )
-            }.onFailure {
-                reportFailure(RadixWalletException.PrepareTransactionException.ConvertManifest)
             }
         }
     }
 
     suspend fun onDismiss(
-        transactionClient: TransactionClient,
+        signTransactionUseCase: SignTransactionUseCase,
         exception: RadixWalletException.DappRequestException
     ) {
         if (approvalJob == null) {
@@ -105,7 +113,7 @@ class TransactionSubmitDelegate @Inject constructor(
         } else if (_state.value.interactionState != null) {
             approvalJob?.cancel()
             approvalJob = null
-            transactionClient.cancelSigning()
+            signTransactionUseCase.cancelSigning()
             _state.update {
                 it.copy(isSubmitting = false)
             }
@@ -114,88 +122,53 @@ class TransactionSubmitDelegate @Inject constructor(
         }
     }
 
-    private suspend fun resolveFeePayerAndSubmit(
-        transactionClient: TransactionClient,
-        manifest: TransactionManifest,
-        deviceBiometricAuthenticationProvider: suspend () -> Boolean
-    ) {
-        _state.value.feePayerSearchResult?.let { feePayerResult ->
-            _state.update { it.copy(isSubmitting = false) }
-            if (feePayerResult.feePayerAddress != null) {
-                signAndSubmit(
-                    transactionClient = transactionClient,
-                    transactionRequest = _state.value.requestNonNull,
-                    feePayerAddress = feePayerResult.feePayerAddress,
-                    manifest = manifest,
-                    deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
-                )
-            }
-        }
-    }
-
     @Suppress("LongMethod")
     private suspend fun signAndSubmit(
-        transactionClient: TransactionClient,
         transactionRequest: MessageFromDataChannel.IncomingRequest.TransactionRequest,
-        feePayerAddress: String,
-        manifest: TransactionManifest,
+        signTransactionUseCase: SignTransactionUseCase,
+        feePayerAddress: AccountAddress?,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ) {
-        _state.update {
-            it.copy(
-                isSubmitting = true,
-            )
-        }
-        val lockFee = _state.value.transactionFees.transactionFeeToLock
-        val tipPercentage = _state.value.transactionFees.tipPercentageForTransaction
-        val request = TransactionApprovalRequest(
-            manifest = manifest,
-            networkId = NetworkId.from(transactionRequest.requestMetadata.networkId),
-            ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey,
-            feePayerAddress = feePayerAddress,
-            message = transactionRequest.transactionManifestData.message?.let {
-                TransactionApprovalRequest.TransactionMessage.Public(it)
-            } ?: TransactionApprovalRequest.TransactionMessage.None
-        )
+        _state.update { it.copy(isSubmitting = true) }
 
-        transactionClient.signTransaction(
-            request = request,
-            lockFee = lockFee,
-            tipPercentage = tipPercentage,
-            deviceBiometricAuthenticationProvider
-        ).mapCatching { notarizedTransactionResult ->
-            submitTransactionUseCase(
-                notarizedTransactionResult.txIdHash,
-                notarizedTransactionResult.notarizedTransactionIntentHex,
-                endEpoch = notarizedTransactionResult.endEpoch
-            ).getOrThrow()
-        }.onSuccess { submitTransactionResult ->
+        signTransactionUseCase.sign(
+            request = SignTransactionUseCase.Request(
+                manifest = transactionRequest.transactionManifestData,
+                lockFee = _state.value.transactionFees.transactionFeeToLock,
+                tipPercentage = _state.value.transactionFees.tipPercentageForTransaction,
+                ephemeralNotaryPrivateKey = _state.value.ephemeralNotaryPrivateKey,
+                feePayerAddress = feePayerAddress
+            ),
+            deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
+        ).then { notarizationResult ->
+            submitTransactionUseCase(notarizationResult = notarizationResult)
+        }.onSuccess { notarization ->
             _state.update {
                 it.copy(
                     isSubmitting = false,
-                    endEpoch = submitTransactionResult.endEpoch
+                    endEpoch = notarization.endEpoch
                 )
             }
             appEventBus.sendEvent(
                 AppEvent.Status.Transaction.InProgress(
                     requestId = transactionRequest.requestId,
-                    transactionId = submitTransactionResult.txId,
+                    transactionId = notarization.intentHash.bech32EncodedTxId,
                     isInternal = transactionRequest.isInternal,
                     blockUntilComplete = transactionRequest.blockUntilComplete
                 )
             )
             transactionStatusClient.pollTransactionStatus(
-                txID = submitTransactionResult.txId,
+                txID = notarization.intentHash.bech32EncodedTxId,
                 requestId = transactionRequest.requestId,
                 transactionType = transactionRequest.transactionType,
-                endEpoch = submitTransactionResult.endEpoch
+                endEpoch = notarization.endEpoch
             )
             // Send confirmation to the dApp that tx was submitted before status polling
             if (!transactionRequest.isInternal) {
                 dAppMessenger.sendTransactionWriteResponseSuccess(
                     remoteConnectorId = transactionRequest.remoteConnectorId,
                     requestId = transactionRequest.requestId,
-                    txId = submitTransactionResult.txId
+                    txId = notarization.intentHash.bech32EncodedTxId
                 )
             }
         }.onFailure { throwable ->
@@ -242,7 +215,7 @@ class TransactionSubmitDelegate @Inject constructor(
         }
     }
 
-    private fun TransactionManifest.attachGuarantees(previewType: PreviewType): TransactionManifest {
+    private fun TransactionManifestData.attachGuarantees(previewType: PreviewType): TransactionManifestData {
         var manifest = this
         if (previewType is PreviewType.Transfer) {
             manifest = manifest.addAssertions(
@@ -277,5 +250,25 @@ class TransactionSubmitDelegate @Inject constructor(
             }
         }
         approvalJob = null
+    }
+
+    private fun TransactionManifestData.addAssertions(
+        depositing: List<Transferable.Depositing>
+    ): TransactionManifestData {
+        val guarantees = depositing.mapNotNull { transferable ->
+            val assertion = transferable.guaranteeAssertion as? GuaranteeAssertion.ForAmount ?: return@mapNotNull null
+            val resource = transferable.transferable.resource as? Resource.FungibleResource ?: return@mapNotNull null
+            TransactionGuarantee(
+                amount = assertion.amount,
+                instructionIndex = assertion.instructionIndex.toULong(),
+                resourceAddress = resource.address,
+                resourceDivisibility = resource.divisibility?.value
+            )
+        }
+
+        return TransactionManifestData.from(
+            manifest = manifestSargon.modifyAddGuarantees(guarantees = guarantees),
+            message = message
+        )
     }
 }

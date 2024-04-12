@@ -2,26 +2,30 @@ package com.babylon.wallet.android.presentation.transfer.prepare
 
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.ManifestBuilderBucket
-import com.radixdlt.ret.NonFungibleGlobalId
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AccountOrAddressOf
+import com.radixdlt.sargon.PerAssetFungibleResource
+import com.radixdlt.sargon.PerAssetFungibleTransfer
+import com.radixdlt.sargon.PerAssetNonFungibleTransfer
+import com.radixdlt.sargon.PerAssetTransfers
+import com.radixdlt.sargon.PerAssetTransfersOfFungibleResource
+import com.radixdlt.sargon.PerAssetTransfersOfNonFungibleResource
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.perAssetTransfers
 import kotlinx.coroutines.flow.update
-import rdx.works.core.ret.BabylonManifestBuilder
-import rdx.works.core.ret.buildSafely
-import rdx.works.core.toRETDecimal
+import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.sargon.toSargon
 import timber.log.Timber
-import java.math.BigDecimal
-import java.math.RoundingMode
 import javax.inject.Inject
 
 class PrepareManifestDelegate @Inject constructor(
@@ -31,155 +35,112 @@ class PrepareManifestDelegate @Inject constructor(
 
     suspend fun onSubmit() {
         val fromAccount = _state.value.fromAccount ?: return
-        prepareRequest(fromAccount, _state.value).onSuccess { request ->
+        val accountsAbleToSign = _state.value.targetAccounts.filterAccountsAbleToSign()
+
+        runCatching {
+            TransactionManifest.perAssetTransfers(
+                transfers = PerAssetTransfers(
+                    fromAccount = AccountAddress.init(validatingAddress = fromAccount.address),
+                    fungibleResources = _state.value.toFungibleTransfers(accountsAbleToSign),
+                    nonFungibleResources = _state.value.toNonFungibleTransfers(accountsAbleToSign)
+                )
+            )
+        }.map { manifest ->
+            TransactionManifestData.from(
+                manifest = manifest,
+                message = when (val messageState = _state.value.messageState) {
+                    is TransferViewModel.State.Message.Added -> TransactionManifestData.TransactionMessage.Public(
+                        message = messageState.message
+                    )
+
+                    is TransferViewModel.State.Message.None -> TransactionManifestData.TransactionMessage.None
+                }
+            ).prepareInternalTransactionRequest()
+        }.onSuccess { request ->
             _state.update { it.copy(transferRequestId = request.requestId) }
-            Timber.d("Manifest for ${request.requestId} prepared:")
-            Timber.d(request.transactionManifestData.instructions)
+            Timber.d("Manifest for ${request.requestId} prepared:\n${request.transactionManifestData.instructions}")
             incomingRequestRepository.add(request)
         }.onFailure { error ->
             _state.update { it.copy(error = UiMessage.ErrorMessage(error)) }
         }
     }
 
-    private suspend fun prepareRequest(
-        fromAccount: Network.Account,
-        currentState: TransferViewModel.State
-    ): Result<MessageFromDataChannel.IncomingRequest.TransactionRequest> =
-        BabylonManifestBuilder()
-            .attachInstructionsForFungibles(
-                fromAccount = fromAccount,
-                targetAccounts = currentState.targetAccounts
-            )
-            .attachInstructionsForNFTs(
-                fromAccount = fromAccount,
-                targetAccounts = currentState.targetAccounts
-            )
-            .buildSafely(fromAccount.networkID)
-            .map { manifest ->
-                manifest.prepareInternalTransactionRequest(
-                    networkId = fromAccount.networkID,
-                    message = currentState.submittedMessage,
-                )
-            }
-
-    @Suppress("NestedBlockDepth")
-    private suspend fun BabylonManifestBuilder.attachInstructionsForFungibles(
-        fromAccount: Network.Account,
-        targetAccounts: List<TargetAccount>
-    ) = apply {
-        _state.value.withdrawingFungibles().forEach { (resource, amount) ->
-            // Withdraw the total amount for each fungible
-            withdrawFromAccount(
-                fromAddress = Address(fromAccount.address),
-                fungible = Address(resource.resourceAddress),
-                amount = amount.toRETDecimal(roundingMode = RoundingMode.HALF_UP)
-            )
-
-            // Deposit to each target account
-            targetAccounts.filter { targetAccount ->
-                targetAccount.spendingAssets.any { it.address == resource.resourceAddress }
-            }.forEach { targetAccount ->
-                val spendingFungibleAsset = targetAccount.spendingAssets.find {
-                    it.address == resource.resourceAddress
-                } as? SpendingAsset.Fungible
-                if (spendingFungibleAsset != null) {
-                    val bucket = newBucket()
-
-                    // First take the correct amount from worktop and pour it into bucket
-                    takeFromWorktop(
-                        fungible = Address(resource.resourceAddress),
-                        amount = spendingFungibleAsset.amountDecimal.toRETDecimal(roundingMode = RoundingMode.HALF_UP),
-                        intoBucket = bucket
-                    )
-
-                    deposit(
-                        targetAccount = targetAccount,
-                        bucket = bucket,
-                        spendingAsset = spendingFungibleAsset
-                    )
-                }
-            }
-        }
-    }
-
-    @Suppress("NestedBlockDepth")
-    private suspend fun BabylonManifestBuilder.attachInstructionsForNFTs(
-        fromAccount: Network.Account,
-        targetAccounts: List<TargetAccount>
-    ) = apply {
+    private fun TransferViewModel.State.toFungibleTransfers(
+        accountsAbleToSign: List<TargetAccount.Owned>
+    ): List<PerAssetTransfersOfFungibleResource> {
+        val perFungibleAssetTransfers = mutableMapOf<Resource.FungibleResource, MutableList<PerAssetFungibleTransfer>>()
         targetAccounts.forEach { targetAccount ->
-            val nonFungibleSpendingAssets = targetAccount.spendingAssets.filterIsInstance<SpendingAsset.NFT>()
-            nonFungibleSpendingAssets.forEach { nft ->
-                val bucket = newBucket()
-
-                val globalId = NonFungibleGlobalId.fromParts(
-                    resourceAddress = Address(nft.item.collectionAddress),
-                    nonFungibleLocalId = nft.item.localId.toRetId()
-                )
-                withdrawNonFungiblesFromAccount(
-                    fromAddress = Address(fromAccount.address),
-                    nonFungible = globalId
-                )
-                takeNonFungiblesFromWorktop(
-                    nonFungible = globalId,
-                    intoBucket = bucket
-                )
-
-                deposit(
-                    targetAccount = targetAccount,
-                    bucket = bucket,
-                    spendingAsset = nft
+            targetAccount.spendingAssets.filterIsInstance<SpendingAsset.Fungible>().forEach { asset ->
+                val listOfExistingTransfers = perFungibleAssetTransfers.getOrPut(asset.resource) { mutableListOf() }
+                listOfExistingTransfers.add(
+                    PerAssetFungibleTransfer(
+                        useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(asset.resourceAddress, accountsAbleToSign),
+                        amount = asset.amountDecimal,
+                        recipient = targetAccount.toAssetTransfersRecipient()
+                    )
                 )
             }
         }
-    }
 
-    private suspend fun BabylonManifestBuilder.deposit(
-        targetAccount: TargetAccount,
-        bucket: ManifestBuilderBucket,
-        spendingAsset: SpendingAsset
-    ) = apply {
-        val isAccountAbleToSign = targetAccount.factorSourceId?.let {
-            it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET ||
-                (it.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(it))
-        } ?: false
-
-        if (targetAccount is TargetAccount.Owned && isAccountAbleToSign) {
-            if (targetAccount.isSignatureRequiredForTransfer(forSpendingAsset = spendingAsset)) {
-                // if for example account has deny all we don't want to prevent transfer between our OWN accounts
-                // therefore ask user to sign
-                accountDeposit(
-                    toAddress = Address(targetAccount.address),
-                    fromBucket = bucket
-                )
-            } else {
-                accountTryDepositOrAbort(
-                    toAddress = Address(targetAccount.address),
-                    fromBucket = bucket
-                )
-            }
-        } else { // try_deposit_or_abort for account that we are not controlling and are not able to sign tx
-            accountTryDepositOrAbort(
-                toAddress = Address(targetAccount.address),
-                fromBucket = bucket
+        return perFungibleAssetTransfers.map { entry ->
+            PerAssetTransfersOfFungibleResource(
+                resource = PerAssetFungibleResource(
+                    resourceAddress = entry.key.address,
+                    divisibility = entry.key.divisibility?.value
+                ),
+                transfers = entry.value
             )
         }
     }
 
-    /**
-     * Sums all the amount needed to be withdrawn for each fungible
-     */
-    private fun TransferViewModel.State.withdrawingFungibles(): Map<Resource.FungibleResource, BigDecimal> {
-        val allFungibles: List<SpendingAsset.Fungible> =
-            targetAccounts.map { it.spendingAssets.filterIsInstance<SpendingAsset.Fungible>() }.flatten()
+    private fun TransferViewModel.State.toNonFungibleTransfers(
+        accountsAbleToSign: List<TargetAccount.Owned>
+    ): List<PerAssetTransfersOfNonFungibleResource> {
+        val perNFTAssetTransfers = mutableMapOf<Resource.NonFungibleResource, MutableList<PerAssetNonFungibleTransfer>>()
+        targetAccounts.forEach { targetAccount ->
+            val spendingNFTs = mutableMapOf<Resource.NonFungibleResource, MutableList<Resource.NonFungibleResource.Item>>()
+            targetAccount.spendingAssets.filterIsInstance<SpendingAsset.NFT>().forEach { asset ->
+                val items = spendingNFTs.getOrPut(asset.resource) { mutableListOf() }
+                items.add(asset.item)
+            }
 
-        val fungibleAmounts = mutableMapOf<Resource.FungibleResource, BigDecimal>()
-        allFungibles.forEach { fungible ->
-            val alreadySpentAmount = fungibleAmounts[fungible.resource] ?: BigDecimal.ZERO
-
-            fungibleAmounts[fungible.resource] = alreadySpentAmount + fungible.amountDecimal
+            spendingNFTs.forEach { entry ->
+                val perNFTAssetTransfer = perNFTAssetTransfers.getOrPut(entry.key) { mutableListOf() }
+                perNFTAssetTransfer.add(
+                    PerAssetNonFungibleTransfer(
+                        useTryDepositOrAbort = targetAccount.useTryDepositOrAbort(entry.key.address, accountsAbleToSign),
+                        nonFungibleLocalIds = entry.value.map { it.localId },
+                        recipient = targetAccount.toAssetTransfersRecipient()
+                    )
+                )
+            }
         }
 
-        return fungibleAmounts
+        return perNFTAssetTransfers.map { entry ->
+            PerAssetTransfersOfNonFungibleResource(
+                resource = entry.key.address,
+                transfers = entry.value
+            )
+        }
     }
+
+    private fun TargetAccount.toAssetTransfersRecipient(): AccountOrAddressOf = when (this) {
+        is TargetAccount.Other -> AccountOrAddressOf.AddressOfExternalAccount(value = AccountAddress.init(address))
+        is TargetAccount.Owned -> AccountOrAddressOf.ProfileAccount(value = account.toSargon())
+        is TargetAccount.Skeleton -> error("Not a valid recipient")
+    }
+
+    private suspend fun List<TargetAccount>.filterAccountsAbleToSign(): List<TargetAccount.Owned> =
+        filterIsInstance<TargetAccount.Owned>().filter {
+            val factorSourceId = it.factorSourceId ?: return@filter false
+
+            factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET || (
+                factorSourceId.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(factorSourceId)
+                )
+        }
+
+    private fun TargetAccount.useTryDepositOrAbort(
+        resourceAddress: ResourceAddress,
+        accountsAbleToSign: List<TargetAccount.Owned>
+    ): Boolean = this !in accountsAbleToSign || !isSignatureRequiredForTransfer(resourceAddress)
 }

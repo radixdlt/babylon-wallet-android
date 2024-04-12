@@ -4,13 +4,22 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.accountsecurity.depositguarantees.DepositGuaranteesViewModel.State
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.clamped
+import com.radixdlt.sargon.extensions.div
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.minus
+import com.radixdlt.sargon.extensions.plus
+import com.radixdlt.sargon.extensions.times
+import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.toDouble
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.defaultDepositGuarantee
 import rdx.works.profile.domain.depositguarantees.ChangeDefaultDepositGuaranteeUseCase
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,7 +32,7 @@ class DepositGuaranteesViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            updateDepositGuarantee(depositGuarantee = getProfileUseCase.defaultDepositGuarantee().toBigDecimal())
+            updateDepositGuarantee(depositGuarantee = getProfileUseCase.defaultDepositGuarantee().toDecimal192())
         }
     }
 
@@ -32,7 +41,9 @@ class DepositGuaranteesViewModel @Inject constructor(
             return
         }
 
-        val updatedDepositGuarantee = depositGuarantee.toBigDecimalOrNull()?.divide(HUNDRED)
+        val updatedDepositGuarantee = depositGuarantee.toDecimal192OrNull()?.let {
+            it / HUNDRED
+        }
 
         _state.update { state ->
             state.copy(
@@ -51,34 +62,33 @@ class DepositGuaranteesViewModel @Inject constructor(
     fun onDepositGuaranteeIncreased() {
         viewModelScope.launch {
             changeAndUpdateDepositGuarantee(
-                updatedDepositGuarantee = getProfileUseCase.defaultDepositGuarantee().toBigDecimal().add(DEPOSIT_CHANGE_THRESHOLD)
+                updatedDepositGuarantee = getProfileUseCase.defaultDepositGuarantee().toDecimal192() + DEPOSIT_CHANGE_THRESHOLD
             )
         }
     }
 
     fun onDepositGuaranteeDecreased() {
         viewModelScope.launch {
-            val updatedDepositGuarantee = getProfileUseCase.defaultDepositGuarantee().toBigDecimal()
-                .subtract(DEPOSIT_CHANGE_THRESHOLD).coerceAtLeast(BigDecimal.ZERO)
+            val updatedDepositGuarantee = (getProfileUseCase.defaultDepositGuarantee().toDecimal192() - DEPOSIT_CHANGE_THRESHOLD).clamped
             changeAndUpdateDepositGuarantee(
                 updatedDepositGuarantee = updatedDepositGuarantee
             )
         }
     }
 
-    private suspend fun changeAndUpdateDepositGuarantee(updatedDepositGuarantee: BigDecimal?) {
+    private suspend fun changeAndUpdateDepositGuarantee(updatedDepositGuarantee: Decimal192?) {
         updateDepositGuarantee(depositGuarantee = updatedDepositGuarantee)
         updatedDepositGuarantee?.let { depositGuarantee ->
             changeDefaultDepositGuaranteeUseCase.invoke(defaultDepositGuarantee = depositGuarantee.toDouble())
         }
     }
 
-    private fun updateDepositGuarantee(depositGuarantee: BigDecimal?) {
+    private fun updateDepositGuarantee(depositGuarantee: Decimal192?) {
         if (depositGuarantee != null) {
             _state.update { state ->
                 state.copy(
                     isDepositInputValid = true,
-                    depositGuarantee = depositGuarantee.multiply(HUNDRED).stripTrailingZeros().toPlainString()
+                    depositGuarantee = (depositGuarantee * HUNDRED).formatted()
                 )
             }
         } else {
@@ -96,7 +106,7 @@ class DepositGuaranteesViewModel @Inject constructor(
     ) : UiState
 
     companion object {
-        private val DEPOSIT_CHANGE_THRESHOLD = BigDecimal("0.01")
-        private val HUNDRED = BigDecimal("100")
+        private val DEPOSIT_CHANGE_THRESHOLD = 0.01.toDecimal192()
+        private val HUNDRED = 100.toDecimal192()
     }
 }

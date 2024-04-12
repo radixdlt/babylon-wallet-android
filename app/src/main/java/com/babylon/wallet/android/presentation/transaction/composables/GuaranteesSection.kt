@@ -16,7 +16,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.GuaranteeAssertion
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.extensions.formatted
 
 @Composable
 fun GuaranteesSection(transferable: Transferable, modifier: Modifier = Modifier) {
@@ -44,7 +44,7 @@ fun GuaranteesSection(transferable: Transferable, modifier: Modifier = Modifier)
             (transferable.transferable as? TransferableAsset.Fungible)?.let {
                 Text(
                     modifier = Modifier,
-                    text = it.amount.displayableQuantity(),
+                    text = it.amount.formatted(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
@@ -66,7 +66,7 @@ fun GuaranteesSection(transferable: Transferable, modifier: Modifier = Modifier)
                 )
                 Text(
                     modifier = Modifier,
-                    text = quantity.amount.displayableQuantity(),
+                    text = quantity.amount.formatted(),
                     style = RadixTheme.typography.body2HighImportance,
                     color = RadixTheme.colors.gray2,
                     maxLines = 1,

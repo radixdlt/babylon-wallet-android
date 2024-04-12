@@ -55,6 +55,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
+import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.roundToInt
 
@@ -347,7 +349,10 @@ fun FailureDialogContent(
             )
         }
 
-        if (transactionAddress.isNotEmpty()) {
+        val transactionId = remember(transactionAddress) {
+            runCatching { IntentHash.init(transactionAddress) }.getOrNull()
+        }
+        if (transactionId != null) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
@@ -359,7 +364,7 @@ fun FailureDialogContent(
                 )
                 Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingXSmall))
                 ActionableAddressView(
-                    address = transactionAddress,
+                    transactionId = transactionId,
                     textStyle = RadixTheme.typography.body1Header,
                     textColor = RadixTheme.colors.blue1,
                     iconColor = RadixTheme.colors.gray2

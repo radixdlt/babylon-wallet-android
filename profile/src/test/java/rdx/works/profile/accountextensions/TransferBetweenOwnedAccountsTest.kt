@@ -1,6 +1,9 @@
 package rdx.works.profile.accountextensions
 
 import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.Assert.assertFalse
@@ -46,8 +49,8 @@ class TransferBetweenOwnedAccountsTest {
 
     private lateinit var targetAccount: Network.Account
 
-    private val asset1address = "asset1address"
-    private val asset2address = "asset2address"
+    private val asset1address = ResourceAddress.sampleMainnet.random()
+    private val asset2address = ResourceAddress.sampleMainnet.random()
     private val targetAccountWithAsset1 = listOf(asset1address)
 
     private val acceptAll = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
@@ -58,7 +61,7 @@ class TransferBetweenOwnedAccountsTest {
         depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll,
         assetsExceptionList = listOf(
             Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
-                address = asset1address,
+                address = asset1address.string,
                 exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny
             )
         )
@@ -72,7 +75,7 @@ class TransferBetweenOwnedAccountsTest {
         depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll,
         assetsExceptionList = listOf(
             Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
-                address = asset1address,
+                address = asset1address.string,
                 exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow
             )
         )
@@ -82,7 +85,7 @@ class TransferBetweenOwnedAccountsTest {
         depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll,
         assetsExceptionList = listOf(
             Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
-                address = asset1address,
+                address = asset1address.string,
                 exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny
             )
         )
@@ -96,7 +99,7 @@ class TransferBetweenOwnedAccountsTest {
         depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown,
         assetsExceptionList = listOf(
             Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
-                address = asset1address,
+                address = asset1address.string,
                 exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow
             )
         )
@@ -106,7 +109,7 @@ class TransferBetweenOwnedAccountsTest {
         depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown,
         assetsExceptionList = listOf(
             Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
-                address = asset1address,
+                address = asset1address.string,
                 exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny
             )
         )

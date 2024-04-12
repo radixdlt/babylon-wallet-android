@@ -7,7 +7,6 @@ import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.GetValidatedDAppWebsiteUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -19,6 +18,8 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.model.toQuantifierUsedInRequest
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -26,6 +27,7 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.then
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository
@@ -52,7 +54,7 @@ class DappDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            dAppWithAssociatedResourcesUseCase.invoke(
+            dAppWithAssociatedResourcesUseCase(
                 definitionAddress = args.dappDefinitionAddress,
                 needMostRecentData = false
             ).onSuccess { dAppWithAssociatedResources ->
@@ -127,7 +129,7 @@ class DappDetailViewModel @Inject constructor(
         val personaSimple =
             authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
         val sharedAccounts = personaSimple?.sharedAccounts?.ids?.mapNotNull {
-            getProfileUseCase.accountOnCurrentNetwork(it)?.toUiModel()
+            getProfileUseCase.accountOnCurrentNetwork(AccountAddress.init(it))?.toUiModel()
         }.orEmpty()
         val requiredKinds = personaSimple?.sharedPersonaData?.alreadyGrantedIds().orEmpty().mapNotNull {
             persona.personaData.getDataFieldKind(it)

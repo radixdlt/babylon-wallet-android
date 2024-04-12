@@ -1,10 +1,14 @@
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+
 package com.babylon.wallet.android.presentation.ui.composables.actionableaddress
 
 import android.content.ClipData
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.DrawableRes
+import androidx.annotation.VisibleForTesting
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -42,113 +46,211 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.core.content.getSystemService
+import androidx.core.net.toUri
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.usecases.VerifyAddressOnLedgerUseCase
-import com.babylon.wallet.android.presentation.model.ActionableAddress
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetWrapper
+import com.babylon.wallet.android.utils.encodeUtf8
 import com.babylon.wallet.android.utils.openUrl
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AddressFormat
+import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateways
 import timber.log.Timber
 
-@Suppress("CyclomaticComplexMethod")
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ActionableAddressView(
-    address: String,
     modifier: Modifier = Modifier,
+    address: Address,
     truncateAddress: Boolean = true,
     visitableInDashboard: Boolean = true,
     textStyle: TextStyle = LocalTextStyle.current,
     textColor: Color = Color.Unspecified,
     iconColor: Color = textColor
 ) {
-    val actionableAddress = remember(address, truncateAddress, visitableInDashboard) {
-        ActionableAddress(
-            address = address,
-            truncateAddress = truncateAddress,
-            isVisitableInDashboard = visitableInDashboard
-        )
-    }
+    ActionableAddressView(
+        modifier = modifier,
+        address = ActionableAddress.Address(address),
+        truncateAddress = truncateAddress,
+        visitableInDashboard = visitableInDashboard,
+        textStyle = textStyle,
+        textColor = textColor,
+        iconColor = iconColor
+    )
+}
+
+@Composable
+fun ActionableAddressView(
+    modifier: Modifier = Modifier,
+    globalId: NonFungibleGlobalId,
+    truncateAddress: Boolean = true,
+    visitableInDashboard: Boolean = true,
+    textStyle: TextStyle = LocalTextStyle.current,
+    textColor: Color = Color.Unspecified,
+    iconColor: Color = textColor
+) {
+    ActionableAddressView(
+        modifier = modifier,
+        address = ActionableAddress.GlobalId(globalId),
+        truncateAddress = truncateAddress,
+        visitableInDashboard = visitableInDashboard,
+        textStyle = textStyle,
+        textColor = textColor,
+        iconColor = iconColor
+    )
+}
+
+@Composable
+fun ActionableAddressView(
+    modifier: Modifier = Modifier,
+    localId: NonFungibleLocalId,
+    truncateAddress: Boolean = true,
+    visitableInDashboard: Boolean = true,
+    textStyle: TextStyle = LocalTextStyle.current,
+    textColor: Color = Color.Unspecified,
+    iconColor: Color = textColor
+) {
+    ActionableAddressView(
+        modifier = modifier,
+        address = ActionableAddress.LocalId(localId),
+        truncateAddress = truncateAddress,
+        visitableInDashboard = visitableInDashboard,
+        textStyle = textStyle,
+        textColor = textColor,
+        iconColor = iconColor
+    )
+}
+
+@Composable
+fun ActionableAddressView(
+    modifier: Modifier = Modifier,
+    transactionId: IntentHash,
+    truncateAddress: Boolean = true,
+    visitableInDashboard: Boolean = true,
+    textStyle: TextStyle = LocalTextStyle.current,
+    textColor: Color = Color.Unspecified,
+    iconColor: Color = textColor
+) {
+    ActionableAddressView(
+        modifier = modifier,
+        address = ActionableAddress.TransactionId(transactionId),
+        truncateAddress = truncateAddress,
+        visitableInDashboard = visitableInDashboard,
+        textStyle = textStyle,
+        textColor = textColor,
+        iconColor = iconColor
+    )
+}
+
+@Suppress("CyclomaticComplexMethod")
+@Composable
+private fun ActionableAddressView(
+    modifier: Modifier = Modifier,
+    address: ActionableAddress,
+    truncateAddress: Boolean,
+    visitableInDashboard: Boolean,
+    textStyle: TextStyle,
+    textColor: Color,
+    iconColor: Color
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val useCaseProvider = LocalActionableAddressViewEntryPoint.current
 
-    var actions: PopupActions? by remember(actionableAddress) {
+    var actions: PopupActions? by remember(address) {
         mutableStateOf(null)
     }
 
-    LaunchedEffect(actionableAddress) {
+    LaunchedEffect(address) {
         scope.launch {
             val networkId = if (useCaseProvider.profileUseCase().isInitialized()) {
-                useCaseProvider.profileUseCase().gateways.first().current().network.networkId()
+                useCaseProvider.profileUseCase().gateways.first().current().network.id
             } else {
-                Radix.Network.mainnet.networkId()
-            }
-            val copyAction = PopupActionItem(
-                name = context.getString(
-                    when {
-                        actionableAddress.type == ActionableAddress.Type.Global.TRANSACTION -> R.string.addressAction_copyTransactionId
-                        actionableAddress.isNft || actionableAddress.type is ActionableAddress.Type.LocalId ->
-                            R.string.addressAction_copyNftId
+                Radix.Network.mainnet.id
+            }.let { NetworkId.init(discriminant = it.toUByte()) }
 
-                        else -> R.string.addressAction_copyAddress
-                    }
-                ),
-                icon = R.drawable.ic_copy
-            ) { OnAction.CallbackBasedAction.CopyToClipboard(actionableAddress) }
-
-            val openExternalAction = actionableAddress.toDashboardUrl(networkId)?.let { url ->
+            val copyAction = address.copyable()?.let {
                 PopupActionItem(
-                    name = context.getString(R.string.addressAction_viewOnDashboard),
-                    icon = R.drawable.ic_external_link,
-                ) {
-                    OnAction.CallbackBasedAction.OpenExternalWebView(url)
-                }
+                    name = context.getString(
+                        when (address) {
+                            is ActionableAddress.TransactionId -> R.string.addressAction_copyTransactionId
+                            is ActionableAddress.GlobalId -> R.string.addressAction_copyNftId
+                            else -> R.string.addressAction_copyAddress
+                        }
+                    ),
+                    icon = R.drawable.ic_copy
+                ) { OnAction.CallbackBasedAction.CopyToClipboard(address) }
             }
 
-            val qrAction = if (actionableAddress.type == ActionableAddress.Type.Global.ACCOUNT) {
+            val openExternalAction = address
+                .takeIf { visitableInDashboard }
+                ?.dashboardUrl(networkId)
+                ?.let { url ->
+                    PopupActionItem(
+                        name = context.getString(R.string.addressAction_viewOnDashboard),
+                        icon = R.drawable.ic_external_link,
+                    ) {
+                        OnAction.CallbackBasedAction.OpenExternalWebView(url.toUri())
+                    }
+                }
+
+            val qrAction = address.asAccountAddress?.let {
                 PopupActionItem(
                     name = context.getString(R.string.addressAction_showAccountQR),
                     icon = com.babylon.wallet.android.designsystem.R.drawable.ic_qr_code_scanner
-                ) { OnAction.ViewBasedAction.QRCode(actionableAddress) }
-            } else {
-                null
+                ) { OnAction.ViewBasedAction.QRCode(it) }
             }
 
-            val primary = if (actionableAddress.type == ActionableAddress.Type.Global.TRANSACTION && openExternalAction != null) {
+            val primary = if (address.isTransactionId && openExternalAction != null) {
                 openExternalAction
             } else {
                 copyAction
             }
+
             val secondary = listOf(
                 qrAction,
                 if (primary == openExternalAction) null else openExternalAction
             ).mapNotNull { it }
 
-            actions = PopupActions(
-                primary = primary,
-                secondary = secondary
-            )
+            actions = if (primary != null) {
+                PopupActions(
+                    primary = primary,
+                    secondary = secondary
+                )
+            } else {
+                null
+            }
 
             // Resolve if address is ledger and attach another action
-            if (actionableAddress.type == ActionableAddress.Type.Global.ACCOUNT) {
-                if (useCaseProvider.profileUseCase().accountOnCurrentNetwork(actionableAddress.address)?.isLedgerAccount == true) {
+            address.asAccountAddress?.let { accountAddress ->
+                if (useCaseProvider.profileUseCase().accountOnCurrentNetwork(accountAddress)?.isLedgerAccount == true) {
                     val verifyOnLedgerAction = PopupActionItem(
                         name = context.getString(R.string.addressAction_verifyAddressLedger),
                         icon = com.babylon.wallet.android.designsystem.R.drawable.ic_ledger_hardware_wallets
                     ) {
                         OnAction.CallbackBasedAction.VerifyAddressOnLedger(
-                            actionableAddress = actionableAddress,
+                            accountAddress = accountAddress,
                             verifyAddressOnLedgerUseCase = useCaseProvider.verifyAddressOnLedgerUseCase(),
                             applicationScope = useCaseProvider.applicationScope()
                         )
@@ -186,7 +288,11 @@ fun ActionableAddressView(
                         }
                     }
                 },
-                onLongClick = { isDropdownMenuExpanded = true }
+                onLongClick = {
+                    if (actions != null) {
+                        isDropdownMenuExpanded = true
+                    }
+                }
             )
         ) {
             val textRef = createRef()
@@ -198,7 +304,7 @@ fun ActionableAddressView(
 
             val inlineContentId = "icon"
             val inlinedText = buildAnnotatedString {
-                append(actionableAddress.displayAddress)
+                append(address.displayable(truncated = truncateAddress))
                 if (!truncateAddress) {
                     append(" ")
                     appendInlineContent(inlineContentId)
@@ -333,7 +439,7 @@ private sealed interface OnAction {
         @Composable
         fun ActionView()
 
-        data class QRCode(private val actionableAddress: ActionableAddress) : ViewBasedAction {
+        data class QRCode(private val accountAddress: AccountAddress) : ViewBasedAction {
 
             @Composable
             override fun ActionView() {
@@ -341,7 +447,7 @@ private sealed interface OnAction {
                     modifier = Modifier
                         .background(RadixTheme.colors.defaultBackground)
                 ) {
-                    AccountQRCodeView(accountAddress = actionableAddress.address)
+                    AccountQRCodeView(accountAddress = accountAddress)
                 }
             }
         }
@@ -360,7 +466,7 @@ private sealed interface OnAction {
 
                     val clipData = ClipData.newPlainText(
                         "Radix Address",
-                        actionableAddress.address
+                        actionableAddress.copyable()
                     )
 
                     clipboardManager.setPrimaryClip(clipData)
@@ -374,7 +480,7 @@ private sealed interface OnAction {
         }
 
         data class OpenExternalWebView(
-            private val url: String
+            private val url: Uri
         ) : CallbackBasedAction {
 
             @Suppress("SwallowedException")
@@ -384,13 +490,13 @@ private sealed interface OnAction {
         }
 
         data class VerifyAddressOnLedger(
-            private val actionableAddress: ActionableAddress,
+            private val accountAddress: AccountAddress,
             private val verifyAddressOnLedgerUseCase: VerifyAddressOnLedgerUseCase,
             private val applicationScope: CoroutineScope
         ) : CallbackBasedAction {
             override fun onAction(context: Context) {
                 applicationScope.launch {
-                    val result = verifyAddressOnLedgerUseCase(actionableAddress.address)
+                    val result = verifyAddressOnLedgerUseCase(accountAddress)
                     withContext(Dispatchers.Main) {
                         result.onSuccess {
                             Toast.makeText(
@@ -413,10 +519,95 @@ private sealed interface OnAction {
     }
 }
 
+@VisibleForTesting
+sealed interface ActionableAddress {
+
+    fun copyable(): String?
+
+    fun displayable(truncated: Boolean): String
+
+    fun dashboardSuffix(): String?
+
+    fun dashboardUrl(networkId: NetworkId): String? = dashboardSuffix()?.let { suffix ->
+        val dashboard = rdx.works.profile.derivation.model.NetworkId.from(networkId.discriminant.toInt()).dashboardUrl()
+
+        "$dashboard/$suffix"
+    }
+
+    val asAccountAddress: AccountAddress?
+        get() = (this as? Address)?.let { it.address as? com.radixdlt.sargon.Address.Account }?.v1
+
+    val isTransactionId: Boolean
+        get() = this is TransactionId
+
+    data class Address(
+        val address: com.radixdlt.sargon.Address
+    ) : ActionableAddress {
+
+        override fun copyable(): String = address.formatted(format = AddressFormat.RAW)
+
+        override fun displayable(truncated: Boolean): String =
+            address.formatted(if (truncated) AddressFormat.DEFAULT else AddressFormat.FULL)
+
+        override fun dashboardSuffix(): String? = when (address) {
+            is com.radixdlt.sargon.Address.AccessController -> null
+            is com.radixdlt.sargon.Address.Account -> "account"
+            is com.radixdlt.sargon.Address.Component -> "component"
+            is com.radixdlt.sargon.Address.Identity -> null
+            is com.radixdlt.sargon.Address.Package -> "package"
+            is com.radixdlt.sargon.Address.Pool -> "pool"
+            is com.radixdlt.sargon.Address.Resource -> "resource"
+            is com.radixdlt.sargon.Address.Validator -> "component"
+            is com.radixdlt.sargon.Address.Vault -> null
+        }?.let {
+            "$it/${address.string.encodeUtf8()}"
+        }
+    }
+
+    data class GlobalId(
+        val address: NonFungibleGlobalId
+    ) : ActionableAddress {
+
+        // The full raw address is copied
+        override fun copyable(): String = address.formatted(AddressFormat.RAW)
+
+        // In case of global id, we should only display the local id, but we can copy the full-raw global id address
+        override fun displayable(truncated: Boolean): String =
+            address.nonFungibleLocalId.formatted(if (truncated) AddressFormat.DEFAULT else AddressFormat.FULL)
+
+        override fun dashboardSuffix(): String = "nft/${address.string.encodeUtf8()}"
+    }
+
+    data class LocalId(
+        val address: NonFungibleLocalId
+    ) : ActionableAddress {
+
+        // Currently only global IDs can be copied
+        override fun copyable(): String? = null
+
+        override fun displayable(truncated: Boolean): String =
+            address.formatted(if (truncated) AddressFormat.DEFAULT else AddressFormat.FULL)
+
+        override fun dashboardSuffix(): String? = null
+    }
+
+    data class TransactionId(
+        val hash: IntentHash
+    ) : ActionableAddress {
+
+        override fun copyable(): String = hash.formatted(format = AddressFormat.RAW)
+
+        override fun displayable(truncated: Boolean): String = hash.formatted(if (truncated) AddressFormat.DEFAULT else AddressFormat.FULL)
+
+        override fun dashboardSuffix(): String = "transaction/${hash.bech32EncodedTxId.encodeUtf8()}"
+    }
+}
+
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun ActionableAddressViewPreview() {
     RadixWalletPreviewTheme {
-        ActionableAddressView(address = "address")
+        ActionableAddressView(address = Address.Account(AccountAddress.sampleMainnet()))
     }
 }

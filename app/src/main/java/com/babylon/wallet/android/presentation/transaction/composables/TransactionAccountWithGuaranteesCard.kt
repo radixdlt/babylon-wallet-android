@@ -37,14 +37,17 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Owned
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
-import rdx.works.core.displayableQuantity
-import java.math.BigDecimal
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 
 @Composable
 fun TransactionAccountWithGuaranteesCard(
@@ -87,7 +90,7 @@ fun TransactionAccountWithGuaranteesCard(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
 
             ActionableAddressView(
-                address = accountWithGuarantee.address,
+                address = Address.Account(accountWithGuarantee.address),
                 textStyle = RadixTheme.typography.body1Regular,
                 textColor = RadixTheme.colors.white,
                 iconColor = RadixTheme.colors.white
@@ -141,7 +144,7 @@ fun TransactionAccountWithGuaranteesCard(
                         )
                         Text(
                             modifier = Modifier,
-                            text = accountWithGuarantee.transferable.amount.displayableQuantity(),
+                            text = accountWithGuarantee.transferable.amount.formatted(),
                             style = RadixTheme.typography.secondaryHeader,
                             color = RadixTheme.colors.gray1,
                             maxLines = 1,
@@ -161,7 +164,7 @@ fun TransactionAccountWithGuaranteesCard(
                         )
                         Text(
                             modifier = Modifier,
-                            text = accountWithGuarantee.guaranteedAmount.displayableQuantity(),
+                            text = accountWithGuarantee.guaranteedAmount.formatted(),
                             style = RadixTheme.typography.body2HighImportance,
                             color = RadixTheme.colors.gray2,
                             maxLines = 1,
@@ -236,6 +239,7 @@ fun TransactionAccountWithGuaranteesCard(
     }
 }
 
+@UsesSampleValues
 @Preview("default")
 @Preview("large font", fontScale = 2f)
 @Preview(showBackground = true)
@@ -247,8 +251,8 @@ fun TransactionAccountWithGuaranteesCardPreview() {
                 Owned(
                     account = SampleDataProvider().sampleAccount(),
                     transferable = TransferableAsset.Fungible.Token(
-                        amount = BigDecimal.TEN,
-                        resource = SampleDataProvider().sampleFungibleResources()[0],
+                        amount = 10.toDecimal192(),
+                        resource = Resource.FungibleResource.sampleMainnet(),
                         isNewlyCreated = false
                     ),
                     instructionIndex = 1L,

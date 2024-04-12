@@ -57,7 +57,7 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
                 }
                 AccountProof(
                     account.address,
-                    signatureWithPublicKey.getOrThrow().toProof(signRequest.dataToSign)
+                    signatureWithPublicKey.getOrThrow().toProof()
                 )
             }
         }
@@ -171,7 +171,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                                 selectedPersona.displayName
                             ),
                             authRequest.challenge.value,
-                            signature.toProof(signRequest.dataToSign)
+                            signature.toProof()
                         )
                     )
                 }.onFailure {

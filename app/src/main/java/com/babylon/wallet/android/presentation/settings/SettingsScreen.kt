@@ -23,14 +23,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.R
@@ -39,7 +46,8 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import kotlinx.collections.immutable.ImmutableList
+import com.radixdlt.sargon.DependencyInformation
+import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -52,7 +60,7 @@ fun SettingsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     SettingsContent(
         modifier = modifier,
-        appSettings = state.settings,
+        state = state,
         onSettingClick = onSettingClick,
         onHideImportOlympiaWalletSettingBox = viewModel::hideImportOlympiaWalletSettingBox,
         onBackClick = onBackClick
@@ -62,7 +70,7 @@ fun SettingsScreen(
 @Composable
 private fun SettingsContent(
     modifier: Modifier = Modifier,
-    appSettings: ImmutableList<SettingsItem.TopLevelSettings>,
+    state: SettingsUiState,
     onSettingClick: (SettingsItem.TopLevelSettings) -> Unit,
     onHideImportOlympiaWalletSettingBox: () -> Unit,
     onBackClick: () -> Unit
@@ -95,7 +103,7 @@ private fun SettingsContent(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                appSettings.forEach { settingsItem ->
+                state.settings.forEach { settingsItem ->
                     when (settingsItem) {
                         SettingsItem.TopLevelSettings.LinkToConnector -> {
                             item {
@@ -182,6 +190,12 @@ private fun SettingsContent(
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+                }
+
+                state.debugBuildInformation?.let { buildInfo ->
+                    item {
+                        DebugBuildInformation(buildInfo = buildInfo)
+                    }
                 }
             }
         }
@@ -317,18 +331,82 @@ private fun ImportOlympiaWalletSettingBox(
     }
 }
 
+@Composable
+private fun DebugBuildInformation(
+    modifier: Modifier = Modifier,
+    buildInfo: DebugBuildInformation
+) {
+    Column(
+        modifier = modifier.padding(
+            vertical = RadixTheme.dimensions.paddingLarge,
+            horizontal = RadixTheme.dimensions.paddingDefault
+        )
+    ) {
+        VersionInformation(
+            dependencyName = "Sargon Version",
+            dependencyVersion = buildInfo.sargonInfo.sargonVersion
+        )
+        VersionInformation(
+            dependencyName = "RET",
+            dependencyVersion = "#${buildInfo.sargonInfo.dependencies.radixEngineToolkit.displayable()}"
+        )
+        VersionInformation(
+            dependencyName = "Scrypto",
+            dependencyVersion = "#${buildInfo.sargonInfo.dependencies.scryptoRadixEngine.displayable()}"
+        )
+        VersionInformation(
+            dependencyName = "SigServer",
+            dependencyVersion = buildInfo.SIGNALING_SERVER
+        )
+    }
+}
+
+@Composable
+private fun VersionInformation(
+    modifier: Modifier = Modifier,
+    dependencyName: String,
+    dependencyVersion: String
+) {
+    Text(
+        modifier = modifier.fillMaxWidth(),
+        text = buildAnnotatedString {
+            append("$dependencyName: ")
+            withStyle(
+                TextStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    color = RadixTheme.colors.gray1
+                ).toSpanStyle()
+            ) {
+                append(dependencyVersion)
+            }
+        },
+        style = RadixTheme.typography.body1Regular,
+        color = RadixTheme.colors.gray2,
+        textAlign = TextAlign.Start
+    )
+}
+
+@Composable
+fun DependencyInformation.displayable(): String = remember(this) {
+    string.takeLast(7)
+}
+
 @Preview(showBackground = true)
 @Composable
 fun SettingsScreenWithoutActiveConnectionPreview() {
     RadixWalletTheme {
         SettingsContent(
-            appSettings = persistentListOf(
-                SettingsItem.TopLevelSettings.LinkToConnector,
-                SettingsItem.TopLevelSettings.ImportOlympiaWallet,
-                SettingsItem.TopLevelSettings.AuthorizedDapps,
-                SettingsItem.TopLevelSettings.Personas(),
-                SettingsItem.TopLevelSettings.AccountSecurityAndSettings(showNotificationWarning = true),
-                SettingsItem.TopLevelSettings.AppSettings
+            state = SettingsUiState(
+                persistentListOf(
+                    SettingsItem.TopLevelSettings.LinkToConnector,
+                    SettingsItem.TopLevelSettings.ImportOlympiaWallet,
+                    SettingsItem.TopLevelSettings.AuthorizedDapps,
+                    SettingsItem.TopLevelSettings.Personas(),
+                    SettingsItem.TopLevelSettings.AccountSecurityAndSettings(showNotificationWarning = true),
+                    SettingsItem.TopLevelSettings.AppSettings
+                )
             ),
             onSettingClick = {},
             onHideImportOlympiaWalletSettingBox = {},

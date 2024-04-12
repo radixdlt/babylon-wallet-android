@@ -23,9 +23,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.resources.isXrd
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
@@ -36,8 +33,11 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.FiatBalance
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import rdx.works.core.displayableQuantity
-import java.math.BigDecimal
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.Token
 
 @Composable
 fun FungibleDialogContent(
@@ -86,6 +86,7 @@ fun FungibleDialogContent(
                 symbol = token?.resource?.symbol.orEmpty(),
             )
 
+            val fiatPrice = tokenPrice?.price
             if (isLoadingBalance) {
                 ShimmeringView(
                     modifier = Modifier
@@ -94,10 +95,10 @@ fun FungibleDialogContent(
                         .fillMaxWidth(0.2f),
                     isVisible = true
                 )
-            } else if (tokenPrice?.price != null) {
+            } else if (fiatPrice != null) {
                 FiatBalanceView(
                     modifier = Modifier.padding(top = RadixTheme.dimensions.paddingSmall),
-                    fiatPrice = tokenPrice.price,
+                    fiatPrice = fiatPrice,
                     textStyle = RadixTheme.typography.body2HighImportance
                 )
             }
@@ -122,7 +123,7 @@ fun FungibleDialogContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            address = resourceAddress,
+            address = Address.Resource(resourceAddress),
             isNewlyCreatedEntity = isNewlyCreated
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
@@ -139,13 +140,10 @@ fun FungibleDialogContent(
                         .padding(start = RadixTheme.dimensions.paddingDefault)
                         .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                         .radixPlaceholder(visible = token?.resource?.currentSupply == null),
-                    text = when {
-                        token?.resource?.currentSupply != null -> when (token.resource.currentSupply) {
-                            BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                            else -> token.resource.currentSupply.displayableQuantity()
-                        }
-
-                        else -> ""
+                    text = when (val supply = token?.resource?.currentSupply) {
+                        null -> ""
+                        0.toDecimal192() -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                        else -> supply.formatted()
                     },
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,

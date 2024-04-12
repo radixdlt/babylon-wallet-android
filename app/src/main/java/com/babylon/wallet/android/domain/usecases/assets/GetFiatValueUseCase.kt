@@ -6,20 +6,22 @@ import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.data.repository.tokenprice.Mainnet
 import com.babylon.wallet.android.data.repository.tokenprice.Testnet
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.times
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.SupportedCurrency
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.then
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.NetworkId
-import java.math.BigDecimal
 import javax.inject.Inject
 
 class GetFiatValueUseCase @Inject constructor(
@@ -111,7 +113,7 @@ class GetFiatValueUseCase @Inject constructor(
         return assets.map { asset ->
             // find those assets that are claims and replace them with the new ensuredStakeClaims
             val claim = ensuredStakeClaims.find { stakeClaim ->
-                stakeClaim.resourceAddress == asset.resource.resourceAddress
+                stakeClaim.resourceAddress == asset.resource.address
             }
             claim ?: asset
         }.map { asset ->
@@ -153,18 +155,18 @@ class GetFiatValueUseCase @Inject constructor(
 
     @Suppress("LongMethod", "CyclomaticComplexMethod")
     private fun Asset.price(
-        fiatPrices: Map<String, FiatPrice>,
+        fiatPrices: Map<ResourceAddress, FiatPrice>,
         networkId: NetworkId,
         currency: SupportedCurrency
     ): AssetPrice? = when (this) {
         is Token -> {
-            val tokenPrice = fiatPrices[resource.resourceAddress]
+            val tokenPrice = fiatPrices[resource.address]
 
             AssetPrice.TokenPrice(
                 asset = this,
                 price = tokenPrice?.let {
                     FiatPrice(
-                        price = it.price.toBigDecimal().multiply(resource.ownedAmount ?: BigDecimal.ZERO).toDouble(),
+                        price = it.price * resource.ownedAmount.orZero(),
                         currency = it.currency
                     )
                 }
@@ -173,14 +175,14 @@ class GetFiatValueUseCase @Inject constructor(
 
         is LiquidStakeUnit -> {
             val tokenPrice = fiatPrices[resourceAddress]
-            val priceForLSU = tokenPrice?.price?.toBigDecimal() ?: BigDecimal.ZERO
-            val totalPrice = priceForLSU.multiply(fungibleResource.ownedAmount ?: BigDecimal.ZERO)
-            val xrdPrice = fiatPrices[XrdResource.address(networkId = networkId)]?.price
+            val priceForLSU = tokenPrice?.price.orZero()
+            val totalPrice = priceForLSU * fungibleResource.ownedAmount.orZero()
+            val xrdPrice = fiatPrices[XrdResource.address(networkId = networkId.value)]?.price
 
             AssetPrice.LSUPrice(
                 asset = this,
                 price = FiatPrice(
-                    price = totalPrice.toDouble(),
+                    price = totalPrice,
                     currency = currency
                 ),
                 oneXrdPrice = xrdPrice?.let {
@@ -194,12 +196,12 @@ class GetFiatValueUseCase @Inject constructor(
 
         is PoolUnit -> {
             val poolItemPrices = pool?.resources?.associateWith { poolItem ->
-                val poolItemFiatPrice = fiatPrices[poolItem.resourceAddress]
+                val poolItemFiatPrice = fiatPrices[poolItem.address]
                 val poolItemRedemptionValue = resourceRedemptionValue(poolItem)
 
                 if (poolItemFiatPrice != null && poolItemRedemptionValue != null) {
                     FiatPrice(
-                        price = (poolItemFiatPrice.price.toBigDecimal() * poolItemRedemptionValue).toDouble(),
+                        price = poolItemFiatPrice.price * poolItemRedemptionValue,
                         currency = poolItemFiatPrice.currency
                     )
                 } else {
@@ -215,14 +217,14 @@ class GetFiatValueUseCase @Inject constructor(
         }
 
         is StakeClaim -> {
-            val xrdAddress = XrdResource.address(networkId = networkId)
+            val xrdAddress = XrdResource.address(networkId = networkId.value)
             val xrdPrice = fiatPrices[xrdAddress]
 
             val prices = nonFungibleResource.items.associateWith {
                 val claimAmountXrd = it.claimAmountXrd
                 if (claimAmountXrd != null && xrdPrice != null) {
                     FiatPrice(
-                        price = claimAmountXrd.multiply(xrdPrice.price.toBigDecimal()).toDouble(),
+                        price = claimAmountXrd * xrdPrice.price,
                         currency = xrdPrice.currency
                     )
                 } else {
@@ -249,15 +251,15 @@ class GetFiatValueUseCase @Inject constructor(
         is NonFungibleCollection -> emptyList()
         is LiquidStakeUnit -> listOf(
             PriceRequestAddress.LSU(address = resourceAddress),
-            PriceRequestAddress.Regular(XrdResource.address(networkId = networkId))
+            PriceRequestAddress.Regular(XrdResource.address(networkId = networkId.value))
         )
 
         is StakeClaim -> {
-            listOf(PriceRequestAddress.Regular(XrdResource.address(networkId = networkId)))
+            listOf(PriceRequestAddress.Regular(XrdResource.address(networkId = networkId.value)))
         }
 
-        is PoolUnit -> pool?.resources?.map { PriceRequestAddress.Regular(it.resourceAddress) }.orEmpty()
-        is Token -> listOf(PriceRequestAddress.Regular(address = resource.resourceAddress))
+        is PoolUnit -> pool?.resources?.map { PriceRequestAddress.Regular(it.address) }.orEmpty()
+        is Token -> listOf(PriceRequestAddress.Regular(address = resource.address))
     }
 
     private suspend fun getFiatPrices(
@@ -265,7 +267,7 @@ class GetFiatValueUseCase @Inject constructor(
         addresses: Set<PriceRequestAddress>,
         currency: SupportedCurrency,
         isRefreshing: Boolean
-    ): Result<Map<String, FiatPrice>> = if (networkId == NetworkId.Mainnet) {
+    ): Result<Map<ResourceAddress, FiatPrice>> = if (networkId == NetworkId.Mainnet) {
         mainnetFiatPriceRepository.getFiatPrices(
             addresses = addresses,
             currency = currency,

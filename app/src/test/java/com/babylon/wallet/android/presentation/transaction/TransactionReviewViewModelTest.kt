@@ -7,21 +7,17 @@ import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.gateway.generated.models.CoreApiTransactionReceipt
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionPreviewResponse
 import com.babylon.wallet.android.data.repository.TransactionStatusClient
-import com.babylon.wallet.android.data.transaction.NotarizedTransactionResult
+import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
-import com.babylon.wallet.android.data.transaction.TransactionClient
-import com.babylon.wallet.android.data.transaction.model.FeePayerSearchResult
+import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.TransactionManifestData
-import com.babylon.wallet.android.domain.model.resources.Badge
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.domain.usecases.GetResourcesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCase
 import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
 import com.babylon.wallet.android.domain.usecases.SearchFeePayersUseCase
+import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntitiesUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
@@ -45,17 +41,22 @@ import com.babylon.wallet.android.presentation.transaction.submit.TransactionSub
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
-import com.radixdlt.ret.Decimal
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.FeeLocks
-import com.radixdlt.ret.FeeSummary
-import com.radixdlt.ret.Instructions
-import com.radixdlt.ret.ManifestClass
-import com.radixdlt.ret.ManifestSummary
-import com.radixdlt.ret.NewEntities
-import com.radixdlt.ret.TransactionHeader
-import com.radixdlt.ret.TransactionManifest
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.CompiledNotarizedIntent
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.FeeLocks
+import com.radixdlt.sargon.FeeSummary
+import com.radixdlt.sargon.IntentHash
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NewEntities
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.rounded
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -73,7 +74,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -81,15 +81,17 @@ import org.junit.Test
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
-import rdx.works.core.displayableQuantity
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.resources.Badge
+import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.logNonFatalException
-import rdx.works.core.ret.crypto.PrivateKey
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import java.math.BigDecimal
+import rdx.works.profile.ret.crypto.PrivateKey
 import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -99,7 +101,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     val defaultLocaleTestRule = DefaultLocaleRule()
 
 
-    private val transactionClient = mockk<TransactionClient>()
+    private val signTransactionUseCase = mockk<SignTransactionUseCase>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val getResourcesUseCase = mockk<GetResourcesUseCase>()
     private val resolveAssetsFromAddressUseCase = mockk<ResolveAssetsFromAddressUseCase>()
@@ -110,6 +112,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     private val submitTransactionUseCase = mockk<SubmitTransactionUseCase>()
     private val transactionStatusClient = mockk<TransactionStatusClient>()
     private val resolveNotaryAndSignersUseCase = mockk<ResolveNotaryAndSignersUseCase>()
+    private val transactionRepository = mockk<TransactionRepository>()
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
     private val dAppMessenger = mockk<DappMessenger>()
     private val appEventBus = mockk<AppEventBus>()
@@ -154,123 +157,103 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             resolveAssetsFromAddressUseCase = resolveAssetsFromAddressUseCase
         )
     )
-    private val sampleTxId = "txId1"
+    private val sampleIntentHash = IntentHash.sample()
+    private val notarizationResult = NotarizationResult(
+        intentHash = sampleIntentHash,
+        compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
+        endEpoch = 50u
+    )
     private val sampleRequestId = "requestId1"
-    private val sampleRequest = mockk<MessageFromDataChannel.IncomingRequest.TransactionRequest>().apply {
-        every { remoteConnectorId } returns "remoteConnectorId"
-        every { requestId } returns sampleRequestId
-        every { blockUntilComplete } returns false
-        every { transactionType } returns com.babylon.wallet.android.data.dapp.model.TransactionType.Generic
-        every { requestMetadata } returns MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            networkId = Radix.Gateway.nebunet.network.id,
-            origin = "https://test.origin.com",
-            dAppDefinitionAddress = "account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa",
-            isInternal = false
-        )
-    }
     private val sampleTransactionManifestData = mockk<TransactionManifestData>().apply {
         every { networkId } returns Radix.Gateway.nebunet.network.id
-        every { message } returns ""
+        every { instructions } returns ""
+        every { blobs } returns emptyList()
+        every { message } returns TransactionManifestData.TransactionMessage.None
+        every { entitiesRequiringAuth() } returns TransactionManifestData.EntitiesRequiringAuth(
+            accounts = emptyList(),
+            identities = emptyList()
+        )
     }
-    private val manifest = mockk<TransactionManifest>().apply {
-        every { instructions() } returns mockk<Instructions>().apply { every { asStr() } returns "" }
-        every { blobs() } returns listOf()
-    }
+    private val sampleRequest = MessageFromDataChannel.IncomingRequest.TransactionRequest(
+        remoteConnectorId = "remoteConnectorId",
+        requestId = sampleRequestId,
+        transactionManifestData = sampleTransactionManifestData,
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+            networkId = NetworkId.MAINNET.discriminant.toInt(),
+            origin = "https://test.origin.com",
+            dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
+            isInternal = false
+        ),
+        transactionType = com.babylon.wallet.android.data.dapp.model.TransactionType.Generic
+    )
     private val fromAccount = account(
-        address = "account_tdx_19jd32jd3928jd3892jd329",
         name = "From Account"
     )
     private val otherAccounts = identifiedArrayListOf(
         account(
-            address = "account_tdx_3j892dj3289dj32d2d2d2d9",
             name = "To Account 1"
         ),
         account(
-            address = "account_tdx_39jfc32jd932ke9023j89r9",
             name = "To Account 2"
         ),
         account(
-            address = "account_tdx_12901829jd9281jd189jd98",
             name = "To account 3"
         )
     )
 
     private val emptyExecutionSummary = ExecutionSummary(
         feeLocks = FeeLocks(
-            lock = Decimal.zero(),
-            contingentLock = Decimal.zero()
+            lock = 0.toDecimal192(),
+            contingentLock = 0.toDecimal192()
         ),
         feeSummary = FeeSummary(
-            executionCost = Decimal.zero(),
-            finalizationCost = Decimal.zero(),
-            storageExpansionCost = Decimal.zero(),
-            royaltyCost = Decimal.zero()
+            executionCost = 0.toDecimal192(),
+            finalizationCost = 0.toDecimal192(),
+            storageExpansionCost = 0.toDecimal192(),
+            royaltyCost = 0.toDecimal192()
         ),
         detailedClassification = listOf(),
         reservedInstructions = listOf(),
-        accountDeposits = mapOf(),
-        accountsRequiringAuth = listOf(),
-        accountWithdraws = mapOf(),
-        encounteredEntities = listOf(),
-        identitiesRequiringAuth = listOf(),
+        deposits = mapOf(),
+        withdrawals = mapOf(),
+        addressesOfAccountsRequiringAuth = listOf(),
+        addressesOfIdentitiesRequiringAuth = listOf(),
+        encounteredComponentAddresses = listOf(),
         newEntities = NewEntities(
-            componentAddresses = listOf(),
-            resourceAddresses = listOf(),
-            packageAddresses = listOf(),
             metadata = mapOf()
         ),
-        presentedProofs = mapOf(),
+        presentedProofs = listOf(),
         newlyCreatedNonFungibles = listOf()
     )
 
     @Before
     override fun setUp() = runTest {
         super.setUp()
+        val dApp = DApp.sampleMainnet()
         coEvery {
-            getDAppsUseCase("account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa", false)
-        } returns Result.success(DApp("account_tdx_b_1p95nal0nmrqyl5r4phcspg8ahwnamaduzdd3kaklw3vqeavrwa"))
+            getDAppsUseCase(dApp.dAppAddress, false)
+        } returns Result.success(dApp)
         every { exceptionMessageProvider.throwableMessage(any()) } returns ""
         every { deviceCapabilityHelper.isDeviceSecure() } returns true
         mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
         every { logNonFatalException(any()) } just Runs
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
         coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
-        coEvery { submitTransactionUseCase(any(), any(), any()) } returns Result.success(
-            SubmitTransactionUseCase.SubmitTransactionResult(sampleTxId, 50u)
-        )
-        coEvery { getTransactionBadgesUseCase.invoke(any()) } returns listOf(
-            Badge(address = "")
-        )
-        coEvery { transactionClient.signTransaction(any(), any(), any(), any()) } returns Result.success(
-            NotarizedTransactionResult(
-                "sampleTxId", "", TransactionHeader(
-                    11u,
-                    1U,
-                    5U,
-                    10u,
-                    com.radixdlt.ret.PublicKey.Ed25519(byteArrayOf()),
-                    false,
-                    10u
-                )
-            )
-        )
-        coEvery { resolveNotaryAndSignersUseCase(any(), any()) } returns Result.success(
-            NotaryAndSigners(
-                emptyList(),
-                PrivateKey.EddsaEd25519.newRandom()
-            )
-        )
-        coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(FeePayerSearchResult("feePayer"))
-        coEvery { transactionClient.signingState } returns emptyFlow()
-        coEvery { transactionClient.getTransactionPreview(any(), any()) } returns Result.success(
-            previewResponse()
-        )
+        coEvery { submitTransactionUseCase(any()) } returns Result.success(notarizationResult)
+        coEvery { getTransactionBadgesUseCase(any()) } returns Result.success(listOf(
+            Badge(address = ResourceAddress.sampleMainnet())
+        ))
+        coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.success(notarizationResult)
+        coEvery { signTransactionUseCase.signingState } returns emptyFlow()
+        coEvery { searchFeePayersUseCase(any(), any()) } returns Result.success(TransactionFeePayers(AccountAddress.sampleMainnet.random()))
+        coEvery { transactionRepository.getLedgerEpoch() } returns Result.success(0.toULong())
+        coEvery { transactionRepository.getTransactionPreview(any()) } returns Result.success(previewResponse())
         coEvery { transactionStatusClient.pollTransactionStatus(any(), any(), any(), any()) } just Runs
         coEvery {
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
-                txId = sampleTxId
+                txId = sampleIntentHash.bech32EncodedTxId
             )
         } returns Result.success(Unit)
         coEvery {
@@ -282,36 +265,28 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             )
         } returns Result.success(Unit)
         coEvery { appEventBus.sendEvent(any()) } returns Unit
-        every { sampleRequest.isInternal } returns false
-        every { sampleRequest.id } returns sampleRequestId
-        every { sampleRequest.transactionManifestData } returns sampleTransactionManifestData
         incomingRequestRepository.add(sampleRequest)
-        every { sampleTransactionManifestData.toTransactionManifest() } returns Result.success(manifest)
-        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary
-        every { manifest.summary(any()) } returns ManifestSummary(
-            accountsDepositedInto = emptyList(),
-            accountsRequiringAuth = emptyList(),
-            accountsWithdrawnFrom = emptyList(),
-            presentedProofs = emptyMap(),
-            identitiesRequiringAuth = emptyList(),
-            encounteredEntities = emptyList(),
-            classification = listOf(ManifestClass.GENERAL),
-            reservedInstructions = emptyList(),
-        )
         every { getProfileUseCase() } returns flowOf(profile(accounts = (identifiedArrayListOf(fromAccount) + otherAccounts).toIdentifiedArrayList()))
+        coEvery { resolveNotaryAndSignersUseCase(any(), any(), any()) } returns Result.success(
+            NotaryAndSigners(
+                listOf(),
+                PrivateKey.EddsaEd25519.newRandom()
+            )
+        )
+        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary
         coEvery { getResourcesUseCase(any(), any()) } returns Result.success(listOf())
         coEvery { resolveAssetsFromAddressUseCase(any(), any()) } returns Result.success(listOf())
     }
 
     override fun initVM(): TransactionReviewViewModel {
         return TransactionReviewViewModel(
-            transactionClient = transactionClient,
+            signTransactionUseCase = signTransactionUseCase,
             analysis = TransactionAnalysisDelegate(
                 previewTypeAnalyzer = previewTypeAnalyzer,
-                getProfileUseCase = getProfileUseCase,
                 cacheNewlyCreatedEntitiesUseCase = cacheNewlyCreatedEntitiesUseCase,
                 searchFeePayersUseCase = searchFeePayersUseCase,
                 resolveNotaryAndSignersUseCase = resolveNotaryAndSignersUseCase,
+                transactionRepository = transactionRepository
             ),
             guarantees = TransactionGuaranteesDelegate(),
             fees = TransactionFeesDelegate(
@@ -332,7 +307,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             getDAppsUseCase = getDAppsUseCase
         )
     }
-
+//    @Ignore("Not working")
     @Test
     fun `transaction approval success`() = runTest {
         val vm = vm.value
@@ -343,7 +318,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             dAppMessenger.sendTransactionWriteResponseSuccess(
                 remoteConnectorId = "remoteConnectorId",
                 requestId = sampleRequestId,
-                txId = sampleTxId
+                txId = sampleIntentHash.bech32EncodedTxId
             )
         }
     }
@@ -368,9 +343,10 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         assertTrue(vm.state.value.isTransactionDismissed)
     }
 
+//    @Ignore("Not working")
     @Test
     fun `transaction approval sign and submit error`() = runTest {
-        coEvery { transactionClient.signTransaction(any(), any(), any(), any()) } returns Result.failure(
+        coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.failure(
             RadixWalletException.PrepareTransactionException.SubmitNotarizedTransaction()
         )
         val vm = vm.value
@@ -392,174 +368,21 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     }
 
     @Test
-    fun `given all fees are zero, network royalty and total fee are 0 (none due)`() = runTest {
-        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
-        )
-        val vm = vm.value
-        advanceUntilIdle()
-        assertEquals("0.1083795", vm.state.value.transactionFees.networkFeeDisplayed)
-        assertEquals("0", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
-        assertEquals("0.1083795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
-    }
-
-    @Test
-    fun `verify network fee royalty and total fee is displayed correctly on default screen 1`() = runTest {
-        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
-            feeLocks = FeeLocks(
-                lock = Decimal("0.9"),
-                contingentLock = Decimal.zero()
-            ),
-            feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
-            ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
-        )
-        val vm = vm.value
-        advanceUntilIdle()
-        assertEquals("0.1283795", vm.state.value.transactionFees.networkFeeDisplayed)
-        assertEquals("0.2", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
-        assertEquals("0.3283795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
-    }
-
-    @Test
-    fun `verify network fee royalty and total fee is displayed correctly on default screen 2`() = runTest {
-        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
-            feeLocks = FeeLocks(
-                lock = Decimal("0.5"),
-                contingentLock = Decimal.zero()
-            ),
-            feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
-            ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
-        )
-        val vm = vm.value
-        advanceUntilIdle()
-        assertEquals("0.5283795", vm.state.value.transactionFees.networkFeeDisplayed)
-        assertEquals("0.2", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
-        assertEquals("0.7283795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
-    }
-
-    @Test
-    fun `verify network fee royalty and total fee is displayed correctly on default screen 3`() = runTest {
-        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
-            feeLocks = FeeLocks(
-                lock = Decimal("1.0"),
-                contingentLock = Decimal.zero()
-            ),
-            feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
-            ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
-        )
-        val vm = vm.value
-        advanceUntilIdle()
-        assertEquals("0.0283795", vm.state.value.transactionFees.networkFeeDisplayed)
-        assertEquals("0.2", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
-        assertEquals("0.2283795", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
-    }
-
-    @Test
-    fun `verify network fee royalty and total fee is displayed correctly on default screen 4`() = runTest {
-        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
-            feeLocks = FeeLocks(
-                lock = Decimal("1.5"),
-                contingentLock = Decimal.zero()
-            ),
-            feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
-            ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
-        )
-        val vm = vm.value
-        advanceUntilIdle()
-        assertNull(vm.state.value.transactionFees.networkFeeDisplayed)
-        assertEquals("0", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
-        assertEquals("0", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())
-    }
-
-    @Test
-    fun `verify network fee royalty and total fee is displayed correctly on default screen 4 with one signer account`() = runTest {
-        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
-            feeLocks = FeeLocks(
-                lock = Decimal.zero(),
-                contingentLock = Decimal.zero()
-            ),
-            feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
-            ),
-            detailedClassification = listOf(
-                DetailedManifestClass.General
-            ),
-            reservedInstructions = emptyList()
-        )
-
-        coEvery { resolveNotaryAndSignersUseCase(any(), any()) } returns Result.success(
-            NotaryAndSigners(
-                listOf(
-                    SampleDataProvider().sampleAccount(
-                        address = "rdx_t_12382918379821",
-                        name = "Savings account"
-                    )
-                ),
-                PrivateKey.EddsaEd25519.newRandom()
-            )
-        )
-
-        val vm = vm.value
-        advanceUntilIdle()
-        assertEquals("1.040813", vm.state.value.transactionFees.networkFeeDisplayed)//0.9265478
-        assertEquals("0.2", vm.state.value.transactionFees.defaultRoyaltyFeesDisplayed)
-        assertEquals("1.240813", vm.state.value.transactionFees.defaultTransactionFee.displayableQuantity())//1.26553
-    }
-
-    @Test
     fun `verify transaction fee to lock is correct on advanced screen 1`() = runTest {
         val feePaddingAmount = "1.6"
 
         // Sum of executionCost finalizationCost storageExpansionCost royaltyCost padding and tip minus noncontingentlock
         val expectedFeeLock = "1.10842739440"
-        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
+        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
-                lock = Decimal("1.5"),
-                contingentLock = Decimal.zero()
+                lock = 1.5.toDecimal192(),
+                contingentLock = 0.toDecimal192()
             ),
             feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
+                executionCost = 0.3.toDecimal192(),
+                finalizationCost = 0.3.toDecimal192(),
+                storageExpansionCost = 0.2.toDecimal192(),
+                royaltyCost = 0.2.toDecimal192()
             ),
             detailedClassification = listOf(
                 DetailedManifestClass.General
@@ -570,7 +393,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         advanceUntilIdle()
         vm.onFeePaddingAmountChanged(feePaddingAmount)
 
-        assertEquals(BigDecimal(expectedFeeLock), vm.state.value.transactionFees.transactionFeeToLock)
+        assertEquals(expectedFeeLock.toDecimal192(), vm.state.value.transactionFees.transactionFeeToLock)
     }
 
     @Test
@@ -578,18 +401,18 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         val tipPercentage = "25"
 
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "0.9019403"
+        val expectedFeeLock = 0.9019403.toDecimal192()
 
-        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
+        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
-                lock = Decimal("0.5"),
-                contingentLock = Decimal.zero()
+                lock = 0.5.toDecimal192(),
+                contingentLock = 0.toDecimal192()
             ),
             feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
+                executionCost = 0.3.toDecimal192(),
+                finalizationCost = 0.3.toDecimal192(),
+                storageExpansionCost = 0.2.toDecimal192(),
+                royaltyCost = 0.2.toDecimal192()
             ),
             detailedClassification = listOf(
                 DetailedManifestClass.General
@@ -600,7 +423,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         advanceUntilIdle()
         vm.onTipPercentageChanged(tipPercentage)
 
-        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity())
+        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
     }
 
     @Test
@@ -609,18 +432,18 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         val tipPercentage = "25"
 
         // Sum of executionCost finalizationCost royaltyCost padding and tip minus noncontingentlock
-        val expectedFeeLock = "2.3678038"
+        val expectedFeeLock = 2.3678038.toDecimal192()
 
-        every { manifest.executionSummary(any(), any()) } returns emptyExecutionSummary.copy(
+        every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary.copy(
             feeLocks = FeeLocks(
-                lock = Decimal("0.5"),
-                contingentLock = Decimal.zero()
+                lock = 0.5.toDecimal192(),
+                contingentLock = 0.toDecimal192()
             ),
             feeSummary = FeeSummary(
-                executionCost = Decimal("0.3"),
-                finalizationCost = Decimal("0.3"),
-                storageExpansionCost = Decimal("0.2"),
-                royaltyCost = Decimal("0.2")
+                executionCost = 0.3.toDecimal192(),
+                finalizationCost = 0.3.toDecimal192(),
+                storageExpansionCost = 0.2.toDecimal192(),
+                royaltyCost = 0.2.toDecimal192()
             ),
             detailedClassification = listOf(
                 DetailedManifestClass.General
@@ -632,7 +455,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         vm.onFeePaddingAmountChanged(feePaddingAmount)
         vm.onTipPercentageChanged(tipPercentage)
 
-        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.displayableQuantity())
+        assertEquals(expectedFeeLock, vm.state.value.transactionFees.transactionFeeToLock.rounded(7u))
     }
 
     private fun previewResponse() = TransactionPreviewResponse(

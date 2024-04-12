@@ -1,8 +1,7 @@
 package rdx.works.profile.domain.signing
 
-import com.radixdlt.ret.SignatureWithPublicKey
+import com.radixdlt.sargon.SignatureWithPublicKey
 import kotlinx.coroutines.flow.first
-import rdx.works.core.ret.toEngineModel
 import rdx.works.profile.data.model.deriveExtendedKey
 import rdx.works.profile.data.model.extensions.updateLastUsed
 import rdx.works.profile.data.model.factorsources.DeviceFactorSource
@@ -14,6 +13,7 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.domain.ProfileException
+import rdx.works.profile.ret.crypto.PrivateKey.Companion.toPrivateKey
 import javax.inject.Inject
 
 class SignWithDeviceFactorSourceUseCase @Inject constructor(
@@ -46,8 +46,11 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                     val extendedKey = mnemonic.deriveExtendedKey(
                         virtualSource = hierarchicalDeterministicVirtualSource
                     )
-                    val privateKeyRET = extendedKey.keyPair.privateKey.toEngineModel()
-                    val signatureWithPublicKey = privateKeyRET.signToSignatureWithPublicKey(dataToSign)
+
+                    val signatureWithPublicKey = extendedKey
+                        .keyPair
+                        .toPrivateKey()
+                        .signToSignatureWithPublicKey(dataToSign)
                     result.add(signatureWithPublicKey)
                     val profile = profileRepository.profile.first()
                     profileRepository.saveProfile(profile.updateLastUsed(deviceFactorSource.id))

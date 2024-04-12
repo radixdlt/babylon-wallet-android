@@ -2,9 +2,14 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
-import com.babylon.wallet.android.domain.model.resources.AccountDetails
-import com.babylon.wallet.android.domain.model.resources.metadata.AccountType
-import java.math.BigDecimal
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
+import rdx.works.core.domain.resources.AccountDetails
+import rdx.works.core.domain.resources.Divisibility
+import rdx.works.core.domain.resources.metadata.AccountType
 import java.time.Instant
 
 data class AccountPortfolioResponse(
@@ -19,19 +24,19 @@ data class AccountPortfolioResponse(
     @ColumnInfo("first_transaction_date")
     val firstTransactionDate: Instant?,
     // From AccountResourceJoin
-    val amount: BigDecimal?,
+    val amount: Decimal192?,
 
     // From ResourceEntity (@Embed does not work here since making ResourceEntity nullable does not work)
     @ColumnInfo("address")
-    private val resourceAddress: String?,
+    private val resourceAddress: ResourceAddress?,
     private val type: ResourceEntityType?,
     @ColumnInfo("validator_address")
-    private val validatorAddress: String?,
+    private val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
-    private val poolAddress: String?,
-    private val divisibility: Int?,
+    private val poolAddress: PoolAddress?,
+    private val divisibility: Divisibility?,
     private val behaviours: BehavioursColumn?,
-    private val supply: BigDecimal?,
+    private val supply: Decimal192?,
     private val metadata: MetadataColumn?,
     @ColumnInfo("synced")
     private val resourceSynced: Instant?
@@ -66,26 +71,26 @@ data class AccountPortfolioResponse(
 
 data class PoolWithResourceResponse(
     @ColumnInfo("pool_entity_address")
-    val address: String,
+    val address: PoolAddress,
     @ColumnInfo("pool_unit_address")
-    val poolUnitAddress: String,
+    val poolUnitAddress: ResourceAddress,
     @ColumnInfo("account_state_version")
     val accountStateVersion: Long?,
     @ColumnInfo("pool_metadata")
     val poolMetadata: MetadataColumn?,
-    val amount: BigDecimal?,
+    val amount: Decimal192?,
 
     // From ResourceEntity (@Embed does not work here since making ResourceEntity nullable does not work)
     @ColumnInfo("address")
-    private val resourceAddress: String?,
+    private val resourceAddress: ResourceAddress?,
     private val type: ResourceEntityType?,
     @ColumnInfo("validator_address")
-    private val validatorAddress: String?,
+    private val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
-    private val poolAddress: String?,
-    private val divisibility: Int?,
+    private val poolAddress: PoolAddress?,
+    private val divisibility: Divisibility?,
     private val behaviours: BehavioursColumn?,
-    private val supply: BigDecimal?,
+    private val supply: Decimal192?,
     private val metadata: MetadataColumn?,
     @ColumnInfo("synced")
     private val resourceSynced: Instant?
@@ -110,7 +115,7 @@ data class PoolWithResourceResponse(
 
 data class AccountStateVersion(
     @ColumnInfo("address")
-    val address: String,
+    val address: AccountAddress,
     @ColumnInfo("state_version")
     val stateVersion: Long
 )

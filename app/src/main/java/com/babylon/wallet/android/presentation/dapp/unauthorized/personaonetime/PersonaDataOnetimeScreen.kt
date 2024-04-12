@@ -31,15 +31,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.unauthorized.login.DAppUnauthorizedLoginViewModel
@@ -56,8 +52,10 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import rdx.works.core.domain.DApp
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -254,18 +252,14 @@ private fun PermissionRequestHeader(
     )
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun LoginPermissionContentPreview() {
     RadixWalletTheme {
         PersonaDataOnetimeContent(
             onContinueClick = {},
-            dapp = DApp(
-                dAppAddress = "account_tdx_abc",
-                metadata = listOf(
-                    Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Collabo.fi", MetadataType.String)
-                )
-            ),
+            dapp = DApp.sampleMainnet(),
             onBackClick = {},
             modifier = Modifier.fillMaxSize(),
             isFirstScreenInFlow = false,

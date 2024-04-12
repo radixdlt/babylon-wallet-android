@@ -1,7 +1,8 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.model.DApp
+import com.radixdlt.sargon.AccountAddress
+import rdx.works.core.domain.DApp
 import javax.inject.Inject
 
 class GetDAppsUseCase @Inject constructor(
@@ -9,7 +10,7 @@ class GetDAppsUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        definitionAddresses: Set<String>,
+        definitionAddresses: Set<AccountAddress>,
         needMostRecentData: Boolean
     ): Result<List<DApp>> = stateRepository.getDAppsDetails(
         definitionAddresses = definitionAddresses.toList(),
@@ -17,7 +18,7 @@ class GetDAppsUseCase @Inject constructor(
     )
 
     suspend operator fun invoke(
-        definitionAddress: String,
+        definitionAddress: AccountAddress,
         needMostRecentData: Boolean
     ): Result<DApp> = stateRepository.getDAppsDetails(
         definitionAddresses = listOf(definitionAddress),

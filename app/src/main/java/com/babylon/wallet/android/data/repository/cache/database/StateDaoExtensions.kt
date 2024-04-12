@@ -5,14 +5,18 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungible
 import com.babylon.wallet.android.data.repository.cache.database.AccountNFTJoin.Companion.asAccountNFTJoin
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.StateDao.Companion.resourcesCacheValidity
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
 import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.resources.Pool
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
 
 @Suppress("UnsafeCallOnNullableType")
-fun StateDao.getCachedPools(poolAddresses: Set<String>, atStateVersion: Long): Map<String, Pool> {
-    val pools = mutableMapOf<String, Pool>()
+fun StateDao.getCachedPools(poolAddresses: Set<PoolAddress>, atStateVersion: Long): Map<PoolAddress, Pool> {
+    val pools = mutableMapOf<PoolAddress, Pool>()
     getPoolDetails(poolAddresses, atStateVersion).forEach { join ->
         // If pool's resource is not up to date or has no details, all pool info is considered stale
         val poolResource = getPoolResource(join.address, resourcesCacheValidity()) ?: return@forEach
@@ -40,8 +44,8 @@ fun StateDao.getCachedPools(poolAddresses: Set<String>, atStateVersion: Long): M
     return pools.mapValues { it.value.copy(resources = it.value.resources.sorted()) }
 }
 
-fun StateDao.getCachedValidators(addresses: Set<String>, atStateVersion: Long): Map<String, ValidatorDetail> {
-    val validators = mutableMapOf<String, ValidatorDetail>()
+fun StateDao.getCachedValidators(addresses: Set<ValidatorAddress>, atStateVersion: Long): Map<ValidatorAddress, Validator> {
+    val validators = mutableMapOf<ValidatorAddress, Validator>()
     getValidators(addresses, atStateVersion).forEach { entity ->
         validators[entity.address] = entity.asValidatorDetail()
     }
@@ -49,8 +53,8 @@ fun StateDao.getCachedValidators(addresses: Set<String>, atStateVersion: Long): 
 }
 
 fun StateDao.storeAccountNFTsPortfolio(
-    accountAddress: String,
-    resourceAddress: String,
+    accountAddress: AccountAddress,
+    resourceAddress: ResourceAddress,
     nextCursor: String?,
     items: List<StateNonFungibleDetailsResponseItem>,
     syncInfo: SyncInfo

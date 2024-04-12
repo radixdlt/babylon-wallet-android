@@ -27,9 +27,9 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.resources.XrdResource
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.extensions.formatted
+import rdx.works.core.domain.resources.XrdResource
 
 @Composable
 fun TransferableLsuItemContent(
@@ -115,7 +115,7 @@ fun TransferableLsuItemContent(
             )
             Text(
                 modifier = Modifier.weight(1f),
-                text = transferableLsu.xrdWorth.displayableQuantity(),
+                text = transferableLsu.xrdWorth.formatted(),
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
                 textAlign = TextAlign.End,

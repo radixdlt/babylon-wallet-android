@@ -25,8 +25,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
 import com.babylon.wallet.android.presentation.account.composable.AssetMetadataRow
 import com.babylon.wallet.android.presentation.status.assets.AssetDialogArgs
 import com.babylon.wallet.android.presentation.status.assets.BehavioursSection
@@ -37,9 +35,12 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.assetOutlin
 import com.babylon.wallet.android.presentation.ui.composables.resources.AddressRow
 import com.babylon.wallet.android.presentation.ui.composables.resources.TokenBalance
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.collections.immutable.toImmutableMap
-import rdx.works.core.displayableQuantity
-import java.math.BigDecimal
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.PoolUnit
 
 @Composable
 fun PoolUnitDialogContent(
@@ -101,7 +102,7 @@ fun PoolUnitDialogContent(
         if (poolUnit != null) {
             val resourcesWithAmount = remember(poolUnit, args) {
                 poolUnit.pool?.resources?.associateWith {
-                    args.fungibleAmountOf(it.resourceAddress) ?: poolUnit.resourceRedemptionValue(it)
+                    args.fungibleAmountOf(it.address) ?: poolUnit.resourceRedemptionValue(it)
                 }.orEmpty().toImmutableMap()
             }
             PoolResourcesValues(
@@ -167,7 +168,7 @@ fun PoolUnitDialogContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingSmall),
-            address = resourceAddress
+            address = Address.Resource(resourceAddress)
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
 
@@ -182,13 +183,10 @@ fun PoolUnitDialogContent(
                     .padding(start = RadixTheme.dimensions.paddingDefault)
                     .widthIn(min = RadixTheme.dimensions.paddingXXXXLarge * 2)
                     .radixPlaceholder(visible = poolUnit?.stake?.currentSupply == null),
-                text = when {
-                    poolUnit?.stake?.currentSupply != null -> when (poolUnit.stake.currentSupply) {
-                        BigDecimal.ZERO -> stringResource(id = R.string.assetDetails_supplyUnkown)
-                        else -> poolUnit.stake.currentSupply.displayableQuantity()
-                    }
-
-                    else -> ""
+                text = when (val supply = poolUnit?.stake?.currentSupply) {
+                    null -> stringResource(id = R.string.empty)
+                    0.toDecimal192() -> stringResource(id = R.string.assetDetails_supplyUnkown)
+                    else -> supply.formatted()
                 },
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,

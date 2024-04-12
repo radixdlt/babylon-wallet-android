@@ -14,13 +14,20 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
-import com.babylon.wallet.android.domain.model.resources.metadata.poolAddress
-import com.babylon.wallet.android.domain.model.resources.metadata.validatorAddress
-import java.math.BigDecimal
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.resources.Divisibility
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.metadata.poolAddress
+import rdx.works.core.domain.resources.metadata.validatorAddress
 import java.time.Instant
 
 enum class ResourceEntityType {
@@ -30,34 +37,34 @@ enum class ResourceEntityType {
 
 @Entity
 data class ResourceEntity(
-    @PrimaryKey val address: String,
+    @PrimaryKey val address: ResourceAddress,
     val type: ResourceEntityType,
     val metadata: MetadataColumn?,
-    val divisibility: Int?,
+    val divisibility: Divisibility?,
     val behaviours: BehavioursColumn?,
     @ColumnInfo("validator_address")
-    val validatorAddress: String?,
+    val validatorAddress: ValidatorAddress?,
     @ColumnInfo("pool_address")
-    val poolAddress: String?,
-    val supply: BigDecimal?,
+    val poolAddress: PoolAddress?,
+    val supply: Decimal192?,
     val synced: Instant
 ) {
 
     @Suppress("CyclomaticComplexMethod")
-    fun toResource(amount: BigDecimal?): Resource {
+    fun toResource(amount: Decimal192?): Resource {
         val validatorAndPoolMetadata = listOf(
             validatorAddress?.let {
-                Metadata.Primitive(ExplicitMetadataKey.VALIDATOR.key, it, MetadataType.Address)
+                Metadata.Primitive(ExplicitMetadataKey.VALIDATOR.key, it.string, MetadataType.Address)
             },
             poolAddress?.let {
-                Metadata.Primitive(ExplicitMetadataKey.POOL.key, it, MetadataType.Address)
+                Metadata.Primitive(ExplicitMetadataKey.POOL.key, it.string, MetadataType.Address)
             }
         ).mapNotNull { it }
 
         return when (type) {
             ResourceEntityType.FUNGIBLE -> {
                 Resource.FungibleResource(
-                    resourceAddress = address,
+                    address = address,
                     ownedAmount = amount,
                     assetBehaviours = behaviours?.behaviours?.toSet(),
                     currentSupply = supply,
@@ -68,11 +75,11 @@ data class ResourceEntity(
 
             ResourceEntityType.NON_FUNGIBLE -> {
                 Resource.NonFungibleResource(
-                    resourceAddress = address,
-                    amount = amount?.toLong() ?: 0L,
+                    address = address,
+                    amount = amount?.string?.toLongOrNull() ?: 0L,
                     assetBehaviours = behaviours?.behaviours?.toSet(),
                     items = emptyList(),
-                    currentSupply = supply?.toInt(),
+                    currentSupply = supply?.string?.toIntOrNull(),
                     metadata = metadata?.metadata.orEmpty() + validatorAndPoolMetadata
                 )
             }
@@ -82,7 +89,7 @@ data class ResourceEntity(
     companion object {
         fun Resource.asEntity(synced: Instant): ResourceEntity = when (this) {
             is Resource.FungibleResource -> ResourceEntity(
-                address = resourceAddress,
+                address = address,
                 type = ResourceEntityType.FUNGIBLE,
                 divisibility = divisibility,
                 behaviours = behaviours?.let { BehavioursColumn(it) },
@@ -97,10 +104,10 @@ data class ResourceEntity(
             )
 
             is Resource.NonFungibleResource -> ResourceEntity(
-                address = resourceAddress,
+                address = address,
                 type = ResourceEntityType.NON_FUNGIBLE,
                 behaviours = behaviours?.let { BehavioursColumn(it) },
-                supply = currentSupply?.toBigDecimal(),
+                supply = currentSupply?.toDecimal192(),
                 divisibility = null,
                 validatorAddress = metadata.validatorAddress(),
                 poolAddress = metadata.poolAddress(),
@@ -118,7 +125,7 @@ data class ResourceEntity(
             // In case we have fetched details for this item
             details: StateEntityDetailsResponseItemDetails? = null
         ): ResourceEntity = from(
-            address = resourceAddress,
+            address = ResourceAddress.init(resourceAddress),
             metadataCollection = explicitMetadata,
             details = details,
             type = ResourceEntityType.FUNGIBLE,
@@ -131,7 +138,7 @@ data class ResourceEntity(
             // In case we have fetched details for this item
             details: StateEntityDetailsResponseItemDetails? = null
         ): ResourceEntity = from(
-            address = resourceAddress,
+            address = ResourceAddress.init(resourceAddress),
             metadataCollection = explicitMetadata,
             details = details,
             type = ResourceEntityType.NON_FUNGIBLE,
@@ -148,7 +155,7 @@ data class ResourceEntity(
                 else -> error("Item is neither fungible nor non-fungible")
             }
             return from(
-                address = address,
+                address = ResourceAddress.init(address),
                 metadataCollection = metadata,
                 details = details,
                 type = type,
@@ -157,7 +164,7 @@ data class ResourceEntity(
         }
 
         private fun from(
-            address: String,
+            address: ResourceAddress,
             metadataCollection: EntityMetadataCollection?,
             details: StateEntityDetailsResponseItemDetails?,
             type: ResourceEntityType,
@@ -169,7 +176,7 @@ data class ResourceEntity(
                 type = type,
                 divisibility = details?.divisibility(),
                 behaviours = details?.let { BehavioursColumn(it.extractBehaviours()) },
-                supply = details?.totalSupply()?.toBigDecimalOrNull(),
+                supply = details?.totalSupply(),
                 validatorAddress = metadata.validatorAddress(),
                 poolAddress = metadata.poolAddress(),
                 metadata = metadata

@@ -3,12 +3,6 @@ package com.babylon.wallet.android.presentation.status.assets
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.Token
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
@@ -16,14 +10,20 @@ import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUs
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.Decimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.Token
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
 import timber.log.Timber
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,7 +49,9 @@ class AssetDialogViewModel @Inject constructor(
                 },
                 nonFungibleIds = when (args) {
                     is AssetDialogArgs.Fungible -> mapOf()
-                    is AssetDialogArgs.NFT -> mapOf(args.resourceAddress to args.localId?.let { setOf(it) }.orEmpty())
+                    is AssetDialogArgs.NFT -> mapOf(
+                        args.resourceAddress to args.localId?.let { setOf(it) }.orEmpty()
+                    )
                 }
             ).mapCatching { assets ->
                 when (val asset = assets.first()) {
@@ -58,7 +60,7 @@ class AssetDialogViewModel @Inject constructor(
                         val fungibleArgs = (args as? AssetDialogArgs.Fungible) ?: return@mapCatching asset
 
                         val resourceWithAmount = asset.resource.copy(
-                            ownedAmount = fungibleArgs.fungibleAmountOf(asset.resource.resourceAddress)
+                            ownedAmount = fungibleArgs.fungibleAmountOf(asset.resource.address)
                         )
                         when (asset) {
                             is LiquidStakeUnit -> asset.copy(fungibleResource = resourceWithAmount)
@@ -178,10 +180,10 @@ class AssetDialogViewModel @Inject constructor(
             }
 
         sealed class ClaimState {
-            abstract val amount: BigDecimal
+            abstract val amount: Decimal192
 
             data class Unstaking(
-                override val amount: BigDecimal,
+                override val amount: Decimal192,
                 private val current: Long,
                 private val claim: Long
             ) : ClaimState() {
@@ -190,7 +192,7 @@ class AssetDialogViewModel @Inject constructor(
             }
 
             data class ReadyToClaim(
-                override val amount: BigDecimal
+                override val amount: Decimal192
             ) : ClaimState()
 
             companion object {

@@ -21,18 +21,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
-import rdx.works.core.displayableQuantity
-import java.math.BigDecimal
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.poolUnitsTab(
     assetsViewData: AssetsViewData,
@@ -50,7 +51,7 @@ fun LazyListScope.poolUnitsTab(
 
     items(
         items = assetsViewData.poolUnits,
-        key = { poolUnitItem -> poolUnitItem.resourceAddress }
+        key = { poolUnitItem -> poolUnitItem.resourceAddress.string }
     ) { poolUnitItem ->
         PoolUnitItem(
             modifier = Modifier
@@ -158,7 +159,7 @@ private fun PoolUnitItem(
 @Composable
 fun PoolResourcesValues(
     modifier: Modifier = Modifier,
-    resources: ImmutableMap<Resource.FungibleResource, BigDecimal?>,
+    resources: ImmutableMap<Resource.FungibleResource, Decimal192?>,
     poolUnitPrice: AssetPrice.PoolUnitPrice?,
     isLoadingBalance: Boolean,
     isCompact: Boolean = true
@@ -188,7 +189,7 @@ fun PoolResourcesValues(
 
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
-                        text = resourceWithAmount.value?.displayableQuantity().orEmpty(),
+                        text = resourceWithAmount.value?.formatted().orEmpty(),
                         style = if (isCompact) RadixTheme.typography.body1HighImportance else RadixTheme.typography.secondaryHeader,
                         color = RadixTheme.colors.gray1,
                         maxLines = 1

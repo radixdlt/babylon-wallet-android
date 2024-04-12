@@ -18,15 +18,20 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
-import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.LegacyOlympiaAccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.profile.olympiaimport.OlympiaAccountType
 
 @Composable
 fun LegacyAccountCard(
     accountName: String,
     accountType: OlympiaAccountType,
-    address: String,
-    newAddress: String,
+    address: LegacyOlympiaAccountAddress,
+    newAddress: AccountAddress,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -65,7 +70,7 @@ fun LegacyAccountCard(
             color = Color.White
         )
         Text(
-            text = address.truncatedHash(),
+            text = address.formatted(),
             textAlign = TextAlign.Start,
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray4
@@ -79,7 +84,7 @@ fun LegacyAccountCard(
             color = Color.White
         )
         Text(
-            text = newAddress.truncatedHash(),
+            text = newAddress.formatted(),
             textAlign = TextAlign.Start,
             style = RadixTheme.typography.body2Regular,
             color = RadixTheme.colors.gray4
@@ -87,6 +92,7 @@ fun LegacyAccountCard(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = false)
 @Composable
 fun LegacyAccountCardPreview() {
@@ -99,8 +105,8 @@ fun LegacyAccountCardPreview() {
                 ),
             accountName = "Account name",
             accountType = OlympiaAccountType.Software,
-            address = "rdx...f934msif3",
-            newAddress = "acco...2qgtxg"
+            address = LegacyOlympiaAccountAddress.sample(),
+            newAddress = AccountAddress.sampleMainnet.random()
         )
     }
 }

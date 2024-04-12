@@ -5,6 +5,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
@@ -36,10 +37,12 @@ suspend fun Context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure: Boole
     return findFragmentActivity()?.biometricAuthenticateSuspend() ?: false
 }
 
+fun Context.openUrl(url: String) = openUrl(url.toUri())
+
 @Suppress("SwallowedException")
-fun Context.openUrl(url: String) {
+fun Context.openUrl(uri: Uri) {
     val intent = Intent(Intent.ACTION_VIEW).apply {
-        data = url.toUri()
+        data = uri
     }
     try {
         startActivity(intent)

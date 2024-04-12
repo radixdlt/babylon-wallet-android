@@ -42,12 +42,12 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.TransactionClass
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.history.State
 import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.extensions.formatted
+import rdx.works.core.domain.resources.Resource
 
 @Composable
 fun FiltersDialog(
@@ -187,10 +187,10 @@ private fun ResourcesSection(
                         maxFungiblesInCollapsedState
                     }
                 ).forEach { fungible ->
-                    val selected = state.filters.resource?.resourceAddress == fungible.resourceAddress
+                    val selected = state.filters.resource?.address == fungible.address
                     HistoryFilterTag(
                         selected = selected,
-                        text = fungible.displayTitle.ifEmpty { fungible.resourceAddress.truncatedHash() },
+                        text = fungible.displayTitle.ifEmpty { fungible.address.formatted() },
                         onClick = {
                             onResourceFilterSelected(if (selected) null else fungible)
                         },
@@ -233,10 +233,10 @@ private fun ResourcesSection(
                         maxNonFungiblesInCollapsedState
                     }
                 ).forEach { nonFungible ->
-                    val selected = state.filters.resource?.resourceAddress == nonFungible.resourceAddress
+                    val selected = state.filters.resource?.address == nonFungible.address
                     HistoryFilterTag(
                         selected = selected,
-                        text = nonFungible.name.ifEmpty { nonFungible.resourceAddress.truncatedHash() },
+                        text = nonFungible.name.ifEmpty { nonFungible.address.formatted() },
                         onClick = {
                             if (selected.not()) {
                                 onResourceFilterSelected(nonFungible)

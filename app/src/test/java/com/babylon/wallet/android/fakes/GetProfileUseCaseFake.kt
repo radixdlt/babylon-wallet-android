@@ -13,7 +13,7 @@ fun fakeGetProfileUseCase(
     initialProfileState: ProfileState = ProfileState.Restored(profile = profile())
 ) = GetProfileUseCase(profileRepository = fakeProfileDataSource(initialProfileState = initialProfileState))
 
-private fun fakeProfileDataSource(initialProfileState: ProfileState) = object : ProfileRepository {
+fun fakeProfileDataSource(initialProfileState: ProfileState) = object : ProfileRepository {
 
     private val profileStateSource: MutableStateFlow<ProfileState> = MutableStateFlow(
         initialProfileState

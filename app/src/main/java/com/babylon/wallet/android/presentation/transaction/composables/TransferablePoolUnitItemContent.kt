@@ -28,7 +28,7 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.name
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.extensions.formatted
 
 @Composable
 fun TransferablePoolUnitItemContent(
@@ -122,7 +122,7 @@ fun TransferablePoolUnitItemContent(
                     )
                     Text(
                         modifier = Modifier.weight(1f),
-                        text = transferablePoolUnit.contributionPerResource[item.resourceAddress]?.displayableQuantity().orEmpty(),
+                        text = transferablePoolUnit.contributionPerResource[item.address]?.formatted().orEmpty(),
                         style = RadixTheme.typography.body1HighImportance,
                         color = RadixTheme.colors.gray1,
                         textAlign = TextAlign.End,

@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.manifest.prepareInternalTransactionRequest
 import com.babylon.wallet.android.data.transaction.ROLAClient
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -14,6 +13,8 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.domain.DApp
 import rdx.works.profile.data.model.extensions.hasAuthSigning
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
@@ -62,7 +64,7 @@ class PersonaDetailViewModel @Inject constructor(
             }.collect { personaToDApps ->
                 val metadataResults = personaToDApps.second.map { authorizedDApp ->
                     getDAppsUseCase.invoke(
-                        definitionAddress = authorizedDApp.dAppDefinitionAddress,
+                        definitionAddress = AccountAddress.init(authorizedDApp.dAppDefinitionAddress),
                         needMostRecentData = false
                     ).getOrNull()
                 }
@@ -119,7 +121,7 @@ class PersonaDetailViewModel @Inject constructor(
                 rolaClient.generateAuthSigningFactorInstance(persona).onSuccess { authSigningFactorInstance ->
                     this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance
                     val manifest = rolaClient
-                        .createAuthKeyManifestWithStringInstructions(persona, authSigningFactorInstance)
+                        .createAuthKeyManifest(persona, authSigningFactorInstance)
                         .getOrElse {
                             _state.update { state -> state.copy(loading = false) }
                             return@launch
@@ -127,7 +129,6 @@ class PersonaDetailViewModel @Inject constructor(
                     uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
                     incomingRequestRepository.add(
                         manifest.prepareInternalTransactionRequest(
-                            networkId = persona.networkID,
                             requestId = uploadAuthKeyRequestId
                         )
                     )

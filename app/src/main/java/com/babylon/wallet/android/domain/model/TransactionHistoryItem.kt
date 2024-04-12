@@ -5,14 +5,24 @@ import com.babylon.wallet.android.data.gateway.generated.models.CommittedTransac
 import com.babylon.wallet.android.data.gateway.generated.models.ManifestClass
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.resources.Resource
-import java.math.BigDecimal
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.extensions.abs
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.isNegative
+import com.radixdlt.sargon.extensions.isPositive
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Resource
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -46,9 +56,9 @@ data class TransactionHistoryData(
 }
 
 data class TransactionHistoryItem(
-    val accountAddress: String,
+    val accountAddress: AccountAddress,
     val txId: String,
-    val feePaid: BigDecimal,
+    val feePaid: Decimal192,
     private val balanceChanges: List<BalanceChange>,
     val transactionClass: TransactionClass?,
     val timestamp: Instant?,
@@ -57,17 +67,17 @@ data class TransactionHistoryItem(
 ) {
     val deposited: List<BalanceChange>
         get() = balanceChanges.filter {
-            if (it.entityAddress != accountAddress) return@filter false
+            if (it.entityAddress.string != accountAddress.string) return@filter false
             when (it) {
-                is BalanceChange.FungibleBalanceChange -> it.balanceChange.signum() == 1
+                is BalanceChange.FungibleBalanceChange -> it.balanceChange.isPositive
                 is BalanceChange.NonFungibleBalanceChange -> it.addedIds.isNotEmpty()
             }
         }
     val withdrawn: List<BalanceChange>
         get() = balanceChanges.filter {
-            if (it.entityAddress != accountAddress) return@filter false
+            if (it.entityAddress.string != accountAddress.string) return@filter false
             when (it) {
-                is BalanceChange.FungibleBalanceChange -> it.balanceChange.signum() == -1
+                is BalanceChange.FungibleBalanceChange -> it.balanceChange.isNegative
                 is BalanceChange.NonFungibleBalanceChange -> it.removedIds.isNotEmpty()
             }
         }
@@ -100,11 +110,11 @@ data class HistoryFilters(
 sealed interface BalanceChange : Comparable<BalanceChange> {
 
     val asset: Asset?
-    val entityAddress: String
+    val entityAddress: Address
 
     data class FungibleBalanceChange(
-        val balanceChange: BigDecimal,
-        override val entityAddress: String,
+        val balanceChange: Decimal192,
+        override val entityAddress: Address,
         override val asset: Asset.Fungible? = null
     ) : BalanceChange {
         @Suppress("UnsafeCallOnNullableType", "ReturnCount", "MagicNumber")
@@ -126,7 +136,7 @@ sealed interface BalanceChange : Comparable<BalanceChange> {
     data class NonFungibleBalanceChange(
         val removedIds: List<String>,
         val addedIds: List<String>,
-        override val entityAddress: String,
+        override val entityAddress: Address,
         override val asset: Asset.NonFungible? = null
     ) : BalanceChange {
         @Suppress("UnsafeCallOnNullableType", "ReturnCount", "MagicNumber")
@@ -175,17 +185,17 @@ fun TransactionClass.toManifestClass(): ManifestClass {
 fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceChange> {
     val fungibleFungibleBalanceChanges = fungibleBalanceChanges.map { item ->
         BalanceChange.FungibleBalanceChange(
-            item.balanceChange.toBigDecimal(),
-            item.entityAddress,
-            when (val asset = assets.filterIsInstance<Asset.Fungible>().find { it.resource.resourceAddress == item.resourceAddress }) {
+            item.balanceChange.toDecimal192(),
+            Address.init(item.entityAddress),
+            when (val asset = assets.filterIsInstance<Asset.Fungible>().find { it.resource.address.string == item.resourceAddress }) {
                 is LiquidStakeUnit -> asset.copy(
                     fungibleResource = asset.fungibleResource.copy(
-                        ownedAmount = item.balanceChange.toBigDecimal().abs()
+                        ownedAmount = item.balanceChange.toDecimal192().abs()
                     )
                 )
 
-                is PoolUnit -> asset.copy(stake = asset.stake.copy(ownedAmount = item.balanceChange.toBigDecimal().abs()))
-                is Token -> asset.copy(resource = asset.resource.copy(ownedAmount = item.balanceChange.toBigDecimal().abs()))
+                is PoolUnit -> asset.copy(stake = asset.stake.copy(ownedAmount = item.balanceChange.toDecimal192().abs()))
+                is Token -> asset.copy(resource = asset.resource.copy(ownedAmount = item.balanceChange.toDecimal192().abs()))
                 null -> null
             }
         )
@@ -194,13 +204,13 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
         val relatedLocalIds = item.removed.toSet() + item.added
         val relatedAsset = when (
             val asset = assets.filterIsInstance<Asset.NonFungible>().find {
-                it.resource.resourceAddress == item.resourceAddress
+                it.resource.address.string == item.resourceAddress
             }
         ) {
             is NonFungibleCollection -> {
                 val updatedCollection = asset.collection.copy(
                     items = asset.collection.items.filter {
-                        relatedLocalIds.contains(it.localId.code)
+                        relatedLocalIds.contains(it.localId.string)
                     }
                 )
                 asset.copy(collection = updatedCollection)
@@ -208,7 +218,7 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
 
             is StakeClaim -> {
                 val updatedResource = asset.nonFungibleResource.copy(
-                    items = asset.nonFungibleResource.items.filter { relatedLocalIds.contains(it.localId.code) }
+                    items = asset.nonFungibleResource.items.filter { relatedLocalIds.contains(it.localId.string) }
                 )
                 asset.copy(nonFungibleResource = updatedResource)
             }
@@ -218,7 +228,7 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
         BalanceChange.NonFungibleBalanceChange(
             item.removed,
             item.added,
-            item.entityAddress,
+            Address.init(item.entityAddress),
             relatedAsset
         )
     }
@@ -236,11 +246,11 @@ enum class TransactionClass {
     PoolRedemption
 }
 
-fun CommittedTransactionInfo.toDomainModel(accountAddress: String, assets: List<Asset>): TransactionHistoryItem {
+fun CommittedTransactionInfo.toDomainModel(accountAddress: AccountAddress, assets: List<Asset>): TransactionHistoryItem {
     return TransactionHistoryItem(
         accountAddress = accountAddress,
         txId = intentHash.orEmpty(),
-        feePaid = feePaid?.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+        feePaid = feePaid?.toDecimal192OrNull().orZero(),
         balanceChanges = balanceChanges?.toDomainModel(assets = assets).orEmpty(),
         transactionClass = manifestClasses?.firstOrNull()?.toTransactionClass(),
         timestamp = confirmedAt?.toInstant(),

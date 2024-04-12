@@ -4,12 +4,11 @@ import com.babylon.wallet.android.domain.usecases.ResolveComponentAddressesUseCa
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import rdx.works.core.ret.isGlobalComponent
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.defaultDepositGuarantee
@@ -22,10 +21,7 @@ class GeneralTransferProcessor @Inject constructor(
     private val resolveComponentAddressesUseCase: ResolveComponentAddressesUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.General> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
-        val badgesAddresses = summary.presentedProofs.map { entry ->
-            entry.value.map { it.resourceAddress }
-        }.flatten().toSet()
-        val badges = getTransactionBadgesUseCase(accountProofs = badgesAddresses)
+        val badges = getTransactionBadgesUseCase(addresses = summary.presentedProofs.toSet()).getOrThrow()
         val dApps = summary.resolveDApps()
         val allOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
         val assets = resolveAssetsFromAddressUseCase(
@@ -49,11 +45,9 @@ class GeneralTransferProcessor @Inject constructor(
     }
 
     private suspend fun ExecutionSummary.resolveDApps() = coroutineScope {
-        encounteredEntities.filter { it.entityType().isGlobalComponent() }
+        encounteredComponentAddresses
             .map { address ->
-                async {
-                    resolveComponentAddressesUseCase.invoke(address.addressString())
-                }
+                async { resolveComponentAddressesUseCase.invoke(address) }
             }
             .awaitAll()
             .mapNotNull { it.getOrNull() }

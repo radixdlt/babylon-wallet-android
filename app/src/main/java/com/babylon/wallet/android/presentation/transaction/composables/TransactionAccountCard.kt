@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -27,12 +28,18 @@ import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources.Owned
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
@@ -143,12 +150,14 @@ fun AccountDepositAccountCardHeader(account: Network.Account, modifier: Modifier
                 shape = RadixTheme.shapes.roundedRectTopMedium
             )
             .padding(RadixTheme.dimensions.paddingMedium),
-        address = account.address
+        address = remember(account.address) {
+            AccountAddress.init(account.address)
+        }
     )
 }
 
 @Composable
-private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String, address: String) {
+private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String, address: AccountAddress) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier,
@@ -163,7 +172,7 @@ private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingSmall))
         ActionableAddressView(
-            address = address,
+            address = Address.Account(address),
             textStyle = RadixTheme.typography.body2Regular,
             textColor = RadixTheme.colors.white,
             iconColor = RadixTheme.colors.white
@@ -171,6 +180,7 @@ private fun AccountCardHeader(modifier: Modifier = Modifier, displayName: String
     }
 }
 
+@UsesSampleValues
 @Preview("default")
 @Preview("large font", fontScale = 2f)
 @Preview(showBackground = true)
@@ -180,15 +190,15 @@ fun TransactionAccountCardPreview() {
         TransactionAccountCard(
             account = Owned(
                 account = SampleDataProvider().sampleAccount(),
-                resources = SampleDataProvider().sampleFungibleResources().map {
+                resources = listOf(
                     Transferable.Withdrawing(
                         transferable = TransferableAsset.Fungible.Token(
-                            amount = "689.203".toBigDecimal(),
-                            resource = it,
+                            amount = 689.203.toDecimal192(),
+                            resource = Resource.FungibleResource.sampleMainnet(),
                             isNewlyCreated = false
                         )
                     )
-                }
+                )
             ),
             onTransferableFungibleClick = { },
             onTransferableNonFungibleClick = { _, _ -> }

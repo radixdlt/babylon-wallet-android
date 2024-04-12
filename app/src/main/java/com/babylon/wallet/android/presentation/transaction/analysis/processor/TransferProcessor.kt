@@ -2,8 +2,10 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.extensions.init
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.defaultDepositGuarantee
@@ -19,9 +21,9 @@ class TransferProcessor @Inject constructor(
             nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
 
-        val involvedAccountAddresses = summary.accountDeposits.keys + summary.accountWithdraws.keys
+        val involvedAccountAddresses = summary.deposits.keys + summary.withdrawals.keys
         val allOwnedAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
-            involvedAccountAddresses.contains(it.address)
+            involvedAccountAddresses.contains(AccountAddress.init(it.address))
         }
 
         return PreviewType.Transfer.GeneralTransfer(

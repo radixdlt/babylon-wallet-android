@@ -1,11 +1,13 @@
 package rdx.works.profile.data.model.extensions
 
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.OlympiaNetwork
-import com.radixdlt.ret.PublicKey
-import com.radixdlt.ret.deriveOlympiaAccountAddressFromPublicKey
-import com.radixdlt.ret.deriveVirtualAccountAddressFromPublicKey
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.LegacyOlympiaAccountAddress
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toBabylonAddress
+import com.radixdlt.sargon.extensions.toBagOfBytes
 import rdx.works.core.toHexString
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
@@ -30,19 +32,11 @@ fun Profile.createAccount(
     appearanceID: Int? = null // optional - used for account recovery
 ): Network.Account {
     val address = if (isForLegacyOlympia.not()) {
-        deriveVirtualAccountAddressFromPublicKey(
-            PublicKey.Ed25519(compressedPublicKey),
-            onNetworkId.value.toUByte()
-        ).addressString()
+        val publicKey = PublicKey.Ed25519.init(bytes = compressedPublicKey.toBagOfBytes())
+        AccountAddress.init(publicKey, com.radixdlt.sargon.NetworkId.init(onNetworkId.value.toUByte()))
     } else {
-        val olympiaAddress = deriveOlympiaAccountAddressFromPublicKey(
-            publicKey = PublicKey.Secp256k1(compressedPublicKey),
-            olympiaNetwork = OlympiaNetwork.MAINNET
-        )
-        Address.virtualAccountAddressFromOlympiaAddress(
-            olympiaAccountAddress = olympiaAddress,
-            networkId = onNetworkId.value.toUByte()
-        ).addressString()
+        val publicKey = PublicKey.Secp256k1.init(bytes = compressedPublicKey.toBagOfBytes())
+        LegacyOlympiaAccountAddress.init(publicKey).toBabylonAddress()
     }
 
     val unsecuredSecurityState = SecurityState.unsecured(
@@ -52,7 +46,7 @@ fun Profile.createAccount(
     )
 
     return Network.Account(
-        address = address,
+        address = address.string,
         appearanceID = if (appearanceID == null) { // then take the next ID based on the accounts of the existing network
             nextAppearanceId(forNetworkId = onNetworkId)
         } else {
@@ -79,11 +73,11 @@ fun initializeAccount(
     factorSource: FactorSource.CreatingEntity,
     onLedgerSettings: Network.Account.OnLedgerSettings
 ): Network.Account {
-    val address = deriveVirtualAccountAddressFromPublicKey(
-        PublicKey.Ed25519(compressedPublicKey),
-        onNetworkId.value.toUByte()
-    ).addressString()
-
+    val publicKey = PublicKey.Ed25519.init(bytes = compressedPublicKey.toBagOfBytes())
+    val accountAddress = AccountAddress.init(
+        publicKey = publicKey,
+        networkId = com.radixdlt.sargon.NetworkId.init(discriminant = onNetworkId.value.toUByte())
+    )
     val unsecuredSecurityState = SecurityState.unsecured(
         publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
         derivationPath = derivationPath,
@@ -91,7 +85,7 @@ fun initializeAccount(
     )
 
     return Network.Account(
-        address = address,
+        address = accountAddress.string,
         appearanceID = derivationPath.derivationPathEntityIndex() % AccountGradientList.count(),
         displayName = displayName,
         networkID = onNetworkId.value,

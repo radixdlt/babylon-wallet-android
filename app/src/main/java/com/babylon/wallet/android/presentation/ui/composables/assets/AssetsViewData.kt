@@ -1,15 +1,16 @@
 package com.babylon.wallet.android.presentation.ui.composables.assets
 
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeSummary
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.assets.TokensPriceSorter
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
-import java.math.BigDecimal
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.sumOf
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeSummary
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.assets.TokensPriceSorter
+import rdx.works.core.domain.assets.ValidatorWithStakes
 
 data class AssetsViewData(
     val epoch: Long?,
@@ -37,16 +38,12 @@ data class AssetsViewData(
         if (epoch == null || validatorsWithStakes.any { !it.isDetailsAvailable }) return@lazy null
 
         StakeSummary(
-            staked = validatorsWithStakes.sumOf { it.stakeValue() ?: BigDecimal.ZERO },
+            staked = validatorsWithStakes.sumOf { it.stakeValue().orZero() },
             unstaking = validatorsWithStakes.sumOf { validator ->
-                validator.stakeClaimNft?.unstakingNFTs(epoch)?.sumOf { item ->
-                    item.claimAmountXrd ?: BigDecimal.ZERO
-                } ?: BigDecimal.ZERO
+                validator.stakeClaimNft?.unstakingNFTs(epoch)?.sumOf { item -> item.claimAmountXrd.orZero() }.orZero()
             },
             readyToClaim = validatorsWithStakes.sumOf { validator ->
-                validator.stakeClaimNft?.readyToClaimNFTs(epoch)?.sumOf { item ->
-                    item.claimAmountXrd ?: BigDecimal.ZERO
-                } ?: BigDecimal.ZERO
+                validator.stakeClaimNft?.readyToClaimNFTs(epoch)?.sumOf { item -> item.claimAmountXrd.orZero() }.orZero()
             }
         )
     }
@@ -68,7 +65,7 @@ data class AssetsViewData(
                 if (lsu == null && claimCollection == null) return@mapNotNull null
 
                 ValidatorWithStakes(
-                    validatorDetail = validator,
+                    validator = validator,
                     liquidStakeUnit = lsu,
                     stakeClaimNft = claimCollection
                 )

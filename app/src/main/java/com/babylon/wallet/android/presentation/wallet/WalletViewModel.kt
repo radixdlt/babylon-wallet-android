@@ -5,10 +5,6 @@ import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
@@ -23,6 +19,11 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.plus
+import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,6 +38,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.extensions.isOlympiaAccount
@@ -234,7 +239,7 @@ class WalletViewModel @Inject constructor(
 
     fun onApplySecuritySettings(account: Network.Account, securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
-            val factorSourceId = getProfileUseCase.accountOnCurrentNetwork(account.address)
+            val factorSourceId = getProfileUseCase.accountOnCurrentNetwork(AccountAddress.init(account.address))
                 ?.factorSourceId as? FactorSourceID.FromHash ?: return@launch
 
             when (securityPromptType) {
@@ -313,12 +318,12 @@ data class WalletUiState(
             } ?: false
             if (isAnyAccountTotalFailed) return null
 
-            var total = 0.0
+            var total = 0.toDecimal192()
             var currency = SupportedCurrency.USD
             accountsAddressesWithAssetsPrices?.values?.forEach {
                 it?.let { assetsPrices ->
                     assetsPrices.forEach { assetPrice ->
-                        total += assetPrice.price?.price ?: 0.0
+                        total += assetPrice.price?.price.orZero()
                         currency = assetPrice.price?.currency ?: SupportedCurrency.USD
                     }
                 }
@@ -338,7 +343,7 @@ data class WalletUiState(
             it.account.address == accountAddress
         }
         if (accountWithAssets?.assets?.ownsAnyAssetsThatContributeToBalance?.not() == true) {
-            return FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
+            return FiatPrice(price = 0.toDecimal192(), currency = SupportedCurrency.USD)
         }
 
         val assetsPrices = accountsAddressesWithAssetsPrices?.get(accountAddress) ?: return null
@@ -346,15 +351,15 @@ data class WalletUiState(
         val hasAtLeastOnePrice = assetsPrices.any { assetPrice -> assetPrice.price != null }
 
         return if (hasAtLeastOnePrice) {
-            var total = 0.0
+            var total = 0.toDecimal192()
             var currency = SupportedCurrency.USD
             assetsPrices.forEach { assetPrice ->
-                total += assetPrice.price?.price ?: 0.0
+                total += assetPrice.price?.price.orZero()
                 currency = assetPrice.price?.currency ?: SupportedCurrency.USD
             }
             FiatPrice(price = total, currency = currency)
         } else {
-            FiatPrice(price = 0.0, currency = SupportedCurrency.USD)
+            FiatPrice(price = 0.toDecimal192(), currency = SupportedCurrency.USD)
         }
     }
 

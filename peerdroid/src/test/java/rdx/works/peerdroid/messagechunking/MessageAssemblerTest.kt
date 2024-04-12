@@ -1,10 +1,10 @@
 package rdx.works.peerdroid.messagechunking
 
+import com.radixdlt.sargon.extensions.hex
 import io.ktor.util.encodeBase64
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import rdx.works.core.blake2Hash
-import rdx.works.core.toHexString
+import rdx.works.core.hash
 import rdx.works.peerdroid.data.PackageDto
 import kotlin.test.assertEquals
 
@@ -16,7 +16,7 @@ class MessageAssemblerTest {
         val actualHashOfMessageInHexString = "afa5476b53c5a84d311c3ed8ff8f77e4990fe190e52cfeba745df6f67c83b7c6"
         val actualChunkData = "dGhpcyBpcyBhIHRlc3QgbWVzc2FnZQ=="
 
-        val expectedHashOfMessage = textMessage.blake2Hash().toHexString()
+        val expectedHashOfMessage = textMessage.toByteArray().hash().hex
         assertEquals(expectedHashOfMessage, actualHashOfMessageInHexString)
 
         val expectedChunkData = textMessage.encodeBase64()

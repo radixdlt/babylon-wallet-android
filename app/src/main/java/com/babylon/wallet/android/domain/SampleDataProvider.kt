@@ -2,30 +2,28 @@
 
 package com.babylon.wallet.android.domain
 
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
-import com.babylon.wallet.android.data.transaction.TransactionVersion
-import com.babylon.wallet.android.domain.model.DApp
-import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AssetType
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.TransactionManifestData.TransactionMessage
+import rdx.works.core.domain.TransactionVersion
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.Validator
+import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Header
@@ -53,7 +51,6 @@ import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.TestData
-import java.math.BigDecimal
 
 class SampleDataProvider {
 
@@ -86,129 +83,35 @@ class SampleDataProvider {
         requestId = "7294770e-5aec-4e49-ada0-e6a2213fc8c8",
         transactionManifestData = TransactionManifestData(
             instructions = "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY",
-            version = TransactionVersion.Default.value,
             networkId = Radix.Gateway.default.network.id,
-            message = "Hello"
+            message = TransactionMessage.Public("Hello"),
+            version = TransactionVersion.Default.value
         ),
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
     )
 
+    @UsesSampleValues
     val transferableDepositing = Transferable.Depositing(
         transferable = TransferableAsset.Fungible.Token(
-            amount = BigDecimal(69),
-            resource = Resource.FungibleResource(
-                resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
-                ownedAmount = null,
-                currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                metadata = listOf(
-                    Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                    Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                    Metadata.Primitive(
-                        key = ExplicitMetadataKey.DESCRIPTION.key,
-                        value = "a very xxx token",
-                        valueType = MetadataType.String
-                    )
-                )
-            ),
+            amount = 69.toDecimal192(),
+            resource = Resource.FungibleResource.sampleMainnet(),
             isNewlyCreated = true
         )
     )
 
+    @UsesSampleValues
     val transferableDepositingLsu = Transferable.Depositing(
         transferable = TransferableAsset.Fungible.LSUAsset(
-            amount = BigDecimal(69),
+            amount = 69.toDecimal192(),
             lsu = LiquidStakeUnit(
-                Resource.FungibleResource(
-                    resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
-                    ownedAmount = null,
-                    currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                    metadata = listOf(
-                        Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                        Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.DESCRIPTION.key,
-                            value = "a very xxx token",
-                            valueType = MetadataType.String
-                        )
-                    )
-                ),
-                ValidatorDetail(
-                    "validator_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
-                    totalXrdStake = BigDecimal(1000000)
-                )
+                Resource.FungibleResource.sampleMainnet(),
+                Validator.sampleMainnet()
             ),
-            xrdWorth = BigDecimal(1000)
+            xrdWorth = 1000.toDecimal192()
         )
     )
 
-    val transferableDepositingPool = Transferable.Depositing(
-        transferable = TransferableAsset.Fungible.PoolUnitAsset(
-            amount = BigDecimal(300),
-            unit = PoolUnit(
-                Resource.FungibleResource(
-                    resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0cltmg",
-                    ownedAmount = null,
-                    currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                    metadata = listOf(
-                        Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                        Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.DESCRIPTION.key,
-                            value = "a very xxx token",
-                            valueType = MetadataType.String
-                        )
-                    )
-                ),
-                pool = Pool(
-                    address = "pool_tdx_19jd32jd3928jd3892jd329",
-                    metadata = listOf(
-                        Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool", valueType = MetadataType.String),
-                        Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
-                        Metadata.Primitive(
-                            key = ExplicitMetadataKey.POOL_UNIT.key,
-                            value = "resource_tdx_19jd32jd3928jd3892jd329",
-                            valueType = MetadataType.Address
-                        )
-                    ),
-                    resources = listOf(
-                        Resource.FungibleResource(
-                            resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt12",
-                            ownedAmount = null,
-                            currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                            metadata = listOf(
-                                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                                Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                                Metadata.Primitive(
-                                    key = ExplicitMetadataKey.DESCRIPTION.key,
-                                    value = "pool 1 token",
-                                    valueType = MetadataType.String
-                                )
-                            )
-                        ),
-                        Resource.FungibleResource(
-                            resourceAddress = "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt21",
-                            ownedAmount = null,
-                            currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                            metadata = listOf(
-                                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                                Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                                Metadata.Primitive(
-                                    key = ExplicitMetadataKey.DESCRIPTION.key,
-                                    value = "pool 2 token",
-                                    valueType = MetadataType.String
-                                )
-                            )
-                        )
-                    )
-                ),
-            ),
-            contributionPerResource = mapOf(
-                "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt12" to BigDecimal(100),
-                "resource_tdx_e_1tkawacgvcw7z9xztccgjrged25c7nqtnd4nllh750s2ny64m0clt21" to BigDecimal(200)
-            )
-        )
-    )
-
+    @UsesSampleValues
     val accountWithTransferableResourcesOwned = AccountWithTransferableResources.Owned(
         account = Network.Account(
             address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",
@@ -246,6 +149,7 @@ class SampleDataProvider {
         resources = listOf(transferableDepositing)
     )
 
+    @UsesSampleValues
     val accountWithTransferableResourceLsu = AccountWithTransferableResources.Owned(
         account = Network.Account(
             address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",
@@ -283,6 +187,7 @@ class SampleDataProvider {
         resources = listOf(transferableDepositingLsu)
     )
 
+    @UsesSampleValues
     val accountWithTransferablePool = AccountWithTransferableResources.Owned(
         account = Network.Account(
             address = "account_tdx_e_12yeuyl924ml5v9qks4s3cegpm6gl355r96cd9d5z99qtlxvwq7y3sz",
@@ -356,8 +261,9 @@ class SampleDataProvider {
         )
     )
 
+    @UsesSampleValues
     fun sampleAccount(
-        address: String = "fj3489fj348f",
+        address: String = AccountAddress.sampleMainnet.random().string,
         name: String = "my account",
         factorSourceId: FactorSource.FactorSourceID.FromHash = FactorSource.FactorSourceID.FromHash(
             kind = FactorSourceKind.DEVICE,
@@ -398,11 +304,15 @@ class SampleDataProvider {
         return sb.toString()
     }
 
-    fun samplePersona(personaAddress: String = "1", personaName: String = "Test Persona"): Network.Persona {
+    fun samplePersona(
+        personaAddress: String = "1",
+        personaName: String = "Test Persona",
+        networkId: Int = NetworkId.Nebunet.value
+    ): Network.Persona {
         return Network.Persona(
             address = personaAddress,
             displayName = personaName,
-            networkID = NetworkId.Nebunet.value,
+            networkID = networkId,
             securityState = SecurityState.Unsecured(
                 unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
                     transactionSigning = FactorInstance(
@@ -436,25 +346,10 @@ class SampleDataProvider {
         )
     }
 
-    fun sampleAccountWithResources(
-        address: String = randomAddress(),
-        withFungibleTokens: List<Resource.FungibleResource> = sampleFungibleResources()
-    ): AccountWithAssets {
-        return AccountWithAssets(
-            account = sampleAccount(address = address),
-            assets = Assets(
-                tokens = withFungibleTokens.map { Token(it) },
-                nonFungibles = emptyList(),
-                poolUnits = emptyList(),
-                liquidStakeUnits = emptyList(),
-                stakeClaims = emptyList()
-            )
-        )
-    }
-
+    @UsesSampleValues
     fun sampleAccountWithoutResources(
         name: String = "my account",
-        address: String = randomAddress()
+        address: String = AccountAddress.sampleMainnet.random().string
     ): AccountWithAssets {
         return AccountWithAssets(
             account = sampleAccount(
@@ -517,53 +412,6 @@ class SampleDataProvider {
 
     fun network(networkId: Int): Network {
         return Network(networkId, emptyIdentifiedArrayList(), emptyIdentifiedArrayList(), emptyList())
-    }
-
-    fun sampleFungibleResources(
-        amount: Pair<BigDecimal, String> = BigDecimal.valueOf(100000) to XrdResource.SYMBOL
-    ): List<Resource.FungibleResource> {
-        val result = mutableListOf<Resource.FungibleResource>()
-        return result.apply {
-            repeat(3) {
-                add(
-                    Resource.FungibleResource(
-                        resourceAddress = randomAddress(),
-                        ownedAmount = amount.first,
-                        currentSupply = BigDecimal("69696969696969.666999666999666999"),
-                        metadata = listOf(
-                            Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "XXX", valueType = MetadataType.String),
-                            Metadata.Primitive(key = ExplicitMetadataKey.SYMBOL.key, value = "XXX", valueType = MetadataType.String),
-                            Metadata.Primitive(
-                                key = ExplicitMetadataKey.DESCRIPTION.key,
-                                value = "a very xxx token",
-                                valueType = MetadataType.String
-                            ),
-                        )
-                    )
-                )
-            }
-        }
-    }
-
-    fun nonFungibleResource(name: String): Resource.NonFungibleResource {
-        return Resource.NonFungibleResource(
-            resourceAddress = randomAddress(),
-            amount = 1,
-            items = emptyList(),
-            metadata = listOf(
-                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = name, valueType = MetadataType.String),
-            )
-        )
-    }
-
-    fun sampleDAppWithResources(): DAppWithResources {
-        return DAppWithResources(
-            dApp = DApp(
-                dAppAddress = "account_tdx_b_1qdcgrj7mz09cz3htn0y7qtcze7tq59s76p2h98puqtpst7jh4u"
-            ),
-            fungibleResources = emptyList(),
-            nonFungibleResources = emptyList()
-        )
     }
 
     fun sampleAssetException(): AssetType.AssetException {

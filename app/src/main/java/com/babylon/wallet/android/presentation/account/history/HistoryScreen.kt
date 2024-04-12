@@ -76,7 +76,6 @@ import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.FiltersDialog
 import com.babylon.wallet.android.presentation.account.composable.FiltersStrip
 import com.babylon.wallet.android.presentation.account.composable.TransactionHistoryItem
@@ -93,10 +92,12 @@ import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
 import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT
 import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT_THIS_YEAR
 import com.babylon.wallet.android.utils.openUrl
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.resources.Resource
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -652,6 +653,7 @@ data class ScrollInfo(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun HistoryContentPreview() {
@@ -664,7 +666,6 @@ fun HistoryContentPreview() {
             state = State(
                 accountWithAssets = AccountWithAssets(
                     SampleDataProvider().sampleAccount(
-                        address = "rdx_t_12382918379821",
                         name = "Savings account"
                     )
                 ),

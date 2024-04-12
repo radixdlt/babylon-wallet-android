@@ -18,14 +18,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.account.composable.EmptyResourcesContent
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.ShimmeringView
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.string
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.resources.Resource
 
 fun LazyListScope.tokensTab(
     assetsViewData: AssetsViewData,
@@ -60,7 +61,7 @@ fun LazyListScope.tokensTab(
 
     itemsIndexed(
         items = assetsViewData.nonXrdTokens,
-        key = { _, token -> token.resource.resourceAddress },
+        key = { _, token -> token.resource.address.string },
         itemContent = { index, token ->
             AssetCard(
                 modifier = Modifier
@@ -105,7 +106,7 @@ private fun FungibleResourceItem(
                     }
 
                     is AssetsViewAction.Selection -> {
-                        action.onFungibleCheckChanged(resource, !action.isSelected(resource.resourceAddress))
+                        action.onFungibleCheckChanged(resource, !action.isSelected(resource.address))
                     }
                 }
             }
@@ -133,7 +134,7 @@ private fun FungibleResourceItem(
         resource.ownedAmount?.let { amount ->
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = amount.displayableQuantity(),
+                    text = amount.formatted(),
                     style = RadixTheme.typography.secondaryHeader,
                     color = RadixTheme.colors.gray1,
                     maxLines = 2
@@ -155,7 +156,7 @@ private fun FungibleResourceItem(
 
         if (action is AssetsViewAction.Selection) {
             val isSelected = remember(resource, action) {
-                action.isSelected(resource.resourceAddress)
+                action.isSelected(resource.address)
             }
             AssetsViewCheckBox(
                 isSelected = isSelected,

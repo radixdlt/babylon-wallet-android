@@ -5,12 +5,16 @@ import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.AddressValidator
+import rdx.works.core.domain.validatedOnNetworkOrNull
 import rdx.works.profile.data.model.extensions.hasAcceptKnownDepositRule
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
@@ -47,7 +51,7 @@ class AccountsChooserDelegate @Inject constructor(
     fun addressTyped(address: String) {
         val currentNetworkId = _state.value.fromAccount?.networkID ?: return
         updateSheetState { sheetState ->
-            val validity = if (!AddressValidator.isValid(address = address, networkId = currentNetworkId)) {
+            val validity = if (AccountAddress.validatedOnNetworkOrNull(address, NetworkId.init(currentNetworkId.toUByte())) == null) {
                 TargetAccount.Other.AddressValidity.INVALID
             } else {
                 val selectedAccountAddresses = _state.value.targetAccounts.map { it.address }
@@ -144,7 +148,7 @@ class AccountsChooserDelegate @Inject constructor(
         }
     }
 
-    private suspend fun fetchKnownResourcesOfOwnedAccount(ownedAccount: Network.Account): List<String> {
+    private suspend fun fetchKnownResourcesOfOwnedAccount(ownedAccount: Network.Account): List<ResourceAddress> {
         return getWalletAssetsUseCase(
             accounts = listOf(ownedAccount),
             isRefreshing = false
@@ -153,7 +157,7 @@ class AccountsChooserDelegate @Inject constructor(
             .assets
             ?.knownResources
             ?.map { resource ->
-                resource.resourceAddress
+                resource.address
             }.orEmpty()
     }
 

@@ -1,10 +1,13 @@
 package com.babylon.wallet.android.data.gateway.model
 
 import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntity
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.assets.SupportedCurrency
 
 @Serializable
 data class TokensAndLsusPricesResponse(
@@ -40,16 +43,16 @@ data class TokensAndLsusPricesResponse(
             val instantGenerator = InstantGenerator()
             val lsus = this.lsus.map { lsuPrice ->
                 TokenPriceEntity(
-                    resourceAddress = lsuPrice.resourceAddress,
-                    price = lsuPrice.usdPrice.toBigDecimal(),
+                    resourceAddress = ResourceAddress.init(lsuPrice.resourceAddress),
+                    price = lsuPrice.usdPrice.toDecimal192(),
                     currency = SupportedCurrency.USD.code,
                     synced = instantGenerator
                 )
             }
             val tokens = this.tokens.map { tokenPrice ->
                 TokenPriceEntity(
-                    resourceAddress = tokenPrice.resourceAddress,
-                    price = tokenPrice.usdPrice.toBigDecimal(),
+                    resourceAddress = ResourceAddress.init(tokenPrice.resourceAddress),
+                    price = tokenPrice.usdPrice.toDecimal192(),
                     currency = SupportedCurrency.USD.code,
                     synced = instantGenerator
                 )

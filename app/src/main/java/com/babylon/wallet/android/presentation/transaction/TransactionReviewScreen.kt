@@ -33,17 +33,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.transaction.InteractionState
-import com.babylon.wallet.android.data.transaction.TransactionVersion
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.userFriendlyMessage
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.UnknownComponentsSheetContent
+import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.UnknownAddressesSheetContent
 import com.babylon.wallet.android.presentation.status.signing.FactorSourceInteractionBottomDialog
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State
 import com.babylon.wallet.android.presentation.transaction.composables.AccountDepositSettingsTypeContent
@@ -64,9 +60,15 @@ import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
 import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
+import com.radixdlt.sargon.Address
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.DApp
+import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.domain.TransactionManifestData.TransactionMessage
+import rdx.works.core.domain.TransactionVersion
+import rdx.works.core.domain.resources.Resource
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.pernetwork.Network
 
@@ -101,7 +103,7 @@ fun TransactionReviewScreen(
         onGuaranteeValueIncreased = viewModel::onGuaranteeValueIncreased,
         onGuaranteeValueDecreased = viewModel::onGuaranteeValueDecreased,
         onDAppClick = onDAppClick,
-        onUnknownComponentsClick = viewModel::onUnknownComponentsClick,
+        onUnknownAddressesClick = viewModel::onUnknownAddressesClick,
         onTransferableFungibleClick = onTransferableFungibleClick,
         onNonTransferableFungibleClick = onTransferableNonFungibleClick,
         onChangeFeePayerClick = viewModel::onChangeFeePayerClick,
@@ -161,7 +163,7 @@ private fun TransactionPreviewContent(
     onGuaranteeValueIncreased: (AccountWithPredictedGuarantee) -> Unit,
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onDAppClick: (DApp) -> Unit,
-    onUnknownComponentsClick: (ImmutableList<String>) -> Unit,
+    onUnknownAddressesClick: (ImmutableList<Address>) -> Unit,
     onTransferableFungibleClick: (asset: TransferableAsset.Fungible) -> Unit,
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
     onChangeFeePayerClick: () -> Unit,
@@ -289,7 +291,7 @@ private fun TransactionPreviewContent(
                                     onPromptForGuarantees = promptForGuarantees,
                                     onDAppClick = onDAppClick,
                                     onUnknownComponentsClick = { componentAddresses ->
-                                        onUnknownComponentsClick(componentAddresses.toPersistentList())
+                                        onUnknownAddressesClick(componentAddresses.map { Address.Component(it) }.toPersistentList())
                                     },
                                     onTransferableFungibleClick = onTransferableFungibleClick,
                                     onNonTransferableFungibleClick = onNonTransferableFungibleClick
@@ -320,7 +322,7 @@ private fun TransactionPreviewContent(
                                     previewType = preview,
                                     onDAppClick = onDAppClick,
                                     onUnknownPoolsClick = { pools ->
-                                        onUnknownComponentsClick(pools.map { it.address }.toPersistentList())
+                                        onUnknownAddressesClick(pools.map { Address.Pool(it.address) }.toPersistentList())
                                     }
                                 )
                             }
@@ -437,11 +439,11 @@ private fun BottomSheetContent(
             )
         }
 
-        is State.Sheet.UnknownComponents -> {
-            UnknownComponentsSheetContent(
+        is State.Sheet.UnknownAddresses -> {
+            UnknownAddressesSheetContent(
                 modifier = modifier,
                 onBackClick = onCloseBottomSheetClick,
-                unknownComponentAddresses = sheetState.unknownComponentAddresses
+                unknownAddresses = sheetState.unknownAddresses
             )
         }
 
@@ -485,9 +487,9 @@ fun TransactionPreviewContentPreview() {
                     requestId = "",
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
-                        version = TransactionVersion.Default.value,
                         networkId = Radix.Gateway.default.network.id,
-                        message = "Hello"
+                        message = TransactionMessage.Public("Hello"),
+                        version = TransactionVersion.Default.value
                     ),
                     requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
                 ),
@@ -503,7 +505,7 @@ fun TransactionPreviewContentPreview() {
             promptForGuarantees = {},
             onCustomizeClick = {},
             onDAppClick = {},
-            onUnknownComponentsClick = {},
+            onUnknownAddressesClick = {},
             onTransferableFungibleClick = {},
             onNonTransferableFungibleClick = { _, _ -> },
             onGuaranteeValueChanged = { _, _ -> },

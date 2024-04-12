@@ -13,12 +13,16 @@ import com.babylon.wallet.android.data.repository.cache.database.TokenPriceEntit
 import com.babylon.wallet.android.data.repository.toResult
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository.PriceRequestAddress
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
-import com.babylon.wallet.android.domain.model.resources.XrdResource
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
+import rdx.works.core.domain.resources.XrdResource
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.profile.derivation.model.NetworkId
 import timber.log.Timber
@@ -53,13 +57,13 @@ interface FiatPriceRepository {
         addresses: Set<PriceRequestAddress>,
         currency: SupportedCurrency,
         isRefreshing: Boolean
-    ): Result<Map<String, FiatPrice>>
+    ): Result<Map<ResourceAddress, FiatPrice>>
 
     // This will not be needed when using sargon's Address types
     sealed interface PriceRequestAddress {
-        val address: String
-        data class Regular(override val address: String) : PriceRequestAddress
-        data class LSU(override val address: String) : PriceRequestAddress
+        val address: ResourceAddress
+        data class Regular(override val address: ResourceAddress) : PriceRequestAddress
+        data class LSU(override val address: ResourceAddress) : PriceRequestAddress
     }
 
     class PricesNotSupportedInNetwork : IllegalStateException("Pricing service available only on Mainnet")
@@ -94,13 +98,13 @@ class MainnetFiatPriceRepository @Inject constructor(
         addresses: Set<PriceRequestAddress>,
         currency: SupportedCurrency,
         isRefreshing: Boolean
-    ): Result<Map<String, FiatPrice>> = withContext(ioDispatcher) {
+    ): Result<Map<ResourceAddress, FiatPrice>> = withContext(ioDispatcher) {
         runCatching {
             val allAddresses = addresses.map { it.address }.toSet()
             val regularResourceAddresses = addresses.filterIsInstance<PriceRequestAddress.Regular>().map { it.address }.toSet()
             val lsuResourceAddresses = addresses.filterIsInstance<PriceRequestAddress.LSU>().map { it.address }.toSet()
             val tokensPrices = tokenPriceDao.getTokensPrices(
-                addresses = allAddresses,
+                addresses = allAddresses.toSet(),
                 minValidity = tokenPriceCacheValidity(isRefreshing = isRefreshing)
             )
 
@@ -113,8 +117,8 @@ class MainnetFiatPriceRepository @Inject constructor(
                 tokenPriceApi.priceTokens(
                     tokensAndLsusPricesRequest = TokensAndLsusPricesRequest(
                         currency = currency.name,
-                        lsus = remainingLsusAddresses.toList(),
-                        tokens = remainingResourcesAddresses.toList()
+                        lsus = remainingLsusAddresses.map { it.string },
+                        tokens = remainingResourcesAddresses.map { it.string }
                     )
                 ).toResult(
                     mapError = { mapTokenPriceApiError(this) }
@@ -148,13 +152,13 @@ class TestnetFiatPriceRepository @Inject constructor(
     @Mainnet private val delegate: FiatPriceRepository
 ) : FiatPriceRepository {
 
-    private val mainnetXrdAddress = XrdResource.address(networkId = NetworkId.Mainnet)
+    private val mainnetXrdAddress = XrdResource.address(networkId = NetworkId.Mainnet.value)
     private val mainnetAddresses = listOf(
         "resource_rdx1t4tjx4g3qzd98nayqxm7qdpj0a0u8ns6a0jrchq49dyfevgh6u0gj3",
         "resource_rdx1t45js47zxtau85v0tlyayerzrgfpmguftlfwfr5fxzu42qtu72tnt0",
         "resource_rdx1tk7g72c0uv2g83g3dqtkg6jyjwkre6qnusgjhrtz0cj9u54djgnk3c",
         "resource_rdx1tkk83magp3gjyxrpskfsqwkg4g949rmcjee4tu2xmw93ltw2cz94sq"
-    )
+    ).map { ResourceAddress.init(it) }
 
     override suspend fun updateFiatPrices(currency: SupportedCurrency): Result<Unit> {
         if (!BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
@@ -167,12 +171,12 @@ class TestnetFiatPriceRepository @Inject constructor(
         addresses: Set<PriceRequestAddress>,
         currency: SupportedCurrency,
         isRefreshing: Boolean
-    ): Result<Map<String, FiatPrice>> {
+    ): Result<Map<ResourceAddress, FiatPrice>> {
         if (!BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
             return Result.failure(FiatPriceRepository.PricesNotSupportedInNetwork())
         }
 
-        val mainnetAddressesToRequest = if (addresses.any { it.address in XrdResource.addressesPerNetwork.values }) {
+        val mainnetAddressesToRequest = if (addresses.any { it.address in XrdResource.addressesPerNetwork().values }) {
             mainnetAddresses + mainnetXrdAddress
         } else {
             mainnetAddresses
@@ -189,8 +193,8 @@ class TestnetFiatPriceRepository @Inject constructor(
             addresses.associate { priceRequestAddress ->
                 if (prices.isEmpty()) {
                     // if the token price service (getFiatPrices) returns emptyMap we can't give random price
-                    priceRequestAddress.address to FiatPrice(0.0, currency)
-                } else if (priceRequestAddress.address in XrdResource.addressesPerNetwork.values) {
+                    priceRequestAddress.address to FiatPrice(0.toDecimal192(), currency)
+                } else if (priceRequestAddress.address in XrdResource.addressesPerNetwork().values) {
                     priceRequestAddress.address to xrdPrice
                 } else {
                     val randomPrice = prices.entries.elementAt(Random.nextInt(prices.entries.size)).value

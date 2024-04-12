@@ -28,9 +28,6 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -39,6 +36,14 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 
 @Suppress("DestructuringDeclarationWithTooManyEntries")
 @Composable
@@ -143,7 +148,9 @@ fun AccountCardView(
         }
 
         ActionableAddressView(
-            address = accountWithAssets.account.address,
+            address = remember(accountWithAssets.account.address) {
+                Address.Account(AccountAddress.init(accountWithAssets.account.address))
+            },
             modifier = Modifier.constrainAs(addressLabel) {
                 top.linkTo(nameLabel.bottom, margin = 8.dp)
                 start.linkTo(parent.start)
@@ -259,6 +266,7 @@ private fun WalletUiState.AccountTag.toLabel(context: Context): String {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountCardPreview() {
@@ -276,7 +284,7 @@ fun AccountCardPreview() {
                     )
                 ),
                 isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 3450900.899, currency = SupportedCurrency.USD),
+                fiatTotalValue = FiatPrice(price = 3450900.899.toDecimal192(), currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
                 isLoadingBalance = false,
@@ -287,6 +295,7 @@ fun AccountCardPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountCardWithLongNameAndShortTotalValuePreview() {
@@ -306,7 +315,7 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     )
                 ),
                 isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 3450.0, currency = SupportedCurrency.USD),
+                fiatTotalValue = FiatPrice(price = 3450.0.toDecimal192(), currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
                 isLoadingBalance = false,
@@ -317,6 +326,7 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountCardWithLongNameAndLongTotalValuePreview() {
@@ -336,7 +346,7 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     )
                 ),
                 isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 345008999008932.4, currency = SupportedCurrency.USD),
+                fiatTotalValue = FiatPrice(price = 345008999008932.4.toDecimal192(), currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = false,
                 isLoadingBalance = false,
@@ -347,6 +357,7 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
@@ -367,7 +378,7 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         )
                     ),
                     isFiatBalancesEnabled = true,
-                    fiatTotalValue = FiatPrice(price = 34509008998732.4, currency = SupportedCurrency.USD),
+                    fiatTotalValue = FiatPrice(price = 34509008998732.4.toDecimal192(), currency = SupportedCurrency.USD),
                     accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                     isLoadingResources = false,
                     isLoadingBalance = false,
@@ -379,6 +390,7 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AccountCardLoadingPreview() {
@@ -396,7 +408,7 @@ fun AccountCardLoadingPreview() {
                     )
                 ),
                 isFiatBalancesEnabled = true,
-                fiatTotalValue = FiatPrice(price = 3450900899.0, currency = SupportedCurrency.USD),
+                fiatTotalValue = FiatPrice(price = 3450900899.0.toDecimal192(), currency = SupportedCurrency.USD),
                 accountTag = WalletUiState.AccountTag.DAPP_DEFINITION,
                 isLoadingResources = true,
                 isLoadingBalance = true,

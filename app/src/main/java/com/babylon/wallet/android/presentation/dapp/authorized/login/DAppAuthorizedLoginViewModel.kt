@@ -9,7 +9,6 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
@@ -33,11 +32,15 @@ import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.toISO8601String
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import rdx.works.core.domain.DApp
 import rdx.works.core.logNonFatalException
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple
@@ -103,16 +106,15 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 )
                 return@launch
             }
-            if (!request.isValidRequest()) {
+            val dAppDefinitionAddress = runCatching { AccountAddress.init(request.requestMetadata.dAppDefinitionAddress) }.getOrNull()
+            if (!request.isValidRequest() || dAppDefinitionAddress == null) {
                 handleRequestError(RadixWalletException.DappRequestException.InvalidRequest)
                 return@launch
             }
-            authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
-                request.requestMetadata.dAppDefinitionAddress
-            )
+            authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(dAppDefinitionAddress = dAppDefinitionAddress)
             editedDapp = authorizedDapp
             stateRepository.getDAppsDetails(
-                definitionAddresses = listOf(request.metadata.dAppDefinitionAddress),
+                definitionAddresses = listOf(dAppDefinitionAddress),
                 isRefreshing = false
             ).onSuccess { dApps ->
                 dApps.firstOrNull()?.let { dApp ->
@@ -121,7 +123,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             }.onFailure { error ->
                 _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
-            setInitialDappLoginRoute()
+            setInitialDappLoginRoute(dAppDefinitionAddress)
         }
     }
 
@@ -139,7 +141,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         _state.update { it.copy(interactionState = null) }
     }
 
-    private suspend fun setInitialDappLoginRoute() {
+    private suspend fun setInitialDappLoginRoute(dAppDefinitionAddress: AccountAddress) {
         when (val authRequest = request.authRequest) {
             is AuthorizedRequest.AuthRequest.UsePersonaRequest -> {
                 val dapp = authorizedDapp
@@ -154,7 +156,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.SelectPersona(
-                            request.requestMetadata.dAppDefinitionAddress
+                            dappDefinitionAddress = dAppDefinitionAddress
                         )
                     )
                 }
@@ -194,7 +196,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     // automatically fill in persona, the persona data, accounts and complete request
                     it.copy(
                         selectedAccountsOngoing = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                            dapp.dAppDefinitionAddress,
+                            AccountAddress.init(dapp.dAppDefinitionAddress),
                             persona.address,
                             ongoingAccountsRequestItem!!.numberOfValues.quantity,
                             ongoingAccountsRequestItem.numberOfValues.toProfileShareAccountsQuantifier()
@@ -399,7 +401,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         return authorizedDapp?.let { dapp ->
             val potentialOngoingAddresses =
                 dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                    dapp.dAppDefinitionAddress,
+                    AccountAddress.init(dapp.dAppDefinitionAddress),
                     personaAddress,
                     accountsRequestItem.numberOfValues.quantity,
                     accountsRequestItem.numberOfValues.toProfileShareAccountsQuantifier()
@@ -465,7 +467,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val dapp = requireNotNull(editedDapp)
         val requestedFieldKinds = requestItem.toRequiredFields()
         return dAppConnectionRepository.dAppAuthorizedPersonaHasAllDataFields(
-            dapp.dAppDefinitionAddress,
+            AccountAddress.init(dapp.dAppDefinitionAddress),
             personaAddress,
             requestedFieldKinds.fields.associate { it.kind to it.numberOfValues.quantity }
         )
@@ -490,7 +492,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         val isExactAccountsCount = ongoingAccountsRequestItem.numberOfValues.exactly()
         val potentialOngoingAddresses =
             dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                dapp.dAppDefinitionAddress,
+                AccountAddress.init(dapp.dAppDefinitionAddress),
                 personaAddress,
                 numberOfAccounts,
                 ongoingAccountsRequestItem.numberOfValues.toProfileShareAccountsQuantifier()
@@ -625,7 +627,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     editedDapp = editedDapp?.updateDappAuthorizedPersonaSharedAccounts(
                         selectedPersona.address,
                         Shared(
-                            selectedAccounts.map { it.address },
+                            selectedAccounts.map { it.address.string },
                             RequestedNumber(
                                 handledRequest.numberOfValues.toProfileShareAccountsQuantifier(),
                                 handledRequest.numberOfValues.quantity

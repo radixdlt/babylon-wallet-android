@@ -10,6 +10,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
+import com.radixdlt.sargon.AccountAddress
 
 @VisibleForTesting
 internal const val ARG_INTERACTION_ID = "interaction_id"
@@ -32,7 +33,7 @@ fun NavGraphBuilder.dAppLoginAuthorized(
     navigateToChooseAccount: (Int, Boolean, Boolean, Boolean) -> Unit,
     navigateToPermissions: (Int, Boolean, Boolean, Boolean) -> Unit,
     navigateToOneTimePersonaData: (RequiredPersonaFields) -> Unit,
-    navigateToSelectPersona: (String) -> Unit,
+    navigateToSelectPersona: (AccountAddress) -> Unit,
     navigateToOngoingPersonaData: (String, RequiredPersonaFields) -> Unit,
     onLoginFlowComplete: () -> Unit,
 ) {

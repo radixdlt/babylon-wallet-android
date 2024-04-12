@@ -7,6 +7,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import rdx.works.core.HexCoded32Bytes
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.RequestedNumber

@@ -1,9 +1,11 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
-import com.babylon.wallet.android.domain.model.resources.Resource
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.ResourceAddress
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.then
 import java.lang.RuntimeException
 import javax.inject.Inject
@@ -15,7 +17,7 @@ class GetLSUDetailsUseCase @Inject constructor(
     private val stateRepository: StateRepository
 ) {
 
-    suspend operator fun invoke(resourceAddress: String, accountAddress: String): Result<ValidatorWithStakes> =
+    suspend operator fun invoke(resourceAddress: ResourceAddress, accountAddress: AccountAddress): Result<ValidatorWithStakes> =
         stateRepository.getResources(
             addresses = setOf(resourceAddress),
             underAccountAddress = accountAddress,
@@ -28,7 +30,7 @@ class GetLSUDetailsUseCase @Inject constructor(
             stateRepository.getValidators(validatorAddresses = setOf(validatorAddress)).mapCatching { validators ->
                 val validator = validators.first()
                 ValidatorWithStakes(
-                    validatorDetail = validator,
+                    validator = validator,
                     liquidStakeUnit = LiquidStakeUnit(stake, validator)
                 )
             }

@@ -8,35 +8,28 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItemDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
-import com.babylon.wallet.android.domain.model.assets.AssetBehaviours
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import java.math.BigDecimal
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.VaultAddress
+import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.networkId
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
+import rdx.works.core.domain.assets.AssetBehaviours
+import rdx.works.core.domain.resources.Divisibility
+import rdx.works.core.domain.resources.XrdResource
 
-fun StateEntityDetailsResponseItemDetails.totalSupply(): String? {
+fun StateEntityDetailsResponseItemDetails.totalSupply(): Decimal192? {
     return when (val details = this) {
-        is StateEntityDetailsResponseFungibleResourceDetails -> details.totalSupply
-        is StateEntityDetailsResponseNonFungibleResourceDetails -> details.totalSupply
+        is StateEntityDetailsResponseFungibleResourceDetails -> details.totalSupply.toDecimal192OrNull()
+        is StateEntityDetailsResponseNonFungibleResourceDetails -> details.totalSupply.toDecimal192OrNull()
         else -> null
     }
 }
 
-fun StateEntityDetailsResponseItemDetails.divisibility(): Int? {
+fun StateEntityDetailsResponseItemDetails.divisibility(): Divisibility? {
     return when (val details = this) {
-        is StateEntityDetailsResponseFungibleResourceDetails -> details.divisibility
-        else -> null
-    }
-}
-
-fun StateEntityDetailsResponseItem.getXRDVaultAmount(vaultAddress: String): BigDecimal? {
-    return when (
-        val resource = fungibleResources?.items?.find {
-            XrdResource.addressesPerNetwork.containsValue(it.resourceAddress)
-        }
-    ) {
-        is FungibleResourcesCollectionItemVaultAggregated -> {
-            resource.vaults.items.find { it.vaultAddress == vaultAddress }?.amount?.toBigDecimal()
-        }
-
+        is StateEntityDetailsResponseFungibleResourceDetails -> Divisibility(details.divisibility.toUByte())
         else -> null
     }
 }
@@ -47,16 +40,16 @@ val StateEntityDetailsResponseItemDetails.xrdVaultAddress: String?
         else -> null
     }
 
-val StateEntityDetailsResponseItem.totalXRDStake: BigDecimal?
+val StateEntityDetailsResponseItem.totalXRDStake: Decimal192?
     get() {
-        val xrdVaultAddress = details?.xrdVaultAddress ?: return null
+        val xrdVaultAddress = details?.xrdVaultAddress?.let { runCatching { VaultAddress.init(it) }.getOrNull() } ?: return null
 
         val xrdResource = fungibleResources?.items?.find {
-            XrdResource.addressesPerNetwork.containsValue(it.resourceAddress)
+            XrdResource.address(networkId = xrdVaultAddress.networkId.discriminant.toInt()).string == it.resourceAddress
         }
 
         return if (xrdResource is FungibleResourcesCollectionItemVaultAggregated) {
-            xrdResource.vaults.items.find { it.vaultAddress == xrdVaultAddress }?.amount?.toBigDecimal()
+            xrdResource.vaults.items.find { it.vaultAddress == xrdVaultAddress.string }?.amountDecimal
         } else {
             null
         }

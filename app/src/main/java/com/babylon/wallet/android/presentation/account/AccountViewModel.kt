@@ -6,16 +6,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.AssetPrice
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
-import com.babylon.wallet.android.domain.model.assets.ValidatorWithStakes
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
@@ -37,6 +27,10 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.plus
+import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -49,6 +43,16 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.AssetPrice
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.SupportedCurrency
+import rdx.works.core.domain.assets.ValidatorWithStakes
+import rdx.works.core.domain.resources.Resource
 import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.extensions.factorSourceId
 import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
@@ -258,7 +262,7 @@ class AccountViewModel @Inject constructor(
 
     fun onNextNftPageRequest(resource: Resource.NonFungibleResource) {
         val account = state.value.accountWithAssets?.account ?: return
-        if (!state.value.isRefreshing && resource.resourceAddress !in state.value.nonFungiblesWithPendingNFTs) {
+        if (!state.value.isRefreshing && resource.address !in state.value.nonFungiblesWithPendingNFTs) {
             _state.update { state -> state.onNFTsLoading(resource) }
             viewModelScope.launch {
                 getNextNFTsPageUseCase(account, resource)
@@ -349,7 +353,7 @@ data class AccountUiState(
     val isFiatBalancesEnabled: Boolean = true,
     val assetsWithAssetsPrices: Map<Asset, AssetPrice?>? = null,
     private val hasFailedToFetchPricesForAccount: Boolean = false,
-    val nonFungiblesWithPendingNFTs: Set<String> = setOf(),
+    val nonFungiblesWithPendingNFTs: Set<ResourceAddress> = setOf(),
     val pendingStakeUnits: Boolean = false,
     val securityPromptType: SecurityPromptType? = null,
     val assetsViewState: AssetsViewState = AssetsViewState.init(),
@@ -365,13 +369,13 @@ data class AccountUiState(
         get() {
             if (hasFailedToFetchPricesForAccount) return null
 
-            var total = 0.0
+            var total = 0.toDecimal192()
             var currency = SupportedCurrency.USD
             assetsWithAssetsPrices?.let { assetsWithAssetsPrices ->
                 assetsWithAssetsPrices.values
                     .mapNotNull { it }
                     .forEach { assetPrice ->
-                        total += assetPrice.price?.price ?: 0.0
+                        total += assetPrice.price?.price.orZero()
                         currency = assetPrice.price?.currency ?: SupportedCurrency.USD
                     }
             } ?: return null
@@ -383,7 +387,7 @@ data class AccountUiState(
         get() = accountWithAssets?.assets != null
 
     fun onNFTsLoading(forResource: Resource.NonFungibleResource): AccountUiState {
-        return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.resourceAddress)
+        return copy(nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs + forResource.address)
     }
 
     fun onNFTsReceived(forResource: Resource.NonFungibleResource): AccountUiState {
@@ -393,21 +397,21 @@ data class AccountUiState(
                 assets = accountWithAssets.assets.copy(
                     nonFungibles = accountWithAssets.assets.nonFungibles.mapWhen(
                         predicate = {
-                            it.collection.resourceAddress == forResource.resourceAddress &&
+                            it.collection.address == forResource.address &&
                                 it.collection.items.size < forResource.items.size
                         },
                         mutation = { NonFungibleCollection(forResource) }
                     )
                 )
             ),
-            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress
+            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address
         )
     }
 
     fun onNFTsError(forResource: Resource.NonFungibleResource, error: Throwable): AccountUiState {
         if (accountWithAssets?.assets?.nonFungibles == null) return this
         return copy(
-            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.resourceAddress,
+            nonFungiblesWithPendingNFTs = nonFungiblesWithPendingNFTs - forResource.address,
             uiMessage = UiMessage.ErrorMessage(error = error)
         )
     }

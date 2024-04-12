@@ -32,18 +32,18 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.domain.model.BalanceChange
 import com.babylon.wallet.android.domain.model.TransactionClass
 import com.babylon.wallet.android.domain.model.TransactionHistoryItem
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.name
 import com.babylon.wallet.android.utils.timestampHoursMinutes
-import com.babylon.wallet.android.utils.truncatedHash
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.extensions.abs
+import com.radixdlt.sargon.extensions.formatted
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Resource
 import timber.log.Timber
 
 @Suppress("CyclomaticComplexMethod")
@@ -354,7 +354,7 @@ private fun PoolUnitBalanceChange(
                 }
             }
             Text(
-                text = balanceChange.balanceChange.abs().displayableQuantity(),
+                text = balanceChange.balanceChange.abs().formatted(),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
@@ -409,7 +409,7 @@ private fun LiquidStakeUnitBalanceChange(
                     )
                 }
                 Text(
-                    text = balanceChange.balanceChange.abs().displayableQuantity(),
+                    text = balanceChange.balanceChange.abs().formatted(),
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End,
@@ -442,7 +442,7 @@ private fun NftItemBalanceChange(
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(
                 text = nftResource.name.ifEmpty {
-                    nftResource.resourceAddress.truncatedHash()
+                    nftResource.address.formatted()
                 },
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
@@ -450,7 +450,7 @@ private fun NftItemBalanceChange(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = nftItem.name ?: nftItem.localId.displayable,
+                text = nftItem.name ?: nftItem.localId.formatted(),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
@@ -481,7 +481,7 @@ private fun TokenContent(
         )
         Text(
             modifier = Modifier.weight(1f),
-            text = withdraw.balanceChange.abs().displayableQuantity(),
+            text = withdraw.balanceChange.abs().formatted(),
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.End,

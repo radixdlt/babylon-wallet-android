@@ -1,8 +1,7 @@
 package rdx.works.profile.domain.account
 
 import com.babylon.wallet.android.designsystem.theme.AccountGradientList
-import com.radixdlt.ret.Address
-import com.radixdlt.ret.OlympiaAddress
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -35,14 +34,10 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
             val networkId = profile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
             val appearanceIdOffset = profile.nextAppearanceId(forNetworkId = networkId)
             val migratedAccounts = olympiaAccounts.mapIndexed { index, olympiaAccount ->
-                val babylonAddress = Address.virtualAccountAddressFromOlympiaAddress(
-                    olympiaAccountAddress = OlympiaAddress(olympiaAccount.address),
-                    networkId = networkId.value.toUByte()
-                ).addressString()
                 val nextAppearanceId = (appearanceIdOffset + index) % AccountGradientList.size
                 Network.Account(
                     displayName = olympiaAccount.accountName.ifEmpty { "Unnamed olympia account ${olympiaAccount.index}" },
-                    address = babylonAddress,
+                    address = olympiaAccount.newBabylonAddress.string,
                     appearanceID = nextAppearanceId,
                     networkID = networkId.value,
                     securityState = SecurityState.unsecured(

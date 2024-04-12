@@ -11,22 +11,25 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.ROUTE_EDIT_PERSONA
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import rdx.works.core.domain.resources.Resource
 
 @VisibleForTesting
 internal const val ARG_DAPP_ADDRESS = "dapp_definition_address"
 
 const val ROUTE_DAPP_DETAIL = "settings_dapp_detail/{$ARG_DAPP_ADDRESS}"
 
-internal class DappDetailScreenArgs(val dappDefinitionAddress: String) {
+internal class DappDetailScreenArgs(val dappDefinitionAddress: AccountAddress) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_DAPP_ADDRESS]) as String
+        AccountAddress.init(checkNotNull(savedStateHandle[ARG_DAPP_ADDRESS]))
     )
 }
 
-fun NavController.dAppDetailScreen(dappDefinitionAddress: String) {
-    navigate("settings_dapp_detail/$dappDefinitionAddress")
+fun NavController.dAppDetailScreen(dappDefinitionAddress: AccountAddress) {
+    navigate("settings_dapp_detail/${dappDefinitionAddress.string}")
 }
 
 fun NavGraphBuilder.dAppDetailScreen(

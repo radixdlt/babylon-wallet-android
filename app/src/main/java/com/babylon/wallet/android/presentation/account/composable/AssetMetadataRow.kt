@@ -21,12 +21,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.ui.composables.ExpandableText
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
 import com.babylon.wallet.android.utils.openUrl
-import rdx.works.core.displayableQuantity
+import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -158,15 +163,31 @@ fun Metadata.ValueView(
                 )
             }
 
-            MetadataType.Address, MetadataType.NonFungibleGlobalId, MetadataType.NonFungibleLocalId -> ActionableAddressView(
+            MetadataType.Address -> ActionableAddressView(
                 modifier = modifier,
-                address = value
+                address = remember(value) {
+                    Address.init(value)
+                }
+            )
+
+            MetadataType.NonFungibleGlobalId -> ActionableAddressView(
+                modifier = modifier,
+                globalId = remember(value) {
+                    NonFungibleGlobalId.init(value)
+                }
+            )
+
+            MetadataType.NonFungibleLocalId -> ActionableAddressView(
+                modifier = modifier,
+                localId = remember(value) {
+                    NonFungibleLocalId.init(value)
+                }
             )
 
             MetadataType.Decimal -> Text(
                 modifier = modifier,
                 // If value is unable to transform to big decimal we just display raw value
-                text = value.toBigDecimalOrNull()?.displayableQuantity() ?: value,
+                text = value.toDecimal192OrNull()?.formatted() ?: value,
                 style = RadixTheme.typography.body1HighImportance,
                 color = RadixTheme.colors.gray1,
                 textAlign = if (isRenderedInNewLine) TextAlign.Start else TextAlign.End,

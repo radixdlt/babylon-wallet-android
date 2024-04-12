@@ -2,12 +2,22 @@ package com.babylon.wallet.android.data.repository.cache.database
 
 import androidx.room.ProvidedTypeConverter
 import androidx.room.TypeConverter
-import com.babylon.wallet.android.domain.model.assets.AssetBehaviour
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.VaultAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.math.BigDecimal
+import rdx.works.core.domain.assets.AssetBehaviour
+import rdx.works.core.domain.resources.Divisibility
+import rdx.works.core.domain.resources.metadata.Metadata
 import java.time.Instant
 
 @Serializable
@@ -46,15 +56,15 @@ class StateDatabaseConverters {
         return column?.let { json.encodeToString(it.metadata) }
     }
 
-    // BigDecimal
+    // Decimal192
     @TypeConverter
-    fun stringToBigDecimal(string: String?): BigDecimal? {
-        return string?.toBigDecimalOrNull()
+    fun stringToDecimal192(string: String?): Decimal192? {
+        return string?.toDecimal192OrNull()
     }
 
     @TypeConverter
-    fun bigDecimalToString(decimal: BigDecimal?): String? {
-        return decimal?.toPlainString()
+    fun decimal192ToString(decimal: Decimal192?): String? {
+        return decimal?.string
     }
 
     // Instant
@@ -66,5 +76,82 @@ class StateDatabaseConverters {
     @TypeConverter
     fun instantToLong(date: Instant?): Long? {
         return date?.toEpochMilli()
+    }
+
+    // ResourceAddress
+    @TypeConverter
+    fun stringToResourceAddress(resourceAddress: String?): ResourceAddress? {
+        return resourceAddress?.let { ResourceAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun resourceAddressToString(resourceAddress: ResourceAddress?): String? {
+        return resourceAddress?.string
+    }
+
+    // AccountAddress
+    @TypeConverter
+    fun stringToAccountAddress(accountAddress: String?): AccountAddress? {
+        return accountAddress?.let { AccountAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun accountAddressToString(accountAddress: AccountAddress?): String? {
+        return accountAddress?.string
+    }
+
+    // ValidatorAddress
+    @TypeConverter
+    fun stringToValidatorAddress(validatorAddress: String?): ValidatorAddress? {
+        return validatorAddress?.let { ValidatorAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun validatorAddressToString(validatorAddress: ValidatorAddress?): String? {
+        return validatorAddress?.string
+    }
+
+    // PoolAddress
+    @TypeConverter
+    fun stringToPoolAddress(poolAddress: String?): PoolAddress? {
+        return poolAddress?.let { PoolAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun poolAddressToString(poolAddress: PoolAddress?): String? {
+        return poolAddress?.string
+    }
+
+    // NonFungibleLocalId
+    @TypeConverter
+    fun stringToNonFungibleLocalId(localId: String?): NonFungibleLocalId? {
+        return localId?.let { NonFungibleLocalId.init(it) }
+    }
+
+    @TypeConverter
+    fun nonFungibleLocalIdToString(localId: NonFungibleLocalId?): String? {
+        return localId?.string
+    }
+
+    // VaultAddress
+    @TypeConverter
+    fun stringToVaultAddress(vaultAddress: String?): VaultAddress? {
+        return vaultAddress?.let { VaultAddress.init(it) }
+    }
+
+    @TypeConverter
+    fun vaultAddressToString(vaultAddress: VaultAddress?): String? {
+        return vaultAddress?.string
+    }
+
+    // Divisibility
+    @TypeConverter
+    fun intToDivisibility(divisibility: Int?): Divisibility? {
+        return divisibility?.let { Divisibility(it.toUByte()) }
+    }
+
+    @TypeConverter
+    fun divisibilityToInt(divisibility: Divisibility?): Int? {
+        return divisibility?.value?.toInt()
     }
 }

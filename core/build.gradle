@@ -34,16 +34,23 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
+    afterEvaluate {
+        tasks.configureEach { task ->
+            if (task.name.contains("Test") && task.name.contains("compile")) {
+                kotlinOptions.freeCompilerArgs += '-Xopt-in=com.radixdlt.sargon.annotation.UsesSampleValues'
+            }
+        }
+    }
 }
 
 dependencies {
-    implementation libs.retAndroid
     implementation libs.slip10
-    implementation libs.crypto
+    api libs.sargonAndroid
     implementation libs.ktorCore
     implementation libs.zxing
     implementation libs.kotlinxSerialization
     implementation libs.firebaseCrashlytics
+    implementation libs.immutableCollections
 
     // Datastore
     implementation libs.datastorePreferences
@@ -53,7 +60,7 @@ dependencies {
     ksp libs.hiltCompiler
 
     testImplementation libs.junit
-    testImplementation libs.retKotlin
+    testRuntimeOnly libs.sargonDesktop
     androidTestImplementation libs.androidXJunit
     androidTestImplementation libs.espresso
 }

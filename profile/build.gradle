@@ -37,6 +37,13 @@ android {
         // It is now used to not make the unit tests fail because of the Log class
         unitTests.returnDefaultValues = true
     }
+    afterEvaluate {
+        tasks.configureEach { task ->
+            if (task.name.contains("Test") && task.name.contains("compile")) {
+                kotlinOptions.freeCompilerArgs += '-Xopt-in=com.radixdlt.sargon.annotation.UsesSampleValues'
+            }
+        }
+    }
 }
 
 dependencies {
@@ -56,7 +63,7 @@ dependencies {
     implementation libs.timber
 
     implementation libs.slip10
-    implementation libs.retAndroid
+    implementation libs.crypto
 
     testImplementation libs.junit
     testImplementation libs.kotlinTestJunit
@@ -64,6 +71,6 @@ dependencies {
     testImplementation libs.mockk
     testImplementation libs.mockitoKotlin
     testImplementation libs.mockitoInline
-    testImplementation libs.retKotlin
     testImplementation libs.jsonAssert
+    testRuntimeOnly libs.sargonDesktop
 }

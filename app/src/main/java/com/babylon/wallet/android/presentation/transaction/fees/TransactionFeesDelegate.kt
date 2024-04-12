@@ -2,10 +2,10 @@ package com.babylon.wallet.android.presentation.transaction.fees
 
 import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
+import com.radixdlt.sargon.extensions.isZero
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountOnCurrentNetwork
-import java.math.BigDecimal
 import javax.inject.Inject
 
 class TransactionFeesDelegate @Inject constructor(
@@ -14,16 +14,16 @@ class TransactionFeesDelegate @Inject constructor(
 
     @Suppress("NestedBlockDepth")
     suspend fun onCustomizeClick() {
-        if (_state.value.transactionFees.defaultTransactionFee == BigDecimal.ZERO) {
+        if (_state.value.transactionFees.defaultTransactionFee.isZero) {
             // None required
             _state.update { state ->
                 state.noneRequiredState()
             }
         } else {
-            _state.value.feePayerSearchResult?.let { feePayerResult ->
-                if (feePayerResult.feePayerAddress != null) {
+            _state.value.feePayers?.let { feePayerResult ->
+                if (feePayerResult.selectedAccountAddress != null) {
                     // Candidate selected
-                    getProfileUseCase.accountOnCurrentNetwork(withAddress = feePayerResult.feePayerAddress)
+                    getProfileUseCase.accountOnCurrentNetwork(withAddress = feePayerResult.selectedAccountAddress)
                         ?.let { feePayerCandidate ->
                             _state.update { state ->
                                 state.candidateSelectedState(feePayerCandidate)

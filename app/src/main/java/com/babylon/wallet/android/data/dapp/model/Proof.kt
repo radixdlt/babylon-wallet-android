@@ -1,11 +1,11 @@
 package com.babylon.wallet.android.data.dapp.model
-
-import com.radixdlt.ret.SignatureWithPublicKey
+import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.publicKey
+import com.radixdlt.sargon.extensions.signature
+import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import rdx.works.core.ret.publicKey
-import rdx.works.core.ret.signature
-import rdx.works.core.ret.toHexString
 
 @Serializable
 data class Proof(
@@ -23,18 +23,11 @@ data class Proof(
     }
 }
 
-fun SignatureWithPublicKey.toProof(signedMessage: ByteArray): Proof {
-    return when (val signatureWithPublicKey = this) {
-        is SignatureWithPublicKey.Secp256k1 -> Proof(
-            signatureWithPublicKey.publicKey(signedMessage).toHexString(),
-            signatureWithPublicKey.signature().toHexString(),
-            Proof.Curve.Secp256k1
-        )
-
-        is SignatureWithPublicKey.Ed25519 -> Proof(
-            signatureWithPublicKey.publicKey().toHexString(),
-            signatureWithPublicKey.signature().toHexString(),
-            Proof.Curve.Curve25519
-        )
+fun SignatureWithPublicKey.toProof(): Proof = Proof(
+    publicKey = this.publicKey.hex,
+    signature = this.signature.string,
+    curve = when (this) {
+        is SignatureWithPublicKey.Ed25519 -> Proof.Curve.Curve25519
+        is SignatureWithPublicKey.Secp256k1 -> Proof.Curve.Secp256k1
     }
-}
+)

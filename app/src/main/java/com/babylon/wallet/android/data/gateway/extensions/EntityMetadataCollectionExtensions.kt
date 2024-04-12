@@ -38,9 +38,9 @@ import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEcdsaSe
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyEddsaEd25519
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEcdsaSecp256k1
 import com.babylon.wallet.android.data.gateway.generated.models.PublicKeyHashEddsaEd25519
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType.Integer.Size
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
+import rdx.works.core.domain.resources.metadata.MetadataType.Integer.Size
 
 fun EntityMetadataCollection.toMetadata(): List<Metadata> {
     return items.mapNotNull { item -> item.toMetadata() }

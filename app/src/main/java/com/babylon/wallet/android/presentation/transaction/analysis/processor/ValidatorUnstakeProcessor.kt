@@ -1,23 +1,25 @@
 package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
-import com.babylon.wallet.android.domain.model.assets.Asset
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.ret.DetailedManifestClass
-import com.radixdlt.ret.ExecutionSummary
-import com.radixdlt.ret.NonFungibleGlobalId
-import com.radixdlt.ret.ResourceIndicator
+import com.radixdlt.sargon.DetailedManifestClass
+import com.radixdlt.sargon.ExecutionSummary
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.ResourceIndicator
+import com.radixdlt.sargon.extensions.address
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.first
+import rdx.works.core.domain.assets.Asset
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.resources.ExplicitMetadataKey
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.XrdResource
+import rdx.works.core.domain.resources.metadata.Metadata
+import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
@@ -30,7 +32,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
 ) : PreviewTypeProcessor<DetailedManifestClass.ValidatorUnstake> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.ValidatorUnstake): PreviewType {
         val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
-        val xrdAddress = XrdResource.address(networkId)
+        val xrdAddress = XrdResource.address(networkId.value)
         val assets = resolveAssetsFromAddressUseCase(
             fungibleAddresses = summary.involvedFungibleAddresses() + xrdAddress,
             nonFungibleIds = summary.involvedNonFungibleIds()
@@ -57,27 +59,28 @@ class ValidatorUnstakeProcessor @Inject constructor(
         getProfileUseCase: GetProfileUseCase,
         assets: List<Asset>,
         involvedOwnedAccounts: List<Network.Account>
-    ) = executionSummary.accountDeposits.map { claimsPerAddress ->
+    ) = executionSummary.deposits.map { claimsPerAddress ->
         val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
         claimsPerAddress.value.map { claimedResource ->
-            val resourceAddress = claimedResource.resourceAddress
-            val asset = assets.find { it.resource.resourceAddress == resourceAddress } ?: error("No resource found")
+            val asset = assets.find { it.resource.address == claimedResource.address } ?: error("No resource found")
             if (asset is StakeClaim) {
                 claimedResource as? ResourceIndicator.NonFungible
                     ?: error("No non-fungible indicator found")
-                val stakeClaimNftItems = claimedResource.indicator.nonFungibleLocalIds.map { localId ->
-                    val globalId = NonFungibleGlobalId.fromParts(claimedResource.resourceAddress, localId)
-                    val claimNFTData = claimsNonFungibleData.find { it.nonFungibleGlobalId.asStr() == globalId.asStr() }?.data
-                        ?: error("No claim data found")
-                    val claimAmount = claimNFTData.claimAmount.asStr().toBigDecimal()
+                val stakeClaimNftItems = claimedResource.nonFungibleLocalIds.map { localId ->
+                    val globalId = NonFungibleGlobalId(
+                        resourceAddress = claimedResource.resourceAddress,
+                        nonFungibleLocalId = localId,
+                    )
+                    val claimNFTData = claimsNonFungibleData[globalId] ?: error("No claim data found")
+                    val claimAmount = claimNFTData.claimAmount
                     val claimEpoch = claimNFTData.claimEpoch
                     Resource.NonFungibleResource.Item(
-                        collectionAddress = resourceAddress,
-                        localId = Resource.NonFungibleResource.Item.ID.from(localId),
+                        collectionAddress = claimedResource.resourceAddress,
+                        localId = localId,
                         metadata = listOf(
                             Metadata.Primitive(
                                 ExplicitMetadataKey.CLAIM_AMOUNT.key,
-                                claimAmount.toPlainString(),
+                                claimAmount.string,
                                 MetadataType.Decimal
                             ),
                             Metadata.Primitive(
@@ -96,7 +99,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
                             validator = asset.validator
                         ),
                         xrdWorthPerNftItem = stakeClaimNftItems.associate {
-                            it.first.localId.displayable to it.second
+                            it.first.localId to it.second
                         },
                         isNewlyCreated = true
                     ),

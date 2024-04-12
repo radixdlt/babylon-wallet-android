@@ -9,9 +9,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.assets.FiatPrice
-import com.babylon.wallet.android.domain.model.assets.SupportedCurrency
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
+import com.radixdlt.sargon.extensions.toDecimal192
+import rdx.works.core.domain.assets.FiatPrice
+import rdx.works.core.domain.assets.SupportedCurrency
 
 @Composable
 fun FiatBalanceView(
@@ -42,7 +43,7 @@ fun FiatBalanceTextPreview() {
     RadixWalletTheme {
         FiatBalanceView(
             modifier = Modifier,
-            fiatPrice = FiatPrice(price = 1879.32, SupportedCurrency.USD)
+            fiatPrice = FiatPrice(price = 1879.32.toDecimal192(), SupportedCurrency.USD)
         )
     }
 }
@@ -54,7 +55,7 @@ fun FiatBalanceTextHiddenPreview() {
         CompositionLocalProvider(value = LocalBalanceVisibility.provides(false)) {
             FiatBalanceView(
                 modifier = Modifier,
-                fiatPrice = FiatPrice(price = 1879.32, SupportedCurrency.USD)
+                fiatPrice = FiatPrice(price = 1879.32.toDecimal192(), SupportedCurrency.USD)
             )
         }
     }

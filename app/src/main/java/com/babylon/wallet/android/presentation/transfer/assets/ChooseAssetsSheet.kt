@@ -19,7 +19,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.resources.Resource
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAssets
@@ -29,6 +28,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewAction
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewData
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
+import rdx.works.core.domain.resources.Resource
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -94,8 +94,12 @@ fun ChooseAssetsSheet(
         },
         containerColor = RadixTheme.colors.gray5
     ) { padding ->
-        val selectedAssets = remember(state.targetAccount.spendingAssets) {
-            state.targetAccount.spendingAssets.map { it.address }
+        val selectedResources = remember(state.targetAccount.spendingAssets) {
+            state.targetAccount.spendingAssets.filterIsInstance<SpendingAsset.Fungible>().map { it.resourceAddress }
+        }
+
+        val selectedNFTs = remember(state.targetAccount.spendingAssets) {
+            state.targetAccount.spendingAssets.filterIsInstance<SpendingAsset.NFT>().map { it.item.globalId }
         }
 
         val assetsViewData = remember(state.assets, state.assetsWithAssetsPrices, state.epoch) {
@@ -120,7 +124,8 @@ fun ChooseAssetsSheet(
                 },
                 state = state.assetsViewState,
                 action = AssetsViewAction.Selection(
-                    selectedResources = selectedAssets,
+                    selectedResources = selectedResources,
+                    selectedNFTs = selectedNFTs,
                     onFungibleCheckChanged = { fungible, isChecked ->
                         onAssetSelectionChanged(SpendingAsset.Fungible(resource = fungible), isChecked)
                     },

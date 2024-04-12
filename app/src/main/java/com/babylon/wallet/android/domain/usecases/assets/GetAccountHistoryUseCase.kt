@@ -6,6 +6,10 @@ import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.HistoryFilters
 import com.babylon.wallet.android.domain.model.TransactionHistoryData
 import com.babylon.wallet.android.domain.model.toDomainModel
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -19,7 +23,7 @@ class GetAccountHistoryUseCase @Inject constructor(
 ) {
 
     suspend fun getHistory(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         filters: HistoryFilters
     ): Result<TransactionHistoryData> {
         return streamRepository.getAccountHistory(accountAddress, filters, null).mapCatching { response ->
@@ -37,7 +41,7 @@ class GetAccountHistoryUseCase @Inject constructor(
     }
 
     suspend fun getHistoryChunk(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         filters: HistoryFilters
     ): Result<TransactionHistoryData> {
         return withContext(ioDispatcher) {
@@ -96,20 +100,24 @@ class GetAccountHistoryUseCase @Inject constructor(
         }
     }
 
-    private fun resolveResponseAssetAddresses(response: StreamTransactionsResponse): Pair<Set<String>, MutableMap<String, Set<String>>> {
+    private fun resolveResponseAssetAddresses(
+        response: StreamTransactionsResponse
+    ): Pair<Set<ResourceAddress>, MutableMap<ResourceAddress, Set<NonFungibleLocalId>>> {
         val fungibleAddresses = response.items.map {
             it.balanceChanges?.fungibleBalanceChanges?.map { balanceChange ->
-                balanceChange.resourceAddress
+                ResourceAddress.init(balanceChange.resourceAddress)
             }.orEmpty().toSet() +
                 it.balanceChanges?.nonFungibleBalanceChanges?.map { balanceChange ->
-                    balanceChange.resourceAddress
+                    ResourceAddress.init(balanceChange.resourceAddress)
                 }.orEmpty().toSet()
         }.flatten().toSet()
-        val nonFungibleAddresses = response.items.fold(mutableMapOf<String, Set<String>>()) { acc, item ->
+        val nonFungibleAddresses = response.items.fold(mutableMapOf<ResourceAddress, Set<NonFungibleLocalId>>()) { acc, item ->
             acc.apply {
                 item.balanceChanges?.nonFungibleBalanceChanges?.forEach { balanceChange ->
-                    val nftCollectionAddress = balanceChange.resourceAddress
-                    val nftLocalIds = balanceChange.added.toSet() + balanceChange.removed
+                    val nftCollectionAddress = ResourceAddress.init(balanceChange.resourceAddress)
+                    val nftLocalIds = (balanceChange.added.toSet() + balanceChange.removed).map {
+                        NonFungibleLocalId.init(it)
+                    }.toSet()
                     if (containsKey(nftCollectionAddress)) {
                         this[nftCollectionAddress] = this[nftCollectionAddress].orEmpty() + nftLocalIds
                     } else {
@@ -122,7 +130,7 @@ class GetAccountHistoryUseCase @Inject constructor(
     }
 
     suspend fun loadMore(
-        accountAddress: String,
+        accountAddress: AccountAddress,
         transactionHistoryData: TransactionHistoryData,
         prepend: Boolean = false
     ): Result<TransactionHistoryData> {

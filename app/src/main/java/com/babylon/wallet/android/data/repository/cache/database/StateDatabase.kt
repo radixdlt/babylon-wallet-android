@@ -20,7 +20,7 @@ import androidx.room.TypeConverters
         PoolDAppJoin::class,
         TokenPriceEntity::class
     ],
-    version = StateDatabase.VERSION_7
+    version = StateDatabase.VERSION_8
 )
 @TypeConverters(StateDatabaseConverters::class)
 abstract class StateDatabase : RoomDatabase() {
@@ -48,8 +48,11 @@ abstract class StateDatabase : RoomDatabase() {
         @Deprecated("Add first tx timestamp to account details")
         const val VERSION_6 = 6
 
-        // Add TokenPriceEntity to schema
+        @Deprecated("Add TokenPriceEntity to schema")
         const val VERSION_7 = 7
+
+        // Replace BigDecimal with Decimal192
+        const val VERSION_8 = 8
 
         private const val NAME = "STATE_DATABASE"
 

@@ -12,7 +12,14 @@ import com.babylon.wallet.android.data.gateway.generated.models.NonFungibleResou
 import com.babylon.wallet.android.data.gateway.generated.models.StateNonFungibleDetailsResponseItem
 import com.babylon.wallet.android.data.repository.cache.database.NFTEntity.Companion.asEntity
 import com.babylon.wallet.android.data.repository.cache.database.ResourceEntity.Companion.asEntity
-import java.math.BigDecimal
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.VaultAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.toDecimal192
 
 @Entity(
     primaryKeys = ["account_address", "resource_address"],
@@ -32,14 +39,14 @@ import java.math.BigDecimal
 )
 data class AccountResourceJoin(
     @ColumnInfo("account_address")
-    val accountAddress: String,
+    val accountAddress: AccountAddress,
     @ColumnInfo("resource_address", index = true)
-    val resourceAddress: String,
-    val amount: BigDecimal,
+    val resourceAddress: ResourceAddress,
+    val amount: Decimal192,
     @ColumnInfo("state_version")
     val stateVersion: Long,
     @ColumnInfo("vault_address")
-    val vaultAddress: String?,
+    val vaultAddress: VaultAddress?,
 
     // Only needed for non fungible owners were we have fetched data
     // until a specific page but we need to request the next pages
@@ -50,26 +57,26 @@ data class AccountResourceJoin(
 
     companion object {
         fun FungibleResourcesCollectionItem.asAccountResourceJoin(
-            accountAddress: String,
+            accountAddress: AccountAddress,
             syncInfo: SyncInfo
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
-            resourceAddress = resourceAddress,
+            resourceAddress = ResourceAddress.init(resourceAddress),
             amount = amountDecimal,
             stateVersion = syncInfo.accountStateVersion,
-            vaultAddress = vaultAddress,
+            vaultAddress = vaultAddress?.let { VaultAddress.init(it) },
             nextCursor = null
         ) to asEntity(syncInfo.synced)
 
         fun NonFungibleResourcesCollectionItem.asAccountResourceJoin(
-            accountAddress: String,
+            accountAddress: AccountAddress,
             syncInfo: SyncInfo
         ): Pair<AccountResourceJoin, ResourceEntity> = AccountResourceJoin(
             accountAddress = accountAddress,
-            resourceAddress = resourceAddress,
-            amount = amount.toBigDecimal(),
+            resourceAddress = ResourceAddress.init(resourceAddress),
+            amount = amount.toDecimal192(),
             stateVersion = syncInfo.accountStateVersion,
-            vaultAddress = vaultAddress,
+            vaultAddress = vaultAddress?.let { VaultAddress.init(it) },
             nextCursor = null
         ) to asEntity(syncInfo.synced)
     }
@@ -88,24 +95,24 @@ data class AccountResourceJoin(
 )
 data class AccountNFTJoin(
     @ColumnInfo("account_address")
-    val accountAddress: String,
+    val accountAddress: AccountAddress,
     @ColumnInfo("resource_address")
-    val resourceAddress: String,
+    val resourceAddress: ResourceAddress,
     @ColumnInfo("local_id")
-    val localId: String,
+    val localId: NonFungibleLocalId,
     @ColumnInfo("state_version")
     val stateVersion: Long
 ) {
 
     companion object {
         fun StateNonFungibleDetailsResponseItem.asAccountNFTJoin(
-            accountAddress: String,
-            resourceAddress: String,
+            accountAddress: AccountAddress,
+            resourceAddress: ResourceAddress,
             syncInfo: SyncInfo
         ): Pair<AccountNFTJoin, NFTEntity> = AccountNFTJoin(
             accountAddress = accountAddress,
             resourceAddress = resourceAddress,
-            localId = nonFungibleId,
+            localId = NonFungibleLocalId.init(nonFungibleId),
             stateVersion = syncInfo.accountStateVersion
         ) to asEntity(resourceAddress, syncInfo.synced)
     }
@@ -131,21 +138,21 @@ data class AccountNFTJoin(
 )
 data class PoolResourceJoin(
     @ColumnInfo("pool_address")
-    val poolAddress: String,
+    val poolAddress: PoolAddress,
     @ColumnInfo("resource_address")
-    val resourceAddress: String,
-    val amount: BigDecimal?,
+    val resourceAddress: ResourceAddress,
+    val amount: Decimal192?,
     @ColumnInfo("state_version")
     val stateVersion: Long
 ) {
 
     companion object {
         fun FungibleResourcesCollectionItem.asPoolResourceJoin(
-            poolAddress: String,
+            poolAddress: PoolAddress,
             syncInfo: SyncInfo
         ): Pair<PoolResourceJoin, ResourceEntity> = PoolResourceJoin(
             poolAddress = poolAddress,
-            resourceAddress = resourceAddress,
+            resourceAddress = ResourceAddress.init(resourceAddress),
             amount = amountDecimal,
             stateVersion = syncInfo.accountStateVersion
         ) to asEntity(syncInfo.synced)
@@ -172,7 +179,7 @@ data class PoolResourceJoin(
 )
 data class PoolDAppJoin(
     @ColumnInfo("pool_address")
-    val poolAddress: String,
+    val poolAddress: PoolAddress,
     @ColumnInfo("dApp_definition_address")
-    val dAppDefinitionAddress: String,
+    val dAppDefinitionAddress: AccountAddress,
 )

@@ -16,25 +16,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.babylon.wallet.android.data.gateway.model.ExplicitMetadataKey
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
-import com.babylon.wallet.android.domain.model.assets.Assets
-import com.babylon.wallet.android.domain.model.assets.LiquidStakeUnit
-import com.babylon.wallet.android.domain.model.assets.NonFungibleCollection
-import com.babylon.wallet.android.domain.model.assets.PoolUnit
-import com.babylon.wallet.android.domain.model.assets.StakeClaim
-import com.babylon.wallet.android.domain.model.assets.Token
-import com.babylon.wallet.android.domain.model.assets.ValidatorDetail
-import com.babylon.wallet.android.domain.model.resources.Pool
-import com.babylon.wallet.android.domain.model.resources.Resource
-import com.babylon.wallet.android.domain.model.resources.XrdResource
-import com.babylon.wallet.android.domain.model.resources.metadata.Metadata
-import com.babylon.wallet.android.domain.model.resources.metadata.MetadataType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTabs
-import java.math.BigDecimal
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import rdx.works.core.domain.assets.Assets
+import rdx.works.core.domain.assets.LiquidStakeUnit
+import rdx.works.core.domain.assets.NonFungibleCollection
+import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.domain.assets.StakeClaim
+import rdx.works.core.domain.assets.Token
+import rdx.works.core.domain.resources.Resource
+import rdx.works.core.domain.resources.sampleMainnet
 
 @Suppress("LongParameterList", "MagicNumber")
 fun LazyListScope.assetsView(
@@ -140,7 +136,8 @@ sealed interface AssetsViewAction {
     ) : AssetsViewAction
 
     data class Selection(
-        val selectedResources: List<String>,
+        val selectedResources: List<ResourceAddress>,
+        val selectedNFTs: List<NonFungibleGlobalId>,
         val onFungibleCheckChanged: (Resource.FungibleResource, Boolean) -> Unit,
         val onNFTCheckChanged: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Boolean) -> Unit,
         override val onTabClick: (AssetsTab) -> Unit,
@@ -149,7 +146,9 @@ sealed interface AssetsViewAction {
         override val onStakesRequest: () -> Unit,
     ) : AssetsViewAction {
 
-        fun isSelected(resourceAddress: String) = selectedResources.contains(resourceAddress)
+        fun isSelected(resourceAddress: ResourceAddress) = selectedResources.contains(resourceAddress)
+
+        fun isSelected(globalId: NonFungibleGlobalId) = selectedNFTs.contains(globalId)
     }
 }
 
@@ -203,6 +202,7 @@ fun AssetsViewWithEmptyAssets() {
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun AssetsViewWithAssets() {
@@ -210,168 +210,22 @@ fun AssetsViewWithAssets() {
         mutableStateOf(
             Assets(
                 tokens = listOf(
-                    Token(
-                        Resource.FungibleResource(
-                            resourceAddress = XrdResource.address(),
-                            ownedAmount = BigDecimal(1000),
-                            metadata = listOf(
-                                Metadata.Primitive(
-                                    key = ExplicitMetadataKey.SYMBOL.key,
-                                    value = XrdResource.SYMBOL,
-                                    valueType = MetadataType.String
-                                )
-                            )
-                        )
-                    )
-                ) + SampleDataProvider().sampleFungibleResources().map { Token(it) },
+                    Token(Resource.FungibleResource.sampleMainnet())
+                ),
                 nonFungibles = listOf(
-                    Resource.NonFungibleResource(
-                        resourceAddress = SampleDataProvider().randomAddress(),
-                        amount = 10,
-                        items = emptyList(),
-                        metadata = listOf(
-                            Metadata.Primitive(ExplicitMetadataKey.NAME.key, "abc", MetadataType.String)
-                        )
-                    ),
-                    SampleDataProvider().nonFungibleResource("cde"),
-                    with(SampleDataProvider().randomAddress()) {
-                        Resource.NonFungibleResource(
-                            resourceAddress = this,
-                            amount = 1,
-                            items = listOf(
-                                Resource.NonFungibleResource.Item(
-                                    collectionAddress = this,
-                                    localId = Resource.NonFungibleResource.Item.ID.from("#1#"),
-                                    metadata = listOf(
-                                        Metadata.Primitive(
-                                            key = ExplicitMetadataKey.NAME.key,
-                                            value = "Some NFT",
-                                            valueType = MetadataType.String
-                                        )
-                                    )
-                                )
-                            ),
-                            metadata = listOf(
-                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "abc", MetadataType.String)
-                            )
-                        )
-                    },
+                    Resource.NonFungibleResource.sampleMainnet.random(),
+                    Resource.NonFungibleResource.sampleMainnet.random(),
+                    Resource.NonFungibleResource.sampleMainnet.random(),
                 ).map { NonFungibleCollection(it) },
                 poolUnits = listOf(
-                    PoolUnit(
-                        stake = Resource.FungibleResource(
-                            resourceAddress = "resource_abcd",
-                            ownedAmount = BigDecimal(2.5),
-                            divisibility = 18,
-                            currentSupply = BigDecimal(1_000_000),
-                            metadata = listOf(
-                                Metadata.Primitive(
-                                    key = ExplicitMetadataKey.NAME.key,
-                                    value = "Custom Pool",
-                                    valueType = MetadataType.String
-                                ),
-                                Metadata.Primitive(
-                                    key = ExplicitMetadataKey.SYMBOL.key,
-                                    value = "CPL",
-                                    valueType = MetadataType.String
-                                )
-                            )
-                        ),
-                        pool = Pool(
-                            address = "pool_abc",
-                            metadata = listOf(
-                                Metadata.Primitive(key = ExplicitMetadataKey.NAME.key, value = "My Pool", valueType = MetadataType.String),
-                                Metadata.Primitive(key = ExplicitMetadataKey.ICON_URL.key, value = "XXX", valueType = MetadataType.Url),
-                                Metadata.Primitive(
-                                    key = ExplicitMetadataKey.POOL_UNIT.key,
-                                    value = "resource_tdx_19jd32jd3928jd3892jd329",
-                                    valueType = MetadataType.Address
-                                )
-                            ),
-                            resources = listOf(
-                                Resource.FungibleResource(
-                                    resourceAddress = XrdResource.address(),
-                                    ownedAmount = BigDecimal(1000),
-                                    metadata = listOf(
-                                        Metadata.Primitive(
-                                            key = ExplicitMetadataKey.SYMBOL.key,
-                                            value = XrdResource.SYMBOL,
-                                            valueType = MetadataType.String
-                                        )
-                                    )
-                                ),
-                                Resource.FungibleResource(
-                                    resourceAddress = "resource_abcdef",
-                                    ownedAmount = BigDecimal(100),
-                                    metadata = listOf(
-                                        Metadata.Primitive(
-                                            key = ExplicitMetadataKey.SYMBOL.key,
-                                            value = "CTM",
-                                            valueType = MetadataType.String
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                    )
+                    PoolUnit.sampleMainnet()
                 ),
                 liquidStakeUnits = listOf(
-                    LiquidStakeUnit(
-                        Resource.FungibleResource(
-                            resourceAddress = "resource_dfgh",
-                            ownedAmount = BigDecimal(100),
-                            metadata = listOf(
-                                Metadata.Primitive(
-                                    key = ExplicitMetadataKey.NAME.key,
-                                    value = "Liquid Stake Unit",
-                                    valueType = MetadataType.String
-                                )
-                            )
-                        ),
-                        ValidatorDetail(
-                            address = "validator_abc",
-                            totalXrdStake = BigDecimal(1000),
-                            metadata = listOf(
-                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Awesome Validator", MetadataType.String)
-                            )
-                        )
-                    ),
-                    LiquidStakeUnit(
-                        Resource.FungibleResource(
-                            resourceAddress = "resource_dfg",
-                            ownedAmount = BigDecimal(21),
-                            metadata = listOf(
-                                Metadata.Primitive(
-                                    key = ExplicitMetadataKey.NAME.key,
-                                    value = "Liquid Stake Unit",
-                                    valueType = MetadataType.String
-                                )
-                            )
-                        ),
-                        ValidatorDetail(
-                            address = "validator_abcd",
-                            totalXrdStake = BigDecimal(10000),
-                            metadata = listOf(
-                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Another Validator", MetadataType.String)
-                            )
-                        )
-                    )
+                    LiquidStakeUnit.sampleMainnet(),
+                    LiquidStakeUnit.sampleMainnet.other()
                 ),
                 stakeClaims = listOf(
-                    StakeClaim(
-                        nonFungibleResource = Resource.NonFungibleResource(
-                            resourceAddress = "resource_stake_claim-abc",
-                            amount = 2,
-                            items = listOf()
-                        ),
-                        ValidatorDetail(
-                            address = "validator_abc",
-                            totalXrdStake = BigDecimal(1000),
-                            metadata = listOf(
-                                Metadata.Primitive(ExplicitMetadataKey.NAME.key, "Awesome Validator", MetadataType.String)
-                            )
-                        )
-                    )
+                    StakeClaim.sampleMainnet()
                 )
             )
         )

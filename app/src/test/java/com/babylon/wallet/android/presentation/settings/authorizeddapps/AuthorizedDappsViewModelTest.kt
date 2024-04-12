@@ -1,10 +1,11 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.model.DApp
+import rdx.works.core.domain.DApp
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.radixdlt.sargon.AccountAddress
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,9 +30,7 @@ internal class AuthorizedDappsViewModelTest : StateViewModelTest<AuthorizedDapps
     override fun setUp() {
         super.setUp()
 
-        coEvery { getDAppsUseCase(setOf("address1", "address2"), false) } returns Result.success(
-            listOf(DApp(dAppAddress = "address1"), DApp(dAppAddress = "address2"))
-        )
+        coEvery { getDAppsUseCase(any<Set<AccountAddress>>(), false) } returns Result.success(DApp.sampleMainnet.all)
     }
 
     @Test
