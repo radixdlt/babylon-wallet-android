@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal
+package com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope

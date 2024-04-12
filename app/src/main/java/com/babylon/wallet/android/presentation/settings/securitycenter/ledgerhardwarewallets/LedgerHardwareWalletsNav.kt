@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets
+package com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.hilt.navigation.compose.hiltViewModel

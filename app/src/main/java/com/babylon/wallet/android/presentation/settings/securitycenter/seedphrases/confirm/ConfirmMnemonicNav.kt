@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm
+package com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.hilt.navigation.compose.hiltViewModel

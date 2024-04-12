@@ -1043,7 +1043,7 @@ If you have any “Legacy” Accounts (created on the Olympia network) to import
     <string name="appSettings_securityCenter">Security Center</string>
     <string name="appSettings_linkedConnectors">Linked Connectors</string>
     <string name="appSettings_troubleshooting">Troubleshooting</string>
-\n\n
+    \n\n
     <string name="appSettings_preferences_subtitle">Deposits, hidden Accounts and Personas, and advanced preferences</string>
     <string name="appSettings_personas_subtitle">Manage Radix dApp login details</string>
     <string name="appSettings_approvedDapps_subtitle">Manage the Radix dApps you’re connected to</string>
@@ -1051,4 +1051,9 @@ If you have any “Legacy” Accounts (created on the Olympia network) to import
     <string name="appSettings_linkedConnectors_subtitle">Connect to desktop through the Radix Connector browser extension </string>
     <string name="appSettings_troubleshooting_subtitle">Add your existing Accounts and contact support</string>
 \n\n
+    <string name="securitySettings_seedPhrasesSubtitle">Your seed phrases connected to your account</string>
+    <string name="securitySettings_ledgerHardwareWalletsSubtitle">Hardware wallet designed for holding crypto</string>
+\n\n
+\n\n
+    \n\n
 </resources>

@@ -11,20 +11,16 @@ import com.babylon.wallet.android.presentation.account.createaccount.withledger.
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.chooseLedger
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.addSingleMnemonic
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
-import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.accountRecoveryScanSelection
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.chooseseed.chooseSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.accountsecurity.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.importLegacyWalletScreen
-import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.ledgerHardwareWalletsScreen
-import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
-import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
-import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.seedPhrases
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.systemBackupSettingsScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm.confirmSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.revealSeedPhrase
 
 const val ROUTE_ACCOUNT_SECURITY_SCREEN = "settings_account_security_screen"
 const val ROUTE_ACCOUNT_SECURITY_GRAPH = "settings_account_security_graph"
@@ -42,18 +38,6 @@ fun NavGraphBuilder.accountSecurityNavGraph(
         route = ROUTE_ACCOUNT_SECURITY_GRAPH
     ) {
         accountSecurityScreen(navController)
-        seedPhrases(
-            onBackClick = { navController.popBackStack() },
-            onNavigateToRecoverMnemonic = {
-                navController.restoreMnemonics(args = RestoreMnemonicsArgs())
-            },
-            onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.body.value) }
-        )
-        ledgerHardwareWalletsScreen(
-            onBackClick = {
-                navController.navigateUp()
-            }
-        )
         importLegacyWalletScreen(
             onBackClick = {
                 navController.popBackStack()
@@ -139,14 +123,6 @@ fun NavGraphBuilder.accountSecurityScreen(
             viewModel = hiltViewModel(),
             onAccountSecuritySettingItemClick = { accountSecurityAndSettingsItem ->
                 when (accountSecurityAndSettingsItem) {
-                    SettingsItem.AccountSecurityAndSettingsItem.SeedPhrases -> {
-                        navController.seedPhrases()
-                    }
-
-                    SettingsItem.AccountSecurityAndSettingsItem.LedgerHardwareWallets -> {
-                        navController.ledgerHardwareWalletsScreen()
-                    }
-
                     SettingsItem.AccountSecurityAndSettingsItem.DepositGuarantees -> {
                         navController.depositGuaranteesScreen()
                     }

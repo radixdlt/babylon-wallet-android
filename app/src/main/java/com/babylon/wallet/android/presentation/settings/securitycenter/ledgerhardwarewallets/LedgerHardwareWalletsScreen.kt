@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets
+package com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background

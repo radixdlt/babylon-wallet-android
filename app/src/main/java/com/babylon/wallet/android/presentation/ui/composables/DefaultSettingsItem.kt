@@ -34,6 +34,7 @@ fun DefaultSettingsItem(
     title: String,
     onClick: () -> Unit,
     subtitleView: @Composable (ColumnScope.() -> Unit)? = null,
+    infoView: @Composable (ColumnScope.() -> Unit)? = null,
     iconView: @Composable (BoxScope.() -> Unit)? = null,
     showNotificationDot: Boolean = false
 ) {
@@ -76,6 +77,9 @@ fun DefaultSettingsItem(
             subtitleView?.let { subtitle ->
                 subtitle()
             }
+            infoView?.let { info ->
+                info()
+            }
         }
         Icon(
             painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
@@ -91,6 +95,7 @@ fun DefaultSettingsItem(
     title: String,
     onClick: () -> Unit,
     subtitle: String? = null,
+    info: String? = null,
     @DrawableRes icon: Int? = null,
     showNotificationDot: Boolean = false
 ) {
@@ -104,6 +109,15 @@ fun DefaultSettingsItem(
                     text = it,
                     style = RadixTheme.typography.body1Regular,
                     color = RadixTheme.colors.gray1
+                )
+            }
+        },
+        infoView = info?.let {
+            {
+                Text(
+                    text = it,
+                    style = RadixTheme.typography.body2Regular,
+                    color = RadixTheme.colors.gray2
                 )
             }
         },

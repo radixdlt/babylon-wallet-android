@@ -64,9 +64,39 @@ sealed interface SettingsItem {
         }
     }
 
+    sealed interface SecurityFactorsSettingsItem {
+
+        val count: Int
+
+        data class SeedPhrases(override val count: Int) : SecurityFactorsSettingsItem
+        data class LedgerHardwareWallets(override val count: Int) : SecurityFactorsSettingsItem
+
+        @StringRes
+        fun descriptionRes(): Int {
+            return when (this) {
+                is SeedPhrases -> R.string.displayMnemonics_seedPhrases
+                is LedgerHardwareWallets -> R.string.accountSecuritySettings_ledgerHardwareWallets_title
+            }
+        }
+
+        @StringRes
+        fun subtitleRes(): Int {
+            return when (this) {
+                is SeedPhrases -> R.string.securitySettings_seedPhrasesSubtitle
+                is LedgerHardwareWallets -> R.string.securitySettings_ledgerHardwareWalletsSubtitle
+            }
+        }
+
+        @DrawableRes
+        fun getIcon(): Int? { // add rest of icons
+            return when (this) {
+                is SeedPhrases -> DSR.ic_seed_phrases
+                is LedgerHardwareWallets -> DSR.ic_ledger_hardware_wallets
+            }
+        }
+    }
+
     sealed interface AccountSecurityAndSettingsItem {
-        data object SeedPhrases : AccountSecurityAndSettingsItem
-        data object LedgerHardwareWallets : AccountSecurityAndSettingsItem
         data object DepositGuarantees : AccountSecurityAndSettingsItem
         data class Backups(val backupState: BackupState) : AccountSecurityAndSettingsItem
         data object ImportFromLegacyWallet : AccountSecurityAndSettingsItem
@@ -75,8 +105,6 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                SeedPhrases -> R.string.displayMnemonics_seedPhrases
-                LedgerHardwareWallets -> R.string.accountSecuritySettings_ledgerHardwareWallets_title
                 DepositGuarantees -> R.string.accountSecuritySettings_depositGuarantees_title
                 is Backups -> R.string.accountSecuritySettings_backups_title
                 ImportFromLegacyWallet -> R.string.accountSecuritySettings_importFromLegacyWallet_title
@@ -87,8 +115,6 @@ sealed interface SettingsItem {
         @DrawableRes
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
-                SeedPhrases -> com.babylon.wallet.android.designsystem.R.drawable.ic_seed_phrases
-                LedgerHardwareWallets -> com.babylon.wallet.android.designsystem.R.drawable.ic_ledger_hardware_wallets
                 DepositGuarantees -> com.babylon.wallet.android.designsystem.R.drawable.ic_filter_list
                 is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
                 ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings

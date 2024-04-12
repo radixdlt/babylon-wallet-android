@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases
+package com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -6,23 +6,22 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import rdx.works.profile.data.model.factorsources.FactorSource
+import com.babylon.wallet.android.presentation.settings.SettingsItem
 
-const val ROUTE_SETTINGS_SHOW_MNEMONIC = "settings_seed_phrases"
+const val ROUTE_SECURITY_FACTORS_SCREEN = "settings_security_factors_screen"
 
-fun NavController.seedPhrases() {
-    navigate(ROUTE_SETTINGS_SHOW_MNEMONIC) {
+fun NavController.securityFactors() {
+    navigate(ROUTE_SECURITY_FACTORS_SCREEN) {
         launchSingleTop = true
     }
 }
 
-fun NavGraphBuilder.seedPhrases(
+fun NavGraphBuilder.securityFactors(
     onBackClick: () -> Unit,
-    onNavigateToRecoverMnemonic: () -> Unit,
-    onNavigateToSeedPhrase: (FactorSource.FactorSourceID.FromHash) -> Unit
+    onSecurityFactorSettingItemClick: (SettingsItem.SecurityFactorsSettingsItem) -> Unit
 ) {
     composable(
-        route = ROUTE_SETTINGS_SHOW_MNEMONIC,
+        route = ROUTE_SECURITY_FACTORS_SCREEN,
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
@@ -36,11 +35,10 @@ fun NavGraphBuilder.seedPhrases(
             EnterTransition.None
         }
     ) {
-        SeedPhrasesScreen(
+        SecurityFactorsScreen(
             viewModel = hiltViewModel(),
             onBackClick = onBackClick,
-            onNavigateToRecoverMnemonic = onNavigateToRecoverMnemonic,
-            onNavigateToSeedPhrase = onNavigateToSeedPhrase
+            onSecurityFactorSettingItemClick = onSecurityFactorSettingItemClick
         )
     }
 }

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases
+package com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
