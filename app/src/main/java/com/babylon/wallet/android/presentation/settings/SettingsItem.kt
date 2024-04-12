@@ -27,7 +27,7 @@ sealed interface SettingsItem {
                 LinkToConnector -> R.string.empty
                 ApprovedDapps -> R.string.settings_authorizedDapps
                 is Personas -> R.string.settings_personas
-                is Preferences -> R.string.settings_appSettings
+                is Preferences -> R.string.appSettings_preferences
                 is DebugSettings -> R.string.settings_debugSettings
                 LinkedConnectors -> R.string.appSettings_linkedConnectors
                 SecurityCenter -> R.string.appSettings_securityCenter
