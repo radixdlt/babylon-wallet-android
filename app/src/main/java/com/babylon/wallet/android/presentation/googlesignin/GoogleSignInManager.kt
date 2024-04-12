@@ -39,7 +39,7 @@ class GoogleSignInManager @Inject constructor(
 
     suspend fun handleSignInResult(result: ActivityResult): Result<GoogleAccount> {
         return withContext(ioDispatcher) {
-            suspendCancellableCoroutine { continuation ->
+            suspendCancellableCoroutine<Result<GoogleAccount>> { continuation ->
 
                 if (result.resultCode != Activity.RESULT_OK) {
                     continuation.resumeIfActive(Result.failure(exception = getCancelReason(result.data)))
@@ -64,6 +64,11 @@ class GoogleSignInManager @Inject constructor(
                     .addOnFailureListener { exception ->
                         continuation.resumeIfActive(Result.failure(exception = exception))
                     }
+            }.also {
+                if (it.isFailure && it.exceptionOrNull() is SecurityException) {
+                    // user signed in but didn't grant access to Drive therefore sign out
+                    signOut()
+                }
             }
         }
     }
@@ -106,13 +111,19 @@ class GoogleSignInManager @Inject constructor(
     // This method will return the GoogleSignInAccount even if the access has been revoked from Drive settings.
     // We must use the Drive api (e.g. accessing the files) in order to get a UserRecoverableAuthIOException.
     fun getSignedInGoogleAccount(): GoogleAccount? {
-        return GoogleSignIn.getLastSignedInAccount(applicationContext)?.let {
-            GoogleAccount(
-                email = it.email,
-                name = it.account?.name,
-                photoUrl = it.photoUrl
-            )
-        }
+        GoogleSignIn.getLastSignedInAccount(applicationContext)?.let { googleSignInAccount ->
+            val isDriveAccessGranted = googleSignInAccount.grantedScopes.contains(driveAppDataScope)
+
+            return if (isDriveAccessGranted) {
+                GoogleAccount(
+                    email = googleSignInAccount.email,
+                    name = googleSignInAccount.account?.name,
+                    photoUrl = googleSignInAccount.photoUrl
+                )
+            } else {
+                null
+            }
+        } ?: return null
     }
 
     private fun getCancelReason(resultData: Intent?) =
