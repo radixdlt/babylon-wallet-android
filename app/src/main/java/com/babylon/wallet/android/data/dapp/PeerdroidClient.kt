@@ -11,7 +11,6 @@ import com.babylon.wallet.android.data.dapp.model.toDomainModel
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
-import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hex
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.sargon.RadixConnectPassword

@@ -2,7 +2,6 @@ package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.babylon.wallet.android.domain.model.TransactionManifestData
 import com.radixdlt.hex.decode
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.sargon.NetworkId

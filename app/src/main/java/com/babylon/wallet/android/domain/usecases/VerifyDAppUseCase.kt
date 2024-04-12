@@ -2,16 +2,16 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepository
-import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.asRadixWalletException
 import com.babylon.wallet.android.domain.getDappMessage
-import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest
 import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.init
+import com.babylon.wallet.android.data.repository.state.StateRepository
+import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.DApp
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
@@ -26,9 +26,8 @@ class VerifyDAppUseCase @Inject constructor(
 
     suspend operator fun invoke(request: IncomingRequest): Result<Boolean> {
         val dAppDefinitionAddress = runCatching { AccountAddress.init(request.metadata.dAppDefinitionAddress) }.getOrElse {
-            dAppMessenger.sendWalletInteractionResponseFailure(
-                remoteConnectorId = request.remoteConnectorId,
-                requestId = request.id,
+            respondToIncomingRequestUseCase.respondWithFailure(
+                request = request,
                 error = WalletErrorType.InvalidRequest
             )
             return Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
@@ -40,7 +39,7 @@ class VerifyDAppUseCase @Inject constructor(
         } else {
             validateTwoWayLink(
                 origin = request.metadata.origin,
-                dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
+                dAppDefinitionAddress = dAppDefinitionAddress
             ).onFailure { error ->
                 error.asRadixWalletException()?.let { radixWalletException ->
                     val walletErrorType = radixWalletException.toConnectorExtensionError() ?: return@let

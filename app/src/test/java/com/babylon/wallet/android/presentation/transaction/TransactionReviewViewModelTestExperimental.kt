@@ -10,7 +10,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionPrevi
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmitResponse
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -147,7 +147,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     }
 
     private fun mockManifestInput(manifestData: TransactionManifestData = sampleManifest(instructions = "")) {
-        val transactionRequest = MessageFromDataChannel.IncomingRequest.TransactionRequest(
+        val transactionRequest = IncomingMessage.IncomingRequest.TransactionRequest(
             remoteConnectorId = "",
             requestId = transactionId,
             transactionManifestData = manifestData,

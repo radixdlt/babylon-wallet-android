@@ -15,7 +15,6 @@ import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.radixdlt.ret.SignatureWithPublicKey
 import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.authenticationSigningFactorInstance
