@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -85,11 +86,26 @@ class AccountSettingsViewModel @Inject constructor(
             getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accounts ->
                 accounts.firstOrNull { it.address == args.address.string }
             }.collect { account ->
+                val thirdPartyDefaultDepositRule = account.onLedgerSettings.thirdPartyDeposits.depositRule
                 _state.update { state ->
                     state.copy(
                         accountName = account.displayName,
                         accountNameChanged = account.displayName,
-                        account = account
+                        account = account,
+                        settingsSections = state.settingsSections.mapWhen(
+                            predicate = { it is AccountSettingsSection.AccountSection },
+                            mutation = { section ->
+                                val updatedSection = section as AccountSettingsSection.AccountSection
+                                updatedSection.copy(
+                                    settingsItems = updatedSection.settingsItems.mapWhen(
+                                        predicate = { it is AccountSettingItem.ThirdPartyDeposits },
+                                        mutation = {
+                                            AccountSettingItem.ThirdPartyDeposits(thirdPartyDefaultDepositRule)
+                                        }
+                                    )
+                                )
+                            }
+                        ).toPersistentList()
                     )
                 }
             }
@@ -201,7 +217,9 @@ data class AccountPreferenceUiState(
     companion object {
         val defaultSettings = persistentListOf(
             AccountSettingsSection.PersonalizeSection(listOf(AccountSettingItem.AccountLabel)),
-            AccountSettingsSection.AccountSection(listOf(AccountSettingItem.ThirdPartyDeposits))
+            AccountSettingsSection.AccountSection(
+                listOf(AccountSettingItem.ThirdPartyDeposits(Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll))
+            )
         )
     }
 }

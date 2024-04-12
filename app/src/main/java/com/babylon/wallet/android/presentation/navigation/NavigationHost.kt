@@ -394,7 +394,7 @@ fun NavigationHost(
             },
             onAccountSettingItemClick = { item, accountAddress ->
                 when (item) {
-                    AccountSettingItem.ThirdPartyDeposits -> {
+                    is AccountSettingItem.ThirdPartyDeposits -> {
                         navController.accountThirdPartyDeposits(accountAddress)
                     }
 

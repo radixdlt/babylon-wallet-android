@@ -22,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
@@ -44,7 +43,7 @@ fun DefaultSettingsItem(
             .heightIn(min = 72.dp)
             .background(RadixTheme.colors.defaultBackground)
             .throttleClickable(onClick = onClick)
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
         verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
@@ -71,7 +70,7 @@ fun DefaultSettingsItem(
         ) {
             Text(
                 text = title,
-                style = RadixTheme.typography.body2Header,
+                style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
             subtitleView?.let { subtitle ->
@@ -103,8 +102,8 @@ fun DefaultSettingsItem(
             {
                 Text(
                     text = it,
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1
                 )
             }
         },
@@ -114,7 +113,7 @@ fun DefaultSettingsItem(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(id = it),
                     contentDescription = null,
-                    tint = Color.Unspecified
+                    tint = RadixTheme.colors.gray1
                 )
             }
         },

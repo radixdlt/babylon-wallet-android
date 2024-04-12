@@ -93,7 +93,6 @@ data class AppSettingsUiState(
     companion object {
         val default = AppSettingsUiState(
             settings = persistentSetOf(
-                SettingsItem.AppSettingsItem.LinkedConnectors,
                 SettingsItem.AppSettingsItem.Gateways,
                 SettingsItem.AppSettingsItem.EntityHiding,
                 SettingsItem.AppSettingsItem.DeveloperMode(false)

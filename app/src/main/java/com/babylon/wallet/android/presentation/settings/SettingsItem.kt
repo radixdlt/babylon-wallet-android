@@ -10,34 +10,55 @@ sealed interface SettingsItem {
 
     sealed interface TopLevelSettings {
         data object LinkToConnector : TopLevelSettings
-        data object ImportOlympiaWallet : TopLevelSettings
-        data object AuthorizedDapps : TopLevelSettings
-        data class Personas(val showBackupSecurityPrompt: Boolean = false) : TopLevelSettings
-        data class AccountSecurityAndSettings(val showNotificationWarning: Boolean) : TopLevelSettings
-        data object AppSettings : TopLevelSettings
+
+        data object SecurityCenter : TopLevelSettings
+        data object Personas : TopLevelSettings
+        data object ApprovedDapps : TopLevelSettings
+
+        data object LinkedConnectors : TopLevelSettings
+        data object Preferences : TopLevelSettings
+
+        data object Troubleshooting : TopLevelSettings
         data object DebugSettings : TopLevelSettings
 
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
                 LinkToConnector -> R.string.empty
-                ImportOlympiaWallet -> R.string.accountSecuritySettings_importFromLegacyWallet_title
-                AuthorizedDapps -> R.string.settings_authorizedDapps
+                ApprovedDapps -> R.string.settings_authorizedDapps
                 is Personas -> R.string.settings_personas
-                is AccountSecurityAndSettings -> R.string.settings_accountSecurityAndSettings
-                is AppSettings -> R.string.settings_appSettings
+                is Preferences -> R.string.settings_appSettings
                 is DebugSettings -> R.string.settings_debugSettings
+                LinkedConnectors -> R.string.appSettings_linkedConnectors
+                SecurityCenter -> R.string.appSettings_securityCenter
+                Troubleshooting -> R.string.appSettings_troubleshooting
+            }
+        }
+
+        @StringRes
+        fun subtitleRes(): Int {
+            return when (this) {
+                LinkToConnector -> R.string.empty
+                ApprovedDapps -> R.string.appSettings_approvedDapps_subtitle
+                is Personas -> R.string.appSettings_personas_subtitle
+                is Preferences -> R.string.appSettings_preferences_subtitle
+                is DebugSettings -> R.string.settings_debugSettings
+                LinkedConnectors -> R.string.appSettings_linkedConnectors_subtitle
+                SecurityCenter -> R.string.appSettings_securityCenter_subtitle
+                Troubleshooting -> R.string.appSettings_troubleshooting_subtitle
             }
         }
 
         @DrawableRes
         fun getIcon(): Int? {
             return when (this) {
-                AuthorizedDapps -> DSR.ic_authorized_dapps
+                ApprovedDapps -> DSR.ic_authorized_dapps
                 is Personas -> DSR.ic_personas
-                is AccountSecurityAndSettings -> DSR.ic_security
-                is AppSettings -> DSR.ic_app_settings
+                is Preferences -> DSR.ic_filter_list
                 is DebugSettings -> DSR.ic_app_settings
+                LinkedConnectors -> DSR.ic_desktop_connection
+                SecurityCenter -> DSR.ic_security_center
+                Troubleshooting -> DSR.ic_troubleshooting
                 else -> null
             }
         }
@@ -77,7 +98,6 @@ sealed interface SettingsItem {
     }
 
     sealed interface AppSettingsItem {
-        data object LinkedConnectors : AppSettingsItem
         data object Gateways : AppSettingsItem
         data object EntityHiding : AppSettingsItem
         data class DeveloperMode(val enabled: Boolean) : AppSettingsItem
@@ -86,7 +106,6 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                LinkedConnectors -> R.string.appSettings_linkedConnectors_title
                 Gateways -> R.string.appSettings_gateways_title
                 is DeveloperMode -> R.string.appSettings_developerMode_title
                 EntityHiding -> R.string.appSettings_entityHiding_title
@@ -97,7 +116,6 @@ sealed interface SettingsItem {
         @DrawableRes
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
-                LinkedConnectors -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 Gateways -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateways
                 EntityHiding -> com.babylon.wallet.android.designsystem.R.drawable.ic_entity
                 else -> null

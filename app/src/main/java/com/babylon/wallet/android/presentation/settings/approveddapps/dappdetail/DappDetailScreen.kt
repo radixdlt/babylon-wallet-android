@@ -1,6 +1,6 @@
 @file:Suppress("TooManyFunctions")
 
-package com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail
+package com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background

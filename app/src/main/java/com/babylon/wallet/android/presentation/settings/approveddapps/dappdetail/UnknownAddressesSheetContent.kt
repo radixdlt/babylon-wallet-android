@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail
+package com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

@@ -10,7 +10,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.ROUTE_DAPP_DETAIL
+import com.babylon.wallet.android.domain.model.DApp
+import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.ROUTE_DAPP_DETAIL
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.ROUTE_EDIT_PERSONA
 import rdx.works.core.domain.DApp
 

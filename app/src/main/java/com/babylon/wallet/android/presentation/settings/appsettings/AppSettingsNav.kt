@@ -13,7 +13,6 @@ import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.appsettings.entityhiding.hiddenEntitiesScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewaysScreen
-import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.linkedConnectorsScreen
 
 const val ROUTE_APP_SETTINGS_SCREEN = "settings_app_settings_screen"
 const val ROUTE_APP_SETTINGS_GRAPH = "settings_app_settings_graph"
@@ -32,9 +31,6 @@ fun NavGraphBuilder.appSettingsNavGraph(
         route = ROUTE_APP_SETTINGS_GRAPH
     ) {
         appSettingsScreen(navController)
-        linkedConnectorsScreen(onBackClick = {
-            navController.popBackStack()
-        })
         settingsGateway(navController)
         hiddenEntitiesScreen(onBackClick = {
             navController.popBackStack()
@@ -64,10 +60,6 @@ fun NavGraphBuilder.appSettingsScreen(
             viewModel = hiltViewModel(),
             onAppSettingItemClick = { appSettingsItem ->
                 when (appSettingsItem) {
-                    SettingsItem.AppSettingsItem.LinkedConnectors -> {
-                        navController.linkedConnectorsScreen()
-                    }
-
                     SettingsItem.AppSettingsItem.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }

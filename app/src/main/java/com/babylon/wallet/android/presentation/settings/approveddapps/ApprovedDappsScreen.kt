@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.authorizeddapps
+package com.babylon.wallet.android.presentation.settings.approveddapps
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,14 +38,14 @@ import kotlinx.collections.immutable.toImmutableList
 import rdx.works.core.domain.DApp
 
 @Composable
-fun AuthorizedDAppsScreen(
-    viewModel: AuthorizedDappsViewModel,
+fun ApprovedDAppsScreen(
+    viewModel: ApprovedDappsViewModel,
     onBackClick: () -> Unit,
     onDAppClick: (AccountAddress) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    AuthorizedDAppsContent(
+    ApprovedDAppsContent(
         modifier = modifier,
         onBackClick = onBackClick,
         state = state,
@@ -55,7 +55,7 @@ fun AuthorizedDAppsScreen(
 }
 
 @Composable
-private fun AuthorizedDAppsContent(
+private fun ApprovedDAppsContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     state: AuthorizedDappsUiState,
@@ -134,9 +134,9 @@ private fun AuthorizedDAppsContent(
 @UsesSampleValues
 @Preview(showBackground = true)
 @Composable
-fun AuthorizedDAppsContentPreview() {
+fun ApprovedDAppsContentPreview() {
     RadixWalletTheme {
-        AuthorizedDAppsContent(
+        ApprovedDAppsContent(
             onBackClick = {},
             state = AuthorizedDappsUiState(
                 dApps = DApp.sampleMainnet.all.toImmutableList()

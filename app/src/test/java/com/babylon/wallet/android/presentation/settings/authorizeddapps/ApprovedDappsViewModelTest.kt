@@ -1,11 +1,11 @@
 package com.babylon.wallet.android.presentation.settings.authorizeddapps
 
 import app.cash.turbine.test
-import rdx.works.core.domain.DApp
+import com.babylon.wallet.android.domain.model.DApp
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.presentation.StateViewModelTest
-import com.radixdlt.sargon.AccountAddress
+import com.babylon.wallet.android.presentation.settings.approveddapps.ApprovedDappsViewModel
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,20 +17,22 @@ import org.junit.Before
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-internal class AuthorizedDappsViewModelTest : StateViewModelTest<AuthorizedDappsViewModel>() {
+internal class ApprovedDappsViewModelTest : StateViewModelTest<ApprovedDappsViewModel>() {
 
     private val dAppConnectionRepository = DAppConnectionRepositoryFake()
     private val getDAppsUseCase = mockk<GetDAppsUseCase>()
 
-    override fun initVM(): AuthorizedDappsViewModel {
-        return AuthorizedDappsViewModel(getDAppsUseCase, dAppConnectionRepository)
+    override fun initVM(): ApprovedDappsViewModel {
+        return ApprovedDappsViewModel(getDAppsUseCase, dAppConnectionRepository)
     }
 
     @Before
     override fun setUp() {
         super.setUp()
 
-        coEvery { getDAppsUseCase(any<Set<AccountAddress>>(), false) } returns Result.success(DApp.sampleMainnet.all)
+        coEvery { getDAppsUseCase(setOf("address1", "address2"), false) } returns Result.success(
+            listOf(DApp(dAppAddress = "address1"), DApp(dAppAddress = "address2"))
+        )
     }
 
     @Test

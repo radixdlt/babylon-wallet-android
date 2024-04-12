@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.authorizeddapps
+package com.babylon.wallet.android.presentation.settings.approveddapps
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.domain.usecases.GetDAppsUseCase
@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 @Suppress("MagicNumber")
 @HiltViewModel
-class AuthorizedDappsViewModel @Inject constructor(
+class ApprovedDappsViewModel @Inject constructor(
     private val getDAppsUseCase: GetDAppsUseCase,
     private val dAppConnectionRepository: DAppConnectionRepository
 ) : StateViewModel<AuthorizedDappsUiState>() {
