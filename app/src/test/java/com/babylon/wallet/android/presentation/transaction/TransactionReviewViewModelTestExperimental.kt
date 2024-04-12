@@ -11,6 +11,7 @@ import com.babylon.wallet.android.data.gateway.generated.models.TransactionSubmi
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.model.IncomingMessage
+import com.babylon.wallet.android.domain.usecases.RespondToIncomingRequestUseCase
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
 import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.StateViewModelTest
@@ -78,8 +79,8 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         )
     }
     private val stateRepository = mockk<StateRepository>()
-    private val dAppMessenger = mockk<DappMessenger>()
-    private val appEventBus = mockk<AppEventBusImpl>()
+    private val respondToIncomingRequestUseCase = mockk<RespondToIncomingRequestUseCase>()
+    private val appEventBus = mockk<AppEventBus>()
     private val exceptionMessageProvider = mockk<ExceptionMessageProvider>()
     private val signTransactionUseCase = mockk<SignTransactionUseCase>().apply {
         every { signingState } returns flowOf()
@@ -95,7 +96,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         signTransactionUseCase = signTransactionUseCase,
         profileRepository = profileRepository,
         stateRepository = stateRepository,
-        dAppMessenger = dAppMessenger,
+        respondToIncomingRequestUseCase = respondToIncomingRequestUseCase,
         appEventBus = appEventBus,
         preferencesManager = preferencesManager,
         exceptionMessageProvider = exceptionMessageProvider,
@@ -148,8 +149,8 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
 
     private fun mockManifestInput(manifestData: TransactionManifestData = sampleManifest(instructions = "")) {
         val transactionRequest = IncomingMessage.IncomingRequest.TransactionRequest(
-            remoteConnectorId = "",
-            requestId = transactionId,
+            remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("remoteConnectorId"),
+            interactionId = transactionId,
             transactionManifestData = manifestData,
             requestMetadata = requestMetadata(manifestData = manifestData)
         ).also {
