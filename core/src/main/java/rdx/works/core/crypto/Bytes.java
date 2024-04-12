@@ -1,4 +1,4 @@
-package rdx.works.profile.ret.crypto;
+package rdx.works.core.crypto;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;

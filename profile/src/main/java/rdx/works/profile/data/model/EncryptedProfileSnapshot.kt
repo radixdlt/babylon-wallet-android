@@ -6,8 +6,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.decodeHex
 import rdx.works.core.toHexString
-import rdx.works.profile.ret.encryption.EncryptionScheme
-import rdx.works.profile.ret.encryption.KeyDerivationScheme
+import rdx.works.core.encryption.EncryptionScheme
+import rdx.works.core.encryption.KeyDerivationScheme
 
 @Serializable
 data class EncryptedProfileSnapshot(

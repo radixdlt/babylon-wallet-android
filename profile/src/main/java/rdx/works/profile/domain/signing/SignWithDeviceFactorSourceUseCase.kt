@@ -13,7 +13,7 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.ret.crypto.PrivateKey.Companion.toPrivateKey
+import rdx.works.core.crypto.PrivateKey.Companion.toPrivateKey
 import javax.inject.Inject
 
 class SignWithDeviceFactorSourceUseCase @Inject constructor(

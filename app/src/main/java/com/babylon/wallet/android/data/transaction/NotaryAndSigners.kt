@@ -10,7 +10,7 @@ import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.ret.crypto.PrivateKey
+import rdx.works.core.crypto.PrivateKey
 
 data class NotaryAndSigners(
     val signers: List<Entity>,

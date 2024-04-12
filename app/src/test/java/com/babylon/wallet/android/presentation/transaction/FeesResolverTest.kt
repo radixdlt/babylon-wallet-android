@@ -15,7 +15,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import rdx.works.profile.ret.crypto.PrivateKey
+import rdx.works.core.crypto.PrivateKey
 
 class FeesResolverTest {
 

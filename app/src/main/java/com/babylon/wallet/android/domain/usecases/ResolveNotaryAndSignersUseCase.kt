@@ -8,7 +8,7 @@ import com.radixdlt.sargon.extensions.string
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.accountsOnCurrentNetwork
 import rdx.works.profile.domain.personasOnCurrentNetwork
-import rdx.works.profile.ret.crypto.PrivateKey
+import rdx.works.core.crypto.PrivateKey
 import javax.inject.Inject
 
 class ResolveNotaryAndSignersUseCase @Inject constructor(

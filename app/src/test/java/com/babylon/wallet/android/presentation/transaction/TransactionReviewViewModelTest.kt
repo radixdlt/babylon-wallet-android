@@ -91,7 +91,7 @@ import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.ret.crypto.PrivateKey
+import rdx.works.core.crypto.PrivateKey
 import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)

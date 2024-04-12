@@ -53,7 +53,7 @@ import rdx.works.core.mapWhen
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.ret.crypto.PrivateKey
+import rdx.works.core.crypto.PrivateKey
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
