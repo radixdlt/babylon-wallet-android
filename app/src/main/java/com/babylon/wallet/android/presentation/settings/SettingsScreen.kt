@@ -30,7 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.BuildConfig
@@ -40,11 +39,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toPersistentList
 import com.radixdlt.sargon.DependencyInformation
 import com.radixdlt.sargon.extensions.string
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun SettingsScreen(
@@ -275,14 +272,16 @@ fun DependencyInformation.displayable(): String = remember(this) {
 fun SettingsScreenWithoutActiveConnectionPreview() {
     RadixWalletTheme {
         SettingsContent(
-            appSettings = listOf(
-                SettingsItem.TopLevelSettings.LinkToConnector,
-                SettingsItem.TopLevelSettings.SecurityCenter,
-                SettingsItem.TopLevelSettings.ApprovedDapps,
-                SettingsItem.TopLevelSettings.LinkedConnectors,
-                SettingsItem.TopLevelSettings.Preferences,
-                SettingsItem.TopLevelSettings.Troubleshooting
-            ).map { SettingsUiItem.Settings(it) }.toPersistentList(),
+            state = SettingsUiState(
+                settings = listOf(
+                    SettingsItem.TopLevelSettings.LinkToConnector,
+                    SettingsItem.TopLevelSettings.SecurityCenter,
+                    SettingsItem.TopLevelSettings.ApprovedDapps,
+                    SettingsItem.TopLevelSettings.LinkedConnectors,
+                    SettingsItem.TopLevelSettings.Preferences,
+                    SettingsItem.TopLevelSettings.Troubleshooting
+                ).map { SettingsUiItem.Settings(it) }.toPersistentList()
+            ),
             onSettingClick = {},
             onBackClick = {}
         )

@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import rdx.works.profile.data.model.Profile
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -60,7 +59,7 @@ class SettingsViewModel @Inject constructor(
 }
 
 data class SettingsUiState(
-    val settings: ImmutableList<SettingsItem.TopLevelSettings>
+    val settings: ImmutableList<SettingsUiItem>
 ) {
 
     val debugBuildInformation: DebugBuildInformation?
