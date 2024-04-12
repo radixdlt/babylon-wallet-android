@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -36,6 +37,7 @@ fun DefaultSettingsItem(
     subtitleView: @Composable (ColumnScope.() -> Unit)? = null,
     infoView: @Composable (ColumnScope.() -> Unit)? = null,
     iconView: @Composable (BoxScope.() -> Unit)? = null,
+    warningView: @Composable (ColumnScope.() -> Unit)? = null,
     showNotificationDot: Boolean = false
 ) {
     Row(
@@ -80,9 +82,12 @@ fun DefaultSettingsItem(
             infoView?.let { info ->
                 info()
             }
+            warningView?.let { warning ->
+                warning()
+            }
         }
         Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
+            painter = painterResource(id = R.drawable.ic_chevron_right),
             contentDescription = null,
             tint = RadixTheme.colors.gray1
         )
@@ -96,6 +101,7 @@ fun DefaultSettingsItem(
     onClick: () -> Unit,
     subtitle: String? = null,
     info: String? = null,
+    warning: String? = null,
     @DrawableRes icon: Int? = null,
     showNotificationDot: Boolean = false
 ) {
@@ -129,6 +135,25 @@ fun DefaultSettingsItem(
                     contentDescription = null,
                     tint = RadixTheme.colors.gray1
                 )
+            }
+        },
+        warningView = warning?.let {
+            {
+                Row(
+                    verticalAlignment = CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_warning_error),
+                        contentDescription = null,
+                        tint = RadixTheme.colors.orange1
+                    )
+                    Text(
+                        text = it,
+                        style = RadixTheme.typography.body2HighImportance,
+                        color = RadixTheme.colors.orange1
+                    )
+                }
             }
         },
         showNotificationDot = showNotificationDot

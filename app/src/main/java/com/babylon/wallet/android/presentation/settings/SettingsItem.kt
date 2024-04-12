@@ -68,7 +68,7 @@ sealed interface SettingsItem {
 
         val count: Int
 
-        data class SeedPhrases(override val count: Int) : SecurityFactorsSettingsItem
+        data class SeedPhrases(override val count: Int, val needsRecovery: Boolean) : SecurityFactorsSettingsItem
         data class LedgerHardwareWallets(override val count: Int) : SecurityFactorsSettingsItem
 
         @StringRes

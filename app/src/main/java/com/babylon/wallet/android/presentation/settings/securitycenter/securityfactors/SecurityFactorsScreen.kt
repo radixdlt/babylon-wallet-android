@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,6 +70,7 @@ private fun SecurityFactorsContent(
                 )
             }
             securityFactorsSettings.forEach { securityFactorsSettingsItem ->
+                val lastItem = securityFactorsSettings.last() == securityFactorsSettingsItem
                 item {
                     DefaultSettingsItem(
                         title = stringResource(id = securityFactorsSettingsItem.descriptionRes()),
@@ -85,8 +87,16 @@ private fun SecurityFactorsContent(
                             is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases -> {
                                 "${securityFactorsSettingsItem.count} Seed Phrases" // TODO crowdin
                             }
+                        },
+                        warning = if (securityFactorsSettingsItem is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases) {
+                            "Enter your seed phrase to recover Accounts" // TODO crowdin
+                        } else {
+                            null
                         }
                     )
+                    if (!lastItem) {
+                        HorizontalDivider(color = RadixTheme.colors.gray5)
+                    }
                 }
             }
         }
