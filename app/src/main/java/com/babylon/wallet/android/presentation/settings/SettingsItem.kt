@@ -97,7 +97,6 @@ sealed interface SettingsItem {
     }
 
     sealed interface AccountSecurityAndSettingsItem {
-        data object DepositGuarantees : AccountSecurityAndSettingsItem
         data class Backups(val backupState: BackupState) : AccountSecurityAndSettingsItem
         data object ImportFromLegacyWallet : AccountSecurityAndSettingsItem
         data object AccountRecovery : AccountSecurityAndSettingsItem
@@ -105,7 +104,6 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                DepositGuarantees -> R.string.accountSecuritySettings_depositGuarantees_title
                 is Backups -> R.string.accountSecuritySettings_backups_title
                 ImportFromLegacyWallet -> R.string.accountSecuritySettings_importFromLegacyWallet_title
                 AccountRecovery -> R.string.accountSecuritySettings_accountRecoveryScan_title
@@ -115,7 +113,6 @@ sealed interface SettingsItem {
         @DrawableRes
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
-                DepositGuarantees -> com.babylon.wallet.android.designsystem.R.drawable.ic_filter_list
                 is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
                 ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 AccountRecovery -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
@@ -123,19 +120,32 @@ sealed interface SettingsItem {
         }
     }
 
-    sealed interface AppSettingsItem {
-        data object Gateways : AppSettingsItem
-        data object EntityHiding : AppSettingsItem
-        data class DeveloperMode(val enabled: Boolean) : AppSettingsItem
-        data class CrashReporting(val enabled: Boolean) : AppSettingsItem
+    sealed interface WalletPreferencesSettingsItem {
+        data object DepositGuarantees : WalletPreferencesSettingsItem
+        data object EntityHiding : WalletPreferencesSettingsItem
+        data object Gateways : WalletPreferencesSettingsItem
+        data class DeveloperMode(val enabled: Boolean) : WalletPreferencesSettingsItem
+        data class CrashReporting(val enabled: Boolean) : WalletPreferencesSettingsItem
 
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
+                DepositGuarantees -> R.string.accountSecuritySettings_depositGuarantees_title
                 Gateways -> R.string.appSettings_gateways_title
                 is DeveloperMode -> R.string.appSettings_developerMode_title
                 EntityHiding -> R.string.appSettings_entityHiding_title
                 is CrashReporting -> R.string.appSettings_crashReporting_title
+            }
+        }
+
+        @StringRes
+        fun subtitleRes(): Int? {
+            return when (this) {
+                DepositGuarantees -> R.string.walletPreferencesSettings_defaultDeposit_subtitle
+                Gateways -> null
+                is DeveloperMode -> R.string.appSettings_developerMode_subtitle
+                EntityHiding -> R.string.walletPreferencesSettings_entityHiding_subtitle
+                is CrashReporting -> null
             }
         }
 
@@ -144,6 +154,7 @@ sealed interface SettingsItem {
             return when (this) {
                 Gateways -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateways
                 EntityHiding -> com.babylon.wallet.android.designsystem.R.drawable.ic_entity
+                DepositGuarantees -> DSR.ic_filter_list
                 else -> null
             }
         }

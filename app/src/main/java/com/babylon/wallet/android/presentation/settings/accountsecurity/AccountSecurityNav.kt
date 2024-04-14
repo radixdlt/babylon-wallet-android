@@ -15,7 +15,6 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.accountRecoveryScanSelection
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.chooseseed.chooseSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scan.accountRecoveryScan
-import com.babylon.wallet.android.presentation.settings.accountsecurity.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.importLegacyWalletScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.backup.systemBackupSettingsScreen
@@ -51,11 +50,6 @@ fun NavGraphBuilder.accountSecurityNavGraph(
                 navController.popBackStack(MAIN_ROUTE, false)
             },
             onClose = {
-                navController.popBackStack()
-            }
-        )
-        depositGuaranteesScreen(
-            onBackClick = {
                 navController.popBackStack()
             }
         )
@@ -123,10 +117,6 @@ fun NavGraphBuilder.accountSecurityScreen(
             viewModel = hiltViewModel(),
             onAccountSecuritySettingItemClick = { accountSecurityAndSettingsItem ->
                 when (accountSecurityAndSettingsItem) {
-                    SettingsItem.AccountSecurityAndSettingsItem.DepositGuarantees -> {
-                        navController.depositGuaranteesScreen()
-                    }
-
                     is SettingsItem.AccountSecurityAndSettingsItem.Backups -> {
                         navController.backupScreen()
                     }

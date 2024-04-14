@@ -11,8 +11,8 @@ import com.babylon.wallet.android.presentation.settings.accountsecurity.accountS
 import com.babylon.wallet.android.presentation.settings.approveddapps.approvedDAppsScreen
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsNavGraph
-import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.linkedConnectorsScreen
+import com.babylon.wallet.android.presentation.settings.appsettings.walletPreferencesScreen
 import com.babylon.wallet.android.presentation.settings.debug.debugSettings
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
@@ -89,7 +89,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                     }
 
                     is SettingsItem.TopLevelSettings.Preferences -> {
-                        navController.appSettingsScreen()
+                        navController.walletPreferencesScreen()
                     }
 
                     is SettingsItem.TopLevelSettings.DebugSettings -> {

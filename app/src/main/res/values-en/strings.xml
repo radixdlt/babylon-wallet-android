@@ -1050,10 +1050,8 @@ If you have any “Legacy” Accounts (created on the Olympia network) to import
     <string name="appSettings_securityCenter_subtitle">Manage your wallet security settings</string>
     <string name="appSettings_linkedConnectors_subtitle">Connect to desktop through the Radix Connector browser extension </string>
     <string name="appSettings_troubleshooting_subtitle">Add your existing Accounts and contact support</string>
-\n\n
     <string name="securitySettings_seedPhrasesSubtitle">Your seed phrases connected to your account</string>
     <string name="securitySettings_ledgerHardwareWalletsSubtitle">Hardware wallet designed for holding crypto</string>
-\n\n
-\n\n
-    \n\n
+    <string name="walletPreferencesSettings_defaultDeposit_subtitle">Set your guaranteed minimum for estimated deposits</string>
+    <string name="walletPreferencesSettings_entityHiding_subtitle">Manage hidden Accounts and Personas</string>
 </resources>

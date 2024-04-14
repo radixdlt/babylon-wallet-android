@@ -88,7 +88,9 @@ private fun SecurityFactorsContent(
                                 "${securityFactorsSettingsItem.count} Seed Phrases" // TODO crowdin
                             }
                         },
-                        warning = if (securityFactorsSettingsItem is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases) {
+                        warning = if (securityFactorsSettingsItem is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases &&
+                            securityFactorsSettingsItem.needsRecovery
+                        ) {
                             "Enter your seed phrase to recover Accounts" // TODO crowdin
                         } else {
                             null

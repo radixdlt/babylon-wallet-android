@@ -11,14 +11,15 @@ import com.babylon.wallet.android.presentation.account.createaccount.confirmatio
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.babylon.wallet.android.presentation.settings.accountsecurity.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.entityhiding.hiddenEntitiesScreen
 import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewaysScreen
 
-const val ROUTE_APP_SETTINGS_SCREEN = "settings_app_settings_screen"
-const val ROUTE_APP_SETTINGS_GRAPH = "settings_app_settings_graph"
+const val ROUTE_WALLET_PREFERENCES_SCREEN = "settings_wallet_preferences_screen"
+const val ROUTE_WALLET_PREFERENCES_GRAPH = "settings_wallet_preferences_graph"
 
-fun NavController.appSettingsScreen() {
-    navigate(ROUTE_APP_SETTINGS_SCREEN) {
+fun NavController.walletPreferencesScreen() {
+    navigate(ROUTE_WALLET_PREFERENCES_SCREEN) {
         launchSingleTop = true
     }
 }
@@ -27,22 +28,27 @@ fun NavGraphBuilder.appSettingsNavGraph(
     navController: NavController,
 ) {
     navigation(
-        startDestination = ROUTE_APP_SETTINGS_SCREEN,
-        route = ROUTE_APP_SETTINGS_GRAPH
+        startDestination = ROUTE_WALLET_PREFERENCES_SCREEN,
+        route = ROUTE_WALLET_PREFERENCES_GRAPH
     ) {
-        appSettingsScreen(navController)
+        walletPreferencesScreen(navController)
         settingsGateway(navController)
         hiddenEntitiesScreen(onBackClick = {
             navController.popBackStack()
         })
+        depositGuaranteesScreen(
+            onBackClick = {
+                navController.popBackStack()
+            }
+        )
     }
 }
 
-fun NavGraphBuilder.appSettingsScreen(
+fun NavGraphBuilder.walletPreferencesScreen(
     navController: NavController
 ) {
     composable(
-        route = ROUTE_APP_SETTINGS_SCREEN,
+        route = ROUTE_WALLET_PREFERENCES_SCREEN,
         enterTransition = {
             slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
         },
@@ -56,17 +62,21 @@ fun NavGraphBuilder.appSettingsScreen(
             EnterTransition.None
         }
     ) {
-        AppSettingsScreen(
+        WalletPreferencesScreen(
             viewModel = hiltViewModel(),
-            onAppSettingItemClick = { appSettingsItem ->
+            onWalletPreferenceItemClick = { appSettingsItem ->
                 when (appSettingsItem) {
-                    SettingsItem.AppSettingsItem.Gateways -> {
+                    SettingsItem.WalletPreferencesSettingsItem.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
-                    is SettingsItem.AppSettingsItem.CrashReporting,
-                    is SettingsItem.AppSettingsItem.DeveloperMode -> {}
-                    SettingsItem.AppSettingsItem.EntityHiding -> {
+                    is SettingsItem.WalletPreferencesSettingsItem.CrashReporting,
+                    is SettingsItem.WalletPreferencesSettingsItem.DeveloperMode -> {}
+                    SettingsItem.WalletPreferencesSettingsItem.EntityHiding -> {
                         navController.hiddenEntitiesScreen()
+                    }
+
+                    SettingsItem.WalletPreferencesSettingsItem.DepositGuarantees -> {
+                        navController.depositGuaranteesScreen()
                     }
                 }
             },

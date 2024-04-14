@@ -23,13 +23,13 @@ import rdx.works.profile.domain.security.UpdateDeveloperModeUseCase
 import javax.inject.Inject
 
 @HiltViewModel
-class AppSettingsViewModel @Inject constructor(
+class WalletPreferencesViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val preferencesManager: PreferencesManager,
     private val updateDeveloperModeUseCase: UpdateDeveloperModeUseCase
-) : StateViewModel<AppSettingsUiState>() {
+) : StateViewModel<WalletPreferencesUiState>() {
 
-    override fun initialState(): AppSettingsUiState = AppSettingsUiState.default
+    override fun initialState(): WalletPreferencesUiState = WalletPreferencesUiState.default
 
     init {
         readSettings()
@@ -41,15 +41,20 @@ class AppSettingsViewModel @Inject constructor(
                 .security
                 .map { it.isDeveloperModeEnabled }
                 .collect { isInDeveloperMode ->
-                    _state.updateSetting<SettingsItem.AppSettingsItem.DeveloperMode> {
-                        SettingsItem.AppSettingsItem.DeveloperMode(isInDeveloperMode)
+                    _state.updateSetting<SettingsItem.WalletPreferencesSettingsItem.DeveloperMode> {
+                        SettingsItem.WalletPreferencesSettingsItem.DeveloperMode(isInDeveloperMode)
                     }
                 }
         }
         if (BuildConfig.CRASH_REPORTING_AVAILABLE) {
             _state.update { settingsUiState ->
+                val updateCrashReportingPreference = PreferencesUiItem.Preference(
+                    SettingsItem.WalletPreferencesSettingsItem.CrashReporting(
+                        false
+                    )
+                )
                 settingsUiState.copy(
-                    settings = (settingsUiState.settings + SettingsItem.AppSettingsItem.CrashReporting(false)).toPersistentSet()
+                    settings = (settingsUiState.settings + updateCrashReportingPreference).toPersistentSet()
                 )
             }
             viewModelScope.launch {
@@ -58,8 +63,8 @@ class AppSettingsViewModel @Inject constructor(
                         deleteCrashlyticsUnsentReports()
                     }
                     enableCrashlytics(enabled)
-                    _state.updateSetting<SettingsItem.AppSettingsItem.CrashReporting> {
-                        SettingsItem.AppSettingsItem.CrashReporting(enabled)
+                    _state.updateSetting<SettingsItem.WalletPreferencesSettingsItem.CrashReporting> {
+                        SettingsItem.WalletPreferencesSettingsItem.CrashReporting(enabled)
                     }
                 }
             }
@@ -74,28 +79,38 @@ class AppSettingsViewModel @Inject constructor(
         preferencesManager.enableCrashReporting(enabled)
     }
 
-    private inline fun <reified S : SettingsItem.AppSettingsItem> MutableStateFlow<AppSettingsUiState>.updateSetting(
+    private inline fun <reified S : SettingsItem.WalletPreferencesSettingsItem> MutableStateFlow<WalletPreferencesUiState>.updateSetting(
         mutation: (S) -> S
     ) = update { uiState ->
         uiState.copy(
             settings = uiState.settings.mapWhen(
-                predicate = { it is S },
-                mutation = { mutation(it as S) }
+                predicate = { it is PreferencesUiItem.Preference && it.item is S },
+                mutation = {
+                    it as PreferencesUiItem.Preference
+                    PreferencesUiItem.Preference(mutation(it.item as S))
+                }
             ).toPersistentSet()
         )
     }
 }
 
-data class AppSettingsUiState(
-    val settings: ImmutableSet<SettingsItem.AppSettingsItem>
+sealed interface PreferencesUiItem {
+    data object AdvancedSection : PreferencesUiItem
+    data class Preference(val item: SettingsItem.WalletPreferencesSettingsItem) : PreferencesUiItem
+}
+
+data class WalletPreferencesUiState(
+    val settings: ImmutableSet<PreferencesUiItem>
 ) : UiState {
 
     companion object {
-        val default = AppSettingsUiState(
+        val default = WalletPreferencesUiState(
             settings = persistentSetOf(
-                SettingsItem.AppSettingsItem.Gateways,
-                SettingsItem.AppSettingsItem.EntityHiding,
-                SettingsItem.AppSettingsItem.DeveloperMode(false)
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferencesSettingsItem.DepositGuarantees),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferencesSettingsItem.EntityHiding),
+                PreferencesUiItem.AdvancedSection,
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferencesSettingsItem.Gateways),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferencesSettingsItem.DeveloperMode(false))
             )
         )
     }
