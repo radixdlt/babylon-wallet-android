@@ -79,8 +79,7 @@ class BackupViewModel @Inject constructor(
         if (isOn) {
             val intent = googleSignInManager.createSignInIntent()
             sendEvent(Event.SignInToGoogle(intent))
-        } else {
-            googleSignInManager.revokeAccess()
+        } else { // just turn off the cloud backup sync
             changeBackupSettingUseCase(isChecked = false)
         }
     }
