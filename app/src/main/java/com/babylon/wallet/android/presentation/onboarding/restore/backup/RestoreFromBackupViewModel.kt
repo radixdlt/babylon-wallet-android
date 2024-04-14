@@ -42,6 +42,7 @@ class RestoreFromBackupViewModel @Inject constructor(
         }
     }
 
+    @Deprecated("Remove when new cloud back up system in place")
     fun toggleRestoringProfileCheck(isChecked: Boolean) {
         if (state.value.restoringProfile?.header?.isCompatible == true) {
             _state.update { it.copy(isRestoringProfileChecked = isChecked) }
