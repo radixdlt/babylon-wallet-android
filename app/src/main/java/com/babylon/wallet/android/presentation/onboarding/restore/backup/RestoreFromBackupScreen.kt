@@ -87,7 +87,6 @@ fun RestoreFromBackupScreen(
         state = state,
         onBackClick = viewModel::onBackClick,
         turnOnCloudBackup = viewModel::turnOnCloudBackup,
-        onRestoringProfileCheckChanged = viewModel::toggleRestoringProfileCheck,
         onRestoreFromFileClick = {
             openDocument.launch(arrayOf("*/*"))
         },
@@ -119,7 +118,6 @@ private fun RestoreFromBackupContent(
     state: RestoreFromBackupViewModel.State,
     onBackClick: () -> Unit,
     turnOnCloudBackup: () -> Unit,
-    onRestoringProfileCheckChanged: (Boolean) -> Unit,
     onRestoreFromFileClick: () -> Unit,
     onMessageShown: () -> Unit,
     onPasswordTyped: (String) -> Unit,
@@ -395,7 +393,6 @@ fun RestoreFromBackupPreviewBackupExists() {
             ),
             onBackClick = {},
             turnOnCloudBackup = {},
-            onRestoringProfileCheckChanged = {},
             onRestoreFromFileClick = {},
             onMessageShown = {},
             onPasswordTyped = {},
@@ -417,7 +414,6 @@ fun RestoreFromBackupPreviewNoBackupExists() {
             ),
             onBackClick = {},
             turnOnCloudBackup = {},
-            onRestoringProfileCheckChanged = {},
             onRestoreFromFileClick = {},
             onMessageShown = {},
             onPasswordTyped = {},
