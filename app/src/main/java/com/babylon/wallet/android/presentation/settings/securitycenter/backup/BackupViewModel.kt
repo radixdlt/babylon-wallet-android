@@ -55,10 +55,6 @@ class BackupViewModel @Inject constructor(
                 _state.update {
                     it.copy(cloudBackupState = State.CloudBackupState.On(signedEmail = signedEmail))
                 }
-            } else if (signedEmail != null) { // cloud back up is authorized but profile is not updated
-                _state.update {
-                    it.copy(cloudBackupState = State.CloudBackupState.Off(warningMessage = "cloud back up is authorized but profile is not updated"))
-                }
             } else {
                 _state.update {
                     it.copy(cloudBackupState = State.CloudBackupState.Off())

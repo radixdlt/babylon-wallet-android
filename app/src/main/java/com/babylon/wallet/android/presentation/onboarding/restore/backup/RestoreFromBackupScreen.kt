@@ -224,103 +224,12 @@ private fun RestoreFromBackupContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 RadixSecondaryButton(
-                    text = "sign in",
+                    text = "sign in", // TODO when screen is ready
                     onClick = turnOnCloudBackup
                 )
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
                 Text(text = state.backupEmail)
             }
-
-            /*
-            Surface(
-                modifier = Modifier
-                    .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-                color = RadixTheme.colors.gray5,
-                shadowElevation = if (state.restoringProfile != null) 8.dp else 0.dp,
-                shape = RadixTheme.shapes.roundedRectMedium
-            ) {
-                if (state.restoringProfile != null) {
-                    Row(
-                        modifier = Modifier
-                            .clickable {
-                                onRestoringProfileCheckChanged(!state.isRestoringProfileChecked)
-                            }
-                            .padding(RadixTheme.dimensions.paddingDefault),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = RadixTheme.dimensions.paddingXSmall)
-                        ) {
-                            Text(
-                                text = stringResource(
-                                    id = R.string.recoverProfileBackup_backupFrom,
-                                    state.restoringProfile.header.lastUsedOnDevice.description
-                                ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                                color = RadixTheme.colors.gray2,
-                                style = RadixTheme.typography.body2Regular
-                            )
-
-                            Text(
-                                text = stringResource(
-                                    id = R.string.recoverProfileBackup_lastModified,
-                                    state.restoringProfile.header.lastUsedOnDevice.date.toDateString()
-                                ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                                color = RadixTheme.colors.gray2,
-                                style = RadixTheme.typography.body2Regular
-                            )
-
-                            Text(
-                                text = stringResource(
-                                    id = R.string.recoverProfileBackup_numberOfAccounts,
-                                    state.restoringProfile.header.contentHint.numberOfAccountsOnAllNetworksInTotal.toInt()
-                                ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                                color = RadixTheme.colors.gray2,
-                                style = RadixTheme.typography.body2Regular
-                            )
-
-                            Text(
-                                text = stringResource(
-                                    id = R.string.recoverProfileBackup_numberOfPersonas,
-                                    state.restoringProfile.header.contentHint.numberOfPersonasOnAllNetworksInTotal.toInt()
-                                ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
-                                color = RadixTheme.colors.gray2,
-                                style = RadixTheme.typography.body2Regular
-                            )
-
-                            if (!state.restoringProfile.header.isCompatible) {
-                                Text(
-                                    text = stringResource(id = R.string.recoverProfileBackup_incompatibleWalletDataLabel),
-                                    color = RadixTheme.colors.red1,
-                                    style = RadixTheme.typography.body2Regular
-                                )
-                            }
-                        }
-
-                        Checkbox(
-                            checked = state.isRestoringProfileChecked,
-                            onCheckedChange = onRestoringProfileCheckChanged,
-                            colors = CheckboxDefaults.colors(
-                                checkedColor = RadixTheme.colors.gray1,
-                                uncheckedColor = RadixTheme.colors.gray2,
-                                checkmarkColor = Color.White
-                            )
-                        )
-                    }
-                } else {
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(RadixTheme.dimensions.paddingXXLarge),
-                        text = stringResource(id = R.string.androidRecoverProfileBackup_noBackupsAvailable),
-                        color = RadixTheme.colors.gray2,
-                        textAlign = TextAlign.Center,
-                        style = RadixTheme.typography.secondaryHeader
-                    )
-                }
-            }
-             */
 
             RadixTextButton(
                 modifier = Modifier
