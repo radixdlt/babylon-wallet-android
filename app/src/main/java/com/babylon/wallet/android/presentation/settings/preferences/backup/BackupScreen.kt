@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.appsettings.backup
+package com.babylon.wallet.android.presentation.settings.preferences.backup
 
 import android.provider.DocumentsContract
 import androidx.activity.compose.BackHandler

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors
+package com.babylon.wallet.android.presentation.settings.preferences.linkedconnectors
 
 import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.AnimatedContentTransitionScope

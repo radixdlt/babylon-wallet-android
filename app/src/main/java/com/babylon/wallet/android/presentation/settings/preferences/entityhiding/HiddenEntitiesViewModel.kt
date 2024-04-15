@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.appsettings.entityhiding
+package com.babylon.wallet.android.presentation.settings.preferences.entityhiding
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.OneOffEvent

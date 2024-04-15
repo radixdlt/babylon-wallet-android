@@ -16,8 +16,8 @@ import com.babylon.wallet.android.presentation.settings.accountsecurity.accountr
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.chooseseed.chooseSeedPhrase
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.importLegacyWalletScreen
-import com.babylon.wallet.android.presentation.settings.appsettings.backup.backupScreen
-import com.babylon.wallet.android.presentation.settings.appsettings.backup.systemBackupSettingsScreen
+import com.babylon.wallet.android.presentation.settings.preferences.backup.backupScreen
+import com.babylon.wallet.android.presentation.settings.preferences.backup.systemBackupSettingsScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm.confirmSeedPhrase
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.revealSeedPhrase
 

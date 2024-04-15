@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors
+package com.babylon.wallet.android.presentation.settings.preferences.linkedconnectors
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel

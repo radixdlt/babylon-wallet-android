@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.appsettings
+package com.babylon.wallet.android.presentation.settings.preferences
 
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig
@@ -41,15 +41,15 @@ class WalletPreferencesViewModel @Inject constructor(
                 .security
                 .map { it.isDeveloperModeEnabled }
                 .collect { isInDeveloperMode ->
-                    _state.updateSetting<SettingsItem.WalletPreferencesSettingsItem.DeveloperMode> {
-                        SettingsItem.WalletPreferencesSettingsItem.DeveloperMode(isInDeveloperMode)
+                    _state.updateSetting<SettingsItem.WalletPreferences.DeveloperMode> {
+                        SettingsItem.WalletPreferences.DeveloperMode(isInDeveloperMode)
                     }
                 }
         }
         if (BuildConfig.CRASH_REPORTING_AVAILABLE) {
             _state.update { settingsUiState ->
                 val updateCrashReportingPreference = PreferencesUiItem.Preference(
-                    SettingsItem.WalletPreferencesSettingsItem.CrashReporting(
+                    SettingsItem.WalletPreferences.CrashReporting(
                         false
                     )
                 )
@@ -63,8 +63,8 @@ class WalletPreferencesViewModel @Inject constructor(
                         deleteCrashlyticsUnsentReports()
                     }
                     enableCrashlytics(enabled)
-                    _state.updateSetting<SettingsItem.WalletPreferencesSettingsItem.CrashReporting> {
-                        SettingsItem.WalletPreferencesSettingsItem.CrashReporting(enabled)
+                    _state.updateSetting<SettingsItem.WalletPreferences.CrashReporting> {
+                        SettingsItem.WalletPreferences.CrashReporting(enabled)
                     }
                 }
             }
@@ -79,7 +79,7 @@ class WalletPreferencesViewModel @Inject constructor(
         preferencesManager.enableCrashReporting(enabled)
     }
 
-    private inline fun <reified S : SettingsItem.WalletPreferencesSettingsItem> MutableStateFlow<WalletPreferencesUiState>.updateSetting(
+    private inline fun <reified S : SettingsItem.WalletPreferences> MutableStateFlow<WalletPreferencesUiState>.updateSetting(
         mutation: (S) -> S
     ) = update { uiState ->
         uiState.copy(
@@ -96,7 +96,7 @@ class WalletPreferencesViewModel @Inject constructor(
 
 sealed interface PreferencesUiItem {
     data object AdvancedSection : PreferencesUiItem
-    data class Preference(val item: SettingsItem.WalletPreferencesSettingsItem) : PreferencesUiItem
+    data class Preference(val item: SettingsItem.WalletPreferences) : PreferencesUiItem
 }
 
 data class WalletPreferencesUiState(
@@ -106,11 +106,11 @@ data class WalletPreferencesUiState(
     companion object {
         val default = WalletPreferencesUiState(
             settings = persistentSetOf(
-                PreferencesUiItem.Preference(SettingsItem.WalletPreferencesSettingsItem.DepositGuarantees),
-                PreferencesUiItem.Preference(SettingsItem.WalletPreferencesSettingsItem.EntityHiding),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DepositGuarantees),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.EntityHiding),
                 PreferencesUiItem.AdvancedSection,
-                PreferencesUiItem.Preference(SettingsItem.WalletPreferencesSettingsItem.Gateways),
-                PreferencesUiItem.Preference(SettingsItem.WalletPreferencesSettingsItem.DeveloperMode(false))
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.Gateways),
+                PreferencesUiItem.Preference(SettingsItem.WalletPreferences.DeveloperMode(false))
             )
         )
     }

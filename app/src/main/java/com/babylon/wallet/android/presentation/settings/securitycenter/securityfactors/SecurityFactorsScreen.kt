@@ -63,7 +63,7 @@ private fun SecurityFactorsContent(
         ) {
             item {
                 Text(
-                    text = "View and manage your security factors",
+                    text = "View and manage your security factors", // TODO crowdin
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray2,
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.appsettings.gateways
+package com.babylon.wallet.android.presentation.settings.preferences.gateways
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement

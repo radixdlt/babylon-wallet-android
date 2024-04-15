@@ -10,12 +10,12 @@ import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityNavGraph
 import com.babylon.wallet.android.presentation.settings.approveddapps.approvedDAppsScreen
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
-import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsNavGraph
-import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.linkedConnectorsScreen
-import com.babylon.wallet.android.presentation.settings.appsettings.walletPreferencesScreen
 import com.babylon.wallet.android.presentation.settings.debug.debugSettings
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.preferences.appSettingsNavGraph
+import com.babylon.wallet.android.presentation.settings.preferences.linkedconnectors.linkedConnectorsScreen
+import com.babylon.wallet.android.presentation.settings.preferences.walletPreferencesScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
 import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingSettings
 import com.babylon.wallet.android.presentation.status.assets.fungibleAssetDialog

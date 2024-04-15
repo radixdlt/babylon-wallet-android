@@ -120,12 +120,12 @@ sealed interface SettingsItem {
         }
     }
 
-    sealed interface WalletPreferencesSettingsItem {
-        data object DepositGuarantees : WalletPreferencesSettingsItem
-        data object EntityHiding : WalletPreferencesSettingsItem
-        data object Gateways : WalletPreferencesSettingsItem
-        data class DeveloperMode(val enabled: Boolean) : WalletPreferencesSettingsItem
-        data class CrashReporting(val enabled: Boolean) : WalletPreferencesSettingsItem
+    sealed interface WalletPreferences {
+        data object DepositGuarantees : WalletPreferences
+        data object EntityHiding : WalletPreferences
+        data object Gateways : WalletPreferences
+        data class DeveloperMode(val enabled: Boolean) : WalletPreferences
+        data class CrashReporting(val enabled: Boolean) : WalletPreferences
 
         @StringRes
         fun descriptionRes(): Int {

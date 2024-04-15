@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.qrcode
+package com.babylon.wallet.android.presentation.settings.preferences.linkedconnectors.qrcode
 
 import androidx.activity.compose.BackHandler
 import androidx.camera.core.CameraSelector

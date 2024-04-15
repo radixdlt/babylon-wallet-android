@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.appsettings
+package com.babylon.wallet.android.presentation.settings.preferences
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -12,8 +12,8 @@ import com.babylon.wallet.android.presentation.account.createaccount.createAccou
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.accountsecurity.depositguarantees.depositGuaranteesScreen
-import com.babylon.wallet.android.presentation.settings.appsettings.entityhiding.hiddenEntitiesScreen
-import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewaysScreen
+import com.babylon.wallet.android.presentation.settings.preferences.entityhiding.hiddenEntitiesScreen
+import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewaysScreen
 
 const val ROUTE_WALLET_PREFERENCES_SCREEN = "settings_wallet_preferences_screen"
 const val ROUTE_WALLET_PREFERENCES_GRAPH = "settings_wallet_preferences_graph"
@@ -66,16 +66,16 @@ fun NavGraphBuilder.walletPreferencesScreen(
             viewModel = hiltViewModel(),
             onWalletPreferenceItemClick = { appSettingsItem ->
                 when (appSettingsItem) {
-                    SettingsItem.WalletPreferencesSettingsItem.Gateways -> {
+                    SettingsItem.WalletPreferences.Gateways -> {
                         navController.navigate(Screen.SettingsEditGatewayApiDestination.route)
                     }
-                    is SettingsItem.WalletPreferencesSettingsItem.CrashReporting,
-                    is SettingsItem.WalletPreferencesSettingsItem.DeveloperMode -> {}
-                    SettingsItem.WalletPreferencesSettingsItem.EntityHiding -> {
+                    is SettingsItem.WalletPreferences.CrashReporting,
+                    is SettingsItem.WalletPreferences.DeveloperMode -> {}
+                    SettingsItem.WalletPreferences.EntityHiding -> {
                         navController.hiddenEntitiesScreen()
                     }
 
-                    SettingsItem.WalletPreferencesSettingsItem.DepositGuarantees -> {
+                    SettingsItem.WalletPreferences.DepositGuarantees -> {
                         navController.depositGuaranteesScreen()
                     }
                 }

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.settings.appsettings
+package com.babylon.wallet.android.presentation.settings.preferences
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -36,7 +36,7 @@ import kotlinx.collections.immutable.ImmutableSet
 @Composable
 fun WalletPreferencesScreen(
     viewModel: WalletPreferencesViewModel,
-    onWalletPreferenceItemClick: (SettingsItem.WalletPreferencesSettingsItem) -> Unit,
+    onWalletPreferenceItemClick: (SettingsItem.WalletPreferences) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -55,7 +55,7 @@ fun WalletPreferencesScreen(
 private fun WalletPreferencesContent(
     modifier: Modifier = Modifier,
     walletPreferences: ImmutableSet<PreferencesUiItem>,
-    onWalletPreferenceItemClick: (SettingsItem.WalletPreferencesSettingsItem) -> Unit,
+    onWalletPreferenceItemClick: (SettingsItem.WalletPreferences) -> Unit,
     onDeveloperModeToggled: (Boolean) -> Unit,
     onBackClick: () -> Unit,
     onCrashReportingToggled: (Boolean) -> Unit,
@@ -77,7 +77,7 @@ private fun WalletPreferencesContent(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Preferences",
+                title = "Preferences", // TODO crowdin
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBars
             )
@@ -107,7 +107,7 @@ private fun WalletPreferencesContent(
 
                             is PreferencesUiItem.Preference -> {
                                 when (val item = walletPreferenceItem.item) {
-                                    is SettingsItem.WalletPreferencesSettingsItem.DeveloperMode -> {
+                                    is SettingsItem.WalletPreferences.DeveloperMode -> {
                                         SwitchSettingsItem(
                                             modifier = Modifier
                                                 .background(RadixTheme.colors.defaultBackground)
@@ -121,7 +121,7 @@ private fun WalletPreferencesContent(
                                         )
                                     }
 
-                                    is SettingsItem.WalletPreferencesSettingsItem.CrashReporting -> {
+                                    is SettingsItem.WalletPreferences.CrashReporting -> {
                                         SwitchSettingsItem(
                                             modifier = Modifier
                                                 .background(RadixTheme.colors.defaultBackground)
