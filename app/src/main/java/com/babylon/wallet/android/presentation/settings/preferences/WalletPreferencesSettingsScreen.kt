@@ -143,7 +143,7 @@ private fun WalletPreferencesContent(
                                     else -> {
                                         DefaultSettingsItem(
                                             title = stringResource(id = item.descriptionRes()),
-                                            icon = item.getIcon(),
+                                            leadingIcon = item.getIcon(),
                                             subtitle = item.subtitleRes()?.let { stringResource(id = it) },
                                             onClick = {
                                                 onWalletPreferenceItemClick(item)

@@ -56,6 +56,23 @@ fun Context.openUrl(uri: Uri) {
 }
 
 @Suppress("SwallowedException")
+fun Context.openEmail() {
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        data = Uri.parse("mailto:")
+        putExtra(Intent.EXTRA_EMAIL, arrayOf("hello@radixdlt.com"))
+    }
+    try {
+        startActivity(intent)
+    } catch (activityNotFound: ActivityNotFoundException) {
+        Toast.makeText(
+            this,
+            "No email client installed", // TODO crowdin
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+}
+
+@Suppress("SwallowedException")
 fun NavController.routeExist(route: String): Boolean {
     return try {
         getBackStackEntry(route)

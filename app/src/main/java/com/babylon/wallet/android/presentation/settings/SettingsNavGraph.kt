@@ -7,16 +7,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityNavGraph
 import com.babylon.wallet.android.presentation.settings.approveddapps.approvedDAppsScreen
 import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.debug.debugSettings
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
-import com.babylon.wallet.android.presentation.settings.preferences.appSettingsNavGraph
-import com.babylon.wallet.android.presentation.settings.preferences.linkedconnectors.linkedConnectorsScreen
+import com.babylon.wallet.android.presentation.settings.preferences.preferencesNavGraph
 import com.babylon.wallet.android.presentation.settings.preferences.walletPreferencesScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenterNavGraph
+import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingNavGraph
 import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingSettings
 import com.babylon.wallet.android.presentation.status.assets.fungibleAssetDialog
 import com.babylon.wallet.android.presentation.status.assets.nftAssetDialog
@@ -55,10 +56,9 @@ fun NavGraphBuilder.settingsNavGraph(
                 navController.nftAssetDialog(resourceAddress = resource.address)
             }
         )
-        accountSecurityNavGraph(navController)
-        appSettingsNavGraph(navController)
-        securityCenter(navController)
-        troubleshootingSettings(navController)
+        preferencesNavGraph(navController)
+        securityCenterNavGraph(navController)
+        troubleshootingNavGraph(navController)
         if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
             debugSettings(navController)
         }

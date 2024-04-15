@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.settings.accountsecurity
 import app.cash.turbine.test
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
-import com.babylon.wallet.android.presentation.settings.accountsecurity.depositguarantees.DepositGuaranteesViewModel
+import com.babylon.wallet.android.presentation.settings.preferences.depositguarantees.DepositGuaranteesViewModel
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

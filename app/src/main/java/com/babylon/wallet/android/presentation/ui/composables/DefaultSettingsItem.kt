@@ -14,11 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -26,7 +24,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 
 @Composable
@@ -36,9 +33,15 @@ fun DefaultSettingsItem(
     onClick: () -> Unit,
     subtitleView: @Composable (ColumnScope.() -> Unit)? = null,
     infoView: @Composable (ColumnScope.() -> Unit)? = null,
-    iconView: @Composable (BoxScope.() -> Unit)? = null,
+    leadingIcon: @Composable (BoxScope.() -> Unit)? = null,
     warningView: @Composable (ColumnScope.() -> Unit)? = null,
-    showNotificationDot: Boolean = false
+    trailingIcon: @Composable (() -> Unit)? = {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_chevron_right),
+            contentDescription = null,
+            tint = RadixTheme.colors.gray1
+        )
+    }
 ) {
     Row(
         modifier = modifier
@@ -50,19 +53,12 @@ fun DefaultSettingsItem(
         verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
-        iconView?.let { icon ->
+        leadingIcon?.let { icon ->
             Box(
                 modifier = Modifier.size(32.dp),
                 contentAlignment = Center
             ) {
                 icon()
-
-                if (showNotificationDot) {
-                    Badge(
-                        modifier = Modifier.align(Alignment.TopEnd),
-                        backgroundColor = Red1
-                    )
-                }
             }
         }
         Column(
@@ -86,11 +82,7 @@ fun DefaultSettingsItem(
                 warning()
             }
         }
-        Icon(
-            painter = painterResource(id = R.drawable.ic_chevron_right),
-            contentDescription = null,
-            tint = RadixTheme.colors.gray1
-        )
+        trailingIcon?.invoke()
     }
 }
 
@@ -102,8 +94,14 @@ fun DefaultSettingsItem(
     subtitle: String? = null,
     info: String? = null,
     warning: String? = null,
-    @DrawableRes icon: Int? = null,
-    showNotificationDot: Boolean = false
+    @DrawableRes leadingIcon: Int? = null,
+    trailingIcon: @Composable (() -> Unit)? = {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_chevron_right),
+            contentDescription = null,
+            tint = RadixTheme.colors.gray1
+        )
+    }
 ) {
     DefaultSettingsItem(
         modifier = modifier,
@@ -127,7 +125,7 @@ fun DefaultSettingsItem(
                 )
             }
         },
-        iconView = icon?.let {
+        leadingIcon = leadingIcon?.let {
             {
                 Icon(
                     modifier = Modifier.size(24.dp),
@@ -156,6 +154,6 @@ fun DefaultSettingsItem(
                 }
             }
         },
-        showNotificationDot = showNotificationDot
+        trailingIcon = trailingIcon
     )
 }

@@ -75,7 +75,7 @@ private fun SecurityFactorsContent(
                     DefaultSettingsItem(
                         title = stringResource(id = securityFactorsSettingsItem.descriptionRes()),
                         subtitle = stringResource(id = securityFactorsSettingsItem.subtitleRes()),
-                        icon = securityFactorsSettingsItem.getIcon(),
+                        leadingIcon = securityFactorsSettingsItem.getIcon(),
                         onClick = {
                             onSecurityFactorSettingItemClick(securityFactorsSettingsItem)
                         },

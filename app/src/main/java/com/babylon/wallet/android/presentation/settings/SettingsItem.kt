@@ -4,7 +4,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import rdx.works.profile.data.model.BackupState
 
 sealed interface SettingsItem {
 
@@ -96,26 +95,40 @@ sealed interface SettingsItem {
         }
     }
 
-    sealed interface AccountSecurityAndSettingsItem {
-        data class Backups(val backupState: BackupState) : AccountSecurityAndSettingsItem
-        data object ImportFromLegacyWallet : AccountSecurityAndSettingsItem
-        data object AccountRecovery : AccountSecurityAndSettingsItem
+    sealed interface Troubleshooting {
+        data object AccountRecovery : Troubleshooting
+        data object ImportFromLegacyWallet : Troubleshooting
+        data object ContactSupport : Troubleshooting
+
+        data object Discord : Troubleshooting
 
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                is Backups -> R.string.accountSecuritySettings_backups_title
                 ImportFromLegacyWallet -> R.string.accountSecuritySettings_importFromLegacyWallet_title
                 AccountRecovery -> R.string.accountSecuritySettings_accountRecoveryScan_title
+                ContactSupport -> R.string.troubleshootingSettings_contactSupport
+                Discord -> R.string.troubleshootingSettings_discord
+            }
+        }
+
+        @StringRes
+        fun subtitleRes(): Int {
+            return when (this) {
+                ImportFromLegacyWallet -> R.string.troubleshootingSettings_legacyImport_subtitle
+                AccountRecovery -> R.string.troubleshootingSettings_accountRecoveryScan_subtitle
+                ContactSupport -> R.string.troubleshootingSettings_contactSupport_subtitle
+                Discord -> R.string.troubleshootingSettings_discord_subtitle
             }
         }
 
         @DrawableRes
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
-                is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
-                ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
-                AccountRecovery -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
+                ImportFromLegacyWallet -> DSR.ic_recovery
+                AccountRecovery -> DSR.ic_recovery
+                ContactSupport -> DSR.ic_email
+                Discord -> DSR.ic_discord
             }
         }
     }

@@ -119,7 +119,7 @@ private fun SettingsContent(
                                                 onSettingClick(settingsItem.item)
                                             },
                                             subtitle = stringResource(id = settingsItem.item.subtitleRes()),
-                                            icon = settingsItem.item.getIcon(),
+                                            leadingIcon = settingsItem.item.getIcon(),
                                             title = stringResource(id = settingsItem.item.descriptionRes())
                                         )
                                     }

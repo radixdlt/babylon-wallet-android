@@ -16,34 +16,49 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import rdx.works.profile.data.model.BackupState
 
 @Composable
 fun SecurityCenterScreen(
     modifier: Modifier = Modifier,
+    securityCenterViewModel: SecurityCenterViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
 ) {
-    SecurityCenterContent(modifier, onBackClick, onSecurityFactorsClick)
+    val state by securityCenterViewModel.state.collectAsStateWithLifecycle()
+    SecurityCenterContent(modifier = modifier, state = state, onBackClick = onBackClick, onSecurityFactorsClick = onSecurityFactorsClick)
 }
 
 @Composable
-private fun SecurityCenterContent(modifier: Modifier = Modifier, onBackClick: () -> Unit, onSecurityFactorsClick: () -> Unit) {
+private fun SecurityCenterContent(
+    modifier: Modifier = Modifier,
+    state: SecurityCenterViewModel.SecurityCenterUiState,
+    onBackClick: () -> Unit,
+    onSecurityFactorsClick: () -> Unit
+) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
             RadixCenteredTopAppBar(
-                title = "",
+                title = stringResource(id = R.string.empty),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBars,
                 contentColor = RadixTheme.colors.gray1,
@@ -70,15 +85,35 @@ private fun SecurityCenterContent(modifier: Modifier = Modifier, onBackClick: ()
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
-            StatusCard()
-            SecurityFactorsCard(onSecurityFactorsClick = onSecurityFactorsClick)
-            BackupConfigurationCard()
+            when {
+                state.securityFactorsState.contains(SecurityPromptType.NEEDS_RESTORE) -> {
+                    NotOkStatusCard(title = "Recovery required", subtitle = "Enter seed phrase to begin recover") // TODO crowdin
+                }
+
+                state.securityFactorsState.contains(SecurityPromptType.NEEDS_BACKUP) -> {
+                    NotOkStatusCard(
+                        title = "${state.accountsNeedRecovery} Accounts and ${state.personasNeedRecovery} Personas are/is not recoverable",
+                        subtitle = "View and write down your seed phrase so Accounts and Personas are recoverable"
+                    ) // TODO crowdin
+                }
+
+                state.backupState?.isWarningVisible == true -> {
+                    NotOkStatusCard(
+                        title = "Your wallet is not recoverable", // TODO crowdin
+                        subtitle = "Configuration Backup is not up to date. Create backup now." // TODO crowdin
+                    )
+                }
+
+                else -> OkStatusCard()
+            }
+            SecurityFactorsCard(onSecurityFactorsClick = onSecurityFactorsClick, needsAction = state.securityFactorsState.isNotEmpty())
+            BackupConfigurationCard(needsAction = state.backupState?.isWarningVisible == true)
         }
     }
 }
 
 @Composable
-private fun StatusCard(modifier: Modifier = Modifier) {
+private fun OkStatusCard(modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -97,7 +132,51 @@ private fun StatusCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun SecurityFactorsCard(modifier: Modifier = Modifier, onSecurityFactorsClick: () -> Unit) {
+private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtitle: String) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(RadixTheme.colors.orange1.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectMedium)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(RadixTheme.colors.orange1, RadixTheme.shapes.roundedRectTopMedium)
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingSmall),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
+        ) {
+            Icon(painter = painterResource(id = DSR.ic_warning_error), contentDescription = null, tint = RadixTheme.colors.white)
+            Text(
+                text = title,
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.white
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingSmall),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+        ) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = subtitle,
+                style = RadixTheme.typography.body1Regular,
+                color = RadixTheme.colors.orange1
+            )
+            Icon(painter = painterResource(id = DSR.ic_chevron_right), contentDescription = null, tint = RadixTheme.colors.orange1)
+        }
+    }
+}
+
+@Composable
+private fun SecurityFactorsCard(
+    modifier: Modifier = Modifier,
+    onSecurityFactorsClick: () -> Unit,
+    needsAction: Boolean
+) {
     Row(
         modifier = modifier
             .shadow(6.dp, shape = RadixTheme.shapes.roundedRectMedium)
@@ -112,14 +191,14 @@ private fun SecurityFactorsCard(modifier: Modifier = Modifier, onSecurityFactors
     ) {
         Icon(
             modifier = Modifier.size(80.dp),
-            painter = painterResource(id = DSR.ic_security_center),
+            painter = painterResource(id = DSR.ic_security_factors),
             contentDescription = null,
-            tint = RadixTheme.colors.green1
+            tint = Color.Unspecified
         )
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = RadixTheme.dimensions.paddingSmall, vertical = RadixTheme.dimensions.paddingDefault),
+                .padding(horizontal = RadixTheme.dimensions.paddingSmall),
             verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall, alignment = Alignment.CenterVertically)
         ) {
             Text(
@@ -137,11 +216,18 @@ private fun SecurityFactorsCard(modifier: Modifier = Modifier, onSecurityFactors
                 Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(painter = painterResource(id = DSR.ic_check_circle), contentDescription = null, tint = RadixTheme.colors.green1)
+                val icon = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle
+                val color = if (needsAction) RadixTheme.colors.orange1 else RadixTheme.colors.green1
+                val text = if (needsAction) "Action required" else "Active" // TODO crowdin
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = null,
+                    tint = color
+                )
                 Text(
-                    text = "Active", // TODO crowdin
+                    text = text,
                     style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.green1
+                    color = color
                 )
             }
         }
@@ -149,7 +235,7 @@ private fun SecurityFactorsCard(modifier: Modifier = Modifier, onSecurityFactors
 }
 
 @Composable
-private fun BackupConfigurationCard() {
+private fun BackupConfigurationCard(needsAction: Boolean) {
     Row(
         modifier = Modifier
             .shadow(6.dp, shape = RadixTheme.shapes.roundedRectMedium)
@@ -160,14 +246,14 @@ private fun BackupConfigurationCard() {
     ) {
         Icon(
             modifier = Modifier.size(80.dp),
-            painter = painterResource(id = DSR.ic_security_center),
+            painter = painterResource(id = DSR.ic_configuration_backup),
             contentDescription = null,
-            tint = RadixTheme.colors.green1
+            tint = Color.Unspecified
         )
         Column(
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = RadixTheme.dimensions.paddingSmall, vertical = RadixTheme.dimensions.paddingDefault),
+                .padding(horizontal = RadixTheme.dimensions.paddingSmall),
             verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall, alignment = Alignment.CenterVertically)
         ) {
             Text(
@@ -185,11 +271,18 @@ private fun BackupConfigurationCard() {
                 Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(painter = painterResource(id = DSR.ic_check_circle), contentDescription = null, tint = RadixTheme.colors.green1)
+                val icon = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle
+                val color = if (needsAction) RadixTheme.colors.orange1 else RadixTheme.colors.green1
+                val text = if (needsAction) "Action required" else "Backed up" // TODO crowdin
+                Icon(
+                    painter = painterResource(id = icon),
+                    contentDescription = null,
+                    tint = color
+                )
                 Text(
-                    text = "Backed up", // TODO crowdin
+                    text = text,
                     style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.green1
+                    color = color
                 )
             }
         }
@@ -198,11 +291,30 @@ private fun BackupConfigurationCard() {
 
 @Preview(showBackground = true)
 @Composable
-fun SecurityCenterContentPreview() {
+fun SecurityCenterContentPreviewAllOk() {
     RadixWalletTheme {
         SecurityCenterContent(
             onBackClick = {},
-            onSecurityFactorsClick = {}
+            onSecurityFactorsClick = {},
+            state = SecurityCenterViewModel.SecurityCenterUiState(
+                securityFactorsState = emptySet(),
+                backupState = null,
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SecurityCenterContentPreviewAllNotOk() {
+    RadixWalletTheme {
+        SecurityCenterContent(
+            onBackClick = {},
+            onSecurityFactorsClick = {},
+            state = SecurityCenterViewModel.SecurityCenterUiState(
+                securityFactorsState = setOf(SecurityPromptType.NEEDS_RESTORE),
+                backupState = BackupState.Closed
+            )
         )
     }
 }
