@@ -14,6 +14,7 @@ import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
@@ -32,7 +33,9 @@ class AddP2PLinkUseCaseTest {
         val addP2PLinkUseCase = AddP2PLinkUseCase(profileRepository)
         val expectedP2PLink = P2PLink.init(
             connectionPassword = "pass1234",
-            displayName = "Mac browser"
+            displayName = "Mac browser",
+            publicKey = "PublicKey key test",
+            purpose = P2PLinkPurpose.General
         )
 
         val initialProfile = Profile(
@@ -55,8 +58,12 @@ class AddP2PLinkUseCaseTest {
         whenever(profileRepository.profile).thenReturn(flowOf(initialProfile))
 
         addP2PLinkUseCase(
-            displayName = "Mac browser",
-            connectionPassword = "pass1234"
+            P2PLink.init(
+                connectionPassword = "pass1234",
+                displayName = "Mac browser",
+                publicKey = "publicKey",
+                purpose = P2PLinkPurpose.General
+            )
         )
 
         val updatedProfile = initialProfile.copy(

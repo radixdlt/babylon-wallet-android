@@ -8,19 +8,11 @@ import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 class AddP2PLinkUseCase @Inject constructor(
-    private val profileRepository: ProfileRepository,
+    private val profileRepository: ProfileRepository
 ) {
 
-    suspend operator fun invoke(
-        displayName: String,
-        connectionPassword: String
-    ) {
+    suspend operator fun invoke(p2pLink: P2PLink) {
         val profile = profileRepository.profile.first()
-
-        val p2pLink = P2PLink.init(
-            connectionPassword = connectionPassword,
-            displayName = displayName
-        )
 
         // Add p2p client to the profile
         val updatedProfile = profile.addP2PLink(

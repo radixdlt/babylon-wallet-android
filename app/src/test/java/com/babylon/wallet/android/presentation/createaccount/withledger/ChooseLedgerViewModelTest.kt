@@ -22,6 +22,7 @@ import org.junit.Before
 import org.junit.Test
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceResult
@@ -87,7 +88,18 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
 
     @Test
     fun `initial state is correct with 1 factor source and 1 p2pLink`() = runTest {
-        coEvery { getProfileUseCase() } returns flowOf(profile(p2pLinks = listOf(P2PLink("pwd", "chrome"))))
+        coEvery { getProfileUseCase() } returns flowOf(
+            profile(
+                p2pLinks = listOf(
+                    P2PLink.init(
+                        connectionPassword = "pwd",
+                        displayName = "chrome",
+                        publicKey = "publicKey",
+                        purpose = P2PLinkPurpose.General
+                    )
+                )
+            )
+        )
         val vm = vm.value
         advanceUntilIdle()
         vm.state.test {

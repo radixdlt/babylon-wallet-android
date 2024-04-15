@@ -61,24 +61,23 @@ fun LinkedConnectorsScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        addLinkConnectorViewModel.oneOffEvent.collect { event ->
+            when (event) {
+                AddLinkConnectorViewModel.Event.Close -> viewModel.onNewConnectorCloseClick()
+            }
+        }
+    }
+
     if (state.showAddLinkConnectorScreen) {
         AddLinkConnectorScreen(
             modifier = modifier,
-            showContent = addLinkConnectorState.showContent,
+            state = addLinkConnectorState,
             onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
             onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
-            connectorDisplayName = addLinkConnectorState.connectorDisplayName,
-            isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
-            onNewConnectorContinueClick = {
-                addLinkConnectorViewModel.onContinueClick()
-                viewModel.onNewConnectorCloseClick()
-            },
-            onNewConnectorCloseClick = {
-                addLinkConnectorViewModel.onCloseClick()
-                viewModel.onNewConnectorCloseClick()
-            },
-            invalidConnectionPassword = addLinkConnectorState.invalidConnectionPassword,
-            onInvalidConnectionPasswordDismissed = addLinkConnectorViewModel::onInvalidConnectionPasswordShown
+            onContinueClick = addLinkConnectorViewModel::onContinueClick,
+            onCloseClick = addLinkConnectorViewModel::onCloseClick,
+            onErrorDismiss = addLinkConnectorViewModel::onErrorDismiss
         )
     } else {
         LinkedConnectorsContent(

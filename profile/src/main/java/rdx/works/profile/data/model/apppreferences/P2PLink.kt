@@ -7,8 +7,7 @@ import kotlinx.serialization.Serializable
 data class P2PLink(
     /**
      * The most important property of this struct, this password,
-     * is used to be able to reestablish the P2P connection and also acts as the seed
-     * for the [id].
+     * is used to be able to reestablish the P2P connection.
      */
     @SerialName("connectionPassword")
     val connectionPassword: String,
@@ -17,19 +16,29 @@ data class P2PLink(
      * Client name, e.g. "Chrome on Macbook" or "My work Android"
      */
     @SerialName("displayName")
-    val displayName: String
+    val displayName: String,
+
+    @SerialName("publicKey")
+    val publicKey: String,
+
+    @SerialName("purpose")
+    val purpose: P2PLinkPurpose
 ) {
 
     val id: String
-        get() = connectionPassword
+        get() = publicKey
 
     companion object {
         fun init(
             connectionPassword: String,
-            displayName: String
+            displayName: String,
+            publicKey: String,
+            purpose: P2PLinkPurpose
         ): P2PLink = P2PLink(
             connectionPassword = connectionPassword,
-            displayName = displayName
+            displayName = displayName,
+            publicKey = publicKey,
+            purpose = purpose
         )
     }
 }

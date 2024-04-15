@@ -188,6 +188,15 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
                 FailedToSignAuthChallenge -> WalletErrorType.InvalidRequest
             }
     }
+
+    sealed class LinkConnectionException : RadixWalletException() {
+
+        data object InvalidQR : LinkConnectionException()
+
+        data object UnknownPurpose : LinkConnectionException()
+
+        data object PurposeChangeNotSupported : LinkConnectionException()
+    }
 }
 
 typealias ConnectorExtensionError = WalletErrorType
@@ -288,6 +297,12 @@ fun RadixWalletException.GatewayException.toUserFriendlyMessage(context: Context
     }
 }
 
+fun RadixWalletException.LinkConnectionException.toUserFriendlyMessage(context: Context): String = when (this) {
+    RadixWalletException.LinkConnectionException.InvalidQR -> context.getString(R.string.linkedConnectors_incorrectQrMessage)
+    RadixWalletException.LinkConnectionException.PurposeChangeNotSupported -> "Changing a Connector’s type is not supported." //TODO replace with strings res
+    RadixWalletException.LinkConnectionException.UnknownPurpose -> "This type of Connector link is not supported." //TODO replace with strings res
+}
+
 fun RadixWalletException.TransactionSubmitException.toUserFriendlyMessage(context: Context): String {
     return when (this) {
         is RadixWalletException.TransactionSubmitException.FailedToPollTXStatus -> {
@@ -379,6 +394,7 @@ fun RadixWalletException.toUserFriendlyMessage(context: Context): String {
         is RadixWalletException.PrepareTransactionException -> toUserFriendlyMessage(context)
         is RadixWalletException.TransactionSubmitException -> toUserFriendlyMessage(context)
         is RadixWalletException.GatewayException -> toUserFriendlyMessage(context)
+        is RadixWalletException.LinkConnectionException -> toUserFriendlyMessage(context)
     }
 }
 

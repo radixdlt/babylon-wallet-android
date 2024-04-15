@@ -20,13 +20,14 @@ import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
 import rdx.works.peerdroid.data.webrtc.model.completeWhenDisconnected
+import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
 import rdx.works.peerdroid.data.websocket.WebSocketClient
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.AnswerPayload.Companion.toAnswerPayload
 import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
 import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
+import rdx.works.peerdroid.domain.ConnectionIdHolder
 import timber.log.Timber
-import java.lang.IllegalStateException
 
 interface PeerdroidLink {
 
@@ -34,7 +35,7 @@ interface PeerdroidLink {
      * Call this function to add a connection in the wallet settings.
      *
      */
-    suspend fun addConnection(encryptionKey: ByteArray): Result<Unit>
+    suspend fun addConnection(encryptionKey: ByteArray, linkClientInteractionResponse: String): Result<Unit>
 }
 
 internal class PeerdroidLinkImpl(
@@ -58,15 +59,19 @@ internal class PeerdroidLinkImpl(
     // This CompletableDeferred will return a result indicating if the peer connection is ready or not.
     private lateinit var peerConnectionDeferred: CompletableDeferred<Result<Unit>>
 
-    override suspend fun addConnection(encryptionKey: ByteArray): Result<Unit> {
+    private var isLinkClientResponseSent = false
+
+    override suspend fun addConnection(encryptionKey: ByteArray, linkClientInteractionResponse: String): Result<Unit> {
         addConnectionDeferred = CompletableDeferred()
         peerConnectionDeferred = CompletableDeferred()
+        isLinkClientResponseSent = false
+
         // get connection id from encryption key
         val connectionId = encryptionKey.hash().hex
         Timber.d("\uD83D\uDDFC️ start process to add a new link connector with connectionId: $connectionId")
 
         withContext(ioDispatcher) {
-            observePeerConnectionUntilEstablished()
+            observePeerConnectionUntilEstablished(connectionId, linkClientInteractionResponse)
             peerConnectionDeferred.await() // wait until the peer connection is initialized and ready to negotiate
             // and now establish the web socket
             webSocketClient.initSession(
@@ -148,7 +153,10 @@ internal class PeerdroidLinkImpl(
 
     // a peer connection executed its lifecycle:
     // created -> connecting -> connected -> disconnected
-    private fun observePeerConnectionUntilEstablished() {
+    private fun observePeerConnectionUntilEstablished(
+        connectionId: String,
+        linkClientInteractionResponse: String
+    ) {
         webRtcManagerJob = webRtcManager
             .createPeerConnection("")
             .onStart { // for debugging
@@ -175,10 +183,29 @@ internal class PeerdroidLinkImpl(
                     }
                     PeerConnectionEvent.Connected -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection connected 🟢")
+
+                        val dataChannelWrapper = DataChannelWrapper(
+                            connectionIdHolder = ConnectionIdHolder(connectionId),
+                            webRtcDataChannel = webRtcManager.getDataChannel()
+                        )
+                        Timber.d("🗼 \uD83D\uDCE1️ send link client response to the connector extension ⬆️")
+                        dataChannelWrapper.sendMessage(linkClientInteractionResponse)
+                            .onSuccess {
+                                Timber.d("🗼️ link client response has been sent")
+                                isLinkClientResponseSent = true
+                                terminateWithSuccess()
+                            }
+                            .onFailure { throwable ->
+                                Timber.e("🗼️ failed to send link client response: ${throwable.message}❗")
+                                terminateWithError()
+                            }
                     }
                     is PeerConnectionEvent.Disconnected -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection disconnected 🔴")
-                        terminateWithSuccess()
+                        if (!isLinkClientResponseSent) {
+                            Timber.d("🗼 ⚡ disconnected before sending the link client response ❌")
+                            terminateWithError()
+                        }
                     }
                     is PeerConnectionEvent.Failed -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection failed ❌")

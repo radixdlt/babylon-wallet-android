@@ -2,15 +2,21 @@ package com.babylon.wallet.android.presentation.ui.composables
 
 import android.Manifest
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -20,16 +26,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.AddLinkConnectorUiState
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
+import com.babylon.wallet.android.utils.formattedSpans
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -38,17 +53,14 @@ import com.google.accompanist.permissions.rememberPermissionState
 @Composable
 fun AddLinkConnectorScreen(
     modifier: Modifier,
-    showContent: AddLinkConnectorUiState.ShowContent,
+    state: AddLinkConnectorUiState,
     onQrCodeScanned: (String) -> Unit,
     onConnectorDisplayNameChanged: (String) -> Unit,
-    connectorDisplayName: String,
-    isNewConnectorContinueButtonEnabled: Boolean,
-    onNewConnectorContinueClick: () -> Unit,
-    onNewConnectorCloseClick: () -> Unit,
-    invalidConnectionPassword: Boolean,
-    onInvalidConnectionPasswordDismissed: () -> Unit
+    onContinueClick: () -> Unit,
+    onCloseClick: () -> Unit,
+    onErrorDismiss: () -> Unit
 ) {
-    BackHandler(onBack = onNewConnectorCloseClick)
+    BackHandler(onBack = onCloseClick)
 
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
     LaunchedEffect(Unit) {
@@ -57,53 +69,26 @@ fun AddLinkConnectorScreen(
 
     AddLinkConnectorContent(
         modifier = modifier,
-        showContent = showContent,
+        state = state,
         isCameraPermissionGranted = cameraPermissionState.status.isGranted,
         onQrCodeScanned = onQrCodeScanned,
         onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
-        connectorDisplayName = connectorDisplayName,
-        isContinueButtonEnabled = isNewConnectorContinueButtonEnabled,
-        onContinueClick = onNewConnectorContinueClick,
-        onCloseClick = onNewConnectorCloseClick
+        onContinueClick = onContinueClick,
+        onCloseClick = onCloseClick,
+        onErrorDismiss = onErrorDismiss
     )
-    if (invalidConnectionPassword) {
-        BasicPromptAlertDialog(
-            finish = {
-                onInvalidConnectionPasswordDismissed()
-            },
-            title = {
-                Text(
-                    text = stringResource(id = R.string.linkedConnectors_incorrectQrTitle),
-                    style = RadixTheme.typography.body1Header,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            message = {
-                Text(
-                    text = stringResource(id = R.string.linkedConnectors_incorrectQrMessage),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray1
-                )
-            },
-            confirmText = stringResource(
-                id = R.string.common_ok
-            ),
-            dismissText = null
-        )
-    }
 }
 
 @Composable
 private fun AddLinkConnectorContent(
     modifier: Modifier = Modifier,
-    showContent: AddLinkConnectorUiState.ShowContent,
+    state: AddLinkConnectorUiState,
     isCameraPermissionGranted: Boolean,
     onQrCodeScanned: (String) -> Unit,
-    connectorDisplayName: String,
     onConnectorDisplayNameChanged: (String) -> Unit,
-    isContinueButtonEnabled: Boolean,
     onContinueClick: () -> Unit,
-    onCloseClick: () -> Unit
+    onCloseClick: () -> Unit,
+    onErrorDismiss: () -> Unit
 ) {
     Scaffold(
         modifier = modifier,
@@ -119,25 +104,57 @@ private fun AddLinkConnectorContent(
     ) { padding ->
         val keyboardController = LocalSoftwareKeyboardController.current
         Column(modifier = Modifier.padding(padding)) {
-            when (showContent) {
-                AddLinkConnectorUiState.ShowContent.ScanQrCode -> {
+            when (state.content) {
+                AddLinkConnectorUiState.Content.ScanQrCode -> {
                     if (isCameraPermissionGranted) {
                         ScanQrCode(onQrCodeScanned = onQrCodeScanned)
                     }
                 }
-
-                AddLinkConnectorUiState.ShowContent.NameLinkConnector -> {
+                is AddLinkConnectorUiState.Content.ApproveNewLinkConnector -> {
+                    ApproveConnector(
+                        title = "Link Connector", //TODO replace with strings res
+                        message = "This Connector will be trusted to verify the dApp origin of requests to this wallet.\n\nOnly continue if you are linking to the **official Radix Connector browser extension** - or a Connector you control and trust.", //TODO replace with strings res
+                        isInProgress = state.isAddingNewLinkConnectorInProgress,
+                        onContinueClick = onContinueClick,
+                        onCancelClick = onCloseClick
+                    )
+                }
+                is AddLinkConnectorUiState.Content.UpdateLinkConnector -> {
+                    ApproveConnector(
+                        title = "Update Link", //TODO replace with strings res
+                        message = "This appears to be a Radix Connector you previously linked to. Link will be updated.", //TODO replace with strings res
+                        isInProgress = state.isAddingNewLinkConnectorInProgress,
+                        onContinueClick = onContinueClick,
+                        onCancelClick = onCloseClick
+                    )
+                }
+                is AddLinkConnectorUiState.Content.NameLinkConnector -> {
                     NameNewConnector(
-                        connectorDisplayName = connectorDisplayName,
+                        content = state.content,
+                        isInProgress = state.isAddingNewLinkConnectorInProgress,
                         onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
-                        isContinueButtonEnabled = isContinueButtonEnabled,
                         onContinueClick = {
                             keyboardController?.hide()
                             onContinueClick()
-                        },
+                        }
                     )
                 }
             }
+        }
+    }
+
+    state.error?.let {
+        when (it) {
+            is AddLinkConnectorUiState.Error.InvalidQR -> ConnectionErrorDialog(
+                title = stringResource(id = R.string.linkedConnectors_incorrectQrTitle),
+                message = stringResource(id = R.string.linkedConnectors_incorrectQrMessage),
+                onDismiss = onErrorDismiss
+            )
+            is AddLinkConnectorUiState.Error.Other -> ConnectionErrorDialog(
+                title = "Link Failed", //TODO replace with strings res
+                message = it.message.getMessage(),
+                onDismiss = onErrorDismiss
+            )
         }
     }
 }
@@ -187,12 +204,87 @@ private fun ScanQrCode(
 }
 
 @Composable
+private fun ApproveConnector(
+    title: String,
+    message: String,
+    isInProgress: Boolean,
+    onContinueClick: () -> Unit,
+    onCancelClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+    ) {
+        Spacer(modifier = Modifier.weight(1f))
+
+        Image(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            painter = painterResource(
+                id = com.babylon.wallet.android.designsystem.R.drawable.icon_desktop_connection_large
+            ),
+            contentDescription = null
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = title,
+            style = RadixTheme.typography.title,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    start = RadixTheme.dimensions.paddingLarge,
+                    end = RadixTheme.dimensions.paddingLarge,
+                    bottom = RadixTheme.dimensions.paddingLarge
+                ),
+            text = message.formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
+            style = RadixTheme.typography.body1Regular,
+            color = RadixTheme.colors.gray1,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.weight(10f))
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadixSecondaryButton(
+                modifier = Modifier.weight(1f),
+                text = stringResource(id = R.string.common_cancel),
+                onClick = onCancelClick
+            )
+
+            Spacer(modifier = Modifier.width(RadixTheme.dimensions.paddingSmall))
+
+            RadixPrimaryButton(
+                text = stringResource(id = R.string.linkedConnectors_nameNewConnector_saveLinkButtonTitle),
+                onClick = onContinueClick,
+                modifier = Modifier.weight(1.5f),
+                isLoading = isInProgress
+            )
+        }
+
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
+    }
+}
+
+@Composable
 private fun NameNewConnector(
     modifier: Modifier = Modifier,
-    connectorDisplayName: String,
+    content: AddLinkConnectorUiState.Content.NameLinkConnector,
+    isInProgress: Boolean,
     onConnectorDisplayNameChanged: (String) -> Unit,
-    isContinueButtonEnabled: Boolean,
-    onContinueClick: () -> Unit,
+    onContinueClick: () -> Unit
 ) {
     Column(
         modifier = modifier
@@ -229,10 +321,13 @@ private fun NameNewConnector(
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingMedium),
             onValueChanged = onConnectorDisplayNameChanged,
-            value = connectorDisplayName,
+            value = content.connectorDisplayName,
             hint = stringResource(id = R.string.empty),
             optionalHint = stringResource(id = R.string.linkedConnectors_nameNewConnector_textFieldHint),
-            singleLine = true
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                capitalization = KeyboardCapitalization.Sentences
+            )
         )
         Spacer(modifier = Modifier.weight(1f))
         RadixPrimaryButton(
@@ -242,24 +337,86 @@ private fun NameNewConnector(
                 .fillMaxWidth()
                 .imePadding()
                 .padding(RadixTheme.dimensions.paddingMedium),
-            enabled = isContinueButtonEnabled
+            enabled = content.isContinueButtonEnabled,
+            isLoading = isInProgress
         )
     }
 }
 
+@Composable
+private fun ConnectionErrorDialog(
+    title: String,
+    message: String,
+    onDismiss: () -> Unit
+) {
+    BasicPromptAlertDialog(
+        finish = {
+            onDismiss()
+        },
+        title = {
+            Text(
+                text = title,
+                style = RadixTheme.typography.body1Header,
+                color = RadixTheme.colors.gray1
+            )
+        },
+        message = {
+            Text(
+                text = message,
+                style = RadixTheme.typography.body2Regular,
+                color = RadixTheme.colors.gray1
+            )
+        },
+        confirmText = "Dismiss", //TODO replace with strings res
+        dismissText = null
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
-fun NameNewConnectorPreview() {
+fun NameNewConnectorPreview(
+    @PreviewParameter(AddLinkConnectorPreviewProvider::class) state: AddLinkConnectorUiState
+) {
     RadixWalletTheme {
         AddLinkConnectorContent(
-            showContent = AddLinkConnectorUiState.ShowContent.NameLinkConnector,
+            state = state,
             isCameraPermissionGranted = true,
             onQrCodeScanned = {},
             onConnectorDisplayNameChanged = {},
-            connectorDisplayName = "",
-            isContinueButtonEnabled = false,
             onContinueClick = {},
-            onCloseClick = {}
+            onCloseClick = {},
+            onErrorDismiss = {}
         )
     }
+}
+
+class AddLinkConnectorPreviewProvider : PreviewParameterProvider<AddLinkConnectorUiState> {
+    override val values: Sequence<AddLinkConnectorUiState>
+        get() = sequenceOf(
+            AddLinkConnectorUiState(
+                isAddingNewLinkConnectorInProgress = false,
+                content = AddLinkConnectorUiState.Content.NameLinkConnector(
+                    isContinueButtonEnabled = true,
+                    connectorDisplayName = "Test Name"
+                ),
+                error = null
+            ),
+            AddLinkConnectorUiState(
+                isAddingNewLinkConnectorInProgress = false,
+                content = AddLinkConnectorUiState.Content.ApproveNewLinkConnector,
+                error = null
+            ),
+            AddLinkConnectorUiState(
+                isAddingNewLinkConnectorInProgress = false,
+                content = AddLinkConnectorUiState.Content.UpdateLinkConnector,
+                error = null
+            ),
+            AddLinkConnectorUiState(
+                isAddingNewLinkConnectorInProgress = false,
+                content = AddLinkConnectorUiState.Content.UpdateLinkConnector,
+                error = AddLinkConnectorUiState.Error.Other(
+                    message = UiMessage.ErrorMessage(null)
+                )
+            )
+        )
 }

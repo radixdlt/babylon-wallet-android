@@ -33,6 +33,7 @@ interface PreferencesManager {
     val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean>
     val lastNPSSurveyInstant: Flow<Instant?>
     val transactionCompleteCounter: Flow<Int>
+    val connectorExtensionLinkPublicKey: Flow<String?>
 
     suspend fun updateLastBackupInstant(backupInstant: Instant)
 
@@ -59,6 +60,8 @@ interface PreferencesManager {
     suspend fun incrementTransactionCompleteCounter()
 
     suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant)
+
+    suspend fun setConnectorExtensionLinkPublicKey(value: String)
 
     suspend fun clear(): Preferences
 }
@@ -228,6 +231,17 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
+    override suspend fun setConnectorExtensionLinkPublicKey(value: String) {
+        dataStore.edit { preferences ->
+            preferences[KEY_CE_LINK_PUBLIC_KEY] = value
+        }
+    }
+
+    override val connectorExtensionLinkPublicKey: Flow<String?> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_CE_LINK_PUBLIC_KEY]
+        }
+
     override suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
@@ -243,5 +257,6 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_TRANSACTIONS_COMPLETE_COUNT = intPreferencesKey("transaction_complete_count")
         val KEY_SHOW_NPS_SURVEY_INSTANT = stringPreferencesKey("show_nps_survey_instant")
         val KEY_UUID = stringPreferencesKey("uuid")
+        val KEY_CE_LINK_PUBLIC_KEY = stringPreferencesKey("KEY_CE_LINK_PUBLIC_KEY")
     }
 }

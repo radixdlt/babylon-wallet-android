@@ -33,6 +33,7 @@ import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
 import rdx.works.profile.data.model.apppreferences.P2PLink
+import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
@@ -57,11 +58,15 @@ class SampleDataProvider {
     val p2pLinksSample = listOf(
         P2PLink(
             displayName = "chrome connection",
-            connectionPassword = "chrome_pass"
+            connectionPassword = "chrome_pass",
+            publicKey = "public_key",
+            purpose = P2PLinkPurpose.General
         ),
         P2PLink(
             displayName = "firefox connection",
-            connectionPassword = "firefox_pass"
+            connectionPassword = "firefox_pass",
+            publicKey = "public_key",
+            purpose = P2PLinkPurpose.General
         )
     )
 

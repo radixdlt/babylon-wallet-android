@@ -120,21 +120,18 @@ fun ChooseLedgerScreen(
         is ChooseLedgerUiState.ShowContent.AddLinkConnector -> {
             AddLinkConnectorScreen(
                 modifier = Modifier,
-                showContent = addLinkConnectorState.showContent,
+                state = addLinkConnectorState,
                 onQrCodeScanned = addLinkConnectorViewModel::onQrCodeScanned,
                 onConnectorDisplayNameChanged = addLinkConnectorViewModel::onConnectorDisplayNameChanged,
-                connectorDisplayName = addLinkConnectorState.connectorDisplayName,
-                isNewConnectorContinueButtonEnabled = addLinkConnectorState.isContinueButtonEnabled,
-                onNewConnectorContinueClick = {
+                onContinueClick = {
                     addLinkConnectorViewModel.onContinueClick()
                     viewModel.onNewLinkedConnectorAdded()
                 },
-                onNewConnectorCloseClick = {
+                onCloseClick = {
                     addLinkConnectorViewModel.onCloseClick()
                     viewModel.onCloseClick()
                 },
-                invalidConnectionPassword = addLinkConnectorState.invalidConnectionPassword,
-                onInvalidConnectionPasswordDismissed = addLinkConnectorViewModel::onInvalidConnectionPasswordShown
+                onErrorDismiss = addLinkConnectorViewModel::onErrorDismiss
             )
         }
 
