@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.presentation.transaction
 
-import androidx.annotation.FloatRange
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.SavedStateHandle
