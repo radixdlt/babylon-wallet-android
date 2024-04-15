@@ -32,7 +32,7 @@ class OnboardingViewModel @Inject constructor(
         viewModelScope.launch {
             googleSignInManager.handleSignInResult(result)
                 .onSuccess { googleAccount ->
-                    _state.update { it.copy(backupEmail = googleAccount.email ?: "!") }
+                    _state.update { it.copy(backupEmail = googleAccount.email) }
                     Timber.d("cloud backup is authorized")
                 }
                 .onFailure { exception ->

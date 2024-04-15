@@ -47,10 +47,11 @@ class GoogleSignInManager @Inject constructor(
 
                 GoogleSignIn.getSignedInAccountFromIntent(result.data)
                     .addOnSuccessListener { googleSignInAccount ->
-                        if (googleSignInAccount.grantedScopes.contains(driveAppDataScope)) {
+                        val email = googleSignInAccount.email
+                        if (googleSignInAccount.grantedScopes.contains(driveAppDataScope) && email != null) {
                             val googleAccount = GoogleAccount(
+                                email = email,
                                 name = googleSignInAccount.displayName,
-                                email = googleSignInAccount.email,
                                 photoUrl = googleSignInAccount.photoUrl
                             )
                             continuation.resumeIfActive(Result.success(value = googleAccount))
@@ -113,10 +114,11 @@ class GoogleSignInManager @Inject constructor(
     fun getSignedInGoogleAccount(): GoogleAccount? {
         GoogleSignIn.getLastSignedInAccount(applicationContext)?.let { googleSignInAccount ->
             val isDriveAccessGranted = googleSignInAccount.grantedScopes.contains(driveAppDataScope)
+            val email = googleSignInAccount.email
 
-            return if (isDriveAccessGranted) {
+            return if (isDriveAccessGranted && email != null) {
                 GoogleAccount(
-                    email = googleSignInAccount.email,
+                    email = email,
                     name = googleSignInAccount.account?.name,
                     photoUrl = googleSignInAccount.photoUrl
                 )
@@ -153,7 +155,7 @@ class GoogleSignInManager @Inject constructor(
     }
 }
 
-fun <T> CancellableContinuation<T>.resumeIfActive(value: T) {
+private fun <T> CancellableContinuation<T>.resumeIfActive(value: T) {
     if (isActive) {
         resume(value)
     }
