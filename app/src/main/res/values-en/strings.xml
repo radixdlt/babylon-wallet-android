@@ -1040,4 +1040,18 @@ If you have any “Legacy” Accounts (created on the Olympia network) to import
   <string name="survey_reason_heading">What’s the main reason for your score?</string>
   <string name="survey_reason_fieldHint">Let us know...</string>
   <string name="survey_submitButton">Submit Feedback - Thanks!</string>
+  <string name="factorSourceActions_signature_title">Signature Request</string>
+  <string name="factorSourceActions_createAccount_title">Creating Account</string>
+  <string name="factorSourceActions_createPersona_title">Creating Persona</string>
+  <string name="factorSourceActions_deriveAccounts_title">Deriving Accounts</string>
+  <string name="factorSourceActions_proveOwnership_title">Proving Ownership</string>
+  <string name="factorSourceActions_encryptMessage_title">Encrypting Message</string>
+  <string name="factorSourceActions_createKey_title">Creating Key</string>
+  <string name="factorSourceActions_device_messageSignature">Authenticate to your phone to sign.</string>
+  <string name="factorSourceActions_device_message">Authenticate to your phone to complete using your phone\'s signing key.</string>
+  <string name="factorSourceActions_ledger_messageSignature">Make sure the following **Ledger hardware wallet** is connected to a computer with a linked Radix Connector browser extension.
+**Complete signing on the device.**</string>
+  <string name="factorSourceActions_ledger_messageDeriveAccounts">Make sure the following **Ledger hardware wallet** is connected to a computer with a linked Radix Connector browser extension.
+**Derivation may take up to a minute.**</string>
+  <string name="factorSourceActions_ledger_message">Make sure the following **Ledger hardware wallet** is connected to a computer with a linked Radix Connector browser extension.</string>
 </resources>
