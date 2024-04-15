@@ -14,8 +14,8 @@ val Persona.factorSourceId: FactorSourceId
 val Persona.derivationPathScheme: DerivationPathScheme
     get() = securityState.derivationPathScheme
 
-val Persona.derivationPathEntityIndex: UInt?
-    get() = securityState.transactionFactorInstance.publicKey.derivationPath.entityIndex
+val Persona.derivationPathEntityIndex: UInt
+    get() = securityState.transactionFactorInstance.publicKey.derivationPath.entityIndex ?: 0u
 
 val Persona.hasAuthSigning: Boolean
     get() = securityState.hasAuthSigning

@@ -1,6 +1,7 @@
 package rdx.works.core.sargon
 
 import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.EntityFlag
 import com.radixdlt.sargon.FactorSourceId
@@ -28,3 +29,9 @@ val Account.usesSECP256k1: Boolean
 
 val Account.isHidden: Boolean
     get() = EntityFlag.DELETED_BY_USER in flags
+
+val Account.isOlympia: Boolean
+    get() = usesSECP256k1
+
+val Account.hasAcceptKnownDepositRule: Boolean
+    get() = onLedgerSettings.thirdPartyDeposits.depositRule == DepositRule.ACCEPT_KNOWN
