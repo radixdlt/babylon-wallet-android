@@ -641,6 +641,7 @@ Or you can clear this wallet from this phone and start fresh.</string>
   <string name="misc_remoteThumbnails_vectorImageFailure">Can\'t displays image of vector type</string>
   <string name="misc_remoteThumbnails_loadingFailure">Can\'t load image</string>
   <string name="assetTransfer_transactionMessage">Message</string>
+  <string name="assetTransfer_transactionMessagePlaceholder">Add a message</string>
   <string name="assetTransfer_qrScanInstructions">Scan a QR code of a Radix Account address from another wallet or an exchange.</string>
   <string name="assetTransfer_sendTransferButton">Continue</string>
   <string name="assetTransfer_accountList_externalAccountName">Account</string>
