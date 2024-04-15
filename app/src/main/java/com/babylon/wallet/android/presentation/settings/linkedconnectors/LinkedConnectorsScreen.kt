@@ -97,7 +97,7 @@ private fun LinkedConnectorsContent(
     isAddingNewLinkConnectorInProgress: Boolean,
     activeLinkedConnectorsList: ImmutableList<P2PLink>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (String) -> Unit,
+    onDeleteConnectorClick: (P2PLink) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -110,7 +110,7 @@ private fun LinkedConnectorsContent(
             )
         }
     ) { padding ->
-        var connectionPasswordToDelete by remember { mutableStateOf<String?>(null) }
+        var connectionLinkToDelete by remember { mutableStateOf<P2PLink?>(null) }
 
         Column(modifier = Modifier.padding(padding)) {
             HorizontalDivider(color = RadixTheme.colors.gray5)
@@ -119,19 +119,19 @@ private fun LinkedConnectorsContent(
                 ActiveLinkedConnectorDetails(
                     activeLinkedConnectorsList = activeLinkedConnectorsList,
                     onLinkNewConnectorClick = onLinkNewConnectorClick,
-                    onDeleteConnectorClick = { connectionPasswordToDelete = it },
+                    onDeleteConnectorClick = { connectionLinkToDelete = it },
                     isAddingNewLinkConnectorInProgress = isAddingNewLinkConnectorInProgress,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                if (connectionPasswordToDelete != null) {
+                if (connectionLinkToDelete != null) {
                     @Suppress("UnsafeCallOnNullableType")
                     BasicPromptAlertDialog(
                         finish = {
                             if (it) {
-                                onDeleteConnectorClick(connectionPasswordToDelete!!)
+                                onDeleteConnectorClick(connectionLinkToDelete!!)
                             }
-                            connectionPasswordToDelete = null
+                            connectionLinkToDelete = null
                         },
                         title = {
                             Text(
@@ -159,7 +159,7 @@ private fun LinkedConnectorsContent(
 private fun ActiveLinkedConnectorDetails(
     activeLinkedConnectorsList: ImmutableList<P2PLink>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (String) -> Unit,
+    onDeleteConnectorClick: (P2PLink) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -184,7 +184,7 @@ private fun ActiveLinkedConnectorDetails(
 private fun ActiveLinkedConnectorsListContent(
     modifier: Modifier = Modifier,
     activeLinkedConnectorsList: ImmutableList<P2PLink>,
-    onDeleteConnectorClick: (String) -> Unit,
+    onDeleteConnectorClick: (P2PLink) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     onLinkNewConnectorClick: () -> Unit
 ) {
@@ -228,7 +228,7 @@ private fun ActiveLinkedConnectorsListContent(
 private fun ActiveLinkedConnectorContent(
     activeLinkedConnector: P2PLink,
     modifier: Modifier = Modifier,
-    onDeleteConnectorClick: (String) -> Unit,
+    onDeleteConnectorClick: (P2PLink) -> Unit,
 ) {
     Column(modifier = modifier) {
         Row(
@@ -245,7 +245,7 @@ private fun ActiveLinkedConnectorContent(
                 color = RadixTheme.colors.gray2
             )
             IconButton(onClick = {
-                onDeleteConnectorClick(activeLinkedConnector.connectionPassword)
+                onDeleteConnectorClick(activeLinkedConnector)
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_delete_24),

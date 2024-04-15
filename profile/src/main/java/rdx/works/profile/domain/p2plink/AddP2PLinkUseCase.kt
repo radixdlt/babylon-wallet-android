@@ -2,7 +2,7 @@ package rdx.works.profile.domain.p2plink
 
 import kotlinx.coroutines.flow.first
 import rdx.works.profile.data.model.apppreferences.P2PLink
-import rdx.works.profile.data.model.extensions.addP2PLink
+import rdx.works.profile.data.model.extensions.updateP2PLink
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
@@ -15,7 +15,7 @@ class AddP2PLinkUseCase @Inject constructor(
         val profile = profileRepository.profile.first()
 
         // Add p2p client to the profile
-        val updatedProfile = profile.addP2PLink(
+        val updatedProfile = profile.updateP2PLink(
             p2pLink = p2pLink
         )
 

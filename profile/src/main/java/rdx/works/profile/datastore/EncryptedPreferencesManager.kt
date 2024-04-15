@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retryWhen
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import rdx.works.core.KeySpec
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
@@ -134,6 +136,41 @@ class EncryptedPreferencesManager @Inject constructor(
         }
     }
 
+    suspend fun saveConnectorExtensionLinkPublicKeyPair(cePublicKey: String, privateKey: ByteArray) {
+        val newKeyPairs = getP2PLinksKeys().toMutableMap()
+            .apply { this[cePublicKey] = privateKey }
+        saveP2PLinksKeys(newKeyPairs)
+    }
+
+    suspend fun getP2PLinkPrivateKey(cePublicKey: String): ByteArray? {
+        return getP2PLinksKeys()[cePublicKey]
+    }
+
+    suspend fun removeP2PLinkKeys(cePublicKey: String) {
+        val newKeyPairs = getP2PLinksKeys().toMutableMap()
+            .apply { remove(cePublicKey) }
+        saveP2PLinksKeys(newKeyPairs)
+    }
+
+    private suspend fun saveP2PLinksKeys(keyPairs: Map<String, ByteArray>) {
+        val encryptedSerializedKeyPairs = Json.encodeToString(keyPairs)
+        putString(P2P_LINKS_KEYS_PREFERENCES_KEY, encryptedSerializedKeyPairs, KeySpec.Profile())
+    }
+
+    private suspend fun getP2PLinksKeys(): Map<String, ByteArray> {
+        return preferences.data.catchIOException()
+            .map { preferences ->
+                preferences[stringPreferencesKey(P2P_LINKS_KEYS_PREFERENCES_KEY)]
+                    .takeIf { !it.isNullOrEmpty() }
+                    ?.decrypt(KeySpec.Profile())
+                    ?.getOrNull()
+                    ?.let { Json.decodeFromString<Map<String, ByteArray>>(it) }
+            }
+            .flowOn(ioDispatcher)
+            .firstOrNull()
+            ?: emptyMap()
+    }
+
     suspend fun clear() = preferences.edit { it.clear() }
 
     private fun Flow<Preferences>.catchIOException() = catch { exception ->
@@ -150,6 +187,7 @@ class EncryptedPreferencesManager @Inject constructor(
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
         private const val RESTORED_PROFILE_CLOUD_PREFERENCES_KEY = "restored_cloud_profile_key"
         private const val RESTORED_PROFILE_FILE_PREFERENCES_KEY = "restored_file_profile_key"
+        private const val P2P_LINKS_KEYS_PREFERENCES_KEY = "p2p_links_keys_key"
         private const val RETRY_COUNT = 3L
         private const val RETRY_DELAY = 1500L
     }

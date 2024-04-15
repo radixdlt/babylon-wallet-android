@@ -4,13 +4,12 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.P2PLink
 
-fun Profile.addP2PLink(
+fun Profile.updateP2PLink(
     p2pLink: P2PLink
 ): Profile {
     val updatedP2PLinks = appPreferences.p2pLinks.toMutableList()
-    updatedP2PLinks.add(
-        p2pLink
-    )
+    updatedP2PLinks.removeIf { p2pLink.publicKey == it.publicKey }
+    updatedP2PLinks.add(p2pLink)
 
     val newAppPreferences = AppPreferences(
         transaction = appPreferences.transaction,
@@ -26,10 +25,10 @@ fun Profile.addP2PLink(
     )
 }
 
-fun Profile.deleteP2PLink(connectionPassword: String): Profile {
+fun Profile.deleteP2PLink(publicKey: String): Profile {
     val updatedP2PLinks = appPreferences.p2pLinks.toMutableList()
     updatedP2PLinks.removeIf { p2pLink ->
-        p2pLink.connectionPassword == connectionPassword
+        p2pLink.publicKey == publicKey
     }
 
     val newAppPreferences = AppPreferences(

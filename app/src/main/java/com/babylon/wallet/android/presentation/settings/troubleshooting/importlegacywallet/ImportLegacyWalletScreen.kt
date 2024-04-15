@@ -396,7 +396,7 @@ private fun ImportLegacyWalletContent(
         if (shouldShowAddLinkConnectorScreen) {
             AddLinkConnectorScreen(
                 modifier = Modifier.fillMaxSize(),
-                state=  addLinkConnectorState,
+                state = addLinkConnectorState,
                 onQrCodeScanned = onLinkConnectorQrCodeScanned,
                 onConnectorDisplayNameChanged = onConnectorDisplayNameChanged,
                 onContinueClick = onNewConnectorContinueClick,

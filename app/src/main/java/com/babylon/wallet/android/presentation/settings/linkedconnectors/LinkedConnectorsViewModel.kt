@@ -45,10 +45,10 @@ class LinkedConnectorsViewModel @Inject constructor(
         }
     }
 
-    fun onDeleteConnectorClick(connectionPassword: String) {
+    fun onDeleteConnectorClick(p2pLink: P2PLink) {
         viewModelScope.launch {
-            deleteP2PLinkUseCase(connectionPassword)
-            peerdroidClient.deleteLink(connectionPassword)
+            deleteP2PLinkUseCase(p2pLink.publicKey)
+            peerdroidClient.deleteLink(p2pLink.connectionPassword)
         }
     }
 

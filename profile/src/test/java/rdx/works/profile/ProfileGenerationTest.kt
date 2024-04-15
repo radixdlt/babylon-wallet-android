@@ -15,7 +15,7 @@ import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.compressedPublicKey
-import rdx.works.profile.data.model.extensions.addP2PLink
+import rdx.works.profile.data.model.extensions.updateP2PLink
 import rdx.works.profile.data.model.extensions.initializeAccount
 import rdx.works.profile.data.model.extensions.nextAccountIndex
 import rdx.works.profile.data.model.extensions.renameAccountDisplayName
@@ -133,7 +133,7 @@ class ProfileGenerationTest {
             publicKey = "PublicKey key test",
             purpose = P2PLinkPurpose.General
         )
-        profile = profile.addP2PLink(
+        profile = profile.updateP2PLink(
             p2pLink = p2pLink
         )
 

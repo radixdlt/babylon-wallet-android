@@ -4,6 +4,7 @@ import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializ
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.connection.LinkConnectionPayload
 import com.babylon.wallet.android.domain.model.connection.LinkConnectionQRContent
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
@@ -29,8 +30,8 @@ class ParseLinkConnectionDetailsUseCase @Inject constructor(
         }
 
         val newLinkPurpose = P2PLinkPurpose.fromValue(content.purpose)
-        val existingLink = getProfileUseCase.p2pLinks.firstOrNull()
-            ?.firstOrNull { it.publicKey == content.publicKey }
+        val existingLink = getProfileUseCase.p2pLinks.first()
+            .firstOrNull { it.publicKey == content.publicKey }
 
         return when {
             newLinkPurpose == null || newLinkPurpose != P2PLinkPurpose.General -> {
