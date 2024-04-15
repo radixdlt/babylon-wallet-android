@@ -5,11 +5,13 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ResourceIndicator
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.orZero
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -33,7 +35,7 @@ class ValidatorClaimProcessor @Inject constructor(
             fungibleAddresses = summary.involvedFungibleAddresses() + xrdAddress,
             nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
-        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
+        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee.toDecimal192()
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map {
             it.validator
         }.toSet() + assets.filterIsInstance<StakeClaim>().map {
@@ -62,7 +64,7 @@ class ValidatorClaimProcessor @Inject constructor(
     private fun extractWithdrawals(
         executionSummary: ExecutionSummary,
         assets: List<Asset>,
-        defaultDepositGuarantees: Double,
+        defaultDepositGuarantees: Decimal192,
         involvedOwnedAccounts: List<Network.Account>
     ): List<AccountWithTransferableResources> {
         val stakeClaimNfts = assets.filterIsInstance<Asset.NonFungible>().map { it.resource.items }.flatten()

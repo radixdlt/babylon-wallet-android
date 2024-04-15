@@ -31,6 +31,8 @@ import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
+import com.radixdlt.sargon.extensions.div
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
@@ -39,6 +41,7 @@ import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
@@ -544,12 +547,11 @@ sealed interface AccountWithPredictedGuarantee {
     val instructionIndex: Long
     val guaranteeAmountString: String
 
-    val guaranteeOffsetDecimal: Double
-        @FloatRange(from = 0.0)
-        get() = (guaranteeAmountString.toDoubleOrNull() ?: 0.0).div(100.0)
+    val guaranteeOffsetDecimal: Decimal192
+        get() = guaranteeAmountString.toDecimal192OrNull().orZero() / 100.toDecimal192()
 
     val guaranteedAmount: Decimal192
-        get() = (transferable.amount * guaranteeOffsetDecimal.toDecimal192()).roundedWith(divisibility)
+        get() = (transferable.amount * guaranteeOffsetDecimal).roundedWith(divisibility)
 
     private val divisibility: Divisibility?
         get() = when (val asset = transferable) {
@@ -565,19 +567,18 @@ sealed interface AccountWithPredictedGuarantee {
         }
 
     fun increase(): AccountWithPredictedGuarantee {
-        val newOffset = (guaranteeOffsetDecimal.toDecimal192().plus(0.001.toDecimal192()) * 100.toDecimal192()).rounded(decimalPlaces = 1u)
+        val newOffset = ((guaranteeOffsetDecimal + changeOffset) * 100.toDecimal192()).rounded(decimalPlaces = 1u)
         return when (this) {
-            is Other -> copy(guaranteeAmountString = newOffset.toString())
-            is Owned -> copy(guaranteeAmountString = newOffset.toString())
+            is Other -> copy(guaranteeAmountString = newOffset.formatted())
+            is Owned -> copy(guaranteeAmountString = newOffset.formatted())
         }
     }
 
     fun decrease(): AccountWithPredictedGuarantee {
-        val newOffset =
-            (guaranteeOffsetDecimal.toDecimal192().minus(0.001.toDecimal192()).clamped * 100.toDecimal192()).rounded(decimalPlaces = 1u)
+        val newOffset = ((guaranteeOffsetDecimal - changeOffset).clamped * 100.toDecimal192()).rounded(decimalPlaces = 1u)
         return when (this) {
-            is Other -> copy(guaranteeAmountString = newOffset.toString())
-            is Owned -> copy(guaranteeAmountString = newOffset.toString())
+            is Other -> copy(guaranteeAmountString = newOffset.formatted())
+            is Owned -> copy(guaranteeAmountString = newOffset.formatted())
         }
     }
 
@@ -612,6 +613,10 @@ sealed interface AccountWithPredictedGuarantee {
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
     ) : AccountWithPredictedGuarantee
+
+    companion object {
+        private val changeOffset = 0.001.toDecimal192()
+    }
 }
 
 sealed interface AccountWithTransferableResources {

@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ResourceIndicator
@@ -12,6 +13,7 @@ import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.div
 import com.radixdlt.sargon.extensions.sumOf
 import com.radixdlt.sargon.extensions.times
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -58,7 +60,7 @@ class ValidatorStakeProcessor @Inject constructor(
         assets: List<Asset>,
         involvedOwnedAccounts: List<Network.Account>
     ) = executionSummary.deposits.map { depositsPerAccount ->
-        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
+        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee.toDecimal192()
         depositsPerAccount.value.map { depositedResource ->
             val asset = assets.find {
                 it.resource.address == depositedResource.address
@@ -74,7 +76,7 @@ class ValidatorStakeProcessor @Inject constructor(
     private fun DetailedManifestClass.ValidatorStake.resolveLSU(
         asset: LiquidStakeUnit,
         depositedResource: ResourceIndicator,
-        defaultDepositGuarantees: Double
+        defaultDepositGuarantees: Decimal192
     ): Transferable.Depositing {
         val relatedStakes = validatorStakes.filter { it.liquidStakeUnitAddress == asset.resourceAddress }
         val totalStakedLsuForAccount = relatedStakes.sumOf { it.liquidStakeUnitAmount }

@@ -32,7 +32,7 @@ class DepositGuaranteesViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            updateDepositGuarantee(depositGuarantee = getProfileUseCase.defaultDepositGuarantee().toDecimal192())
+            updateDepositGuarantee(depositGuarantee = getProfileUseCase.defaultDepositGuarantee())
         }
     }
 
@@ -62,14 +62,14 @@ class DepositGuaranteesViewModel @Inject constructor(
     fun onDepositGuaranteeIncreased() {
         viewModelScope.launch {
             changeAndUpdateDepositGuarantee(
-                updatedDepositGuarantee = getProfileUseCase.defaultDepositGuarantee().toDecimal192() + DEPOSIT_CHANGE_THRESHOLD
+                updatedDepositGuarantee = getProfileUseCase.defaultDepositGuarantee() + DEPOSIT_CHANGE_THRESHOLD
             )
         }
     }
 
     fun onDepositGuaranteeDecreased() {
         viewModelScope.launch {
-            val updatedDepositGuarantee = (getProfileUseCase.defaultDepositGuarantee().toDecimal192() - DEPOSIT_CHANGE_THRESHOLD).clamped
+            val updatedDepositGuarantee = (getProfileUseCase.defaultDepositGuarantee() - DEPOSIT_CHANGE_THRESHOLD).clamped
             changeAndUpdateDepositGuarantee(
                 updatedDepositGuarantee = updatedDepositGuarantee
             )
