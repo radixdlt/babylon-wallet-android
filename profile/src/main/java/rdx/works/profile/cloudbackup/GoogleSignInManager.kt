@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.presentation.googlesignin
+package rdx.works.profile.cloudbackup
 
 import android.app.Activity
 import android.content.Context
@@ -12,19 +12,17 @@ import com.google.android.gms.common.api.Scope
 import com.google.android.gms.common.api.Status
 import com.google.api.services.drive.DriveScopes
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import rdx.works.peerdroid.di.IoDispatcher
+import rdx.works.profile.di.coroutines.IoDispatcher
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 import kotlin.coroutines.resume
 
-@ViewModelScoped
 class GoogleSignInManager @Inject constructor(
     @ApplicationContext private val applicationContext: Context,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
