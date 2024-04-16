@@ -32,9 +32,8 @@ class RcrRepositoryImpl @Inject constructor(
     override suspend fun getRequest(sessionId: String, interactionId: String) = withContext(ioDispatcher) {
         api.executeRequest(RcrRequest.GetRequests(sessionId)).toResult().mapCatching { response ->
             val dappLink = dappLinkRepository.getDappLinks().getOrThrow().first { it.sessionId == sessionId }
-            response.map { d ->
-                val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.value.decodeHex()).getOrThrow()
-
+            response.mapNotNull { d ->
+                val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.value.decodeHex()).getOrNull() ?: return@mapNotNull null
                 val decryptedRequestString = String(decryptedBytes, StandardCharsets.UTF_8)
                 peerdroidRequestJson.decodeFromString<WalletInteraction>(decryptedRequestString)
             }.find { it.interactionId == interactionId } ?: error("No interaction with id $interactionId")
