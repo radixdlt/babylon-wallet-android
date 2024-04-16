@@ -211,7 +211,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 _state.update { it.copy(isScanningNetwork = true) }
                 val bdfs = state.value.recoveryFactorSource
                 val accounts = state.value.activeAccounts +
-                        state.value.inactiveAccounts.filter { it.selected }.map { it.data }
+                    state.value.inactiveAccounts.filter { it.selected }.map { it.data }
                 generateProfileUseCase.derived(
                     deviceFactorSource = bdfs as FactorSource.Device,
                     mnemonicWithPassphrase = givenTempMnemonic!!,
@@ -224,7 +224,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
             } else {
                 _state.update { it.copy(isScanningNetwork = true) }
                 val accounts = state.value.activeAccounts +
-                        state.value.inactiveAccounts.filter { it.selected }.map { it.data }
+                    state.value.inactiveAccounts.filter { it.selected }.map { it.data }
                 if (accounts.isNotEmpty()) {
                     addRecoveredAccountsToProfileUseCase(accounts = accounts)
                     sendEvent(Event.RecoverComplete)
