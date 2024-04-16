@@ -10,6 +10,8 @@ import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.domain.ProfileException
+import java.time.Instant
 import javax.inject.Inject
 
 class RestoreAndCreateMainSeedPhraseUseCase @Inject constructor(
@@ -26,7 +28,7 @@ class RestoreAndCreateMainSeedPhraseUseCase @Inject constructor(
 
         if (profile != null) {
             val deviceInfo = deviceInfoRepository.getDeviceInfo()
-            return mnemonicRepository().mapCatching { mnemonic ->
+            return mnemonicRepository().fold(onSuccess = { mnemonic ->
                 val deviceFactorSource = FactorSource.Device.babylon(
                     mnemonicWithPassphrase = mnemonic,
                     model = deviceInfo.model,
@@ -38,9 +40,11 @@ class RestoreAndCreateMainSeedPhraseUseCase @Inject constructor(
                 val updatedProfile = profile.addMainBabylonDeviceFactorSource(
                     mainBabylonFactorSource = deviceFactorSource
                 )
-
                 profileRepository.saveProfile(updatedProfile)
-            }
+                Result.success(Unit)
+            }, onFailure = {
+                Result.failure(ProfileException.SecureStorageAccess)
+            })
         }
         return Result.failure(Exception("No profile to restore"))
     }

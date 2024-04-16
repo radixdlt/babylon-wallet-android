@@ -14,4 +14,6 @@ sealed class ProfileException(msg: String? = null, cause: Throwable? = null) : T
     data class BdfsSecureStorage(val isSamsungDevice: Boolean) : ProfileException("There was issue tying to save BDFS for your profile")
 
     data object SecureStorageAccess : ProfileException("There was issue tying to access mnemonic secure storage")
+
+    data object InvalidMnemonic : ProfileException("Invalid mnemonic")
 }

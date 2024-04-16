@@ -15,6 +15,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.UUIDGenerator
 import java.io.IOException
+import rdx.works.profile.domain.ProfileException
 
 @Serializable
 sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
@@ -25,25 +26,10 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
     @Serializable
     @SerialName("info_message")
     sealed class InfoMessage : UiMessage() {
-        @Serializable
-        @SerialName("invalid_mnemonic")
-        data object InvalidMnemonic : InfoMessage()
-
-        @Serializable
-        @SerialName("invalid_snapshot")
-        data object InvalidSnapshot : InfoMessage()
-
-        @Serializable
-        @SerialName("invalid_password")
-        data object InvalidPassword : InfoMessage()
 
         @Serializable
         @SerialName("invalid_payload")
         data object InvalidPayload : InfoMessage()
-
-        @Serializable
-        @SerialName("invalid_no_mnemonic_for_accounts")
-        data object NoMnemonicForAccounts : InfoMessage()
 
         @Serializable
         @SerialName("invalid_no_accounts_for_ledger")
@@ -63,16 +49,12 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
 
         @Composable
         override fun getMessage(): String = when (this) {
-            InvalidMnemonic -> stringResource(id = R.string.importOlympiaAccounts_invalidMnemonic)
             InvalidPayload -> stringResource(id = R.string.importOlympiaAccounts_invalidPayload)
-            NoMnemonicForAccounts -> stringResource(id = R.string.importOlympiaAccounts_noMnemonicFound)
             NoAccountsForLedger ->
                 "No addresses verified. The currently connected Ledger device is not related to any " +
                     "accounts to be imported, or has already been used." // TODO string.importOlympiaAccounts_noAddresses)
             is LedgerAlreadyExist -> stringResource(id = R.string.addLedgerDevice_alreadyAddedAlert_message, label)
             WalletExported -> stringResource(id = R.string.profileBackup_manualBackups_successMessage)
-            InvalidSnapshot -> stringResource(id = R.string.recoverProfileBackup_incompatibleWalletDataLabel)
-            InvalidPassword -> stringResource(id = R.string.recoverProfileBackup_passwordWrong)
             NpsSurveySubmitted -> "Thank you!"
         }
     }
@@ -83,12 +65,28 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
 
         @Composable
         override fun getMessage(): String {
-            val message = error?.asRadixWalletException()?.toUserFriendlyMessage(LocalContext.current) ?: error?.message
+            val message = when (error) {
+                is ProfileException -> return error.toUserFriendlyMessage()
+                else -> error?.asRadixWalletException()?.toUserFriendlyMessage(LocalContext.current) ?: error?.message
+            }
             return if (message.isNullOrEmpty()) {
                 stringResource(id = R.string.common_somethingWentWrong)
             } else {
                 message
             }
+        }
+    }
+
+    @Composable
+    fun ProfileException.toUserFriendlyMessage(): String {
+        return when (this) {
+            is ProfileException.InvalidSnapshot -> stringResource(id = R.string.recoverProfileBackup_incompatibleWalletDataLabel)
+            is ProfileException.InvalidPassword -> stringResource(id = R.string.recoverProfileBackup_passwordWrong)
+            is ProfileException.NoMnemonic -> "Please restore your Seed Phrase and try again"
+            is ProfileException.SecureStorageAccess -> "There was issue tying to access mnemonic secure storage"
+            is ProfileException.AuthenticationSigningAlreadyExist -> "Signing Entity $entity already has authenticationSigning"
+            is ProfileException.BdfsSecureStorage -> "There was issue tying to save BDFS for your profile"
+            ProfileException.InvalidMnemonic -> stringResource(id = R.string.importOlympiaAccounts_invalidMnemonic)
         }
     }
 

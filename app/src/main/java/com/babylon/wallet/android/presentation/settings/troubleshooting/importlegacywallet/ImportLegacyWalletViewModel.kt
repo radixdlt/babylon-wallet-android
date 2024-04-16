@@ -46,6 +46,7 @@ import rdx.works.core.sargon.supportsOlympia
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.AddOlympiaFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.GetFactorSourceIdForOlympiaAccountsUseCase
 import rdx.works.profile.domain.account.MigrateOlympiaAccountsUseCase
 import rdx.works.profile.olympiaimport.ChunkInfo
@@ -336,7 +337,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                     else -> importAllAccounts(biometricAuthProvider)
                 }
             } else {
-                _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic) }
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(ProfileException.InvalidMnemonic)) }
             }
         }
     }
@@ -352,8 +353,20 @@ class ImportLegacyWalletViewModel @Inject constructor(
             if (softwareAccountsToMigrate.isNotEmpty()) {
                 val authenticated = biometricAuthProvider()
                 if (!authenticated) return@launch
-                val factorSourceID =
-                    state.value.existingOlympiaFactorSourceId ?: addOlympiaFactorSourceUseCase(state.value.mnemonicWithPassphrase())
+                val factorSourceID = if (state.value.existingOlympiaFactorSourceId != null) {
+                    state.value.existingOlympiaFactorSourceId!!
+                } else {
+                    val result = addOlympiaFactorSourceUseCase(state.value.mnemonicWithPassphrase())
+                    if (result.exceptionOrNull() != null) {
+                        _state.update { state ->
+                            state.copy(uiMessage = UiMessage.ErrorMessage(result.exceptionOrNull()))
+                        }
+                        return@launch
+                    } else {
+                        result.getOrThrow()
+                    }
+                }
+                state.value.existingOlympiaFactorSourceId ?: addOlympiaFactorSourceUseCase(state.value.mnemonicWithPassphrase())
                 migrateOlympiaAccountsUseCase(
                     olympiaAccounts = softwareAccountsToMigrate,
                     factorSourceId = factorSourceID

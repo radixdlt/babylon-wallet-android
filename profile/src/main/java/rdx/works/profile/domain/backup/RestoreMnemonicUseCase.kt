@@ -9,6 +9,7 @@ import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.MnemonicRepository
+import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
 class RestoreMnemonicUseCase @Inject constructor(
@@ -24,11 +25,14 @@ class RestoreMnemonicUseCase @Inject constructor(
             mnemonicWithPassphrase = mnemonicWithPassphrase
         ) == factorSource.id
         return if (isValid) {
-            mnemonicRepository.saveMnemonic(factorSource.value.id.asGeneral(), mnemonicWithPassphrase)
-            preferencesManager.markFactorSourceBackedUp(factorSource.value.id.asGeneral())
-            Result.success(Unit)
+            return mnemonicRepository.saveMnemonic(factorSource.value.id.asGeneral(), mnemonicWithPassphrase).fold(onSuccess = {
+                preferencesManager.markFactorSourceBackedUp(factorSource.value.id.asGeneral())
+                Result.success(Unit)
+            }, onFailure = {
+                Result.failure(ProfileException.SecureStorageAccess)
+            })
         } else {
-            Result.failure(Exception("Invalid mnemonic with passphrase"))
+            Result.failure(ProfileException.InvalidMnemonic)
         }
     }
 }

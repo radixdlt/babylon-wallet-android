@@ -57,7 +57,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         })
     }
 
-    suspend fun addBabylonFactorSource(mnemonic: MnemonicWithPassphrase): Profile {
+    suspend fun addBabylonFactorSource(mnemonic: MnemonicWithPassphrase): Result<Profile> {
         val profile = profileRepository.profile.first()
         val deviceInfo = deviceInfoRepository.getDeviceInfo()
         val deviceFactorSource = FactorSource.Device.babylon(
@@ -70,8 +70,8 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         val existingFactorSource = profile.factorSources.filterIsInstance<FactorSource.Device>().find {
             it.id == deviceFactorSource.id
         }
-        val updatedProfile = if (existingFactorSource != null) {
-            if (existingFactorSource.supportsOlympia) {
+        return if (existingFactorSource != null) {
+            val updatedProfile = if (existingFactorSource.supportsOlympia) {
                 profileRepository.updateProfile { p ->
                     p.copy(
                         factorSources = FactorSources(
@@ -92,14 +92,18 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
             } else {
                 profile
             }
+            preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())
+            Result.success(updatedProfile)
         } else {
-            mnemonicRepository.saveMnemonic(deviceFactorSource.value.id.asGeneral(), mnemonic)
-            profileRepository.updateProfile { p ->
-                p.copy(factorSources = p.factorSources.asIdentifiable().append(deviceFactorSource).asList())
-            }
+            mnemonicRepository.saveMnemonic(deviceFactorSource.value.id.asGeneral(), mnemonic).fold(onSuccess = {
+                preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())
+                Result.success(profileRepository.updateProfile { p ->
+                    p.copy(factorSources = p.factorSources.asIdentifiable().append(deviceFactorSource).asList())
+                })
+            }, onFailure = {
+                Result.failure(ProfileException.SecureStorageAccess)
+            })
         }
-        preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())
-        return updatedProfile
     }
 
     suspend fun babylonFactorSourceExist(): Boolean {

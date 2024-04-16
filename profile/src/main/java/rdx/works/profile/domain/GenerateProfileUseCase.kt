@@ -67,7 +67,7 @@ class GenerateProfileUseCase @Inject constructor(
                         profileRepository.saveProfile(profile)
                         preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())
                         Result.success(profile)
-                    }, onFailure = { error ->
+                    }, onFailure = {
                         Result.failure(ProfileException.SecureStorageAccess)
                     }).getOrThrow()
                 }

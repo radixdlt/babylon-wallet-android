@@ -18,6 +18,8 @@ import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
+import rdx.works.profile.domain.factorSourceByIdValue
 import javax.inject.Inject
 
 @HiltViewModel
@@ -68,7 +70,7 @@ class ConfirmMnemonicViewModel @Inject constructor(
                     preferencesManager.markFactorSourceBackedUp(factorSource.value.id.asGeneral())
                     sendEvent(Event.MnemonicBackedUp)
                 } else {
-                    _state.update { it.copy(uiMessage = UiMessage.InfoMessage.InvalidMnemonic) }
+                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(ProfileException.InvalidMnemonic)) }
                 }
             }
         }
