@@ -11,13 +11,19 @@ import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSour
 import javax.inject.Inject
 import javax.inject.Singleton
 
+interface AppEventBus {
+
+    val events: Flow<AppEvent>
+    suspend fun sendEvent(event: AppEvent, delayMs: Long = 0L)
+}
+
 @Singleton
-class AppEventBus @Inject constructor() {
+class AppEventBusImpl @Inject constructor() : AppEventBus {
 
     private val _events = MutableSharedFlow<AppEvent>()
-    val events: Flow<AppEvent> = _events.asSharedFlow()
+    override val events: Flow<AppEvent> = _events.asSharedFlow()
 
-    suspend fun sendEvent(event: AppEvent, delayMs: Long = 0L) {
+    override suspend fun sendEvent(event: AppEvent, delayMs: Long) {
         delay(delayMs)
         _events.emit(event)
     }

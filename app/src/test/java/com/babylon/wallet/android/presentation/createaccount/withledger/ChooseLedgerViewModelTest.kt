@@ -30,6 +30,7 @@ import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.samples.sample
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.every
@@ -53,6 +54,7 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
     private val p2pLinksRepository = mockk<P2PLinksRepository>()
     private val ledgerMessenger = mockk<LedgerMessenger>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
+    private val addLedgerFactorSourceUseCase = mockk<AddLedgerFactorSourceUseCase>()
     private val eventBus = mockk<AppEventBus>()
     private val savedStateHandle = mockk<SavedStateHandle>()
 

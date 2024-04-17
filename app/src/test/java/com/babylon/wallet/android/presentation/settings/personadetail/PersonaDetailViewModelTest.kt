@@ -47,7 +47,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
     private val addAuthSigningFactorInstanceUseCase = mockk<AddAuthSigningFactorInstanceUseCase>()
     private val rolaClient = mockk<ROLAClient>()
-    private val eventBus = mockk<AppEventBus>()
+    private val eventBus = mockk<AppEventBusImpl>()
 
     val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
     val persona = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.personas.first()

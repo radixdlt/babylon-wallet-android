@@ -32,7 +32,7 @@ import com.babylon.wallet.android.presentation.transaction.analysis.processor.Va
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
-import com.babylon.wallet.android.utils.AppEventBus
+import com.babylon.wallet.android.utils.AppEventBusImpl
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.string
@@ -51,7 +51,7 @@ internal fun TransactionReviewViewModelTestExperimental.testViewModel(
     profileRepository: ProfileRepository,
     stateRepository: StateRepository,
     dAppMessenger: DappMessenger,
-    appEventBus: AppEventBus,
+    appEventBus: AppEventBusImpl,
     preferencesManager: PreferencesManager,
     exceptionMessageProvider: ExceptionMessageProvider,
     savedStateHandle: SavedStateHandle,
