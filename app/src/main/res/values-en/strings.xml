@@ -1068,15 +1068,6 @@ If you have any “Legacy” Accounts (created on the Olympia network) to import
   <string name="securityCenter_problem7_text">Accounts and Personas not recoverable. Create Configuration Backup now.</string>
   <string name="securityCenter_problem9_heading">Recovery required</string>
   <string name="securityCenter_problem9_text">Enter seed phrase to begin recovery.</string>
-  <string name="securityCenter_status_recoverable">Your wallet is recoverable</string>
-  <string name="securityCenter_status_recoveryRequired">Recovery required</string>
-  <string name="securityCenter_status_notRecoverable">Your wallet is not recoverable</string>
-  <string name="securityCenter_status_entitiesNotRecoverable">%d Account(s) and %d Persona(s) are/is not recoverable</string>
-  <string name="securityCenter_subStatus_problem9">Enter seed phrase to begin recovery</string>
-  <string name="securityCenter_subStatus_problem6">Configuration Backup is not up to date. Create backup now.</string>
-  <string name="securityCenter_subStatus_problem5">Automated Configuration Backup has stopped working. Check internet and cloud settings.</string>
-  <string name="securityCenter_subStatus_problem7">Accounts and Personas not recoverable. Create Configuration Backup now.</string>
-  <string name="securityCenter_subStatus_problem3">View and write down your seed phrase so Accounts and Personas are recoverable</string>
   <string name="securityCenter_securityFactorsItem_title">Security Factors</string>
   <string name="securityCenter_securityFactorsItem_subtitle">The keys you use to control your Accounts and Personas</string>
   <string name="securityCenter_securityFactorsItem_activeStatus">Active</string>
