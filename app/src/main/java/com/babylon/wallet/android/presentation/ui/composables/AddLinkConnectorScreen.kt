@@ -112,8 +112,8 @@ private fun AddLinkConnectorContent(
                 }
                 is AddLinkConnectorUiState.Content.ApproveNewLinkConnector -> {
                     ApproveConnector(
-                        title = "Link Connector", //TODO replace with strings res
-                        message = "This Connector will be trusted to verify the dApp origin of requests to this wallet.\n\nOnly continue if you are linking to the **official Radix Connector browser extension** - or a Connector you control and trust.", //TODO replace with strings res
+                        title = stringResource(id = R.string.linkedConnectors_approveNewConnector_title),
+                        message = stringResource(id = R.string.linkedConnectors_approveNewConnector_message),
                         isInProgress = state.isAddingNewLinkConnectorInProgress,
                         onContinueClick = onContinueClick,
                         onCancelClick = onCloseClick
@@ -121,8 +121,8 @@ private fun AddLinkConnectorContent(
                 }
                 is AddLinkConnectorUiState.Content.UpdateLinkConnector -> {
                     ApproveConnector(
-                        title = "Update Link", //TODO replace with strings res
-                        message = "This appears to be a Radix Connector you previously linked to. Link will be updated.", //TODO replace with strings res
+                        title = stringResource(id = R.string.linkedConnectors_approveExistingConnector_title),
+                        message = stringResource(id = R.string.linkedConnectors_approveExistingConnector_message),
                         isInProgress = state.isAddingNewLinkConnectorInProgress,
                         onContinueClick = onContinueClick,
                         onCancelClick = onCloseClick
@@ -151,7 +151,7 @@ private fun AddLinkConnectorContent(
                 onDismiss = onErrorDismiss
             )
             is AddLinkConnectorUiState.Error.Other -> ConnectionErrorDialog(
-                title = "Link Failed", //TODO replace with strings res
+                title = stringResource(id = R.string.linkedConnectors_linkFailedErrorTitle),
                 message = it.message.getMessage(),
                 onDismiss = onErrorDismiss
             )
@@ -367,7 +367,7 @@ private fun ConnectionErrorDialog(
                 color = RadixTheme.colors.gray1
             )
         },
-        confirmText = "Dismiss", //TODO replace with strings res
+        confirmText = stringResource(id = R.string.common_dismiss),
         dismissText = null
     )
 }
