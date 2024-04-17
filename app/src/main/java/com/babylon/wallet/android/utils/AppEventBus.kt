@@ -29,6 +29,8 @@ sealed interface AppEvent {
     data object RestoredMnemonic : AppEvent
     data object BabylonFactorSourceDoesNotExist : AppEvent
     data object NPSSurveySubmitted : AppEvent
+
+    data object SecureFolderWarning : AppEvent
     sealed interface AccessFactorSources : AppEvent {
 
         data class SelectedLedgerDevice(val ledgerFactorSource: FactorSource.Ledger) : AccessFactorSources

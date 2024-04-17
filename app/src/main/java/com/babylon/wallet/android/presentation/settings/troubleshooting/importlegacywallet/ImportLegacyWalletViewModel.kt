@@ -19,6 +19,9 @@ import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInput
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
+import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.AddLedgerDeviceUiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceUiState
 import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.utils.Constants.DELAY_300_MS
@@ -68,6 +71,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val olympiaWalletDataParser: OlympiaWalletDataParser,
     private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase,
+    private val appEventBus: AppEventBus,
     private val p2PLinksRepository: P2PLinksRepository
 ) : StateViewModel<ImportLegacyWalletUiState>(), OneOffEventHandler<OlympiaImportEvent> by OneOffEventHandlerImpl() {
 
@@ -292,9 +296,20 @@ class ImportLegacyWalletViewModel @Inject constructor(
                 val mnemonicExistForSoftwareAccounts = when {
                     hasOlympiaFactorSource -> {
                         if (biometricAuthProvider()) {
-                            val factorSourceId = getFactorSourceIdForOlympiaAccountsUseCase(softwareAccountsToMigrate())
+                            val factorSourceIdResult = getFactorSourceIdForOlympiaAccountsUseCase(softwareAccountsToMigrate())
+                            factorSourceIdResult.onFailure {
+                                if (it is ProfileException.SecureStorageAccess) {
+                                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                                } else {
+                                    _state.update { state ->
+                                        state.copy(uiMessage = UiMessage.ErrorMessage(it))
+                                    }
+                                }
+                                return@launch
+                            }
+                            val factorSourceId = factorSourceIdResult.getOrNull()
                             _state.update {
-                                it.copy(existingOlympiaFactorSourceId = factorSourceId)
+                                it.copy(existingOlympiaFactorSourceId = factorSourceIdResult.getOrNull())
                             }
                             factorSourceId != null
                         } else {
@@ -358,15 +373,19 @@ class ImportLegacyWalletViewModel @Inject constructor(
                 } else {
                     val result = addOlympiaFactorSourceUseCase(state.value.mnemonicWithPassphrase())
                     if (result.exceptionOrNull() != null) {
-                        _state.update { state ->
-                            state.copy(uiMessage = UiMessage.ErrorMessage(result.exceptionOrNull()))
+                        val exception = result.exceptionOrNull()
+                        if (exception is ProfileException.SecureStorageAccess) {
+                            appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                        } else {
+                            _state.update { state ->
+                                state.copy(uiMessage = UiMessage.ErrorMessage(exception))
+                            }
                         }
                         return@launch
                     } else {
                         result.getOrThrow()
                     }
                 }
-                state.value.existingOlympiaFactorSourceId ?: addOlympiaFactorSourceUseCase(state.value.mnemonicWithPassphrase())
                 migrateOlympiaAccountsUseCase(
                     olympiaAccounts = softwareAccountsToMigrate,
                     factorSourceId = factorSourceID

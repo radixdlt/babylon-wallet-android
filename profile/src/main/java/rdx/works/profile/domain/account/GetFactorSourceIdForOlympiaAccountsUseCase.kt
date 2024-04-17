@@ -20,23 +20,24 @@ class GetFactorSourceIdForOlympiaAccountsUseCase @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
-    suspend operator fun invoke(olympiaAccounts: List<OlympiaAccountDetails>): FactorSourceId.Hash? {
+    suspend operator fun invoke(olympiaAccounts: List<OlympiaAccountDetails>): Result<FactorSourceId.Hash?> {
         return withContext(defaultDispatcher) {
-            getProfileUseCase().deviceFactorSources
+            val existingId = getProfileUseCase().deviceFactorSources
+                .first()
                 .filter { deviceFactorSource ->
                     deviceFactorSource.value.common.cryptoParameters.supportsOlympia
                 }
                 .map { deviceFactorSource ->
                     deviceFactorSource.value.id.asGeneral()
                 }
-                .forEach { fromHashId ->
-                    val mnemonic = mnemonicRepository.readMnemonic(fromHashId).getOrNull()
-                    if (mnemonic?.validatePublicKeysOf(olympiaAccounts) == true) {
-                        return@withContext fromHashId
+                .find { fromHashId ->
+                    val mnemonic = mnemonicRepository.readMnemonic(fromHashId)
+                    if (mnemonic.exceptionOrNull() != null) {
+                        return@withContext Result.failure(mnemonic.exceptionOrNull()!!)
                     }
-                }
-
-            return@withContext null
+                    mnemonic.getOrNull()?.validatePublicKeysOf(olympiaAccounts) == true
+                }?.id
+            Result.success(existingId)
         }
     }
 

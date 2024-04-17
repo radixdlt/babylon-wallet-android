@@ -32,6 +32,7 @@ import rdx.works.core.sargon.usesEd25519
 import rdx.works.core.sargon.usesSECP256k1
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.DiscardTemporaryRestoredFileForBackupUseCase
 import rdx.works.profile.domain.backup.GetTemporaryRestoringProfileForBackupUseCase
@@ -184,12 +185,12 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update { state -> state.copy(isRestoring = false) }
             showNextRecoverableFactorSourceOrFinish(skipAuth = true)
         }.onFailure { error ->
-            _state.update { state ->
-                state.copy(
-                    uiMessage = UiMessage.ErrorMessage(error),
-                    isRestoring = false
-                )
+            if (error is ProfileException.SecureStorageAccess) {
+                appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+            } else {
+                _state.update { state -> state.copy(uiMessage = UiMessage.ErrorMessage(error)) }
             }
+            _state.update { state -> state.copy(isRestoring = false) }
         }
     }
 

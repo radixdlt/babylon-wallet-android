@@ -11,6 +11,8 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseVerificationDelegate
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.extensions.asGeneral
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -27,7 +29,8 @@ class ConfirmMnemonicViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val mnemonicRepository: MnemonicRepository,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val appEventBus: AppEventBus
 ) : StateViewModel<ConfirmMnemonicViewModel.State>(),
     OneOffEventHandler<ConfirmMnemonicViewModel.Event> by OneOffEventHandlerImpl() {
 
@@ -73,7 +76,11 @@ class ConfirmMnemonicViewModel @Inject constructor(
                     _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(ProfileException.InvalidMnemonic)) }
                 }
             }.onFailure { e ->
-                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(e)) }
+                if (e is ProfileException.SecureStorageAccess) {
+                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                } else {
+                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(e)) }
+                }
             }
         }
     }

@@ -13,6 +13,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.FactorSource
@@ -46,6 +48,8 @@ class AccountRecoveryScanViewModel @Inject constructor(
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
+    private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
+    private val appEventBus: AppEventBus,
     private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
     private val deviceInfoRepository: DeviceInfoRepository
 ) : StateViewModel<AccountRecoveryScanViewModel.State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
@@ -219,7 +223,12 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 ).onSuccess {
                     sendEvent(Event.RecoverComplete)
                 }.onFailure { error ->
-                    _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error), isScanningNetwork = false) }
+                    if (error is ProfileException.SecureStorageAccess) {
+                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                    } else {
+                        _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(error)) }
+                    }
+                    _state.update { it.copy(isScanningNetwork = false) }
                 }
             } else {
                 _state.update { it.copy(isScanningNetwork = true) }
@@ -227,7 +236,6 @@ class AccountRecoveryScanViewModel @Inject constructor(
                     state.value.inactiveAccounts.filter { it.selected }.map { it.data }
                 if (accounts.isNotEmpty()) {
                     addRecoveredAccountsToProfileUseCase(accounts = accounts)
-                    sendEvent(Event.RecoverComplete)
                 }
                 sendEvent(Event.RecoverComplete)
             }

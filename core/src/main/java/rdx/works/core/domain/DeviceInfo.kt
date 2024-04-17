@@ -27,9 +27,6 @@ data class DeviceInfo(
             "$name $commercialName"
         }
 
-    val isSamsungDevice: Boolean
-        get() = manufacturer.contains("samsung", ignoreCase = true)
-
     companion object {
 
         fun factory(context: Context) = DeviceInfo(

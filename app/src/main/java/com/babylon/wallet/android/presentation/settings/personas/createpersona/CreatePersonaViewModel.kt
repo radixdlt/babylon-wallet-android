@@ -14,6 +14,8 @@ import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toPersonaData
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.IdentityAddress
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -27,7 +29,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CreatePersonaViewModel @Inject constructor(
     private val createPersonaWithDeviceFactorSourceUseCase: CreatePersonaWithDeviceFactorSourceUseCase,
-    private val preferencesManager: PreferencesManager
+    private val preferencesManager: PreferencesManager,
+    private val appEventBus: AppEventBus
 ) : StateViewModel<CreatePersonaViewModel.CreatePersonaUiState>(),
     OneOffEventHandler<CreatePersonaEvent> by OneOffEventHandlerImpl(),
     PersonaEditable by PersonaEditableImpl() {
@@ -69,11 +72,19 @@ class CreatePersonaViewModel @Inject constructor(
                     )
                 )
             }.onFailure { error ->
-                _state.update {
-                    if (error is ProfileException.NoMnemonic) {
-                        it.copy(loading = false, isNoMnemonicErrorVisible = true)
-                    } else {
-                        it.copy(loading = false, uiMessage = UiMessage.ErrorMessage(error))
+                when {
+                    error is ProfileException.SecureStorageAccess -> {
+                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                    }
+
+                    else -> {
+                        _state.update {
+                            if (error is ProfileException.NoMnemonic) {
+                                it.copy(loading = false, isNoMnemonicErrorVisible = true)
+                            } else {
+                                it.copy(loading = false, uiMessage = UiMessage.ErrorMessage(error))
+                            }
+                        }
                     }
                 }
             }

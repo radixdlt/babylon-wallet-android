@@ -10,6 +10,8 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.utils.AppEvent
+import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.asProfileEntity
@@ -22,6 +24,7 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.hasAuthSigning
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -34,6 +37,7 @@ class DevSettingsViewModel @Inject constructor(
     private val incomingRequestRepository: IncomingRequestRepository,
     private val addAuthSigningFactorInstanceUseCase: AddAuthSigningFactorInstanceUseCase,
     private val transactionStatusClient: TransactionStatusClient,
+    private val appEventBus: AppEventBus,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<DevSettingsUiState>() {
 
@@ -96,6 +100,9 @@ class DevSettingsViewModel @Inject constructor(
                     _state.update { it.copy(isLoading = false) }
                     listenForRolaKeyUploadTransactionResult(interactionId)
                 }.onFailure {
+                    if (it is ProfileException.SecureStorageAccess) {
+                        appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                    }
                     _state.update { state ->
                         state.copy(isLoading = false)
                     }

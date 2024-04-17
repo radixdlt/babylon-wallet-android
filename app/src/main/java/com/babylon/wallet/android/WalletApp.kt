@@ -4,11 +4,13 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,6 +54,7 @@ fun WalletApp(
     val state by mainViewModel.state.collectAsStateWithLifecycle()
     val navController = rememberNavController()
     var showNotSecuredDialog by remember { mutableStateOf(false) }
+    var showSecureFolderWarning by rememberSaveable { mutableStateOf(false) }
     NavigationHost(
         modifier = modifier.fillMaxSize(),
         startDestination = MAIN_ROUTE,
@@ -95,6 +98,11 @@ fun WalletApp(
             showNotSecuredDialog = true
         }
     }
+    LaunchedEffect(Unit) {
+        mainViewModel.secureFolderWarning.collect {
+            showSecureFolderWarning = true
+        }
+    }
     HandleAccessFactorSourcesEvents(
         navController = navController,
         accessFactorSourcesEvents = mainViewModel.accessFactorSourcesEvents
@@ -118,6 +126,17 @@ fun WalletApp(
             showNotSecuredDialog = false
             onCloseApp()
         })
+    }
+    if (showSecureFolderWarning) {
+        BasicPromptAlertDialog(
+            finish = {
+                showSecureFolderWarning = false
+            },
+            message = {
+                Text(text = stringResource(id = R.string.homePage_secureFolderWarning))
+            },
+            dismissText = null
+        )
     }
     val olympiaErrorState = state.olympiaErrorState
     if (olympiaErrorState != null) {
