@@ -1168,4 +1168,14 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="troubleshooting_contactSupport_subtitle">Connect directly with the Radix support team</string>
   <string name="troubleshooting_discord_title">Discord</string>
   <string name="troubleshooting_discord_subtitle">Connect to the official Radix Discord channel to join the community and ask for help.</string>
+  <string name="linkedConnectors_approveNewConnector_title">Link Connector</string>
+  <string name="linkedConnectors_approveExistingConnector_title">Update Link</string>
+  <string name="linkedConnectors_approveNewConnector_message">This Connector will be trusted to verify the dApp origin of requests to this wallet.
+
+  Only continue if you are linking to the **official Radix Connector browser extension** - or a Connector you control and trust.</string>
+  <string name="linkedConnectors_approveExistingConnector_message">This appears to be a Radix Connector you previously linked to. Link will be updated.</string>
+  <string name="linkedConnectors_linkFailedErrorTitle">Link Failed</string>
+  <string name="linkedConnectors_unknownPurposeErrorMessage">This type of Connector link is not supported.</string>
+  <string name="linkedConnectors_changingPurposeNotSupportedErrorMessage">Changing a Connector\'s type is not supported.</string>
+  <string name="common_dismiss">Dismiss</string>
 </resources>
