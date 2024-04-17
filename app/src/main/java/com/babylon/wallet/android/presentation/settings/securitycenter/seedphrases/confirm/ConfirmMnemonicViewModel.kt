@@ -72,6 +72,8 @@ class ConfirmMnemonicViewModel @Inject constructor(
                 } else {
                     _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(ProfileException.InvalidMnemonic)) }
                 }
+            }.onFailure { e ->
+                _state.update { it.copy(uiMessage = UiMessage.ErrorMessage(e)) }
             }
         }
     }

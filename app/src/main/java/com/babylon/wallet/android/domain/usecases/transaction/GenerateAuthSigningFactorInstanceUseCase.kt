@@ -57,6 +57,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
                     is ProfileEntity.PersonaEntity -> path.value.toIdentityAuthSigningDerivationPath(networkId = networkId)
                 }
             }
+
             is DerivationPath.Cap26 -> when (val cap26Path = path.value) {
                 is Cap26Path.Account -> cap26Path.toAuthSigningDerivationPath()
                 is Cap26Path.Identity -> cap26Path.toAuthSigningDerivationPath()
@@ -117,14 +118,14 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
         deviceFactorSource: FactorSource.Device,
         authSigningDerivationPath: DerivationPath
     ): Result<HierarchicalDeterministicFactorInstance> {
-        val mnemonic = mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).getOrNull()
-        requireNotNull(mnemonic)
-        val authSigningHDPublicKey = mnemonic.derivePublicKey(path = authSigningDerivationPath)
-        return Result.success(
-            HierarchicalDeterministicFactorInstance(
-                factorSourceId = deviceFactorSource.value.id,
-                publicKey = authSigningHDPublicKey
+        return mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).mapCatching { mnemonic ->
+            val authSigningHDPublicKey = mnemonic.derivePublicKey(path = authSigningDerivationPath)
+            Result.success(
+                HierarchicalDeterministicFactorInstance(
+                    factorSourceId = deviceFactorSource.value.id,
+                    publicKey = authSigningHDPublicKey
+                )
             )
-        )
+        }
     }
 }

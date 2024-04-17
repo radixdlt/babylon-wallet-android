@@ -23,7 +23,6 @@ import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.data.repository.updateProfile
 import rdx.works.profile.domain.TestData.deviceInfo
-import timber.log.Timber
 import java.time.Instant
 import javax.inject.Inject
 
@@ -38,7 +37,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         val profile = profileRepository.profile.first()
         if (profile.mainBabylonFactorSource() != null) return Result.success(profile)
         val deviceInfo = deviceInfoRepository.getDeviceInfo()
-        return mnemonicRepository().fold(onSuccess = { mnemonic ->
+        return mnemonicRepository.createNew().fold(onSuccess = { mnemonic ->
             val deviceFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonic,
                 model = deviceInfo.model,
@@ -50,11 +49,8 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
                 mainBabylonFactorSource = deviceFactorSource
             )
             profileRepository.saveProfile(updatedProfile)
-            Result.success(updatedProfile)
-        }, onFailure = {
-            Timber.d(it)
-            Result.failure(ProfileException.BdfsSecureStorage(deviceInfo.isSamsungDevice))
-        })
+            updatedProfile
+        }
     }
 
     suspend fun addBabylonFactorSource(mnemonic: MnemonicWithPassphrase): Result<Profile> {

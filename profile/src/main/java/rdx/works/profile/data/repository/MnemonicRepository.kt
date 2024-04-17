@@ -53,26 +53,19 @@ class MnemonicRepository @Inject constructor(
         encryptedPreferencesManager.removeEntryForKey("mnemonic${key.value.body.hex}")
     }
 
-    /**
-     * Used to return or generate a new mnemonic. The mnemonic can:
-     * 1. Not exist in the first place or we didn't pass a key:
-     *    In this case we generate a new mnemonic, and based on that a "default" factor source id.`
-     * 2. Exist, but could not be deserialized properly:
-     *    This should not happen to the end users, but as we refactor the project we used to save
-     *    only the mnemonic words. Now we save a json representation of both the mnemonic words and
-     *    the passphrase. In such a scenario, when the user upgrades to the newest version, we will
-     *    not be able to deserialize properly. In this case we generate a new mnemonic like in (1).
-     * 3. We passed a key and the mnemonic exists:
-     *    We deserialize it properly and just return that back.
-     */
-    suspend operator fun invoke(mnemonicKey: FactorSourceId.Hash? = null): Result<MnemonicWithPassphrase> {
-        return mnemonicKey?.let { readMnemonic(key = it) } ?: withContext(defaultDispatcher) {
-            val generated =   MnemonicWithPassphrase(
+    suspend fun createNew(): Result<MnemonicWithPassphrase> {
+        return withContext(defaultDispatcher) {
+            val generated = MnemonicWithPassphrase(
                 mnemonic = Mnemonic.init(
                     wordCount = Bip39WordCount.TWENTY_FOUR,
                     language = Bip39Language.ENGLISH
                 ),
                 passphrase = ""
+            )
+            val key = FactorSource.factorSourceId(mnemonicWithPassphrase = generated)
+            val fromHash = FactorSource.FactorSourceID.FromHash(
+                kind = FactorSourceKind.DEVICE,
+                body = HexCoded32Bytes(key)
             )
 
             val key = FactorSourceId.Hash.init(kind = FactorSourceKind.DEVICE, mnemonicWithPassphrase = it)

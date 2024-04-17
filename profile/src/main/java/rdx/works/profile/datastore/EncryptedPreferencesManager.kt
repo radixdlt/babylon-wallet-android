@@ -1,5 +1,6 @@
 package rdx.works.profile.datastore
 
+import android.security.keystore.UserNotAuthenticatedException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.IOException
 import androidx.datastore.preferences.core.Preferences
@@ -62,11 +63,25 @@ class EncryptedPreferencesManager @Inject constructor(
             } else {
                 encryptedValue.decrypt(KeySpec.Mnemonic())
             }
-        }.first()
+        }.first().fold(onSuccess = { Result.success(it) }, onFailure = {
+            if (it is UserNotAuthenticatedException) {
+                Result.failure(ProfileException.SecureStorageAccess)
+            } else {
+                Result.failure(it)
+            }
+        })
     }
 
     suspend fun saveMnemonic(key: String, newValue: String): Result<Unit> {
-        return putString(key, newValue, KeySpec.Mnemonic())
+        return putString(key, newValue, KeySpec.Mnemonic()).fold(onSuccess = {
+            Result.success(Unit)
+        }, onFailure = {
+            if (it is UserNotAuthenticatedException) {
+                Result.failure(ProfileException.SecureStorageAccess)
+            } else {
+                Result.failure(it)
+            }
+        })
     }
 
     suspend fun keyExist(key: String): Boolean {

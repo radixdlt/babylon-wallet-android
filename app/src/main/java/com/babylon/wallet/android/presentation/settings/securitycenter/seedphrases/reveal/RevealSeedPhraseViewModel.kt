@@ -35,7 +35,12 @@ class RevealSeedPhraseViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             preferencesManager.getBackedUpFactorSourceIds().collect { backedUpIds ->
-                mnemonicRepository.readMnemonic(args.factorSourceId).getOrNull()?.let { mnemonicWithPassphrase ->
+                mnemonicRepository.readMnemonic(
+                    FactorSourceID.FromHash(
+                        kind = FactorSourceKind.DEVICE,
+                        body = HexCoded32Bytes(args.factorSourceId)
+                    )
+                ).onSuccess { mnemonicWithPassphrase ->
                     _state.update { state ->
                         state.copy(
                             mnemonicWordsChunked = mnemonicWithPassphrase
@@ -50,6 +55,10 @@ class RevealSeedPhraseViewModel @Inject constructor(
                             backedUp = backedUpIds.contains(args.factorSourceId),
                             mnemonicSize = mnemonicWithPassphrase.mnemonic.wordCount.value.toInt()
                         )
+                    }
+                }.onFailure { error ->
+                    _state.update {
+                        it.copy(uiMessage = UiMessage.ErrorMessage(error))
                     }
                 }
             }

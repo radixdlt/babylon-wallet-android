@@ -107,6 +107,7 @@ class DerivePublicKeyViewModel @Inject constructor(
                 ShowContentForFactorSource.Device -> {
                     sendEvent(Event.RequestBiometricPrompt())
                 }
+
                 is ShowContentForFactorSource.Ledger -> {
                     derivePublicKey().onSuccess {
                         sendEvent(Event.AccessingFactorSourceCompleted)

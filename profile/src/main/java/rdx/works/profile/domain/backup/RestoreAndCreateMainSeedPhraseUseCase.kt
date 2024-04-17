@@ -10,7 +10,6 @@ import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.domain.ProfileException
 import java.time.Instant
 import javax.inject.Inject
 
@@ -28,7 +27,7 @@ class RestoreAndCreateMainSeedPhraseUseCase @Inject constructor(
 
         if (profile != null) {
             val deviceInfo = deviceInfoRepository.getDeviceInfo()
-            return mnemonicRepository().fold(onSuccess = { mnemonic ->
+            return mnemonicRepository.createNew().fold(onSuccess = { mnemonic ->
                 val deviceFactorSource = FactorSource.Device.babylon(
                     mnemonicWithPassphrase = mnemonic,
                     model = deviceInfo.model,
