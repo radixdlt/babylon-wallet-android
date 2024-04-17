@@ -20,6 +20,7 @@
   <string name="homePage_radixBanner_title">Start Using Radix</string>
   <string name="homePage_radixBanner_subtitle">Complete setting up your wallet and start staking, using dApps and more!</string>
   <string name="homePage_radixBanner_action">Get Started Now</string>
+  <string name="homePage_secureFolder_warning">Your wallet has encountered a problem that should be resolved before you continue use. If you have a Samsung phone, this may be caused by putting the Radix Wallet in the \"Secure Folder\". Please contact support at hello@radixdlt.com for assistance.</string>
   <string name="account_transfer">Transfer</string>
   <string name="account_tokens">Tokens</string>
   <string name="account_nfts">NFTs</string>
@@ -641,6 +642,7 @@ Or you can clear this wallet from this phone and start fresh.</string>
   <string name="misc_remoteThumbnails_vectorImageFailure">Can\'t displays image of vector type</string>
   <string name="misc_remoteThumbnails_loadingFailure">Can\'t load image</string>
   <string name="assetTransfer_transactionMessage">Message</string>
+  <string name="assetTransfer_transactionMessagePlaceholder">Add a message</string>
   <string name="assetTransfer_qrScanInstructions">Scan a QR code of a Radix Account address from another wallet or an exchange.</string>
   <string name="assetTransfer_sendTransferButton">Continue</string>
   <string name="assetTransfer_accountList_externalAccountName">Account</string>
@@ -1039,4 +1041,18 @@ If you have any “Legacy” Accounts (created on the Olympia network) to import
   <string name="survey_reason_heading">What’s the main reason for your score?</string>
   <string name="survey_reason_fieldHint">Let us know...</string>
   <string name="survey_submitButton">Submit Feedback - Thanks!</string>
+  <string name="factorSourceActions_signature_title">Signature Request</string>
+  <string name="factorSourceActions_createAccount_title">Creating Account</string>
+  <string name="factorSourceActions_createPersona_title">Creating Persona</string>
+  <string name="factorSourceActions_deriveAccounts_title">Deriving Accounts</string>
+  <string name="factorSourceActions_proveOwnership_title">Proving Ownership</string>
+  <string name="factorSourceActions_encryptMessage_title">Encrypting Message</string>
+  <string name="factorSourceActions_createKey_title">Creating Key</string>
+  <string name="factorSourceActions_device_messageSignature">Authenticate to your phone to sign.</string>
+  <string name="factorSourceActions_device_message">Authenticate to your phone to complete using your phone\'s signing key.</string>
+  <string name="factorSourceActions_ledger_messageSignature">Make sure the following **Ledger hardware wallet** is connected to a computer with a linked Radix Connector browser extension.
+**Complete signing on the device.**</string>
+  <string name="factorSourceActions_ledger_messageDeriveAccounts">Make sure the following **Ledger hardware wallet** is connected to a computer with a linked Radix Connector browser extension.
+**Derivation may take up to a minute.**</string>
+  <string name="factorSourceActions_ledger_message">Make sure the following **Ledger hardware wallet** is connected to a computer with a linked Radix Connector browser extension.</string>
 </resources>
