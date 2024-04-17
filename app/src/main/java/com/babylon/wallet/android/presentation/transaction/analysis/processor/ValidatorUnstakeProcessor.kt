@@ -11,6 +11,7 @@ import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.ResourceIndicator
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -60,7 +61,7 @@ class ValidatorUnstakeProcessor @Inject constructor(
         assets: List<Asset>,
         involvedOwnedAccounts: List<Network.Account>
     ) = executionSummary.deposits.map { claimsPerAddress ->
-        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
+        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee.toDecimal192()
         claimsPerAddress.value.map { claimedResource ->
             val asset = assets.find { it.resource.address == claimedResource.address } ?: error("No resource found")
             if (asset is StakeClaim) {

@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.model
 
-import androidx.annotation.FloatRange
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
@@ -29,15 +28,15 @@ sealed interface Transferable {
 
                     when (val transferable = transferable) {
                         is TransferableAsset.Fungible.Token -> GuaranteeAssertion.ForAmount(
-                            amount = transferable.amount * predicted.guaranteeOffset.toDecimal192(),
+                            amount = transferable.amount * predicted.guaranteeOffset,
                             instructionIndex = predicted.instructionIndex
                         )
                         is TransferableAsset.Fungible.PoolUnitAsset -> GuaranteeAssertion.ForAmount(
-                            amount = transferable.amount * predicted.guaranteeOffset.toDecimal192(),
+                            amount = transferable.amount * predicted.guaranteeOffset,
                             instructionIndex = predicted.instructionIndex
                         )
                         is TransferableAsset.Fungible.LSUAsset -> GuaranteeAssertion.ForAmount(
-                            amount = transferable.amount * predicted.guaranteeOffset.toDecimal192(),
+                            amount = transferable.amount * predicted.guaranteeOffset,
                             instructionIndex = predicted.instructionIndex
                         )
                         is TransferableAsset.NonFungible.NFTAssets -> GuaranteeAssertion.ForNFT(
@@ -71,8 +70,7 @@ sealed interface Transferable {
     ) : Transferable
 
     fun updateGuarantee(
-        @FloatRange(from = 0.0)
-        guaranteeOffset: Double
+        guaranteeOffset: Decimal192
     ): Transferable {
         return when (this) {
             is Depositing -> {
@@ -103,13 +101,12 @@ sealed interface GuaranteeType {
     data object Guaranteed : GuaranteeType
     data class Predicted(
         val instructionIndex: Long,
-        @FloatRange(from = 0.0, to = 1.0)
-        val guaranteeOffset: Double
+        val guaranteeOffset: Decimal192
     ) : GuaranteeType {
 
         @Suppress("MagicNumber")
-        val guaranteePercent: Double
-            get() = guaranteeOffset * 100
+        val guaranteePercent: Decimal192
+            get() = guaranteeOffset * 100.toDecimal192()
     }
 }
 

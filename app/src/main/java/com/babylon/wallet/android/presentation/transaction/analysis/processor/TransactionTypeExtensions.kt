@@ -82,7 +82,7 @@ val ResourceIndicator.amount: Decimal192
         }
     }
 
-fun ResourceIndicator.guaranteeType(defaultGuarantee: Double) = when (this) {
+fun ResourceIndicator.guaranteeType(defaultGuarantee: Decimal192) = when (this) {
     is ResourceIndicator.Fungible -> when (val indicator = indicator) {
         is FungibleResourceIndicator.Guaranteed -> GuaranteeType.Guaranteed
         is FungibleResourceIndicator.Predicted -> GuaranteeType.Predicted(
@@ -350,7 +350,7 @@ fun ExecutionSummary.toWithdrawingAccountsWithTransferableAssets(
 fun ExecutionSummary.resolveDepositingAsset(
     resourceIndicator: ResourceIndicator,
     involvedAssets: List<Asset>,
-    defaultDepositGuarantee: Double,
+    defaultDepositGuarantee: Decimal192,
     aggregateAmount: Decimal192? = null
 ): Transferable.Depositing {
     val asset = resourceIndicator.newlyCreatedResource(summary = this)?.let { newlyCreatedResource ->
@@ -366,7 +366,7 @@ fun ExecutionSummary.resolveDepositingAsset(
 fun ExecutionSummary.toDepositingAccountsWithTransferableAssets(
     involvedAssets: List<Asset>,
     allOwnedAccounts: List<Network.Account>,
-    defaultGuarantee: Double
+    defaultGuarantee: Decimal192
 ) = deposits.map { depositEntry ->
     depositEntry.value.map { resource ->
         resolveDepositingAsset(resource, involvedAssets, defaultGuarantee)

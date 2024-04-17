@@ -9,6 +9,7 @@ import com.babylon.wallet.android.presentation.transaction.AccountWithTransferab
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel
 import com.babylon.wallet.android.presentation.transaction.TransactionReviewViewModel.State.Sheet
+import com.radixdlt.sargon.extensions.formatted
 import kotlinx.coroutines.flow.update
 import rdx.works.core.mapWhen
 import javax.inject.Inject
@@ -35,7 +36,7 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
                                 address = depositing.address,
                                 transferable = amount.key,
                                 instructionIndex = amount.value.instructionIndex,
-                                guaranteeAmountString = amount.value.guaranteePercent.toString()
+                                guaranteeAmountString = amount.value.guaranteePercent.formatted()
                             )
                         )
                     }
@@ -48,7 +49,7 @@ class TransactionGuaranteesDelegate @Inject constructor() : ViewModelDelegate<Tr
                                 account = depositing.account,
                                 transferable = amount.key,
                                 instructionIndex = amount.value.instructionIndex,
-                                guaranteeAmountString = amount.value.guaranteePercent.toString()
+                                guaranteeAmountString = amount.value.guaranteePercent.formatted()
                             )
                         )
                     }
