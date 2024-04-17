@@ -133,7 +133,7 @@ fun WalletApp(
                 showSecureFolderWarning = false
             },
             message = {
-                Text(text = stringResource(id = R.string.homePage_secureFolderWarning))
+                Text(text = stringResource(id = R.string.homePage_secureFolder_warning))
             },
             dismissText = null
         )
