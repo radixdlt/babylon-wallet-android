@@ -128,14 +128,15 @@ class CreateAccountViewModel @Inject constructor(
             }.onFailure { throwable ->
                 if (throwable is ProfileException.SecureStorageAccess) {
                     appEventBus.sendEvent(AppEvent.SecureFolderWarning)
-                }
-                _state.update { state ->
-                    if (throwable is ProfileException.NoMnemonic) {
-                        state.copy(isNoMnemonicErrorVisible = true)
-                    } else {
-                        state.copy(
-                            uiMessage = UiMessage.ErrorMessage(throwable)
-                        )
+                } else {
+                    _state.update { state ->
+                        if (throwable is ProfileException.NoMnemonic) {
+                            state.copy(isNoMnemonicErrorVisible = true)
+                        } else {
+                            state.copy(
+                                uiMessage = UiMessage.ErrorMessage(throwable)
+                            )
+                        }
                     }
                 }
             }

@@ -264,23 +264,27 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     private suspend fun handleRequestError(exception: Throwable) {
         if (exception is RadixWalletException.DappRequestException) {
             logNonFatalException(exception)
-            if (exception.cause is RadixWalletException.LedgerCommunicationException) {
-                return
+            when (exception.cause) {
+                is ProfileException.SecureStorageAccess -> {
+                    appEventBus.sendEvent(AppEvent.SecureFolderWarning)
+                }
+
+                is ProfileException.NoMnemonic -> {
+                    _state.update { it.copy(isNoMnemonicErrorVisible = true) }
+                }
+
+                is RadixWalletException.LedgerCommunicationException, is RadixWalletException.SignatureCancelled -> {}
+
+                else -> {
+                    dAppMessenger.sendWalletInteractionResponseFailure(
+                        remoteConnectorId = request.remoteConnectorId,
+                        requestId = args.interactionId,
+                        error = exception.ceError,
+                        message = exception.getDappMessage()
+                    )
+                    _state.update { it.copy(failureDialog = FailureDialogState.Open(exception)) }
+                }
             }
-            if (exception.cause is RadixWalletException.SignatureCancelled) {
-                return
-            }
-            if (exception.cause is ProfileException.NoMnemonic) {
-                _state.update { it.copy(isNoMnemonicErrorVisible = true) }
-                return
-            }
-            dAppMessenger.sendWalletInteractionResponseFailure(
-                remoteConnectorId = request.remoteConnectorId,
-                requestId = args.interactionId,
-                error = exception.ceError,
-                message = exception.getDappMessage()
-            )
-            _state.update { it.copy(failureDialog = FailureDialogState.Open(exception)) }
         }
     }
 
