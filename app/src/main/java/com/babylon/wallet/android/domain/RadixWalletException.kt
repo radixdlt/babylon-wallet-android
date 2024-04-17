@@ -193,6 +193,8 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
         data object InvalidQR : LinkConnectionException()
 
+        data object InvalidSignature : LinkConnectionException()
+
         data object UnknownPurpose : LinkConnectionException()
 
         data object PurposeChangeNotSupported : LinkConnectionException()
@@ -298,7 +300,8 @@ fun RadixWalletException.GatewayException.toUserFriendlyMessage(context: Context
 }
 
 fun RadixWalletException.LinkConnectionException.toUserFriendlyMessage(context: Context): String = when (this) {
-    RadixWalletException.LinkConnectionException.InvalidQR -> context.getString(R.string.linkedConnectors_incorrectQrMessage)
+    RadixWalletException.LinkConnectionException.InvalidQR,
+    RadixWalletException.LinkConnectionException.InvalidSignature -> context.getString(R.string.linkedConnectors_incorrectQrMessage)
     RadixWalletException.LinkConnectionException.PurposeChangeNotSupported -> "Changing a Connector’s type is not supported." //TODO replace with strings res
     RadixWalletException.LinkConnectionException.UnknownPurpose -> "This type of Connector link is not supported." //TODO replace with strings res
 }

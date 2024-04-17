@@ -7,6 +7,7 @@ import com.radixdlt.model.ECKeyPair
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toBagOfBytes
 import org.bouncycastle.asn1.x9.X9ECParameters
@@ -30,6 +31,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECParameterSpec
 import org.bouncycastle.jce.spec.ECPublicKeySpec
 import org.bouncycastle.util.encoders.Hex
+import rdx.works.core.toByteArray
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.SecureRandom
@@ -297,6 +299,15 @@ sealed class PrivateKey {
              */
             fun newFromPrivateKeyHexString(privateKeyHexString: String): EddsaEd25519 {
                 return newFromPrivateKeyBytes(Hex.decode(privateKeyHexString))
+            }
+
+            fun verifySignature(signature: ByteArray, hashedData: ByteArray, publicKey: ByteArray): Boolean {
+                val signer = Ed25519Signer().apply {
+                    init(false, Ed25519PublicKeyParameters(publicKey))
+                    update(hashedData, 0, hashedData.size)
+                }
+
+                return signer.verifySignature(signature)
             }
         }
 

@@ -10,5 +10,7 @@ data class LinkConnectionQRContent(
     @SerialName("publicKey")
     val publicKey: String,
     @SerialName("purpose")
-    val purpose: String
+    val purpose: String,
+    @SerialName("signature")
+    val signature: String
 )

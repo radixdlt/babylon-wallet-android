@@ -12,6 +12,8 @@ sealed class ConnectorExtensionExchangeInteraction(
     @Serializable
     data class LinkClient(
         @SerialName("publicKey")
-        val publicKey: String
+        val publicKey: String,
+        @SerialName("signature")
+        val signature: String
     ) : ConnectorExtensionExchangeInteraction("linkClient")
 }

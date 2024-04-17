@@ -35,7 +35,20 @@ interface PeerdroidLink {
      * Call this function to add a connection in the wallet settings.
      *
      */
-    suspend fun addConnection(encryptionKey: ByteArray, linkClientInteractionResponse: String): Result<Unit>
+    suspend fun addConnection(
+        encryptionKey: ByteArray,
+        connectionListener: ConnectionListener
+    ): Result<Unit>
+
+    suspend fun send(
+        message: String,
+        connectionId: String
+    ): Result<Unit>
+
+    interface ConnectionListener {
+
+        suspend fun completeLinking(connectionId: String): Result<Unit>
+    }
 }
 
 internal class PeerdroidLinkImpl(
@@ -59,19 +72,19 @@ internal class PeerdroidLinkImpl(
     // This CompletableDeferred will return a result indicating if the peer connection is ready or not.
     private lateinit var peerConnectionDeferred: CompletableDeferred<Result<Unit>>
 
-    private var isLinkClientResponseSent = false
-
-    override suspend fun addConnection(encryptionKey: ByteArray, linkClientInteractionResponse: String): Result<Unit> {
+    override suspend fun addConnection(
+        encryptionKey: ByteArray,
+        connectionListener: PeerdroidLink.ConnectionListener
+    ): Result<Unit> {
         addConnectionDeferred = CompletableDeferred()
         peerConnectionDeferred = CompletableDeferred()
-        isLinkClientResponseSent = false
 
         // get connection id from encryption key
         val connectionId = encryptionKey.hash().hex
         Timber.d("\uD83D\uDDFC️ start process to add a new link connector with connectionId: $connectionId")
 
         withContext(ioDispatcher) {
-            observePeerConnectionUntilEstablished(connectionId, linkClientInteractionResponse)
+            observePeerConnectionUntilEstablished(connectionId, connectionListener)
             peerConnectionDeferred.await() // wait until the peer connection is initialized and ready to negotiate
             // and now establish the web socket
             webSocketClient.initSession(
@@ -87,6 +100,17 @@ internal class PeerdroidLinkImpl(
         }
 
         return addConnectionDeferred.await()
+    }
+
+    override suspend fun send(message: String, connectionId: String): Result<Unit> {
+        val dataChannelWrapper = DataChannelWrapper(
+            connectionIdHolder = ConnectionIdHolder(connectionId),
+            webRtcDataChannel = webRtcManager.getDataChannel()
+        )
+
+        Timber.d("🗼 \uD83D\uDCE1️ sending message to the connector extension ⬆️")
+
+        return dataChannelWrapper.sendMessage(message)
     }
 
     @Suppress("LongMethod")
@@ -155,7 +179,7 @@ internal class PeerdroidLinkImpl(
     // created -> connecting -> connected -> disconnected
     private fun observePeerConnectionUntilEstablished(
         connectionId: String,
-        linkClientInteractionResponse: String
+        connectionListener: PeerdroidLink.ConnectionListener
     ) {
         webRtcManagerJob = webRtcManager
             .createPeerConnection("")
@@ -184,28 +208,19 @@ internal class PeerdroidLinkImpl(
                     PeerConnectionEvent.Connected -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection connected 🟢")
 
-                        val dataChannelWrapper = DataChannelWrapper(
-                            connectionIdHolder = ConnectionIdHolder(connectionId),
-                            webRtcDataChannel = webRtcManager.getDataChannel()
-                        )
-                        Timber.d("🗼 \uD83D\uDCE1️ send link client response to the connector extension ⬆️")
-                        dataChannelWrapper.sendMessage(linkClientInteractionResponse)
+                        connectionListener.completeLinking(connectionId)
                             .onSuccess {
-                                Timber.d("🗼️ link client response has been sent")
-                                isLinkClientResponseSent = true
+                                Timber.d("🗼️ linking completed")
                                 terminateWithSuccess()
                             }
                             .onFailure { throwable ->
-                                Timber.e("🗼️ failed to send link client response: ${throwable.message}❗")
+                                Timber.e("🗼️ failed to complete linking: ${throwable.message}❗")
                                 terminateWithError()
                             }
                     }
                     is PeerConnectionEvent.Disconnected -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection disconnected 🔴")
-                        if (!isLinkClientResponseSent) {
-                            Timber.d("🗼 ⚡ disconnected before sending the link client response ❌")
-                            terminateWithError()
-                        }
+                        terminateWithError()
                     }
                     is PeerConnectionEvent.Failed -> {
                         Timber.d("🗼 ⚡ signaling state changed: peer connection failed ❌")
@@ -276,20 +291,21 @@ internal class PeerdroidLinkImpl(
     }
 
     private suspend fun terminateWithError() {
-        webSocketClientJob?.cancel()
-        webSocketClient.closeSession()
-        webRtcManagerJob?.cancel()
-        webRtcManager.close()
+        terminateConnection()
         peerConnectionDeferred.complete(Result.failure(IllegalStateException("peer connection couldn't initialize")))
         addConnectionDeferred.complete(Result.failure(IllegalStateException("data channel couldn't initialize")))
     }
 
     private suspend fun terminateWithSuccess() {
+        terminateConnection()
+        addConnectionDeferred.complete(Result.success(Unit))
+    }
+
+    private suspend fun terminateConnection() {
         Timber.d("🗼️ terminate webrtc and web socket connection \uD83D\uDEAB")
         webSocketClientJob?.cancel()
         webSocketClient.closeSession()
         webRtcManagerJob?.cancel()
         webRtcManager.close()
-        addConnectionDeferred.complete(Result.success(Unit))
     }
 }

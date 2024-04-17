@@ -56,7 +56,8 @@ class AddLinkConnectorViewModel @Inject constructor(
 
                         state.copy(
                             error = when (exception) {
-                                is RadixWalletException.LinkConnectionException.InvalidQR -> {
+                                is RadixWalletException.LinkConnectionException.InvalidQR,
+                                is RadixWalletException.LinkConnectionException.InvalidSignature -> {
                                     AddLinkConnectorUiState.Error.InvalidQR(uiMessage)
                                 }
                                 else -> {
