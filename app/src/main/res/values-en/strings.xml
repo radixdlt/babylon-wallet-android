@@ -20,6 +20,7 @@
   <string name="homePage_radixBanner_title">Start Using Radix</string>
   <string name="homePage_radixBanner_subtitle">Complete setting up your wallet and start staking, using dApps and more!</string>
   <string name="homePage_radixBanner_action">Get Started Now</string>
+  <string name="homePage_secureFolder_warning">Your wallet has encountered a problem that should be resolved before you continue use. If you have a Samsung phone, this may be caused by putting the Radix Wallet in the \"Secure Folder\". Please contact support at hello@radixdlt.com for assistance.</string>
   <string name="account_transfer">Transfer</string>
   <string name="account_tokens">Tokens</string>
   <string name="account_nfts">NFTs</string>
