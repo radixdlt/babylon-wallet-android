@@ -53,6 +53,9 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 },
                 onSecurityFactorsClick = {
                     navController.securityFactors()
+                },
+                onBackupConfigurationClick = {
+                    navController.backupScreen()
                 }
             )
         }

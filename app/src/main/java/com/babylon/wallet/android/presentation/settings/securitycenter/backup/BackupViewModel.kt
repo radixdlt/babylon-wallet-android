@@ -164,7 +164,8 @@ class BackupViewModel @Inject constructor(
         val encryptSheet: EncryptSheet = EncryptSheet.Closed,
         val deleteWalletDialogVisible: Boolean = false,
         val uiMessage: UiMessage? = null,
-        val canAccessSystemBackupSettings: Boolean = false
+        val canAccessSystemBackupSettings: Boolean = false,
+        val isLoggedIn: Boolean = false
     ) : UiState {
 
         val isBackupEnabled: Boolean

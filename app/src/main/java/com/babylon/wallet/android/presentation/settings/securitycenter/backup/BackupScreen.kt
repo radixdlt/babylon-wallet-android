@@ -4,11 +4,14 @@ import android.provider.DocumentsContract
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,6 +28,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -39,8 +43,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -60,12 +67,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
-import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
-import com.babylon.wallet.android.presentation.ui.composables.NotBackedUpWarning
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -105,7 +112,8 @@ fun BackupScreen(
         onDeleteWalletClick = viewModel::onDeleteWalletClick,
         onDeleteWalletConfirm = viewModel::onDeleteWalletConfirm,
         onDeleteWalletDeny = viewModel::onDeleteWalletDeny,
-        onBackClick = viewModel::onBackClick
+        onBackClick = viewModel::onBackClick,
+        onDisconnectClick = {}
     )
 
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -151,7 +159,8 @@ private fun BackupScreenContent(
     onDeleteWalletClick: () -> Unit,
     onDeleteWalletConfirm: () -> Unit,
     onDeleteWalletDeny: () -> Unit,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onDisconnectClick: () -> Unit
 ) {
     BackHandler(onBack = onBackClick)
 
@@ -193,7 +202,7 @@ private fun BackupScreenContent(
     Scaffold(
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(R.string.accountSecuritySettings_backups_title),
+                title = stringResource(id = R.string.configurationBackup_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBars
             )
@@ -210,102 +219,63 @@ private fun BackupScreenContent(
         Column(
             modifier = Modifier
                 .padding(padding)
+                .padding(RadixTheme.dimensions.paddingDefault)
                 .verticalScroll(rememberScrollState())
         ) {
             Text(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.profileBackup_headerTitle)
-                    .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.Bold)),
+                modifier = Modifier,
+                text = stringResource(id = R.string.configurationBackup_subtitle),
                 color = RadixTheme.colors.gray2,
-                style = RadixTheme.typography.body1HighImportance
+                style = RadixTheme.typography.body1Header
             )
-
-            Text(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.profileBackup_automaticBackups_title),
-                color = RadixTheme.colors.gray2,
-                style = RadixTheme.typography.body1HighImportance
-            )
-
-            Surface(
-                color = RadixTheme.colors.defaultBackground,
-                shadowElevation = 1.dp
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(
-                            horizontal = RadixTheme.dimensions.paddingDefault,
-                            vertical = RadixTheme.dimensions.paddingLarge
-                        ),
-                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-                ) {
-                    SwitchSettingsItem(
-                        titleRes = R.string.androidProfileBackup_backupWalletData_title,
-                        subtitleRes = R.string.androidProfileBackup_backupWalletData_message,
-                        checked = state.isBackupEnabled,
-                        icon = {
-                            Icon(
-                                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_backup),
-                                tint = RadixTheme.colors.gray1,
-                                contentDescription = null
-                            )
-                        },
-                        onCheckedChange = onBackupCheckChanged
-                    )
-
-                    NotBackedUpWarning(
-                        backupState = state.backupState,
-                        horizontalSpacing = RadixTheme.dimensions.paddingMedium
-                    )
-
-                    if (state.canAccessSystemBackupSettings) {
-                        RadixSecondaryButton(
-                            modifier = Modifier.fillMaxWidth(),
-                            text = stringResource(id = R.string.androidProfileBackup_openSystemBackupSettings),
-                            onClick = onSystemBackupSettingsClick
-                        )
-                    }
-                }
-            }
-
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-
-            Text(
-                modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-                text = stringResource(id = R.string.profileBackup_manualBackups_title),
-                color = RadixTheme.colors.gray2,
-                style = RadixTheme.typography.body1HighImportance
-            )
-
-            Surface(
-                color = RadixTheme.colors.defaultBackground,
-                shadowElevation = 1.dp
+            if (state.backupState.isWarningVisible) {
+                BackupWarning()
+                Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+            }
+            Column(
+                modifier = Modifier
+                    .shadow(6.dp)
+                    .fillMaxWidth()
+                    .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectMedium)
             ) {
-                Column(
+                BackupStatusCard(state = state, onBackupCheckChanged = onBackupCheckChanged)
+                if (state.isLoggedIn) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = RadixTheme.dimensions.paddingLarge),
+                        color = RadixTheme.colors.gray5
+                    )
+                    LoggedInStatus(onDisconnectClick = onDisconnectClick)
+                }
+                Row(
                     modifier = Modifier
-                        .padding(
-                            horizontal = RadixTheme.dimensions.paddingDefault,
-                            vertical = RadixTheme.dimensions.paddingLarge
-                        ),
-                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+                        .fillMaxWidth()
+                        .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectBottomMedium)
+                        .padding(horizontal = RadixTheme.dimensions.paddingLarge, vertical = RadixTheme.dimensions.paddingDefault),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
                 ) {
+                    Icon(
+                        painter = painterResource(id = DSR.ic_warning_error),
+                        contentDescription = null
+                    )
                     Text(
-                        text = stringResource(id = R.string.profileBackup_manualBackups_subtitle)
-                            .formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.Bold)),
-                        color = RadixTheme.colors.gray2,
-                        style = RadixTheme.typography.body1HighImportance
-                    )
-
-                    RadixSecondaryButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(id = R.string.profileBackup_manualBackups_exportButtonTitle),
-                        onClick = onFileBackupClick
+                        modifier = Modifier.weight(1f),
+                        text = stringResource(id = R.string.configurationBackup_automatedBackupsWarning),
+                        color = RadixTheme.colors.gray1,
+                        style = RadixTheme.typography.body1Regular
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+            Text(
+                modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
+                text = stringResource(id = R.string.configurationBackup_manualBackup_heading),
+                color = RadixTheme.colors.gray2,
+                style = RadixTheme.typography.body1Header
+            )
 
+            ManualBackupCard(onFileBackupClick = onFileBackupClick)
             Text(
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
                 text = stringResource(id = R.string.profileBackup_deleteWallet_buttonTitle),
@@ -361,6 +331,217 @@ private fun BackupScreenContent(
             },
             onDismissRequest = onBackClick
         )
+    }
+}
+
+@Composable
+private fun ManualBackupCard(
+    modifier: Modifier = Modifier,
+    onFileBackupClick: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .shadow(6.dp)
+            .fillMaxWidth()
+            .background(RadixTheme.colors.defaultBackground, shape = RadixTheme.shapes.roundedRectMedium)
+    ) {
+        Text(
+            modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
+            text = stringResource(id = R.string.configurationBackup_manualBackup_subtitle),
+            color = RadixTheme.colors.gray1,
+            style = RadixTheme.typography.body1Regular
+        )
+        RadixPrimaryButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            text = stringResource(id = R.string.configurationBackup_manualBackup_exportButton),
+            onClick = onFileBackupClick
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectBottomMedium)
+                .padding(
+                    RadixTheme.dimensions.paddingDefault
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
+        ) {
+            Icon(
+                painter = painterResource(id = DSR.ic_warning_error),
+                contentDescription = null
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = stringResource(id = R.string.configurationBackup_manualBackup_warning),
+                color = RadixTheme.colors.gray1,
+                style = RadixTheme.typography.body1Regular
+            )
+        }
+    }
+}
+
+@Composable
+private fun BackupStatusCard(
+    modifier: Modifier = Modifier,
+    state: BackupViewModel.State,
+    onBackupCheckChanged: (Boolean) -> Unit
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = RadixTheme.dimensions.paddingLarge)
+    ) {
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
+        SwitchSettingsItem(
+            titleRes = R.string.configurationBackup_backupsToggleGDrive,
+            subtitleRes = R.string.configurationBackup_backupsUpdate,
+            checked = state.isBackupEnabled,
+            icon = {
+                Icon(
+                    painter = painterResource(id = DSR.ic_backup),
+                    tint = RadixTheme.colors.gray1,
+                    contentDescription = null
+                )
+            },
+            onCheckedChange = onBackupCheckChanged
+        )
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
+            color = RadixTheme.colors.gray5
+        )
+        Text(
+            text = stringResource(id = R.string.configurationBackup_automatedBackupsToggle),
+            color = RadixTheme.colors.gray1,
+            style = RadixTheme.typography.body1Regular
+        )
+        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
+        BackupStatusSection(
+            title = stringResource(id = R.string.configurationBackup_accountsItem),
+            subtitle = stringResource(id = R.string.configurationBackup_accountsSubtitle),
+            backupState = state.backupState
+        )
+        BackupStatusSection(
+            title = stringResource(id = R.string.configurationBackup_personasItem),
+            subtitle = stringResource(id = R.string.configurationBackup_personasSubtitle),
+            backupState = state.backupState
+        )
+        BackupStatusSection(
+            title = stringResource(id = R.string.configurationBackup_securityFactorsItem),
+            subtitle = stringResource(id = R.string.configurationBackup_securityFactorsSubtitle),
+            backupState = state.backupState
+        )
+        BackupStatusSection(
+            title = stringResource(id = R.string.configurationBackup_walletSettingsItem),
+            subtitle = stringResource(id = R.string.configurationBackup_walletSettingsSubtitle),
+            backupState = state.backupState
+        )
+    }
+}
+
+@Composable
+private fun LoggedInStatus(modifier: Modifier = Modifier, onDisconnectClick: () -> Unit) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(RadixTheme.colors.gray5, RadixTheme.shapes.roundedRectBottomMedium),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                modifier = Modifier.weight(1f),
+                text = stringResource(id = R.string.configurationBackup_loggedInAsHeading),
+                color = RadixTheme.colors.gray2,
+                style = RadixTheme.typography.body2Regular
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = "Test User",
+                color = RadixTheme.colors.gray1,
+                style = RadixTheme.typography.body1Regular
+            )
+        }
+        RadixTextButton(
+            modifier = Modifier.weight(1f),
+            text = stringResource(id = R.string.configurationBackup_disconnectButton),
+            onClick = onDisconnectClick
+        )
+    }
+}
+
+@Composable
+private fun BackupWarning(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(RadixTheme.colors.orange1.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectMedium)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(RadixTheme.colors.orange1.copy(alpha = 0.1f), RadixTheme.shapes.roundedRectMedium)
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingMedium),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingMedium)
+        ) {
+            Icon(
+                painter = painterResource(id = DSR.ic_warning_error),
+                contentDescription = null,
+                tint = RadixTheme.colors.orange1
+            )
+            Text(
+                text = stringResource(id = R.string.configurationBackup_problem5WarningAndroid),
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.orange1
+            )
+        }
+    }
+}
+
+@Composable
+private fun BackupStatusSection(title: String, subtitle: String, backupState: BackupState) {
+    var expanded by rememberSaveable {
+        mutableStateOf(false)
+    }
+    Column(
+        modifier = Modifier
+            .clickable { expanded = !expanded }
+            .fillMaxWidth()
+            .padding(vertical = RadixTheme.dimensions.paddingSmall)
+            .animateContentSize()
+    ) {
+        val statusColor = if (backupState.isWarningVisible) RadixTheme.colors.orange1 else RadixTheme.colors.green1
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingSmall)
+        ) {
+            Icon(
+                painter = painterResource(id = DSR.ic_check_circle),
+                tint = statusColor,
+                contentDescription = null
+            )
+            Text(
+                modifier = Modifier.weight(1f),
+                text = title,
+                color = statusColor,
+                style = RadixTheme.typography.body2HighImportance
+            )
+            Icon(
+                painter = painterResource(id = if (expanded) DSR.ic_arrow_up else DSR.ic_arrow_down),
+                tint = RadixTheme.colors.gray1,
+                contentDescription = null
+            )
+        }
+        if (expanded) {
+            Text(
+                text = subtitle,
+                color = RadixTheme.colors.gray2,
+                style = RadixTheme.typography.body2Regular
+            )
+        }
     }
 }
 
@@ -647,7 +828,8 @@ fun BackupScreenPreview() {
             onDeleteWalletClick = {},
             onDeleteWalletConfirm = {},
             onDeleteWalletDeny = {},
-            onBackClick = {}
+            onBackClick = {},
+            onDisconnectClick = {}
         )
     }
 }

@@ -51,7 +51,7 @@ class SecurityCenterViewModel @Inject constructor(
     }
 
     data class SecurityCenterUiState(
-        val securityFactorsState: Set<SecurityPromptType> = emptySet(),
+        val securityFactorsState: Set<SecurityPromptType>? = null,
         val backupState: BackupState? = null,
         val entitiesWithSecurityPromptUseCase: List<GetEntitiesWithSecurityPromptUseCase> = emptyList(),
         val accountsNeedRecovery: Int = 0,

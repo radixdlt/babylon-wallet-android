@@ -42,9 +42,16 @@ fun SecurityCenterScreen(
     securityCenterViewModel: SecurityCenterViewModel = hiltViewModel(),
     onBackClick: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
+    onBackupConfigurationClick: () -> Unit,
 ) {
     val state by securityCenterViewModel.state.collectAsStateWithLifecycle()
-    SecurityCenterContent(modifier = modifier, state = state, onBackClick = onBackClick, onSecurityFactorsClick = onSecurityFactorsClick)
+    SecurityCenterContent(
+        modifier = modifier,
+        state = state,
+        onBackClick = onBackClick,
+        onSecurityFactorsClick = onSecurityFactorsClick,
+        onBackupConfigurationClick = onBackupConfigurationClick
+    )
 }
 
 @Composable
@@ -52,7 +59,8 @@ private fun SecurityCenterContent(
     modifier: Modifier = Modifier,
     state: SecurityCenterViewModel.SecurityCenterUiState,
     onBackClick: () -> Unit,
-    onSecurityFactorsClick: () -> Unit
+    onSecurityFactorsClick: () -> Unit,
+    onBackupConfigurationClick: () -> Unit
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -86,14 +94,14 @@ private fun SecurityCenterContent(
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
             when {
-                state.securityFactorsState.contains(SecurityPromptType.NEEDS_RESTORE) -> {
+                state.securityFactorsState?.contains(SecurityPromptType.NEEDS_RESTORE) == true -> {
                     NotOkStatusCard(
                         title = stringResource(id = R.string.securityCenter_problem9_heading),
                         subtitle = stringResource(id = R.string.securityCenter_problem9_text)
                     )
                 }
 
-                state.securityFactorsState.contains(SecurityPromptType.NEEDS_BACKUP) -> {
+                state.securityFactorsState?.contains(SecurityPromptType.NEEDS_BACKUP) == true -> {
                     NotOkStatusCard(
                         title = stringResource(
                             id = R.string.securityCenter_problem3_heading,
@@ -111,10 +119,16 @@ private fun SecurityCenterContent(
                     )
                 }
 
-                else -> OkStatusCard()
+                state.securityFactorsState != null && state.backupState?.isWarningVisible == false -> OkStatusCard()
             }
-            SecurityFactorsCard(onSecurityFactorsClick = onSecurityFactorsClick, needsAction = state.securityFactorsState.isNotEmpty())
-            BackupConfigurationCard(needsAction = state.backupState?.isWarningVisible == true)
+            SecurityFactorsCard(
+                onSecurityFactorsClick = onSecurityFactorsClick,
+                needsAction = state.securityFactorsState?.isNotEmpty() == true
+            )
+            BackupConfigurationCard(
+                needsAction = state.backupState?.isWarningVisible == true,
+                onBackupConfigurationClick = onBackupConfigurationClick
+            )
         }
     }
 }
@@ -246,10 +260,14 @@ private fun SecurityFactorsCard(
 }
 
 @Composable
-private fun BackupConfigurationCard(needsAction: Boolean) {
+private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationClick: () -> Unit) {
     Row(
         modifier = Modifier
             .shadow(6.dp, shape = RadixTheme.shapes.roundedRectMedium)
+            .clip(RadixTheme.shapes.roundedRectMedium)
+            .clickable {
+                onBackupConfigurationClick()
+            }
             .background(RadixTheme.colors.defaultBackground, RadixTheme.shapes.roundedRectMedium)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
         verticalAlignment = Alignment.CenterVertically,
@@ -309,12 +327,13 @@ private fun BackupConfigurationCard(needsAction: Boolean) {
 fun SecurityCenterContentPreviewAllOk() {
     RadixWalletTheme {
         SecurityCenterContent(
-            onBackClick = {},
-            onSecurityFactorsClick = {},
             state = SecurityCenterViewModel.SecurityCenterUiState(
                 securityFactorsState = emptySet(),
                 backupState = null,
-            )
+            ),
+            onBackClick = {},
+            onSecurityFactorsClick = {},
+            onBackupConfigurationClick = {}
         )
     }
 }
@@ -324,12 +343,13 @@ fun SecurityCenterContentPreviewAllOk() {
 fun SecurityCenterContentPreviewAllNotOk() {
     RadixWalletTheme {
         SecurityCenterContent(
-            onBackClick = {},
-            onSecurityFactorsClick = {},
             state = SecurityCenterViewModel.SecurityCenterUiState(
                 securityFactorsState = setOf(SecurityPromptType.NEEDS_RESTORE),
                 backupState = BackupState.Closed
-            )
+            ),
+            onBackClick = {},
+            onSecurityFactorsClick = {},
+            onBackupConfigurationClick = {}
         )
     }
 }
