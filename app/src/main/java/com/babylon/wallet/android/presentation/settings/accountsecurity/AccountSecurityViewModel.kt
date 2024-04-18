@@ -63,10 +63,7 @@ class AccountSecurityViewModel @Inject constructor(
     }
 
     companion object {
-        private val defaultSettings = persistentSetOf(
-            SettingsItem.AccountSecurityAndSettingsItem.SeedPhrases,
-            SettingsItem.AccountSecurityAndSettingsItem.LedgerHardwareWallets,
-            SettingsItem.AccountSecurityAndSettingsItem.DepositGuarantees,
+        private val defaultSettings: ImmutableSet<SettingsItem.AccountSecurityAndSettingsItem> = persistentSetOf(
             SettingsItem.AccountSecurityAndSettingsItem.AccountRecovery
         )
     }

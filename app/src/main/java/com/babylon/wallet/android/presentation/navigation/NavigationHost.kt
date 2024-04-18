@@ -50,10 +50,6 @@ import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTIO
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scan.accountRecoveryScan
 import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scancomplete.recoveryScanComplete
-import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.confirm.confirmSeedPhrase
-import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.ROUTE_REVEAL_SEED_PHRASE
-import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.reveal.revealSeedPhrase
-import com.babylon.wallet.android.presentation.settings.accountsecurity.seedphrases.seedPhrases
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen
@@ -61,6 +57,10 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.p
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.popPersonaCreation
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.personaDetailScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.confirm.confirmSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.ROUTE_REVEAL_SEED_PHRASE
+import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.revealSeedPhrase
+import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.seedPhrases
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
 import com.babylon.wallet.android.presentation.status.assets.assetDialog
 import com.babylon.wallet.android.presentation.status.assets.fungibleAssetDialog
@@ -394,7 +394,7 @@ fun NavigationHost(
             },
             onAccountSettingItemClick = { item, accountAddress ->
                 when (item) {
-                    AccountSettingItem.ThirdPartyDeposits -> {
+                    is AccountSettingItem.ThirdPartyDeposits -> {
                         navController.accountThirdPartyDeposits(accountAddress)
                     }
 

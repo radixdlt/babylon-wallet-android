@@ -22,9 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.Red1
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
@@ -35,7 +35,9 @@ fun DefaultSettingsItem(
     title: String,
     onClick: () -> Unit,
     subtitleView: @Composable (ColumnScope.() -> Unit)? = null,
+    infoView: @Composable (ColumnScope.() -> Unit)? = null,
     iconView: @Composable (BoxScope.() -> Unit)? = null,
+    warningView: @Composable (ColumnScope.() -> Unit)? = null,
     showNotificationDot: Boolean = false
 ) {
     Row(
@@ -44,7 +46,7 @@ fun DefaultSettingsItem(
             .heightIn(min = 72.dp)
             .background(RadixTheme.colors.defaultBackground)
             .throttleClickable(onClick = onClick)
-            .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+            .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
         verticalAlignment = CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
@@ -71,15 +73,21 @@ fun DefaultSettingsItem(
         ) {
             Text(
                 text = title,
-                style = RadixTheme.typography.body2Header,
+                style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
             subtitleView?.let { subtitle ->
                 subtitle()
             }
+            infoView?.let { info ->
+                info()
+            }
+            warningView?.let { warning ->
+                warning()
+            }
         }
         Icon(
-            painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_chevron_right),
+            painter = painterResource(id = R.drawable.ic_chevron_right),
             contentDescription = null,
             tint = RadixTheme.colors.gray1
         )
@@ -92,6 +100,8 @@ fun DefaultSettingsItem(
     title: String,
     onClick: () -> Unit,
     subtitle: String? = null,
+    info: String? = null,
+    warning: String? = null,
     @DrawableRes icon: Int? = null,
     showNotificationDot: Boolean = false
 ) {
@@ -100,6 +110,15 @@ fun DefaultSettingsItem(
         title = title,
         onClick = onClick,
         subtitleView = subtitle?.let {
+            {
+                Text(
+                    text = it,
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1
+                )
+            }
+        },
+        infoView = info?.let {
             {
                 Text(
                     text = it,
@@ -114,8 +133,27 @@ fun DefaultSettingsItem(
                     modifier = Modifier.size(24.dp),
                     painter = painterResource(id = it),
                     contentDescription = null,
-                    tint = Color.Unspecified
+                    tint = RadixTheme.colors.gray1
                 )
+            }
+        },
+        warningView = warning?.let {
+            {
+                Row(
+                    verticalAlignment = CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_warning_error),
+                        contentDescription = null,
+                        tint = RadixTheme.colors.orange1
+                    )
+                    Text(
+                        text = it,
+                        style = RadixTheme.typography.body2HighImportance,
+                        color = RadixTheme.colors.orange1
+                    )
+                }
             }
         },
         showNotificationDot = showNotificationDot

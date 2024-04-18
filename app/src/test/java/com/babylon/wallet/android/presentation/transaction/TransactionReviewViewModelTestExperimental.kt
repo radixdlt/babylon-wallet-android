@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.transaction
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.gateway.generated.models.CoreApiTransactionReceipt
@@ -47,9 +48,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TestRule
-import org.junit.runner.Description
-import org.junit.runners.model.Statement
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.preferences.PreferencesManager
@@ -57,7 +55,6 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.sargon.toSargon
-import java.util.Locale
 import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -154,17 +151,6 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
 //                    txId = notarisation.txIdHash
 //                )
 //            }
-        }
-    }
-
-    class DefaultLocaleRule : TestRule {
-        override fun apply(base: Statement, description: Description): Statement {
-            return object : Statement() {
-                override fun evaluate() {
-                    Locale.setDefault(Locale.UK)
-                    base.evaluate()
-                }
-            }
         }
     }
 

@@ -8,6 +8,7 @@ import rdx.works.profile.data.model.Profile
 import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.factorsources.EntityFlag
+import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.Slip10Curve
 import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.FactorInstance
@@ -40,6 +41,14 @@ val Entity.usesSecp256k1: Boolean
 
 val Entity.factorSourceId
     get() = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId
+val Entity.factorSourceIdString: String
+    get() {
+        val id = (this.securityState as SecurityState.Unsecured).unsecuredEntityControl.transactionSigning.factorSourceId
+        return when (id) {
+            is FactorSource.FactorSourceID.FromAddress -> id.body.value
+            is FactorSource.FactorSourceID.FromHash -> id.body.value
+        }
+    }
 
 val Entity.derivationPathScheme: DerivationPathScheme
     get() {

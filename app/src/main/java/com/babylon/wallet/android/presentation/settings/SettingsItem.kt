@@ -10,43 +10,93 @@ sealed interface SettingsItem {
 
     sealed interface TopLevelSettings {
         data object LinkToConnector : TopLevelSettings
-        data object ImportOlympiaWallet : TopLevelSettings
-        data object AuthorizedDapps : TopLevelSettings
-        data class Personas(val showBackupSecurityPrompt: Boolean = false) : TopLevelSettings
-        data class AccountSecurityAndSettings(val showNotificationWarning: Boolean) : TopLevelSettings
-        data object AppSettings : TopLevelSettings
+
+        data object SecurityCenter : TopLevelSettings
+        data object Personas : TopLevelSettings
+        data object ApprovedDapps : TopLevelSettings
+
+        data object LinkedConnectors : TopLevelSettings
+        data object Preferences : TopLevelSettings
+
+        data object Troubleshooting : TopLevelSettings
         data object DebugSettings : TopLevelSettings
 
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
                 LinkToConnector -> R.string.empty
-                ImportOlympiaWallet -> R.string.accountSecuritySettings_importFromLegacyWallet_title
-                AuthorizedDapps -> R.string.settings_authorizedDapps
-                is Personas -> R.string.settings_personas
-                is AccountSecurityAndSettings -> R.string.settings_accountSecurityAndSettings
-                is AppSettings -> R.string.settings_appSettings
+                ApprovedDapps -> R.string.walletSettings_dapps_title
+                is Personas -> R.string.walletSettings_personas_title
+                is Preferences -> R.string.walletSettings_preferences_title
                 is DebugSettings -> R.string.settings_debugSettings
+                LinkedConnectors -> R.string.walletSettings_connectors_title
+                SecurityCenter -> R.string.walletSettings_securityCenter_title
+                Troubleshooting -> R.string.walletSettings_troubleshooting_title
+            }
+        }
+
+        @StringRes
+        fun subtitleRes(): Int {
+            return when (this) {
+                LinkToConnector -> R.string.empty
+                ApprovedDapps -> R.string.walletSettings_dapps_subtitle
+                is Personas -> R.string.walletSettings_personas_subtitle
+                is Preferences -> R.string.walletSettings_preferences_subtitle
+                is DebugSettings -> R.string.settings_debugSettings
+                LinkedConnectors -> R.string.walletSettings_connectors_subtitle
+                SecurityCenter -> R.string.walletSettings_securityCenter_subtitle
+                Troubleshooting -> R.string.walletSettings_troubleshooting_subtitle
             }
         }
 
         @DrawableRes
         fun getIcon(): Int? {
             return when (this) {
-                AuthorizedDapps -> DSR.ic_authorized_dapps
+                ApprovedDapps -> DSR.ic_authorized_dapps
                 is Personas -> DSR.ic_personas
-                is AccountSecurityAndSettings -> DSR.ic_security
-                is AppSettings -> DSR.ic_app_settings
+                is Preferences -> DSR.ic_filter_list
                 is DebugSettings -> DSR.ic_app_settings
+                LinkedConnectors -> DSR.ic_desktop_connection
+                SecurityCenter -> DSR.ic_security_center
+                Troubleshooting -> DSR.ic_troubleshooting
                 else -> null
             }
         }
     }
 
+    sealed interface SecurityFactorsSettingsItem {
+
+        val count: Int
+
+        data class SeedPhrases(override val count: Int, val needsRecovery: Boolean) : SecurityFactorsSettingsItem
+        data class LedgerHardwareWallets(override val count: Int) : SecurityFactorsSettingsItem
+
+        @StringRes
+        fun descriptionRes(): Int {
+            return when (this) {
+                is SeedPhrases -> R.string.securityFactors_seedPhrases_title
+                is LedgerHardwareWallets -> R.string.securityFactors_ledgerWallet_title
+            }
+        }
+
+        @StringRes
+        fun subtitleRes(): Int {
+            return when (this) {
+                is SeedPhrases -> R.string.securityFactors_seedPhrases_subtitle
+                is LedgerHardwareWallets -> R.string.securityFactors_ledgerWallet_subtitle
+            }
+        }
+
+        @DrawableRes
+        fun getIcon(): Int? { // add rest of icons
+            return when (this) {
+                is SeedPhrases -> DSR.ic_seed_phrases
+                is LedgerHardwareWallets -> DSR.ic_ledger_hardware_wallets
+            }
+        }
+    }
+
     sealed interface AccountSecurityAndSettingsItem {
-        data object SeedPhrases : AccountSecurityAndSettingsItem
-        data object LedgerHardwareWallets : AccountSecurityAndSettingsItem
-        data object DepositGuarantees : AccountSecurityAndSettingsItem
         data class Backups(val backupState: BackupState) : AccountSecurityAndSettingsItem
         data object ImportFromLegacyWallet : AccountSecurityAndSettingsItem
         data object AccountRecovery : AccountSecurityAndSettingsItem
@@ -54,9 +104,6 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                SeedPhrases -> R.string.displayMnemonics_seedPhrases
-                LedgerHardwareWallets -> R.string.accountSecuritySettings_ledgerHardwareWallets_title
-                DepositGuarantees -> R.string.accountSecuritySettings_depositGuarantees_title
                 is Backups -> R.string.accountSecuritySettings_backups_title
                 ImportFromLegacyWallet -> R.string.accountSecuritySettings_importFromLegacyWallet_title
                 AccountRecovery -> R.string.accountSecuritySettings_accountRecoveryScan_title
@@ -66,9 +113,6 @@ sealed interface SettingsItem {
         @DrawableRes
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
-                SeedPhrases -> com.babylon.wallet.android.designsystem.R.drawable.ic_seed_phrases
-                LedgerHardwareWallets -> com.babylon.wallet.android.designsystem.R.drawable.ic_ledger_hardware_wallets
-                DepositGuarantees -> com.babylon.wallet.android.designsystem.R.drawable.ic_filter_list
                 is Backups -> com.babylon.wallet.android.designsystem.R.drawable.ic_backup
                 ImportFromLegacyWallet -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
                 AccountRecovery -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
@@ -76,30 +120,41 @@ sealed interface SettingsItem {
         }
     }
 
-    sealed interface AppSettingsItem {
-        data object LinkedConnectors : AppSettingsItem
-        data object Gateways : AppSettingsItem
-        data object EntityHiding : AppSettingsItem
-        data class DeveloperMode(val enabled: Boolean) : AppSettingsItem
-        data class CrashReporting(val enabled: Boolean) : AppSettingsItem
+    sealed interface WalletPreferences {
+        data object DepositGuarantees : WalletPreferences
+        data object EntityHiding : WalletPreferences
+        data object Gateways : WalletPreferences
+        data class DeveloperMode(val enabled: Boolean) : WalletPreferences
+        data class CrashReporting(val enabled: Boolean) : WalletPreferences
 
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                LinkedConnectors -> R.string.appSettings_linkedConnectors_title
-                Gateways -> R.string.appSettings_gateways_title
+                DepositGuarantees -> R.string.preferences_depositGuarantees_title
+                Gateways -> R.string.preferences_gateways
                 is DeveloperMode -> R.string.appSettings_developerMode_title
-                EntityHiding -> R.string.appSettings_entityHiding_title
+                EntityHiding -> R.string.preferences_hiddenEntities_title
                 is CrashReporting -> R.string.appSettings_crashReporting_title
+            }
+        }
+
+        @StringRes
+        fun subtitleRes(): Int? {
+            return when (this) {
+                DepositGuarantees -> R.string.preferences_depositGuarantees_subtitle
+                Gateways -> null
+                is DeveloperMode -> R.string.appSettings_developerMode_subtitle
+                EntityHiding -> R.string.preferences_hiddenEntities_subtitle
+                is CrashReporting -> null
             }
         }
 
         @DrawableRes
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
-                LinkedConnectors -> com.babylon.wallet.android.designsystem.R.drawable.ic_desktop_connection
                 Gateways -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateways
                 EntityHiding -> com.babylon.wallet.android.designsystem.R.drawable.ic_entity
+                DepositGuarantees -> DSR.ic_filter_list
                 else -> null
             }
         }

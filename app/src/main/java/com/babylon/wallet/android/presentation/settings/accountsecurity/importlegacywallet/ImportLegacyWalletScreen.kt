@@ -73,10 +73,10 @@ import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInput
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseWord
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.ImportLegacyWalletUiState.Page
-import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.AddLedgerDeviceUiState
-import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.AddLinkConnectorUiState
-import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.AddLinkConnectorViewModel
-import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.settings.preferences.linkedconnectors.AddLinkConnectorUiState
+import com.babylon.wallet.android.presentation.settings.preferences.linkedconnectors.AddLinkConnectorViewModel
+import com.babylon.wallet.android.presentation.settings.preferences.linkedconnectors.qrcode.CameraPreview
+import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceUiState
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.accountItemUiModelsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.olympiaAccountsList
 import com.babylon.wallet.android.presentation.ui.MockUiProvider.seedPhraseWords

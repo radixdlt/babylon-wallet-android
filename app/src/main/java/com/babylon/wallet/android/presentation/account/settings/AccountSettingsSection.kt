@@ -3,12 +3,13 @@ package com.babylon.wallet.android.presentation.account.settings
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
+import rdx.works.profile.data.model.pernetwork.Network
 
-sealed class AccountSettingsSection(val settingsItems: List<AccountSettingItem>) {
+sealed class AccountSettingsSection(open val settingsItems: List<AccountSettingItem>) {
 
-    class PersonalizeSection(settingsItems: List<AccountSettingItem>) : AccountSettingsSection(settingsItems)
-    class AccountSection(settingsItems: List<AccountSettingItem>) : AccountSettingsSection(settingsItems)
-    class DevelopmentSection(settingsItems: List<AccountSettingItem>) : AccountSettingsSection(settingsItems)
+    data class PersonalizeSection(override val settingsItems: List<AccountSettingItem>) : AccountSettingsSection(settingsItems)
+    data class AccountSection(override val settingsItems: List<AccountSettingItem>) : AccountSettingsSection(settingsItems)
+    data class DevelopmentSection(override val settingsItems: List<AccountSettingItem>) : AccountSettingsSection(settingsItems)
 
     @StringRes
     fun titleRes(): Int {
@@ -25,7 +26,9 @@ sealed interface AccountSettingItem {
     data object AccountColor : AccountSettingItem
     data object ShowAssetsWithTags : AccountSettingItem
     data object AccountSecurity : AccountSettingItem
-    data object ThirdPartyDeposits : AccountSettingItem
+    data class ThirdPartyDeposits(
+        val defaultDepositRule: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule
+    ) : AccountSettingItem
     data object DevSettings : AccountSettingItem
 
     @StringRes
@@ -35,7 +38,7 @@ sealed interface AccountSettingItem {
             AccountLabel -> R.string.accountSettings_accountLabel
             AccountSecurity -> R.string.settings_accountSecurityAndSettings
             ShowAssetsWithTags -> R.string.accountSettings_showAssets
-            ThirdPartyDeposits -> R.string.accountSettings_thirdPartyDeposits
+            is ThirdPartyDeposits -> R.string.accountSettings_thirdPartyDeposits
             DevSettings -> R.string.accountSettings_devPreferences
         }
     }
@@ -47,7 +50,7 @@ sealed interface AccountSettingItem {
             AccountLabel -> R.string.accountSettings_accountColor_text
             AccountSecurity -> R.string.accountSettings_setBehaviorHeading
             ShowAssetsWithTags -> R.string.accountSettings_showAssetsSubtitle
-            ThirdPartyDeposits -> R.string.accountSettings_thirdPartyDeposits
+            is ThirdPartyDeposits -> R.string.accountSettings_thirdPartyDeposits
             DevSettings -> R.string.accountSettings_devPreferences
         }
     }
@@ -59,7 +62,7 @@ sealed interface AccountSettingItem {
             AccountLabel -> com.babylon.wallet.android.designsystem.R.drawable.ic_account_label
             AccountSecurity -> com.babylon.wallet.android.designsystem.R.drawable.ic_security
             ShowAssetsWithTags -> com.babylon.wallet.android.designsystem.R.drawable.ic_tags
-            ThirdPartyDeposits -> com.babylon.wallet.android.designsystem.R.drawable.ic_deposits
+            is ThirdPartyDeposits -> com.babylon.wallet.android.designsystem.R.drawable.ic_deposits
             DevSettings -> com.babylon.wallet.android.designsystem.R.drawable.ic_app_settings
         }
     }

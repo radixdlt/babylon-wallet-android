@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction
 
+import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transaction.analysis.FeesResolver
@@ -14,10 +15,14 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Rule
 import org.junit.Test
 import rdx.works.profile.ret.crypto.PrivateKey
 
 class FeesResolverTest {
+
+    @get:Rule
+    val defaultLocaleTestRule = DefaultLocaleRule()
 
     private val emptyExecutionSummary = ExecutionSummary(
         feeLocks = FeeLocks(
