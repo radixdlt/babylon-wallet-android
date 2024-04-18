@@ -11,7 +11,6 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.Rest
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
-import com.babylon.wallet.android.presentation.settings.securitycenter.backup.systemBackupSettingsScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.ledgerHardwareWalletsScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.securityFactors
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.revealSeedPhrase
@@ -60,16 +59,12 @@ fun NavGraphBuilder.securityCenterNavGraph(
             )
         }
         backupScreen(
-            onSystemBackupSettingsClick = {
-                navController.systemBackupSettingsScreen()
-            },
             onProfileDeleted = {
                 navController.popBackStack(MAIN_ROUTE, false)
-            },
-            onClose = {
-                navController.popBackStack()
             }
-        )
+        ) {
+            navController.popBackStack()
+        }
         securityFactors(
             onBackClick = {
                 navController.popBackStack()

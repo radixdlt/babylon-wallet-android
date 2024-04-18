@@ -1,3 +1,4 @@
+@file:Suppress("TooManyFunctions")
 package com.babylon.wallet.android.presentation.settings.securitycenter.backup
 
 import android.provider.DocumentsContract
@@ -87,7 +88,6 @@ import rdx.works.profile.data.model.BackupState
 fun BackupScreen(
     viewModel: BackupViewModel,
     modifier: Modifier = Modifier,
-    onSystemBackupSettingsClick: () -> Unit,
     onProfileDeleted: () -> Unit,
     onClose: () -> Unit
 ) {
@@ -99,7 +99,6 @@ fun BackupScreen(
         onBackupCheckChanged = { isChecked ->
             viewModel.onBackupSettingChanged(isChecked)
         },
-        onSystemBackupSettingsClick = onSystemBackupSettingsClick,
         onFileBackupClick = viewModel::onFileBackupClick,
         onFileBackupConfirm = viewModel::onFileBackupConfirm,
         onFileBackupDeny = viewModel::onFileBackupDeny,
@@ -146,7 +145,6 @@ private fun BackupScreenContent(
     modifier: Modifier = Modifier,
     state: BackupViewModel.State,
     onBackupCheckChanged: (Boolean) -> Unit,
-    onSystemBackupSettingsClick: () -> Unit,
     onFileBackupClick: () -> Unit,
     onFileBackupConfirm: (Boolean) -> Unit,
     onFileBackupDeny: () -> Unit,
@@ -815,7 +813,6 @@ fun BackupScreenPreview() {
         BackupScreenContent(
             state = BackupViewModel.State(backupState = BackupState.Closed),
             onBackupCheckChanged = {},
-            onSystemBackupSettingsClick = {},
             onFileBackupClick = {},
             onFileBackupConfirm = {},
             onFileBackupDeny = {},

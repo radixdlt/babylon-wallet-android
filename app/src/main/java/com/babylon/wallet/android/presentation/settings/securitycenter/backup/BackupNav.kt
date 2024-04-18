@@ -14,7 +14,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import timber.log.Timber
 
 private val backupSettingsScreenIntent: Intent
     get() = Intent().apply {
@@ -36,15 +35,6 @@ fun isBackupScreenNavigationSupported(): Boolean {
         }.size > 0
     }
 }
-
-fun NavController.systemBackupSettingsScreen() {
-    try {
-        context.startActivity(backupSettingsScreenIntent)
-    } catch (e: Exception) {
-        Timber.w(e)
-    }
-}
-
 fun NavController.backupScreen() {
     navigate("settings_backup") {
         launchSingleTop = true
@@ -52,7 +42,6 @@ fun NavController.backupScreen() {
 }
 
 fun NavGraphBuilder.backupScreen(
-    onSystemBackupSettingsClick: () -> Unit,
     onProfileDeleted: () -> Unit,
     onClose: () -> Unit
 ) {
@@ -67,7 +56,6 @@ fun NavGraphBuilder.backupScreen(
     ) {
         BackupScreen(
             viewModel = hiltViewModel(),
-            onSystemBackupSettingsClick = onSystemBackupSettingsClick,
             onProfileDeleted = onProfileDeleted,
             onClose = onClose
         )
