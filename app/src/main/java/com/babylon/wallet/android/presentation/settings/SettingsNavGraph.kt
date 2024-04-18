@@ -100,7 +100,7 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.linkedConnectorsScreen()
                     }
 
-                    SettingsItem.TopLevelSettings.SecurityCenter -> {
+                    is SettingsItem.TopLevelSettings.SecurityCenter -> {
                         navController.securityCenter()
                     }
                     SettingsItem.TopLevelSettings.Troubleshooting -> {

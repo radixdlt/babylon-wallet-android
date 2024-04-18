@@ -10,7 +10,7 @@ sealed interface SettingsItem {
     sealed interface TopLevelSettings {
         data object LinkToConnector : TopLevelSettings
 
-        data object SecurityCenter : TopLevelSettings
+        data class SecurityCenter(val needAction: Boolean = false) : TopLevelSettings
         data object Personas : TopLevelSettings
         data object ApprovedDapps : TopLevelSettings
 
@@ -29,7 +29,7 @@ sealed interface SettingsItem {
                 is Preferences -> R.string.walletSettings_preferences_title
                 is DebugSettings -> R.string.settings_debugSettings
                 LinkedConnectors -> R.string.walletSettings_connectors_title
-                SecurityCenter -> R.string.walletSettings_securityCenter_title
+                is SecurityCenter -> R.string.walletSettings_securityCenter_title
                 Troubleshooting -> R.string.walletSettings_troubleshooting_title
             }
         }
@@ -43,7 +43,7 @@ sealed interface SettingsItem {
                 is Preferences -> R.string.walletSettings_preferences_subtitle
                 is DebugSettings -> R.string.settings_debugSettings
                 LinkedConnectors -> R.string.walletSettings_connectors_subtitle
-                SecurityCenter -> R.string.walletSettings_securityCenter_subtitle
+                is SecurityCenter -> R.string.walletSettings_securityCenter_subtitle
                 Troubleshooting -> R.string.walletSettings_troubleshooting_subtitle
             }
         }
@@ -56,7 +56,7 @@ sealed interface SettingsItem {
                 is Preferences -> DSR.ic_filter_list
                 is DebugSettings -> DSR.ic_app_settings
                 LinkedConnectors -> DSR.ic_desktop_connection
-                SecurityCenter -> DSR.ic_security_center
+                is SecurityCenter -> DSR.ic_security_center
                 Troubleshooting -> DSR.ic_troubleshooting
                 else -> null
             }
@@ -105,20 +105,20 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                ImportFromLegacyWallet -> R.string.accountSecuritySettings_importFromLegacyWallet_title
-                AccountRecovery -> R.string.accountSecuritySettings_accountRecoveryScan_title
-                ContactSupport -> R.string.troubleshootingSettings_contactSupport
-                Discord -> R.string.troubleshootingSettings_discord
+                ImportFromLegacyWallet -> R.string.troubleshooting_legacyImport_title
+                AccountRecovery -> R.string.troubleshooting_accountScan_title
+                ContactSupport -> R.string.troubleshooting_contactSupport_title
+                Discord -> R.string.troubleshooting_discord_title
             }
         }
 
         @StringRes
         fun subtitleRes(): Int {
             return when (this) {
-                ImportFromLegacyWallet -> R.string.troubleshootingSettings_legacyImport_subtitle
-                AccountRecovery -> R.string.troubleshootingSettings_accountRecoveryScan_subtitle
-                ContactSupport -> R.string.troubleshootingSettings_contactSupport_subtitle
-                Discord -> R.string.troubleshootingSettings_discord_subtitle
+                ImportFromLegacyWallet -> R.string.troubleshooting_legacyImport_subtitle
+                AccountRecovery -> R.string.troubleshooting_accountScan_subtitle
+                ContactSupport -> R.string.troubleshooting_contactSupport_subtitle
+                Discord -> R.string.troubleshooting_discord_subtitle
             }
         }
 

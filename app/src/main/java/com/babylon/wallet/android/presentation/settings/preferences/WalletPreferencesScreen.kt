@@ -99,7 +99,7 @@ private fun WalletPreferencesContent(
                             PreferencesUiItem.AdvancedSection -> {
                                 Text(
                                     modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
-                                    text = "Advanced Preferences", // TODO crowdin
+                                    text = stringResource(id = R.string.preferences_advancedPreferences),
                                     style = RadixTheme.typography.body1Link,
                                     color = RadixTheme.colors.gray2
                                 )

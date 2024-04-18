@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.settings.SettingsItem.Troubleshooting
@@ -57,7 +58,7 @@ private fun TroubleshootingSettingsContent(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Troubleshooting", // TODO crowdin
+                title = stringResource(id = R.string.troubleshooting_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBars
             )
@@ -76,7 +77,7 @@ private fun TroubleshootingSettingsContent(
                             TroubleshootingUiItem.RecoverySection -> {
                                 Text(
                                     modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
-                                    text = "Account Recovery", // TODO crowdin
+                                    text = stringResource(id = R.string.troubleshooting_accountRecovery),
                                     style = RadixTheme.typography.body1Link,
                                     color = RadixTheme.colors.gray2
                                 )
@@ -85,7 +86,7 @@ private fun TroubleshootingSettingsContent(
                             TroubleshootingUiItem.SupportSection -> {
                                 Text(
                                     modifier = Modifier.padding(all = RadixTheme.dimensions.paddingDefault),
-                                    text = "Support and Community", // TODO crowdin
+                                    text = stringResource(id = R.string.troubleshooting_supportAndCommunity),
                                     style = RadixTheme.typography.body1Link,
                                     color = RadixTheme.colors.gray2
                                 )

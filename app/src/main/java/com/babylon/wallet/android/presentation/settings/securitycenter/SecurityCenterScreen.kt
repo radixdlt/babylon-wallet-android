@@ -75,32 +75,39 @@ private fun SecurityCenterContent(
             verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingDefault)
         ) {
             Text(
-                text = "Security Center", // TODO crowdin
+                text = stringResource(id = R.string.securityCenter_title),
                 style = RadixTheme.typography.title,
                 color = RadixTheme.colors.gray1
             )
             Text(
-                text = "Decentralized security settings that give you total control over your wallet’s protection.", // TODO crowdin
+                text = stringResource(id = R.string.securityCenter_subtitle),
                 style = RadixTheme.typography.body1Regular,
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
             when {
                 state.securityFactorsState.contains(SecurityPromptType.NEEDS_RESTORE) -> {
-                    NotOkStatusCard(title = "Recovery required", subtitle = "Enter seed phrase to begin recover") // TODO crowdin
+                    NotOkStatusCard(
+                        title = stringResource(id = R.string.securityCenter_problem9_heading),
+                        subtitle = stringResource(id = R.string.securityCenter_problem9_text)
+                    )
                 }
 
                 state.securityFactorsState.contains(SecurityPromptType.NEEDS_BACKUP) -> {
                     NotOkStatusCard(
-                        title = "${state.accountsNeedRecovery} Accounts and ${state.personasNeedRecovery} Personas are/is not recoverable",
-                        subtitle = "View and write down your seed phrase so Accounts and Personas are recoverable"
-                    ) // TODO crowdin
+                        title = stringResource(
+                            id = R.string.securityCenter_problem3_heading,
+                            state.accountsNeedRecovery,
+                            state.personasNeedRecovery
+                        ),
+                        subtitle = stringResource(id = R.string.securityCenter_problem3_text)
+                    )
                 }
 
                 state.backupState?.isWarningVisible == true -> {
                     NotOkStatusCard(
-                        title = "Your wallet is not recoverable", // TODO crowdin
-                        subtitle = "Configuration Backup is not up to date. Create backup now." // TODO crowdin
+                        title = stringResource(id = R.string.securityCenter_problem6_heading),
+                        subtitle = stringResource(id = R.string.securityCenter_problem6_text)
                     )
                 }
 
@@ -124,7 +131,7 @@ private fun OkStatusCard(modifier: Modifier = Modifier) {
     ) {
         Icon(painter = painterResource(id = DSR.ic_security_center), contentDescription = null, tint = RadixTheme.colors.white)
         Text(
-            text = "Your wallet is recoverable", // TODO crowdin
+            text = stringResource(id = R.string.securityCenter_goodState_heading),
             style = RadixTheme.typography.body1Regular,
             color = RadixTheme.colors.white
         )
@@ -202,12 +209,12 @@ private fun SecurityFactorsCard(
             verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall, alignment = Alignment.CenterVertically)
         ) {
             Text(
-                text = "Security Factors", // TODO crowdin
+                text = stringResource(id = R.string.securityCenter_securityFactorsItem_title),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
             Text(
-                text = "The keys you use to control your Accounts and Personas", // TODO crowdin
+                text = stringResource(id = R.string.securityCenter_securityFactorsItem_subtitle),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -218,7 +225,11 @@ private fun SecurityFactorsCard(
             ) {
                 val icon = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle
                 val color = if (needsAction) RadixTheme.colors.orange1 else RadixTheme.colors.green1
-                val text = if (needsAction) "Action required" else "Active" // TODO crowdin
+                val text = if (needsAction) {
+                    stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)
+                } else {
+                    stringResource(id = R.string.securityCenter_securityFactorsItem_activeStatus)
+                }
                 Icon(
                     painter = painterResource(id = icon),
                     contentDescription = null,
@@ -257,12 +268,12 @@ private fun BackupConfigurationCard(needsAction: Boolean) {
             verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall, alignment = Alignment.CenterVertically)
         ) {
             Text(
-                text = "Configuration Backup", // TODO crowdin
+                text = stringResource(id = R.string.configurationBackup_title),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
             Text(
-                text = "A backup of your security settings and wallet settings", // TODO crowdin
+                text = stringResource(id = R.string.configurationBackup_subtitle),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -273,7 +284,11 @@ private fun BackupConfigurationCard(needsAction: Boolean) {
             ) {
                 val icon = if (needsAction) DSR.ic_warning_error else DSR.ic_check_circle
                 val color = if (needsAction) RadixTheme.colors.orange1 else RadixTheme.colors.green1
-                val text = if (needsAction) "Action required" else "Backed up" // TODO crowdin
+                val text = if (needsAction) {
+                    stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)
+                } else {
+                    stringResource(id = R.string.securityCenter_securityFactorsItem_activeStatus)
+                }
                 Icon(
                     painter = painterResource(id = icon),
                     contentDescription = null,
