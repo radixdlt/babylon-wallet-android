@@ -25,13 +25,13 @@ sealed interface SettingsItem {
         fun descriptionRes(): Int {
             return when (this) {
                 LinkToConnector -> R.string.empty
-                ApprovedDapps -> R.string.settings_authorizedDapps
-                is Personas -> R.string.settings_personas
-                is Preferences -> R.string.appSettings_preferences
+                ApprovedDapps -> R.string.walletSettings_dapps_title
+                is Personas -> R.string.walletSettings_personas_title
+                is Preferences -> R.string.walletSettings_preferences_title
                 is DebugSettings -> R.string.settings_debugSettings
-                LinkedConnectors -> R.string.appSettings_linkedConnectors
-                SecurityCenter -> R.string.appSettings_securityCenter
-                Troubleshooting -> R.string.appSettings_troubleshooting
+                LinkedConnectors -> R.string.walletSettings_connectors_title
+                SecurityCenter -> R.string.walletSettings_securityCenter_title
+                Troubleshooting -> R.string.walletSettings_troubleshooting_title
             }
         }
 
@@ -39,13 +39,13 @@ sealed interface SettingsItem {
         fun subtitleRes(): Int {
             return when (this) {
                 LinkToConnector -> R.string.empty
-                ApprovedDapps -> R.string.appSettings_approvedDapps_subtitle
-                is Personas -> R.string.appSettings_personas_subtitle
-                is Preferences -> R.string.appSettings_preferences_subtitle
+                ApprovedDapps -> R.string.walletSettings_dapps_subtitle
+                is Personas -> R.string.walletSettings_personas_subtitle
+                is Preferences -> R.string.walletSettings_preferences_subtitle
                 is DebugSettings -> R.string.settings_debugSettings
-                LinkedConnectors -> R.string.appSettings_linkedConnectors_subtitle
-                SecurityCenter -> R.string.appSettings_securityCenter_subtitle
-                Troubleshooting -> R.string.appSettings_troubleshooting_subtitle
+                LinkedConnectors -> R.string.walletSettings_connectors_subtitle
+                SecurityCenter -> R.string.walletSettings_securityCenter_subtitle
+                Troubleshooting -> R.string.walletSettings_troubleshooting_subtitle
             }
         }
 
@@ -74,16 +74,16 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                is SeedPhrases -> R.string.displayMnemonics_seedPhrases
-                is LedgerHardwareWallets -> R.string.accountSecuritySettings_ledgerHardwareWallets_title
+                is SeedPhrases -> R.string.securityFactors_seedPhrases_title
+                is LedgerHardwareWallets -> R.string.securityFactors_ledgerWallet_title
             }
         }
 
         @StringRes
         fun subtitleRes(): Int {
             return when (this) {
-                is SeedPhrases -> R.string.securitySettings_seedPhrasesSubtitle
-                is LedgerHardwareWallets -> R.string.securitySettings_ledgerHardwareWalletsSubtitle
+                is SeedPhrases -> R.string.securityFactors_seedPhrases_subtitle
+                is LedgerHardwareWallets -> R.string.securityFactors_ledgerWallet_subtitle
             }
         }
 
@@ -130,10 +130,10 @@ sealed interface SettingsItem {
         @StringRes
         fun descriptionRes(): Int {
             return when (this) {
-                DepositGuarantees -> R.string.accountSecuritySettings_depositGuarantees_title
-                Gateways -> R.string.appSettings_gateways_title
+                DepositGuarantees -> R.string.preferences_depositGuarantees_title
+                Gateways -> R.string.preferences_gateways
                 is DeveloperMode -> R.string.appSettings_developerMode_title
-                EntityHiding -> R.string.appSettings_entityHiding_title
+                EntityHiding -> R.string.preferences_hiddenEntities_title
                 is CrashReporting -> R.string.appSettings_crashReporting_title
             }
         }
@@ -141,10 +141,10 @@ sealed interface SettingsItem {
         @StringRes
         fun subtitleRes(): Int? {
             return when (this) {
-                DepositGuarantees -> R.string.walletPreferencesSettings_defaultDeposit_subtitle
+                DepositGuarantees -> R.string.preferences_depositGuarantees_subtitle
                 Gateways -> null
                 is DeveloperMode -> R.string.appSettings_developerMode_subtitle
-                EntityHiding -> R.string.walletPreferencesSettings_entityHiding_subtitle
+                EntityHiding -> R.string.preferences_hiddenEntities_subtitle
                 is CrashReporting -> null
             }
         }
