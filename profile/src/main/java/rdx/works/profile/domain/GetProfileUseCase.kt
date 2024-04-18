@@ -4,6 +4,7 @@ package rdx.works.profile.domain
 
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -182,7 +183,7 @@ val GetProfileUseCase.isBalanceVisible
  * Default deposit guarantee
  */
 suspend fun GetProfileUseCase.defaultDepositGuarantee() =
-    invoke().map { it.appPreferences.transaction.defaultDepositGuarantee }.first()
+    invoke().map { it.appPreferences.transaction.defaultDepositGuarantee.toDecimal192() }.first()
 
 fun Collection<Network.Account>.notHiddenAccounts(): List<Network.Account> {
     return filter { it.flags.contains(EntityFlag.DeletedByUser).not() }
