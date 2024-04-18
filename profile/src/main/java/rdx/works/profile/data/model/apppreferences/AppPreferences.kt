@@ -15,8 +15,5 @@ data class AppPreferences(
     val security: Security,
 
     @SerialName("gateways")
-    val gateways: Gateways,
-
-    @SerialName("p2pLinks")
-    val p2pLinks: List<P2PLink>
+    val gateways: Gateways
 )

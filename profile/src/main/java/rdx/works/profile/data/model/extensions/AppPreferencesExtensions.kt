@@ -13,8 +13,7 @@ fun Profile.changeDefaultDepositGuarantee(
             transaction = Transaction(defaultDepositGuarantee = defaultDepositGuarantee),
             display = appPreferences.display,
             security = appPreferences.security,
-            gateways = appPreferences.gateways,
-            p2pLinks = appPreferences.p2pLinks
+            gateways = appPreferences.gateways
         )
     )
 }
@@ -30,8 +29,7 @@ fun Profile.changeBalanceVisibility(
                 isCurrencyAmountVisible = isVisible
             ),
             security = appPreferences.security,
-            gateways = appPreferences.gateways,
-            p2pLinks = appPreferences.p2pLinks
+            gateways = appPreferences.gateways
         )
     )
 }

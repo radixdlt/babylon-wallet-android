@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.DebugSettings
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
@@ -19,17 +20,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import rdx.works.core.mapWhen
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    getProfileUseCase: GetProfileUseCase,
     getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
-    getBackupStateUseCase: GetBackupStateUseCase
+    getBackupStateUseCase: GetBackupStateUseCase,
+    p2PLinksRepository: P2PLinksRepository
 ) : ViewModel() {
 
     private val defaultSettings = listOf(
@@ -46,12 +45,12 @@ class SettingsViewModel @Inject constructor(
     ).mapNotNull { it }
 
     val state: StateFlow<SettingsUiState> = combine(
-        getProfileUseCase(),
         getBackupStateUseCase(),
-        getEntitiesWithSecurityPromptUseCase()
-    ) { profile: Profile, backupState, entitiesWithSecurityPrompts ->
+        getEntitiesWithSecurityPromptUseCase(),
+        p2PLinksRepository.observeP2PLinks()
+    ) { backupState, entitiesWithSecurityPrompts, p2pLinks ->
         var mutated = defaultSettings
-        if (profile.appPreferences.p2pLinks.isEmpty() && !defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map {
+        if (p2pLinks.isEmpty() && !defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map {
                 it.item
             }.contains(LinkToConnector)
         ) {

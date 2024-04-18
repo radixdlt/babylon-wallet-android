@@ -34,7 +34,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DSR
@@ -42,7 +41,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import rdx.works.profile.data.model.apppreferences.P2PLink
 
 @Composable
 fun LinkedConnectorsScreen(
@@ -95,9 +93,9 @@ fun LinkedConnectorsScreen(
 private fun LinkedConnectorsContent(
     modifier: Modifier = Modifier,
     isAddingNewLinkConnectorInProgress: Boolean,
-    activeLinkedConnectorsList: ImmutableList<P2PLink>,
+    activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (P2PLink) -> Unit,
+    onDeleteConnectorClick: (String) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -110,7 +108,7 @@ private fun LinkedConnectorsContent(
             )
         }
     ) { padding ->
-        var connectionLinkToDelete by remember { mutableStateOf<P2PLink?>(null) }
+        var connectionLinkToDelete by remember { mutableStateOf<String?>(null) }
 
         Column(modifier = Modifier.padding(padding)) {
             HorizontalDivider(color = RadixTheme.colors.gray5)
@@ -157,9 +155,9 @@ private fun LinkedConnectorsContent(
 
 @Composable
 private fun ActiveLinkedConnectorDetails(
-    activeLinkedConnectorsList: ImmutableList<P2PLink>,
+    activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (P2PLink) -> Unit,
+    onDeleteConnectorClick: (String) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -183,20 +181,18 @@ private fun ActiveLinkedConnectorDetails(
 @Composable
 private fun ActiveLinkedConnectorsListContent(
     modifier: Modifier = Modifier,
-    activeLinkedConnectorsList: ImmutableList<P2PLink>,
-    onDeleteConnectorClick: (P2PLink) -> Unit,
+    activeLinkedConnectorsList: ImmutableList<LinkedConnectorsUiState.ConnectorUiItem>,
+    onDeleteConnectorClick: (String) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     onLinkNewConnectorClick: () -> Unit
 ) {
     LazyColumn(modifier) {
         items(
             items = activeLinkedConnectorsList,
-            key = { activeLinkedConnector: P2PLink ->
-                activeLinkedConnector.id
-            },
-            itemContent = { p2pLink ->
+            key = { activeLinkedConnector -> activeLinkedConnector.id },
+            itemContent = { item ->
                 ActiveLinkedConnectorContent(
-                    activeLinkedConnector = p2pLink,
+                    activeLinkedConnector = item,
                     onDeleteConnectorClick = onDeleteConnectorClick
                 )
             }
@@ -226,9 +222,9 @@ private fun ActiveLinkedConnectorsListContent(
 
 @Composable
 private fun ActiveLinkedConnectorContent(
-    activeLinkedConnector: P2PLink,
+    activeLinkedConnector: LinkedConnectorsUiState.ConnectorUiItem,
     modifier: Modifier = Modifier,
-    onDeleteConnectorClick: (P2PLink) -> Unit,
+    onDeleteConnectorClick: (String) -> Unit,
 ) {
     Column(modifier = modifier) {
         Row(
@@ -240,12 +236,12 @@ private fun ActiveLinkedConnectorContent(
         ) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = activeLinkedConnector.displayName,
+                text = activeLinkedConnector.name,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
             IconButton(onClick = {
-                onDeleteConnectorClick(activeLinkedConnector)
+                onDeleteConnectorClick(activeLinkedConnector.id)
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_delete_24),
@@ -278,7 +274,16 @@ fun LinkedConnectorsContentWithoutActiveLinkedConnectorsPreview() {
 fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
     RadixWalletTheme {
         LinkedConnectorsContent(
-            activeLinkedConnectorsList = SampleDataProvider().p2pLinksSample.toPersistentList(),
+            activeLinkedConnectorsList = listOf(
+                LinkedConnectorsUiState.ConnectorUiItem(
+                    id = "public_key",
+                    name = "chrome connection"
+                ),
+                LinkedConnectorsUiState.ConnectorUiItem(
+                    id = "public_key1",
+                    name = "firefox connection"
+                )
+            ).toPersistentList(),
             onLinkNewConnectorClick = {},
             isAddingNewLinkConnectorInProgress = false,
             onBackClick = {},

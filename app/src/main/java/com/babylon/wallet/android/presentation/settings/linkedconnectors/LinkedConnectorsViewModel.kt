@@ -2,7 +2,7 @@ package com.babylon.wallet.android.presentation.settings.linkedconnectors
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.babylon.wallet.android.data.dapp.PeerdroidClient
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -14,17 +14,11 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.apppreferences.P2PLink
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.p2pLinks
-import rdx.works.profile.domain.p2plink.DeleteP2PLinkUseCase
 import javax.inject.Inject
 
 @HiltViewModel
 class LinkedConnectorsViewModel @Inject constructor(
-    private val peerdroidClient: PeerdroidClient,
-    getProfileUseCase: GetProfileUseCase,
-    private val deleteP2PLinkUseCase: DeleteP2PLinkUseCase,
+    private val p2pLinksRepository: P2PLinksRepository,
     savedStateHandle: SavedStateHandle,
 ) : StateViewModel<LinkedConnectorsUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
@@ -36,19 +30,24 @@ class LinkedConnectorsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.p2pLinks
+            p2pLinksRepository.observeP2PLinks()
                 .collect { p2pLinks ->
                     _state.update {
-                        it.copy(activeConnectors = p2pLinks.toPersistentList())
+                        it.copy(
+                            activeConnectors = p2pLinks.map { link ->
+                                LinkedConnectorsUiState.ConnectorUiItem(
+                                    id = link.publicKey,
+                                    name = link.displayName
+                                )
+                            }.toPersistentList())
                     }
                 }
         }
     }
 
-    fun onDeleteConnectorClick(p2pLink: P2PLink) {
+    fun onDeleteConnectorClick(id: String) {
         viewModelScope.launch {
-            deleteP2PLinkUseCase(p2pLink.publicKey)
-            peerdroidClient.deleteLink(p2pLink.connectionPassword)
+            p2pLinksRepository.removeP2PLink(id)
         }
     }
 
@@ -72,7 +71,13 @@ internal sealed interface Event : OneOffEvent {
 }
 
 data class LinkedConnectorsUiState(
-    val activeConnectors: ImmutableList<P2PLink> = persistentListOf(),
+    val activeConnectors: ImmutableList<ConnectorUiItem> = persistentListOf(),
     val showAddLinkConnectorScreen: Boolean = false,
     val triggerCameraPermissionPrompt: Boolean = false
-) : UiState
+) : UiState {
+
+    data class ConnectorUiItem(
+        val id: String,
+        val name: String
+    )
+}

@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.domain.model.connection
+package com.babylon.wallet.android.domain.model.p2plink
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

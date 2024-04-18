@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.account.createaccount.withledger
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
@@ -17,20 +18,19 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ledgerFactorSources
-import rdx.works.profile.domain.p2pLinks
 import javax.inject.Inject
 
 @HiltViewModel
 class ChooseLedgerViewModel @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
     private val appEventBus: AppEventBus,
+    private val p2pLinksRepository: P2PLinksRepository,
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<ChooseLedgerUiState>(),
     OneOffEventHandler<ChooseLedgerEvent> by OneOffEventHandlerImpl() {
@@ -97,7 +97,7 @@ class ChooseLedgerViewModel @Inject constructor(
             selectableLedgerDevice.selected
         }?.let { ledgerFactorSource ->
             viewModelScope.launch {
-                val hasAtLeastOneLinkedConnector = getProfileUseCase.p2pLinks.first().isNotEmpty()
+                val hasAtLeastOneLinkedConnector = p2pLinksRepository.getP2PLinks().isNotEmpty()
                 // check if there is not linked connector and show link new connector screen
                 if (hasAtLeastOneLinkedConnector.not()) {
                     _state.update {
@@ -136,7 +136,7 @@ class ChooseLedgerViewModel @Inject constructor(
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
             _state.update { uiState ->
-                val hasAtLeastOneLinkedConnector = getProfileUseCase.p2pLinks.first().isNotEmpty()
+                val hasAtLeastOneLinkedConnector = p2pLinksRepository.getP2PLinks().isNotEmpty()
                 if (hasAtLeastOneLinkedConnector) {
                     uiState.copy(showContent = ChooseLedgerUiState.ShowContent.AddLedger)
                 } else {

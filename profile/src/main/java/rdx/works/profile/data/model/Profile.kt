@@ -70,8 +70,7 @@ data class Profile(
                 transaction = Transaction.default,
                 display = Display.default,
                 security = Security.default,
-                gateways = gateways,
-                p2pLinks = listOf()
+                gateways = gateways
             )
 
             return Profile(
@@ -108,8 +107,7 @@ data class Profile(
                 transaction = Transaction.default,
                 display = Display.default,
                 security = Security.default,
-                gateways = gateways,
-                p2pLinks = listOf()
+                gateways = gateways
             )
 
             return Profile(

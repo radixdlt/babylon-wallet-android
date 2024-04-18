@@ -11,11 +11,8 @@ import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.data.model.MnemonicWithPassphrase
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.apppreferences.P2PLink
-import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.compressedPublicKey
-import rdx.works.profile.data.model.extensions.updateP2PLink
 import rdx.works.profile.data.model.extensions.initializeAccount
 import rdx.works.profile.data.model.extensions.nextAccountIndex
 import rdx.works.profile.data.model.extensions.renameAccountDisplayName
@@ -126,18 +123,6 @@ class ProfileGenerationTest {
                 factorSourceID = babylonFactorSource.id
             )
         )
-
-        val p2pLink = P2PLink.init(
-            connectionPassword = "deadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeafdeadbeeffadedeaf",
-            displayName = "Brave browser on Mac Studio",
-            publicKey = "PublicKey key test",
-            purpose = P2PLinkPurpose.General
-        )
-        profile = profile.updateP2PLink(
-            p2pLink = p2pLink
-        )
-
-        assertEquals(1, profile.appPreferences.p2pLinks.count())
 
         Assert.assertTrue(profile.header.id.isNotBlank())
 

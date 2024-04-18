@@ -170,12 +170,6 @@ val GetProfileUseCase.gateways
 val GetProfileUseCase.security
     get() = invoke().map { it.appPreferences.security }
 
-/**
- * P2P Links preferences
- */
-val GetProfileUseCase.p2pLinks
-    get() = invoke().map { it.appPreferences.p2pLinks }
-
 val GetProfileUseCase.isBalanceVisible
     get() = invoke().map { it.appPreferences.display.isCurrencyAmountVisible }
 

@@ -1171,7 +1171,7 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="linkedConnectors_approveNewConnector_title">Link Connector</string>
   <string name="linkedConnectors_approveExistingConnector_title">Update Link</string>
   <string name="linkedConnectors_approveNewConnector_message">This Connector will be trusted to verify the dApp origin of requests to this wallet.
-
+\n\n
   Only continue if you are linking to the **official Radix Connector browser extension** - or a Connector you control and trust.</string>
   <string name="linkedConnectors_approveExistingConnector_message">This appears to be a Radix Connector you previously linked to. Link will be updated.</string>
   <string name="linkedConnectors_linkFailedErrorTitle">Link Failed</string>

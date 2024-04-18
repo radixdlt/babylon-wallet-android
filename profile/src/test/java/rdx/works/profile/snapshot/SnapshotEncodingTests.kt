@@ -24,7 +24,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @RunWith(Parameterized::class)
-@Ignore("CAP-36 involves P2PLink model updates which cause the tests to fail. Ignoring because the profile is being migrated to Sargon")
+@Ignore("CAP-36 involves P2PLink model removal from profile which cause the tests to fail. Ignoring because the profile is being migrated to Sargon")
 class SnapshotEncodingTests(private val input: SnapshotTestInput) {
 
     private val serializer = SerializerModule.provideProfileSerializer()

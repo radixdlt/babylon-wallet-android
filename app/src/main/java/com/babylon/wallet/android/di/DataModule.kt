@@ -14,6 +14,8 @@ import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionR
 import com.babylon.wallet.android.data.repository.dapps.WellKnownDAppDefinitionRepositoryImpl
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
 import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepositoryImpl
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepositoryImpl
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.state.StateRepositoryImpl
 import com.babylon.wallet.android.data.repository.stream.StreamRepository
@@ -95,6 +97,12 @@ interface DataModule {
     fun bindIncomingRequestRepository(
         dAppMessenger: IncomingRequestRepositoryImpl
     ): IncomingRequestRepository
+
+    @Binds
+    @Singleton
+    fun bindP2PLinksRepository(
+        repository: P2PLinksRepositoryImpl
+    ): P2PLinksRepository
 
     @Binds
     @Singleton

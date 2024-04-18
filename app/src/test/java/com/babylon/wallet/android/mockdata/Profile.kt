@@ -41,7 +41,6 @@ fun profile(
     ),
     personas: IdentifiedArrayList<Network.Persona> = identifiedArrayListOf(SampleDataProvider().samplePersona()),
     dApps: List<Network.AuthorizedDapp> = emptyList(),
-    p2pLinks: List<P2PLink> = emptyList(),
     gateway: Radix.Gateway = Radix.Gateway.default,
     transaction: Transaction = Transaction.default
 ) = Profile(
@@ -55,8 +54,7 @@ fun profile(
         transaction = transaction,
         display = Display.default,
         security = Security.default,
-        gateways = Gateways(gateway.url, listOf(gateway)),
-        p2pLinks = p2pLinks
+        gateways = Gateways(gateway.url, listOf(gateway))
     ),
     factorSources = identifiedArrayListOf(
         DeviceFactorSource.babylon(

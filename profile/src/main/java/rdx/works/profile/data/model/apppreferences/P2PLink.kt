@@ -22,11 +22,11 @@ data class P2PLink(
     val publicKey: String,
 
     @SerialName("purpose")
-    val purpose: P2PLinkPurpose
-) {
+    val purpose: P2PLinkPurpose,
 
-    val id: String
-        get() = publicKey
+    @SerialName("walletPrivateKey")
+    val walletPrivateKey: String
+) {
 
     companion object {
         fun init(
@@ -38,7 +38,8 @@ data class P2PLink(
             connectionPassword = connectionPassword,
             displayName = displayName,
             publicKey = publicKey,
-            purpose = purpose
+            purpose = purpose,
+            walletPrivateKey = ""
         )
     }
 }

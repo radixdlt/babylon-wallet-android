@@ -22,8 +22,6 @@ import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.data.model.apppreferences.AppPreferences
 import rdx.works.profile.data.model.apppreferences.Display
 import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.apppreferences.P2PLink
-import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
@@ -69,15 +67,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
                 transaction = Transaction.default,
                 display = Display.default,
                 security = Security.default,
-                gateways = Gateways(network.url, listOf(network)),
-                p2pLinks = listOf(
-                    P2PLink.init(
-                        connectionPassword = "My password",
-                        displayName = "Browser name test",
-                        publicKey = "PublicKey key test",
-                        purpose = P2PLinkPurpose.General
-                    )
-                )
+                gateways = Gateways(network.url, listOf(network))
             ),
             factorSources = identifiedArrayListOf(DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)),
             networks = listOf(

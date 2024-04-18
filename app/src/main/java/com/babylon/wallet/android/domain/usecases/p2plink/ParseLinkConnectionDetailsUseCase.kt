@@ -1,27 +1,26 @@
-package com.babylon.wallet.android.domain.usecases.connection
+package com.babylon.wallet.android.domain.usecases.p2plink
 
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
+import com.babylon.wallet.android.data.repository.p2plink.findBy
+import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionPayload
+import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionQRContent
 import com.babylon.wallet.android.domain.RadixWalletException
-import com.babylon.wallet.android.domain.model.connection.LinkConnectionPayload
-import com.babylon.wallet.android.domain.model.connection.LinkConnectionQRContent
 import com.babylon.wallet.android.utils.getSignatureMessageFromConnectionPassword
-import kotlinx.coroutines.flow.first
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.p2pLinks
 import rdx.works.profile.ret.crypto.PrivateKey
 import timber.log.Timber
 import javax.inject.Inject
 
 class ParseLinkConnectionDetailsUseCase @Inject constructor(
-    private val getProfileUseCase: GetProfileUseCase
+    private val p2PLinksRepository: P2PLinksRepository
 ) {
 
-    suspend operator fun invoke(rawContent: String): Result<LinkConnectionPayload> {
+    suspend operator fun invoke(raw: String): Result<LinkConnectionPayload> {
         val content = runCatching {
-            Serializer.kotlinxSerializationJson.decodeFromString<LinkConnectionQRContent>(rawContent)
+            Serializer.kotlinxSerializationJson.decodeFromString<LinkConnectionQRContent>(raw)
                 .also {
                     // Validate password format
                     HexCoded32Bytes(it.password)
@@ -38,13 +37,12 @@ class ParseLinkConnectionDetailsUseCase @Inject constructor(
                     }
                 }
         }.onFailure { throwable ->
-            Timber.e("Failed to parse the p2p link connection QR content: $rawContent Error: ${throwable.message}")
+            Timber.e("Failed to parse the p2p link connection QR content: $raw Error: ${throwable.message}")
             return Result.failure(RadixWalletException.LinkConnectionException.InvalidQR)
         }.getOrThrow()
 
         val newLinkPurpose = P2PLinkPurpose.fromValue(content.purpose)
-        val existingLink = getProfileUseCase.p2pLinks.first()
-            .firstOrNull { it.publicKey == content.publicKey }
+        val existingLink = p2PLinksRepository.getP2PLinks().findBy(content.publicKey)
 
         return when {
             newLinkPurpose == null || newLinkPurpose != P2PLinkPurpose.General -> {

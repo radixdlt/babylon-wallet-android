@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.createaccount.withledger
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
+import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.account.createaccount.withledger.ARG_SELECTION_PURPOSE
@@ -21,8 +22,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.core.HexCoded32Bytes
-import rdx.works.profile.data.model.apppreferences.P2PLink
-import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
 import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.domain.AddLedgerFactorSourceResult
@@ -34,6 +33,7 @@ import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewModel>() {
 
     private val getProfileUseCase = mockk<GetProfileUseCase>()
+    private val p2pLinksRepository = mockk<P2PLinksRepository>()
     private val ledgerMessenger = mockk<LedgerMessenger>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
     private val addLedgerFactorSourceUseCase = mockk<AddLedgerFactorSourceUseCase>()
@@ -48,6 +48,7 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
         return ChooseLedgerViewModel(
             getProfileUseCase,
             eventBus,
+            p2pLinksRepository,
             savedStateHandle
         )
     }
@@ -77,29 +78,6 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
 
     @Test
     fun `initial state is correct with 1 factor source and no p2pLinks`() = runTest {
-        val vm = vm.value
-        advanceUntilIdle()
-        vm.state.test {
-            val item = expectMostRecentItem()
-            assert(item.ledgerDevices.size == 1)
-            assert(item.ledgerDevices.first { it.selected }.data.id.body.value == secondDeviceId)
-        }
-    }
-
-    @Test
-    fun `initial state is correct with 1 factor source and 1 p2pLink`() = runTest {
-        coEvery { getProfileUseCase() } returns flowOf(
-            profile(
-                p2pLinks = listOf(
-                    P2PLink.init(
-                        connectionPassword = "pwd",
-                        displayName = "chrome",
-                        publicKey = "publicKey",
-                        purpose = P2PLinkPurpose.General
-                    )
-                )
-            )
-        )
         val vm = vm.value
         advanceUntilIdle()
         vm.state.test {
