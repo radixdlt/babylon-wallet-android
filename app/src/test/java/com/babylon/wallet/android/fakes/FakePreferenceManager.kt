@@ -32,9 +32,6 @@ class FakePreferenceManager : PreferencesManager {
     override val lastNPSSurveyInstant: Flow<Instant?>
         get() = _lastNPSSurveyInstant
 
-    override val connectorExtensionLinkPublicKey: Flow<String?>
-        get() = TODO("Not yet implemented")
-
     override suspend fun updateLastBackupInstant(backupInstant: Instant) {
         TODO("Not yet implemented")
     }

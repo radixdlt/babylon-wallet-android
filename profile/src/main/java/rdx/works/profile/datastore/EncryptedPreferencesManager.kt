@@ -80,16 +80,11 @@ class EncryptedPreferencesManager @Inject constructor(
         putString(preferences, key, newValue, keySpec)
     }
 
-    private suspend fun putString(
-        preferences: DataStore<Preferences>,
-        key: String,
-        newValue: String?,
-        keySpec: KeySpec
-    ) {
+    private suspend fun putString(prefs: DataStore<Preferences>, key: String, newValue: String?, keySpec: KeySpec) {
         val preferencesKey = stringPreferencesKey(key)
         newValue?.let { newValueNotNull ->
             val encryptedValue = newValueNotNull.encrypt(withKey = keySpec).getOrThrow()
-            preferences.edit { mutablePreferences ->
+            prefs.edit { mutablePreferences ->
                 mutablePreferences[preferencesKey] = encryptedValue
             }
         }
