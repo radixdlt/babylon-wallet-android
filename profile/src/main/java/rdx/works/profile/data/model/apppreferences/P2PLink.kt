@@ -26,20 +26,4 @@ data class P2PLink(
 
     @SerialName("walletPrivateKey")
     val walletPrivateKey: String
-) {
-
-    companion object {
-        fun init(
-            connectionPassword: String,
-            displayName: String,
-            publicKey: String,
-            purpose: P2PLinkPurpose
-        ): P2PLink = P2PLink(
-            connectionPassword = connectionPassword,
-            displayName = displayName,
-            publicKey = publicKey,
-            purpose = purpose,
-            walletPrivateKey = ""
-        )
-    }
-}
+)
