@@ -34,9 +34,8 @@ class P2PLinksRepositoryImpl @Inject constructor(
         return encryptedPreferencesManager.getP2PLinks()
             .map { serializedLinksResult ->
                 serializedLinksResult?.getOrNull()
-                    ?.let {
-                        Json.decodeFromString<List<P2PLink>>(it)
-                    } ?: emptyList()
+                    ?.let { Json.decodeFromString<List<P2PLink>>(it) }
+                    .orEmpty()
             }
     }
 
@@ -63,9 +62,8 @@ class P2PLinksRepositoryImpl @Inject constructor(
         return encryptedPreferencesManager.getP2PLinks()
             .firstOrNull()
             ?.getOrNull()
-            ?.let {
-                Json.decodeFromString<List<P2PLink>>(it)
-            } ?: emptyList()
+            ?.let { Json.decodeFromString<List<P2PLink>>(it) }
+            .orEmpty()
     }
 
     private suspend fun saveP2PLinks(links: List<P2PLink>) {
