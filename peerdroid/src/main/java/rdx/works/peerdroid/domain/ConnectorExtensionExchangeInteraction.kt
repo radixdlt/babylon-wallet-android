@@ -1,4 +1,4 @@
-package com.babylon.wallet.android.data.dapp.model
+package rdx.works.peerdroid.domain
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

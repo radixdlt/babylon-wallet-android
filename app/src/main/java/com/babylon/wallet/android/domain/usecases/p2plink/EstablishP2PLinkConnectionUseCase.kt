@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases.p2plink
 
-import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionExchangeInteraction
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.p2plink.findBy
 import com.babylon.wallet.android.data.repository.p2plink.isSame
@@ -9,12 +8,11 @@ import com.babylon.wallet.android.utils.getSignatureMessageFromConnectionPasswor
 import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.string
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import rdx.works.core.decodeHex
 import rdx.works.core.mapWhen
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PeerdroidLink
+import rdx.works.peerdroid.domain.ConnectorExtensionExchangeInteraction
 import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.ret.crypto.PrivateKey
 import timber.log.Timber
@@ -79,12 +77,12 @@ class EstablishP2PLinkConnectionUseCase @Inject constructor(
                         ?.decodeHex() ?: PrivateKey.EddsaEd25519.newRandom().toByteArray()
                     val walletClientKey = PrivateKey.EddsaEd25519.newFromPrivateKeyBytes(walletClientKeyBytes)
 
-                    val linkClientInteractionResponse = getLinkClientInteractionResponse(
+                    val linkClientInteractionResponse = buildLinkClientInteractionResponse(
                         walletClientPrivateKey = walletClientKey,
                         connectionPassword = payload.password
                     )
 
-                    return peerdroidLink.send(linkClientInteractionResponse, connectionId)
+                    return peerdroidLink.sendMessage(connectionId, linkClientInteractionResponse)
                         .onSuccess {
                             saveP2PLink(p2pLinks, walletClientKey.toByteArray().toHexString())
                         }
@@ -97,17 +95,15 @@ class EstablishP2PLinkConnectionUseCase @Inject constructor(
         }
     }
 
-    private fun getLinkClientInteractionResponse(
+    private fun buildLinkClientInteractionResponse(
         walletClientPrivateKey: PrivateKey.EddsaEd25519,
         connectionPassword: String
-    ): String {
-        return Json.encodeToString(
-            ConnectorExtensionExchangeInteraction.LinkClient(
-                publicKey = walletClientPrivateKey.publicKey().hex,
-                signature = walletClientPrivateKey.signToSignature(
-                    hashedData = getSignatureMessageFromConnectionPassword(connectionPassword)
-                ).string
-            )
+    ): ConnectorExtensionExchangeInteraction.LinkClient {
+        return ConnectorExtensionExchangeInteraction.LinkClient(
+            publicKey = walletClientPrivateKey.publicKey().hex,
+            signature = walletClientPrivateKey.signToSignature(
+                hashedData = getSignatureMessageFromConnectionPassword(connectionPassword)
+            ).string
         )
     }
 

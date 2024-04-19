@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import rdx.works.core.hash
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
@@ -27,6 +29,7 @@ import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
 import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
+import rdx.works.peerdroid.domain.ConnectorExtensionExchangeInteraction
 import timber.log.Timber
 
 interface PeerdroidLink {
@@ -40,9 +43,9 @@ interface PeerdroidLink {
         connectionListener: ConnectionListener
     ): Result<Unit>
 
-    suspend fun send(
-        message: String,
-        connectionId: String
+    suspend fun sendMessage(
+        connectionId: String,
+        message: ConnectorExtensionExchangeInteraction
     ): Result<Unit>
 
     interface ConnectionListener {
@@ -102,15 +105,16 @@ internal class PeerdroidLinkImpl(
         return addConnectionDeferred.await()
     }
 
-    override suspend fun send(message: String, connectionId: String): Result<Unit> {
+    override suspend fun sendMessage(connectionId: String, message: ConnectorExtensionExchangeInteraction): Result<Unit> {
         val dataChannelWrapper = DataChannelWrapper(
             connectionIdHolder = ConnectionIdHolder(connectionId),
             webRtcDataChannel = webRtcManager.getDataChannel()
         )
+        val serializedMessage = Json.encodeToString(message)
 
         Timber.d("🗼 \uD83D\uDCE1️ sending message to the connector extension ⬆️")
 
-        return dataChannelWrapper.sendMessage(message)
+        return dataChannelWrapper.sendMessage(serializedMessage)
     }
 
     @Suppress("LongMethod")
