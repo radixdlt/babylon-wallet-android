@@ -34,7 +34,7 @@ class TroubleshootingSettingsViewModel @Inject constructor(
             ) {
                 _state.update { state ->
                     val updatedSettings =
-                        defaultSettings.filter {
+                        defaultSettings.filterNot {
                             it is TroubleshootingUiItem.Setting && it.item is SettingsItem.Troubleshooting.ImportFromLegacyWallet
                         }.toPersistentSet()
                     state.copy(
