@@ -7,7 +7,6 @@ import com.radixdlt.model.ECKeyPair
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
 import com.radixdlt.sargon.SignatureWithPublicKey
-import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toBagOfBytes
 import org.bouncycastle.asn1.x9.X9ECParameters

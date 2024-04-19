@@ -3,9 +3,9 @@ package com.babylon.wallet.android.domain.usecases.p2plink
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.p2plink.findBy
+import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionPayload
 import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionQRContent
-import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.utils.getSignatureMessageFromConnectionPassword
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.decodeHex

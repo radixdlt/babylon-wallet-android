@@ -374,7 +374,7 @@ private fun ConnectionErrorDialog(
 
 @Preview(showBackground = true)
 @Composable
-fun NameNewConnectorPreview(
+private fun AddLinkConnectorPreview(
     @PreviewParameter(AddLinkConnectorPreviewProvider::class) state: AddLinkConnectorUiState
 ) {
     RadixWalletTheme {

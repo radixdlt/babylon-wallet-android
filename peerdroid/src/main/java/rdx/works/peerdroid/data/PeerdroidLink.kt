@@ -54,6 +54,7 @@ interface PeerdroidLink {
     }
 }
 
+@Suppress("TooManyFunctions")
 internal class PeerdroidLinkImpl(
     @ApplicationContext private val applicationContext: Context,
     @ApplicationScope private val applicationScope: CoroutineScope,

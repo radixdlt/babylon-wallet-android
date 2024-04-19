@@ -39,7 +39,8 @@ class LinkedConnectorsViewModel @Inject constructor(
                                     id = link.publicKey,
                                     name = link.displayName
                                 )
-                            }.toPersistentList())
+                            }.toPersistentList()
+                        )
                     }
                 }
         }
