@@ -48,6 +48,7 @@ class AddLinkConnectorViewModel @Inject constructor(
                         val uiMessage = UiMessage.ErrorMessage(exception)
 
                         state.copy(
+                            content = AddLinkConnectorUiState.Content.ScanQrCode(false),
                             error = when (exception) {
                                 is RadixWalletException.LinkConnectionException.InvalidQR,
                                 is RadixWalletException.LinkConnectionException.InvalidSignature -> {
@@ -154,7 +155,9 @@ data class AddLinkConnectorUiState(
 
     sealed interface Content {
 
-        data object ScanQrCode : Content
+        data class ScanQrCode(
+            val isCameraOn: Boolean
+        ) : Content
 
         data object ApproveNewLinkConnector : Content
 
@@ -182,7 +185,7 @@ data class AddLinkConnectorUiState(
     companion object {
         val init = AddLinkConnectorUiState(
             isAddingNewLinkConnectorInProgress = false,
-            content = Content.ScanQrCode,
+            content = Content.ScanQrCode(true),
             error = null
         )
     }

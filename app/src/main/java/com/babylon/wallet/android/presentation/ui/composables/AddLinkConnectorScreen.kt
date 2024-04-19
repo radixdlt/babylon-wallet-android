@@ -105,9 +105,12 @@ private fun AddLinkConnectorContent(
         val keyboardController = LocalSoftwareKeyboardController.current
         Column(modifier = Modifier.padding(padding)) {
             when (state.content) {
-                AddLinkConnectorUiState.Content.ScanQrCode -> {
+                is AddLinkConnectorUiState.Content.ScanQrCode -> {
                     if (isCameraPermissionGranted) {
-                        ScanQrCode(onQrCodeScanned = onQrCodeScanned)
+                        ScanQrCode(
+                            isCameraOn = state.content.isCameraOn,
+                            onQrCodeScanned = onQrCodeScanned
+                        )
                     }
                 }
                 is AddLinkConnectorUiState.Content.ApproveNewLinkConnector -> {
@@ -162,6 +165,7 @@ private fun AddLinkConnectorContent(
 @Composable
 private fun ScanQrCode(
     modifier: Modifier = Modifier,
+    isCameraOn: Boolean,
     onQrCodeScanned: (String) -> Unit,
 ) {
     Column(
@@ -195,7 +199,7 @@ private fun ScanQrCode(
                 .imePadding()
                 .clip(RadixTheme.shapes.roundedRectMedium),
             disableBackHandler = false,
-            isVisible = true,
+            isVisible = isCameraOn,
             onQrCodeDetected = {
                 onQrCodeScanned(it)
             }
