@@ -48,8 +48,6 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.rest
 import com.babylon.wallet.android.presentation.onboarding.restore.withoutbackup.restoreWithoutBackupScreen
 import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTION
 import com.babylon.wallet.android.presentation.rootdetection.RootDetectionContent
-import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scan.accountRecoveryScan
-import com.babylon.wallet.android.presentation.settings.accountsecurity.accountrecoveryscan.scancomplete.recoveryScanComplete
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaConfirmationScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.createPersonaScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personaInfoScreen
@@ -62,6 +60,8 @@ import com.babylon.wallet.android.presentation.settings.securitycenter.seedphras
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.revealSeedPhrase
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.seedPhrases
 import com.babylon.wallet.android.presentation.settings.settingsNavGraph
+import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.accountRecoveryScan
+import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scancomplete.recoveryScanComplete
 import com.babylon.wallet.android.presentation.status.assets.assetDialog
 import com.babylon.wallet.android.presentation.status.assets.fungibleAssetDialog
 import com.babylon.wallet.android.presentation.status.assets.nftAssetDialog

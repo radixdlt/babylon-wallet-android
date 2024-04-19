@@ -11,7 +11,7 @@ import com.babylon.wallet.android.presentation.account.createaccount.confirmatio
 import com.babylon.wallet.android.presentation.account.createaccount.createAccountScreen
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.presentation.settings.SettingsItem
-import com.babylon.wallet.android.presentation.settings.accountsecurity.depositguarantees.depositGuaranteesScreen
+import com.babylon.wallet.android.presentation.settings.preferences.depositguarantees.depositGuaranteesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.entityhiding.hiddenEntitiesScreen
 import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewaysScreen
 
@@ -19,12 +19,12 @@ const val ROUTE_WALLET_PREFERENCES_SCREEN = "settings_wallet_preferences_screen"
 const val ROUTE_WALLET_PREFERENCES_GRAPH = "settings_wallet_preferences_graph"
 
 fun NavController.walletPreferencesScreen() {
-    navigate(ROUTE_WALLET_PREFERENCES_SCREEN) {
+    navigate(ROUTE_WALLET_PREFERENCES_GRAPH) {
         launchSingleTop = true
     }
 }
 
-fun NavGraphBuilder.appSettingsNavGraph(
+fun NavGraphBuilder.preferencesNavGraph(
     navController: NavController,
 ) {
     navigation(

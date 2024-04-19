@@ -6,9 +6,11 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.restoreMnemonics
 import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.babylon.wallet.android.presentation.settings.securitycenter.backup.backupScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.ledgerHardwareWalletsScreen
 import com.babylon.wallet.android.presentation.settings.securitycenter.securityfactors.securityFactors
 import com.babylon.wallet.android.presentation.settings.securitycenter.seedphrases.reveal.revealSeedPhrase
@@ -18,10 +20,11 @@ const val ROUTE_SECURITY_CENTER_SCREEN = "settings_security_center_screen"
 const val ROUTE_SECURITY_CENTER_GRAPH = "settings_security_center_graph"
 
 fun NavController.securityCenter() {
-    navigate(ROUTE_SECURITY_CENTER_SCREEN)
+    navigate(ROUTE_SECURITY_CENTER_GRAPH)
 }
 
-fun NavGraphBuilder.securityCenter(
+@Suppress("LongMethod")
+fun NavGraphBuilder.securityCenterNavGraph(
     navController: NavController
 ) {
     navigation(
@@ -49,8 +52,18 @@ fun NavGraphBuilder.securityCenter(
                 },
                 onSecurityFactorsClick = {
                     navController.securityFactors()
+                },
+                onBackupConfigurationClick = {
+                    navController.backupScreen()
                 }
             )
+        }
+        backupScreen(
+            onProfileDeleted = {
+                navController.popBackStack(MAIN_ROUTE, false)
+            }
+        ) {
+            navController.popBackStack()
         }
         securityFactors(
             onBackClick = {

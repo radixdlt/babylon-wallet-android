@@ -119,8 +119,18 @@ private fun SettingsContent(
                                                 onSettingClick(settingsItem.item)
                                             },
                                             subtitle = stringResource(id = settingsItem.item.subtitleRes()),
-                                            icon = settingsItem.item.getIcon(),
-                                            title = stringResource(id = settingsItem.item.descriptionRes())
+                                            leadingIcon = settingsItem.item.getIcon(),
+                                            title = stringResource(id = settingsItem.item.descriptionRes()),
+                                            warning = when (settingsItem.item) {
+                                                is SettingsItem.TopLevelSettings.SecurityCenter -> {
+                                                    if (settingsItem.item.needAction) {
+                                                        stringResource(R.string.securityCenter_problem9_heading)
+                                                    } else {
+                                                        null
+                                                    }
+                                                }
+                                                else -> null
+                                            }
                                         )
                                     }
                                     item {
@@ -275,7 +285,7 @@ fun SettingsScreenWithoutActiveConnectionPreview() {
             state = SettingsUiState(
                 settings = listOf(
                     SettingsItem.TopLevelSettings.LinkToConnector,
-                    SettingsItem.TopLevelSettings.SecurityCenter,
+                    SettingsItem.TopLevelSettings.SecurityCenter(),
                     SettingsItem.TopLevelSettings.ApprovedDapps,
                     SettingsItem.TopLevelSettings.LinkedConnectors,
                     SettingsItem.TopLevelSettings.Preferences,

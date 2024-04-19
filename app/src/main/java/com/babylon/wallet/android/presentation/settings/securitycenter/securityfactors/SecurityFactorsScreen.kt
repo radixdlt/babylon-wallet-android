@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.settings.SettingsItem
@@ -49,7 +50,7 @@ private fun SecurityFactorsContent(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = "Security Factors", // TODO crowdin
+                title = stringResource(id = R.string.securityFactors_title),
                 onBackClick = onBackClick,
                 windowInsets = WindowInsets.statusBars
             )
@@ -63,7 +64,7 @@ private fun SecurityFactorsContent(
         ) {
             item {
                 Text(
-                    text = "View and manage your security factors", // TODO crowdin
+                    text = stringResource(id = R.string.securityFactors_subtitle),
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray2,
                     modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
@@ -75,23 +76,37 @@ private fun SecurityFactorsContent(
                     DefaultSettingsItem(
                         title = stringResource(id = securityFactorsSettingsItem.descriptionRes()),
                         subtitle = stringResource(id = securityFactorsSettingsItem.subtitleRes()),
-                        icon = securityFactorsSettingsItem.getIcon(),
+                        leadingIcon = securityFactorsSettingsItem.getIcon(),
                         onClick = {
                             onSecurityFactorSettingItemClick(securityFactorsSettingsItem)
                         },
                         info = when (securityFactorsSettingsItem) {
                             is SettingsItem.SecurityFactorsSettingsItem.LedgerHardwareWallets -> {
-                                "${securityFactorsSettingsItem.count} set" // TODO crowdin
+                                if (securityFactorsSettingsItem.count == 1) {
+                                    stringResource(id = R.string.securityFactors_ledgerWallet_counterSingular)
+                                } else {
+                                    stringResource(
+                                        id = R.string.securityFactors_ledgerWallet_counterPlural,
+                                        securityFactorsSettingsItem.count
+                                    )
+                                }
                             }
 
                             is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases -> {
-                                "${securityFactorsSettingsItem.count} Seed Phrases" // TODO crowdin
+                                if (securityFactorsSettingsItem.count == 1) {
+                                    stringResource(id = R.string.securityFactors_seedPhrases_counterSingular)
+                                } else {
+                                    stringResource(
+                                        id = R.string.securityFactors_seedPhrases_counterPlural,
+                                        securityFactorsSettingsItem.count
+                                    )
+                                }
                             }
                         },
                         warning = if (securityFactorsSettingsItem is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases &&
                             securityFactorsSettingsItem.needsRecovery
                         ) {
-                            "Enter your seed phrase to recover Accounts" // TODO crowdin
+                            stringResource(id = R.string.securityFactors_seedPhrases_enterSeedPhrase)
                         } else {
                             null
                         }
@@ -107,7 +122,7 @@ private fun SecurityFactorsContent(
 
 @Preview(showBackground = true)
 @Composable
-fun AccountSecurityScreenPreview() {
+fun SecurityFactorsContentPreview() {
     RadixWalletTheme {
         SecurityFactorsContent(
             modifier = Modifier,
