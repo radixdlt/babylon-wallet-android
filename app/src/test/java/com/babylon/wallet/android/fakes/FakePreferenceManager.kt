@@ -91,10 +91,6 @@ class FakePreferenceManager : PreferencesManager {
         _lastNPSSurveyInstant.emit(npsSurveyInstant)
     }
 
-    override suspend fun setConnectorExtensionLinkPublicKey(value: String) {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun clear(): Preferences {
         TODO("Not yet implemented")
     }

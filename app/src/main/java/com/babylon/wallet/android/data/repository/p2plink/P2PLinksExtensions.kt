@@ -11,5 +11,5 @@ fun P2PLink.isSame(other: P2PLink): Boolean {
 }
 
 fun P2PLink.isSame(publicKey: String): Boolean {
-    return publicKey.equals(publicKey, false)
+    return this.publicKey.equals(publicKey, true)
 }

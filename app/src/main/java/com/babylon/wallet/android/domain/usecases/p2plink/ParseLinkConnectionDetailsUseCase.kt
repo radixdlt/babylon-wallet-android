@@ -26,11 +26,15 @@ class ParseLinkConnectionDetailsUseCase @Inject constructor(
                     HexCoded32Bytes(it.password)
 
                     // Validate client signature
-                    val isSignatureValid = PrivateKey.EddsaEd25519.verifySignature(
-                        signature = it.signature.decodeHex(),
-                        hashedData = getSignatureMessageFromConnectionPassword(it.password),
-                        publicKey = it.publicKey.decodeHex()
-                    )
+                    val isSignatureValid = runCatching {
+                        PrivateKey.EddsaEd25519.verifySignature(
+                            signature = it.signature.decodeHex(),
+                            hashedData = getSignatureMessageFromConnectionPassword(it.password),
+                            publicKey = it.publicKey.decodeHex()
+                        )
+                    }.onFailure { throwable ->
+                        Timber.e("Failed to verify the link signature: ${it.signature} Error: ${throwable.message}")
+                    }.getOrNull() ?: false
 
                     if (!isSignatureValid) {
                         return Result.failure(RadixWalletException.LinkConnectionException.InvalidSignature)
@@ -42,10 +46,11 @@ class ParseLinkConnectionDetailsUseCase @Inject constructor(
         }.getOrThrow()
 
         val newLinkPurpose = P2PLinkPurpose.fromValue(content.purpose)
-        val existingLink = p2PLinksRepository.getP2PLinks().findBy(content.publicKey)
+        val links = p2PLinksRepository.getP2PLinks()
+        val existingLink = links.findBy(content.publicKey)
 
         return when {
-            newLinkPurpose == null || newLinkPurpose != P2PLinkPurpose.General -> {
+            newLinkPurpose == null -> {
                 Result.failure(RadixWalletException.LinkConnectionException.UnknownPurpose)
             }
             existingLink != null && newLinkPurpose != existingLink.purpose -> {
