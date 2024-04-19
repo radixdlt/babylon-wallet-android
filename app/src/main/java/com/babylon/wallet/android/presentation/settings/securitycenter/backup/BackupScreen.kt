@@ -234,7 +234,7 @@ private fun BackupScreenContent(
                 style = RadixTheme.typography.body1Header
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
-            if (state.backupState.isWarningVisible) {
+            if (state.isCloudBackupEnabled.not()) {
                 BackupWarning()
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
             }
@@ -402,8 +402,7 @@ private fun BackupStatusCard(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         SwitchSettingsItem(
             titleRes = R.string.configurationBackup_automated_toggleAndroid,
-            subtitleRes = R.string.configurationBackup_automated_lastBackup,
-            checked = state.isBackupEnabled,
+            checked = state.isCloudBackupEnabled,
             icon = {
                 Icon(
                     painter = painterResource(id = DSR.ic_backup),
@@ -412,6 +411,10 @@ private fun BackupStatusCard(
                 )
             },
             onCheckedChange = onBackupCheckChanged
+        )
+        Text(
+            text = state.cloudBackupEmail,
+            style = RadixTheme.typography.body2Regular,
         )
         HorizontalDivider(
             modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingDefault),
@@ -426,22 +429,22 @@ private fun BackupStatusCard(
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_accountsItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_accountsItemSubtitle),
-            backupState = state.backupState
+            isCloudBackupEnabled = state.isCloudBackupEnabled
         )
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_personasItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_personasItemSubtitle),
-            backupState = state.backupState
+            isCloudBackupEnabled = state.isCloudBackupEnabled
         )
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_securityFactorsItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_securityFactorsItemSubtitle),
-            backupState = state.backupState
+            isCloudBackupEnabled = state.isCloudBackupEnabled
         )
         BackupStatusSection(
             title = stringResource(id = R.string.configurationBackup_automated_walletSettingsItemTitle),
             subtitle = stringResource(id = R.string.configurationBackup_automated_walletSettingsItemSubtitle),
-            backupState = state.backupState
+            isCloudBackupEnabled = state.isCloudBackupEnabled
         )
     }
 }
@@ -506,7 +509,11 @@ private fun BackupWarning(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun BackupStatusSection(title: String, subtitle: String, backupState: BackupState) {
+private fun BackupStatusSection(
+    title: String,
+    subtitle: String,
+    isCloudBackupEnabled: Boolean
+) {
     var expanded by rememberSaveable {
         mutableStateOf(false)
     }
@@ -517,7 +524,7 @@ private fun BackupStatusSection(title: String, subtitle: String, backupState: Ba
             .padding(vertical = RadixTheme.dimensions.paddingSmall)
             .animateContentSize()
     ) {
-        val statusColor = if (backupState.isWarningVisible) RadixTheme.colors.orange1 else RadixTheme.colors.green1
+        val statusColor = if (isCloudBackupEnabled) RadixTheme.colors.green1 else RadixTheme.colors.orange1
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
