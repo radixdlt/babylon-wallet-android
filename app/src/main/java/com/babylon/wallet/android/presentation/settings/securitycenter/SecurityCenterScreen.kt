@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,7 +33,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.usecases.SecurityPromptType
+import com.babylon.wallet.android.domain.model.SecurityProblem
+import com.babylon.wallet.android.domain.model.toProblemHeading
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import rdx.works.core.domain.BackupState
@@ -43,6 +46,8 @@ fun SecurityCenterScreen(
     onBackClick: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
     onBackupConfigurationClick: () -> Unit,
+    onRecoverEntitiesClick: () -> Unit,
+    onBackupEntities: () -> Unit,
 ) {
     val state by securityCenterViewModel.state.collectAsStateWithLifecycle()
     SecurityCenterContent(
@@ -50,7 +55,9 @@ fun SecurityCenterScreen(
         state = state,
         onBackClick = onBackClick,
         onSecurityFactorsClick = onSecurityFactorsClick,
-        onBackupConfigurationClick = onBackupConfigurationClick
+        onBackupConfigurationClick = onBackupConfigurationClick,
+        onRecoverEntitiesClick = onRecoverEntitiesClick,
+        onBackupEntities = onBackupEntities
     )
 }
 
@@ -60,7 +67,9 @@ private fun SecurityCenterContent(
     state: SecurityCenterViewModel.SecurityCenterUiState,
     onBackClick: () -> Unit,
     onSecurityFactorsClick: () -> Unit,
-    onBackupConfigurationClick: () -> Unit
+    onBackupConfigurationClick: () -> Unit,
+    onRecoverEntitiesClick: () -> Unit,
+    onBackupEntities: () -> Unit
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -78,7 +87,8 @@ private fun SecurityCenterContent(
         Column(
             modifier = Modifier
                 .padding(padding)
-                .padding(horizontal = RadixTheme.dimensions.paddingDefault),
+                .padding(horizontal = RadixTheme.dimensions.paddingDefault)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingDefault)
         ) {
@@ -93,42 +103,54 @@ private fun SecurityCenterContent(
                 color = RadixTheme.colors.gray1
             )
             Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingMedium))
-            when {
-                state.securityFactorsState?.contains(SecurityPromptType.NEEDS_RESTORE) == true -> {
-                    NotOkStatusCard(
-                        title = stringResource(id = R.string.securityCenter_problem9_heading),
-                        subtitle = stringResource(id = R.string.securityCenter_problem9_text)
-                    )
-                }
+            state.securityProblems?.forEach { problem ->
+                val title = problem.toProblemHeading()
+                when (problem) {
+                    is SecurityProblem.EntitiesNeedBackup -> {
+                        NotOkStatusCard(
+                            modifier = Modifier
+                                .clip(RadixTheme.shapes.roundedRectMedium)
+                                .clickable {
+                                    onBackupEntities()
+                                },
+                            title = title,
+                            subtitle = stringResource(id = R.string.securityCenter_problem3_text)
+                        )
+                    }
 
-                state.securityFactorsState?.contains(SecurityPromptType.NEEDS_BACKUP) == true -> {
-                    NotOkStatusCard(
-                        title = stringResource(
-                            id = R.string.securityCenter_problem3_heading,
-                            state.accountsNeedRecovery,
-                            state.personasNeedRecovery
-                        ),
-                        subtitle = stringResource(id = R.string.securityCenter_problem3_text)
-                    )
-                }
+                    is SecurityProblem.EntitiesNeedRecovery -> {
+                        NotOkStatusCard(
+                            modifier = Modifier
+                                .clip(RadixTheme.shapes.roundedRectMedium)
+                                .clickable { onRecoverEntitiesClick() },
+                            title = title,
+                            subtitle = stringResource(id = R.string.securityCenter_problem9_text)
+                        )
+                    }
 
-                state.backupState?.isWarningVisible == true -> {
-                    NotOkStatusCard(
-                        title = stringResource(id = R.string.securityCenter_problem6_heading),
-                        subtitle = stringResource(id = R.string.securityCenter_problem6_text)
-                    )
+                    SecurityProblem.BackupNotWorking -> {
+                        NotOkStatusCard(
+                            modifier = Modifier
+                                .clip(RadixTheme.shapes.roundedRectMedium)
+                                .clickable { onBackupConfigurationClick() },
+                            title = title,
+                            subtitle = stringResource(id = R.string.securityCenter_problem6_text)
+                        )
+                    }
                 }
-
-                state.securityFactorsState != null && state.backupState?.isWarningVisible == false -> OkStatusCard()
+            }
+            if (state.securityProblems?.isEmpty() == true) {
+                OkStatusCard()
             }
             SecurityFactorsCard(
                 onSecurityFactorsClick = onSecurityFactorsClick,
-                needsAction = state.securityFactorsState?.isNotEmpty() == true
+                needsAction = state.securityProblems?.isNotEmpty() == true
             )
             BackupConfigurationCard(
-                needsAction = state.backupState?.isWarningVisible == true,
+                needsAction = state.securityProblems?.contains(SecurityProblem.BackupNotWorking) == true,
                 onBackupConfigurationClick = onBackupConfigurationClick
             )
+            Spacer(modifier = Modifier.size(RadixTheme.dimensions.paddingLarge))
         }
     }
 }
@@ -157,7 +179,7 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(RadixTheme.colors.orange1.copy(alpha = 0.3f), RadixTheme.shapes.roundedRectMedium)
+            .background(RadixTheme.colors.lightOrange, RadixTheme.shapes.roundedRectMedium)
     ) {
         Row(
             modifier = Modifier
@@ -328,12 +350,13 @@ fun SecurityCenterContentPreviewAllOk() {
     RadixWalletTheme {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
-                securityFactorsState = emptySet(),
-                backupState = null,
+                securityProblems = emptySet()
             ),
             onBackClick = {},
             onSecurityFactorsClick = {},
-            onBackupConfigurationClick = {}
+            onBackupConfigurationClick = {},
+            onRecoverEntitiesClick = {},
+            onBackupEntities = {}
         )
     }
 }
@@ -344,12 +367,15 @@ fun SecurityCenterContentPreviewAllNotOk() {
     RadixWalletTheme {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
-                securityFactorsState = setOf(SecurityPromptType.NEEDS_RESTORE),
-                backupState = BackupState.Closed
+                securityProblems = setOf(
+                    SecurityProblem.EntitiesNeedRecovery("")
+                )
             ),
             onBackClick = {},
             onSecurityFactorsClick = {},
-            onBackupConfigurationClick = {}
+            onBackupConfigurationClick = {},
+            onRecoverEntitiesClick = {},
+            onBackupEntities = {}
         )
     }
 }

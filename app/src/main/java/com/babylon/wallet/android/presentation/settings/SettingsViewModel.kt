@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
-import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
+import com.babylon.wallet.android.domain.usecases.GetSecurityProblemsUseCase
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.DebugSettings
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
@@ -21,15 +21,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import rdx.works.core.mapWhen
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
-    getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
-    getBackupStateUseCase: GetBackupStateUseCase
+    getSecurityProblemsUseCase: GetSecurityProblemsUseCase
 ) : ViewModel() {
 
     private val defaultSettings = listOf(
@@ -46,21 +44,18 @@ class SettingsViewModel @Inject constructor(
     ).mapNotNull { it }
 
     val state: StateFlow<SettingsUiState> = combine(
-        getProfileUseCase.flow,
-        getBackupStateUseCase(),
-        getEntitiesWithSecurityPromptUseCase()
-    ) { profile, backupState, entitiesWithSecurityPrompts ->
+        getProfileUseCase(),
+        getSecurityProblemsUseCase(),
+    ) { profile: Profile, securityProblems ->
         var mutated = defaultSettings
         val settingsItems = defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map { it.item }
         if (profile.appPreferences.p2pLinks().isEmpty() && LinkToConnector !in settingsItems) {
             mutated = listOf(SettingsUiItem.Settings(LinkToConnector)) + mutated
         }
-        val anyEntityHasProblem = entitiesWithSecurityPrompts.isNotEmpty()
-        val backupHasProblem = backupState.isWarningVisible
-        if (anyEntityHasProblem || backupHasProblem) {
+        if (securityProblems.isNotEmpty()) {
             mutated = mutated.mapWhen(
                 predicate = { it is SettingsUiItem.Settings && it.item is SettingsItem.TopLevelSettings.SecurityCenter },
-                mutation = { SettingsUiItem.Settings(SettingsItem.TopLevelSettings.SecurityCenter(true)) }
+                mutation = { SettingsUiItem.Settings(SettingsItem.TopLevelSettings.SecurityCenter(securityProblems)) }
             )
         }
         SettingsUiState(mutated.toPersistentList())

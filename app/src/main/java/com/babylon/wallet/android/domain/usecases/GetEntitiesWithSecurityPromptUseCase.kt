@@ -16,6 +16,9 @@ import rdx.works.core.sargon.factorSourceById
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.domain.entitiesOnCurrentNetwork
+import rdx.works.profile.domain.factorSourceById
+import rdx.works.profile.domain.personasOnCurrentNetwork
 import javax.inject.Inject
 
 class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
@@ -33,33 +36,21 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
         }
     }
 
-    val shouldShowPersonaSecurityPrompt: Flow<Boolean>
-        get() = combine(
-            getProfileUseCase.flow.map { it.activePersonasOnCurrentNetwork },
-            preferencesManager.getBackedUpFactorSourceIds().distinctUntilChanged()
-        ) { personas, backedUpFactorSourceIds ->
-            personas.any { persona ->
-                val entity = mapToEntityWithSecurityPrompt(persona.asProfileEntity(), backedUpFactorSourceIds)
-                entity?.prompt == SecurityPromptType.NEEDS_BACKUP
+    private suspend fun mapToEntityWithSecurityPrompt(entity: ProfileEntity, backedUpFactorSourceIds: Set<String>): EntityWithSecurityPrompt? {
+        val factorSourceId = entity.securityState.factorSourceId as? FactorSourceID.FromHash ?: return null
+        val factorSource = getProfileUseCase.factorSourceById(factorSourceId) as? DeviceFactorSource ?: return null
+        val prompts = mutableSetOf<SecurityPromptType>().apply {
+            if (!mnemonicRepository.mnemonicExist(factorSource.id)) {
+                add(SecurityPromptType.NEEDS_RESTORE)
             }
-        }
-
-    private suspend fun mapToEntityWithSecurityPrompt(
-        entity: ProfileEntity,
-        backedUpFactorSourceIds: Set<FactorSourceId.Hash>
-    ): EntityWithSecurityPrompt? {
-        val factorSourceId = entity.securityState.factorSourceId as? FactorSourceId.Hash ?: return null
-        val factorSource = getProfileUseCase().factorSourceById(factorSourceId) as? FactorSource.Device ?: return null
-
-        return if (!mnemonicRepository.mnemonicExist(factorSource.value.id.asGeneral())) {
+            if (!backedUpFactorSourceIds.contains(factorSourceId.body.value)) {
+                add(SecurityPromptType.NEEDS_BACKUP)
+            }
+        }.toSet()
+        return if (prompts.isNotEmpty()) {
             EntityWithSecurityPrompt(
                 entity = entity,
-                prompt = SecurityPromptType.NEEDS_RESTORE
-            )
-        } else if (!backedUpFactorSourceIds.contains(factorSourceId)) {
-            EntityWithSecurityPrompt(
-                entity = entity,
-                prompt = SecurityPromptType.NEEDS_BACKUP
+                prompts = prompts
             )
         } else {
             null
@@ -69,8 +60,11 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
 
 data class EntityWithSecurityPrompt(
     val entity: ProfileEntity,
+    val prompts: Set<SecurityPromptType>
+) {
     val prompt: SecurityPromptType
-)
+        get() = prompts.first()
+}
 
 enum class SecurityPromptType {
     NEEDS_BACKUP,

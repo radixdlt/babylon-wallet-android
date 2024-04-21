@@ -21,6 +21,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 
 @Composable
@@ -103,10 +104,10 @@ private fun SecurityFactorsContent(
                                 }
                             }
                         },
-                        warning = if (securityFactorsSettingsItem is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases &&
+                        warnings = if (securityFactorsSettingsItem is SettingsItem.SecurityFactorsSettingsItem.SeedPhrases &&
                             securityFactorsSettingsItem.needsRecovery
                         ) {
-                            stringResource(id = R.string.securityFactors_seedPhrases_enterSeedPhrase)
+                            persistentListOf(stringResource(id = R.string.securityFactors_seedPhrases_enterSeedPhrase))
                         } else {
                             null
                         }
