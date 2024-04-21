@@ -69,9 +69,7 @@ fun FactorSourceInteractionBottomDialogContent(
             SignatureSuccessfulContent(modifier = modifier)
         }
 
-        is InteractionState.Ledger.DerivingPublicKey,
         is InteractionState.Ledger.Pending,
-        is InteractionState.Device.DerivingAccounts,
         is InteractionState.Device.Pending -> {
             SignatureRequestContent(interactionState, modifier)
         }
@@ -103,18 +101,11 @@ private fun SignatureRequestContent(
         )
         val title = stringResource(
             id = when (interactionState) {
-                is InteractionState.Ledger.DerivingPublicKey -> {
-                    com.babylon.wallet.android.R.string.signing_signatureRequest_title
-                }
-
                 is InteractionState.Ledger -> {
-                    com.babylon.wallet.android.R.string.signing_signatureRequest_title
-                }
-                is InteractionState.Device.DerivingAccounts -> {
-                    com.babylon.wallet.android.R.string.accountRecoveryScan_derivingAccounts
+                    com.babylon.wallet.android.R.string.factorSourceActions_signature_title
                 }
 
-                is InteractionState.Device -> com.babylon.wallet.android.R.string.signing_signatureRequest_title
+                is InteractionState.Device -> com.babylon.wallet.android.R.string.factorSourceActions_signature_title
                 else -> com.babylon.wallet.android.R.string.empty
             }
         )
@@ -135,13 +126,7 @@ private fun SignatureRequestContent(
 
             is InteractionState.Ledger.Success,
             is InteractionState.Ledger.Pending -> {
-                stringResource(id = com.babylon.wallet.android.R.string.signing_signatureRequest_body)
-            }
-            is InteractionState.Ledger.DerivingAccounts -> {
-                stringResource(id = com.babylon.wallet.android.R.string.signing_signatureRequest_body)
-            }
-            is InteractionState.Device.DerivingAccounts -> {
-                "Authenticate to your phone to complete using your phone’s signing key."
+                stringResource(id = com.babylon.wallet.android.R.string.factorSourceActions_ledger_messageSignature)
             }
 
             else -> null
@@ -185,7 +170,7 @@ private fun SignatureRequestContent(
 private fun signingPurposeDescription(signingPurpose: SigningPurpose) =
     when (signingPurpose) {
         SigningPurpose.SignAuth -> com.babylon.wallet.android.R.string.empty
-        SigningPurpose.SignTransaction -> com.babylon.wallet.android.R.string.signing_withDeviceFactorSource_signTransaction
+        SigningPurpose.SignTransaction -> com.babylon.wallet.android.R.string.factorSourceActions_device_messageSignature
     }
 
 @Composable

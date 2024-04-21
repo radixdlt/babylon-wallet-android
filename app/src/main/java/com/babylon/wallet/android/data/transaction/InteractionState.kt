@@ -6,13 +6,12 @@ import rdx.works.profile.data.model.factorsources.FactorSource
 import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.SigningPurpose
 
+@Deprecated("It will be removed once refactoring of access factor sources is complete.")
 sealed class InteractionState(val factorSource: FactorSource) {
 
     abstract val label: String
 
     sealed class Device(private val deviceFactorSource: DeviceFactorSource) : InteractionState(deviceFactorSource) {
-
-        data class DerivingAccounts(private val deviceFactorSource: DeviceFactorSource) : Device(deviceFactorSource)
 
         data class Pending(
             private val deviceFactorSource: DeviceFactorSource,
@@ -33,7 +32,6 @@ sealed class InteractionState(val factorSource: FactorSource) {
     ) : InteractionState(ledgerFactorSource) {
 
         data class DerivingPublicKey(val ledgerFactorSource: LedgerHardwareWalletFactorSource) : Ledger(ledgerFactorSource)
-        data class DerivingAccounts(val ledgerFactorSource: LedgerHardwareWalletFactorSource) : Ledger(ledgerFactorSource)
 
         data class Pending(
             val ledgerFactorSource: LedgerHardwareWalletFactorSource,
