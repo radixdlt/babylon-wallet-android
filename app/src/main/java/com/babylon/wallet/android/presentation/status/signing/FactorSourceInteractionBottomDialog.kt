@@ -14,10 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
@@ -28,7 +24,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.designsystem.R
-import com.babylon.wallet.android.designsystem.theme.GradientBrand2
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
@@ -64,17 +59,11 @@ fun FactorSourceInteractionBottomDialogContent(
     interactionState: InteractionState?
 ) {
     when (interactionState) {
-        is InteractionState.Ledger.Success,
-        is InteractionState.Device.Success -> {
-            SignatureSuccessfulContent(modifier = modifier)
-        }
-
-        is InteractionState.Ledger.DerivingPublicKey,
         is InteractionState.Ledger.Pending,
-        is InteractionState.Device.DerivingAccounts,
         is InteractionState.Device.Pending -> {
             SignatureRequestContent(interactionState, modifier)
         }
+
         else -> {}
     }
 }
@@ -103,18 +92,11 @@ private fun SignatureRequestContent(
         )
         val title = stringResource(
             id = when (interactionState) {
-                is InteractionState.Ledger.DerivingPublicKey -> {
-                    com.babylon.wallet.android.R.string.signing_signatureRequest_title
-                }
-
                 is InteractionState.Ledger -> {
-                    com.babylon.wallet.android.R.string.signing_signatureRequest_title
-                }
-                is InteractionState.Device.DerivingAccounts -> {
-                    com.babylon.wallet.android.R.string.accountRecoveryScan_derivingAccounts
+                    com.babylon.wallet.android.R.string.factorSourceActions_signature_title
                 }
 
-                is InteractionState.Device -> com.babylon.wallet.android.R.string.signing_signatureRequest_title
+                is InteractionState.Device -> com.babylon.wallet.android.R.string.factorSourceActions_signature_title
                 else -> com.babylon.wallet.android.R.string.empty
             }
         )
@@ -125,23 +107,12 @@ private fun SignatureRequestContent(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         val subtitle = when (interactionState) {
-            is InteractionState.Device.Success -> {
-                stringResource(id = signingPurposeDescription(interactionState.signingPurpose))
-            }
-
             is InteractionState.Device.Pending -> {
                 stringResource(id = signingPurposeDescription(interactionState.signingPurpose))
             }
 
-            is InteractionState.Ledger.Success,
             is InteractionState.Ledger.Pending -> {
-                stringResource(id = com.babylon.wallet.android.R.string.signing_signatureRequest_body)
-            }
-            is InteractionState.Ledger.DerivingAccounts -> {
-                stringResource(id = com.babylon.wallet.android.R.string.signing_signatureRequest_body)
-            }
-            is InteractionState.Device.DerivingAccounts -> {
-                "Authenticate to your phone to complete using your phone’s signing key."
+                stringResource(id = com.babylon.wallet.android.R.string.factorSourceActions_ledger_messageSignature)
             }
 
             else -> null
@@ -185,51 +156,8 @@ private fun SignatureRequestContent(
 private fun signingPurposeDescription(signingPurpose: SigningPurpose) =
     when (signingPurpose) {
         SigningPurpose.SignAuth -> com.babylon.wallet.android.R.string.empty
-        SigningPurpose.SignTransaction -> com.babylon.wallet.android.R.string.signing_withDeviceFactorSource_signTransaction
+        SigningPurpose.SignTransaction -> com.babylon.wallet.android.R.string.factorSourceActions_device_messageSignature
     }
-
-@Composable
-private fun SignatureSuccessfulContent(
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier
-            .fillMaxWidth()
-            .background(color = RadixTheme.colors.defaultBackground)
-            .padding(RadixTheme.dimensions.paddingLarge),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingDefault)
-    ) {
-        Icon(
-            modifier = Modifier
-                .size(80.dp)
-                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
-                .drawWithCache {
-                    onDrawWithContent {
-                        drawContent()
-                        drawRect(GradientBrand2, blendMode = BlendMode.SrcAtop)
-                    }
-                },
-            painter = painterResource(
-                id = R.drawable.ic_security_key
-            ),
-            contentDescription = null
-        )
-        Text(
-            text = stringResource(com.babylon.wallet.android.R.string.signing_signatureSuccessful_title),
-            style = RadixTheme.typography.title,
-            color = RadixTheme.colors.gray1
-        )
-        Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
-        Text(
-            text = stringResource(id = com.babylon.wallet.android.R.string.signing_signatureSuccessful_body),
-            style = RadixTheme.typography.body1Regular,
-            color = RadixTheme.colors.gray1,
-            textAlign = TextAlign.Center
-        )
-        Spacer(Modifier.height(36.dp))
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
@@ -244,13 +172,5 @@ fun SignatureRequestContentPreview() {
                 )
             )
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun SignatureSuccessfulContentPreview() {
-    RadixWalletTheme {
-        SignatureSuccessfulContent()
     }
 }

@@ -107,14 +107,14 @@ private fun DeriveAccountsBottomSheetContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 style = RadixTheme.typography.title,
-                text = stringResource(id = R.string.accountRecoveryScan_derivingAccounts)
+                text = stringResource(id = R.string.factorSourceActions_deriveAccounts_title)
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             when (showContentForFactorSource) {
                 ShowContentForFactorSource.Device -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
+                        text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
                     )
                     if (shouldShowRetryButton) {
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
@@ -130,7 +130,7 @@ private fun DeriveAccountsBottomSheetContent(
                 is ShowContentForFactorSource.Ledger -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.derivePublicKeys_subtitleLedger)
+                        text = stringResource(id = R.string.factorSourceActions_ledger_messageDeriveAccounts)
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
