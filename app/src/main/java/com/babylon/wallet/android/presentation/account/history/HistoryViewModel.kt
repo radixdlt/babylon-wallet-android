@@ -203,7 +203,7 @@ class HistoryViewModel @Inject constructor(
     fun onTimeFilterSelected(timeFilterItem: State.MonthFilter) {
         val existingIndex = _state.value.historyItems?.indexOfFirst {
             it.dateTime?.isAfter(timeFilterItem.start) == true &&
-                it.dateTime?.isBefore(timeFilterItem.end) == true
+                    it.dateTime?.isBefore(timeFilterItem.end) == true
         }
         if (existingIndex == null || existingIndex == -1) {
             viewModelScope.launch {
