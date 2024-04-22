@@ -198,6 +198,15 @@
   <string name="linkedConnectors_localNetworkPermissionDeniedAlert_message">Local network access is required to link to a Connector.</string>
   <string name="linkedConnectors_incorrectQrTitle">Incorrect QR code scanned.</string>
   <string name="linkedConnectors_incorrectQrMessage">Please scan the QR code provided by your Radix Wallet Connector browser extension.</string>
+  <string name="linkedConnectors_approveNewConnector_title">Link Connector</string>
+  <string name="linkedConnectors_approveExistingConnector_title">Update Link</string>
+  <string name="linkedConnectors_approveNewConnector_message">This Connector will be trusted to verify the dApp origin of requests to this wallet.
+
+Only continue if you are linking to the **official Radix Connector browser extension** - or a Connector you control and trust.</string>
+  <string name="linkedConnectors_approveExistingConnector_message">This appears to be a Radix Connector you previously linked to. Link will be updated.</string>
+  <string name="linkedConnectors_linkFailedErrorTitle">Link Failed</string>
+  <string name="linkedConnectors_unknownPurposeErrorMessage">This type of Connector link is not supported.</string>
+  <string name="linkedConnectors_changingPurposeNotSupportedErrorMessage">Changing a Connector’s type is not supported.</string>
   <string name="gateways_title">Gateways</string>
   <string name="gateways_subtitle">Choose the gateway your wallet will use to connect to the Radix Network or test networks. Only change this if you know what you’re doing.</string>
   <string name="gateways_whatIsAGateway">What is a Gateway?</string>
@@ -512,6 +521,7 @@
   <string name="common_unauthorized">Unauthorized</string>
   <string name="common_rateLimitReached">Gateway access blocked due to exceeding rate limit. Please wait a few minutes to retry.</string>
   <string name="common_badHttpResponseStatusCode">Bad HTTP response status code %d</string>
+  <string name="common_dismiss">Dismiss</string>
   <string name="error_dappRequest_invalidPersonaId">Invalid Persona specified by dApp</string>
   <string name="error_dappRequest_invalidRequest">Invalid request</string>
   <string name="error_profileLoad_decodingError">Failed to import Radix Wallet backup: %s</string>
