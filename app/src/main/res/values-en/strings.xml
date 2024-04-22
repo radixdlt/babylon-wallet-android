@@ -404,7 +404,7 @@ Only continue if you are linking to the **official Radix Connector browser exten
   <string name="transactionReview_slideToSign">Slide to Sign</string>
   <string name="transactionReview_xrdAmount">%s XRD</string>
   <string name="transactionReview_insufficientBalance">Insufficient Balance</string>
-  <string name="transactionReview_feePayerRequiredMessage">Fee Payer account required</string>
+  <string name="transactionReview_feePayerRequiredMessage">Fee payer account required</string>
   <string name="transactionReview_withdrawalsHeading">Withdrawing From</string>
   <string name="transactionReview_depositsHeading">Depositing To</string>
   <string name="transactionReview_sendingToHeading">Sending to</string>
