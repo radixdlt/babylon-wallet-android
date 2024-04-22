@@ -18,11 +18,6 @@ sealed class InteractionState(val factorSource: FactorSource) {
             val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
         ) : Device(deviceFactorSource)
 
-        data class Success(
-            private val deviceFactorSource: DeviceFactorSource,
-            val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
-        ) : Device(deviceFactorSource)
-
         override val label: String
             get() = deviceFactorSource.hint.name
     }
@@ -34,11 +29,6 @@ sealed class InteractionState(val factorSource: FactorSource) {
         data class DerivingPublicKey(val ledgerFactorSource: LedgerHardwareWalletFactorSource) : Ledger(ledgerFactorSource)
 
         data class Pending(
-            val ledgerFactorSource: LedgerHardwareWalletFactorSource,
-            val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
-        ) : Ledger(ledgerFactorSource)
-
-        data class Success(
             val ledgerFactorSource: LedgerHardwareWalletFactorSource,
             val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
         ) : Ledger(ledgerFactorSource)
