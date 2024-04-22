@@ -31,7 +31,7 @@ class P2PLinksRepositoryImpl @Inject constructor(
 ) : P2PLinksRepository {
 
     override fun observeP2PLinks(): Flow<List<P2PLink>> {
-        return encryptedPreferencesManager.getP2PLinks()
+        return encryptedPreferencesManager.getP2PLinkListJson()
             .map { serializedLinksResult ->
                 serializedLinksResult?.getOrNull()
                     ?.let { Json.decodeFromString<List<P2PLink>>(it) }
@@ -59,7 +59,7 @@ class P2PLinksRepositoryImpl @Inject constructor(
     }
 
     private suspend fun getSavedP2PLinks(): List<P2PLink> {
-        return encryptedPreferencesManager.getP2PLinks()
+        return encryptedPreferencesManager.getP2PLinkListJson()
             .firstOrNull()
             ?.getOrNull()
             ?.let { Json.decodeFromString<List<P2PLink>>(it) }
@@ -67,8 +67,8 @@ class P2PLinksRepositoryImpl @Inject constructor(
     }
 
     private suspend fun saveP2PLinks(links: List<P2PLink>) {
-        encryptedPreferencesManager.saveP2PLinks(
-            serializedP2PLinks = Json.encodeToString(links.distinctBy { it.publicKey })
+        encryptedPreferencesManager.saveP2PLinkListJson(
+            p2pLinkListJson = Json.encodeToString(links.distinctBy { it.publicKey })
         )
     }
 }

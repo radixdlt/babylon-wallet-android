@@ -276,11 +276,11 @@ fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
         LinkedConnectorsContent(
             activeLinkedConnectorsList = listOf(
                 LinkedConnectorsUiState.ConnectorUiItem(
-                    id = "public_key",
+                    id = "id1",
                     name = "chrome connection"
                 ),
                 LinkedConnectorsUiState.ConnectorUiItem(
-                    id = "public_key1",
+                    id = "id2",
                     name = "firefox connection"
                 )
             ).toPersistentList(),

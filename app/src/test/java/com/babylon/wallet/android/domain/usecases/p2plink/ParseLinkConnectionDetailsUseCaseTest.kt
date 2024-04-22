@@ -5,6 +5,11 @@ import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionPayload
 import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionQRContent
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -111,8 +116,8 @@ class ParseLinkConnectionDetailsUseCaseTest {
             val qrContent = buildQRContent()
             val rawInput = toRawInput(qrContent)
             val expectedResult = LinkConnectionPayload(
-                password = qrContent.password,
-                publicKey = qrContent.publicKey,
+                password = RadixConnectPassword(Exactly32Bytes.init(qrContent.password.hexToBagOfBytes())),
+                publicKey = PublicKey.Ed25519.init(qrContent.publicKey),
                 purpose = P2PLinkPurpose.General,
                 existingP2PLink = null
             )
@@ -136,8 +141,8 @@ class ParseLinkConnectionDetailsUseCaseTest {
 
             val existingP2PLink = buildP2PLink()
             val expectedResult = LinkConnectionPayload(
-                password = qrContent.password,
-                publicKey = qrContent.publicKey,
+                password = RadixConnectPassword(Exactly32Bytes.init(qrContent.password.hexToBagOfBytes())),
+                publicKey = PublicKey.Ed25519.init(qrContent.publicKey),
                 purpose = P2PLinkPurpose.General,
                 existingP2PLink = existingP2PLink
             )

@@ -5,11 +5,12 @@ import com.babylon.wallet.android.data.repository.p2plink.findBy
 import com.babylon.wallet.android.data.repository.p2plink.isSame
 import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionPayload
 import com.babylon.wallet.android.utils.getSignatureMessageFromConnectionPassword
-import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
+import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.hex
-import com.radixdlt.sargon.extensions.string
 import rdx.works.core.decodeHex
 import rdx.works.core.mapWhen
+import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PeerdroidLink
 import rdx.works.peerdroid.domain.ConnectorExtensionExchangeInteraction
@@ -62,18 +63,14 @@ class EstablishP2PLinkConnectionUseCase @Inject constructor(
         payload: LinkConnectionPayload,
         saveP2PLink: suspend (p2pLinks: List<P2PLink>, privateKey: String) -> Unit
     ): Result<Unit> {
-        val encryptionKey = parseEncryptionKeyFromConnectionPassword(
-            connectionPassword = payload.password
-        ) ?: return Result.failure(IllegalArgumentException("Failed to parse encryption key from connection password"))
-
         return peerdroidLink.addConnection(
-            encryptionKey = encryptionKey,
+            encryptionKey = payload.password.value.bytes.toByteArray(),
             connectionListener = object : PeerdroidLink.ConnectionListener {
 
                 override suspend fun completeLinking(connectionId: String): Result<Unit> {
                     val p2pLinks = p2PLinksRepository.getP2PLinks()
 
-                    val walletClientKeyBytes = p2pLinks.findBy(payload.publicKey)?.walletPrivateKey
+                    val walletClientKeyBytes = p2pLinks.findBy(payload.publicKey.hex)?.walletPrivateKey
                         ?.decodeHex() ?: PrivateKey.EddsaEd25519.newRandom().toByteArray()
                     val walletClientKey = PrivateKey.EddsaEd25519.newFromPrivateKeyBytes(walletClientKeyBytes)
 
@@ -97,21 +94,21 @@ class EstablishP2PLinkConnectionUseCase @Inject constructor(
 
     private fun buildLinkClientInteractionResponse(
         walletClientPrivateKey: PrivateKey.EddsaEd25519,
-        connectionPassword: String
+        connectionPassword: RadixConnectPassword
     ): ConnectorExtensionExchangeInteraction.LinkClient {
         return ConnectorExtensionExchangeInteraction.LinkClient(
-            publicKey = walletClientPrivateKey.publicKey().hex,
+            publicKey = walletClientPrivateKey.publicKey(),
             signature = walletClientPrivateKey.signToSignature(
-                hashedData = getSignatureMessageFromConnectionPassword(connectionPassword)
-            ).string
+                hashedData = getSignatureMessageFromConnectionPassword(connectionPassword.value.hex)
+            )
         )
     }
 
     private fun LinkConnectionPayload.toP2PLink(name: String, privateKey: String): P2PLink {
         return P2PLink(
-            connectionPassword = password,
+            connectionPassword = password.value.hex,
             displayName = name,
-            publicKey = publicKey,
+            publicKey = publicKey.hex,
             purpose = purpose,
             walletPrivateKey = privateKey
         )

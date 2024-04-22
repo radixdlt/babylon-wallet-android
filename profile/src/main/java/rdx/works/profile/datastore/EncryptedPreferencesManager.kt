@@ -140,7 +140,7 @@ class EncryptedPreferencesManager @Inject constructor(
         }
     }
 
-    fun getP2PLinks(): Flow<Result<String>?> {
+    fun getP2PLinkListJson(): Flow<Result<String>?> {
         return permanentPreferences.data.catchIOException()
             .map { preferences ->
                 preferences[stringPreferencesKey(P2P_LINKS_PREFERENCES_KEY)]
@@ -149,8 +149,8 @@ class EncryptedPreferencesManager @Inject constructor(
             }
     }
 
-    suspend fun saveP2PLinks(serializedP2PLinks: String) {
-        putString(permanentPreferences, P2P_LINKS_PREFERENCES_KEY, serializedP2PLinks, KeySpec.Profile())
+    suspend fun saveP2PLinkListJson(p2pLinkListJson: String) {
+        putString(permanentPreferences, P2P_LINKS_PREFERENCES_KEY, p2pLinkListJson, KeySpec.Profile())
     }
 
     suspend fun clear() = preferences.edit { it.clear() }
