@@ -12,7 +12,6 @@ import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
-import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
 import rdx.works.profile.ret.crypto.PrivateKey
