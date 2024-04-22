@@ -165,6 +165,7 @@
   <string name="accountSettings_hideThisAccount">Hide This Account</string>
   <string name="accountSettings_hideAccountConfirmation">Are you sure you want to hide this account?</string>
   <string name="settings_title">Settings</string>
+  <string name="settings_authorizedDapps">Authorized dApps</string>
   <string name="settings_personas">Personas</string>
   <string name="settings_accountSecurityAndSettings">Account Security &amp; Settings</string>
   <string name="settings_appSettings">App Settings</string>
