@@ -223,7 +223,7 @@ private fun BackupScreenContent(
         ) {
             Text(
                 modifier = Modifier,
-                text = stringResource(id = R.string.configurationBackup_subtitle),
+                text = stringResource(id = R.string.configurationBackup_automated_heading),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body1Header
             )
@@ -260,7 +260,7 @@ private fun BackupScreenContent(
                     )
                     Text(
                         modifier = Modifier.weight(1f),
-                        text = stringResource(id = R.string.configurationBackup_automatedBackupsWarning),
+                        text = stringResource(id = R.string.configurationBackup_automated_warning),
                         color = RadixTheme.colors.gray1,
                         style = RadixTheme.typography.body1Regular
                     )
@@ -269,7 +269,7 @@ private fun BackupScreenContent(
 
             Text(
                 modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
-                text = stringResource(id = R.string.configurationBackup_manualBackup_heading),
+                text = stringResource(id = R.string.configurationBackup_manual_heading),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body1Header
             )
@@ -346,7 +346,7 @@ private fun ManualBackupCard(
     ) {
         Text(
             modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.configurationBackup_manualBackup_subtitle),
+            text = stringResource(id = R.string.configurationBackup_manual_text),
             color = RadixTheme.colors.gray1,
             style = RadixTheme.typography.body1Regular
         )
@@ -354,7 +354,7 @@ private fun ManualBackupCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = RadixTheme.dimensions.paddingDefault),
-            text = stringResource(id = R.string.configurationBackup_manualBackup_exportButton),
+            text = stringResource(id = R.string.configurationBackup_manual_exportButton),
             onClick = onFileBackupClick
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingMedium))
@@ -374,7 +374,7 @@ private fun ManualBackupCard(
             )
             Text(
                 modifier = Modifier.weight(1f),
-                text = stringResource(id = R.string.configurationBackup_manualBackup_warning),
+                text = stringResource(id = R.string.configurationBackup_manual_warning),
                 color = RadixTheme.colors.gray1,
                 style = RadixTheme.typography.body1Regular
             )
@@ -395,8 +395,8 @@ private fun BackupStatusCard(
     ) {
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
         SwitchSettingsItem(
-            titleRes = R.string.configurationBackup_backupsToggleGDrive,
-            subtitleRes = R.string.configurationBackup_backupsUpdate,
+            titleRes = R.string.configurationBackup_automated_toggleAndroid,
+            subtitleRes = R.string.configurationBackup_automated_lastBackup,
             checked = state.isBackupEnabled,
             icon = {
                 Icon(
@@ -412,29 +412,29 @@ private fun BackupStatusCard(
             color = RadixTheme.colors.gray5
         )
         Text(
-            text = stringResource(id = R.string.configurationBackup_automatedBackupsToggle),
+            text = stringResource(id = R.string.configurationBackup_automated_text),
             color = RadixTheme.colors.gray1,
             style = RadixTheme.typography.body1Regular
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
         BackupStatusSection(
-            title = stringResource(id = R.string.configurationBackup_accountsItem),
-            subtitle = stringResource(id = R.string.configurationBackup_accountsSubtitle),
+            title = stringResource(id = R.string.configurationBackup_automated_accountsItemTitle),
+            subtitle = stringResource(id = R.string.configurationBackup_automated_accountsItemSubtitle),
             backupState = state.backupState
         )
         BackupStatusSection(
-            title = stringResource(id = R.string.configurationBackup_personasItem),
-            subtitle = stringResource(id = R.string.configurationBackup_personasSubtitle),
+            title = stringResource(id = R.string.configurationBackup_automated_personasItemTitle),
+            subtitle = stringResource(id = R.string.configurationBackup_automated_personasItemSubtitle),
             backupState = state.backupState
         )
         BackupStatusSection(
-            title = stringResource(id = R.string.configurationBackup_securityFactorsItem),
-            subtitle = stringResource(id = R.string.configurationBackup_securityFactorsSubtitle),
+            title = stringResource(id = R.string.configurationBackup_automated_securityFactorsItemTitle),
+            subtitle = stringResource(id = R.string.configurationBackup_automated_securityFactorsItemSubtitle),
             backupState = state.backupState
         )
         BackupStatusSection(
-            title = stringResource(id = R.string.configurationBackup_walletSettingsItem),
-            subtitle = stringResource(id = R.string.configurationBackup_walletSettingsSubtitle),
+            title = stringResource(id = R.string.configurationBackup_automated_walletSettingsItemTitle),
+            subtitle = stringResource(id = R.string.configurationBackup_automated_walletSettingsItemSubtitle),
             backupState = state.backupState
         )
     }
@@ -451,7 +451,7 @@ private fun LoggedInStatus(modifier: Modifier = Modifier, onDisconnectClick: () 
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 modifier = Modifier.weight(1f),
-                text = stringResource(id = R.string.configurationBackup_loggedInAsHeading),
+                text = stringResource(id = R.string.configurationBackup_automated_loggedInAsAndroid),
                 color = RadixTheme.colors.gray2,
                 style = RadixTheme.typography.body2Regular
             )
@@ -464,7 +464,7 @@ private fun LoggedInStatus(modifier: Modifier = Modifier, onDisconnectClick: () 
         }
         RadixTextButton(
             modifier = Modifier.weight(1f),
-            text = stringResource(id = R.string.configurationBackup_disconnectButton),
+            text = stringResource(id = R.string.configurationBackup_automated_disconnectAndroid),
             onClick = onDisconnectClick
         )
     }
