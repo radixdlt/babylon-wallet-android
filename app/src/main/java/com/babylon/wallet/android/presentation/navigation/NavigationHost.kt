@@ -13,7 +13,7 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.accessfactorsources.deriveaccounts.deriveAccounts
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.derivePublicKey
-import com.babylon.wallet.android.presentation.account.AccountScreen
+import com.babylon.wallet.android.presentation.account.account
 import com.babylon.wallet.android.presentation.account.createaccount.ROUTE_CREATE_ACCOUNT
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.createAccountConfirmationScreen
@@ -34,7 +34,6 @@ import com.babylon.wallet.android.presentation.incompatibleprofile.ROUTE_INCOMPA
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainUiState
 import com.babylon.wallet.android.presentation.main.main
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ADDRESS
 import com.babylon.wallet.android.presentation.onboarding.OnboardingScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.eulaScreen
 import com.babylon.wallet.android.presentation.onboarding.eula.navigateToEulaScreen
@@ -73,6 +72,7 @@ import com.babylon.wallet.android.presentation.transaction.transactionReviewScre
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.radixdlt.sargon.extensions.networkId
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.profile.domain.backup.BackupType
@@ -176,9 +176,7 @@ fun NavigationHost(
                 navController.navigate(Screen.SettingsAllDestination.route)
             },
             onAccountClick = { account ->
-                navController.navigate(
-                    Screen.AccountDestination.routeWithArgs(account.address)
-                )
+                navController.account(accountAddress = account.address)
             },
             onNavigateToMnemonicBackup = {
                 navController.seedPhrases()
@@ -201,53 +199,45 @@ fun NavigationHost(
                 navController.npsSurveyDialog()
             }
         )
-        composable(
-            route = Screen.AccountDestination.route + "/{$ARG_ACCOUNT_ADDRESS}",
-            arguments = listOf(
-                navArgument(ARG_ACCOUNT_ADDRESS) { type = NavType.StringType }
-            )
-        ) {
-            AccountScreen(
-                viewModel = hiltViewModel(),
-                onAccountPreferenceClick = { address ->
-                    navController.accountSettings(address = address)
-                },
-                onBackClick = {
-                    navController.navigateUp()
-                },
-                onNavigateToMnemonicBackup = {
-                    navController.seedPhrases()
-                },
-                onNavigateToMnemonicRestore = {
-                    navController.restoreMnemonics(
-                        args = RestoreMnemonicsArgs()
-                    )
-                },
-                onFungibleResourceClick = { resource, account ->
-                    val resourceWithAmount = resource.ownedAmount?.let {
-                        mapOf(resource.address to it)
-                    }.orEmpty()
-                    navController.fungibleAssetDialog(
-                        resourceAddress = resource.address,
-                        amounts = resourceWithAmount,
-                        underAccountAddress = account.address
-                    )
-                },
-                onNonFungibleResourceClick = { resource, item, account ->
-                    navController.nftAssetDialog(
-                        resourceAddress = resource.address,
-                        localId = item.localId,
-                        underAccountAddress = account.address
-                    )
-                },
-                onTransferClick = { accountId ->
-                    navController.transfer(accountId = accountId)
-                },
-                onHistoryClick = { accountAddress ->
-                    navController.history(accountAddress)
-                }
-            )
-        }
+        account(
+            onAccountPreferenceClick = { address ->
+                navController.accountSettings(address = address)
+            },
+            onBackClick = {
+                navController.navigateUp()
+            },
+            onNavigateToMnemonicBackup = {
+                navController.seedPhrases()
+            },
+            onNavigateToMnemonicRestore = {
+                navController.restoreMnemonics(
+                    args = RestoreMnemonicsArgs()
+                )
+            },
+            onFungibleResourceClick = { resource, account ->
+                val resourceWithAmount = resource.ownedAmount?.let {
+                    mapOf(resource.address to it)
+                }.orEmpty()
+                navController.fungibleAssetDialog(
+                    resourceAddress = resource.address,
+                    amounts = resourceWithAmount,
+                    underAccountAddress = account.address
+                )
+            },
+            onNonFungibleResourceClick = { resource, item, account ->
+                navController.nftAssetDialog(
+                    resourceAddress = resource.address,
+                    localId = item.localId,
+                    underAccountAddress = account.address
+                )
+            },
+            onTransferClick = { accountId ->
+                navController.transfer(accountId = accountId)
+            },
+            onHistoryClick = { accountAddress ->
+                navController.history(accountAddress)
+            }
+        )
         derivePublicKey(
             onDismiss = {
                 navController.popBackStack()

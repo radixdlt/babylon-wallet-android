@@ -22,17 +22,14 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.presentation.navigation.Screen.Companion.ARG_ACCOUNT_ADDRESS
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.ProfileEntity
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -82,14 +79,13 @@ class AccountViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<AccountUiState>(), OneOffEventHandler<AccountEvent> by OneOffEventHandlerImpl() {
 
-    private val accountAddress: AccountAddress = AccountAddress.init(savedStateHandle.get<String>(ARG_ACCOUNT_ADDRESS).orEmpty())
-
+    private val args = AccountArgs(savedStateHandle)
     override fun initialState(): AccountUiState = AccountUiState(accountWithAssets = null)
 
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountFlow = combine(
         getProfileUseCase.flow.mapNotNull {profile ->
-            profile.activeAccountsOnCurrentNetwork.find { it.address == accountAddress }
+            profile.activeAccountsOnCurrentNetwork.find { it.address == args.accountAddress }
         },
         refreshFlow
     ) { account, _ -> account }
@@ -188,7 +184,7 @@ class AccountViewModel @Inject constructor(
         viewModelScope.launch {
             getEntitiesWithSecurityPromptUseCase().collect { entities ->
                 val securityPrompt = entities.find {
-                    (it.entity as? ProfileEntity.AccountEntity)?.account?.address == accountAddress
+                    (it.entity as? ProfileEntity.AccountEntity)?.account?.address == args.accountAddress
                 }?.prompt
 
                 _state.update { state ->
