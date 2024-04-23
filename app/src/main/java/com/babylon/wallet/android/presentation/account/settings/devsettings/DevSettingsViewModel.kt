@@ -12,13 +12,13 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.extensions.ProfileEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.hasAuthSigning
 import rdx.works.profile.domain.GetProfileUseCase

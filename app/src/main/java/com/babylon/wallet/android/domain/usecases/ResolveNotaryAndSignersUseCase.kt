@@ -4,8 +4,8 @@ import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.extensions.ProfileEntity
 import rdx.works.core.crypto.PrivateKey
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase

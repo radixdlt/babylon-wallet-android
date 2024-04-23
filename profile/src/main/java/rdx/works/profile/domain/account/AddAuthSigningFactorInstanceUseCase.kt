@@ -1,9 +1,9 @@
 package rdx.works.profile.domain.account
 
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
+import com.radixdlt.sargon.extensions.ProfileEntity
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.addAuthSigningFactorInstanceForEntity
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.updateProfile

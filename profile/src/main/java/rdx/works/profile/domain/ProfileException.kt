@@ -1,7 +1,7 @@
 package rdx.works.profile.domain
 
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.string
-import rdx.works.core.sargon.ProfileEntity
 
 sealed class ProfileException(msg: String? = null, cause: Throwable? = null) : Throwable(msg, cause) {
     data class AuthenticationSigningAlreadyExist(val entity: ProfileEntity) :

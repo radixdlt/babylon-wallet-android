@@ -37,6 +37,7 @@ import com.radixdlt.sargon.ProfileSnapshotVersion
 import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.TransactionPreferences
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.SargonException
 import com.radixdlt.sargon.extensions.append
 import com.radixdlt.sargon.extensions.asGeneral

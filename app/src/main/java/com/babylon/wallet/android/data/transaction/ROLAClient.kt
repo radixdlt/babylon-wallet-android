@@ -10,12 +10,12 @@ import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.PublicKeyHash
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.TransactionManifest
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.setOwnerKeysHashes
 import kotlinx.coroutines.flow.merge
 import rdx.works.core.domain.TransactionManifestData
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.core.domain.SigningPurpose
 import javax.inject.Inject

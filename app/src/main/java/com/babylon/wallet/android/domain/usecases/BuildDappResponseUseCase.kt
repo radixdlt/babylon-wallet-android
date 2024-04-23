@@ -6,8 +6,6 @@ import com.babylon.wallet.android.data.dapp.model.AuthLoginWithChallengeRequestR
 import com.babylon.wallet.android.data.dapp.model.AuthLoginWithoutChallengeRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.AuthRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.AuthUsePersonaRequestResponseItem
-import com.babylon.wallet.android.data.dapp.model.PersonaDataName
-import com.babylon.wallet.android.data.dapp.model.PersonaDataRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.WalletAuthorizedRequestResponseItems
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionResponse
 import com.babylon.wallet.android.data.dapp.model.WalletInteractionSuccessResponse
@@ -22,9 +20,8 @@ import com.babylon.wallet.android.presentation.model.toPersonaDataRequestRespons
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.PersonaDataNameVariant
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.string
-import rdx.works.core.sargon.ProfileEntity
 import javax.inject.Inject
 
 private typealias DAppPersona = com.babylon.wallet.android.data.dapp.model.Persona

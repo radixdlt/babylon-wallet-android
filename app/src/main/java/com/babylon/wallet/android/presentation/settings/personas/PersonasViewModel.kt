@@ -11,7 +11,6 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -23,7 +22,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.domain.GetProfileUseCase

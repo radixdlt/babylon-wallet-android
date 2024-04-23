@@ -3,9 +3,9 @@ package com.babylon.wallet.android.data.transaction
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
 import com.radixdlt.sargon.SignedIntentHash
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.bytes
 import rdx.works.core.crypto.PrivateKey
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.core.toByteArray
 

@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.domain.usecases.assets
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import rdx.works.core.sargon.ProfileEntity
+import com.radixdlt.sargon.extensions.ProfileEntity
 import javax.inject.Inject
 
 class GetEntitiesOwnerKeysUseCase @Inject constructor(

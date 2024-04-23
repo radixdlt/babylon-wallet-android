@@ -2,13 +2,13 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asGeneral
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.activeEntitiesOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceById

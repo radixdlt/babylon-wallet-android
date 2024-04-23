@@ -6,6 +6,7 @@ import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.TransactionIntent
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.hash
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
 import rdx.works.core.hash
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.toByteArray
 import rdx.works.core.domain.SigningPurpose
 import rdx.works.profile.domain.signing.GetSigningEntitiesByFactorSourceUseCase

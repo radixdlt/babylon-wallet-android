@@ -15,6 +15,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.extensions.ProfileEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -27,7 +28,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.DApp
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
 import rdx.works.core.sargon.hasAuthSigning
 import rdx.works.profile.data.repository.DAppConnectionRepository

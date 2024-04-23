@@ -3,10 +3,10 @@ package rdx.works.profile.domain.signing
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import kotlinx.coroutines.flow.first
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.derivePrivateKey
 import rdx.works.core.sargon.updateLastUsed
 import rdx.works.core.domain.SigningPurpose

@@ -11,6 +11,7 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
@@ -20,7 +21,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapError
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.authenticationSigningFactorInstance
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.derivePublicKey

@@ -22,6 +22,7 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
@@ -46,7 +47,6 @@ import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceId

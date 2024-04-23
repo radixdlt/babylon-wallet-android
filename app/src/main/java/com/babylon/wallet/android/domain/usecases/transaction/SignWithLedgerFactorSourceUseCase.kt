@@ -9,13 +9,13 @@ import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Signature
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.authenticationSigningFactorInstance
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.core.sargon.updateLastUsed

@@ -31,6 +31,7 @@ import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
@@ -49,7 +50,6 @@ import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import rdx.works.core.domain.resources.metadata.dAppDefinition
 import rdx.works.core.domain.resources.metadata.ownerKeyHashes
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject

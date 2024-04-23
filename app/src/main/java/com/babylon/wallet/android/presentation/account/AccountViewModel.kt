@@ -31,6 +31,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
@@ -58,7 +59,6 @@ import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.mapWhen
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.factorSourceId
 import rdx.works.profile.domain.GetProfileUseCase

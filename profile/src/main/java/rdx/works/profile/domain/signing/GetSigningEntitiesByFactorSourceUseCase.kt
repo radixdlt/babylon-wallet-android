@@ -3,9 +3,9 @@ package rdx.works.profile.domain.signing
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.kind
-import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
