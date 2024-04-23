@@ -41,6 +41,7 @@ import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.SargonException
 import com.radixdlt.sargon.extensions.append
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.changeCurrent
 import com.radixdlt.sargon.extensions.contains
 import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.hex
@@ -49,6 +50,7 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.remove
 import com.radixdlt.sargon.extensions.removeByAddress
+import com.radixdlt.sargon.extensions.removeById
 import com.radixdlt.sargon.extensions.size
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toBagOfBytes
@@ -428,10 +430,7 @@ fun Profile.unHideAllEntities(): Profile {
 fun Profile.addP2PLink(
     p2pLink: P2pLink
 ): Profile {
-
-    val newAppPreferences = appPreferences.copy(
-        p2pLinks = P2pLinks.init(appPreferences.p2pLinks() + p2pLink)
-    )
+    val newAppPreferences = appPreferences.copy(p2pLinks = appPreferences.p2pLinks.append(p2pLink))
 
     return copy(appPreferences = newAppPreferences)
 }
@@ -439,10 +438,7 @@ fun Profile.addP2PLink(
 fun Profile.deleteP2PLink(
     p2pLink: P2pLink
 ): Profile {
-    val updatedP2PLinks = appPreferences.p2pLinks().toMutableList()
-    updatedP2PLinks.removeIf { it == p2pLink }
-
-    val newAppPreferences = appPreferences.copy(p2pLinks = P2pLinks.init(updatedP2PLinks))
+    val newAppPreferences = appPreferences.copy(p2pLinks = appPreferences.p2pLinks.removeById(p2pLink.id))
 
     return copy(appPreferences = newAppPreferences)
 }
@@ -462,13 +458,7 @@ fun Profile.changeGateway(
 ): Profile {
     if (gateway !in appPreferences.gateways.other) return this
 
-    val currentGateway = appPreferences.gateways.current
-    val gateways = appPreferences.gateways.copy(
-        current = gateway,
-        other = appPreferences.gateways.other.append(currentGateway).remove(gateway)
-    ) // TODO integration
-    val appPreferences = appPreferences.copy(gateways = gateways)
-    return copy(appPreferences = appPreferences)
+    return copy(appPreferences = appPreferences.copy(gateways = appPreferences.gateways.changeCurrent(gateway)))
 }
 
 fun Profile.addGateway(
