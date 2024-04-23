@@ -54,12 +54,12 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Url
+import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.isWellKnown
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
-import rdx.works.core.sargon.forNetwork
 
 @Composable
 fun GatewaysScreen(

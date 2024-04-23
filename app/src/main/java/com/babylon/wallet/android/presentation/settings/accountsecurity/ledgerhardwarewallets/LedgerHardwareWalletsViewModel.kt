@@ -32,7 +32,7 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
         viewModelScope.launch {
             getProfileUseCase.flow.map { it.ledgerFactorSources }.collect { ledgerDevices ->
                 _state.update { uiState ->
-                    uiState.copy(ledgerDevices = ledgerDevices.map { it.asGeneral() }.toPersistentList())
+                    uiState.copy(ledgerDevices = ledgerDevices.toPersistentList())
                 }
             }
         }

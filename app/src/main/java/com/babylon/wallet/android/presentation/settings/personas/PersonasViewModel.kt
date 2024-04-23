@@ -50,7 +50,7 @@ class PersonasViewModel @Inject constructor(
                     it.copy(
                         personas = personas.toPersistentList(),
                         entitiesWithSecurityPrompts = entitiesWithSecurityPrompts,
-                        babylonFactorSource = babylonFactorSource?.asGeneral()
+                        babylonFactorSource = babylonFactorSource
                     )
                 }
             }.collect {}

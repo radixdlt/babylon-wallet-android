@@ -75,7 +75,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     recoverableFactorSources = factorSources,
-                    mainBabylonFactorSourceId = profile?.mainBabylonFactorSource?.id?.asGeneral()
+                    mainBabylonFactorSourceId = profile?.mainBabylonFactorSource?.value?.id?.asGeneral()
                 )
             }
 

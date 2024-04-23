@@ -76,10 +76,16 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.radixdlt.sargon.AssetException
 import com.radixdlt.sargon.DepositAddressExceptionRule
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.samples.sampleRandom
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
 
@@ -661,20 +667,28 @@ sealed interface DeleteDialogState {
     data class AboutToDeleteAssetDepositor(val depositor: AssetType.Depositor) : DeleteDialogState
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun SpecificAssetsDepositsPreview() {
+    val assetExceptionProvider = {
+        AssetType.Exception(
+            assetException = AssetException(
+                address = ResourceAddress.sampleRandom(NetworkId.MAINNET),
+                exceptionRule = DepositAddressExceptionRule.ALLOW
+            )
+        )
+    }
     RadixWalletTheme {
-        with(SampleDataProvider()) {
-            SpecificAssetsDepositsContent(
-                onBackClick = {},
-                onMessageShown = {},
-                error = null,
-                onShowAddAssetSheet = {},
-                allowedAssets = persistentListOf(sampleAssetException(), sampleAssetException(), sampleAssetException()),
-                deniedAssets = persistentListOf(sampleAssetException(), sampleAssetException(), sampleAssetException())
-            ) {}
-        }
+
+        SpecificAssetsDepositsContent(
+            onBackClick = {},
+            onMessageShown = {},
+            error = null,
+            onShowAddAssetSheet = {},
+            allowedAssets = List(3) { assetExceptionProvider() }.toPersistentList(),
+            deniedAssets = List(3) { assetExceptionProvider() }.toPersistentList()
+        ) {}
     }
 }
 

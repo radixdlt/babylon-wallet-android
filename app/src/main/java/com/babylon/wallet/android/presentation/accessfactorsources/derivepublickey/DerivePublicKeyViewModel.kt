@@ -114,7 +114,7 @@ class DerivePublicKeyViewModel @Inject constructor(
             val deviceFactorSource = profile.mainBabylonFactorSource ?: error("Babylon factor source is not present")
             derivePublicKeyFromDeviceFactorSource(
                 forNetworkId = input.forNetworkId,
-                deviceFactorSource = deviceFactorSource.asGeneral()
+                deviceFactorSource = deviceFactorSource
             )
         } else { // ledger factor source
             val ledgerFactorSource = input.factorSource as FactorSource.Ledger

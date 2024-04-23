@@ -67,7 +67,7 @@ class TransactionSubmitDelegate @Inject constructor(
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
                 val failure =
-                    RadixWalletException.DappRequestException.WrongNetwork(currentNetworkId.value.toInt(), manifestNetworkId.value.toInt())
+                    RadixWalletException.DappRequestException.WrongNetwork(currentNetworkId, manifestNetworkId)
                 onDismiss(
                     signTransactionUseCase = signTransactionUseCase,
                     exception = failure

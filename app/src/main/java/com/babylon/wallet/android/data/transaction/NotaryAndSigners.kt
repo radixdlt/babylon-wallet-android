@@ -25,6 +25,6 @@ data class NotaryAndSigners(
     }
 
     fun signWithNotary(signedIntentHash: SignedIntentHash): Signature {
-        return ephemeralNotaryPrivateKey.signToSignature(signedIntentHash.hash.bytes.toByteArray())
+        return ephemeralNotaryPrivateKey.signToSignature(signedIntentHash.hash.bytes.bytes.toByteArray())
     }
 }

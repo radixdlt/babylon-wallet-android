@@ -1,10 +1,15 @@
 package rdx.works.core.sargon
 
+import com.radixdlt.sargon.CommonException
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.extensions.SargonException
 import com.radixdlt.sargon.extensions.string
 
-fun NetworkId.Companion.init(name: String) = NetworkId.entries.find { it.string == name } ?: error("No NetworkId found with name `${name}`")
+@Throws(SargonException::class)
+fun NetworkId.Companion.init(name: String) = NetworkId.entries.find { it.string == name } ?: throw CommonException.UnknownNetworkWithName(
+    badValue = name
+)
 
 fun NetworkId?.orDefault() = this ?: Gateway.default.network.id
 

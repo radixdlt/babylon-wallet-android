@@ -112,7 +112,7 @@ class CreateAccountViewModel @Inject constructor(
                     // when we reach this point main babylon factor source has already created
                     if (selectedFactorSource == null && isWithLedger.not()) { // so take it if it is a creation with device
                         val profile = getProfileUseCase() // get again the profile with its updated state
-                        selectedFactorSource = profile.mainBabylonFactorSource?.asGeneral() ?: error("Babylon factor source is not present")
+                        selectedFactorSource = profile.mainBabylonFactorSource ?: error("Babylon factor source is not present")
                     }
 
                     val factorSourceId = when (val factorSource = selectedFactorSource) {
@@ -159,7 +159,7 @@ class CreateAccountViewModel @Inject constructor(
         _state.update { it.copy(loading = true) }
         val accountName = accountName.value.trim()
         if (args.networkIdToSwitch != null) {
-            switchNetworkUseCase(Url(args.networkUrlEncoded!!.decodeUtf8()))
+            switchNetworkUseCase(args.networkUrl!!)
         }
         val account = accountProvider(accountName)
         val accountId = account.address

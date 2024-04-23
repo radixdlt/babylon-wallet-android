@@ -58,6 +58,13 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ResourceOrNonFungible
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleRandom
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -415,23 +422,29 @@ private fun DepositorItem(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun SpecificDepositorPreview() {
     RadixWalletTheme {
-        with(SampleDataProvider()) {
-            SpecificDepositorContent(
-                onBackClick = {},
-                onMessageShown = {},
-                error = null,
-                onShowAddAssetSheet = {},
-                allowedDepositors = persistentListOf(
-                    sampleDepositorResourceAddress(),
-                    sampleDepositorNftAddress(),
-                    sampleDepositorResourceAddress()
-                )
-            ) {}
+        val sampleDepositorResourceAddress = {
+            AssetType.Depositor(depositorAddress = ResourceOrNonFungible.Resource(ResourceAddress.sampleRandom(NetworkId.MAINNET)))
         }
+        val sampleDepositorNftAddress = {
+            AssetType.Depositor(depositorAddress = ResourceOrNonFungible.NonFungible(NonFungibleGlobalId.sample()))
+        }
+
+        SpecificDepositorContent(
+            onBackClick = {},
+            onMessageShown = {},
+            error = null,
+            onShowAddAssetSheet = {},
+            allowedDepositors = persistentListOf(
+                sampleDepositorResourceAddress(),
+                sampleDepositorNftAddress(),
+                sampleDepositorResourceAddress()
+            )
+        ) {}
     }
 }
 

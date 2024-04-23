@@ -10,10 +10,9 @@ import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.sumOf
-import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.PoolUnit
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
 class PoolRedemptionProcessor @Inject constructor(
@@ -26,7 +25,7 @@ class PoolRedemptionProcessor @Inject constructor(
             nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
         val defaultDepositGuarantees = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
-        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
+        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
         val to = summary.toDepositingAccountsWithTransferableAssets(
             allOwnedAccounts = involvedOwnedAccounts,
             involvedAssets = assets,

@@ -30,7 +30,6 @@ import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.derivation.model.KeyType
-import rdx.works.profile.derivation.model.NetworkId
 
 fun account(
     name: String = "account-name",

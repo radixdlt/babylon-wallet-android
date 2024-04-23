@@ -18,6 +18,7 @@ import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
@@ -60,7 +61,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     return Result.failure(RadixWalletException.DappRequestException.InvalidPersona)
                 }
                 val authorizedPersonaSimple = authorizedDapp
-                    .referencesToAuthorizedPersonas
+                    .referencesToAuthorizedPersonas()
                     .firstOrNull { authorizedPersonaSimple ->
                         authorizedPersonaSimple.identityAddress.string ==
                             (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.personaAddress
@@ -184,7 +185,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         personaAddress: IdentityAddress
     ): AuthorizedDapp {
         val updatedDapp = authorizedDApp.updateAuthorizedDAppPersonas(
-            authorizedDApp.referencesToAuthorizedPersonas.map { ref ->
+            authorizedDApp.referencesToAuthorizedPersonas().map { ref ->
                 if (ref.identityAddress == personaAddress) {
                     ref.copy(lastLogin = TimestampGenerator())
                 } else {

@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoReposit
 import com.babylon.wallet.android.domain.model.NetworkInfo
 import kotlinx.coroutines.flow.first
 import rdx.works.core.sargon.currentGateway
-import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject

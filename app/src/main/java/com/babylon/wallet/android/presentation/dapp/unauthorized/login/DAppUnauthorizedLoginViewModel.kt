@@ -29,7 +29,6 @@ import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -76,7 +75,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             } else {
                 request = requestToHandle
             }
-            val currentNetworkId = getCurrentGatewayUseCase().network.id.discriminant.toInt()
+            val currentNetworkId = getCurrentGatewayUseCase().network.id
             if (currentNetworkId != request.requestMetadata.networkId) {
                 handleRequestError(
                     RadixWalletException.DappRequestException.WrongNetwork(

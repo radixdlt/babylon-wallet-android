@@ -41,6 +41,7 @@ import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -63,6 +64,7 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -451,30 +453,30 @@ private fun HistoryButton(
 @Composable
 fun AccountContentPreview() {
     RadixWalletPreviewTheme {
-        with(SampleDataProvider()) {
-            AccountScreenContent(
-                state = AccountUiState(
-                    accountWithAssets = sampleAccountWithoutResources(),
-                    assetsWithAssetsPrices = emptyMap()
+        AccountScreenContent(
+            state = AccountUiState(
+                accountWithAssets = AccountWithAssets(
+                    account = Account.sampleMainnet()
                 ),
-                onShowHideBalanceToggle = {},
-                onAccountPreferenceClick = { _ -> },
-                onBackClick = {},
-                onRefresh = {},
-                onTransferClick = {},
-                onMessageShown = {},
-                onTabClick = {},
-                onCollectionClick = {},
-                onFungibleItemClicked = {},
-                onNonFungibleItemClicked = { _, _ -> },
-                onApplySecuritySettings = {},
-                onPoolUnitClick = {},
-                onLSUUnitClicked = {},
-                onNextNFTsPageRequest = {},
-                onStakesRequest = {},
-                onClaimClick = {}
-            ) {}
-        }
+                assetsWithAssetsPrices = emptyMap()
+            ),
+            onShowHideBalanceToggle = {},
+            onAccountPreferenceClick = { _ -> },
+            onBackClick = {},
+            onRefresh = {},
+            onTransferClick = {},
+            onMessageShown = {},
+            onTabClick = {},
+            onCollectionClick = {},
+            onFungibleItemClicked = {},
+            onNonFungibleItemClicked = { _, _ -> },
+            onApplySecuritySettings = {},
+            onPoolUnitClick = {},
+            onLSUUnitClicked = {},
+            onNextNFTsPageRequest = {},
+            onStakesRequest = {},
+            onClaimClick = {}
+        ) {}
     }
 }
 
@@ -483,30 +485,30 @@ fun AccountContentPreview() {
 @Composable
 fun AccountContentWithFiatBalancesDisabledPreview() {
     RadixWalletPreviewTheme {
-        with(SampleDataProvider()) {
-            AccountScreenContent(
-                state = AccountUiState(
-                    isFiatBalancesEnabled = false,
-                    accountWithAssets = sampleAccountWithoutResources(),
-                    assetsWithAssetsPrices = emptyMap()
+        AccountScreenContent(
+            state = AccountUiState(
+                isFiatBalancesEnabled = false,
+                accountWithAssets = AccountWithAssets(
+                    account = Account.sampleMainnet()
                 ),
-                onShowHideBalanceToggle = {},
-                onAccountPreferenceClick = { _ -> },
-                onBackClick = {},
-                onRefresh = {},
-                onTransferClick = {},
-                onMessageShown = {},
-                onTabClick = {},
-                onCollectionClick = {},
-                onFungibleItemClicked = {},
-                onNonFungibleItemClicked = { _, _ -> },
-                onApplySecuritySettings = {},
-                onPoolUnitClick = {},
-                onLSUUnitClicked = {},
-                onNextNFTsPageRequest = {},
-                onStakesRequest = {},
-                onClaimClick = {}
-            ) {}
-        }
+                assetsWithAssetsPrices = emptyMap()
+            ),
+            onShowHideBalanceToggle = {},
+            onAccountPreferenceClick = { _ -> },
+            onBackClick = {},
+            onRefresh = {},
+            onTransferClick = {},
+            onMessageShown = {},
+            onTabClick = {},
+            onCollectionClick = {},
+            onFungibleItemClicked = {},
+            onNonFungibleItemClicked = { _, _ -> },
+            onApplySecuritySettings = {},
+            onPoolUnitClick = {},
+            onLSUUnitClicked = {},
+            onNextNFTsPageRequest = {},
+            onStakesRequest = {},
+            onClaimClick = {}
+        ) {}
     }
 }
