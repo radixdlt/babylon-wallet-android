@@ -102,10 +102,10 @@ fun Profile.activePersonaOnCurrentNetwork(withAddress: IdentityAddress): Persona
     }
 
 val Profile.deviceFactorSources: List<FactorSource.Device>
-    get() = factorSources().filterIsInstance<DeviceFactorSource>().map { it.asGeneral() }
+    get() = factorSources().filterIsInstance<FactorSource.Device>()
 
 val Profile.ledgerFactorSources: List<FactorSource.Ledger>
-    get() = factorSources().filterIsInstance<LedgerHardwareWalletFactorSource>().map { it.asGeneral() }
+    get() = factorSources().filterIsInstance<FactorSource.Ledger>()
 
 fun Profile.factorSourceById(id: FactorSourceId) = factorSources.getById(id = id)
 
