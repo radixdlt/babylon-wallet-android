@@ -291,7 +291,7 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
                 color = RadixTheme.colors.gray1
             )
             Text(
-                text = stringResource(id = R.string.configurationBackup_subtitle),
+                text = stringResource(id = R.string.configurationBackup_automated_heading),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
