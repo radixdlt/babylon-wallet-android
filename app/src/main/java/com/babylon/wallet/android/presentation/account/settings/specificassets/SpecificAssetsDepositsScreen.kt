@@ -76,7 +76,6 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.radixdlt.sargon.AssetException
 import com.radixdlt.sargon.DepositAddressExceptionRule
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
@@ -84,7 +83,6 @@ import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.samples.sampleRandom
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
@@ -347,7 +345,7 @@ private fun SpecificAssetsDepositsContent(
     }
     val scope = rememberCoroutineScope()
     val pagerState = rememberPagerState(0) {
-        SpecificAssetsTab.values().size
+        SpecificAssetsTab.entries.size
     }
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -672,12 +670,7 @@ sealed interface DeleteDialogState {
 @Composable
 fun SpecificAssetsDepositsPreview() {
     val assetExceptionProvider = {
-        AssetType.Exception(
-            assetException = AssetException(
-                address = ResourceAddress.sampleRandom(NetworkId.MAINNET),
-                exceptionRule = DepositAddressExceptionRule.ALLOW
-            )
-        )
+        AssetType.Exception(assetAddress = ResourceAddress.sampleRandom(NetworkId.MAINNET))
     }
     RadixWalletTheme {
 

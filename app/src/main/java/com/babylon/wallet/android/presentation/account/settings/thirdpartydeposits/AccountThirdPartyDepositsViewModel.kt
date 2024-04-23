@@ -179,10 +179,10 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
             _state.update { state ->
                 state.copy(
                     assetExceptionsUiModels = state.assetExceptionsUiModels?.mapWhen(
-                        predicate = { it.assetException?.address in loadedResourcesAddresses }
+                        predicate = { it.assetAddress in loadedResourcesAddresses }
                     ) { assetException ->
                         val resource = resources.firstOrNull {
-                            it.address == assetException.assetException?.address
+                            it.address == assetException.assetAddress
                         }
 
                         if (resource != null) {
@@ -224,8 +224,8 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                 assetExceptionToAdd = AssetType.Exception()
             )
         }
-        if (assetExceptionToAdd.assetException != null) {
-            loadAssets(setOf(assetExceptionToAdd.assetException.address))
+        if (assetExceptionToAdd.assetAddress != null) {
+            loadAssets(setOf(assetExceptionToAdd.assetAddress))
         }
         checkIfSettingsChanged()
     }
@@ -253,13 +253,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun onAssetExceptionRuleChanged(rule: DepositAddressExceptionRule) {
         _state.update { state ->
-            state.copy(
-                assetExceptionToAdd = state.assetExceptionToAdd.copy(
-                    assetException = state.assetExceptionToAdd.assetException?.copy(
-                        exceptionRule = rule
-                    )
-                )
-            )
+            state.copy(assetExceptionToAdd = state.assetExceptionToAdd.copy(rule = rule))
         }
         checkIfSettingsChanged()
     }
@@ -284,7 +278,7 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
 
     fun onDeleteAsset(asset: AssetType.Exception) {
         _state.update { state ->
-            val updateAssetExceptions = state.assetExceptionsUiModels?.filter { it.assetException != asset.assetException }
+            val updateAssetExceptions = state.assetExceptionsUiModels?.filterNot { it.assetException == asset.assetException }
             state.copy(
                 assetExceptionsUiModels = updateAssetExceptions?.toPersistentList(),
                 updatedThirdPartyDepositSettings = state.updatedThirdPartyDepositSettings?.copy(
@@ -301,16 +295,9 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
         val alreadyAdded = state.value.assetExceptionsUiModels?.any { it.assetException?.address?.string == address } == true
         val validatedAddress = ResourceAddress.validatedOnNetworkOrNull(validating = address, networkId = currentNetworkId)
 
-        val assetExceptionToAdd = state.value.assetExceptionToAdd.assetException
-        val assetException = if (validatedAddress != null && assetExceptionToAdd != null) {
-            assetExceptionToAdd.copy(address = validatedAddress)
-        } else {
-            null
-        }
-
         _state.update { state ->
             val updatedException = state.assetExceptionToAdd.copy(
-                assetException = assetException,
+                assetAddress = validatedAddress,
                 addressValid = validatedAddress != null && !alreadyAdded,
                 addressToDisplay = address
             )
@@ -365,7 +352,10 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
                         account = account,
                         updatedThirdPartyDepositSettings = account.onLedgerSettings.thirdPartyDeposits,
                         assetExceptionsUiModels = account.onLedgerSettings.thirdPartyDeposits.assetsExceptionList.map {
-                            AssetType.Exception(assetException = it)
+                            AssetType.Exception(
+                                assetAddress = it.address,
+                                rule = it.exceptionRule
+                            )
                         }.toPersistentList(),
                         allowedDepositorsUiModels = account.onLedgerSettings.thirdPartyDeposits.depositorsAllowList.map {
                             AssetType.Depositor(depositorAddress = it)
@@ -389,21 +379,44 @@ class AccountThirdPartyDepositsViewModel @Inject constructor(
     }
 
     fun setAddAssetSheetVisible(isVisible: Boolean) {
-        _state.update { it.copy(selectedSheetState = if (isVisible) SelectedDepositsSheetState.AddAsset else null) }
+        _state.update {
+            it.copy(
+                selectedSheetState = if (isVisible) SelectedDepositsSheetState.AddAsset else null,
+                assetExceptionToAdd = if (isVisible) AssetType.Exception() else it.assetExceptionToAdd
+            )
+        }
     }
 
     fun setAddDepositorSheetVisible(isVisible: Boolean) {
-        _state.update { it.copy(selectedSheetState = if (isVisible) SelectedDepositsSheetState.AddDepositor else null) }
+        _state.update {
+            it.copy(
+                selectedSheetState = if (isVisible) SelectedDepositsSheetState.AddDepositor else null,
+                depositorToAdd = if (isVisible) AssetType.Depositor() else it.depositorToAdd
+            )
+        }
     }
 }
 
 sealed class AssetType {
     data class Exception(
-        val assetException: AssetException? = null, // TODO integration
+        val assetAddress: ResourceAddress? = null,
+        val rule: DepositAddressExceptionRule = DepositAddressExceptionRule.ALLOW,
         val resource: Resource? = null,
         val addressValid: Boolean = false,
         val addressToDisplay: String = ""
-    )
+    ) {
+
+        val assetException: AssetException?
+            get() = if (assetAddress != null) {
+                AssetException(
+                    address = assetAddress,
+                    exceptionRule = rule
+                )
+            } else {
+                null
+            }
+
+    }
 
     data class Depositor(
         val depositorAddress: ResourceOrNonFungible? = null,
