@@ -13,7 +13,7 @@ import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.BackupState
+import rdx.works.core.domain.BackupState
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType

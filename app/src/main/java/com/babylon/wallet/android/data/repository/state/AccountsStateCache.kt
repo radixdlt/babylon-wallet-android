@@ -19,9 +19,11 @@ import com.babylon.wallet.android.di.coroutines.ApplicationScope
 import com.babylon.wallet.android.di.coroutines.DefaultDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.orZero
 import kotlinx.coroutines.CoroutineDispatcher
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combineTransform
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.launchIn
@@ -57,10 +60,10 @@ import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.AccountType
 import rdx.works.core.domain.resources.metadata.poolUnit
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.toUnitResult
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
+import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.profile
 import timber.log.Timber
 import java.time.Instant
 import javax.inject.Inject
@@ -71,14 +74,14 @@ class AccountsStateCache @Inject constructor(
     private val api: StateApi,
     private val dao: StateDao,
     private val database: StateDatabase,
-    private val getProfileUseCase: GetProfileUseCase,
+    private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
     @ApplicationScope private val applicationScope: CoroutineScope
 ) {
 
     private val accountsMemoryCache = MutableStateFlow<List<AccountAddressWithAssets>?>(null)
     private val cacheErrors = MutableStateFlow<Throwable?>(null)
-    private val accountsRequested = MutableStateFlow<Set<String>>(emptySet())
+    private val accountsRequested = MutableStateFlow<Set<AccountAddress>>(emptySet())
     private val deletingDatabaseMutex = Mutex()
 
     init {
@@ -92,7 +95,7 @@ class AccountsStateCache @Inject constructor(
     }
 
     fun observeAccountsOnLedger(
-        accounts: List<Network.Account>,
+        accounts: List<Account>,
         isRefreshing: Boolean
     ): Flow<List<AccountWithAssets>> = combineTransform(
         accountsMemoryCache,
@@ -132,13 +135,13 @@ class AccountsStateCache @Inject constructor(
         }
         .flowOn(dispatcher)
 
-    suspend fun getOwnedXRD(accounts: List<Network.Account>) = withContext(dispatcher) {
+    suspend fun getOwnedXRD(accounts: List<Account>) = withContext(dispatcher) {
         if (accounts.isEmpty()) return@withContext Result.success(emptyMap())
 
-        val xrdAddress = XrdResource.address(networkId = accounts.first().networkID)
+        val xrdAddress = XrdResource.address(networkId = accounts.first().networkId)
 
         val accountsWithXRDVaults = accounts.associateWith { account ->
-            dao.getAccountResourceJoin(accountAddress = AccountAddress.init(account.address), resourceAddress = xrdAddress)?.vaultAddress
+            dao.getAccountResourceJoin(accountAddress = account.address, resourceAddress = xrdAddress)?.vaultAddress
         }
 
         runCatching {
@@ -165,20 +168,20 @@ class AccountsStateCache @Inject constructor(
     }.toUnitResult()
 
     private suspend fun fetchAllResources(
-        accountAddresses: Set<String>,
+        accountAddresses: Set<AccountAddress>,
         onStateVersion: Long? = null,
     ) {
         val addressesInProgress = accountsRequested.getAndUpdate { value -> value union accountAddresses }
         val accountsToRequest = accountAddresses subtract addressesInProgress
         if (accountsToRequest.isEmpty()) return
 
-        logger.d("☁️ ${accountsToRequest.joinToString { it.truncatedHash() }}")
+        logger.d("☁️ ${accountsToRequest.joinToString { it.formatted() }}")
         api.fetchAccountGatewayDetails(
             accountsToRequest = accountsToRequest,
             onStateVersion = onStateVersion
         ).onSuccess { result ->
-            val receivedAccountAddresses = result.map { it.first.address }
-            logger.d("☁️ <= ${receivedAccountAddresses.joinToString { it.truncatedHash() }}")
+            val receivedAccountAddresses = result.map { AccountAddress.init(it.first.address) }
+            logger.d("☁️ <= ${receivedAccountAddresses.joinToString { it.formatted() }}")
             accountsRequested.update { value -> value subtract receivedAccountAddresses.toSet() }
 
             if (result.isNotEmpty()) {
@@ -194,9 +197,9 @@ class AccountsStateCache @Inject constructor(
     }
 
     private fun Flow<List<AccountPortfolioResponse>>.collectCachedData() = map { portfolio ->
-        val result = mutableMapOf<String, AccountCachedData>()
+        val result = mutableMapOf<AccountAddress, AccountCachedData>()
         val cacheMinBoundary = Instant.ofEpochMilli(accountCacheValidity())
-        val addressesOnNetwork = getProfileUseCase.accountsOnCurrentNetwork().map { it.address }
+        val addressesOnNetwork = profileRepository.profile.first().activeAccountsOnCurrentNetwork.map { it.address }
         portfolio.forEach { cache ->
             if (cache.accountSynced == null || cache.accountSynced < cacheMinBoundary || cache.address !in addressesOnNetwork) {
                 return@forEach
@@ -231,7 +234,7 @@ class AccountsStateCache @Inject constructor(
         result
     }
 
-    private fun Flow<MutableMap<String, AccountCachedData>>.compileAccountAddressAssets(): Flow<List<AccountAddressWithAssets>> =
+    private fun Flow<MutableMap<AccountAddress, AccountCachedData>>.compileAccountAddressAssets(): Flow<List<AccountAddressWithAssets>> =
         transform { cached ->
             val stateVersion = cached.values.mapNotNull { it.stateVersion }.maxOrNull() ?: run {
                 emit(emptyList())
@@ -313,7 +316,7 @@ class AccountsStateCache @Inject constructor(
 
         @Suppress("LongMethod")
         fun toAccountAddressWithAssets(
-            accountAddress: String,
+            accountAddress: AccountAddress,
             pools: Map<PoolAddress, Pool>,
             validators: Map<ValidatorAddress, Validator>
         ): AccountAddressWithAssets? {
@@ -400,24 +403,23 @@ class AccountsStateCache @Inject constructor(
     }
 
     private data class AccountAddressWithAssets(
-        val address: String,
+        val address: AccountAddress,
         val details: AccountDetails?,
         val assets: Assets?
     ) {
 
-        fun toAccountWithAssets(account: Network.Account, dao: StateDao) = AccountWithAssets(
+        fun toAccountWithAssets(account: Account, dao: StateDao) = AccountWithAssets(
             account = account,
             details = details,
             assets = details?.stateVersion?.let { stateVersion ->
-                val accountAddress = AccountAddress.init(account.address)
                 val nonFungibles = assets?.nonFungibles?.map { nonFungible ->
-                    val items = dao.getOwnedNfts(accountAddress, nonFungible.collection.address, stateVersion)
+                    val items = dao.getOwnedNfts(account.address, nonFungible.collection.address, stateVersion)
                         .map { it.toItem() }.sorted()
                     nonFungible.copy(collection = nonFungible.collection.copy(items = items))
                 }.orEmpty()
 
                 val updatedClaims = assets?.stakeClaims?.map { stakeClaim ->
-                    val items = dao.getOwnedNfts(accountAddress, stakeClaim.resourceAddress, stateVersion)
+                    val items = dao.getOwnedNfts(account.address, stakeClaim.resourceAddress, stateVersion)
                         .map { it.toItem() }
                         .sorted()
                     stakeClaim.copy(nonFungibleResource = stakeClaim.nonFungibleResource.copy(items = items))

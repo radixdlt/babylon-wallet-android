@@ -39,9 +39,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
@@ -59,11 +58,11 @@ import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBa
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceViewToggle
 import com.babylon.wallet.android.presentation.ui.composables.assets.assetsView
 import com.babylon.wallet.android.presentation.ui.composables.toText
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.assets.LiquidStakeUnit
@@ -71,8 +70,6 @@ import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.resources.Resource
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun AccountScreen(
@@ -80,10 +77,10 @@ fun AccountScreen(
     onAccountPreferenceClick: (address: AccountAddress) -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit,
-    onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit,
+    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit,
     onNavigateToMnemonicRestore: () -> Unit,
-    onFungibleResourceClick: (Resource.FungibleResource, Network.Account) -> Unit,
-    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Network.Account) -> Unit,
+    onFungibleResourceClick: (Resource.FungibleResource, Account) -> Unit,
+    onNonFungibleResourceClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item, Account) -> Unit,
     onTransferClick: (AccountAddress) -> Unit,
     onHistoryClick: (AccountAddress) -> Unit
 ) {
@@ -152,8 +149,7 @@ private fun AccountScreenContent(
     onHistoryClick: (AccountAddress) -> Unit
 ) {
     val gradient = remember(state.accountWithAssets) {
-        val appearanceId = state.accountWithAssets?.account?.appearanceID ?: 0
-        AccountGradientList[appearanceId % AccountGradientList.size]
+        getAccountGradientColorsFor(state.accountWithAssets?.account?.appearanceId?.value ?: 0u)
     }.toPersistentList()
 
     val snackBarHostState = remember { SnackbarHostState() }
@@ -173,7 +169,7 @@ private fun AccountScreenContent(
             modifier = Modifier,
             topBar = {
                 RadixCenteredTopAppBar(
-                    title = state.accountWithAssets?.account?.displayName.orEmpty(),
+                    title = state.accountWithAssets?.account?.displayName?.value.orEmpty(),
                     onBackClick = onBackClick,
                     contentColor = RadixTheme.colors.white,
                     containerColor = Color.Transparent,
@@ -183,7 +179,7 @@ private fun AccountScreenContent(
                         ThrottleIconButton(
                             onClick = {
                                 state.accountWithAssets?.account?.let {
-                                    onAccountPreferenceClick(AccountAddress.init(it.address))
+                                    onAccountPreferenceClick(it.address)
                                 }
                             },
                             thresholdMs = 1000L
@@ -264,7 +260,7 @@ fun AssetsContent(
         color = RadixTheme.colors.gray5
     ) {
         val accountAddress = remember(state.accountWithAssets) {
-            state.accountWithAssets?.account?.let { AccountAddress.init(it.address) }
+            state.accountWithAssets?.account?.address
         }
 
         val assetsViewData = remember(state.accountWithAssets?.assets, state.assetsWithAssetsPrices, state.epoch) {

@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.account.AccountViewModel
 import com.babylon.wallet.android.presentation.navigation.Screen
 import com.babylon.wallet.android.utils.AppEvent

@@ -26,13 +26,9 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.SecurityState
 import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.derivation.model.NetworkId
 

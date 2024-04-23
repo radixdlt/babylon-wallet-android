@@ -61,12 +61,13 @@ class TransactionSubmitDelegate @Inject constructor(
 
         approvalJob = applicationScope.launch {
             val currentState = _state.value
-            val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
+            val currentNetworkId = getCurrentGatewayUseCase().network.id
             val manifestNetworkId = currentState.requestNonNull.transactionManifestData.networkId
 
             if (currentNetworkId != manifestNetworkId) {
                 approvalJob = null
-                val failure = RadixWalletException.DappRequestException.WrongNetwork(currentNetworkId, manifestNetworkId)
+                val failure =
+                    RadixWalletException.DappRequestException.WrongNetwork(currentNetworkId.value.toInt(), manifestNetworkId.value.toInt())
                 onDismiss(
                     signTransactionUseCase = signTransactionUseCase,
                     exception = failure
@@ -186,6 +187,7 @@ class TransactionSubmitDelegate @Inject constructor(
                         approvalJob = null
                         return
                     }
+
                     is RadixWalletException.PrepareTransactionException.SignCompiledTransactionIntent -> {
                         _state.update {
                             it.copy(

@@ -18,8 +18,11 @@ import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountIt
 import com.babylon.wallet.android.presentation.dapp.authorized.account.toUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.model.toQuantifierUsedInRequest
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -28,12 +31,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.activePersonaOnCurrentNetwork
+import rdx.works.core.sargon.alreadyGrantedIds
+import rdx.works.core.sargon.getDataFieldKind
 import rdx.works.core.then
-import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
-import rdx.works.profile.domain.personaOnCurrentNetwork
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -47,7 +51,7 @@ class DappDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : StateViewModel<DappDetailUiState>(), OneOffEventHandler<DappDetailEvent> by OneOffEventHandlerImpl() {
 
-    private lateinit var authorizedDapp: Network.AuthorizedDapp
+    private lateinit var authorizedDapp: AuthorizedDapp
     private val args = DappDetailScreenArgs(savedStateHandle)
 
     override fun initialState(): DappDetailUiState = DappDetailUiState()
@@ -84,15 +88,15 @@ class DappDetailViewModel @Inject constructor(
 
     private fun observeDapp() {
         viewModelScope.launch {
-            dAppConnectionRepository.getAuthorizedDappFlow(args.dappDefinitionAddress).collect {
+            dAppConnectionRepository.getAuthorizedDAppFlow(args.dappDefinitionAddress).collect {
                 if (it == null) {
                     sendEvent(DappDetailEvent.LastPersonaDeleted)
                     return@collect
                 } else {
-                    authorizedDapp = checkNotNull(dAppConnectionRepository.getAuthorizedDapp(args.dappDefinitionAddress))
+                    authorizedDapp = checkNotNull(dAppConnectionRepository.getAuthorizedDApp(args.dappDefinitionAddress))
                 }
                 val personas = authorizedDapp.referencesToAuthorizedPersonas.mapNotNull { personaSimple ->
-                    getProfileUseCase.personaOnCurrentNetwork(personaSimple.identityAddress)
+                    getProfileUseCase().activePersonaOnCurrentNetwork(personaSimple.identityAddress)
                 }
                 (state.value.selectedSheetState as? SelectedSheetState.SelectedPersona)?.persona?.persona?.let { persona ->
                     updateSelectedPersonaData(persona)
@@ -107,7 +111,7 @@ class DappDetailViewModel @Inject constructor(
         }
     }
 
-    fun onPersonaClick(persona: Network.Persona) {
+    fun onPersonaClick(persona: Persona) {
         viewModelScope.launch {
             updateSelectedPersonaData(persona)
         }
@@ -125,13 +129,13 @@ class DappDetailViewModel @Inject constructor(
         }
     }
 
-    private suspend fun updateSelectedPersonaData(persona: Network.Persona) {
+    private suspend fun updateSelectedPersonaData(persona: Persona) {
         val personaSimple =
             authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
         val sharedAccounts = personaSimple?.sharedAccounts?.ids?.mapNotNull {
-            getProfileUseCase.accountOnCurrentNetwork(AccountAddress.init(it))?.toUiModel()
+            getProfileUseCase().activeAccountOnCurrentNetwork(it)?.toUiModel()
         }.orEmpty()
-        val requiredKinds = personaSimple?.sharedPersonaData?.alreadyGrantedIds().orEmpty().mapNotNull {
+        val requiredKinds = personaSimple?.sharedPersonaData?.alreadyGrantedIds.orEmpty().mapNotNull {
             persona.personaData.getDataFieldKind(it)
         }
         // TODO properly compute required fields and number of values when we will support multiple entry values
@@ -168,15 +172,15 @@ class DappDetailViewModel @Inject constructor(
         }
     }
 
-    fun onDisconnectPersona(persona: Network.Persona) {
+    fun onDisconnectPersona(persona: Persona) {
         viewModelScope.launch {
-            dAppConnectionRepository.deletePersonaForDapp(args.dappDefinitionAddress, persona.address)
+            dAppConnectionRepository.deletePersonaForDApp(args.dappDefinitionAddress, persona.address)
         }
     }
 
     fun onDeleteDapp() {
         viewModelScope.launch {
-            dAppConnectionRepository.deleteAuthorizedDapp(args.dappDefinitionAddress)
+            dAppConnectionRepository.deleteAuthorizedDApp(args.dappDefinitionAddress)
             sendEvent(DappDetailEvent.DappDeleted)
         }
     }
@@ -206,18 +210,18 @@ class DappDetailViewModel @Inject constructor(
                         remoteConnectorId = "",
                         interactionId = UUIDGenerator.uuid().toString(),
                         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-                            authorizedDapp.networkID,
+                            authorizedDapp.networkId.discriminant.toInt(),
                             "",
-                            authorizedDapp.dAppDefinitionAddress,
+                            authorizedDapp.dappDefinitionAddress.string,
                             isInternal = true
                         ),
                         authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
-                            persona.address
+                            persona.address.string
                         ),
                         ongoingAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
                             isOngoing = true,
                             numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
-                                quantity = sharedAccounts.request.quantity,
+                                quantity = sharedAccounts.request.quantity.toInt(),
                                 quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest()
                             ),
                             challenge = null
@@ -239,7 +243,7 @@ class DappDetailViewModel @Inject constructor(
 }
 
 sealed interface DappDetailEvent : OneOffEvent {
-    data class EditPersona(val personaAddress: String, val requiredPersonaFields: RequiredPersonaFields? = null) :
+    data class EditPersona(val personaAddress: IdentityAddress, val requiredPersonaFields: RequiredPersonaFields? = null) :
         DappDetailEvent
 
     data object LastPersonaDeleted : DappDetailEvent
@@ -250,11 +254,11 @@ sealed interface DappDetailEvent : OneOffEvent {
 
 data class DappDetailUiState(
     val loading: Boolean = true,
-    val dapp: Network.AuthorizedDapp? = null,
+    val dapp: AuthorizedDapp? = null,
     val dAppWithResources: DAppWithResources? = null,
     val isValidatingWebsite: Boolean = false,
     val validatedWebsite: String? = null,
-    val personas: ImmutableList<Network.Persona> = persistentListOf(),
+    val personas: ImmutableList<Persona> = persistentListOf(),
     val sharedPersonaAccounts: ImmutableList<AccountItemUiModel> = persistentListOf(),
     val selectedSheetState: SelectedSheetState? = null
 ) : UiState {

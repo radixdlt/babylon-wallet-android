@@ -63,20 +63,17 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.formatted
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
-import rdx.works.profile.domain.accountOnCurrentNetwork
-import rdx.works.profile.domain.gateways
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.dashboardUrl
+import rdx.works.core.sargon.isLedgerAccount
 import timber.log.Timber
 
 @Composable
@@ -185,10 +182,10 @@ private fun ActionableAddressView(
     LaunchedEffect(address) {
         scope.launch {
             val networkId = if (useCaseProvider.profileUseCase().isInitialized()) {
-                useCaseProvider.profileUseCase().gateways.first().current().network.id
+                useCaseProvider.profileUseCase().invoke().currentGateway.network.id
             } else {
-                Radix.Network.mainnet.id
-            }.let { NetworkId.init(discriminant = it.toUByte()) }
+                NetworkId.MAINNET
+            }
 
             val copyAction = address.copyable()?.let {
                 PopupActionItem(
@@ -244,7 +241,7 @@ private fun ActionableAddressView(
 
             // Resolve if address is ledger and attach another action
             address.asAccountAddress?.let { accountAddress ->
-                if (useCaseProvider.profileUseCase().accountOnCurrentNetwork(accountAddress)?.isLedgerAccount == true) {
+                if (useCaseProvider.profileUseCase().invoke().activeAccountOnCurrentNetwork(accountAddress)?.isLedgerAccount == true) {
                     val verifyOnLedgerAction = PopupActionItem(
                         name = context.getString(R.string.addressAction_verifyAddressLedger),
                         icon = com.babylon.wallet.android.designsystem.R.drawable.ic_ledger_hardware_wallets
@@ -529,7 +526,7 @@ sealed interface ActionableAddress {
     fun dashboardSuffix(): String?
 
     fun dashboardUrl(networkId: NetworkId): String? = dashboardSuffix()?.let { suffix ->
-        val dashboard = rdx.works.profile.derivation.model.NetworkId.from(networkId.discriminant.toInt()).dashboardUrl()
+        val dashboard = networkId.dashboardUrl()
 
         "$dashboard/$suffix"
     }

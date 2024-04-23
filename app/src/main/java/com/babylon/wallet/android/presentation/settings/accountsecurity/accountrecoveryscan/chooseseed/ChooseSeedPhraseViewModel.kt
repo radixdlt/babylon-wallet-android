@@ -10,18 +10,21 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.core.sargon.babylonFactorSourcesWithAccounts
+import rdx.works.core.sargon.olympiaFactorSourcesWithAccounts
 import rdx.works.profile.domain.DeviceFactorSourceData
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.babylonFactorSourcesWithAccounts
-import rdx.works.profile.domain.olympiaFactorSourcesWithAccounts
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,8 +43,8 @@ class ChooseSeedPhraseViewModel @Inject constructor(
         viewModelScope.launch {
             when (args.recoveryType) {
                 MnemonicType.BabylonMain,
-                MnemonicType.Babylon -> getProfileUseCase.babylonFactorSourcesWithAccounts
-                MnemonicType.Olympia -> getProfileUseCase.olympiaFactorSourcesWithAccounts
+                MnemonicType.Babylon -> getProfileUseCase.flow.map { it.babylonFactorSourcesWithAccounts }
+                MnemonicType.Olympia -> getProfileUseCase.flow.map { it.olympiaFactorSourcesWithAccounts }
             }.collect { factorSources ->
                 val existing = _state.value.factorSources
                 var updated = factorSources.map { entry ->
@@ -59,10 +62,10 @@ class ChooseSeedPhraseViewModel @Inject constructor(
         }
     }
 
-    fun onSelectionChanged(id: FactorSource.FactorSourceID.FromHash) {
+    fun onSelectionChanged(id: FactorSourceId.Hash) {
         _state.update { state ->
             val updated = state.factorSources.map { selectable ->
-                selectable.copy(selected = selectable.data.deviceFactorSource.id == id)
+                selectable.copy(selected = selectable.data.deviceFactorSource.value.id == id.value)
             }
             state.copy(factorSources = updated.toPersistentList())
         }
@@ -71,7 +74,7 @@ class ChooseSeedPhraseViewModel @Inject constructor(
     fun onUseFactorSource() {
         _state.value.selectedFactorSource?.let { factorSource ->
             viewModelScope.launch {
-                sendEvent(Event.UseFactorSource(factorSource, args.recoveryType == MnemonicType.Olympia))
+                sendEvent(Event.UseFactorSource(factorSource.value.id.asGeneral(), args.recoveryType == MnemonicType.Olympia))
             }
         }
     }
@@ -86,6 +89,6 @@ class ChooseSeedPhraseViewModel @Inject constructor(
     }
 
     sealed interface Event : OneOffEvent {
-        data class UseFactorSource(val factorSource: DeviceFactorSource, val isOlympia: Boolean) : Event
+        data class UseFactorSource(val factorSource: FactorSourceId.Hash, val isOlympia: Boolean) : Event
     }
 }

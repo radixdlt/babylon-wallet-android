@@ -58,12 +58,10 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.Constants
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSource
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun AccountRecoveryScanScreen(
@@ -116,7 +114,7 @@ private fun AccountRecoveryScanContent(
     onBackClick: () -> Unit,
     onScanMoreClick: () -> Unit,
     state: AccountRecoveryScanViewModel.State,
-    onAccountSelected: (Selectable<Network.Account>) -> Unit,
+    onAccountSelected: (Selectable<Account>) -> Unit,
     onContinueClick: () -> Unit,
     isScanningNetwork: Boolean,
     onMessageShown: () -> Unit
@@ -206,7 +204,7 @@ private fun AccountRecoveryScanContent(
                             .fillMaxSize()
                             .padding(padding),
                         isLedgerDevice = state.recoveryFactorSource?.let {
-                            it is LedgerHardwareWalletFactorSource
+                            it is FactorSource.Ledger
                         } ?: false,
                         isOlympiaSeedPhrase = state.isOlympiaSeedPhrase,
                         isScanningNetwork = state.isScanningNetwork
@@ -237,10 +235,10 @@ private fun AccountRecoveryScanContent(
 fun ScanCompleteContent(
     modifier: Modifier,
     pagerState: PagerState,
-    activeAccounts: PersistentList<Network.Account>,
-    inactiveAccounts: PersistentList<Selectable<Network.Account>>,
+    activeAccounts: PersistentList<Account>,
+    inactiveAccounts: PersistentList<Selectable<Account>>,
     allScannedAccountsSize: Int,
-    onAccountSelected: (Selectable<Network.Account>) -> Unit
+    onAccountSelected: (Selectable<Account>) -> Unit
 ) {
     val pages = ScanCompletePages.entries.toTypedArray()
     HorizontalPager(state = pagerState, userScrollEnabled = false) { page ->
@@ -267,7 +265,7 @@ fun ScanCompleteContent(
 @Composable
 private fun ActiveAccountsPage(
     modifier: Modifier,
-    activeAccounts: PersistentList<Network.Account>,
+    activeAccounts: PersistentList<Account>,
     allScannedAccountsSize: Int
 ) {
     LazyColumn(
@@ -329,8 +327,8 @@ private fun ActiveAccountsPage(
 @Composable
 private fun InactiveAccountsPage(
     modifier: Modifier,
-    inactiveAccounts: PersistentList<Selectable<Network.Account>>,
-    onAccountSelected: (Selectable<Network.Account>) -> Unit
+    inactiveAccounts: PersistentList<Selectable<Account>>,
+    onAccountSelected: (Selectable<Account>) -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
@@ -361,7 +359,7 @@ private fun InactiveAccountsPage(
         }
 
         items(inactiveAccounts) { account ->
-            val gradientColor = getAccountGradientColorsFor(account.data.appearanceID)
+            val gradientColor = getAccountGradientColorsFor(account.data.appearanceId.value)
             AccountSelectionCard(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -375,9 +373,7 @@ private fun InactiveAccountsPage(
                         onAccountSelected(account)
                     },
                 accountName = Constants.DEFAULT_ACCOUNT_NAME,
-                address = remember(account.data.address) {
-                    AccountAddress.init(account.data.address)
-                },
+                address = account.data.address,
                 checked = account.selected,
                 isSingleChoice = false,
                 radioButtonClicked = {

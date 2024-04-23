@@ -4,10 +4,9 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.transaction.model.TransactionFeePayers
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.extensions.compareTo
-import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.TransactionManifestData
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
 class SearchFeePayersUseCase @Inject constructor(
@@ -16,7 +15,7 @@ class SearchFeePayersUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(manifestData: TransactionManifestData, lockFee: Decimal192): Result<TransactionFeePayers> {
-        val allAccounts = profileUseCase.accountsOnCurrentNetwork()
+        val allAccounts = profileUseCase().activeAccountsOnCurrentNetwork
         return stateRepository.getOwnedXRD(accounts = allAccounts).map { accountsWithXRD ->
             val candidates = accountsWithXRD.map { entry ->
                 TransactionFeePayers.FeePayerCandidate(
@@ -25,7 +24,7 @@ class SearchFeePayersUseCase @Inject constructor(
                 )
             }
             val candidateAddress = manifestData.feePayerCandidates().firstOrNull { address ->
-                candidates.any { it.account.address == address.string && it.xrdAmount >= lockFee }
+                candidates.any { it.account.address == address && it.xrdAmount >= lockFee }
             }
 
             TransactionFeePayers(

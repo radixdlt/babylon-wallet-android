@@ -23,7 +23,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -39,11 +38,13 @@ import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScree
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.core.sargon.sample
 
 @Composable
 fun ChooseLedgerScreen(
@@ -53,7 +54,7 @@ fun ChooseLedgerScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     goBackToCreateAccount: () -> Unit,
-    onStartRecovery: (FactorSource, Boolean) -> Unit
+    onStartRecovery: (FactorSourceId.Hash, Boolean) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val addLedgerDeviceState by addLedgerDeviceViewModel.state.collectAsStateWithLifecycle()
@@ -142,7 +143,7 @@ fun ChooseLedgerScreen(
             AddLedgerDeviceScreen(
                 modifier = Modifier,
                 showContent = addLedgerDeviceState.showContent,
-                deviceModel = addLedgerDeviceState.newConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
+                deviceModel = addLedgerDeviceState.newConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel(),
                 uiMessage = addLedgerDeviceState.uiMessage,
                 onSendAddLedgerRequestClick = addLedgerDeviceViewModel::onSendAddLedgerRequestClick,
                 onConfirmLedgerNameClick = {
@@ -166,8 +167,8 @@ fun ChooseLedgerScreen(
 @Composable
 private fun ChooseLedgerDeviceContent(
     modifier: Modifier,
-    ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>>,
-    onLedgerDeviceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
+    ledgerDevices: ImmutableList<Selectable<FactorSource.Ledger>>,
+    onLedgerDeviceSelected: (FactorSource.Ledger) -> Unit,
     onUseLedgerContinueClick: () -> Unit,
     onAddLedgerDeviceClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -232,14 +233,14 @@ private fun ChooseLedgerDeviceContent(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun ChooseLedgerScreenPreview() {
     RadixWalletTheme {
         ChooseLedgerDeviceContent(
             modifier = Modifier.fillMaxSize(),
-            ledgerDevices = SampleDataProvider()
-                .ledgerFactorSourcesSample
+            ledgerDevices = FactorSource.Ledger.sample.all
                 .map {
                     Selectable(it, false)
                 }.toPersistentList(),

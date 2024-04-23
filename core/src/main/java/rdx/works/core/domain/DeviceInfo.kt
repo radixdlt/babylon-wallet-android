@@ -1,8 +1,10 @@
-package rdx.works.profile.data.model
+package rdx.works.core.domain
 
 import android.content.Context
 import android.os.Build
 import android.provider.Settings
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.Sample
 import java.util.Locale
 
 data class DeviceInfo(
@@ -39,5 +41,22 @@ data class DeviceInfo(
                 if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
             }
         )
+
+        @UsesSampleValues
+        val sample: Sample<DeviceInfo>
+            get() = object : Sample<DeviceInfo> {
+                override fun invoke(): DeviceInfo = DeviceInfo(
+                    name = "Sample",
+                    manufacturer = "Test",
+                    model = "1"
+                )
+
+                override fun other(): DeviceInfo = DeviceInfo(
+                    name = "Sample XL",
+                    manufacturer = "Test",
+                    model = "2"
+                )
+
+            }
     }
 }

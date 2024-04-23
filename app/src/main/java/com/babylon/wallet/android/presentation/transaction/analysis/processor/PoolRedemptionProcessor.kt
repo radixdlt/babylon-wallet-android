@@ -25,7 +25,7 @@ class PoolRedemptionProcessor @Inject constructor(
             fungibleAddresses = summary.involvedFungibleAddresses(),
             nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
-        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
+        val defaultDepositGuarantees = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
         val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
         val to = summary.toDepositingAccountsWithTransferableAssets(
             allOwnedAccounts = involvedOwnedAccounts,

@@ -35,7 +35,6 @@ import com.babylon.wallet.android.presentation.ui.composables.card.FungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.card.NonFungibleCard
 import com.babylon.wallet.android.presentation.ui.composables.displayName
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
 
 @Composable

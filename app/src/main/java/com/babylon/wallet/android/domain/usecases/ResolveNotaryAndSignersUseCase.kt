@@ -4,11 +4,11 @@ import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.extensions.string
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
-import rdx.works.profile.domain.personasOnCurrentNetwork
 import rdx.works.core.crypto.PrivateKey
+import rdx.works.core.sargon.ProfileEntity
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
+import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
 class ResolveNotaryAndSignersUseCase @Inject constructor(
@@ -20,13 +20,13 @@ class ResolveNotaryAndSignersUseCase @Inject constructor(
         personaAddressesRequiringAuth: List<IdentityAddress>,
         notary: PrivateKey
     ) = runCatching {
-        val accounts = profileUseCase.accountsOnCurrentNetwork()
-        val personas = profileUseCase.personasOnCurrentNetwork()
+        val accounts = profileUseCase().activeAccountsOnCurrentNetwork
+        val personas = profileUseCase().activePersonasOnCurrentNetwork
 
         accountsAddressesRequiringAuth.map { address ->
-            accounts.find { it.address == address.string } ?: throw FailedToFindSigningEntities
+            accounts.find { it.address == address }?.let { ProfileEntity.AccountEntity(it) } ?: throw FailedToFindSigningEntities
         } + personaAddressesRequiringAuth.map { address ->
-            personas.find { it.address == address.string } ?: throw FailedToFindSigningEntities
+            personas.find { it.address == address }?.let { ProfileEntity.PersonaEntity(it) } ?: throw FailedToFindSigningEntities
         }
     }.map {
         NotaryAndSigners(

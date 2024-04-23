@@ -1,9 +1,11 @@
 package rdx.works.profile.domain.backup
 
+import com.radixdlt.sargon.DeviceInfo
+import com.radixdlt.sargon.NetworkId
 import rdx.works.core.InstantGenerator
+import rdx.works.core.TimestampGenerator
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.extensions.changeGateway
+import rdx.works.core.sargon.changeGatewayToNetworkId
 import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.ProfileRepository
@@ -18,14 +20,17 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
 
     suspend operator fun invoke(backupType: BackupType) {
         // always restore backup on mainnet
-        val profile = backupProfileRepository.getTemporaryRestoringProfile(backupType)?.changeGateway(Radix.Gateway.mainnet)
+        val profile = backupProfileRepository.getTemporaryRestoringProfile(backupType)?.changeGatewayToNetworkId(NetworkId.MAINNET)
 
         if (profile != null) {
             val newDeviceName = deviceInfoRepository.getDeviceInfo().displayName
             val profileWithRestoredHeader = profile.copy(
-                header = profile.header.claim(
-                    deviceDescription = newDeviceName,
-                    claimedDate = InstantGenerator()
+                header = profile.header.copy(
+                    lastUsedOnDevice = DeviceInfo(
+                        id = profile.header.id, // TODO integration
+                        description = newDeviceName,
+                        date = TimestampGenerator()
+                    )
                 )
             )
             profileRepository.saveProfile(profileWithRestoredHeader)

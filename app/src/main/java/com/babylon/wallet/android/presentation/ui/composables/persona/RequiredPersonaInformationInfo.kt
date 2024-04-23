@@ -11,11 +11,11 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.RedWarningText
 import kotlinx.collections.immutable.ImmutableList
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.PersonaDataField
 
 @Composable
 fun RequiredPersonaInformationInfo(
-    requiredFields: ImmutableList<PersonaData.PersonaDataField.Kind>,
+    requiredFields: ImmutableList<PersonaDataField.Kind>,
     modifier: Modifier = Modifier
 ) {
     val text = stringResource(id = R.string.dAppRequest_personalDataBox_requiredInformation)

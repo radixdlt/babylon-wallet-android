@@ -34,15 +34,18 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.ui.composables.AddLinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.radixdlt.sargon.P2pLink
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
-import rdx.works.profile.data.model.apppreferences.P2PLink
 
 @Composable
 fun LinkedConnectorsScreen(
@@ -96,9 +99,9 @@ fun LinkedConnectorsScreen(
 private fun LinkedConnectorsContent(
     modifier: Modifier = Modifier,
     isAddingNewLinkConnectorInProgress: Boolean,
-    activeLinkedConnectorsList: ImmutableList<P2PLink>,
+    activeLinkedConnectorsList: ImmutableList<P2pLink>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (String) -> Unit,
+    onDeleteConnectorClick: (P2pLink) -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -111,7 +114,7 @@ private fun LinkedConnectorsContent(
             )
         }
     ) { padding ->
-        var connectionPasswordToDelete by remember { mutableStateOf<String?>(null) }
+        var onLinkToDelete by remember { mutableStateOf<P2pLink?>(null) }
 
         Column(modifier = Modifier.padding(padding)) {
             HorizontalDivider(color = RadixTheme.colors.gray5)
@@ -120,19 +123,19 @@ private fun LinkedConnectorsContent(
                 ActiveLinkedConnectorDetails(
                     activeLinkedConnectorsList = activeLinkedConnectorsList,
                     onLinkNewConnectorClick = onLinkNewConnectorClick,
-                    onDeleteConnectorClick = { connectionPasswordToDelete = it },
+                    onDeleteConnectorClick = { onLinkToDelete = it },
                     isAddingNewLinkConnectorInProgress = isAddingNewLinkConnectorInProgress,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                if (connectionPasswordToDelete != null) {
+                if (onLinkToDelete != null) {
                     @Suppress("UnsafeCallOnNullableType")
                     BasicPromptAlertDialog(
                         finish = {
                             if (it) {
-                                onDeleteConnectorClick(connectionPasswordToDelete!!)
+                                onDeleteConnectorClick(onLinkToDelete!!)
                             }
-                            connectionPasswordToDelete = null
+                            onLinkToDelete = null
                         },
                         title = {
                             Text(
@@ -158,9 +161,9 @@ private fun LinkedConnectorsContent(
 
 @Composable
 private fun ActiveLinkedConnectorDetails(
-    activeLinkedConnectorsList: ImmutableList<P2PLink>,
+    activeLinkedConnectorsList: ImmutableList<P2pLink>,
     onLinkNewConnectorClick: () -> Unit,
-    onDeleteConnectorClick: (String) -> Unit,
+    onDeleteConnectorClick: (P2pLink) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -184,16 +187,16 @@ private fun ActiveLinkedConnectorDetails(
 @Composable
 private fun ActiveLinkedConnectorsListContent(
     modifier: Modifier = Modifier,
-    activeLinkedConnectorsList: ImmutableList<P2PLink>,
-    onDeleteConnectorClick: (String) -> Unit,
+    activeLinkedConnectorsList: ImmutableList<P2pLink>,
+    onDeleteConnectorClick: (P2pLink) -> Unit,
     isAddingNewLinkConnectorInProgress: Boolean,
     onLinkNewConnectorClick: () -> Unit
 ) {
     LazyColumn(modifier) {
         items(
             items = activeLinkedConnectorsList,
-            key = { activeLinkedConnector: P2PLink ->
-                activeLinkedConnector.id
+            key = { activeLinkedConnector ->
+                activeLinkedConnector.id.hex
             },
             itemContent = { p2pLink ->
                 ActiveLinkedConnectorContent(
@@ -227,9 +230,9 @@ private fun ActiveLinkedConnectorsListContent(
 
 @Composable
 private fun ActiveLinkedConnectorContent(
-    activeLinkedConnector: P2PLink,
+    activeLinkedConnector: P2pLink,
     modifier: Modifier = Modifier,
-    onDeleteConnectorClick: (String) -> Unit,
+    onDeleteConnectorClick: (P2pLink) -> Unit,
 ) {
     Column(modifier = modifier) {
         Row(
@@ -246,7 +249,7 @@ private fun ActiveLinkedConnectorContent(
                 color = RadixTheme.colors.gray2
             )
             IconButton(onClick = {
-                onDeleteConnectorClick(activeLinkedConnector.connectionPassword)
+                onDeleteConnectorClick(activeLinkedConnector)
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_delete_24),
@@ -273,13 +276,14 @@ fun LinkedConnectorsContentWithoutActiveLinkedConnectorsPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
 fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
     RadixWalletTheme {
         LinkedConnectorsContent(
-            activeLinkedConnectorsList = SampleDataProvider().p2pLinksSample.toPersistentList(),
+            activeLinkedConnectorsList= persistentListOf(P2pLink.sample()),
             onLinkNewConnectorClick = {},
             isAddingNewLinkConnectorInProgress = false,
             onBackClick = {},

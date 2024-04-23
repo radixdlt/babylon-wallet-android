@@ -7,20 +7,24 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRe
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.PersonaRequestItem
 import com.babylon.wallet.android.domain.model.Selectable
-import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
+import com.babylon.wallet.android.domain.model.toRequestedNumberQuantifier
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
-import com.babylon.wallet.android.utils.toISO8601String
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedPersonaSimple
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.extensions.init
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import com.radixdlt.sargon.extensions.string
+import rdx.works.core.TimestampGenerator
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.activePersonaOnCurrentNetwork
+import rdx.works.core.sargon.updateAuthorizedDAppPersonas
 import rdx.works.profile.data.repository.DAppConnectionRepository
-import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
-import rdx.works.profile.domain.personaOnCurrentNetwork
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 /**
@@ -48,7 +52,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 return@let
             }
             (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.let {
-                val authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(
+                val authorizedDapp = dAppConnectionRepository.getAuthorizedDApp(
                     dAppDefinitionAddress = AccountAddress.init(request.metadata.dAppDefinitionAddress)
                 )
                 if (authorizedDapp == null) {
@@ -58,7 +62,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 val authorizedPersonaSimple = authorizedDapp
                     .referencesToAuthorizedPersonas
                     .firstOrNull { authorizedPersonaSimple ->
-                        authorizedPersonaSimple.identityAddress ==
+                        authorizedPersonaSimple.identityAddress.string ==
                             (request.authRequest as? AuthorizedRequest.AuthRequest.UsePersonaRequest)?.personaAddress
                     }
                 if (authorizedPersonaSimple == null) {
@@ -66,7 +70,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     return Result.failure(RadixWalletException.DappRequestException.InvalidPersona)
                 }
 
-                val persona = getProfileUseCase.personaOnCurrentNetwork(
+                val persona = getProfileUseCase().activePersonaOnCurrentNetwork(
                     withAddress = authorizedPersonaSimple.identityAddress
                 )
                 if (persona == null) {
@@ -80,7 +84,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                     }
                     val hasOngoingAccountsRequest = request.ongoingAccountsRequestItem != null
                     val hasOngoingPersonaDataRequest = request.ongoingPersonaDataRequestItem != null
-                    val selectedAccounts: List<Selectable<Network.Account>> = emptyList()
+                    val selectedAccounts: List<Selectable<Account>> = emptyList()
                     val selectedPersonaData: PersonaData?
                     when {
                         hasOngoingAccountsRequest -> {
@@ -99,7 +103,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                         hasOngoingPersonaDataRequest -> {
                             selectedPersonaData = getAlreadyGrantedPersonaData(
                                 request = request,
-                                authorizedDapp = authorizedDapp,
+                                authorizedDApp = authorizedDapp,
                                 authorizedPersonaSimple = authorizedPersonaSimple
                             )
                             if (selectedPersonaData != null) {
@@ -108,7 +112,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                                     persona = persona,
                                     selectedAccounts = selectedAccounts,
                                     selectedPersonaData = selectedPersonaData,
-                                    authorizedDapp = authorizedDapp
+                                    authorizedDApp = authorizedDapp
                                 )
                                 operationResult = result.map { dAppName ->
                                     DAppData(requestId = request.id, name = dAppName)
@@ -132,15 +136,15 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
 
     private suspend fun handleOngoingAccountsRequest(
         request: AuthorizedRequest,
-        authorizedDapp: Network.AuthorizedDapp,
-        authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple,
+        authorizedDapp: AuthorizedDapp,
+        authorizedPersonaSimple: AuthorizedPersonaSimple,
         hasOngoingPersonaDataRequest: Boolean,
-        persona: Network.Persona
+        persona: Persona
     ): Result<String?> {
         var operationResult: Result<String?> = Result.failure(
             exception = RadixWalletException.DappRequestException.NotPossibleToAuthenticateAutomatically
         )
-        val selectedAccounts: List<Selectable<Network.Account>> = getAccountsWithGrantedAccess(
+        val selectedAccounts: List<Selectable<Account>> = getAccountsWithGrantedAccess(
             request,
             authorizedDapp,
             authorizedPersonaSimple
@@ -155,7 +159,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                         persona = persona,
                         selectedAccounts = selectedAccounts,
                         selectedPersonaData = selectedPersonaData,
-                        authorizedDapp = authorizedDapp
+                        authorizedDApp = authorizedDapp
                     )
                 }
             }
@@ -167,7 +171,7 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                         persona = persona,
                         selectedAccounts = selectedAccounts,
                         selectedPersonaData = selectedPersonaData,
-                        authorizedDapp = authorizedDapp
+                        authorizedDApp = authorizedDapp
                     )
                 }
             }
@@ -175,14 +179,14 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
         return operationResult
     }
 
-    private fun updateDappPersonaWithLastUsedTimestamp(
-        authorizedDapp: Network.AuthorizedDapp,
-        personaAddress: String
-    ): Network.AuthorizedDapp {
-        val updatedDapp = authorizedDapp.updateAuthorizedDappPersonas(
-            authorizedDapp.referencesToAuthorizedPersonas.map { ref ->
+    private fun updateDAppPersonaWithLastUsedTimestamp(
+        authorizedDApp: AuthorizedDapp,
+        personaAddress: IdentityAddress
+    ): AuthorizedDapp {
+        val updatedDapp = authorizedDApp.updateAuthorizedDAppPersonas(
+            authorizedDApp.referencesToAuthorizedPersonas.map { ref ->
                 if (ref.identityAddress == personaAddress) {
-                    ref.copy(lastLogin = LocalDateTime.now().toISO8601String())
+                    ref.copy(lastLogin = TimestampGenerator())
                 } else {
                     ref
                 }
@@ -193,10 +197,10 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
 
     private suspend fun sendSuccessResponse(
         request: AuthorizedRequest,
-        persona: Network.Persona,
-        selectedAccounts: List<Selectable<Network.Account>>,
+        persona: Persona,
+        selectedAccounts: List<Selectable<Account>>,
         selectedPersonaData: PersonaData?,
-        authorizedDapp: Network.AuthorizedDapp
+        authorizedDApp: AuthorizedDapp
     ): Result<String?> {
         return buildAuthorizedDappResponseUseCase(
             request = request,
@@ -209,25 +213,23 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
                 remoteConnectorId = request.remoteConnectorId,
                 response = response
             ).getOrNull()?.let {
-                val updatedDapp = updateDappPersonaWithLastUsedTimestamp(authorizedDapp, persona.address)
-                dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDapp)
-                Result.success(
-                    authorizedDapp.displayName
-                )
+                val updatedDApp = updateDAppPersonaWithLastUsedTimestamp(authorizedDApp, persona.address)
+                dAppConnectionRepository.updateOrCreateAuthorizedDApp(updatedDApp)
+                Result.success(authorizedDApp.displayName)
             } ?: Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
         }
     }
 
     private suspend fun getAlreadyGrantedPersonaData(
         request: AuthorizedRequest,
-        authorizedDapp: Network.AuthorizedDapp,
-        authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple
+        authorizedDApp: AuthorizedDapp,
+        authorizedPersonaSimple: AuthorizedPersonaSimple
     ): PersonaData? {
         var result: PersonaData? = null
         val handledRequest = checkNotNull(request.ongoingPersonaDataRequestItem)
         val requiredFieldKinds = handledRequest.toRequiredFields()
-        if (personaDataAccessAlreadyGranted(authorizedDapp, handledRequest, authorizedPersonaSimple.identityAddress)) {
-            result = getProfileUseCase.personaOnCurrentNetwork(
+        if (personaDataAccessAlreadyGranted(authorizedDApp, handledRequest, authorizedPersonaSimple.identityAddress)) {
+            result = getProfileUseCase().activePersonaOnCurrentNetwork(
                 authorizedPersonaSimple.identityAddress
             )?.getPersonaDataForFieldKinds(requiredFieldKinds.fields)
         }
@@ -236,21 +238,21 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
 
     private suspend fun getAccountsWithGrantedAccess(
         request: AuthorizedRequest,
-        authorizedDapp: Network.AuthorizedDapp,
-        authorizedPersonaSimple: Network.AuthorizedDapp.AuthorizedPersonaSimple
-    ): List<Selectable<Network.Account>> {
-        var result: List<Selectable<Network.Account>> = emptyList()
+        authorizedDApp: AuthorizedDapp,
+        authorizedPersonaSimple: AuthorizedPersonaSimple
+    ): List<Selectable<Account>> {
+        var result: List<Selectable<Account>> = emptyList()
         val handledRequest = checkNotNull(request.ongoingAccountsRequestItem)
         if (request.resetRequestItem?.personaData != true && request.resetRequestItem?.accounts != true) {
             val potentialOngoingAddresses = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                AccountAddress.init(authorizedDapp.dAppDefinitionAddress),
+                authorizedDApp.dappDefinitionAddress,
                 authorizedPersonaSimple.identityAddress,
                 handledRequest.numberOfValues.quantity,
-                handledRequest.numberOfValues.toProfileShareAccountsQuantifier()
+                handledRequest.numberOfValues.toRequestedNumberQuantifier()
             )
             if (potentialOngoingAddresses.isNotEmpty()) {
                 result = potentialOngoingAddresses.mapNotNull { address ->
-                    getProfileUseCase.accountOnCurrentNetwork(withAddress = address)?.let { Selectable(it) }
+                    getProfileUseCase().activeAccountOnCurrentNetwork(withAddress = address)?.let { Selectable(it) }
                 }
             }
         }
@@ -258,13 +260,13 @@ class AuthorizeSpecifiedPersonaUseCase @Inject constructor(
     }
 
     private suspend fun personaDataAccessAlreadyGranted(
-        dApp: Network.AuthorizedDapp,
+        dApp: AuthorizedDapp,
         requestItem: PersonaRequestItem,
-        personaAddress: String
+        personaAddress: IdentityAddress
     ): Boolean {
         val requestedFieldKinds = requestItem.toRequiredFields()
         return dAppConnectionRepository.dAppAuthorizedPersonaHasAllDataFields(
-            AccountAddress.init(dApp.dAppDefinitionAddress),
+            dApp.dappDefinitionAddress,
             personaAddress,
             requestedFieldKinds.fields.associate { it.kind to it.numberOfValues.quantity }
         )

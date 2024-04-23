@@ -11,25 +11,36 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
 
 @VisibleForTesting
-internal const val ARG_FACTOR_SOURCE_ID = "factor_source_id"
+internal const val ARG_FACTOR_SOURCE_ID_BODY_HEX = "factor_source_id"
 
-const val ROUTE_REVEAL_SEED_PHRASE = "reveal_seed_phrase/{$ARG_FACTOR_SOURCE_ID}"
+const val ROUTE_REVEAL_SEED_PHRASE = "reveal_seed_phrase/{$ARG_FACTOR_SOURCE_ID_BODY_HEX}"
 
-internal class RevealSeedPhraseArgs(val factorSourceId: String) {
+internal class RevealSeedPhraseArgs(val factorSourceId: FactorSourceId.Hash) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_FACTOR_SOURCE_ID]) as String
+        FactorSourceIdFromHash(
+            kind = FactorSourceKind.DEVICE,
+            body = Exactly32Bytes.init(checkNotNull(savedStateHandle.get<String>(ARG_FACTOR_SOURCE_ID_BODY_HEX)).hexToBagOfBytes())
+        ).asGeneral()
     )
 }
 
-fun NavController.revealSeedPhrase(factorSourceId: String) {
-    navigate("reveal_seed_phrase/$factorSourceId")
+fun NavController.revealSeedPhrase(factorSourceId: FactorSourceId.Hash) {
+    navigate("reveal_seed_phrase/${factorSourceId.value.body.hex}")
 }
 
 fun NavGraphBuilder.revealSeedPhrase(
     onBackClick: () -> Unit,
-    onConfirmSeedPhraseClick: (String, Int) -> Unit
+    onConfirmSeedPhraseClick: (FactorSourceId.Hash, Int) -> Unit
 ) {
     composable(
         route = ROUTE_REVEAL_SEED_PHRASE,
@@ -46,7 +57,7 @@ fun NavGraphBuilder.revealSeedPhrase(
             EnterTransition.None
         },
         arguments = listOf(
-            navArgument(ARG_FACTOR_SOURCE_ID) {
+            navArgument(ARG_FACTOR_SOURCE_ID_BODY_HEX) {
                 type = NavType.StringType
             }
         )

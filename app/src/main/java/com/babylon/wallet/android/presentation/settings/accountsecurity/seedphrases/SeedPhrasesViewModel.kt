@@ -6,6 +6,8 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.asGeneral
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -16,7 +18,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.DeviceFactorSourceData
 import rdx.works.profile.domain.GetFactorSourcesWithAccountsUseCase
@@ -41,11 +42,11 @@ class SeedPhrasesViewModel @Inject constructor(
             ) { factorSources, _ ->
                 val backedUpFactorSourceIds = preferencesManager.getBackedUpFactorSourceIds().firstOrNull().orEmpty()
                 factorSources.map { data ->
-                    val mnemonicExist = mnemonicRepository.mnemonicExist(data.deviceFactorSource.id)
+                    val mnemonicExist = mnemonicRepository.mnemonicExist(data.deviceFactorSource.value.id.asGeneral())
                     val mnemonicState = when {
                         !mnemonicExist -> DeviceFactorSourceData.MnemonicState.NeedRecover
                         backedUpFactorSourceIds.contains(
-                            data.deviceFactorSource.id.body.value
+                            data.deviceFactorSource.value.id.asGeneral()
                         ) -> DeviceFactorSourceData.MnemonicState.BackedUp
                         else -> DeviceFactorSourceData.MnemonicState.NotBackedUp
                     }
@@ -65,9 +66,9 @@ class SeedPhrasesViewModel @Inject constructor(
     fun onSeedPhraseClick(deviceFactorSourceItem: DeviceFactorSourceData) {
         viewModelScope.launch {
             if (deviceFactorSourceItem.mnemonicState == DeviceFactorSourceData.MnemonicState.NeedRecover) {
-                sendEvent(Effect.OnRequestToRecoverMnemonic(deviceFactorSourceItem.deviceFactorSource.id))
+                sendEvent(Effect.OnRequestToRecoverMnemonic(deviceFactorSourceItem.deviceFactorSource.value.id.asGeneral()))
             } else {
-                sendEvent(Effect.OnRequestToShowMnemonic(deviceFactorSourceItem.deviceFactorSource.id))
+                sendEvent(Effect.OnRequestToShowMnemonic(deviceFactorSourceItem.deviceFactorSource.value.id.asGeneral()))
             }
         }
     }
@@ -77,7 +78,7 @@ class SeedPhrasesViewModel @Inject constructor(
     ) : UiState
 
     sealed interface Effect : OneOffEvent {
-        data class OnRequestToShowMnemonic(val factorSourceID: FactorSourceID.FromHash) : Effect
-        data class OnRequestToRecoverMnemonic(val factorSourceID: FactorSourceID.FromHash) : Effect
+        data class OnRequestToShowMnemonic(val factorSourceID: FactorSourceId.Hash) : Effect
+        data class OnRequestToRecoverMnemonic(val factorSourceID: FactorSourceId.Hash) : Effect
     }
 }

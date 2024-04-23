@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.settings.personaedit
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
@@ -31,7 +30,7 @@ import org.junit.Before
 import org.junit.Test
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.PersonaDataField
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.persona.UpdatePersonaUseCase
 
@@ -56,7 +55,7 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
         every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
                 RequiredPersonaField(
-                    PersonaData.PersonaDataField.Kind.Name,
+                    PersonaDataField.Kind.Name,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,
                         MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
@@ -136,12 +135,12 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
         val vm = vm.value
         vm.state.whileCollecting {
             advanceUntilIdle()
-            vm.onFieldValueChanged(emailFieldId, PersonaData.PersonaDataField.Email("jakub@jakub.pl"))
+            vm.onFieldValueChanged(emailFieldId, PersonaDataField.Email("jakub@jakub.pl"))
             advanceUntilIdle()
             vm.onFieldValueChanged(
                 nameFieldId,
-                PersonaData.PersonaDataField.Name(
-                    variant = PersonaData.PersonaDataField.Name.Variant.Western,
+                PersonaDataField.Name(
+                    variant = PersonaDataField.Name.Variant.Western,
                     given = "jakub",
                     family = "",
                     nickname = ""
@@ -154,15 +153,15 @@ internal class PersonaEditViewModelTest : StateViewModelTest<PersonaEditViewMode
                     item.currentFields.map {
                         it.entry
                     }.filter {
-                        it.value.kind == PersonaData.PersonaDataField.Kind.EmailAddress
-                    }.map { it.value as PersonaData.PersonaDataField.Email }.first().value == "jakub@jakub.pl"
+                        it.value.kind == PersonaDataField.Kind.EmailAddress
+                    }.map { it.value as PersonaDataField.Email }.first().value == "jakub@jakub.pl"
                 )
                 assert(
                     item.currentFields.map {
                         it.entry
                     }.filter {
-                        it.value.kind == PersonaData.PersonaDataField.Kind.Name
-                    }.map { it.value as PersonaData.PersonaDataField.Name }.first().given == "jakub"
+                        it.value.kind == PersonaDataField.Kind.Name
+                    }.map { it.value as PersonaDataField.Name }.first().given == "jakub"
                 )
             }
         }

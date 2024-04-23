@@ -185,7 +185,7 @@ sealed class PrivateKey {
 
         override fun signToSignatureWithPublicKey(hashedData: ByteArray): SignatureWithPublicKey.Secp256k1 {
             return SignatureWithPublicKey.Secp256k1(
-                publicKey = publicKey().value,
+                publicKey = publicKey().v1,
                 signature = signToSignature(hashedData).value
             )
         }
@@ -321,7 +321,7 @@ sealed class PrivateKey {
 
         override fun signToSignatureWithPublicKey(hashedData: ByteArray): SignatureWithPublicKey.Ed25519 {
             return SignatureWithPublicKey.Ed25519(
-                publicKey = publicKey().value,
+                publicKey = publicKey().v1,
                 signature = signToSignature(hashedData).value
             )
         }

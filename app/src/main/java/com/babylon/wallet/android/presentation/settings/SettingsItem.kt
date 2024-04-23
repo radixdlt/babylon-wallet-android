@@ -4,7 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.presentation.ui.composables.DSR
-import rdx.works.profile.data.model.BackupState
+import rdx.works.core.domain.BackupState
 
 sealed interface SettingsItem {
 

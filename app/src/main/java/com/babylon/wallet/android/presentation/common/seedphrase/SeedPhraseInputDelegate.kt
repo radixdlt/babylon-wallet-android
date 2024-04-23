@@ -7,6 +7,10 @@ import com.babylon.wallet.android.utils.toMnemonicWords
 import com.radixdlt.bip39.model.MnemonicWords
 import com.radixdlt.bip39.validate
 import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
+import com.radixdlt.sargon.Bip39WordCount
+import com.radixdlt.sargon.Mnemonic
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.extensions.init
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -16,7 +20,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
-import rdx.works.profile.data.model.MnemonicWithPassphrase
 
 class SeedPhraseInputDelegate(
     private val scope: CoroutineScope
@@ -24,13 +27,13 @@ class SeedPhraseInputDelegate(
 
     private var debounceJob: Job? = null
 
-    fun setSeedPhraseSize(size: Int) {
+    fun setSeedPhraseSize(size: Bip39WordCount) {
         _state.update { state ->
             state.copy(
-                seedPhraseWords = (0 until size).map {
+                seedPhraseWords = (0 until size.value.toInt()).map {
                     SeedPhraseWord(
                         it,
-                        lastWord = it == size - 1
+                        lastWord = it == size.value.toInt() - 1
                     )
                 }.toPersistentList()
             )
@@ -141,11 +144,10 @@ class SeedPhraseInputDelegate(
         val seedPhraseBIP39Valid: Boolean
             get() = seedPhraseInputValid && MnemonicWords(seedPhraseWords.map { it.value }).validate(WORDLIST_ENGLISH)
 
-        val wordsPhrase: String
-            get() = seedPhraseWords.joinToString(separator = " ") { it.value }
-
-        val mnemonicWithPassphrase: MnemonicWithPassphrase
-            get() = MnemonicWithPassphrase(wordsPhrase, bip39Passphrase)
+        fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = MnemonicWithPassphrase(
+            mnemonic = Mnemonic.init(seedPhraseWords.joinToString(separator = " ") { it.value }),
+            passphrase = bip39Passphrase
+        )
     }
 
     override fun initialState(): State {

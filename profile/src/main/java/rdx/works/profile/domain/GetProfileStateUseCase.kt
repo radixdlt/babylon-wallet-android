@@ -1,7 +1,7 @@
 package rdx.works.profile.domain
 
 import kotlinx.coroutines.flow.firstOrNull
-import rdx.works.profile.data.model.ProfileState
+import rdx.works.core.domain.ProfileState
 import rdx.works.profile.data.repository.ProfileRepository
 import javax.inject.Inject
 

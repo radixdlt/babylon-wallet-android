@@ -1,11 +1,13 @@
 package rdx.works.profile.domain.signing
 
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.pernetwork.Entity
-import rdx.works.profile.data.model.pernetwork.SecurityState
+import com.radixdlt.sargon.EntitySecurityState
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.kind
+import rdx.works.core.sargon.ProfileEntity
+import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.factorSourceById
 import javax.inject.Inject
 
 /**
@@ -17,14 +19,15 @@ class GetSigningEntitiesByFactorSourceUseCase @Inject constructor(
 ) {
 
     @Suppress("NestedBlockDepth", "UnsafeCallOnNullableType")
-    suspend operator fun invoke(signers: List<Entity>): Map<FactorSource, List<Entity>> {
-        val result = mutableMapOf<FactorSource, List<Entity>>()
+    suspend operator fun invoke(signers: List<ProfileEntity>): Map<FactorSource, List<ProfileEntity>> {
+        val result = mutableMapOf<FactorSource, List<ProfileEntity>>()
+        val profile = getProfileUseCase()
         signers.forEach { signer ->
             when (val securityState = signer.securityState) {
-                is SecurityState.Unsecured -> {
-                    val factorSourceId = securityState.unsecuredEntityControl.transactionSigning.factorSourceId
-                    val factorSource = requireNotNull(getProfileUseCase.factorSourceById(factorSourceId))
-                    if (factorSource.id.kind != FactorSourceKind.TRUSTED_CONTACT) { // trusted contact cannot sign!
+                is EntitySecurityState.Unsecured -> {
+                    val factorSourceId = securityState.value.transactionSigning.factorSourceId.asGeneral()
+                    val factorSource = requireNotNull(profile.factorSourceById(factorSourceId))
+                    if (factorSource.kind != FactorSourceKind.TRUSTED_CONTACT) { // trusted contact cannot sign!
                         if (result[factorSource] != null) {
                             result[factorSource] = result[factorSource].orEmpty() + listOf(signer)
                         } else {
@@ -34,7 +37,7 @@ class GetSigningEntitiesByFactorSourceUseCase @Inject constructor(
                 }
             }
         }
-        return result.keys.sortedBy { it.id.kind.signingOrder() }.associateWith { result[it]!! }
+        return result.keys.sortedBy { it.kind.signingOrder() }.associateWith { result[it]!! }
     }
 }
 

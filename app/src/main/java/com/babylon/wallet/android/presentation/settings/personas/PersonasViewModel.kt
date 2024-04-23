@@ -9,21 +9,24 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.pernetwork.Entity
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.ProfileEntity
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
+import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.mainBabylonFactorSource
-import rdx.works.profile.domain.personasOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,15 +42,15 @@ class PersonasViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             combine(
-                getProfileUseCase.personasOnCurrentNetwork,
+                getProfileUseCase.flow.map { it.activePersonasOnCurrentNetwork },
                 getEntitiesWithSecurityPromptUseCase()
             ) { personas, entitiesWithSecurityPrompts ->
-                val babylonFactorSource = getProfileUseCase.mainBabylonFactorSource()
+                val babylonFactorSource = getProfileUseCase().mainBabylonFactorSource
                 _state.update {
                     it.copy(
                         personas = personas.toPersistentList(),
                         entitiesWithSecurityPrompts = entitiesWithSecurityPrompts,
-                        babylonFactorSource = babylonFactorSource
+                        babylonFactorSource = babylonFactorSource?.asGeneral()
                     )
                 }
             }.collect {}
@@ -61,13 +64,13 @@ class PersonasViewModel @Inject constructor(
     }
 
     data class PersonasUiState(
-        val babylonFactorSource: DeviceFactorSource? = null,
-        val personas: ImmutableList<Network.Persona> = persistentListOf(),
+        val babylonFactorSource: FactorSource.Device? = null,
+        val personas: ImmutableList<Persona> = persistentListOf(),
         val entitiesWithSecurityPrompts: List<EntityWithSecurityPrompt> = emptyList()
     ) : UiState {
-        fun securityPrompt(forEntity: Entity): SecurityPromptType? {
+        fun securityPrompt(forEntity: Persona): SecurityPromptType? {
             val prompt = entitiesWithSecurityPrompts.find {
-                it.entity.address == forEntity.address
+                it.entity.address.string == forEntity.address.string
             }?.prompt
             return if (prompt == SecurityPromptType.NEEDS_BACKUP) {
                 prompt

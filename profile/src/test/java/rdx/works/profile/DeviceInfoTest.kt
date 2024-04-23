@@ -2,8 +2,7 @@ package rdx.works.profile
 
 import kotlin.test.assertEquals
 import org.junit.Test
-import rdx.works.profile.data.model.DeviceInfo
-import rdx.works.profile.domain.TestData
+import rdx.works.core.domain.DeviceInfo
 
 class DeviceInfoTest {
 

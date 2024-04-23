@@ -14,17 +14,13 @@ import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.core.domain.ProfileState
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.extensions.nextAccountIndex
-import rdx.works.profile.data.model.factorsources.DerivationPathScheme
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.derivation.model.KeyType
-import rdx.works.profile.domain.TestData
 
 class CreateAccountUseCaseTest {
 

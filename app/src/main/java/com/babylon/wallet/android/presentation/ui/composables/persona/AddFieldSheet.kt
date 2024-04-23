@@ -31,10 +31,10 @@ import com.babylon.wallet.android.presentation.model.empty
 import com.babylon.wallet.android.presentation.model.toDisplayResource
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.PersonaDataEntryID
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.profile.data.model.pernetwork.PersonaData
-import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.core.sargon.PersonaDataField
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -143,7 +143,7 @@ fun CreateAccountContentPreview() {
             onBackClick = {},
             onAddFields = {},
             onSelectionChanged = { _, _ -> },
-            fieldsToAdd = persistentListOf(PersonaFieldWrapper(entry = PersonaData.PersonaDataField.Kind.Name.empty())),
+            fieldsToAdd = persistentListOf(PersonaFieldWrapper(entry = PersonaDataField.Kind.Name.empty())),
             anyFieldSelected = false
         )
     }

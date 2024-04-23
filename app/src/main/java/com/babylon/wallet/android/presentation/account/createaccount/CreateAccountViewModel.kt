@@ -16,20 +16,21 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.utils.decodeUtf8
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.Url
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentNetwork
-import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
@@ -83,21 +84,17 @@ class CreateAccountViewModel @Inject constructor(
                 discardTemporaryRestoredFileForBackupUseCase(BackupType.Cloud)
             }
 
-            val onNetworkId = if (args.networkId != -1) {
-                NetworkId.from(args.networkId)
-            } else {
-                val profile = getProfileUseCase.invoke().first()
-                profile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
-            }
+            val onNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id
 
             // at the moment you can create a account either with device factor source or ledger factor source
-            var selectedFactorSource: FactorSource.CreatingEntity? = null
+            var selectedFactorSource: FactorSource? = null
 
             if (isWithLedger) { // get the selected ledger device
                 sendEvent(CreateAccountEvent.AddLedgerDevice)
                 selectedFactorSource = appEventBus.events
                     .filterIsInstance<AppEvent.AccessFactorSources.SelectedLedgerDevice>()
-                    .first().ledgerFactorSource
+                    .first()
+                    .ledgerFactorSource
             }
 
             // if main babylon factor source is not present, it will be created during the public key derivation
@@ -111,17 +108,22 @@ class CreateAccountViewModel @Inject constructor(
                     }
                 )
             ).onSuccess {
-                handleAccountCreate { nameOfAccount, networkId ->
+                handleAccountCreate { nameOfAccount ->
                     // when we reach this point main babylon factor source has already created
                     if (selectedFactorSource == null && isWithLedger.not()) { // so take it if it is a creation with device
-                        val profile = getProfileUseCase.invoke().first() // get again the profile with its updated state
-                        selectedFactorSource = profile.mainBabylonFactorSource() ?: error("Babylon factor source is not present")
+                        val profile = getProfileUseCase() // get again the profile with its updated state
+                        selectedFactorSource = profile.mainBabylonFactorSource?.asGeneral() ?: error("Babylon factor source is not present")
+                    }
+
+                    val factorSourceId = when (val factorSource = selectedFactorSource) {
+                        is FactorSource.Device -> factorSource.value.id.asGeneral()
+                        is FactorSource.Ledger -> factorSource.value.id.asGeneral()
+                        null -> error("factor source must not be null")
                     }
                     createAccountUseCase(
-                        displayName = nameOfAccount,
-                        factorSource = selectedFactorSource ?: error("factor source must not be null"),
-                        publicKeyAndDerivationPath = it,
-                        onNetworkId = networkId
+                        displayName = DisplayName(nameOfAccount),
+                        factorSourceId = factorSourceId,
+                        publicKeyAndDerivationPath = it
                     )
                 }
             }.onFailure { error ->
@@ -152,18 +154,20 @@ class CreateAccountViewModel @Inject constructor(
     }
 
     private suspend fun handleAccountCreate(
-        accountProvider: suspend (String, NetworkId?) -> Network.Account
+        accountProvider: suspend (String) -> Account
     ) {
         _state.update { it.copy(loading = true) }
         val accountName = accountName.value.trim()
-        val networkId = switchNetworkIfNeeded()
-        val account = accountProvider(accountName, networkId)
+        if (args.networkIdToSwitch != null) {
+            switchNetworkUseCase(Url(args.networkUrlEncoded!!.decodeUtf8()))
+        }
+        val account = accountProvider(accountName)
         val accountId = account.address
 
         _state.update {
             it.copy(
                 loading = true,
-                accountId = accountId,
+                accountId = accountId.string,
                 accountName = accountName
             )
         }
@@ -174,22 +178,10 @@ class CreateAccountViewModel @Inject constructor(
 
         sendEvent(
             CreateAccountEvent.Complete(
-                accountId = AccountAddress.init(accountId),
+                accountId = accountId,
                 requestSource = args.requestSource
             )
         )
-    }
-
-    @Suppress("UnsafeCallOnNullableType")
-    private suspend fun switchNetworkIfNeeded(): NetworkId? {
-        val switchNetwork = args.switchNetwork ?: false
-        var networkId: NetworkId? = null
-        if (switchNetwork) {
-            val networkUrl = args.networkUrlEncoded!!.decodeUtf8()
-            val id = args.networkId
-            networkId = switchNetworkUseCase(networkUrl, id)
-        }
-        return networkId
     }
 
     data class CreateAccountUiState(

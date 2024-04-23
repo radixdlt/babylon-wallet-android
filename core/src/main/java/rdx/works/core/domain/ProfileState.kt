@@ -1,6 +1,8 @@
-package rdx.works.profile.data.model
+package rdx.works.core.domain
 
-import rdx.works.profile.data.model.apppreferences.Radix
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.invoke
 
 sealed class ProfileState {
 
@@ -18,8 +20,8 @@ sealed class ProfileState {
     data object None : ProfileState()
 
     /**
-     * The [ProfileSnapshot]'s version saved in the internal storage is lower than the
-     * [ProfileSnapshot.MINIMUM], so it is incompatible. Currently the user can only
+     * The [Profile]'s version saved in the internal storage is lower than the
+     * [ProfileSnapshotVersion.V100], so it is incompatible. Currently the user can only
      * create a new profile.
      */
     data object Incompatible : ProfileState()
@@ -28,8 +30,9 @@ sealed class ProfileState {
      * A compatible [ProfileSnapshot] exists and the user can derive the [Profile].
      */
     data class Restored(val profile: Profile) : ProfileState() {
+        // TODO integration might need to just check for empty networks
         fun hasMainnet(): Boolean {
-            return profile.networks.any { it.networkID == Radix.Gateway.mainnet.network.id }
+            return profile.networks().any { it.id == NetworkId.MAINNET }
         }
     }
 }

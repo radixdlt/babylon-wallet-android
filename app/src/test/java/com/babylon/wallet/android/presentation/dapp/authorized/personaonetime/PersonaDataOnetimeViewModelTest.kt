@@ -20,7 +20,7 @@ import org.junit.Before
 import org.junit.Test
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.PersonaDataField
 import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -46,7 +46,7 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
         every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
                 RequiredPersonaField(
-                    PersonaData.PersonaDataField.Kind.Name,
+                    PersonaDataField.Kind.Name,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,
                         MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
@@ -90,7 +90,7 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
         vm.onEditClick(samplePersona.address)
         advanceUntilIdle()
         val item = vm.oneOffEvent.first()
-        assert(item is PersonaDataOnetimeEvent.OnEditPersona && item.requiredPersonaFields.fields.any { it.kind == PersonaData.PersonaDataField.Kind.Name })
+        assert(item is PersonaDataOnetimeEvent.OnEditPersona && item.requiredPersonaFields.fields.any { it.kind == PersonaDataField.Kind.Name })
     }
 
 }

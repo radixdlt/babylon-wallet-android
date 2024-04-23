@@ -1,20 +1,20 @@
 package rdx.works.profile.data.repository
 
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.serializedJsonString
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import rdx.works.core.InstantGenerator
+import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.EncryptedProfileSnapshot
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
+import rdx.works.core.sargon.encryptWithPassword
+import rdx.works.core.sargon.init
+import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.datastore.EncryptedPreferencesManager
-import rdx.works.profile.di.ProfileSerializer
 import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import javax.inject.Inject
 
+// TODO integration
 interface BackupProfileRepository {
 
     suspend fun saveTemporaryRestoringSnapshot(snapshotSerialised: String, backupType: BackupType): Result<Unit>
@@ -29,7 +29,6 @@ interface BackupProfileRepository {
 class BackupProfileRepositoryImpl @Inject constructor(
     private val encryptedPreferencesManager: EncryptedPreferencesManager,
     private val preferencesManager: PreferencesManager,
-    @ProfileSerializer private val profileSnapshotJson: Json,
     private val profileRepository: ProfileRepository
 ) : BackupProfileRepository {
 
@@ -53,40 +52,21 @@ class BackupProfileRepositoryImpl @Inject constructor(
                 encryptedPreferencesManager.putProfileSnapshotFromFileBackup(snapshotSerialised)
                 Result.success(Unit)
             } else {
-                val encryptedProfileSnapshot = runCatching {
-                    profileSnapshotJson.decodeFromString<EncryptedProfileSnapshot>(snapshotSerialised)
-                }.getOrNull()
-
-                if (encryptedProfileSnapshot != null) {
-                    Result.failure(ProfileException.InvalidPassword)
-                } else {
-                    Result.failure(ProfileException.InvalidSnapshot)
-                }
+                Result.failure(ProfileException.InvalidSnapshot)
             }
         }
 
         is BackupType.File.Encrypted -> {
-            val encryptedProfileSnapshot = runCatching {
-                profileSnapshotJson.decodeFromString<EncryptedProfileSnapshot>(snapshotSerialised)
+            val profile = runCatching {
+                Profile.init(encrypted = snapshotSerialised, password = backupType.password)
             }.getOrNull()
 
-            if (encryptedProfileSnapshot == null) {
-                Result.failure(ProfileException.InvalidSnapshot)
+            if (profile == null) {
+                Result.failure(ProfileException.InvalidPassword)
             } else {
-                val snapshot = runCatching {
-                    val decrypted = encryptedProfileSnapshot.decrypt(
-                        deserializer = profileSnapshotJson,
-                        password = backupType.password
-                    )
-                    profileSnapshotJson.encodeToString(decrypted)
-                }.getOrNull()
-
-                if (snapshot != null) {
-                    encryptedPreferencesManager.putProfileSnapshotFromFileBackup(snapshot)
-                    Result.success(Unit)
-                } else {
-                    Result.failure(ProfileException.InvalidPassword)
-                }
+                val snapshot = profile.serializedJsonString()
+                encryptedPreferencesManager.putProfileSnapshotFromFileBackup(snapshot)
+                Result.success(Unit)
             }
         }
     }
@@ -113,23 +93,15 @@ class BackupProfileRepositoryImpl @Inject constructor(
      */
     override suspend fun getSnapshotForBackup(backupType: BackupType): String? {
         val profile = profileRepository.profile.firstOrNull()
-        if (profile == null || profile.mainBabylonFactorSource() == null) return null
-        val snapshotSerialised = runCatching {
-            profileSnapshotJson.encodeToString(profile.snapshot())
-        }.getOrNull() ?: return null
-
+        if (profile == null || profile.mainBabylonFactorSource == null) return null
         return when (backupType) {
             is BackupType.Cloud -> if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
-                snapshotSerialised
+                profile.serializedJsonString()
             } else {
                 null
             }
-
-            is BackupType.File.PlainText -> snapshotSerialised
-            is BackupType.File.Encrypted -> {
-                val encryptedSnapshot = EncryptedProfileSnapshot.from(snapshotSerialised, backupType.password)
-                runCatching { profileSnapshotJson.encodeToString(encryptedSnapshot) }.getOrNull()
-            }
+            is BackupType.File.PlainText -> profile.serializedJsonString()
+            is BackupType.File.Encrypted -> profile.encryptWithPassword(backupType.password)
         }
     }
 }

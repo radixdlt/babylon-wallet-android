@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.ProfileState
+import rdx.works.core.domain.ProfileState
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 

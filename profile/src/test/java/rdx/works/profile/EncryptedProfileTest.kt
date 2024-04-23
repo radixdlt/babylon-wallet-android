@@ -3,12 +3,8 @@ package rdx.works.profile
 import kotlinx.serialization.encodeToString
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import rdx.works.profile.data.model.DeviceInfo
-import rdx.works.profile.data.model.EncryptedProfileSnapshot
+import rdx.works.core.domain.DeviceInfo
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.di.SerializerModule
 import java.time.Instant
 import kotlin.test.Ignore
 

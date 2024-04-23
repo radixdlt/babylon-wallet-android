@@ -3,6 +3,7 @@ package com.babylon.wallet.android.domain.usecases.transaction
 import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.radixdlt.hex.extensions.toHexString
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.extensions.bytes
@@ -14,12 +15,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
 import rdx.works.core.hash
+import rdx.works.core.sargon.ProfileEntity
 import rdx.works.core.toByteArray
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.pernetwork.Entity
-import rdx.works.profile.data.model.pernetwork.SigningPurpose
+import rdx.works.core.domain.SigningPurpose
 import rdx.works.profile.domain.signing.GetSigningEntitiesByFactorSourceUseCase
 import rdx.works.profile.domain.signing.SignWithDeviceFactorSourceUseCase
 import javax.inject.Inject
@@ -35,7 +33,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
 
     @Suppress("ReturnCount", "LongMethod")
     suspend operator fun invoke(
-        signers: List<Entity>,
+        signers: List<ProfileEntity>,
         signRequest: SignRequest,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
@@ -44,9 +42,8 @@ class CollectSignersSignaturesUseCase @Inject constructor(
         val signaturesWithPublicKeys = mutableListOf<SignatureWithPublicKey>()
         val signersPerFactorSource = getSigningEntitiesByFactorSourceUseCase(signers)
         signersPerFactorSource.forEach { (factorSource, signers) ->
-            when (factorSource.id.kind) {
-                FactorSourceKind.DEVICE -> {
-                    factorSource as DeviceFactorSource
+            when (factorSource) {
+                is FactorSource.Device -> {
                     // here I assume that in the future we will grant
                     // access to keystore key for few seconds, so I ask for auth only once, instead of on every DEVICE signature
                     if (!deviceAuthenticated) {
@@ -69,8 +66,7 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         return Result.failure(it)
                     }
                 }
-
-                FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET -> {
+                is FactorSource.Ledger -> {
                     if (!deviceAuthenticated) {
                         deviceAuthenticated = deviceBiometricAuthenticationProvider()
                     }
@@ -78,7 +74,6 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         _interactionState.update { null }
                         return Result.failure(RadixWalletException.SignatureCancelled)
                     }
-                    factorSource as LedgerHardwareWalletFactorSource
                     _interactionState.update { InteractionState.Ledger.Pending(factorSource, signingPurpose) }
                     signWithLedgerFactorSourceUseCase(
                         ledgerFactorSource = factorSource,
@@ -93,12 +88,6 @@ class CollectSignersSignaturesUseCase @Inject constructor(
                         return Result.failure(error)
                     }
                 }
-
-                FactorSourceKind.OFF_DEVICE_MNEMONIC -> {
-                    /*TODO when we have off device mnemonic*/
-                }
-
-                FactorSourceKind.TRUSTED_CONTACT -> error("trusted contact cannot sign")
             }
         }
         return Result.success(signaturesWithPublicKeys)
@@ -118,7 +107,7 @@ sealed interface SignRequest {
         intent: TransactionIntent
     ) : SignRequest {
         override val dataToSign: ByteArray = intent.compile().toByteArray()
-        override val hashedDataToSign: ByteArray = intent.hash().hash.bytes.toByteArray()
+        override val hashedDataToSign: ByteArray = intent.hash().hash.bytes.bytes.toByteArray()
     }
 
     class SignAuthChallengeRequest(
@@ -138,7 +127,7 @@ sealed interface SignRequest {
             get() = dataToSign.toHexString()
 
         override val hashedDataToSign: ByteArray
-            get() = dataToSign.hash().bytes.toByteArray()
+            get() = dataToSign.hash().bytes.bytes.toByteArray()
 
         companion object {
             const val ROLA_PAYLOAD_PREFIX = 0x52

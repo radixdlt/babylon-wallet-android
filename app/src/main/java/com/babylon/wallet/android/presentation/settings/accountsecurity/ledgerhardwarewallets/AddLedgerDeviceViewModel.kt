@@ -7,17 +7,15 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
+import com.radixdlt.sargon.FactorSource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.factorSourceById
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,12 +34,7 @@ class AddLedgerDeviceViewModel @Inject constructor(
             }
             ledgerMessenger.sendDeviceInfoRequest(interactionId = UUIDGenerator.uuid().toString())
                 .onSuccess { deviceInfoResponse ->
-                    val existingLedgerFactorSource = getProfileUseCase.factorSourceById(
-                        FactorSource.FactorSourceID.FromHash(
-                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                            body = deviceInfoResponse.deviceId
-                        )
-                    )
+                    val existingLedgerFactorSource = getProfileUseCase().factorSourceById(deviceInfoResponse.factorSourceId)
                     if (existingLedgerFactorSource == null) {
                         _state.update { state ->
                             state.copy(
@@ -55,17 +48,17 @@ class AddLedgerDeviceViewModel @Inject constructor(
                         }
                     } else {
                         _state.update { state ->
-                            existingLedgerFactorSource as LedgerHardwareWalletFactorSource
+                            existingLedgerFactorSource as FactorSource.Ledger
                             state.copy(
                                 isAddingLedgerDeviceInProgress = false,
                                 showContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
                                 newConnectedLedgerDevice = LedgerDeviceUiModel(
                                     id = deviceInfoResponse.deviceId,
                                     model = deviceInfoResponse.model,
-                                    name = existingLedgerFactorSource.hint.name
+                                    name = existingLedgerFactorSource.value.hint.name
                                 ),
                                 uiMessage = UiMessage.InfoMessage.LedgerAlreadyExist(
-                                    label = existingLedgerFactorSource.hint.name
+                                    label = existingLedgerFactorSource.value.hint.name
                                 )
                             )
                         }
@@ -95,13 +88,13 @@ class AddLedgerDeviceViewModel @Inject constructor(
     private suspend fun addLedgerDeviceToProfile() {
         state.value.newConnectedLedgerDevice?.let { ledgerDeviceUiModel ->
             val result = addLedgerFactorSourceUseCase(
-                ledgerId = ledgerDeviceUiModel.id,
+                ledgerId = ledgerDeviceUiModel.factorSourceId,
                 model = ledgerDeviceUiModel.model.toProfileLedgerDeviceModel(),
                 name = ledgerDeviceUiModel.name
             )
             val message: UiMessage? = when (result) {
                 is AddLedgerFactorSourceResult.AlreadyExist -> UiMessage.InfoMessage.LedgerAlreadyExist(
-                    label = result.ledgerFactorSource.hint.name
+                    label = result.ledgerFactorSource.value.hint.name
                 )
 
                 else -> null

@@ -42,7 +42,6 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Pool
-import rdx.works.core.domain.resources.metadata.name
 
 @Composable
 fun PoolsContent(

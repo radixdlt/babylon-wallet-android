@@ -4,6 +4,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AddressOfAccountOrPersona
 import com.radixdlt.sargon.EntityFlag
+import com.radixdlt.sargon.EntityFlags
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
@@ -13,7 +14,7 @@ sealed interface ProfileEntity {
     val networkId: NetworkId
     val address: AddressOfAccountOrPersona
     val securityState: EntitySecurityState
-    val flags: List<EntityFlag>
+    val flags: EntityFlags
 
     data class AccountEntity(
         val account: Account
@@ -24,7 +25,7 @@ sealed interface ProfileEntity {
             get() = AddressOfAccountOrPersona.Account(accountAddress)
         override val securityState: EntitySecurityState
             get() = account.securityState
-        override val flags: List<EntityFlag>
+        override val flags: EntityFlags
             get() = account.flags
 
         val accountAddress: AccountAddress
@@ -40,7 +41,7 @@ sealed interface ProfileEntity {
             get() = AddressOfAccountOrPersona.Identity(identityAddress)
         override val securityState: EntitySecurityState
             get() = persona.securityState
-        override val flags: List<EntityFlag>
+        override val flags: EntityFlags
             get() = persona.flags
 
         val identityAddress: IdentityAddress

@@ -1,30 +1,5 @@
 package com.babylon.wallet.android.data.transaction
 
-import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
-import com.babylon.wallet.android.domain.usecases.ResolveNotaryAndSignersUseCase
-import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
-import com.babylon.wallet.android.mockdata.account
-import com.babylon.wallet.android.mockdata.profile
-import com.babylon.wallet.android.presentation.TestDispatcherRule
-import io.mockk.coEvery
-import io.mockk.mockk
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.runTest
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
-import rdx.works.core.identifiedArrayListOf
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.core.crypto.PrivateKey
-
 internal class TransactionClientTest {
 
 //    @get:Rule

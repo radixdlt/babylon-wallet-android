@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.data.repository.cache
 
-import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hex
-import com.radixdlt.sargon.extensions.toBagOfBytes
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -16,7 +14,6 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 import rdx.works.core.InstantGenerator
 import rdx.works.core.hash
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import retrofit2.Call
 import java.time.Duration

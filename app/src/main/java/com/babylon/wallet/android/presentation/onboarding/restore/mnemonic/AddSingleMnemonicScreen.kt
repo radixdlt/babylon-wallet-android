@@ -61,7 +61,7 @@ import com.babylon.wallet.android.presentation.ui.composables.SeedPhraseSuggesti
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import rdx.works.profile.data.model.SeedPhraseLength
+import com.radixdlt.sargon.Bip39WordCount
 
 @Composable
 fun AddSingleMnemonicScreen(
@@ -114,7 +114,7 @@ private fun AddSingleMnemonicsContent(
     onWordSelected: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onMessageShown: () -> Unit,
-    onSeedPhraseLengthChanged: (Int) -> Unit
+    onSeedPhraseLengthChanged: (Bip39WordCount) -> Unit
 ) {
     BackHandler(onBack = onBackClick)
 
@@ -208,7 +208,7 @@ private fun SeedPhraseView(
     onWordChanged: (Int, String) -> Unit,
     onPassphraseChanged: (String) -> Unit,
     onFocusedWordIndexChanged: (Int) -> Unit,
-    onSeedPhraseLengthChanged: (Int) -> Unit = {},
+    onSeedPhraseLengthChanged: (Bip39WordCount) -> Unit = {},
     seedPhraseState: SeedPhraseInputDelegate.State,
     isOlympia: Boolean
 ) {
@@ -239,7 +239,7 @@ private fun SeedPhraseView(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         if (isOlympia) {
-            val tabs = SeedPhraseLength.entries
+            val tabs = Bip39WordCount.entries
             var tabIndex by remember { mutableStateOf(0) }
             Text(
                 modifier = Modifier
@@ -278,7 +278,7 @@ private fun SeedPhraseView(
                         selected = isSelected,
                         onClick = {
                             tabIndex = tabs.indexOf(tab)
-                            onSeedPhraseLengthChanged(tab.words)
+                            onSeedPhraseLengthChanged(tab)
                         },
                         interactionSource = interactionSource,
                         selectedContentColor = RadixTheme.colors.gray1,
@@ -288,7 +288,7 @@ private fun SeedPhraseView(
                             modifier = Modifier.padding(
                                 vertical = RadixTheme.dimensions.paddingSmall
                             ),
-                            text = tab.words.toString(),
+                            text = tab.value.toString(),
                             style = RadixTheme.typography.body1HighImportance,
                         )
                     }

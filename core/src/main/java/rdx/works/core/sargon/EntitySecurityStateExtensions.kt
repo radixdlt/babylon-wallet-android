@@ -5,7 +5,26 @@ import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.UnsecuredEntityControl
+
+fun EntitySecurityState.Companion.unsecured(
+    factorSourceId: FactorSourceId.Hash,
+    publicKey: PublicKey,
+    derivationPath: DerivationPath
+) = EntitySecurityState.Unsecured(
+    UnsecuredEntityControl(
+        transactionSigning = HierarchicalDeterministicFactorInstance(
+            factorSourceId = factorSourceId.value,
+            publicKey = HierarchicalDeterministicPublicKey(
+                publicKey = publicKey,
+                derivationPath = derivationPath
+            )
+        ),
+        authenticationSigning = null
+    )
+)
 
 val EntitySecurityState.factorSourceId: FactorSourceId
     get() = when (this) {
@@ -40,15 +59,15 @@ val EntitySecurityState.derivationPathScheme: DerivationPathScheme
         }
     }
 
-val EntitySecurityState.transactionFactorInstance: HierarchicalDeterministicFactorInstance
+val EntitySecurityState.transactionSigningFactorInstance: HierarchicalDeterministicFactorInstance
     get() = when (this) {
         is EntitySecurityState.Unsecured -> value.transactionSigning
     }
 
-val EntitySecurityState.authFactorInstance: HierarchicalDeterministicFactorInstance?
+val EntitySecurityState.authenticationSigningFactorInstance: HierarchicalDeterministicFactorInstance?
     get() = when (this) {
         is EntitySecurityState.Unsecured -> value.authenticationSigning
     }
 
 val EntitySecurityState.hasAuthSigning: Boolean
-    get() = authFactorInstance != null
+    get() = authenticationSigningFactorInstance != null

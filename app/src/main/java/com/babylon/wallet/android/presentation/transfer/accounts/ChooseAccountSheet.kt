@@ -57,9 +57,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
-import rdx.works.profile.data.model.pernetwork.Network
+import com.radixdlt.sargon.Account
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -68,7 +66,7 @@ fun ChooseAccountSheet(
     state: ChooseAccounts,
     onCloseClick: () -> Unit,
     onAddressChanged: (String) -> Unit,
-    onOwnedAccountSelected: (Network.Account) -> Unit,
+    onOwnedAccountSelected: (Account) -> Unit,
     onChooseAccountSubmitted: () -> Unit,
     onQrCodeIconClick: () -> Unit,
     onAddressDecoded: (String) -> Unit,
@@ -157,7 +155,7 @@ private fun ChooseAccountContent(
     state: ChooseAccounts,
     onAddressChanged: (String) -> Unit,
     onQrCodeIconClick: () -> Unit,
-    onOwnedAccountSelected: (Network.Account) -> Unit
+    onOwnedAccountSelected: (Account) -> Unit
 ) {
     LazyColumn(
         modifier = modifier
@@ -178,7 +176,7 @@ private fun ChooseAccountContent(
         item {
             val (typedAddress, errorResource) = remember(state.selectedAccount) {
                 if (state.selectedAccount is TargetAccount.Other) {
-                    val address = state.selectedAccount.address
+                    val address = state.selectedAccount.typedAddress
 
                     // Do not show the error when the field has an empty value
                     if (address.isBlank()) {
@@ -289,7 +287,7 @@ private fun ChooseAccountContent(
         items(state.ownedAccounts.size) { index ->
             val accountItem = state.ownedAccounts[index]
 
-            val gradientColor = getAccountGradientColorsFor(accountItem.appearanceID)
+            val gradientColor = getAccountGradientColorsFor(accountItem.appearanceId.value)
             AccountSelectionCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
@@ -305,10 +303,8 @@ private fun ChooseAccountContent(
                             focusManager.clearFocus(true)
                         }
                     },
-                accountName = accountItem.displayName,
-                address = remember(accountItem.address) {
-                    AccountAddress.init(accountItem.address)
-                },
+                accountName = accountItem.displayName.value,
+                address = accountItem.address,
                 checked = state.isOwnedAccountSelected(account = accountItem),
                 isSingleChoice = true,
                 radioButtonClicked = {

@@ -2,16 +2,18 @@ package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.NetworkId
 import kotlinx.coroutines.flow.first
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentNetwork
-import rdx.works.profile.data.model.extensions.createAccount
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.addAccounts
+import rdx.works.core.sargon.addAccounts
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.initBabylon
+import rdx.works.core.sargon.nextAppearanceId
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
-import rdx.works.profile.derivation.model.NetworkId
 import javax.inject.Inject
 
 class CreateAccountUseCase @Inject constructor(
@@ -20,21 +22,21 @@ class CreateAccountUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        displayName: String,
-        factorSource: FactorSource.CreatingEntity,
+        displayName: DisplayName,
+        factorSourceId: FactorSourceId.Hash,
         publicKeyAndDerivationPath: AccessFactorSourcesOutput.PublicKeyAndDerivationPath,
-        onNetworkId: NetworkId?
-    ): Network.Account {
+        onNetworkId: NetworkId? = null
+    ): Account {
         val currentProfile = profileRepository.profile.first()
-        val networkId = onNetworkId ?: currentProfile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
+        val networkId = onNetworkId ?: currentProfile.currentGateway.network.id
 
-        val newAccount = currentProfile.createAccount(
+        val newAccount = Account.initBabylon(
+            networkId = networkId,
             displayName = displayName,
-            onNetworkId = networkId,
-            factorSource = factorSource,
+            publicKey = publicKeyAndDerivationPath.publicKey,
             derivationPath = publicKeyAndDerivationPath.derivationPath,
-            compressedPublicKey = publicKeyAndDerivationPath.compressedPublicKey,
-            onLedgerSettings = Network.Account.OnLedgerSettings.init()
+            factorSourceId = factorSourceId,
+            customAppearanceId = currentProfile.nextAppearanceId(forNetworkId = networkId)
         )
 
         val accountWithOnLedgerStatusResult = resolveAccountsLedgerStateRepository(listOf(newAccount))

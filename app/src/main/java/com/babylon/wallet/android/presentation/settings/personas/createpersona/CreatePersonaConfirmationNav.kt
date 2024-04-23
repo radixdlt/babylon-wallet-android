@@ -8,13 +8,15 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.extensions.string
 
 @VisibleForTesting
 internal const val ARG_PERSONA_ID = "arg_persona_id"
 private const val ROUTE = "persona_completion_route/{$ARG_PERSONA_ID}"
 
-fun NavController.createPersonaConfirmationScreen(personaId: String) {
-    navigate("persona_completion_route/$personaId")
+fun NavController.createPersonaConfirmationScreen(personaId: IdentityAddress) {
+    navigate("persona_completion_route/${personaId.string}")
 }
 
 fun NavGraphBuilder.createPersonaConfirmationScreen(

@@ -7,29 +7,34 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.AddLedgerDeviceUiState
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.core.sargon.factorSourceById
+import rdx.works.core.sargon.ledgerFactorSources
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.factorSourceById
-import rdx.works.profile.domain.ledgerFactorSources
 
 class UseLedgerDelegate(
     private val getProfileUseCase: GetProfileUseCase,
     private val ledgerMessenger: LedgerMessenger,
     private val addLedgerFactorSourceUseCase: AddLedgerFactorSourceUseCase,
     private val scope: CoroutineScope,
-    private val onUseLedger: suspend (LedgerHardwareWalletFactorSource) -> Unit
+    private val onUseLedger: suspend (FactorSource.Ledger) -> Unit
 ) : Stateful<UseLedgerDelegate.UseLedgerDelegateState>() {
 
     init {
         scope.launch {
-            getProfileUseCase.ledgerFactorSources.collect { ledgerDevices ->
+            getProfileUseCase.flow.map { it.ledgerFactorSources }.collect { ledgerDevices ->
                 _state.update { state ->
                     state.copy(
                         hasLedgerDevices = ledgerDevices.isNotEmpty(),
@@ -44,10 +49,12 @@ class UseLedgerDelegate(
             _state.update { it.copy(waitingForLedgerResponse = true) }
             val result = ledgerMessenger.sendDeviceInfoRequest(UUIDGenerator.uuid().toString())
             result.onSuccess { deviceInfoResponse ->
-                val existingLedgerFactorSource = getProfileUseCase.factorSourceById(
-                    FactorSource.FactorSourceID.FromHash(
-                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        body = deviceInfoResponse.deviceId
+                val existingLedgerFactorSource = getProfileUseCase().factorSourceById(
+                    FactorSourceId.Hash(
+                        value = FactorSourceIdFromHash(
+                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                            body = Exactly32Bytes.init(deviceInfoResponse.deviceId.value.hexToBagOfBytes())
+                        )
                     )
                 )
                 if (existingLedgerFactorSource == null) {
@@ -63,13 +70,13 @@ class UseLedgerDelegate(
                     }
                 } else {
                     _state.update { state ->
-                        existingLedgerFactorSource as LedgerHardwareWalletFactorSource
+                        existingLedgerFactorSource as FactorSource.Ledger
                         state.copy(
                             addLedgerSheetState = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
                             waitingForLedgerResponse = false
                         )
                     }
-                    onUseLedger(existingLedgerFactorSource as LedgerHardwareWalletFactorSource)
+                    onUseLedger(existingLedgerFactorSource as FactorSource.Ledger)
                 }
             }
             result.onFailure { error ->
@@ -87,7 +94,7 @@ class UseLedgerDelegate(
         scope.launch {
             state.value.recentlyConnectedLedgerDevice?.let { ledgerDeviceUiModel ->
                 val result = addLedgerFactorSourceUseCase(
-                    ledgerId = ledgerDeviceUiModel.id,
+                    ledgerId = ledgerDeviceUiModel.factorSourceId,
                     model = ledgerDeviceUiModel.model.toProfileLedgerDeviceModel(),
                     name = ledgerDeviceUiModel.name
                 )

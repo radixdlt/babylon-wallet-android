@@ -2,7 +2,6 @@ package com.babylon.wallet.android.presentation.dapp.selectpersona
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest

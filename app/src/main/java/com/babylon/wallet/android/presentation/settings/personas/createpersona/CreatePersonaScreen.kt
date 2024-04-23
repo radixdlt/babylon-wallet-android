@@ -53,11 +53,12 @@ import com.babylon.wallet.android.presentation.ui.composables.persona.PersonaDat
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.findFragmentActivity
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.PersonaDataEntryID
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.PersonaData
-import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.core.sargon.PersonaDataField
 
 @Composable
 fun CreatePersonaScreen(
@@ -65,8 +66,8 @@ fun CreatePersonaScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     onContinueClick: (
-        personaId: String
-    ) -> Unit = { _: String -> },
+        personaId: IdentityAddress
+    ) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     if (state.loading) {
@@ -110,7 +111,7 @@ fun CreatePersonaContent(
     onSelectionChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onAddFields: () -> Unit,
     onDeleteField: (PersonaDataEntryID) -> Unit,
-    onValueChanged: (PersonaDataEntryID, PersonaData.PersonaDataField) -> Unit,
+    onValueChanged: (PersonaDataEntryID, PersonaDataField) -> Unit,
     onFieldFocusChanged: (PersonaDataEntryID, Boolean) -> Unit,
     onPersonaDisplayNameFocusChanged: (Boolean) -> Unit,
     onAddFieldSheetVisible: (Boolean) -> Unit
@@ -222,7 +223,7 @@ private fun CreatePersonaContentList(
     onPersonaNameChange: (String) -> Unit,
     personaName: PersonaDisplayNameFieldWrapper,
     currentFields: ImmutableList<PersonaFieldWrapper>,
-    onValueChanged: (PersonaDataEntryID, PersonaData.PersonaDataField) -> Unit,
+    onValueChanged: (PersonaDataEntryID, PersonaDataField) -> Unit,
     onDeleteField: (PersonaDataEntryID) -> Unit,
     addButtonEnabled: Boolean,
     modifier: Modifier = Modifier,

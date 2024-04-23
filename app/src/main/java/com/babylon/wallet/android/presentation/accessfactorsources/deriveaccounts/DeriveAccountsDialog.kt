@@ -33,7 +33,9 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.formattedSpans
-import rdx.works.profile.domain.TestData
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import rdx.works.core.sargon.sample
 
 @Composable
 fun DeriveAccountsDialog(
@@ -134,7 +136,7 @@ private fun DeriveAccountsBottomSheetContent(
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
-                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.hint.name)
+                    RoundLedgerItem(ledgerName = showContentForFactorSource.selectedLedgerDevice.value.hint.name)
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
                     RadixTextButton(
                         modifier = Modifier.fillMaxWidth(),
@@ -161,12 +163,13 @@ fun DeriveAccountsDeviceDialogPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = false)
 @Composable
 fun DeriveAccountsLedgerDialogPreview() {
     RadixWalletTheme {
         DeriveAccountsBottomSheetContent(
-            showContentForFactorSource = ShowContentForFactorSource.Ledger(TestData.ledgerFactorSource),
+            showContentForFactorSource = ShowContentForFactorSource.Ledger(FactorSource.Ledger.sample()),
             shouldShowRetryButton = true,
             onDismiss = {},
             onRetryClick = {}

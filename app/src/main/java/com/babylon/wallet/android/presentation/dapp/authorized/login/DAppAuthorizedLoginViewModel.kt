@@ -13,7 +13,7 @@ import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AccountsRequestItem
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
-import com.babylon.wallet.android.domain.model.toProfileShareAccountsQuantifier
+import com.babylon.wallet.android.domain.model.toRequestedNumberQuantifier
 import com.babylon.wallet.android.domain.model.toRequiredFields
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -31,33 +31,36 @@ import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toU
 import com.babylon.wallet.android.presentation.model.getPersonaDataForFieldKinds
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.babylon.wallet.android.utils.toISO8601String
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedPersonaSimple
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.PersonaData
+import com.radixdlt.sargon.RequestedNumberQuantifier
+import com.radixdlt.sargon.RequestedQuantity
+import com.radixdlt.sargon.SharedPersonaData
+import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.DApp
 import rdx.works.core.logNonFatalException
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple
-import rdx.works.profile.data.model.pernetwork.PersonaData
-import rdx.works.profile.data.model.pernetwork.RequestedNumber
-import rdx.works.profile.data.model.pernetwork.Shared
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.activePersonaOnCurrentNetwork
+import rdx.works.core.sargon.addOrUpdateAuthorizedDAppPersona
+import rdx.works.core.sargon.hasAuthorizedPersona
+import rdx.works.core.sargon.updateAuthorizedDAppPersonaFields
+import rdx.works.core.sargon.updateAuthorizedDAppPersonas
+import rdx.works.core.sargon.updateDAppAuthorizedPersonaSharedAccounts
 import rdx.works.profile.data.repository.DAppConnectionRepository
-import rdx.works.profile.data.repository.addOrUpdateAuthorizedDappPersona
-import rdx.works.profile.data.repository.updateAuthorizedDappPersonaFields
-import rdx.works.profile.data.repository.updateAuthorizedDappPersonas
-import rdx.works.profile.data.repository.updateDappAuthorizedPersonaSharedAccounts
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.domain.personaOnCurrentNetwork
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -81,8 +84,8 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private lateinit var request: AuthorizedRequest
 
-    private var authorizedDapp: Network.AuthorizedDapp? = null
-    private var editedDapp: Network.AuthorizedDapp? = null
+    private var authorizedDapp: AuthorizedDapp? = null
+    private var editedDapp: AuthorizedDapp? = null
 
     override fun initialState(): DAppLoginUiState = DAppLoginUiState()
 
@@ -96,7 +99,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             } else {
                 request = requestToHandle
             }
-            val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
+            val currentNetworkId = getCurrentGatewayUseCase().network.id
             if (currentNetworkId != request.requestMetadata.networkId) {
                 handleRequestError(
                     RadixWalletException.DappRequestException.WrongNetwork(
@@ -111,7 +114,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                 handleRequestError(RadixWalletException.DappRequestException.InvalidRequest)
                 return@launch
             }
-            authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(dAppDefinitionAddress = dAppDefinitionAddress)
+            authorizedDapp = dAppConnectionRepository.getAuthorizedDApp(dAppDefinitionAddress = dAppDefinitionAddress)
             editedDapp = authorizedDapp
             stateRepository.getDAppsDetails(
                 definitionAddresses = listOf(dAppDefinitionAddress),
@@ -166,25 +169,24 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     @Suppress("LongMethod", "CyclomaticComplexMethod", "UnsafeCallOnNullableType")
     private suspend fun setInitialDappLoginRouteForUsePersonaRequest(
-        dapp: Network.AuthorizedDapp,
+        dapp: AuthorizedDapp,
         authRequest: AuthorizedRequest.AuthRequest.UsePersonaRequest
     ) {
-        val hasAuthorizedPersona = dapp.hasAuthorizedPersona(authRequest.personaAddress)
+        val hasAuthorizedPersona = dapp.hasAuthorizedPersona(authRequest.identityAddress)
         if (hasAuthorizedPersona.not()) {
             onAbortDappLogin(WalletErrorType.InvalidPersona)
             return
         }
         val resetAccounts = request.resetRequestItem?.accounts == true
         val resetPersonaData = request.resetRequestItem?.personaData == true
-        val persona =
-            checkNotNull(getProfileUseCase.personaOnCurrentNetwork(authRequest.personaAddress))
+        val persona = checkNotNull(getProfileUseCase().activePersonaOnCurrentNetwork(authRequest.identityAddress))
         onSelectPersona(persona)
         val ongoingAccountsRequestItem = request.ongoingAccountsRequestItem
         val oneTimeAccountsRequestItem = request.oneTimeAccountsRequestItem
         val ongoingPersonaDataRequestItem = request.ongoingPersonaDataRequestItem
         val oneTimePersonaDataRequestItem = request.oneTimePersonaDataRequestItem
         val ongoingAccountsAlreadyGranted = requestedAccountsPermissionAlreadyGranted(
-            authRequest.personaAddress,
+            authRequest.identityAddress,
             ongoingAccountsRequestItem
         )
         val needSignature = request.needSignatures()
@@ -196,12 +198,12 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     // automatically fill in persona, the persona data, accounts and complete request
                     it.copy(
                         selectedAccountsOngoing = dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                            AccountAddress.init(dapp.dAppDefinitionAddress),
+                            dapp.dappDefinitionAddress,
                             persona.address,
                             ongoingAccountsRequestItem!!.numberOfValues.quantity,
-                            ongoingAccountsRequestItem.numberOfValues.toProfileShareAccountsQuantifier()
+                            ongoingAccountsRequestItem.numberOfValues.toRequestedNumberQuantifier()
                         ).mapNotNull { address ->
-                            getProfileUseCase.accountOnCurrentNetwork(address)?.toUiModel()
+                            getProfileUseCase().activeAccountOnCurrentNetwork(address)?.toUiModel()
                         },
                         selectedOngoingPersonaData = persona.getPersonaDataForFieldKinds(
                             ongoingPersonaDataRequestItem!!.toRequiredFields().fields
@@ -223,11 +225,11 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             }
 
             ongoingPersonaDataRequestItem != null &&
-                ongoingPersonaDataRequestItem.isValid() && (!ongoingDataAlreadyGranted || resetPersonaData) -> {
+                    ongoingPersonaDataRequestItem.isValid() && (!ongoingDataAlreadyGranted || resetPersonaData) -> {
                 _state.update { state ->
                     state.copy(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
-                            authRequest.personaAddress,
+                            authRequest.identityAddress,
                             ongoingPersonaDataRequestItem.toRequiredFields()
                         )
                     )
@@ -304,7 +306,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun handleNextRequestItem(selectedPersona: Network.Persona) {
+    private suspend fun handleNextRequestItem(selectedPersona: Persona) {
         val request = request
         when {
             request.hasOnlyAuthItem() -> {
@@ -358,7 +360,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             val requiredFields =
                 checkNotNull(request.ongoingPersonaDataRequestItem?.toRequiredFields())
             val selectedPersona = checkNotNull(state.value.selectedPersona)
-            getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)
+            getProfileUseCase().activePersonaOnCurrentNetwork(selectedPersona.persona.address)
                 ?.let { updatedPersona ->
                     val grantedPersonaData = updatedPersona.getPersonaDataForFieldKinds(requiredFields.fields)
                     _state.update {
@@ -368,7 +370,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                         )
                     }
                     mutex.withLock {
-                        editedDapp = editedDapp?.updateAuthorizedDappPersonaFields(
+                        editedDapp = editedDapp?.updateAuthorizedDAppPersonaFields(
                             personaAddress = updatedPersona.address,
                             personaData = grantedPersonaData,
                             requiredFields = requiredFields.fields.associate { it.kind to it.numberOfValues.quantity }
@@ -379,7 +381,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun onGrantedPersonaDataOnetime(persona: Network.Persona) {
+    fun onGrantedPersonaDataOnetime(persona: Persona) {
         viewModelScope.launch {
             val requiredFields =
                 checkNotNull(request.oneTimePersonaDataRequestItem?.toRequiredFields())
@@ -394,24 +396,24 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     }
 
     private suspend fun requestedAccountsPermissionAlreadyGranted(
-        personaAddress: String,
+        personaAddress: IdentityAddress,
         accountsRequestItem: AccountsRequestItem?
     ): Boolean {
         if (accountsRequestItem == null) return false
         return authorizedDapp?.let { dapp ->
             val potentialOngoingAddresses =
                 dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                    AccountAddress.init(dapp.dAppDefinitionAddress),
+                    dapp.dappDefinitionAddress,
                     personaAddress,
                     accountsRequestItem.numberOfValues.quantity,
-                    accountsRequestItem.numberOfValues.toProfileShareAccountsQuantifier()
+                    accountsRequestItem.numberOfValues.toRequestedNumberQuantifier()
                 )
             potentialOngoingAddresses.isNotEmpty()
         } ?: false
     }
 
     private suspend fun handleOngoingPersonaDataRequestItem(
-        personaAddress: String,
+        personaAddress: IdentityAddress,
         requestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem
     ) {
         val dapp = requireNotNull(editedDapp)
@@ -425,15 +427,15 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             )
         } else {
             val requestedFields = requestItem.toRequiredFields()
-            val persona = requireNotNull(getProfileUseCase.personaOnCurrentNetwork(personaAddress))
+            val persona = requireNotNull(getProfileUseCase().activePersonaOnCurrentNetwork(personaAddress))
             val sharedPersonaData = persona.getPersonaDataForFieldKinds(requestedFields.fields)
             _state.update { it.copy(selectedOngoingPersonaData = sharedPersonaData) }
             mutex.withLock {
                 editedDapp =
-                    editedDapp?.updateAuthorizedDappPersonas(
+                    editedDapp?.updateAuthorizedDAppPersonas(
                         dapp.referencesToAuthorizedPersonas.map { ref ->
                             if (ref.identityAddress == personaAddress) {
-                                ref.copy(lastLogin = LocalDateTime.now().toISO8601String())
+                                ref.copy(lastLogin = TimestampGenerator())
                             } else {
                                 ref
                             }
@@ -461,13 +463,13 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun personaDataAccessAlreadyGranted(
         requestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem?,
-        personaAddress: String
+        personaAddress: IdentityAddress
     ): Boolean {
         if (requestItem == null) return false
         val dapp = requireNotNull(editedDapp)
         val requestedFieldKinds = requestItem.toRequiredFields()
         return dAppConnectionRepository.dAppAuthorizedPersonaHasAllDataFields(
-            AccountAddress.init(dapp.dAppDefinitionAddress),
+            dapp.dappDefinitionAddress,
             personaAddress,
             requestedFieldKinds.fields.associate { it.kind to it.numberOfValues.quantity }
         )
@@ -485,17 +487,17 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun handleOngoingAddressRequestItem(
         ongoingAccountsRequestItem: AccountsRequestItem,
-        personaAddress: String
+        personaAddress: IdentityAddress
     ) {
         val dapp = requireNotNull(editedDapp)
         val numberOfAccounts = ongoingAccountsRequestItem.numberOfValues.quantity
         val isExactAccountsCount = ongoingAccountsRequestItem.numberOfValues.exactly()
         val potentialOngoingAddresses =
             dAppConnectionRepository.dAppAuthorizedPersonaAccountAddresses(
-                AccountAddress.init(dapp.dAppDefinitionAddress),
+                dapp.dappDefinitionAddress,
                 personaAddress,
                 numberOfAccounts,
-                ongoingAccountsRequestItem.numberOfValues.toProfileShareAccountsQuantifier()
+                ongoingAccountsRequestItem.numberOfValues.toRequestedNumberQuantifier()
             )
         if (request.resetRequestItem?.accounts == true || potentialOngoingAddresses.isEmpty()) {
             sendEvent(
@@ -506,15 +508,15 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             )
         } else {
             val selectedAccounts = potentialOngoingAddresses.mapNotNull {
-                getProfileUseCase.accountOnCurrentNetwork(it)?.toUiModel(true)
+                getProfileUseCase().activeAccountOnCurrentNetwork(it)?.toUiModel(true)
             }
             _state.update { it.copy(selectedAccountsOngoing = selectedAccounts) }
             mutex.withLock {
                 editedDapp =
-                    editedDapp?.updateAuthorizedDappPersonas(
+                    editedDapp?.updateAuthorizedDAppPersonas(
                         dapp.referencesToAuthorizedPersonas.map { ref ->
                             if (ref.identityAddress == personaAddress) {
-                                ref.copy(lastLogin = LocalDateTime.now().toISO8601String())
+                                ref.copy(lastLogin = TimestampGenerator())
                             } else {
                                 ref
                             }
@@ -543,35 +545,39 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    private suspend fun updateOrCreateAuthorizedDappWithSelectedPersona(selectedPersona: Network.Persona) {
+    private suspend fun updateOrCreateAuthorizedDappWithSelectedPersona(selectedPersona: Persona) {
         val dApp = authorizedDapp
-        val date = LocalDateTime.now().toISO8601String()
+        val date = TimestampGenerator()
         if (dApp == null) {
             val dAppName = state.value.dapp?.name?.ifEmpty { null }
             mutex.withLock {
-                editedDapp = Network.AuthorizedDapp(
+                editedDapp = AuthorizedDapp(
                     request.metadata.networkId,
-                    request.metadata.dAppDefinitionAddress,
+                    AccountAddress.init(request.metadata.dAppDefinitionAddress),
                     dAppName,
                     listOf(
                         AuthorizedPersonaSimple(
                             identityAddress = selectedPersona.address,
                             lastLogin = date,
-                            sharedAccounts = Shared(
-                                emptyList(),
-                                request = RequestedNumber(
-                                    RequestedNumber.Quantifier.Exactly,
-                                    0
+                            sharedAccounts = SharedToDappWithPersonaAccountAddresses(
+                                ids = emptyList(),
+                                request = RequestedQuantity(
+                                    quantifier = RequestedNumberQuantifier.EXACTLY,
+                                    quantity = 0u
                                 )
                             ),
-                            sharedPersonaData = Network.AuthorizedDapp.SharedPersonaData()
+                            sharedPersonaData = SharedPersonaData(
+                                name = null,
+                                emailAddresses = null,
+                                phoneNumbers = null
+                            )
                         )
                     )
                 )
             }
         } else {
             mutex.withLock {
-                editedDapp = authorizedDapp?.addOrUpdateAuthorizedDappPersona(selectedPersona, date)
+                editedDapp = authorizedDapp?.addOrUpdateAuthorizedDAppPersona(selectedPersona, date)
             }
         }
     }
@@ -592,7 +598,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun onSelectPersona(persona: Network.Persona) {
+    fun onSelectPersona(persona: Persona) {
         _state.update { it.copy(selectedPersona = persona.toUiModel()) }
     }
 
@@ -624,14 +630,14 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             _state.update { it.copy(selectedAccountsOngoing = selectedAccounts) }
             viewModelScope.launch {
                 mutex.withLock {
-                    editedDapp = editedDapp?.updateDappAuthorizedPersonaSharedAccounts(
-                        selectedPersona.address,
-                        Shared(
-                            selectedAccounts.map { it.address.string },
-                            RequestedNumber(
-                                handledRequest.numberOfValues.toProfileShareAccountsQuantifier(),
-                                handledRequest.numberOfValues.quantity
-                            )
+                    editedDapp = editedDapp?.updateDAppAuthorizedPersonaSharedAccounts(
+                        personaAddress = selectedPersona.address,
+                        sharedAccounts = SharedToDappWithPersonaAccountAddresses(
+                            request = RequestedQuantity(
+                                quantifier = handledRequest.numberOfValues.toRequestedNumberQuantifier(),
+                                quantity = handledRequest.numberOfValues.quantity.toUShort()
+                            ),
+                            ids = selectedAccounts.map { it.address }
                         )
                     )
                 }
@@ -696,10 +702,10 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     request = request,
                     selectedPersona = selectedPersona,
                     oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull {
-                        getProfileUseCase.accountOnCurrentNetwork(it.address)
+                        getProfileUseCase().activeAccountOnCurrentNetwork(it.address)
                     },
                     ongoingAccounts = state.value.selectedAccountsOngoing.mapNotNull {
-                        getProfileUseCase.accountOnCurrentNetwork(it.address)
+                        getProfileUseCase().activeAccountOnCurrentNetwork(it.address)
                     },
                     ongoingSharedPersonaData = state.value.selectedOngoingPersonaData,
                     onetimeSharedPersonaData = state.value.selectedOnetimePersonaData,
@@ -746,7 +752,7 @@ sealed interface Event : OneOffEvent {
     ) : Event
 
     data class PersonaDataOngoing(
-        val personaAddress: String,
+        val personaAddress: IdentityAddress,
         val requiredPersonaFields: RequiredPersonaFields
     ) : Event
 

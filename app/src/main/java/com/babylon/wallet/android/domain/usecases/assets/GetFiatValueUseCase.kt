@@ -6,6 +6,8 @@ import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
 import com.babylon.wallet.android.data.repository.tokenprice.Mainnet
 import com.babylon.wallet.android.data.repository.tokenprice.Testnet
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.times
@@ -20,8 +22,6 @@ import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.domain.assets.Token
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.then
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.derivation.model.NetworkId
 import javax.inject.Inject
 
 class GetFiatValueUseCase @Inject constructor(
@@ -35,7 +35,7 @@ class GetFiatValueUseCase @Inject constructor(
         currency: SupportedCurrency = SupportedCurrency.USD,
         isRefreshing: Boolean
     ): Result<List<AssetPrice>> {
-        val networkId = NetworkId.from(accountWithAssets.account.networkID)
+        val networkId = accountWithAssets.account.networkId
         return runCatching {
             accountWithAssets.assets?.ownedTokens?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
                 accountWithAssets.assets?.ownedLiquidStakeUnits?.map { it.priceRequestAddresses(networkId) }?.flatten().orEmpty() +
@@ -79,11 +79,11 @@ class GetFiatValueUseCase @Inject constructor(
      */
     suspend fun forAssets(
         assets: List<Asset>,
-        account: Network.Account,
+        account: Account,
         currency: SupportedCurrency = SupportedCurrency.USD,
         isRefreshing: Boolean
     ): List<AssetPrice?> {
-        val networkId = NetworkId.from(account.networkID)
+        val networkId = account.networkId
 
         val requestAddresses = runCatching {
             assets.map {
@@ -123,11 +123,11 @@ class GetFiatValueUseCase @Inject constructor(
 
     suspend fun forAsset(
         asset: Asset,
-        account: Network.Account,
+        account: Account,
         currency: SupportedCurrency = SupportedCurrency.USD,
         isRefreshing: Boolean
     ): Result<AssetPrice?> {
-        val networkId = NetworkId.from(account.networkID)
+        val networkId = account.networkId
 
         return runCatching {
             asset.priceRequestAddresses(networkId)
@@ -177,7 +177,7 @@ class GetFiatValueUseCase @Inject constructor(
             val tokenPrice = fiatPrices[resourceAddress]
             val priceForLSU = tokenPrice?.price.orZero()
             val totalPrice = priceForLSU * fungibleResource.ownedAmount.orZero()
-            val xrdPrice = fiatPrices[XrdResource.address(networkId = networkId.value)]?.price
+            val xrdPrice = fiatPrices[XrdResource.address(networkId = networkId)]?.price
 
             AssetPrice.LSUPrice(
                 asset = this,
@@ -217,7 +217,7 @@ class GetFiatValueUseCase @Inject constructor(
         }
 
         is StakeClaim -> {
-            val xrdAddress = XrdResource.address(networkId = networkId.value)
+            val xrdAddress = XrdResource.address(networkId = networkId)
             val xrdPrice = fiatPrices[xrdAddress]
 
             val prices = nonFungibleResource.items.associateWith {
@@ -251,11 +251,11 @@ class GetFiatValueUseCase @Inject constructor(
         is NonFungibleCollection -> emptyList()
         is LiquidStakeUnit -> listOf(
             PriceRequestAddress.LSU(address = resourceAddress),
-            PriceRequestAddress.Regular(XrdResource.address(networkId = networkId.value))
+            PriceRequestAddress.Regular(XrdResource.address(networkId = networkId))
         )
 
         is StakeClaim -> {
-            listOf(PriceRequestAddress.Regular(XrdResource.address(networkId = networkId.value)))
+            listOf(PriceRequestAddress.Regular(XrdResource.address(networkId = networkId)))
         }
 
         is PoolUnit -> pool?.resources?.map { PriceRequestAddress.Regular(it.address) }.orEmpty()
@@ -267,7 +267,7 @@ class GetFiatValueUseCase @Inject constructor(
         addresses: Set<PriceRequestAddress>,
         currency: SupportedCurrency,
         isRefreshing: Boolean
-    ): Result<Map<ResourceAddress, FiatPrice>> = if (networkId == NetworkId.Mainnet) {
+    ): Result<Map<ResourceAddress, FiatPrice>> = if (networkId == NetworkId.MAINNET) {
         mainnetFiatPriceRepository.getFiatPrices(
             addresses = addresses,
             currency = currency,

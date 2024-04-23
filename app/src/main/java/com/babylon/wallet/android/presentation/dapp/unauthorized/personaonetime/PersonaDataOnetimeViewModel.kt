@@ -9,18 +9,20 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.Persona
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.personasOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,7 +40,7 @@ class PersonaDataOnetimeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.personasOnCurrentNetwork.collect { personas ->
+            getProfileUseCase.flow.map { it.activePersonasOnCurrentNetwork }.collect { personas ->
                 _state.update { state ->
                     val existingPersonas = state.personaListToDisplay
                     state.copy(
@@ -56,7 +58,7 @@ class PersonaDataOnetimeViewModel @Inject constructor(
         }
     }
 
-    fun onSelectPersona(persona: Network.Persona) {
+    fun onSelectPersona(persona: Persona) {
         val updatedPersonas = state.value.personaListToDisplay.map {
             it.copy(selected = it.persona.address == persona.address)
         }.toPersistentList()
@@ -69,9 +71,9 @@ class PersonaDataOnetimeViewModel @Inject constructor(
         }
     }
 
-    fun onEditClick(personaAddress: String) {
+    fun onEditClick(persona: Persona) {
         viewModelScope.launch {
-            sendEvent(PersonaDataOnetimeEvent.OnEditPersona(personaAddress, args.requiredPersonaFields))
+            sendEvent(PersonaDataOnetimeEvent.OnEditPersona(persona.address, args.requiredPersonaFields))
         }
     }
 
@@ -84,7 +86,7 @@ class PersonaDataOnetimeViewModel @Inject constructor(
 
 sealed interface PersonaDataOnetimeEvent : OneOffEvent {
     data class OnEditPersona(
-        val personaAddress: String,
+        val personaAddress: IdentityAddress,
         val requiredPersonaFields: RequiredPersonaFields? = null
     ) : PersonaDataOnetimeEvent
 

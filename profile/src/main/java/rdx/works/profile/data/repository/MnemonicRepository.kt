@@ -1,14 +1,15 @@
 package rdx.works.profile.data.repository
 
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.extensions.hex
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.core.HexCoded32Bytes
-import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.generate
+import rdx.works.core.sargon.generate
+import rdx.works.core.sargon.toFactorSourceId
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
@@ -22,32 +23,32 @@ class MnemonicRepository @Inject constructor(
      * We might have multiple OnDevice-HD-FactorSources, thus multiple mnemonics stored on the device.
      */
     @Suppress("SwallowedException")
-    suspend fun readMnemonic(key: FactorSource.FactorSourceID.FromHash): Result<MnemonicWithPassphrase> {
-        return encryptedPreferencesManager.readMnemonic("mnemonic${key.body.value}").map {
-            Json.decodeFromString(it)
+    suspend fun readMnemonic(key: FactorSourceId.Hash): Result<MnemonicWithPassphrase> {
+        return encryptedPreferencesManager.readMnemonic("mnemonic${key.value.body.hex}").map {
+            Json.decodeFromString(it) // TODO integration needs sargon serializer
         }
     }
 
     @Suppress("SwallowedException")
-    suspend fun mnemonicExist(key: FactorSource.FactorSourceID.FromHash): Boolean {
-        return encryptedPreferencesManager.keyExist("mnemonic${key.body.value}")
+    suspend fun mnemonicExist(key: FactorSourceId.Hash): Boolean {
+        return encryptedPreferencesManager.keyExist("mnemonic${key.value.body.hex}")
     }
 
     /**
      * We save mnemonic under specific key which will be factorSourceId
      */
     suspend fun saveMnemonic(
-        key: FactorSource.FactorSourceID.FromHash,
+        key: FactorSourceId.Hash,
         mnemonicWithPassphrase: MnemonicWithPassphrase
     ) {
-        val serialised = Json.encodeToString(mnemonicWithPassphrase)
-        encryptedPreferencesManager.saveMnemonic("mnemonic${key.body.value}", serialised)
+        val serialised = Json.encodeToString(mnemonicWithPassphrase) // TODO integration needs sargon serializer
+        encryptedPreferencesManager.saveMnemonic("mnemonic${key.value.body.hex}", serialised)
     }
 
     suspend fun deleteMnemonic(
-        key: FactorSource.FactorSourceID.FromHash
+        key: FactorSourceId.Hash
     ) {
-        encryptedPreferencesManager.removeEntryForKey("mnemonic${key.body.value}")
+        encryptedPreferencesManager.removeEntryForKey("mnemonic${key.value.body.hex}")
     }
 
     /**
@@ -62,17 +63,11 @@ class MnemonicRepository @Inject constructor(
      * 3. We passed a key and the mnemonic exists:
      *    We deserialize it properly and just return that back.
      */
-    suspend operator fun invoke(mnemonicKey: FactorSource.FactorSourceID.FromHash? = null): MnemonicWithPassphrase {
+    suspend operator fun invoke(mnemonicKey: FactorSourceId.Hash? = null): MnemonicWithPassphrase {
         return mnemonicKey?.let { readMnemonic(key = it).getOrNull() } ?: withContext(defaultDispatcher) {
-            val generated = MnemonicWithPassphrase.generate(entropyStrength = ENTROPY_STRENGTH)
-
-            val key = FactorSource.factorSourceId(mnemonicWithPassphrase = generated)
-            val fromHash = FactorSource.FactorSourceID.FromHash(
-                kind = FactorSourceKind.DEVICE,
-                body = HexCoded32Bytes(key)
-            )
-            saveMnemonic(key = fromHash, mnemonicWithPassphrase = generated)
-            generated
+            MnemonicWithPassphrase.generate(entropyStrength = ENTROPY_STRENGTH).also {
+                saveMnemonic(key = it.toFactorSourceId(), mnemonicWithPassphrase = it)
+            }
         }
     }
 

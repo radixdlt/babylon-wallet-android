@@ -18,7 +18,6 @@ import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
-import rdx.works.profile.data.model.pernetwork.Entity
 import rdx.works.profile.data.model.pernetwork.Network
 
 open class StateRepositoryFake : StateRepository {

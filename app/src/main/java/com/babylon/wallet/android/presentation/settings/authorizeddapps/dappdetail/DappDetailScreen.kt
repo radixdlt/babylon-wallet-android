@@ -56,7 +56,6 @@ import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
@@ -80,6 +79,8 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
@@ -89,7 +90,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Resource
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.fields
 import java.util.Locale
 
 @Composable
@@ -97,7 +98,7 @@ fun DappDetailScreen(
     viewModel: DappDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onEditPersona: (String, RequiredPersonaFields?) -> Unit,
+    onEditPersona: (IdentityAddress, RequiredPersonaFields?) -> Unit,
     onFungibleClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleClick: (Resource.NonFungibleResource) -> Unit
 ) {
@@ -138,10 +139,10 @@ private fun DappDetailContent(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     state: DappDetailUiState,
-    onPersonaClick: (Network.Persona) -> Unit,
+    onPersonaClick: (Persona) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNftClick: (Resource.NonFungibleResource) -> Unit,
-    onDisconnectPersona: (Network.Persona) -> Unit,
+    onDisconnectPersona: (Persona) -> Unit,
     personaDetailsClosed: () -> Unit,
     onDeleteDapp: () -> Unit,
     onEditPersona: () -> Unit,
@@ -293,8 +294,8 @@ private fun DappDetails(
     dAppWithResources: DAppWithResources?,
     isValidatingWebsite: Boolean,
     validatedWebsite: String?,
-    personaList: ImmutableList<Network.Persona>,
-    onPersonaClick: (Network.Persona) -> Unit,
+    personaList: ImmutableList<Persona>,
+    onPersonaClick: (Persona) -> Unit,
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleClick: (Resource.NonFungibleResource) -> Unit,
     onDeleteDapp: () -> Unit
@@ -533,15 +534,15 @@ private fun PersonaDetailsSheet(
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
     dappName: String,
-    onDisconnectPersona: (Network.Persona) -> Unit,
+    onDisconnectPersona: (Persona) -> Unit,
     onEditPersona: () -> Unit,
     onEditAccountSharing: () -> Unit
 ) {
-    var personaToDisconnect by remember { mutableStateOf<Network.Persona?>(null) }
+    var personaToDisconnect by remember { mutableStateOf<Persona?>(null) }
     Box(modifier = modifier) {
         Column(Modifier.fillMaxSize()) {
             RadixCenteredTopAppBar(
-                title = persona.persona.displayName,
+                title = persona.persona.displayName.value,
                 onBackClick = onCloseClick,
                 contentColor = RadixTheme.colors.gray1
             )
@@ -595,7 +596,7 @@ private fun PersonaDetailList(
     onEditPersona: () -> Unit,
     sharedPersonaAccounts: ImmutableList<AccountItemUiModel>,
     dappName: String,
-    onDisconnectPersona: (Network.Persona) -> Unit,
+    onDisconnectPersona: (Persona) -> Unit,
     onEditAccountSharing: () -> Unit
 ) {
     LazyColumn(
@@ -617,14 +618,14 @@ private fun PersonaDetailList(
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
                 label = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
-                value = persona.persona.displayName
+                value = persona.persona.displayName.value
             )
             Spacer(modifier = Modifier.height(dimensions.paddingXXLarge))
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = dimensions.paddingDefault)
             )
         }
-        val nonEmptyPersonaFields = persona.persona.personaData.allFields
+        val nonEmptyPersonaFields = persona.persona.personaData.fields
         if (nonEmptyPersonaFields.isNotEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(dimensions.paddingDefault))
@@ -745,7 +746,7 @@ fun DappDetailContentPreview() {
             onBackClick = {},
             state = DappDetailUiState(
                 loading = false,
-                personas = persistentListOf(SampleDataProvider().samplePersona()),
+                personas = persistentListOf(Persona.sampleMainnet()),
                 dAppWithResources = DAppWithResources(
                     dApp = DApp.sampleMainnet()
                 ),
@@ -773,7 +774,7 @@ fun DappDetailContentPreview() {
 fun PersonaDetailsSheetPreview() {
     RadixWalletTheme {
         PersonaDetailsSheet(
-            persona = PersonaUiModel(SampleDataProvider().samplePersona()),
+            persona = PersonaUiModel(Persona.sampleMainnet()),
             sharedPersonaAccounts = persistentListOf(
                 AccountItemUiModel(AccountAddress.sampleMainnet.random(), "Account1", 0)
             ),

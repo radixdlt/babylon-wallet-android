@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import rdx.works.core.domain.DApp
 import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaData
 import rdx.works.profile.data.model.pernetwork.PersonaDataEntryID
+import rdx.works.core.sargon.PersonaDataField
 import rdx.works.profile.data.model.pernetwork.RequestedNumber
 import rdx.works.profile.data.model.pernetwork.Shared
 import rdx.works.profile.data.repository.DAppConnectionRepository
@@ -27,7 +27,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
 
     var savedDApp: Network.AuthorizedDapp? = null
 
-    override suspend fun getAuthorizedDapp(dAppDefinitionAddress: AccountAddress): Network.AuthorizedDapp? {
+    override suspend fun getAuthorizedDApp(dAppDefinitionAddress: AccountAddress): Network.AuthorizedDapp? {
         return when (state) {
             InitialState.NoDapp -> null
             InitialState.PredefinedDapp -> {
@@ -54,7 +54,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
         }
     }
 
-    override fun getAuthorizedDapps(): Flow<List<Network.AuthorizedDapp>> {
+    override fun getAuthorizedDApps(): Flow<List<Network.AuthorizedDapp>> {
         return flow {
             emit(
                 listOf(
@@ -122,7 +122,7 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     override suspend fun dAppAuthorizedPersonaHasAllDataFields(
         dAppDefinitionAddress: AccountAddress,
         personaAddress: String,
-        requestedFieldKinds: Map<PersonaData.PersonaDataField.Kind, Int>
+        requestedFieldKinds: Map<PersonaDataField.Kind, Int>
     ): Boolean {
         return false
     }
@@ -139,16 +139,16 @@ class DAppConnectionRepositoryFake : DAppConnectionRepository {
     }
 
     override fun getAuthorizedDappsByPersona(personaAddress: String): Flow<List<Network.AuthorizedDapp>> {
-        return getAuthorizedDapps()
+        return getAuthorizedDApps()
     }
 
-    override fun getAuthorizedDappFlow(dAppDefinitionAddress: AccountAddress): Flow<Network.AuthorizedDapp?> {
+    override fun getAuthorizedDAppFlow(dAppDefinitionAddress: AccountAddress): Flow<Network.AuthorizedDapp?> {
         return flow {
-            emit(getAuthorizedDapp(dAppDefinitionAddress))
+            emit(getAuthorizedDApp(dAppDefinitionAddress))
         }
     }
 
-    override suspend fun deleteAuthorizedDapp(dAppDefinitionAddress: AccountAddress) {
+    override suspend fun deleteAuthorizedDApp(dAppDefinitionAddress: AccountAddress) {
     }
 
     override suspend fun ensureAuthorizedPersonasFieldsExist(personaAddress: String, existingFieldIds: List<PersonaDataEntryID>) {

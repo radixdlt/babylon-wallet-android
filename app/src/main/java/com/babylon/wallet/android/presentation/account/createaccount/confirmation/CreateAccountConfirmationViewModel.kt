@@ -7,11 +7,12 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,15 +28,15 @@ class CreateAccountConfirmationViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val account = getProfileUseCase.accountOnCurrentNetwork(args.accountId)
+            val account = getProfileUseCase().activeAccountOnCurrentNetwork(args.accountId)
             requireNotNull(account) {
                 "account is null"
             }
             _state.update {
                 AccountConfirmationUiState(
-                    accountName = account.displayName,
-                    accountAddress = account.address,
-                    appearanceId = account.appearanceID
+                    accountName = account.displayName.value,
+                    accountAddress = account.address.string,
+                    appearanceId = account.appearanceId.value.toInt()
                 )
             }
         }

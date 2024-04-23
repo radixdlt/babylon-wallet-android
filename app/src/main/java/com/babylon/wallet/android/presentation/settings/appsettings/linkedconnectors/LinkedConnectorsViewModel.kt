@@ -8,15 +8,16 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.P2pLink
+import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.apppreferences.P2PLink
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.p2pLinks
 import rdx.works.profile.domain.p2plink.DeleteP2PLinkUseCase
 import javax.inject.Inject
 
@@ -36,19 +37,19 @@ class LinkedConnectorsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.p2pLinks
+            getProfileUseCase.flow.map { it.appPreferences.p2pLinks }
                 .collect { p2pLinks ->
                     _state.update {
-                        it.copy(activeConnectors = p2pLinks.toPersistentList())
+                        it.copy(activeConnectors = p2pLinks().toPersistentList())
                     }
                 }
         }
     }
 
-    fun onDeleteConnectorClick(connectionPassword: String) {
+    fun onDeleteConnectorClick(p2pLink: P2pLink) {
         viewModelScope.launch {
-            deleteP2PLinkUseCase(connectionPassword)
-            peerdroidClient.deleteLink(connectionPassword)
+            deleteP2PLinkUseCase(p2pLink)
+            peerdroidClient.deleteLink(p2pLink)
         }
     }
 
@@ -72,7 +73,7 @@ internal sealed interface Event : OneOffEvent {
 }
 
 data class LinkedConnectorsUiState(
-    val activeConnectors: ImmutableList<P2PLink> = persistentListOf(),
+    val activeConnectors: ImmutableList<P2pLink> = persistentListOf(),
     val showAddLinkConnectorScreen: Boolean = false,
     val triggerCameraPermissionPrompt: Boolean = false
 ) : UiState

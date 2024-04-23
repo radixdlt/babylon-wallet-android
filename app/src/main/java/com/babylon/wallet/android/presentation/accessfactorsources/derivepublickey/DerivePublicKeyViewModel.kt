@@ -13,17 +13,19 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.decodeHex
-import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.PublicKeyProvider
-import rdx.works.profile.derivation.model.NetworkId
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import java.io.IOException
 import javax.inject.Inject
@@ -46,7 +48,7 @@ class DerivePublicKeyViewModel @Inject constructor(
         derivePublicKeyJob = viewModelScope.launch {
             input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
             when (input.factorSource) {
-                is LedgerHardwareWalletFactorSource -> {
+                is FactorSource.Ledger -> {
                     if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist()) {
                         derivePublicKey().onSuccess {
                             sendEvent(Event.AccessingFactorSourceCompleted)
@@ -57,7 +59,7 @@ class DerivePublicKeyViewModel @Inject constructor(
                     }
                 }
 
-                is DeviceFactorSource,
+                is FactorSource.Device,
                 null -> {
                     sendEvent(Event.RequestBiometricPrompt)
                 }
@@ -109,13 +111,13 @@ class DerivePublicKeyViewModel @Inject constructor(
         val profile = ensureBabylonFactorSourceExistUseCase()
 
         return if (input.factorSource == null) { // device factor source
-            val deviceFactorSource = profile.mainBabylonFactorSource() ?: error("Babylon factor source is not present")
+            val deviceFactorSource = profile.mainBabylonFactorSource ?: error("Babylon factor source is not present")
             derivePublicKeyFromDeviceFactorSource(
                 forNetworkId = input.forNetworkId,
-                deviceFactorSource = deviceFactorSource
+                deviceFactorSource = deviceFactorSource.asGeneral()
             )
         } else { // ledger factor source
-            val ledgerFactorSource = input.factorSource as LedgerHardwareWalletFactorSource
+            val ledgerFactorSource = input.factorSource as FactorSource.Ledger
             _state.update { uiState ->
                 uiState.copy(
                     showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = ledgerFactorSource)
@@ -130,7 +132,7 @@ class DerivePublicKeyViewModel @Inject constructor(
 
     private suspend fun derivePublicKeyFromDeviceFactorSource(
         forNetworkId: NetworkId,
-        deviceFactorSource: DeviceFactorSource
+        deviceFactorSource: FactorSource.Device
     ): Result<Unit> {
         val derivationPath = publicKeyProvider.getNextDerivationPathForFactorSource(
             forNetworkId = forNetworkId,
@@ -139,18 +141,17 @@ class DerivePublicKeyViewModel @Inject constructor(
         return publicKeyProvider.derivePublicKeyForDeviceFactorSource(
             deviceFactorSource = deviceFactorSource,
             derivationPath = derivationPath
-        ).mapCatching { compressedPublicKey ->
-            val output = PublicKeyAndDerivationPath(
-                compressedPublicKey = compressedPublicKey,
+        ).mapCatching { publicKey ->
+            accessFactorSourcesUiProxy.setOutput(output = PublicKeyAndDerivationPath(
+                publicKey = publicKey,
                 derivationPath = derivationPath
-            )
-            accessFactorSourcesUiProxy.setOutput(output)
+            ))
         }
     }
 
     private suspend fun derivePublicKeyFromLedgerFactorSource(
         forNetworkId: NetworkId,
-        ledgerFactorSource: LedgerHardwareWalletFactorSource
+        ledgerFactorSource: FactorSource.Ledger
     ): Result<Unit> {
         val derivationPath = publicKeyProvider.getNextDerivationPathForFactorSource(
             forNetworkId = forNetworkId,
@@ -158,12 +159,12 @@ class DerivePublicKeyViewModel @Inject constructor(
         )
         ledgerMessenger.sendDerivePublicKeyRequest(
             interactionId = UUIDGenerator.uuid().toString(),
-            keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.path)),
-            ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource = ledgerFactorSource)
+            keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.string)),
+            ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(factorSource = ledgerFactorSource)
         ).onSuccess { derivePublicKeyResponse ->
-            val publicKey = derivePublicKeyResponse.publicKeysHex.first().publicKeyHex.decodeHex()
+            val publicKey = PublicKey.init(derivePublicKeyResponse.publicKeysHex.first().publicKeyHex)
             val publicKeyAndDerivationPath = PublicKeyAndDerivationPath(
-                compressedPublicKey = publicKey,
+                publicKey = publicKey,
                 derivationPath = derivationPath
             )
             accessFactorSourcesUiProxy.setOutput(publicKeyAndDerivationPath)
@@ -181,7 +182,7 @@ class DerivePublicKeyViewModel @Inject constructor(
 
         sealed interface ShowContentForFactorSource {
             data object Device : ShowContentForFactorSource
-            data class Ledger(val selectedLedgerDevice: LedgerHardwareWalletFactorSource) : ShowContentForFactorSource
+            data class Ledger(val selectedLedgerDevice: FactorSource.Ledger) : ShowContentForFactorSource
         }
     }
 

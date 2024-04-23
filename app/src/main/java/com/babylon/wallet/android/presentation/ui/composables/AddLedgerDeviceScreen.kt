@@ -40,13 +40,15 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.settings.accountsecurity.ledgerhardwarewallets.AddLedgerDeviceUiState
+import com.radixdlt.sargon.LedgerHardwareWalletModel
+import rdx.works.core.sargon.displayName
 
 @Composable
 fun AddLedgerDeviceScreen(
     modifier: Modifier = Modifier,
     showContent: AddLedgerDeviceUiState.ShowContent,
     uiMessage: UiMessage? = null,
-    deviceModel: String?,
+    deviceModel: LedgerHardwareWalletModel?,
     onSendAddLedgerRequestClick: () -> Unit,
     onConfirmLedgerNameClick: (String) -> Unit,
     backIconType: BackIconType = BackIconType.Close,
@@ -168,7 +170,7 @@ fun AddLedgerDeviceScreen(
                                         .padding(vertical = RadixTheme.dimensions.paddingLarge),
                                     text = stringResource(
                                         id = com.babylon.wallet.android.R.string.addLedgerDevice_nameLedger_detectedType,
-                                        model
+                                        model.displayName()
                                     ),
                                     style = RadixTheme.typography.body1Header,
                                     color = RadixTheme.colors.gray2,
@@ -222,7 +224,7 @@ fun AddLedgerDeviceScreenPreview() {
             modifier = Modifier.fillMaxSize(),
             showContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
             uiMessage = null,
-            deviceModel = "device model",
+            deviceModel = LedgerHardwareWalletModel.NANO_S,
             onSendAddLedgerRequestClick = {},
             onConfirmLedgerNameClick = { },
             backIconType = BackIconType.Back,
@@ -244,7 +246,7 @@ fun AddLedgerDeviceContentPreview3() {
             modifier = Modifier.fillMaxSize(),
             showContent = AddLedgerDeviceUiState.ShowContent.NameLedgerDevice,
             uiMessage = null,
-            deviceModel = "device model",
+            deviceModel = LedgerHardwareWalletModel.NANO_S_PLUS,
             onSendAddLedgerRequestClick = {},
             onConfirmLedgerNameClick = { },
             backIconType = BackIconType.Back,

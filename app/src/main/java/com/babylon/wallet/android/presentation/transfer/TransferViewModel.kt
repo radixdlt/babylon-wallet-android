@@ -10,10 +10,14 @@ import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDele
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
 import com.babylon.wallet.android.presentation.ui.composables.assets.AssetsViewState
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.isZero
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
@@ -40,12 +44,10 @@ import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.ValidatorWithStakes
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.mapWhen
-import rdx.works.profile.data.model.extensions.factorSourceId
-import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.factorSourceId
+import rdx.works.core.sargon.isSignatureRequiredBasedOnDepositRules
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -68,7 +70,7 @@ class TransferViewModel @Inject constructor(
         prepareManifestDelegate(viewModelScope, _state)
 
         viewModelScope.launch {
-            val sourceAccount = getProfileUseCase.accountOnCurrentNetwork(args.accountId)
+            val sourceAccount = getProfileUseCase().activeAccountOnCurrentNetwork(args.accountId)
 
             _state.update {
                 it.copy(fromAccount = sourceAccount)
@@ -203,7 +205,7 @@ class TransferViewModel @Inject constructor(
 
     fun onAddressTyped(address: String) = accountsChooserDelegate.addressTyped(address = address)
 
-    fun onOwnedAccountSelected(account: Network.Account) = accountsChooserDelegate.onOwnedAccountSelected(account = account)
+    fun onOwnedAccountSelected(account: Account) = accountsChooserDelegate.onOwnedAccountSelected(account = account)
 
     fun onChooseAccountSubmitted() = accountsChooserDelegate.chooseAccountSubmitted()
 
@@ -253,7 +255,7 @@ class TransferViewModel @Inject constructor(
     }
 
     data class State(
-        val fromAccount: Network.Account? = null,
+        val fromAccount: Account? = null,
         val targetAccounts: ImmutableList<TargetAccount> = persistentListOf(TargetAccount.Skeleton()),
         val messageState: Message = Message.None,
         val sheet: Sheet = Sheet.None,
@@ -370,22 +372,22 @@ class TransferViewModel @Inject constructor(
 
             data class ChooseAccounts(
                 val selectedAccount: TargetAccount,
-                val ownedAccounts: PersistentList<Network.Account>,
+                val ownedAccounts: PersistentList<Account>,
                 val mode: Mode = Mode.Chooser,
                 val isLoadingAssetsForAccount: Boolean
             ) : Sheet {
 
                 val isOwnedAccountsEnabled: Boolean
                     get() = when (selectedAccount) {
-                        is TargetAccount.Other -> selectedAccount.address.isBlank()
+                        is TargetAccount.Other -> selectedAccount.address != null
                         is TargetAccount.Owned -> true
                         is TargetAccount.Skeleton -> true
                     }
 
                 val isChooseButtonEnabled: Boolean
-                    get() = selectedAccount.isAddressValid
+                    get() = selectedAccount.validatedAddress != null
 
-                fun isOwnedAccountSelected(account: Network.Account) = (selectedAccount as? TargetAccount.Owned)?.account == account
+                fun isOwnedAccountSelected(account: Account) = (selectedAccount as? TargetAccount.Owned)?.account == account
 
                 enum class Mode {
                     Chooser,
@@ -486,17 +488,17 @@ class TransferViewModel @Inject constructor(
 }
 
 sealed class TargetAccount {
-    abstract val address: String
+    abstract val address: AccountAddress?
     abstract val id: String
     abstract val spendingAssets: ImmutableSet<SpendingAsset>
 
     abstract fun isSignatureRequiredForTransfer(resourceAddress: ResourceAddress): Boolean
 
-    val isAddressValid: Boolean
+    val validatedAddress: AccountAddress?
         get() = when (this) {
-            is Owned -> true
-            is Other -> validity == Other.AddressValidity.VALID
-            else -> false
+            is Owned -> address
+            is Other -> if (validity == Other.AddressValidity.VALID) address else null
+            is Skeleton -> null
         }
 
     val isValidForSubmission: Boolean
@@ -506,8 +508,8 @@ sealed class TargetAccount {
             is Skeleton -> spendingAssets.isEmpty()
         }
 
-    val factorSourceId: FactorSource.FactorSourceID.FromHash?
-        get() = (this as? Owned)?.account?.factorSourceId as? FactorSource.FactorSourceID.FromHash
+    val factorSourceId: FactorSourceId.Hash?
+        get() = (this as? Owned)?.account?.factorSourceId as? FactorSourceId.Hash
 
     fun amountSpent(fungibleAsset: SpendingAsset.Fungible): Decimal192 = spendingAssets
         .filterIsInstance<SpendingAsset.Fungible>()
@@ -550,17 +552,19 @@ sealed class TargetAccount {
         override val id: String = UUIDGenerator.uuid().toString(),
         override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
-        override val address: String = ""
+        override val address: AccountAddress? = null
 
         override fun isSignatureRequiredForTransfer(resourceAddress: ResourceAddress): Boolean = false
     }
 
     data class Other(
-        override val address: String,
+        val typedAddress: String = "",
         val validity: AddressValidity,
         override val id: String,
         override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
+        override val address: AccountAddress?
+            get() = runCatching { AccountAddress.init(typedAddress) }.getOrNull()
 
         override fun isSignatureRequiredForTransfer(resourceAddress: ResourceAddress): Boolean = false
 
@@ -572,12 +576,12 @@ sealed class TargetAccount {
     }
 
     data class Owned(
-        val account: Network.Account,
+        val account: Account,
         val accountAssetsAddresses: List<ResourceAddress> = emptyList(),
         override val id: String,
         override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
-        override val address: String
+        override val address: AccountAddress
             get() = account.address
 
         override fun isSignatureRequiredForTransfer(resourceAddress: ResourceAddress): Boolean {

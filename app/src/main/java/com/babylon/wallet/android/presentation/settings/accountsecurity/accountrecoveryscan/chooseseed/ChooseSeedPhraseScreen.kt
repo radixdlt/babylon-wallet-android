@@ -47,7 +47,8 @@ import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
-import rdx.works.profile.data.model.factorsources.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.asGeneral
 import rdx.works.profile.domain.DeviceFactorSourceData
 
 @Composable
@@ -55,7 +56,7 @@ fun ChooseSeedPhraseScreen(
     viewModel: ChooseSeedPhraseViewModel,
     onBack: () -> Unit,
     onAddSeedPhrase: (MnemonicType) -> Unit,
-    onRecoveryScanWithFactorSource: (FactorSource, Boolean) -> Unit,
+    onRecoveryScanWithFactorSource: (FactorSourceId.Hash, Boolean) -> Unit,
 ) {
     val state by viewModel.state.collectAsState()
     ChooseSeedPhraseContent(
@@ -85,7 +86,7 @@ private fun ChooseSeedPhraseContent(
     onBackClick: () -> Unit,
     onUseFactorSource: () -> Unit,
     onAddSeedPhrase: (MnemonicType) -> Unit,
-    onSelectionChanged: (FactorSource.FactorSourceID.FromHash) -> Unit,
+    onSelectionChanged: (FactorSourceId.Hash) -> Unit,
     recoveryType: MnemonicType
 ) {
     val backCallback = {
@@ -149,7 +150,7 @@ private fun ChooseSeedPhraseContent(
                         modifier = Modifier
                             .clip(RadixTheme.shapes.roundedRectMedium)
                             .throttleClickable {
-                                onSelectionChanged(factorSource.data.deviceFactorSource.id)
+                                onSelectionChanged(factorSource.data.deviceFactorSource.value.id.asGeneral())
                             }
                             .shadow(elevation = 4.dp, shape = RadixTheme.shapes.roundedRectMedium)
                             .fillMaxWidth()
@@ -158,7 +159,7 @@ private fun ChooseSeedPhraseContent(
                         data = factorSource.data,
                         selected = factorSource.selected,
                         onSelectionChanged = {
-                            onSelectionChanged(factorSource.data.deviceFactorSource.id)
+                            onSelectionChanged(factorSource.data.deviceFactorSource.value.id.asGeneral())
                         }
                     )
                 }
@@ -205,14 +206,14 @@ fun SeedPhraseCard(
                 tint = RadixTheme.colors.gray1
             )
             Column(modifier = Modifier.weight(1f)) {
-                androidx.compose.material3.Text(
+                Text(
                     text = "Seed phrase",
                     style = RadixTheme.typography.body1Header,
                     color = RadixTheme.colors.gray1,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                androidx.compose.material3.Text(
+                Text(
                     text = stringResource(
                         id = if (data.accounts.size == 1) {
                             R.string.displayMnemonics_connectedAccountsLabel_one

@@ -54,8 +54,7 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.core.domain.ProfileState
 import rdx.works.profile.sargon.toSargon
 import java.util.Locale
 import java.util.UUID

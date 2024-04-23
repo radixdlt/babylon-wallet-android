@@ -3,9 +3,9 @@ package com.babylon.wallet.android.data.gateway.extensions
 import com.babylon.wallet.android.data.gateway.generated.models.DefaultDepositRule
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseComponentDetails
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseItem
+import com.radixdlt.sargon.DepositRule
 import rdx.works.core.domain.resources.metadata.ownerBadge
 import rdx.works.core.domain.resources.metadata.ownerKeyHashes
-import rdx.works.profile.data.model.pernetwork.Network
 
 val StateEntityDetailsResponseItem.isEntityActive: Boolean
     get() {
@@ -26,10 +26,10 @@ val StateEntityDetailsResponseItem.defaultDepositRule: DefaultDepositRule?
         else -> null
     }
 
-fun DefaultDepositRule.toProfileDepositRule(): Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule {
+fun DefaultDepositRule.toProfileDepositRule(): DepositRule {
     return when (this) {
-        DefaultDepositRule.Accept -> Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll
-        DefaultDepositRule.Reject -> Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll
-        DefaultDepositRule.AllowExisting -> Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown
+        DefaultDepositRule.Accept -> DepositRule.ACCEPT_ALL
+        DefaultDepositRule.Reject -> DepositRule.DENY_ALL
+        DefaultDepositRule.AllowExisting -> DepositRule.ACCEPT_KNOWN
     }
 }

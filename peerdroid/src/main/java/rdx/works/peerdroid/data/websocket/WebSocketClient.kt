@@ -1,6 +1,8 @@
 package rdx.works.peerdroid.data.websocket
 
 import android.content.Context
+import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.extensions.bytes
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -26,6 +28,7 @@ import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeHex
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
+import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.BuildConfig
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
@@ -58,7 +61,7 @@ internal class WebSocketClient(applicationContext: Context) {
     private var socket: WebSocketSession? = null
 
     private lateinit var connectionId: String
-    private lateinit var encryptionKey: ByteArray
+    private lateinit var encryptionKey: RadixConnectPassword
 
     // this is used only for the PeerdroidLink
     // where we need to add a new link connection
@@ -71,7 +74,7 @@ internal class WebSocketClient(applicationContext: Context) {
 
     suspend fun initSession(
         connectionId: String,
-        encryptionKey: ByteArray
+        encryptionKey: RadixConnectPassword
     ): Result<Unit> {
         return try {
             this.connectionId = connectionId
@@ -129,7 +132,7 @@ internal class WebSocketClient(applicationContext: Context) {
     ) {
         val offerJson = json.encodeToString(offerPayload)
         val encryptedOffer = offerJson.toByteArray().encrypt(
-            withEncryptionKey = encryptionKey
+            withEncryptionKey = encryptionKey.value.bytes.toByteArray()
         )
         val rpcMessage = RpcMessage.Offer(
             targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
@@ -146,7 +149,7 @@ internal class WebSocketClient(applicationContext: Context) {
     ) {
         val answerJson = json.encodeToString(answerPayload)
         val encryptedAnswer = answerJson.toByteArray().encrypt(
-            withEncryptionKey = encryptionKey
+            withEncryptionKey = encryptionKey.value.bytes.toByteArray()
         )
         val rpcMessage: RpcMessage = RpcMessage.Answer(
             targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
@@ -163,7 +166,7 @@ internal class WebSocketClient(applicationContext: Context) {
     ) {
         val iceCandidatePayload = iceCandidateData.toJsonPayload()
         val encryptedIceCandidate = iceCandidatePayload.toString().toByteArray().encrypt(
-            withEncryptionKey = encryptionKey
+            withEncryptionKey = encryptionKey.value.bytes.toByteArray()
         )
         val rpcMessage: RpcMessage = RpcMessage.IceCandidate(
             targetClientId = remoteClientId.ifEmpty { connectorExtensionId },
@@ -236,7 +239,7 @@ internal class WebSocketClient(applicationContext: Context) {
         remoteClientId: String
     ): SignalingServerMessage.RemoteData.Offer {
         val message = offerPayload.encryptedPayload.decodeHex().toByteArray().decrypt(
-            withEncryptionKey = encryptionKey
+            withEncryptionKey = encryptionKey.value.bytes.toByteArray()
         ).getOrThrow()
         val offer = json.decodeFromString<RpcMessage.OfferPayload>(String(message, StandardCharsets.UTF_8))
 
@@ -254,7 +257,7 @@ internal class WebSocketClient(applicationContext: Context) {
         remoteClientId: String
     ): SignalingServerMessage.RemoteData.Answer {
         val message = answerPayload.encryptedPayload.decodeHex().toByteArray().decrypt(
-            withEncryptionKey = encryptionKey
+            withEncryptionKey = encryptionKey.value.bytes.toByteArray()
         ).getOrThrow()
         val answer = json.decodeFromString<RpcMessage.AnswerPayload>(String(message, StandardCharsets.UTF_8))
 
@@ -271,7 +274,7 @@ internal class WebSocketClient(applicationContext: Context) {
         remoteClientId: String
     ): SignalingServerMessage.RemoteData.IceCandidate {
         val message = iceCandidatePayload.encryptedPayload.decodeHex().toByteArray().decrypt(
-            withEncryptionKey = encryptionKey
+            withEncryptionKey = encryptionKey.value.bytes.toByteArray()
         ).getOrThrow()
         val iceCandidate = json.decodeFromString<RpcMessage.IceCandidatePayload>(
             String(message, StandardCharsets.UTF_8)

@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.domain.model.assets
 
+import com.radixdlt.sargon.Account
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.resources.AccountDetails
 import rdx.works.core.domain.resources.metadata.AccountType
-import rdx.works.profile.data.model.pernetwork.Network
 
 data class AccountWithAssets(
-    val account: Network.Account,
+    val account: Account,
     val details: AccountDetails? = null,
     val assets: Assets? = null,
 ) {

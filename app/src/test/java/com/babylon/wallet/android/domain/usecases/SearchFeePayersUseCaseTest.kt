@@ -39,8 +39,7 @@ import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.model.pernetwork.Entity
+import rdx.works.core.domain.ProfileState
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase

@@ -60,6 +60,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
@@ -79,7 +80,6 @@ import rdx.works.core.domain.resources.metadata.iconUrl
 import rdx.works.core.domain.resources.metadata.name
 import rdx.works.core.domain.resources.sampleMainnet
 import rdx.works.core.toEncodedString
-import rdx.works.profile.data.model.pernetwork.Network
 import kotlin.math.absoluteValue
 
 object Thumbnail {
@@ -232,14 +232,14 @@ object Thumbnail {
     @Composable
     fun Persona(
         modifier: Modifier = Modifier,
-        persona: Network.Persona?
+        persona: Persona?
     ) {
         Custom(
             modifier = modifier,
             imageType = null, // We don't support persona avatars yet
             emptyDrawable = R.drawable.ic_persona,
             shape = CircleShape,
-            contentDescription = persona?.displayName.orEmpty()
+            contentDescription = persona?.displayName?.value.orEmpty()
         )
     }
 

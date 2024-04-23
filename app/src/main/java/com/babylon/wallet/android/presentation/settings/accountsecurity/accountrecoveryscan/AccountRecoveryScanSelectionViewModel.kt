@@ -10,7 +10,7 @@ import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.Mnemo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.extensions.isCurrentNetworkMainnet
+import rdx.works.core.sargon.isCurrentNetworkMainnet
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -22,8 +22,8 @@ class AccountRecoveryScanSelectionViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase().collect { profile ->
-                _state.update { it.copy(isMainnet = profile.isCurrentNetworkMainnet()) }
+            getProfileUseCase.flow.collect { profile ->
+                _state.update { it.copy(isMainnet = profile.isCurrentNetworkMainnet) }
             }
         }
     }

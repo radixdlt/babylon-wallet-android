@@ -27,20 +27,22 @@ import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.hex
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.core.sargon.sample
 
 @Composable
 fun ChooseLedgerDeviceSection(
     modifier: Modifier,
-    ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>>,
+    ledgerDevices: ImmutableList<Selectable<FactorSource.Ledger>>,
     onAddLedgerDeviceClick: () -> Unit,
-    onLedgerDeviceSelected: (LedgerHardwareWalletFactorSource) -> Unit,
+    onLedgerDeviceSelected: (FactorSource.Ledger) -> Unit,
 ) {
     Column(
         modifier = modifier
@@ -108,7 +110,7 @@ fun ChooseLedgerDeviceSection(
                 items(
                     items = ledgerDevices,
                     key = { item ->
-                        item.data.id.body.value
+                        item.data.value.id.body.hex
                     },
                     itemContent = { ledgerItem ->
                         LedgerListItem(
@@ -142,14 +144,14 @@ fun ChooseLedgerDeviceSection(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun FullscreenCircularProgressContentPreview() {
     RadixWalletPreviewTheme {
         ChooseLedgerDeviceSection(
             modifier = Modifier,
-            ledgerDevices = SampleDataProvider()
-                .ledgerFactorSourcesSample
+            ledgerDevices = FactorSource.Ledger.sample.all
                 .map {
                     Selectable(it)
                 }.toImmutableList(),

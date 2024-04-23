@@ -34,7 +34,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.AddLinkConnectorViewModel
 import com.babylon.wallet.android.presentation.ui.composables.AddLedgerDeviceScreen
@@ -44,11 +43,14 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.LedgerListItem
 import com.babylon.wallet.android.presentation.ui.composables.LinkConnectorScreen
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.hex
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.core.sargon.sample
 
 @Composable
 fun LedgerHardwareWalletsScreen(
@@ -103,7 +105,7 @@ fun LedgerHardwareWalletsScreen(
                 AddLedgerDeviceScreen(
                     showContent = addLedgerDeviceState.showContent,
                     uiMessage = addLedgerDeviceState.uiMessage,
-                    deviceModel = addLedgerDeviceState.newConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel()?.value,
+                    deviceModel = addLedgerDeviceState.newConnectedLedgerDevice?.model?.toProfileLedgerDeviceModel(),
                     onSendAddLedgerRequestClick = addLedgerDeviceViewModel::onSendAddLedgerRequestClick,
                     onConfirmLedgerNameClick = {
                         coroutineScope.launch {
@@ -154,7 +156,7 @@ fun LedgerHardwareWalletsScreen(
 
 @Composable
 private fun LedgerHardwareWalletsContent(
-    ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
+    ledgerDevices: ImmutableList<FactorSource.Ledger>,
     onAddLedgerDeviceClick: () -> Unit,
     onBackClick: () -> Unit,
     isNewLinkedConnectorConnected: Boolean,
@@ -186,7 +188,7 @@ private fun LedgerHardwareWalletsContent(
 @Composable
 private fun LedgerDeviceDetails(
     modifier: Modifier = Modifier,
-    ledgerFactorSources: ImmutableList<LedgerHardwareWalletFactorSource>,
+    ledgerFactorSources: ImmutableList<FactorSource.Ledger>,
     onAddLedgerDeviceClick: () -> Unit,
     isNewLinkedConnectorConnected: Boolean
 ) {
@@ -239,7 +241,7 @@ private fun LedgerDeviceDetails(
 @Composable
 private fun LedgerDevicesListContent(
     modifier: Modifier = Modifier,
-    ledgerDevices: ImmutableList<LedgerHardwareWalletFactorSource>,
+    ledgerDevices: ImmutableList<FactorSource.Ledger>,
     onAddLedgerDeviceClick: () -> Unit,
     isNewLinkedConnectorConnected: Boolean
 ) {
@@ -250,8 +252,8 @@ private fun LedgerDevicesListContent(
     ) {
         items(
             items = ledgerDevices,
-            key = { factorSource: LedgerHardwareWalletFactorSource ->
-                factorSource.id.body.value
+            key = { factorSource: FactorSource.Ledger ->
+                factorSource.value.id.body.hex
             },
             itemContent = { item ->
                 LedgerListItem(
@@ -295,12 +297,13 @@ fun LedgerHardwareWalletsScreenEmptyPreview() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun LedgerHardwareWalletsScreenPreview() {
     RadixWalletTheme {
         LedgerHardwareWalletsContent(
-            ledgerDevices = SampleDataProvider().ledgerFactorSourcesSample.toPersistentList(),
+            ledgerDevices = FactorSource.Ledger.sample.all.toPersistentList(),
             onAddLedgerDeviceClick = {},
             onBackClick = {},
             isNewLinkedConnectorConnected = true

@@ -5,17 +5,17 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.sumOf
-import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.PoolUnit
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
 class PoolContributionProcessor @Inject constructor(
@@ -28,8 +28,8 @@ class PoolContributionProcessor @Inject constructor(
             fungibleAddresses = summary.involvedFungibleAddresses(),
             nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
-        val defaultDepositGuarantee = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
-        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
+        val defaultDepositGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
+        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
         val from = summary.toWithdrawingAccountsWithTransferableAssets(assets, involvedOwnedAccounts)
         val to = summary.extractDeposits(
             classification = classification,
@@ -47,8 +47,8 @@ class PoolContributionProcessor @Inject constructor(
     private fun ExecutionSummary.extractDeposits(
         classification: DetailedManifestClass.PoolContribution,
         assets: List<Asset>,
-        defaultDepositGuarantee: Double,
-        involvedOwnedAccounts: List<Network.Account>
+        defaultDepositGuarantee: Decimal192,
+        involvedOwnedAccounts: List<Account>
     ): List<AccountWithTransferableResources> {
         val to = deposits.map { depositsPerAddress ->
             depositsPerAddress.value.map { deposit ->

@@ -72,8 +72,6 @@ import com.babylon.wallet.android.presentation.survey.npsSurveyDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReviewScreen
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.networkId
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.core.domain.resources.XrdResource
@@ -232,14 +230,14 @@ fun NavigationHost(
                     navController.fungibleAssetDialog(
                         resourceAddress = resource.address,
                         amounts = resourceWithAmount,
-                        underAccountAddress = AccountAddress.init(account.address)
+                        underAccountAddress = account.address
                     )
                 },
                 onNonFungibleResourceClick = { resource, item, account ->
                     navController.nftAssetDialog(
                         resourceAddress = resource.address,
                         localId = item.localId,
-                        underAccountAddress = AccountAddress.init(account.address)
+                        underAccountAddress = account.address
                     )
                 },
                 onTransferClick = { accountId ->
@@ -286,9 +284,9 @@ fun NavigationHost(
             onFinish = {
                 navController.popBackStack(ROUTE_CREATE_ACCOUNT, false)
             },
-            onStartRecovery = { factorSource, isOlympia ->
+            onStartRecovery = { factorSourceId, isOlympia ->
                 navController.accountRecoveryScan(
-                    factorSourceId = factorSource.identifier,
+                    factorSourceId = factorSourceId,
                     isOlympia = isOlympia
                 )
             }
@@ -324,7 +322,7 @@ fun NavigationHost(
                 navController.personaDetailScreen(personaAddress)
             },
             onNavigateToMnemonicBackup = {
-                navController.revealSeedPhrase(it.body.value)
+                navController.revealSeedPhrase(it)
             }
         )
         personaDetailScreen(
@@ -349,7 +347,7 @@ fun NavigationHost(
                 val resourcesWithAmount = when (asset) {
                     is TransferableAsset.Fungible.LSUAsset -> {
                         val xrdResourceAddress = runCatching {
-                            val networkId = asset.resourceAddress.networkId.value.toInt()
+                            val networkId = asset.resourceAddress.networkId
                             XrdResource.address(networkId = networkId)
                         }.getOrNull()
 

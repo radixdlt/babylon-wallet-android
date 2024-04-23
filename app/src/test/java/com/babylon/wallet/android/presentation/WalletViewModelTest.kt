@@ -33,8 +33,7 @@ import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.BackupState
-import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.core.domain.BackupState
 import rdx.works.profile.data.model.currentNetwork
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase

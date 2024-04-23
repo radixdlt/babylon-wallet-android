@@ -1,6 +1,7 @@
 package rdx.works.peerdroid.data
 
 import android.content.Context
+import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
@@ -15,7 +16,6 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
-import rdx.works.core.hash
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
@@ -26,7 +26,6 @@ import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
 import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
 import timber.log.Timber
-import java.lang.IllegalStateException
 
 interface PeerdroidLink {
 
@@ -34,7 +33,7 @@ interface PeerdroidLink {
      * Call this function to add a connection in the wallet settings.
      *
      */
-    suspend fun addConnection(encryptionKey: ByteArray): Result<Unit>
+    suspend fun addConnection(encryptionKey: RadixConnectPassword): Result<Unit>
 }
 
 internal class PeerdroidLinkImpl(
@@ -58,11 +57,11 @@ internal class PeerdroidLinkImpl(
     // This CompletableDeferred will return a result indicating if the peer connection is ready or not.
     private lateinit var peerConnectionDeferred: CompletableDeferred<Result<Unit>>
 
-    override suspend fun addConnection(encryptionKey: ByteArray): Result<Unit> {
+    override suspend fun addConnection(encryptionKey: RadixConnectPassword): Result<Unit> {
         addConnectionDeferred = CompletableDeferred()
         peerConnectionDeferred = CompletableDeferred()
         // get connection id from encryption key
-        val connectionId = encryptionKey.hash().hex
+        val connectionId = encryptionKey.value.hex
         Timber.d("\uD83D\uDDFC️ start process to add a new link connector with connectionId: $connectionId")
 
         withContext(ioDispatcher) {

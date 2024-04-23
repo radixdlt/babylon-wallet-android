@@ -8,21 +8,23 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.LAST_USED_DATE_FORMAT_SHORT_MONTH
-import com.babylon.wallet.android.utils.fromISO8601String
 import com.babylon.wallet.android.utils.toEpochMillis
+import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedPersonaSimple
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.Persona
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.Network.AuthorizedDapp.AuthorizedPersonaSimple
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.personasOnCurrentNetwork
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
@@ -36,13 +38,13 @@ class SelectPersonaViewModel @Inject constructor(
 
     private val args = SelectPersonaArgs(savedStateHandle)
 
-    private var authorizedDapp: Network.AuthorizedDapp? = null
+    private var authorizedDapp: AuthorizedDapp? = null
 
     override fun initialState(): SelectPersonaUiState = SelectPersonaUiState()
 
     init {
         viewModelScope.launch {
-            authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(args.dappDefinitionAddress)
+            authorizedDapp = dAppConnectionRepository.getAuthorizedDApp(args.dappDefinitionAddress)
             val allAuthorizedPersonas = authorizedDapp?.referencesToAuthorizedPersonas
             _state.update { state ->
                 val personas = generatePersonasListForDisplay(
@@ -63,8 +65,8 @@ class SelectPersonaViewModel @Inject constructor(
 
     private fun observePersonas() {
         viewModelScope.launch {
-            getProfileUseCase.personasOnCurrentNetwork.collect { personas ->
-                authorizedDapp = dAppConnectionRepository.getAuthorizedDapp(args.dappDefinitionAddress)
+            getProfileUseCase.flow.map { it.activePersonasOnCurrentNetwork }.collect { personas ->
+                authorizedDapp = dAppConnectionRepository.getAuthorizedDApp(args.dappDefinitionAddress)
                 val allAuthorizedPersonas = authorizedDapp?.referencesToAuthorizedPersonas
                 _state.update { state ->
                     val personasListForDisplay = generatePersonasListForDisplay(
@@ -90,7 +92,7 @@ class SelectPersonaViewModel @Inject constructor(
                 personaUiModel.persona.address == it.identityAddress
             }
             if (matchingAuthorizedPersona != null) {
-                val localDateTime = matchingAuthorizedPersona.lastLogin.fromISO8601String()
+                val localDateTime = matchingAuthorizedPersona.lastLogin.toLocalDateTime()
                 personaUiModel.copy(
                     lastUsedOn = localDateTime
                         ?.format(DateTimeFormatter.ofPattern(LAST_USED_DATE_FORMAT_SHORT_MONTH)),
@@ -110,7 +112,7 @@ class SelectPersonaViewModel @Inject constructor(
         }
     }
 
-    fun onSelectPersona(personaAddress: String) {
+    fun onSelectPersona(personaAddress: IdentityAddress) {
         val updatedPersonas = state.value.personaListToDisplay.map {
             it.copy(selected = it.persona.address == personaAddress)
         }.toPersistentList()
@@ -125,7 +127,7 @@ class SelectPersonaViewModel @Inject constructor(
 }
 
 sealed interface DAppSelectPersonaEvent : OneOffEvent {
-    data class PersonaSelected(val persona: Network.Persona) : DAppSelectPersonaEvent
+    data class PersonaSelected(val persona: Persona) : DAppSelectPersonaEvent
     data class CreatePersona(val firstPersonaCreated: Boolean) : DAppSelectPersonaEvent
 }
 

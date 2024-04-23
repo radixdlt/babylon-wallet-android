@@ -14,17 +14,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
-import rdx.works.profile.data.model.pernetwork.Network
+import com.radixdlt.sargon.samples.sampleMainnet
 
 @Composable
 fun SimpleAccountCard(
@@ -78,12 +77,12 @@ fun SimpleAccountCard(
 @Composable
 fun SimpleAccountCard(
     modifier: Modifier = Modifier,
-    account: Network.Account
+    account: Account
 ) {
     Row(
         modifier = modifier
             .background(
-                Brush.horizontalGradient(AccountGradientList[account.appearanceID % AccountGradientList.size]),
+                Brush.horizontalGradient(getAccountGradientColorsFor(account.appearanceId.value)),
                 RadixTheme.shapes.roundedRectSmall
             )
             .padding(
@@ -95,7 +94,7 @@ fun SimpleAccountCard(
     ) {
         Text(
             modifier = Modifier.padding(end = RadixTheme.dimensions.paddingMedium),
-            text = account.displayName,
+            text = account.displayName.value,
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
             color = RadixTheme.colors.white,
@@ -103,7 +102,7 @@ fun SimpleAccountCard(
         )
         ActionableAddressView(
             address = remember(account.address) {
-                Address.Account(AccountAddress.init(account.address))
+                Address.Account(account.address)
             },
             textStyle = RadixTheme.typography.body2HighImportance,
             textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
@@ -116,7 +115,7 @@ fun SimpleAccountCard(
 @Composable
 fun SimpleAccountCardPreview() {
     RadixWalletTheme {
-        SimpleAccountCard(account = SampleDataProvider().sampleAccount(), modifier = Modifier.fillMaxWidth())
+        SimpleAccountCard(account = Account.sampleMainnet(), modifier = Modifier.fillMaxWidth())
     }
 }
 
@@ -125,6 +124,6 @@ fun SimpleAccountCardPreview() {
 @Composable
 fun SimpleAccountCardWithoutNamePreview() {
     RadixWalletTheme {
-        SimpleAccountCard(account = SampleDataProvider().sampleAccount(), modifier = Modifier.fillMaxWidth())
+        SimpleAccountCard(account = Account.sampleMainnet().copy(displayName = DisplayName("")), modifier = Modifier.fillMaxWidth())
     }
 }

@@ -47,7 +47,7 @@ fun NavGraphBuilder.accountSecurityNavGraph(
             onNavigateToRecoverMnemonic = {
                 navController.restoreMnemonics(args = RestoreMnemonicsArgs())
             },
-            onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.body.value) }
+            onNavigateToSeedPhrase = { navController.revealSeedPhrase(it) }
         )
         ledgerHardwareWalletsScreen(
             onBackClick = {
@@ -109,7 +109,7 @@ fun NavGraphBuilder.accountSecurityNavGraph(
             },
             onRecoveryScanWithFactorSource = { factorSource, isOlympia ->
                 navController.accountRecoveryScan(
-                    factorSourceId = factorSource.identifier,
+                    factorSourceId = factorSource,
                     isOlympia = isOlympia
                 )
             }

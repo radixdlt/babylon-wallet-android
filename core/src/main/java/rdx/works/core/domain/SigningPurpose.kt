@@ -1,4 +1,4 @@
-package rdx.works.profile.data.model.pernetwork
+package rdx.works.core.domain
 
 enum class SigningPurpose {
     SignAuth, SignTransaction

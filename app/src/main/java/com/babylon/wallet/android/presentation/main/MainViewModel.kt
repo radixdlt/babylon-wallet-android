@@ -15,7 +15,10 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
-import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.size
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -32,15 +35,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentGateway
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.domain.ProfileState
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
-import rdx.works.profile.domain.CorrectLegacyAccountsDerivationPathSchemeUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.IsAnyEntityCreatedWithOlympiaUseCase
-import rdx.works.profile.domain.p2pLinks
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -59,7 +59,6 @@ class MainViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
     private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase,
-    private val correctLegacyAccountsDerivationPathSchemeUseCase: CorrectLegacyAccountsDerivationPathSchemeUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -68,10 +67,11 @@ class MainViewModel @Inject constructor(
     private var countdownJob: Job? = null
 
     val observeP2PLinks = getProfileUseCase
-        .p2pLinks
+        .flow
+        .map { it.appPreferences.p2pLinks }
         .map { p2pLinks ->
             Timber.d("found ${p2pLinks.size} p2p links")
-            p2pLinks.forEach { p2PLink ->
+            p2pLinks().forEach { p2PLink ->
                 establishLinkConnection(connectionPassword = p2PLink.connectionPassword)
             }
         }
@@ -94,7 +94,7 @@ class MainViewModel @Inject constructor(
     val isDevBannerVisible = getProfileStateUseCase().map { profileState ->
         when (profileState) {
             is ProfileState.Restored -> {
-                profileState.profile.currentGateway.network.id != Radix.Gateway.mainnet.network.id
+                profileState.profile.currentGateway.network.id != NetworkId.MAINNET
             }
 
             else -> false
@@ -135,49 +135,44 @@ class MainViewModel @Inject constructor(
         incomingRequestRepository.resumeIncomingRequests()
     }
 
-    private suspend fun establishLinkConnection(connectionPassword: String) {
-        val encryptionKey = parseEncryptionKeyFromConnectionPassword(
-            connectionPassword = connectionPassword
-        )
-        if (encryptionKey != null) {
-            peerdroidClient.connect(encryptionKey = encryptionKey)
-                .onSuccess {
-                    if (incomingDappRequestsJob == null) {
-                        Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")
-                        // We must run this only once
-                        // otherwise for each new link connection
-                        // we create a new job to collect messages from the same stream (messagesFromRemoteClients).
-                        // I think this can be improved.
-                        incomingDappRequestsJob = viewModelScope.launch {
-                            peerdroidClient
-                                .listenForIncomingRequests()
-                                .cancellable()
-                                .collect { incomingRequest ->
-                                    val remoteConnectorId = incomingRequest.remoteConnectorId
-                                    val requestId = incomingRequest.id
-                                    Timber.d(
-                                        "\uD83E\uDD16 wallet received incoming request from " +
+    private suspend fun establishLinkConnection(connectionPassword: RadixConnectPassword) {
+        peerdroidClient.connect(encryptionKey = connectionPassword)
+            .onSuccess {
+                if (incomingDappRequestsJob == null) {
+                    Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")
+                    // We must run this only once
+                    // otherwise for each new link connection
+                    // we create a new job to collect messages from the same stream (messagesFromRemoteClients).
+                    // I think this can be improved.
+                    incomingDappRequestsJob = viewModelScope.launch {
+                        peerdroidClient
+                            .listenForIncomingRequests()
+                            .cancellable()
+                            .collect { incomingRequest ->
+                                val remoteConnectorId = incomingRequest.remoteConnectorId
+                                val requestId = incomingRequest.id
+                                Timber.d(
+                                    "\uD83E\uDD16 wallet received incoming request from " +
                                             "remote connector $remoteConnectorId with id $requestId"
-                                    )
-                                    verifyIncomingRequest(incomingRequest)
+                                )
+                                verifyIncomingRequest(incomingRequest)
+                            }
+                    }
+                    incomingDappRequestErrorsJob = viewModelScope.launch {
+                        peerdroidClient
+                            .listenForIncomingRequestErrors()
+                            .cancellable()
+                            .collect {
+                                _state.update { state ->
+                                    state.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequestChallenge)
                                 }
-                        }
-                        incomingDappRequestErrorsJob = viewModelScope.launch {
-                            peerdroidClient
-                                .listenForIncomingRequestErrors()
-                                .cancellable()
-                                .collect {
-                                    _state.update { state ->
-                                        state.copy(dappRequestFailure = RadixWalletException.DappRequestException.InvalidRequestChallenge)
-                                    }
-                                }
-                        }
+                            }
                     }
                 }
-                .onFailure { throwable ->
-                    Timber.e("\uD83E\uDD16 Failed to establish link connection: ${throwable.message}")
-                }
-        }
+            }
+            .onFailure { throwable ->
+                Timber.e("\uD83E\uDD16 Failed to establish link connection: ${throwable.message}")
+            }
     }
 
     /**
@@ -260,7 +255,6 @@ class MainViewModel @Inject constructor(
             if (deviceNotSecure) {
                 appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
             } else {
-                correctLegacyAccountsDerivationPathSchemeUseCase()
                 val entitiesCreatedWithOlympiaLegacyFactorSource = isAnyEntityCreatedWithOlympiaUseCase()
                 if (entitiesCreatedWithOlympiaLegacyFactorSource) {
                     _state.update { state ->

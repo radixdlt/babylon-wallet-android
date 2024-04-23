@@ -53,12 +53,12 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import rdx.works.core.domain.DApp
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun SelectPersonaScreen(
@@ -177,7 +177,7 @@ private fun HandleOneOffEvents(
 private fun SelectPersonaContent(
     onCancelClick: () -> Unit,
     onContinueClick: () -> Unit,
-    onSelectPersona: (Network.Persona) -> Unit,
+    onSelectPersona: (Persona) -> Unit,
     dapp: DApp?,
     firstTimeLogin: Boolean,
     continueButtonEnabled: Boolean,

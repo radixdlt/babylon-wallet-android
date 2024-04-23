@@ -4,7 +4,6 @@ package com.babylon.wallet.android.presentation.dapp.authorized.personaongoing
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.RequiredPersonaField
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
@@ -20,7 +19,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import rdx.works.core.identifiedArrayListOf
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.PersonaDataField
 import rdx.works.profile.domain.GetProfileUseCase
 
 internal class PersonaDataOngoingViewModelTest {
@@ -46,7 +45,7 @@ internal class PersonaDataOngoingViewModelTest {
         every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
                 RequiredPersonaField(
-                    PersonaData.PersonaDataField.Kind.Name,
+                    PersonaDataField.Kind.Name,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,
                         MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
@@ -73,7 +72,7 @@ internal class PersonaDataOngoingViewModelTest {
         every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
                 RequiredPersonaField(
-                    PersonaData.PersonaDataField.Kind.PhoneNumber,
+                    PersonaDataField.Kind.PhoneNumber,
                     MessageFromDataChannel.IncomingRequest.NumberOfValues(
                         1,
                         MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly

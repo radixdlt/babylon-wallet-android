@@ -5,18 +5,17 @@ import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.radixdlt.sargon.NetworkId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.collections.immutable.toPersistentSet
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
-import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
-import rdx.works.profile.domain.gateways
 import javax.inject.Inject
 
 @Suppress("MagicNumber")
@@ -32,7 +31,7 @@ class AccountSecurityViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            if (getProfileUseCase.gateways.first().current().network.id == Radix.Network.mainnet.id || EXPERIMENTAL_FEATURES_ENABLED) {
+            if (getProfileUseCase().currentGateway.network.id == NetworkId.MAINNET || EXPERIMENTAL_FEATURES_ENABLED) {
                 _state.update { state ->
                     val updatedSettings = defaultSettings.toMutableList().apply {
                         add(indices.last, SettingsItem.AccountSecurityAndSettingsItem.ImportFromLegacyWallet)

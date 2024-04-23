@@ -57,7 +57,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.onboarding.restore.backup.RestoreFromBackupViewModel.Event
 import com.babylon.wallet.android.presentation.ui.composables.DefaultModalSheetLayout
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
@@ -65,7 +64,11 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.formattedSpans
 import com.babylon.wallet.android.utils.toDateString
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.isCompatible
 
 @Composable
 fun RestoreFromBackupScreen(
@@ -455,13 +458,14 @@ private fun PasswordSheet(
     }
 }
 
+@UsesSampleValues
 @Preview
 @Composable
 fun RestoreFromBackupPreviewBackupExists() {
     RadixWalletTheme {
         RestoreFromBackupContent(
             state = RestoreFromBackupViewModel.State(
-                restoringProfile = SampleDataProvider().sampleProfile()
+                restoringProfile = Profile.sample()
             ),
             onBackClick = {},
             onRestoringProfileCheckChanged = {},

@@ -32,7 +32,7 @@ class NotariseTransactionUseCase @Inject constructor() {
         val intent = runCatching {
             TransactionIntent(
                 header = TransactionHeader(
-                    networkId = request.manifestData.networkIdSargon,
+                    networkId = request.manifestData.networkId,
                     startEpochInclusive = request.startEpoch,
                     endEpochExclusive = request.endEpoch,
                     nonce = request.nonce,

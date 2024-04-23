@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.mockdata
 
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.string
@@ -10,28 +9,16 @@ import rdx.works.core.IdentifiedArrayList
 import rdx.works.core.InstantGenerator
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.identifiedArrayListOf
-import rdx.works.profile.data.model.DeviceInfo
-import rdx.works.profile.data.model.Header
-import rdx.works.profile.data.model.MnemonicWithPassphrase
+import rdx.works.core.domain.DeviceInfo
 import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.apppreferences.AppPreferences
-import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.apppreferences.P2PLink
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.apppreferences.Security
 import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.data.model.compressedPublicKey
 import rdx.works.profile.data.model.extensions.createAccount
 import rdx.works.profile.data.model.extensions.nextAccountIndex
-import rdx.works.profile.data.model.factorsources.DerivationPathScheme
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.Network
 import rdx.works.profile.data.model.pernetwork.addAccounts
 import rdx.works.profile.derivation.model.KeyType
-import rdx.works.profile.domain.TestData
 import java.time.Instant
 
 fun profile(

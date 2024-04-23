@@ -1,118 +1,144 @@
 package rdx.works.profile.accountextensions
 
-import com.radixdlt.extensions.removeLeadingZero
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AssetException
+import com.radixdlt.sargon.BIP39Passphrase
+import com.radixdlt.sargon.Cap26KeyKind
+import com.radixdlt.sargon.DepositAddressExceptionRule
+import com.radixdlt.sargon.DepositRule
+import com.radixdlt.sargon.DerivationPath
+import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.HdPathComponent
+import com.radixdlt.sargon.Mnemonic
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.ThirdPartyDeposits
+import com.radixdlt.sargon.extensions.get
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.InstantGenerator
-import rdx.works.core.identifiedArrayListOf
-import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.compressedPublicKey
-import rdx.works.profile.data.model.extensions.initializeAccount
-import rdx.works.profile.data.model.extensions.isSignatureRequiredBasedOnDepositRules
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.addAccounts
-import rdx.works.profile.data.model.pernetwork.updateThirdPartyDepositSettings
+import rdx.works.core.domain.DeviceInfo
+import rdx.works.core.sargon.account
+import rdx.works.core.sargon.addAccounts
+import rdx.works.core.sargon.babylon
+import rdx.works.core.sargon.derivePublicKey
+import rdx.works.core.sargon.initBabylon
+import rdx.works.core.sargon.isSignatureRequiredBasedOnDepositRules
+import rdx.works.core.sargon.updateThirdPartyDepositSettings
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.derivation.model.KeyType
-import rdx.works.profile.domain.TestData
 import kotlin.test.assertTrue
 
 class TransferBetweenOwnedAccountsTest {
 
     private val mnemonicWithPassphrase = MnemonicWithPassphrase(
-        mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                "humble limb repeat video sudden possible story mask neutral prize goose mandate",
-        bip39Passphrase = ""
+        mnemonic = Mnemonic.init(
+            "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                    "humble limb repeat video sudden possible story mask neutral prize goose mandate"
+        ),
+        passphrase = BIP39Passphrase()
     )
+
+    private val deviceInfo = DeviceInfo.sample()
     private val babylonFactorSource = DeviceFactorSource.babylon(
-        mnemonicWithPassphrase, model = TestData.deviceInfo.displayName,
-        name = "Samsung"
+        mnemonicWithPassphrase = mnemonicWithPassphrase,
+        model = deviceInfo.model,
+        name = deviceInfo.name
     )
 
     var profile = Profile.init(
-        id = "BABE1442-3C98-41FF-AFB0-D0F5829B020D",
-        deviceInfo = TestData.deviceInfo,
-        creationDate = InstantGenerator()
-    ).copy(factorSources = identifiedArrayListOf(babylonFactorSource))
+        deviceFactorSource = babylonFactorSource,
+        creatingDeviceName = deviceInfo.displayName
+    )
 
-    private val defaultNetwork = Radix.Gateway.default.network
+    private val defaultNetwork = NetworkId.MAINNET
 
-    private lateinit var targetAccount: Network.Account
+    private lateinit var targetAccount: Account
 
     private val asset1address = ResourceAddress.sampleMainnet.random()
     private val asset2address = ResourceAddress.sampleMainnet.random()
     private val targetAccountWithAsset1 = listOf(asset1address)
 
-    private val acceptAll = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
-        depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll
+    private val acceptAll = ThirdPartyDeposits(
+        depositRule = DepositRule.ACCEPT_ALL,
+        assetsExceptionList = emptyList(),
+        depositorsAllowList = emptyList()
     )
 
-    private val acceptAllAndDenyAsset1 = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
-        depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll,
+    private val acceptAllAndDenyAsset1 = ThirdPartyDeposits(
+        depositRule = DepositRule.ACCEPT_ALL,
         assetsExceptionList = listOf(
-            Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
-                address = asset1address.string,
-                exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny
+            AssetException(
+                address = asset1address,
+                exceptionRule = DepositAddressExceptionRule.DENY
             )
-        )
+        ),
+        depositorsAllowList = emptyList()
     )
 
-    private val denyAll = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
-        depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll
+    private val denyAll = ThirdPartyDeposits(
+        depositRule = DepositRule.DENY_ALL,
+        assetsExceptionList = emptyList(),
+        depositorsAllowList = emptyList()
     )
 
-    private val denyAllAndAllowAsset1 = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
-        depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll,
+    private val denyAllAndAllowAsset1 = ThirdPartyDeposits(
+        depositRule = DepositRule.DENY_ALL,
         assetsExceptionList = listOf(
-            Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
-                address = asset1address.string,
-                exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow
+            AssetException(
+                address = asset1address,
+                exceptionRule = DepositAddressExceptionRule.ALLOW
             )
-        )
+        ),
+        depositorsAllowList = emptyList()
     )
 
-    private val denyAllAndDenyAsset1 = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
-        depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll,
+    private val denyAllAndDenyAsset1 = ThirdPartyDeposits(
+        depositRule = DepositRule.DENY_ALL,
         assetsExceptionList = listOf(
-            Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
-                address = asset1address.string,
-                exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny
+            AssetException(
+                address = asset1address,
+                exceptionRule = DepositAddressExceptionRule.DENY
             )
-        )
+        ),
+        depositorsAllowList = emptyList()
     )
 
-    private val acceptKnown = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
-        depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown
+    private val acceptKnown = ThirdPartyDeposits(
+        depositRule = DepositRule.ACCEPT_KNOWN,
+        assetsExceptionList = emptyList(),
+        depositorsAllowList = emptyList()
     )
 
-    private val acceptKnownAndAllowAsset1 = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
-        depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown,
+    private val acceptKnownAndAllowAsset1 = ThirdPartyDeposits(
+        depositRule = DepositRule.ACCEPT_KNOWN,
         assetsExceptionList = listOf(
-            Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
-                address = asset1address.string,
-                exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow
+            AssetException(
+                address = asset1address,
+                exceptionRule = DepositAddressExceptionRule.ALLOW
             )
-        )
+        ),
+        depositorsAllowList = emptyList()
     )
 
-    private val acceptKnownAndDenyAsset1 = Network.Account.OnLedgerSettings.ThirdPartyDeposits(
-        depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown,
+    private val acceptKnownAndDenyAsset1 = ThirdPartyDeposits(
+        depositRule = DepositRule.ACCEPT_KNOWN,
         assetsExceptionList = listOf(
-            Network.Account.OnLedgerSettings.ThirdPartyDeposits.AssetException(
-                address = asset1address.string,
-                exceptionRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny
+            AssetException(
+                address = asset1address,
+                exceptionRule = DepositAddressExceptionRule.DENY
             )
-        )
+        ),
+        depositorsAllowList = emptyList()
     )
 
     @Before
@@ -120,23 +146,23 @@ class TransferBetweenOwnedAccountsTest {
         val mnemonicRepository = mockk<MnemonicRepository>()
         coEvery { mnemonicRepository() } returns mnemonicWithPassphrase
 
-        val derivationPath = DerivationPath.forAccount(
-            networkId = defaultNetwork.networkId(),
-            accountIndex = 0,
-            keyType = KeyType.TRANSACTION_SIGNING
+        val derivationPath = DerivationPath.account(
+            networkId = defaultNetwork,
+            keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
+            index = HdPathComponent(0u)
         )
-        targetAccount = initializeAccount(
-            displayName = "target account",
-            onNetworkId = defaultNetwork.networkId(),
-            compressedPublicKey = mnemonicWithPassphrase.compressedPublicKey(derivationPath = derivationPath).removeLeadingZero(),
+        targetAccount = Account.initBabylon(
+            networkId = defaultNetwork,
+            displayName = DisplayName("target account"),
+            publicKey = mnemonicWithPassphrase.derivePublicKey(derivationPath = derivationPath),
             derivationPath = derivationPath,
-            factorSource = (profile.factorSources.first() as DeviceFactorSource),
-            onLedgerSettings = Network.Account.OnLedgerSettings.init()
+            factorSourceId = profile.factorSources().first().id as FactorSourceId.Hash,
+
         )
 
         profile = profile.addAccounts(
             accounts = listOf(targetAccount),
-            onNetwork = defaultNetwork.networkId()
+            onNetwork = defaultNetwork
         )
     }
 

@@ -32,14 +32,13 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transfer.assets.SpendingAssetItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentSetOf
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.resources.Resource
@@ -78,7 +77,7 @@ fun TargetAccountCard(
                 Modifier
                     .background(
                         brush = Brush.linearGradient(
-                            getAccountGradientColorsFor(targetAccount.account.appearanceID)
+                            getAccountGradientColorsFor(targetAccount.account.appearanceId.value)
                         ),
                         shape = RadixTheme.shapes.roundedRectTopMedium
                     )
@@ -134,16 +133,16 @@ fun TargetAccountCard(
                 is TargetAccount.Owned -> {
                     Text(
                         modifier = Modifier.padding(start = RadixTheme.dimensions.paddingMedium),
-                        text = targetAccount.account.displayName,
+                        text = targetAccount.account.displayName.value,
                         style = RadixTheme.typography.body1Header,
                         color = RadixTheme.colors.white
                     )
                 }
             }
             Spacer(modifier = Modifier.weight(1f))
-            if (targetAccount.isAddressValid) {
+            targetAccount.validatedAddress?.let {
                 ActionableAddressView(
-                    address = Address.Account(AccountAddress.init(targetAccount.address)),
+                    address = Address.Account(it),
                     textStyle = RadixTheme.typography.body2HighImportance,
                     textColor = RadixTheme.colors.white.copy(alpha = 0.8f),
                     iconColor = RadixTheme.colors.white.copy(alpha = 0.8f)
@@ -155,7 +154,7 @@ fun TargetAccountCard(
                     Icon(
                         imageVector = Icons.Filled.Clear,
                         contentDescription = "clear",
-                        tint = if (targetAccount.isAddressValid) RadixTheme.colors.white else RadixTheme.colors.gray1,
+                        tint = if (targetAccount.validatedAddress != null) RadixTheme.colors.white else RadixTheme.colors.gray1,
                     )
                 }
             }
@@ -274,7 +273,7 @@ fun TargetAccountCardPreview() {
                 onMaxAmountClicked = {},
                 onDeleteClick = {},
                 targetAccount = TargetAccount.Owned(
-                    account = SampleDataProvider().sampleAccount(),
+                    account = Account.sampleMainnet(),
                     id = UUIDGenerator.uuid().toString(),
                     spendingAssets = persistentSetOf(
                         SpendingAsset.Fungible(

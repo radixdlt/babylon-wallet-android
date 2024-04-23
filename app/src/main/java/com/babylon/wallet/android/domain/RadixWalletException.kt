@@ -7,7 +7,9 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.utils.replaceDoublePercent
-import rdx.works.profile.data.model.apppreferences.Radix
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import rdx.works.profile.domain.ProfileException
 
 sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = cause) {
@@ -52,17 +54,13 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
             DappRequestException(cause = cause)
 
         data class WrongNetwork(
-            val currentNetworkId: Int,
-            val requestNetworkId: Int
+            val currentNetworkId: NetworkId,
+            val requestNetworkId: NetworkId
         ) : DappRequestException() {
             val currentNetworkName: String
-                get() = runCatching {
-                    Radix.Network.fromId(currentNetworkId)
-                }.getOrNull()?.name.orEmpty().replaceFirstChar(Char::titlecase)
+                get() = currentNetworkId.string.replaceFirstChar(Char::titlecase)
             val requestNetworkName: String
-                get() = runCatching {
-                    Radix.Network.fromId(requestNetworkId)
-                }.getOrNull()?.name.orEmpty().replaceFirstChar(Char::titlecase)
+                get() = requestNetworkId.string.replaceFirstChar(Char::titlecase)
         }
 
         override val ceError: ConnectorExtensionError

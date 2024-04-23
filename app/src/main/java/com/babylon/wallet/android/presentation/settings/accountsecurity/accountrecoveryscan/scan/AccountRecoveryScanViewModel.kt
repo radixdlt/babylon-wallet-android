@@ -14,6 +14,14 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.Constants
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.Accounts
+import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -23,18 +31,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import rdx.works.core.TimestampGenerator
 import rdx.works.core.mapWhen
-import rdx.works.core.toIdentifiedArrayList
-import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.babylon
+import rdx.works.core.sargon.factorSourceById
+import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.domain.AddRecoveredAccountsToProfileUseCase
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.factorSourceByIdValue
+import java.time.Instant
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -46,21 +53,22 @@ class AccountRecoveryScanViewModel @Inject constructor(
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
-    private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository
+    private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
+    private val deviceInfoRepository: DeviceInfoRepository
 ) : StateViewModel<AccountRecoveryScanViewModel.State>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = AccountRecoveryScanArgs(savedStateHandle)
 
     // used only when account recovery scan is from onboarding
     private var givenTempMnemonic: MnemonicWithPassphrase? = null
-    private var nextDerivationPathOffset: Int = 0
+    private var nextDerivationPathOffset: UInt = 0u
 
     override fun initialState(): State = State()
 
     init {
         viewModelScope.launch {
             val factorSource = args.factorSourceId?.let { factorSourceId ->
-                getProfileUseCase.factorSourceByIdValue(factorSourceId) as FactorSource.CreatingEntity
+                getProfileUseCase().factorSourceById(factorSourceId)
             }
             _state.update { state ->
                 state.copy(
@@ -72,10 +80,15 @@ class AccountRecoveryScanViewModel @Inject constructor(
             // if true it is account scan from recovery in onboarding with a given main babylon seed phrase
             if (factorSource == null) {
                 givenTempMnemonic = accessFactorSourcesProxy.getTempMnemonicWithPassphrase()
-                givenTempMnemonic?.let {
-                    val mainBabylonDeviceFactorSource = ensureBabylonFactorSourceExistUseCase.initMainBabylonFactorSourceWithMnemonic(
-                        mnemonic = it
-                    )
+                givenTempMnemonic?.let { mnemonic ->
+                    val deviceInfo = deviceInfoRepository.getDeviceInfo()
+                    val mainBabylonDeviceFactorSource = DeviceFactorSource.babylon(
+                        mnemonicWithPassphrase = mnemonic,
+                        model = deviceInfo.model,
+                        name = deviceInfo.name,
+                        createdAt = TimestampGenerator(),
+                        isMain = true
+                    ).asGeneral()
                     _state.update { state ->
                         state.copy(recoveryFactorSource = mainBabylonDeviceFactorSource)
                     }
@@ -112,7 +125,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
     @Suppress("UnsafeCallOnNullableType")
     private fun startRecoveryScan(
         isMainBabylonFactorSource: Boolean,
-        factorSource: FactorSource.CreatingEntity,
+        factorSource: FactorSource,
         isOlympia: Boolean
     ) {
         viewModelScope.launch {
@@ -150,7 +163,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
         }
     }
 
-    private suspend fun resolveStateFromDerivedAccounts(derivedAccounts: List<Network.Account>) {
+    private suspend fun resolveStateFromDerivedAccounts(derivedAccounts: List<Account>) {
         _state.update { it.copy(isScanningNetwork = true) }
 
         val accountsWithLedgerState = resolveAccountsLedgerStateRepository(derivedAccounts)
@@ -206,10 +219,10 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 val bdfs = state.value.recoveryFactorSource
                 val accounts = state.value.activeAccounts +
                     state.value.inactiveAccounts.filter { it.selected }.map { it.data }
-                generateProfileUseCase.initWithBdfsAndAccounts(
-                    bdfs = bdfs as DeviceFactorSource,
+                generateProfileUseCase.initWithDeviceFactorSourceAndAccounts(
+                    deviceFactorSource = bdfs as FactorSource.Device,
                     mnemonicWithPassphrase = givenTempMnemonic!!,
-                    accounts = accounts.toIdentifiedArrayList()
+                    accounts = Accounts.init(accounts).invoke()
                 )
                 sendEvent(Event.RecoverComplete)
             } else {
@@ -225,7 +238,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
         }
     }
 
-    fun onAccountSelected(selectableAccount: Selectable<Network.Account>) {
+    fun onAccountSelected(selectableAccount: Selectable<Account>) {
         _state.update { state ->
             state.copy(
                 inactiveAccounts = state.inactiveAccounts.mapWhen(
@@ -254,12 +267,12 @@ class AccountRecoveryScanViewModel @Inject constructor(
     }
 
     data class State(
-        val recoveryFactorSource: FactorSource.CreatingEntity? = null,
+        val recoveryFactorSource: FactorSource? = null,
         val isOlympiaSeedPhrase: Boolean = false,
         val contentState: ContentState = ContentState.ScanInProgress,
         val recoveredAccounts: ImmutableList<AccountWithOnLedgerStatus> = persistentListOf(),
-        val activeAccounts: PersistentList<Network.Account> = persistentListOf(),
-        val inactiveAccounts: PersistentList<Selectable<Network.Account>> = persistentListOf(),
+        val activeAccounts: PersistentList<Account> = persistentListOf(),
+        val inactiveAccounts: PersistentList<Selectable<Account>> = persistentListOf(),
         val isScanningNetwork: Boolean = false,
         val isNoMnemonicErrorVisible: Boolean = false,
         val uiMessage: UiMessage? = null

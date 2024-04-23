@@ -22,7 +22,6 @@ import com.radixdlt.sargon.extensions.perAssetTransfers
 import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.sargon.toSargon
 import timber.log.Timber

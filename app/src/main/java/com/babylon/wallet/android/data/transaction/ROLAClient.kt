@@ -5,7 +5,7 @@ import com.babylon.wallet.android.domain.usecases.assets.GetEntitiesOwnerKeysUse
 import com.babylon.wallet.android.domain.usecases.transaction.CollectSignersSignaturesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GenerateAuthSigningFactorInstanceUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
-import com.radixdlt.sargon.AddressOfAccountOrPersona
+import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.PublicKeyHash
 import com.radixdlt.sargon.SignatureWithPublicKey
@@ -15,11 +15,9 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.setOwnerKeysHashes
 import kotlinx.coroutines.flow.merge
 import rdx.works.core.domain.TransactionManifestData
-import rdx.works.profile.data.model.pernetwork.Entity
-import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.pernetwork.SigningPurpose
-import rdx.works.profile.sargon.toSargon
+import rdx.works.core.sargon.ProfileEntity
+import rdx.works.core.sargon.transactionSigningFactorInstance
+import rdx.works.core.domain.SigningPurpose
 import javax.inject.Inject
 
 class ROLAClient @Inject constructor(
@@ -33,28 +31,17 @@ class ROLAClient @Inject constructor(
         generateAuthSigningFactorInstanceUseCase.interactionState
     )
 
-    suspend fun generateAuthSigningFactorInstance(entity: Entity): Result<FactorInstance> {
+    suspend fun generateAuthSigningFactorInstance(entity: ProfileEntity): Result<HierarchicalDeterministicFactorInstance> {
         return generateAuthSigningFactorInstanceUseCase(entity)
     }
 
     suspend fun createAuthKeyManifest(
-        entity: Entity,
-        authSigningFactorInstance: FactorInstance
+        entity: ProfileEntity,
+        authSigningFactorInstance: HierarchicalDeterministicFactorInstance
     ): Result<TransactionManifestData> {
-        val transactionSigningPublicKey = when (val state = entity.securityState) {
-            is SecurityState.Unsecured -> {
-                when (val badge = state.unsecuredEntityControl.transactionSigning.badge) {
-                    is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-                        badge.publicKey.toSargon()
-                    }
-                }
-            }
-        }
-        val authSigningPublicKey = when (val badge = authSigningFactorInstance.badge) {
-            is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
-                badge.publicKey.toSargon()
-            }
-        }
+
+        val transactionSigningPublicKey = entity.securityState.transactionSigningFactorInstance.publicKey.publicKey
+        val authSigningPublicKey = authSigningFactorInstance.publicKey.publicKey
 
         return getEntitiesOwnerKeysUseCase(listOf(entity)).mapCatching { ownerKeysPerEntity ->
             val ownerKeys = ownerKeysPerEntity[entity].orEmpty()
@@ -68,7 +55,7 @@ class ROLAClient @Inject constructor(
             publicKeys
         }.mapCatching { publicKeys ->
             TransactionManifest.setOwnerKeysHashes(
-                addressOfAccountOrPersona = AddressOfAccountOrPersona.init(validating = entity.address),
+                addressOfAccountOrPersona = entity.address,
                 ownerKeyHashes = publicKeys.map { PublicKeyHash.init(it) }
             )
         }.mapCatching {
@@ -77,7 +64,7 @@ class ROLAClient @Inject constructor(
     }
 
     suspend fun signAuthChallenge(
-        entity: Entity,
+        entity: ProfileEntity,
         signRequest: SignRequest,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<SignatureWithPublicKey> {

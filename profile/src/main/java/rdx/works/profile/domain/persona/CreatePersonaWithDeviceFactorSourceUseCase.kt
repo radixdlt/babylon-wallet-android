@@ -1,53 +1,58 @@
 package rdx.works.profile.domain.persona
 
+import com.radixdlt.sargon.DerivationPathScheme
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.PersonaData
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.id
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.currentGateway
-import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
-import rdx.works.profile.data.model.factorsources.DerivationPathScheme
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.Network.Persona.Companion.init
-import rdx.works.profile.data.model.pernetwork.PersonaData
-import rdx.works.profile.data.model.pernetwork.addPersona
-import rdx.works.profile.data.model.pernetwork.nextPersonaIndex
+import rdx.works.core.sargon.addPersona
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.init
+import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.core.sargon.nextPersonaIndex
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
-import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import javax.inject.Inject
 
 class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
-    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val profileRepository: ProfileRepository,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
     suspend operator fun invoke(
-        displayName: String,
+        displayName: DisplayName,
         personaData: PersonaData
-    ): Network.Persona {
+    ): Persona {
         return withContext(defaultDispatcher) {
-            val profile = ensureBabylonFactorSourceExistUseCase()
+            val profile = profileRepository.profile.first()
 
-            val networkID = profile.currentGateway.network.networkId()
-            val factorSource = profile.mainBabylonFactorSource()
-                ?: error("Babylon factor source is not present")
-            val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.id).getOrNull())
+            val networkId = profile.currentGateway.network.id
+            val factorSource = profile.mainBabylonFactorSource ?: error("Babylon factor source is not present")
+            val mnemonicWithPassphrase = requireNotNull(mnemonicRepository.readMnemonic(factorSource.value.id.asGeneral()).getOrNull())
             // Construct new persona
-            val newPersona = init(
-                entityIndex = profile.nextPersonaIndex(DerivationPathScheme.CAP_26, networkID),
+            val newPersona = Persona.init(
+                entityIndex = profile.nextPersonaIndex(
+                    forNetworkId = networkId,
+                    derivationPathScheme = DerivationPathScheme.CAP26
+                ),
                 displayName = displayName,
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
-                factorSource = factorSource,
-                networkId = networkID,
+                factorSourceId = factorSource.value.id.asGeneral(),
+                networkId = networkId,
                 personaData = personaData
             )
 
             // Add persona to the profile
             val updatedProfile = profile.addPersona(
                 persona = newPersona,
-                onNetwork = networkID
+                onNetwork = networkId
             )
             profileRepository.saveProfile(updatedProfile)
             newPersona

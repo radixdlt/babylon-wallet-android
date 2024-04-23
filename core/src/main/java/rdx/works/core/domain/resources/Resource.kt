@@ -302,13 +302,12 @@ private fun String.truncate(maxNumberOfCharacters: Int, addEllipsis: Boolean = t
 object XrdResource {
     const val SYMBOL = "XRD"
 
-    fun address(networkId: Int): ResourceAddress {
-        return ResourceAddress.xrd(com.radixdlt.sargon.NetworkId.init(discriminant = networkId.toUByte()))
+    fun address(networkId: com.radixdlt.sargon.NetworkId): ResourceAddress {
+        return ResourceAddress.xrd(networkId)
     }
 
-    fun addressesPerNetwork(): Map<Int, ResourceAddress> = NetworkId.entries.associate { entry ->
-        entry.value to address(networkId = entry.value)
-    }
+    fun addressesPerNetwork(): Map<com.radixdlt.sargon.NetworkId, ResourceAddress> =
+        com.radixdlt.sargon.NetworkId.entries.associateWith { entry -> address(networkId = entry) }
 }
 
 @Suppress("MagicNumber")

@@ -4,13 +4,21 @@ import android.os.Parcelable
 import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.TransactionType
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.LedgerHardwareWalletModel
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.RequestedNumberQuantifier
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.domain.TransactionManifestData
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.pernetwork.PersonaData
-import rdx.works.profile.data.model.pernetwork.RequestedNumber
+import rdx.works.core.sargon.PersonaDataField
 
 sealed interface MessageFromDataChannel {
 
@@ -85,7 +93,9 @@ sealed interface MessageFromDataChannel {
                     data object WithoutChallenge : LoginRequest()
                 }
 
-                data class UsePersonaRequest(val personaAddress: String) : AuthRequest
+                data class UsePersonaRequest(val personaAddress: String) : AuthRequest {
+                    val identityAddress: IdentityAddress = IdentityAddress.init(personaAddress)
+                }
             }
         }
 
@@ -114,7 +124,7 @@ sealed interface MessageFromDataChannel {
         ) : IncomingRequest(remoteConnectorId, requestId, requestMetadata)
 
         data class RequestMetadata(
-            val networkId: Int,
+            val networkId: NetworkId,
             val origin: String,
             val dAppDefinitionAddress: String,
             val isInternal: Boolean, // Indicates that the request is made from the wallet app itself.
@@ -122,7 +132,7 @@ sealed interface MessageFromDataChannel {
         ) {
 
             companion object {
-                fun internal(networkId: Int, blockUntilCompleted: Boolean = false) = RequestMetadata(
+                fun internal(networkId: NetworkId, blockUntilCompleted: Boolean = false) = RequestMetadata(
                     networkId = networkId,
                     origin = "",
                     dAppDefinitionAddress = "",
@@ -208,7 +218,17 @@ sealed interface MessageFromDataChannel {
             val interactionId: String,
             val model: LedgerDeviceModel,
             val deviceId: HexCoded32Bytes
-        ) : LedgerResponse(interactionId)
+        ) : LedgerResponse(interactionId) {
+
+            val factorSourceId: FactorSourceId.Hash
+                get() = FactorSourceId.Hash(
+                    value = FactorSourceIdFromHash(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        body = Exactly32Bytes.init(deviceId.value.hexToBagOfBytes())
+                    )
+                )
+
+        }
 
         data class DerivePublicKeyResponse(
             val interactionId: String,
@@ -242,23 +262,16 @@ sealed interface MessageFromDataChannel {
     data class Error(val exception: RadixWalletException) : MessageFromDataChannel
 }
 
-fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toProfileShareAccountsQuantifier(): RequestedNumber.Quantifier {
-    return when (this.quantifier) {
-        MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly -> {
-            RequestedNumber.Quantifier.Exactly
-        }
-
-        MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast -> {
-            RequestedNumber.Quantifier.AtLeast
-        }
-    }
+fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toRequestedNumberQuantifier(): RequestedNumberQuantifier = when (quantifier) {
+    MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly -> RequestedNumberQuantifier.EXACTLY
+    MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast -> RequestedNumberQuantifier.AT_LEAST
 }
 
-fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): LedgerHardwareWalletFactorSource.DeviceModel {
+fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): LedgerHardwareWalletModel {
     return when (this) {
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_S
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_S_PLUS
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> LedgerHardwareWalletFactorSource.DeviceModel.NANO_X
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> LedgerHardwareWalletModel.NANO_S
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletModel.NANO_S_PLUS
+        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> LedgerHardwareWalletModel.NANO_X
     }
 }
 
@@ -268,7 +281,7 @@ fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields()
             if (isRequestingName) {
                 it.add(
                     RequiredPersonaField(
-                        PersonaData.PersonaDataField.Kind.Name,
+                        PersonaDataField.Kind.Name,
                         MessageFromDataChannel.IncomingRequest.NumberOfValues(
                             1,
                             MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
@@ -279,7 +292,7 @@ fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields()
             if (numberOfRequestedEmailAddresses != null) {
                 it.add(
                     RequiredPersonaField(
-                        kind = PersonaData.PersonaDataField.Kind.EmailAddress,
+                        kind = PersonaDataField.Kind.EmailAddress,
                         numberOfValues = numberOfRequestedEmailAddresses
                     )
                 )
@@ -287,7 +300,7 @@ fun MessageFromDataChannel.IncomingRequest.PersonaRequestItem.toRequiredFields()
             if (numberOfRequestedPhoneNumbers != null) {
                 it.add(
                     RequiredPersonaField(
-                        kind = PersonaData.PersonaDataField.Kind.PhoneNumber,
+                        kind = PersonaDataField.Kind.PhoneNumber,
                         numberOfValues = numberOfRequestedPhoneNumbers
                     )
                 )

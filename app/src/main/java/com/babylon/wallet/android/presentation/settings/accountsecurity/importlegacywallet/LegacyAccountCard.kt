@@ -100,7 +100,7 @@ fun LegacyAccountCardPreview() {
         LegacyAccountCard(
             modifier = Modifier
                 .background(
-                    Brush.horizontalGradient(getAccountGradientColorsFor(1)),
+                    Brush.horizontalGradient(getAccountGradientColorsFor(1u)),
                     shape = RadixTheme.shapes.roundedRectSmall
                 ),
             accountName = "Account name",

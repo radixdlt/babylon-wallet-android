@@ -74,7 +74,7 @@ import com.babylon.wallet.android.presentation.ui.composables.WarningButton
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.BackupState
+import rdx.works.core.domain.BackupState
 
 @Composable
 fun BackupScreen(

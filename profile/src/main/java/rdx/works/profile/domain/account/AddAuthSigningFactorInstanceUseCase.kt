@@ -1,10 +1,10 @@
 package rdx.works.profile.domain.account
 
+import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.pernetwork.Entity
-import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.addAuthSigningFactorInstanceForEntity
+import rdx.works.core.sargon.ProfileEntity
+import rdx.works.core.sargon.addAuthSigningFactorInstanceForEntity
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.updateProfile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -15,8 +15,8 @@ class AddAuthSigningFactorInstanceUseCase @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
     suspend operator fun invoke(
-        entity: Entity,
-        authSigningFactorInstance: FactorInstance,
+        entity: ProfileEntity,
+        authSigningFactorInstance: HierarchicalDeterministicFactorInstance,
     ) {
         return withContext(defaultDispatcher) {
             profileRepository.updateProfile { profile ->

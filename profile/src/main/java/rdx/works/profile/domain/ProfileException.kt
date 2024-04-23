@@ -1,10 +1,11 @@
 package rdx.works.profile.domain
 
-import rdx.works.profile.data.model.pernetwork.Entity
+import com.radixdlt.sargon.extensions.string
+import rdx.works.core.sargon.ProfileEntity
 
 sealed class ProfileException(msg: String? = null, cause: Throwable? = null) : Throwable(msg, cause) {
-    data class AuthenticationSigningAlreadyExist(val entity: Entity) :
-        ProfileException("Signing Entity $entity already has authenticationSigning")
+    data class AuthenticationSigningAlreadyExist(val entity: ProfileEntity) :
+        ProfileException("Signing Entity ${entity.address.string} already has authenticationSigning")
 
     data object InvalidSnapshot : ProfileException("The snapshot is invalid")
     data object InvalidPassword : ProfileException("The password is invalid")

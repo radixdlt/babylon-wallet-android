@@ -23,17 +23,17 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
+import com.radixdlt.sargon.Persona
 import kotlinx.collections.immutable.ImmutableList
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.PersonaDataField
 
 @Composable
 fun PersonaDetailCard(
     persona: PersonaUiModel,
-    missingFields: ImmutableList<PersonaData.PersonaDataField.Kind>,
-    onEditClick: (String) -> Unit,
+    missingFields: ImmutableList<PersonaDataField.Kind>,
+    onEditClick: (Persona) -> Unit,
     modifier: Modifier = Modifier,
-    onSelectPersona: ((Network.Persona) -> Unit)? = null
+    onSelectPersona: ((Persona) -> Unit)? = null
 ) {
     Column(modifier = modifier) {
         Row(
@@ -53,7 +53,7 @@ fun PersonaDetailCard(
                 persona = persona.persona
             )
             Text(
-                text = persona.persona.displayName,
+                text = persona.persona.displayName.value,
                 style = RadixTheme.typography.header,
                 color = RadixTheme.colors.gray1
             )
@@ -96,7 +96,7 @@ fun PersonaDetailCard(
             RadixPrimaryButton(
                 text = stringResource(id = R.string.dAppRequest_personalDataBox_edit),
                 onClick = {
-                    onEditClick(persona.persona.address)
+                    onEditClick(persona.persona)
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -108,7 +108,7 @@ fun PersonaDetailCard(
                     .fillMaxWidth()
                     .padding(RadixTheme.dimensions.paddingDefault),
                 onClick = {
-                    onEditClick(persona.persona.address)
+                    onEditClick(persona.persona)
                 },
                 text = stringResource(id = R.string.dAppRequest_personalDataBox_edit)
             )

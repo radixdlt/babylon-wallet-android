@@ -38,7 +38,6 @@ import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.test.TestScope
 import rdx.works.core.domain.DApp
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase

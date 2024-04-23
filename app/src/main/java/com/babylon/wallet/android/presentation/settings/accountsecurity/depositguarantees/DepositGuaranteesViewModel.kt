@@ -16,9 +16,7 @@ import com.radixdlt.sargon.extensions.toDecimal192OrNull
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.domain.toDouble
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.defaultDepositGuarantee
 import rdx.works.profile.domain.depositguarantees.ChangeDefaultDepositGuaranteeUseCase
 import javax.inject.Inject
 
@@ -32,7 +30,7 @@ class DepositGuaranteesViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            updateDepositGuarantee(depositGuarantee = getProfileUseCase.defaultDepositGuarantee().toDecimal192())
+            updateDepositGuarantee(depositGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee)
         }
     }
 
@@ -54,7 +52,7 @@ class DepositGuaranteesViewModel @Inject constructor(
 
         viewModelScope.launch {
             updatedDepositGuarantee?.let { depositGuarantee ->
-                changeDefaultDepositGuaranteeUseCase.invoke(defaultDepositGuarantee = depositGuarantee.toDouble())
+                changeDefaultDepositGuaranteeUseCase.invoke(defaultDepositGuarantee = depositGuarantee)
             }
         }
     }
@@ -62,14 +60,15 @@ class DepositGuaranteesViewModel @Inject constructor(
     fun onDepositGuaranteeIncreased() {
         viewModelScope.launch {
             changeAndUpdateDepositGuarantee(
-                updatedDepositGuarantee = getProfileUseCase.defaultDepositGuarantee().toDecimal192() + DEPOSIT_CHANGE_THRESHOLD
+                updatedDepositGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee + DEPOSIT_CHANGE_THRESHOLD
             )
         }
     }
 
     fun onDepositGuaranteeDecreased() {
         viewModelScope.launch {
-            val updatedDepositGuarantee = (getProfileUseCase.defaultDepositGuarantee().toDecimal192() - DEPOSIT_CHANGE_THRESHOLD).clamped
+            val updatedDepositGuarantee = (getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee -
+                    DEPOSIT_CHANGE_THRESHOLD).clamped
             changeAndUpdateDepositGuarantee(
                 updatedDepositGuarantee = updatedDepositGuarantee
             )
@@ -79,7 +78,7 @@ class DepositGuaranteesViewModel @Inject constructor(
     private suspend fun changeAndUpdateDepositGuarantee(updatedDepositGuarantee: Decimal192?) {
         updateDepositGuarantee(depositGuarantee = updatedDepositGuarantee)
         updatedDepositGuarantee?.let { depositGuarantee ->
-            changeDefaultDepositGuaranteeUseCase.invoke(defaultDepositGuarantee = depositGuarantee.toDouble())
+            changeDefaultDepositGuaranteeUseCase.invoke(defaultDepositGuarantee = depositGuarantee)
         }
     }
 

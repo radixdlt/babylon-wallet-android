@@ -13,6 +13,7 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.ROUTE_EDIT_PERSONA
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.Resource
@@ -34,7 +35,7 @@ fun NavController.dAppDetailScreen(dappDefinitionAddress: AccountAddress) {
 
 fun NavGraphBuilder.dAppDetailScreen(
     onBackClick: () -> Unit,
-    onEditPersona: (String, RequiredPersonaFields?) -> Unit,
+    onEditPersona: (IdentityAddress, RequiredPersonaFields?) -> Unit,
     onFungibleClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleClick: (Resource.NonFungibleResource) -> Unit
 ) {

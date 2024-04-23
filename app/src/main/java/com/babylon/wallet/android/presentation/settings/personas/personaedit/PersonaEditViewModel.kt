@@ -12,18 +12,21 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toPersonaData
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.Persona
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.PersonaDataField
+import rdx.works.core.sargon.activePersonaOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.persona.UpdatePersonaUseCase
-import rdx.works.profile.domain.personaOnCurrentNetworkFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -57,7 +60,7 @@ class PersonaEditViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            getProfileUseCase.personaOnCurrentNetworkFlow(args.personaAddress).collect { persona ->
+            getProfileUseCase.flow.mapNotNull { it.activePersonaOnCurrentNetwork(args.personaAddress) }.collect { persona ->
                 setPersona(
                     persona = persona,
                     requiredFieldKinds = args.requiredPersonaFields?.fields?.map { it.kind }.orEmpty()
@@ -66,7 +69,7 @@ class PersonaEditViewModel @Inject constructor(
                     state.copy(
                         persona = persona,
                         personaDisplayName = PersonaDisplayNameFieldWrapper(
-                            value = persona.displayName
+                            value = persona.displayName.value
                         )
                     )
                 }
@@ -76,7 +79,7 @@ class PersonaEditViewModel @Inject constructor(
 
     private fun missingPersonaFieldKinds(
         currentFields: ImmutableList<PersonaFieldWrapper>
-    ): PersistentList<PersonaData.PersonaDataField.Kind> {
+    ): PersistentList<PersonaDataField.Kind> {
         return args.requiredPersonaFields?.fields?.map {
             it.kind
         }?.toSet()?.minus(currentFields.map { it.entry.value.kind }.toSet()).orEmpty().toPersistentList()
@@ -87,7 +90,7 @@ class PersonaEditViewModel @Inject constructor(
             state.value.persona?.let { persona ->
                 val personaData = state.value.currentFields.toPersonaData()
                 val updatedPersona =
-                    persona.copy(displayName = state.value.personaDisplayName.value.trim(), personaData = personaData)
+                    persona.copy(displayName = DisplayName(state.value.personaDisplayName.value.trim()), personaData = personaData)
                 updatePersonaUseCase(updatedPersona)
                 sendEvent(PersonaEditEvent.PersonaSaved)
             }
@@ -104,7 +107,7 @@ sealed interface PersonaEditEvent : OneOffEvent {
 }
 
 data class PersonaEditUiState(
-    val persona: Network.Persona? = null,
+    val persona: Persona? = null,
     val currentFields: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
     val fieldsToAdd: ImmutableList<PersonaFieldWrapper> = persistentListOf(),
     val personaDisplayName: PersonaDisplayNameFieldWrapper = PersonaDisplayNameFieldWrapper(),
@@ -112,6 +115,6 @@ data class PersonaEditUiState(
     val saveButtonEnabled: Boolean = false,
     val dappContextEdit: Boolean = false,
     val wasEdited: Boolean = false,
-    val missingFields: ImmutableList<PersonaData.PersonaDataField.Kind> = persistentListOf(),
+    val missingFields: ImmutableList<PersonaDataField.Kind> = persistentListOf(),
     val isAddFieldBottomSheetVisible: Boolean = false
 ) : UiState

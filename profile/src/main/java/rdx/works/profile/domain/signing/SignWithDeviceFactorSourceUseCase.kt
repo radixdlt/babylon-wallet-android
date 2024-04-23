@@ -1,19 +1,19 @@
 package rdx.works.profile.domain.signing
 
+import com.radixdlt.sargon.EntitySecurityState
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.SignatureWithPublicKey
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.id
 import kotlinx.coroutines.flow.first
-import rdx.works.profile.data.model.deriveExtendedKey
-import rdx.works.profile.data.model.extensions.updateLastUsed
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.pernetwork.Entity
-import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.SecurityState
-import rdx.works.profile.data.model.pernetwork.SigningPurpose
+import rdx.works.core.sargon.ProfileEntity
+import rdx.works.core.sargon.derivePrivateKey
+import rdx.works.core.sargon.updateLastUsed
+import rdx.works.core.domain.SigningPurpose
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.domain.ProfileException
-import rdx.works.core.crypto.PrivateKey.Companion.toPrivateKey
 import javax.inject.Inject
 
 class SignWithDeviceFactorSourceUseCase @Inject constructor(
@@ -22,8 +22,8 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        deviceFactorSource: DeviceFactorSource,
-        signers: List<Entity>,
+        deviceFactorSource: FactorSource.Device,
+        signers: List<ProfileEntity>,
         dataToSign: ByteArray,
         signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
     ): Result<List<SignatureWithPublicKey>> {
@@ -31,26 +31,19 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
 
         signers.forEach { signer ->
             when (val securityState = signer.securityState) {
-                is SecurityState.Unsecured -> {
+                is EntitySecurityState.Unsecured -> {
                     val factorInstance = when (signingPurpose) {
-                        SigningPurpose.SignAuth ->
-                            securityState.unsecuredEntityControl.authenticationSigning
-                                ?: securityState.unsecuredEntityControl.transactionSigning
-                        SigningPurpose.SignTransaction -> securityState.unsecuredEntityControl.transactionSigning
+                        SigningPurpose.SignAuth -> securityState.value.authenticationSigning ?: securityState.value.transactionSigning
+                        SigningPurpose.SignTransaction -> securityState.value.transactionSigning
                     }
-                    val mnemonicExist = mnemonicRepository.mnemonicExist(deviceFactorSource.id)
+                    val mnemonicExist = mnemonicRepository.mnemonicExist(deviceFactorSource.value.id.asGeneral())
                     if (mnemonicExist.not()) return Result.failure(ProfileException.NoMnemonic)
-                    val mnemonic = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.id).getOrNull())
-                    val hierarchicalDeterministicVirtualSource = factorInstance.badge
-                        as? FactorInstance.Badge.VirtualSource.HierarchicalDeterministic ?: return@forEach
-                    val extendedKey = mnemonic.deriveExtendedKey(
-                        virtualSource = hierarchicalDeterministicVirtualSource
-                    )
+                    val mnemonic = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).getOrNull())
 
-                    val signatureWithPublicKey = extendedKey
-                        .keyPair
-                        .toPrivateKey()
+                    val signatureWithPublicKey = mnemonic
+                        .derivePrivateKey(hdPublicKey = factorInstance.publicKey)
                         .signToSignatureWithPublicKey(dataToSign)
+
                     result.add(signatureWithPublicKey)
                     val profile = profileRepository.profile.first()
                     profileRepository.saveProfile(profile.updateLastUsed(deviceFactorSource.id))

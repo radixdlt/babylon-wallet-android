@@ -48,7 +48,10 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.radixdlt.sargon.AccountAddress
-import rdx.works.profile.data.model.pernetwork.Network
+import com.radixdlt.sargon.DepositRule
+import com.radixdlt.sargon.ThirdPartyDeposits
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
 
 @Composable
 fun AccountThirdPartyDepositsScreen(
@@ -124,7 +127,7 @@ private fun AccountThirdPartyDepositsContent(
     onAcceptKnown: () -> Unit,
     onDenyAll: () -> Unit,
     onAssetSpecificRulesClick: () -> Unit,
-    accountThirdPartyDepositSettings: Network.Account.OnLedgerSettings.ThirdPartyDeposits?,
+    accountThirdPartyDepositSettings: ThirdPartyDeposits?,
     onUpdateThirdPartyDeposits: () -> Unit,
     onSpecificDepositorsClick: () -> Unit
 ) {
@@ -186,7 +189,7 @@ private fun AccountThirdPartyDepositsContent(
                 color = RadixTheme.colors.gray2
             )
             var titleSubtitleAndIcon = getDepositRuleCopiesAndIcon(
-                depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll
+                depositRule = DepositRule.ACCEPT_ALL
             )
             DepositOptionItem(
                 modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
@@ -194,7 +197,7 @@ private fun AccountThirdPartyDepositsContent(
                 icon = titleSubtitleAndIcon.third,
                 title = titleSubtitleAndIcon.first,
                 subtitle = titleSubtitleAndIcon.second,
-                trailingContent = if (accountDepositRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll) {
+                trailingContent = if (accountDepositRule == DepositRule.ACCEPT_ALL) {
                     checkIcon
                 } else {
                     {}
@@ -205,7 +208,7 @@ private fun AccountThirdPartyDepositsContent(
                 color = RadixTheme.colors.gray5
             )
             titleSubtitleAndIcon = getDepositRuleCopiesAndIcon(
-                depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown
+                depositRule = DepositRule.ACCEPT_KNOWN
             )
             DepositOptionItem(
                 modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
@@ -213,7 +216,7 @@ private fun AccountThirdPartyDepositsContent(
                 icon = titleSubtitleAndIcon.third,
                 title = titleSubtitleAndIcon.first,
                 subtitle = titleSubtitleAndIcon.second,
-                trailingContent = if (accountDepositRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown) {
+                trailingContent = if (accountDepositRule == DepositRule.ACCEPT_KNOWN) {
                     checkIcon
                 } else {
                     {}
@@ -224,7 +227,7 @@ private fun AccountThirdPartyDepositsContent(
                 color = RadixTheme.colors.gray5
             )
             titleSubtitleAndIcon = getDepositRuleCopiesAndIcon(
-                depositRule = Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll
+                depositRule = DepositRule.DENY_ALL
             )
             DepositOptionItem(
                 modifier = Modifier.padding(vertical = RadixTheme.dimensions.paddingLarge),
@@ -232,7 +235,7 @@ private fun AccountThirdPartyDepositsContent(
                 icon = titleSubtitleAndIcon.third,
                 title = titleSubtitleAndIcon.first,
                 subtitle = titleSubtitleAndIcon.second,
-                trailingContent = if (accountDepositRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll) {
+                trailingContent = if (accountDepositRule == DepositRule.DENY_ALL) {
                     checkIcon
                 } else {
                     {}
@@ -288,9 +291,9 @@ private fun AccountThirdPartyDepositsContent(
 }
 
 @Composable
-fun getDepositRuleCopiesAndIcon(depositRule: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule): Triple<String, String, Int> {
+fun getDepositRuleCopiesAndIcon(depositRule: DepositRule): Triple<String, String, Int> {
     return when (depositRule) {
-        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll -> {
+        DepositRule.ACCEPT_ALL -> {
             Triple(
                 stringResource(id = R.string.accountSettings_thirdPartyDeposits_acceptAll),
                 stringResource(id = R.string.accountSettings_thirdPartyDeposits_acceptAllSubtitle),
@@ -298,7 +301,7 @@ fun getDepositRuleCopiesAndIcon(depositRule: Network.Account.OnLedgerSettings.Th
             )
         }
 
-        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptKnown -> {
+        DepositRule.ACCEPT_KNOWN -> {
             Triple(
                 stringResource(id = R.string.accountSettings_thirdPartyDeposits_onlyKnown),
                 stringResource(id = R.string.accountSettings_thirdPartyDeposits_onlyKnownSubtitle),
@@ -306,7 +309,7 @@ fun getDepositRuleCopiesAndIcon(depositRule: Network.Account.OnLedgerSettings.Th
             )
         }
 
-        Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.DenyAll -> {
+        DepositRule.DENY_ALL -> {
             Triple(
                 stringResource(id = R.string.accountSettings_thirdPartyDeposits_denyAll),
                 stringResource(id = R.string.accountSettings_thirdPartyDeposits_denyAllSubtitle),
@@ -372,6 +375,7 @@ fun DepositOptionItem(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun AccountThirdPartyDepositsPreview() {
@@ -385,7 +389,7 @@ fun AccountThirdPartyDepositsPreview() {
             onAcceptKnown = {},
             onDenyAll = {},
             onAssetSpecificRulesClick = {},
-            accountThirdPartyDepositSettings = Network.Account.OnLedgerSettings.ThirdPartyDeposits(),
+            accountThirdPartyDepositSettings = ThirdPartyDeposits.sample(),
             onUpdateThirdPartyDeposits = {},
             onSpecificDepositorsClick = {}
         )

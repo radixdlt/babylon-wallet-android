@@ -5,21 +5,21 @@ import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.PreviewType
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ResourceIndicator
 import com.radixdlt.sargon.extensions.address
 import com.radixdlt.sargon.extensions.orZero
-import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.assets.Asset
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.XrdResource
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.currentGateway
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
-import rdx.works.profile.domain.currentNetwork
 import javax.inject.Inject
 
 class ValidatorClaimProcessor @Inject constructor(
@@ -27,19 +27,19 @@ class ValidatorClaimProcessor @Inject constructor(
     private val resolveAssetsFromAddressUseCase: ResolveAssetsFromAddressUseCase
 ) : PreviewTypeProcessor<DetailedManifestClass.ValidatorClaim> {
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.ValidatorClaim): PreviewType {
-        val networkId = requireNotNull(getProfileUseCase.currentNetwork()?.knownNetworkId)
-        val xrdAddress = XrdResource.address(networkId.value)
+        val networkId = getProfileUseCase().currentGateway.network.id
+        val xrdAddress = XrdResource.address(networkId)
         val assets = resolveAssetsFromAddressUseCase(
             fungibleAddresses = summary.involvedFungibleAddresses() + xrdAddress,
             nonFungibleIds = summary.involvedNonFungibleIds()
         ).getOrThrow()
-        val defaultDepositGuarantees = getProfileUseCase.invoke().first().appPreferences.transaction.defaultDepositGuarantee
+        val defaultDepositGuarantees = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
         val involvedValidators = assets.filterIsInstance<LiquidStakeUnit>().map {
             it.validator
         }.toSet() + assets.filterIsInstance<StakeClaim>().map {
             it.validator
         }.toSet()
-        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
+        val involvedOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
         val toAccounts = summary.toDepositingAccountsWithTransferableAssets(
             assets,
             involvedOwnedAccounts,
@@ -62,8 +62,8 @@ class ValidatorClaimProcessor @Inject constructor(
     private fun extractWithdrawals(
         executionSummary: ExecutionSummary,
         assets: List<Asset>,
-        defaultDepositGuarantees: Double,
-        involvedOwnedAccounts: List<Network.Account>
+        defaultDepositGuarantees: Decimal192,
+        involvedOwnedAccounts: List<Account>
     ): List<AccountWithTransferableResources> {
         val stakeClaimNfts = assets.filterIsInstance<Asset.NonFungible>().map { it.resource.items }.flatten()
         return executionSummary.withdrawals.map { claimsPerAddress ->

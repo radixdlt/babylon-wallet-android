@@ -18,7 +18,6 @@ import rdx.works.core.enableCrashlytics
 import rdx.works.core.mapWhen
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.security
 import rdx.works.profile.domain.security.UpdateDeveloperModeUseCase
 import javax.inject.Inject
 
@@ -37,9 +36,8 @@ class AppSettingsViewModel @Inject constructor(
 
     private fun readSettings() {
         viewModelScope.launch {
-            getProfileUseCase
-                .security
-                .map { it.isDeveloperModeEnabled }
+            getProfileUseCase.flow
+                .map { it.appPreferences.security.isDeveloperModeEnabled }
                 .collect { isInDeveloperMode ->
                     _state.updateSetting<SettingsItem.AppSettingsItem.DeveloperMode> {
                         SettingsItem.AppSettingsItem.DeveloperMode(isInDeveloperMode)

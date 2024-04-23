@@ -1,10 +1,11 @@
 package rdx.works.profile.domain.persona
 
+import com.radixdlt.sargon.Persona
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.updatePersona
+import rdx.works.core.sargon.fieldIds
+import rdx.works.core.sargon.updatePersona
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
@@ -18,7 +19,7 @@ class UpdatePersonaUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        updatedPersona: Network.Persona,
+        updatedPersona: Persona,
     ) {
         return withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()
@@ -27,7 +28,7 @@ class UpdatePersonaUseCase @Inject constructor(
             profileRepository.saveProfile(updatedProfile)
             dAppConnectionRepository.ensureAuthorizedPersonasFieldsExist(
                 personaAddress = updatedPersona.address,
-                existingFieldIds = updatedPersona.personaData.allFieldIds
+                existingFieldIds = updatedPersona.personaData.fieldIds
             )
         }
     }

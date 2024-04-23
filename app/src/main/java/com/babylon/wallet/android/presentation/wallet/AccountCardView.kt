@@ -24,9 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.R
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
@@ -36,11 +35,12 @@ import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.
 import com.babylon.wallet.android.presentation.ui.composables.assets.TotalFiatBalanceView
 import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.babylon.wallet.android.presentation.ui.modifier.radixPlaceholder
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
@@ -58,8 +58,8 @@ fun AccountCardView(
     securityPromptType: SecurityPromptType?,
     onApplySecuritySettings: (SecurityPromptType) -> Unit
 ) {
-    val gradient = remember(accountWithAssets.account.appearanceID) {
-        AccountGradientList[accountWithAssets.account.appearanceID % AccountGradientList.size]
+    val gradient = remember(accountWithAssets.account.appearanceId) {
+        getAccountGradientColorsFor(accountWithAssets.account.appearanceId.value)
     }
     ConstraintLayout(
         modifier
@@ -102,7 +102,7 @@ fun AccountCardView(
                 )
                 width = Dimension.fillToConstraints
             },
-            text = accountWithAssets.account.displayName,
+            text = accountWithAssets.account.displayName.value,
             style = RadixTheme.typography.body1Header,
             maxLines = 1,
             color = RadixTheme.colors.white,
@@ -149,7 +149,7 @@ fun AccountCardView(
 
         ActionableAddressView(
             address = remember(accountWithAssets.account.address) {
-                Address.Account(AccountAddress.init(accountWithAssets.account.address))
+                Address.Account(accountWithAssets.account.address)
             },
             modifier = Modifier.constrainAs(addressLabel) {
                 top.linkTo(nameLabel.bottom, margin = 8.dp)
@@ -274,7 +274,7 @@ fun AccountCardPreview() {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             AccountCardView(
                 accountWithAssets = AccountWithAssets(
-                    account = SampleDataProvider().sampleAccount(),
+                    account = Account.sampleMainnet(),
                     assets = Assets(
                         tokens = emptyList(),
                         nonFungibles = listOf(),
@@ -303,8 +303,8 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             AccountCardView(
                 accountWithAssets = AccountWithAssets(
-                    account = SampleDataProvider().sampleAccount(
-                        name = "a very long name for my account"
+                    account = Account.sampleMainnet().copy(
+                        displayName = DisplayName("a very long name for my account")
                     ),
                     assets = Assets(
                         tokens = emptyList(),
@@ -334,8 +334,8 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             AccountCardView(
                 accountWithAssets = AccountWithAssets(
-                    account = SampleDataProvider().sampleAccount(
-                        name = "a very long name for my account again much more longer oh god "
+                    account = Account.sampleMainnet().copy(
+                        displayName = DisplayName("a very long name for my account again much more longer oh god ")
                     ),
                     assets = Assets(
                         tokens = emptyList(),
@@ -366,8 +366,8 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 AccountCardView(
                     accountWithAssets = AccountWithAssets(
-                        account = SampleDataProvider().sampleAccount(
-                            name = "a very long name for my account again much more longer oh god "
+                        account = Account.sampleMainnet().copy(
+                            displayName = DisplayName("a very long name for my account again much more longer oh god ")
                         ),
                         assets = Assets(
                             tokens = emptyList(),
@@ -398,7 +398,7 @@ fun AccountCardLoadingPreview() {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             AccountCardView(
                 accountWithAssets = AccountWithAssets(
-                    account = SampleDataProvider().sampleAccount(),
+                    account = Account.sampleMainnet(),
                     assets = Assets(
                         tokens = emptyList(),
                         nonFungibles = listOf(),

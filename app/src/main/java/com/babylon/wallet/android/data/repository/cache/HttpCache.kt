@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.data.repository.cache
 
-import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hex
 import kotlinx.serialization.KSerializer
 import okhttp3.HttpUrl
@@ -120,7 +119,7 @@ class HttpCacheImpl @Inject constructor(
     private suspend fun Call<*>.cacheKeyData(): CacheKeyData {
         // TODO this needs to change to use the original request's base url and not gateways.
         // This fails if cache is used with dynamic base urls like the .well-known/radix.json request
-        val baseUrl = URL(getCurrentGatewayUseCase().url)
+        val baseUrl = getCurrentGatewayUseCase().url
 
         return CacheKeyData(
             method = request().method,

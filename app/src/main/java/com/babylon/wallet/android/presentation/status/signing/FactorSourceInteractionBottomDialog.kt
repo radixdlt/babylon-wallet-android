@@ -33,9 +33,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.utils.formattedSpans
-import rdx.works.core.HexCoded32Bytes
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.pernetwork.SigningPurpose
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import rdx.works.core.sargon.sample
+import rdx.works.core.domain.SigningPurpose
 
 @Composable
 fun FactorSourceInteractionBottomDialog(
@@ -231,17 +232,14 @@ private fun SignatureSuccessfulContent(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun SignatureRequestContentPreview() {
     RadixWalletTheme {
         SignatureRequestContent(
             interactionState = InteractionState.Ledger.Pending(
-                LedgerHardwareWalletFactorSource.newSource(
-                    model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
-                    name = "nanoS",
-                    deviceID = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
-                )
+                FactorSource.Ledger.sample()
             )
         )
     }

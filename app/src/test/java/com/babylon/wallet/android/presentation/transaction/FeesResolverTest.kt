@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transaction.analysis.FeesResolver
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary

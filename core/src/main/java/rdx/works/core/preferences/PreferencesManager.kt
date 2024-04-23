@@ -8,6 +8,13 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Epoch
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceIdFromHash
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
@@ -42,9 +49,9 @@ interface PreferencesManager {
 
     suspend fun markImportFromOlympiaComplete()
 
-    fun getBackedUpFactorSourceIds(): Flow<Set<String>>
+    fun getBackedUpFactorSourceIds(): Flow<Set<FactorSourceId.Hash>>
 
-    suspend fun markFactorSourceBackedUp(id: String)
+    suspend fun markFactorSourceBackedUp(id: FactorSourceId.Hash)
 
     suspend fun enableCrashReporting(enabled: Boolean)
 
@@ -126,9 +133,13 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
-    override fun getBackedUpFactorSourceIds(): Flow<Set<String>> {
+    override fun getBackedUpFactorSourceIds(): Flow<Set<FactorSourceId.Hash>> {
         return dataStore.data.map { preferences ->
-            preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS]?.split(",").orEmpty().toSet()
+            preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS]?.split(",").orEmpty().map { hex ->
+                FactorSourceId.Hash(
+                    FactorSourceIdFromHash(kind = FactorSourceKind.DEVICE, body = Exactly32Bytes.init(hex.hexToBagOfBytes()))
+                )
+            }.toSet()
         }
     }
 
@@ -137,13 +148,14 @@ class PreferencesManagerImpl @Inject constructor(
             preferences[KEY_CRASH_REPORTING_ENABLED] ?: BuildConfig.CRASH_REPORTING_ENABLED
         }
 
-    override suspend fun markFactorSourceBackedUp(id: String) {
+    override suspend fun markFactorSourceBackedUp(id: FactorSourceId.Hash) {
         dataStore.edit { preferences ->
             val current = preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS]
+            val idHex = id.value.body.hex
             if (current == null) {
-                preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS] = id
+                preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS] = idHex
             } else {
-                preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS] = listOf(current, id).joinToString(",")
+                preferences[KEY_BACKED_UP_FACTOR_SOURCE_IDS] = listOf(current, idHex).joinToString(",")
             }
         }
     }

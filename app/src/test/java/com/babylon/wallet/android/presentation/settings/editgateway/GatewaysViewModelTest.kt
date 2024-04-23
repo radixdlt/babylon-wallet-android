@@ -1,8 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.editgateway
 
 import app.cash.turbine.test
-import com.babylon.wallet.android.data.repository.networkinfo.NetworkInfoRepository
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.NetworkInfo
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
@@ -22,7 +20,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayIfNetworkExistUseCase

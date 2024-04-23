@@ -14,6 +14,9 @@ import androidx.navigation.navArgument
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.navigation.RequiredPersonaFieldsParameterType
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.serialization.encodeToString
 
 @VisibleForTesting
@@ -25,17 +28,17 @@ internal const val ARG_REQUIRED_FIELDS = "required_fields"
 const val ROUTE_EDIT_PERSONA = "persona_edit/{$ARG_PERSONA_ADDRESS}?$ARG_REQUIRED_FIELDS={$ARG_REQUIRED_FIELDS}"
 
 internal class PersonaEditScreenArgs(
-    val personaAddress: String,
+    val personaAddress: IdentityAddress,
     val requiredPersonaFields: RequiredPersonaFields? = null
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_PERSONA_ADDRESS]) as String,
+        personaAddress = IdentityAddress.init(requireNotNull(savedStateHandle[ARG_PERSONA_ADDRESS])),
         savedStateHandle.get(ARG_REQUIRED_FIELDS) as? RequiredPersonaFields
     )
 }
 
-fun NavController.personaEditScreen(personaAddress: String, requiredPersonaFields: RequiredPersonaFields? = null) {
-    var route = "persona_edit/$personaAddress"
+fun NavController.personaEditScreen(personaAddress: IdentityAddress, requiredPersonaFields: RequiredPersonaFields? = null) {
+    var route = "persona_edit/${personaAddress.string}"
     requiredPersonaFields?.let {
         val argument = Uri.encode(Serializer.kotlinxSerializationJson.encodeToString(requiredPersonaFields))
         route += "?$ARG_REQUIRED_FIELDS=$argument"

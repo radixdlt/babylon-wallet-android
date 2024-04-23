@@ -31,10 +31,9 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
-import rdx.works.profile.data.model.apppreferences.Radix.dashboardUrl
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.dashboardUrl
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
 import timber.log.Timber
 import java.time.Instant
 import java.time.ZoneId
@@ -63,7 +62,7 @@ class HistoryViewModel @Inject constructor(
     private fun loadFirstTransactionDate() {
         // we load first transaction date first before we load history for the 1st time, to use this date in request filters
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(args.accountAddress)?.let { account ->
+            getProfileUseCase().activeAccountOnCurrentNetwork(args.accountAddress)?.let { account ->
                 getWalletAssetsUseCase(listOf(account), false).catch { error ->
                     _state.update {
                         it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
@@ -98,7 +97,7 @@ class HistoryViewModel @Inject constructor(
 
     private fun observeAccount() {
         viewModelScope.launch {
-            getProfileUseCase.accountOnCurrentNetwork(args.accountAddress)?.let { account ->
+            getProfileUseCase().activeAccountOnCurrentNetwork(args.accountAddress)?.let { account ->
                 _state.update {
                     it.copy(accountWithAssets = AccountWithAssets(account))
                 }
@@ -269,7 +268,7 @@ class HistoryViewModel @Inject constructor(
     fun onOpenTransactionDetails(txId: String) {
         viewModelScope.launch {
             state.value.accountWithAssets?.let { account ->
-                val dashboardUrl = NetworkId.from(account.account.networkID).dashboardUrl()
+                val dashboardUrl = account.account.networkId.dashboardUrl()
                 sendEvent(HistoryEvent.OnTransactionItemClick("$dashboardUrl/transaction/$txId/summary"))
             }
         }

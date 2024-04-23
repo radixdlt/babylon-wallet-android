@@ -3,19 +3,16 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.ResourceOrNonFungible
 import com.radixdlt.sargon.ResourcePreference
 import com.radixdlt.sargon.ResourcePreferenceUpdate
-import com.radixdlt.sargon.extensions.init
 import rdx.works.core.domain.assets.Asset
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
 class AccountDepositSettingsProcessor @Inject constructor(
@@ -34,19 +31,19 @@ class AccountDepositSettingsProcessor @Inject constructor(
             classification.resourcePreferencesUpdates.keys +
             classification.authorizedDepositorsAdded.keys +
             classification.authorizedDepositorsRemoved.keys
-        val involvedAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
-            involvedAccountAddresses.contains(AccountAddress.init(it.address))
+        val involvedAccounts = getProfileUseCase().activeAccountsOnCurrentNetwork.filter {
+            it.address in involvedAccountAddresses
         }
         val result = involvedAccounts.map { involvedAccount ->
-            val defaultDepositRule = classification.depositModeUpdates[AccountAddress.init(involvedAccount.address)]
+            val defaultDepositRule = classification.depositModeUpdates[involvedAccount.address]
             val assetChanges = classification.resolveAssetChanges(involvedAccount, assets)
             val depositorChanges = classification.resolveDepositorChanges(involvedAccount, assets)
             AccountWithDepositSettingsChanges(
                 account = involvedAccount,
                 defaultDepositRule = when (defaultDepositRule) {
-                    DepositRule.ACCEPT_ALL -> ThirdPartyDeposits.DepositRule.AcceptAll
-                    DepositRule.DENY_ALL -> ThirdPartyDeposits.DepositRule.DenyAll
-                    DepositRule.ACCEPT_KNOWN -> ThirdPartyDeposits.DepositRule.AcceptKnown
+                    DepositRule.ACCEPT_ALL -> DepositRule.ACCEPT_ALL
+                    DepositRule.DENY_ALL -> DepositRule.DENY_ALL
+                    DepositRule.ACCEPT_KNOWN -> DepositRule.ACCEPT_KNOWN
                     null -> null
                 },
                 assetChanges = assetChanges,
@@ -57,9 +54,9 @@ class AccountDepositSettingsProcessor @Inject constructor(
     }
 
     private fun DetailedManifestClass.AccountDepositSettingsUpdate.resolveDepositorChanges(
-        involvedAccount: Network.Account,
+        involvedAccount: Account,
         assets: List<Asset>
-    ) = authorizedDepositorsAdded[AccountAddress.init(involvedAccount.address)]?.let { authorizedDepositorsChangeForAccount ->
+    ) = authorizedDepositorsAdded[involvedAccount.address]?.let { authorizedDepositorsChangeForAccount ->
         val added = authorizedDepositorsChangeForAccount.map { added ->
             when (added) {
                 is ResourceOrNonFungible.NonFungible -> {
@@ -79,7 +76,7 @@ class AccountDepositSettingsProcessor @Inject constructor(
                 }
             }
         }
-        val removed = authorizedDepositorsRemoved[AccountAddress.init(involvedAccount.address)]?.map { removed ->
+        val removed = authorizedDepositorsRemoved[involvedAccount.address]?.map { removed ->
             when (removed) {
                 is ResourceOrNonFungible.NonFungible -> {
                     AccountWithDepositSettingsChanges.DepositorPreferenceChange(
@@ -100,9 +97,9 @@ class AccountDepositSettingsProcessor @Inject constructor(
     }.orEmpty()
 
     private fun DetailedManifestClass.AccountDepositSettingsUpdate.resolveAssetChanges(
-        involvedAccount: Network.Account,
+        involvedAccount: Account,
         allResources: List<Asset>
-    ) = resourcePreferencesUpdates[AccountAddress.init(involvedAccount.address)]?.let { resourcePreferenceChangeForAccount ->
+    ) = resourcePreferencesUpdates[involvedAccount.address]?.let { resourcePreferenceChangeForAccount ->
         resourcePreferenceChangeForAccount.map { resourcePreferenceChange ->
             val resource = allResources.find { it.resource.address == resourcePreferenceChange.key }?.resource
             val assetPreferenceChange = when (val action = resourcePreferenceChange.value) {

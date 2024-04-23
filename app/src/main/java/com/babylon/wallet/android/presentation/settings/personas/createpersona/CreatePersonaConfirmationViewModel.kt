@@ -9,8 +9,8 @@ import com.babylon.wallet.android.presentation.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.personasOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,7 +24,7 @@ class CreatePersonaConfirmationViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             _state.update {
-                it.copy(isFirstPersona = getProfileUseCase.personasOnCurrentNetwork().count() == 1)
+                it.copy(isFirstPersona = getProfileUseCase().activePersonasOnCurrentNetwork.count() == 1)
             }
         }
     }
