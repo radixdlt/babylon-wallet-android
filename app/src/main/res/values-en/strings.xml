@@ -1168,4 +1168,5 @@ Your Backup does not contain your keys or seed phrase.</string>
   <string name="troubleshooting_contactSupport_subtitle">Connect directly with the Radix support team</string>
   <string name="troubleshooting_discord_title">Discord</string>
   <string name="troubleshooting_discord_subtitle">Connect to the official Radix Discord channel to join the community and ask for help.</string>
+  <string name="linkedConnectors_oldQrMessage">This is an old version of the Radix Connector browser extension. Please update to the latest Connector and try linking again.</string>
 </resources>
