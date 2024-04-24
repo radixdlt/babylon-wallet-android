@@ -6,16 +6,18 @@ import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.SettingsItem
+import com.radixdlt.sargon.extensions.id
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.extensions.factorSourceIdString
+import rdx.works.core.sargon.factorSourceId
+import rdx.works.core.sargon.ledgerFactorSources
 import rdx.works.profile.domain.GetFactorSourcesWithAccountsUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.ledgerFactorSources
 import javax.inject.Inject
 
 @Suppress("MagicNumber")
@@ -37,13 +39,13 @@ class SecurityFactorsViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 getFactorSourcesWithAccountsUseCase(),
-                getProfileUseCase.ledgerFactorSources,
+                getProfileUseCase.flow.map { it.ledgerFactorSources },
                 getEntitiesWithSecurityPromptUseCase(),
             ) { deviceFactorSources, ledgerFactorSources, entitiesWithSecurityPrompts ->
-                val factorSourcesIds = deviceFactorSources.map { it.deviceFactorSource.id.body.value }
+                val factorSourcesIds = deviceFactorSources.map { it.deviceFactorSource.id }
                 val anyEntityNeedRecovery = entitiesWithSecurityPrompts.any { entityWithSecurityPrompt ->
                     entityWithSecurityPrompt.prompt == SecurityPromptType.NEEDS_RESTORE &&
-                        factorSourcesIds.contains(entityWithSecurityPrompt.entity.factorSourceIdString)
+                            entityWithSecurityPrompt.entity.securityState.factorSourceId in factorSourcesIds
                 }
                 SecurityFactorsUiState(
                     settings = persistentSetOf(

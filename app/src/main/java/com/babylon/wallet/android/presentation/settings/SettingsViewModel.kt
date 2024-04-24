@@ -55,7 +55,7 @@ class SettingsViewModel @Inject constructor(
     ) { profile, backupState, entitiesWithSecurityPrompts ->
         var mutated = defaultSettings
         val settingsItems = defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map { it.item }
-        if (profile.appPreferences.p2pLinks().isEmpty() && LinkConnector !in settingsItems) {
+        if (profile.appPreferences.p2pLinks().isEmpty() && LinkToConnector !in settingsItems) {
             mutated = listOf(SettingsUiItem.Settings(LinkToConnector)) + mutated
         }
         val anyEntityHasProblem = entitiesWithSecurityPrompts.isNotEmpty()

@@ -24,7 +24,7 @@ sealed class InteractionState(val factorSource: FactorSource) {
         private val ledgerFactorSource: FactorSource.Ledger
     ) : InteractionState(ledgerFactorSource) {
 
-        data class DerivingPublicKey(val ledgerFactorSource: LedgerHardwareWalletFactorSource) : Ledger(ledgerFactorSource)
+        data class DerivingPublicKey(val ledgerFactorSource: FactorSource.Ledger) : Ledger(ledgerFactorSource)
 
         data class Pending(
             val ledgerFactorSource: FactorSource.Ledger,
