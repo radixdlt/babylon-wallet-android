@@ -23,49 +23,66 @@ class ParseLinkConnectionDetailsUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(raw: String): Result<LinkConnectionPayload> {
+        val content = runCatching {
+            decodeRawInput(raw)
+        }.getOrElse { throwable ->
+            return Result.failure(throwable)
+        }
+
         runCatching {
-            val content = Serializer.kotlinxSerializationJson.decodeFromString<LinkConnectionQRContent>(raw)
+            PrivateKey.EddsaEd25519.verifySignature(
+                signature = content.signature.decodeHex(),
+                hashedData = getSignatureMessageFromConnectionPassword(content.password),
+                publicKey = content.publicKey.decodeHex()
+            )
+        }.getOrElse { throwable ->
+            Timber.e("Failed to verify the link signature: ${content.signature} Error: ${throwable.message}")
+            return Result.failure(RadixWalletException.LinkConnectionException.InvalidSignature)
+        }
 
-            val passwordBytes = Exactly32Bytes.init(content.password.hexToBagOfBytes())
-            val isSignatureValid = runCatching {
-                PrivateKey.EddsaEd25519.verifySignature(
-                    signature = content.signature.decodeHex(),
-                    hashedData = getSignatureMessageFromConnectionPassword(content.password),
-                    publicKey = content.publicKey.decodeHex()
-                )
-            }.onFailure { throwable ->
-                Timber.e("Failed to verify the link signature: ${content.signature} Error: ${throwable.message}")
-            }.getOrNull() ?: false
+        val newLinkPurpose = P2PLinkPurpose.fromValue(content.purpose)
+        val links = p2PLinksRepository.getP2PLinks()
+        val existingLink = links.findBy(content.publicKey)
 
-            if (!isSignatureValid) {
-                return Result.failure(RadixWalletException.LinkConnectionException.InvalidSignature)
+        return when {
+            newLinkPurpose == null -> {
+                Result.failure(RadixWalletException.LinkConnectionException.UnknownPurpose)
             }
-
-            val newLinkPurpose = P2PLinkPurpose.fromValue(content.purpose)
-            val links = p2PLinksRepository.getP2PLinks()
-            val existingLink = links.findBy(content.publicKey)
-
-            return when {
-                newLinkPurpose == null -> {
-                    Result.failure(RadixWalletException.LinkConnectionException.UnknownPurpose)
-                }
-                existingLink != null && newLinkPurpose != existingLink.purpose -> {
-                    Result.failure(RadixWalletException.LinkConnectionException.PurposeChangeNotSupported)
-                }
-                else -> {
-                    Result.success(
-                        LinkConnectionPayload(
-                            password = RadixConnectPassword(passwordBytes),
-                            publicKey = PublicKey.Ed25519.init(content.publicKey),
-                            purpose = newLinkPurpose,
-                            existingP2PLink = existingLink
-                        )
+            existingLink != null && newLinkPurpose != existingLink.purpose -> {
+                Result.failure(RadixWalletException.LinkConnectionException.PurposeChangeNotSupported)
+            }
+            else -> {
+                Result.success(
+                    LinkConnectionPayload(
+                        password = RadixConnectPassword(Exactly32Bytes.init(content.password.hexToBagOfBytes())),
+                        publicKey = PublicKey.Ed25519.init(content.publicKey),
+                        purpose = newLinkPurpose,
+                        existingP2PLink = existingLink
                     )
-                }
+                )
             }
-        }.onFailure { throwable ->
-            Timber.e("Failed to parse the p2p link connection QR content: $raw Error: ${throwable.message}")
-            return Result.failure(RadixWalletException.LinkConnectionException.InvalidQR)
-        }.getOrThrow<Nothing>()
+        }
+    }
+
+    @Throws(RadixWalletException.LinkConnectionException::class)
+    private fun decodeRawInput(value: String): LinkConnectionQRContent {
+        runCatching {
+            Exactly32Bytes.init(value.hexToBagOfBytes())
+        }.onSuccess {
+            Timber.e("An old QR version has been scanned")
+            throw RadixWalletException.LinkConnectionException.OldQRVersion
+        }
+
+        return runCatching {
+            val content = Serializer.kotlinxSerializationJson.decodeFromString<LinkConnectionQRContent>(value)
+
+            // Validate connection password
+            Exactly32Bytes.init(content.password.hexToBagOfBytes())
+
+            content
+        }.getOrElse { throwable ->
+            Timber.e("Failed to parse the p2p link connection QR content: $value Error: ${throwable.message}")
+            throw RadixWalletException.LinkConnectionException.InvalidQR
+        }
     }
 }

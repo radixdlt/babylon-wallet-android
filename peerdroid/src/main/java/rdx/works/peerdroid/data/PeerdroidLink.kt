@@ -1,6 +1,8 @@
 package rdx.works.peerdroid.data
 
 import android.content.Context
+import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.Signature
 import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
@@ -15,9 +17,14 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import rdx.works.core.hash
+import rdx.works.core.serializers.PublicKeySerializer
+import rdx.works.core.serializers.SignatureSerializer
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
 import rdx.works.peerdroid.data.webrtc.model.SessionDescriptionWrapper
@@ -29,8 +36,8 @@ import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
 import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
-import rdx.works.peerdroid.domain.ConnectorExtensionExchangeInteraction
 import timber.log.Timber
+import javax.inject.Inject
 
 interface PeerdroidLink {
 
@@ -45,8 +52,21 @@ interface PeerdroidLink {
 
     suspend fun sendMessage(
         connectionId: String,
-        message: ConnectorExtensionExchangeInteraction
+        message: LinkClientExchangeInteraction
     ): Result<Unit>
+
+    @Serializable
+    data class LinkClientExchangeInteraction(
+        @EncodeDefault
+        @SerialName("discriminator")
+        val discriminator: String = "linkClient",
+        @Serializable(with = PublicKeySerializer::class)
+        @SerialName("publicKey")
+        val publicKey: PublicKey,
+        @Serializable(with = SignatureSerializer::class)
+        @SerialName("signature")
+        val signature: Signature
+    )
 
     interface ConnectionListener {
 
@@ -106,15 +126,17 @@ internal class PeerdroidLinkImpl(
         return addConnectionDeferred.await()
     }
 
-    override suspend fun sendMessage(connectionId: String, message: ConnectorExtensionExchangeInteraction): Result<Unit> {
+    override suspend fun sendMessage(
+        connectionId: String,
+        message: PeerdroidLink.LinkClientExchangeInteraction
+    ): Result<Unit> {
         val dataChannelWrapper = DataChannelWrapper(
             connectionIdHolder = ConnectionIdHolder(connectionId),
             webRtcDataChannel = webRtcManager.getDataChannel()
         )
+
         val serializedMessage = Json.encodeToString(message)
-
         Timber.d("🗼 \uD83D\uDCE1️ sending message to the connector extension ⬆️")
-
         return dataChannelWrapper.sendMessage(serializedMessage)
     }
 
