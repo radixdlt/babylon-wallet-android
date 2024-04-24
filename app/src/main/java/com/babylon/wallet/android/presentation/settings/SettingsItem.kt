@@ -165,9 +165,10 @@ sealed interface SettingsItem {
         @DrawableRes
         fun getIcon(): Int? { // add rest of icons
             return when (this) {
-                Gateways -> com.babylon.wallet.android.designsystem.R.drawable.ic_gateways
-                EntityHiding -> com.babylon.wallet.android.designsystem.R.drawable.ic_entity
+                Gateways -> DSR.ic_gateways
+                EntityHiding -> DSR.ic_entity_hiding
                 DepositGuarantees -> DSR.ic_filter_list
+                is DeveloperMode -> DSR.ic_developer_mode
                 else -> null
             }
         }

@@ -170,7 +170,7 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
             Icon(painter = painterResource(id = DSR.ic_warning_error), contentDescription = null, tint = RadixTheme.colors.white)
             Text(
                 text = title,
-                style = RadixTheme.typography.body1Regular,
+                style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.white
             )
         }
@@ -184,7 +184,7 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
             Text(
                 modifier = Modifier.weight(1f),
                 text = subtitle,
-                style = RadixTheme.typography.body1Regular,
+                style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.orange1
             )
             Icon(painter = painterResource(id = DSR.ic_chevron_right), contentDescription = null, tint = RadixTheme.colors.orange1)
