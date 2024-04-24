@@ -2,21 +2,24 @@ package rdx.works.profile.accountextensions
 
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AssetException
+import com.radixdlt.sargon.AssetsExceptionList
 import com.radixdlt.sargon.BIP39Passphrase
 import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DepositAddressExceptionRule
 import com.radixdlt.sargon.DepositRule
+import com.radixdlt.sargon.DepositorsAllowList
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ThirdPartyDeposits
+import com.radixdlt.sargon.extensions.account
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.get
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
@@ -28,10 +31,10 @@ import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
 import rdx.works.core.domain.DeviceInfo
-import rdx.works.core.sargon.account
 import rdx.works.core.sargon.addAccounts
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.derivePublicKey
+import rdx.works.core.sargon.init
 import rdx.works.core.sargon.initBabylon
 import rdx.works.core.sargon.isSignatureRequiredBasedOnDepositRules
 import rdx.works.core.sargon.updateThirdPartyDepositSettings
@@ -40,20 +43,18 @@ import kotlin.test.assertTrue
 
 class TransferBetweenOwnedAccountsTest {
 
-    private val mnemonicWithPassphrase = MnemonicWithPassphrase(
-        mnemonic = Mnemonic.init(
-            "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                    "humble limb repeat video sudden possible story mask neutral prize goose mandate"
-        ),
-        passphrase = BIP39Passphrase()
+    private val mnemonicWithPassphrase = MnemonicWithPassphrase.init(
+        phrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                "humble limb repeat video sudden possible story mask neutral prize goose mandate"
     )
 
     private val deviceInfo = DeviceInfo.sample()
     private val babylonFactorSource = DeviceFactorSource.babylon(
         mnemonicWithPassphrase = mnemonicWithPassphrase,
         model = deviceInfo.model,
-        name = deviceInfo.name
-    )
+        name = deviceInfo.name,
+        isMain = true
+    ).asGeneral()
 
     var profile = Profile.init(
         deviceFactorSource = babylonFactorSource,
@@ -70,75 +71,75 @@ class TransferBetweenOwnedAccountsTest {
 
     private val acceptAll = ThirdPartyDeposits(
         depositRule = DepositRule.ACCEPT_ALL,
-        assetsExceptionList = emptyList(),
-        depositorsAllowList = emptyList()
+        assetsExceptionList = AssetsExceptionList.init(),
+        depositorsAllowList = DepositorsAllowList.init()
     )
 
     private val acceptAllAndDenyAsset1 = ThirdPartyDeposits(
         depositRule = DepositRule.ACCEPT_ALL,
-        assetsExceptionList = listOf(
+        assetsExceptionList = AssetsExceptionList.init(
             AssetException(
                 address = asset1address,
                 exceptionRule = DepositAddressExceptionRule.DENY
             )
         ),
-        depositorsAllowList = emptyList()
+        depositorsAllowList = DepositorsAllowList.init()
     )
 
     private val denyAll = ThirdPartyDeposits(
         depositRule = DepositRule.DENY_ALL,
-        assetsExceptionList = emptyList(),
-        depositorsAllowList = emptyList()
+        assetsExceptionList = AssetsExceptionList.init(),
+        depositorsAllowList = DepositorsAllowList.init()
     )
 
     private val denyAllAndAllowAsset1 = ThirdPartyDeposits(
         depositRule = DepositRule.DENY_ALL,
-        assetsExceptionList = listOf(
+        assetsExceptionList = AssetsExceptionList.init(
             AssetException(
                 address = asset1address,
                 exceptionRule = DepositAddressExceptionRule.ALLOW
             )
         ),
-        depositorsAllowList = emptyList()
+        depositorsAllowList = DepositorsAllowList.init()
     )
 
     private val denyAllAndDenyAsset1 = ThirdPartyDeposits(
         depositRule = DepositRule.DENY_ALL,
-        assetsExceptionList = listOf(
+        assetsExceptionList = AssetsExceptionList.init(
             AssetException(
                 address = asset1address,
                 exceptionRule = DepositAddressExceptionRule.DENY
             )
         ),
-        depositorsAllowList = emptyList()
+        depositorsAllowList = DepositorsAllowList.init()
     )
 
     private val acceptKnown = ThirdPartyDeposits(
         depositRule = DepositRule.ACCEPT_KNOWN,
-        assetsExceptionList = emptyList(),
-        depositorsAllowList = emptyList()
+        assetsExceptionList = AssetsExceptionList.init(),
+        depositorsAllowList = DepositorsAllowList.init()
     )
 
     private val acceptKnownAndAllowAsset1 = ThirdPartyDeposits(
         depositRule = DepositRule.ACCEPT_KNOWN,
-        assetsExceptionList = listOf(
+        assetsExceptionList = AssetsExceptionList.init(
             AssetException(
                 address = asset1address,
                 exceptionRule = DepositAddressExceptionRule.ALLOW
             )
         ),
-        depositorsAllowList = emptyList()
+        depositorsAllowList = DepositorsAllowList.init()
     )
 
     private val acceptKnownAndDenyAsset1 = ThirdPartyDeposits(
         depositRule = DepositRule.ACCEPT_KNOWN,
-        assetsExceptionList = listOf(
+        assetsExceptionList = AssetsExceptionList.init(
             AssetException(
                 address = asset1address,
                 exceptionRule = DepositAddressExceptionRule.DENY
             )
         ),
-        depositorsAllowList = emptyList()
+        depositorsAllowList = DepositorsAllowList.init()
     )
 
     @Before
@@ -146,10 +147,10 @@ class TransferBetweenOwnedAccountsTest {
         val mnemonicRepository = mockk<MnemonicRepository>()
         coEvery { mnemonicRepository() } returns mnemonicWithPassphrase
 
-        val derivationPath = DerivationPath.account(
+        val derivationPath = DerivationPath.Cap26.account(
             networkId = defaultNetwork,
             keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
-            index = HdPathComponent(0u)
+            index = 0u
         )
         targetAccount = Account.initBabylon(
             networkId = defaultNetwork,
@@ -158,7 +159,7 @@ class TransferBetweenOwnedAccountsTest {
             derivationPath = derivationPath,
             factorSourceId = profile.factorSources().first().id as FactorSourceId.Hash,
 
-        )
+            )
 
         profile = profile.addAccounts(
             accounts = listOf(targetAccount),

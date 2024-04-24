@@ -1,13 +1,13 @@
 package rdx.works.profile.data.repository
 
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.serializedJsonString
+import com.radixdlt.sargon.extensions.fromEncryptedJson
+import com.radixdlt.sargon.extensions.toEncryptedJson
+import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.flow.firstOrNull
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.encryptWithPassword
-import rdx.works.core.sargon.init
 import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.domain.ProfileException
@@ -57,17 +57,17 @@ class BackupProfileRepositoryImpl @Inject constructor(
         }
 
         is BackupType.File.Encrypted -> {
-            val profile = runCatching {
-                Profile.init(encrypted = snapshotSerialised, password = backupType.password)
-            }.getOrNull()
-
-            if (profile == null) {
-                Result.failure(ProfileException.InvalidPassword)
-            } else {
-                val snapshot = profile.serializedJsonString()
-                encryptedPreferencesManager.putProfileSnapshotFromFileBackup(snapshot)
-                Result.success(Unit)
-            }
+            runCatching {
+                Profile.fromEncryptedJson(jsonString = snapshotSerialised, decryptionPassword = backupType.password)
+            }.fold(
+                onSuccess = {
+                    encryptedPreferencesManager.putProfileSnapshotFromFileBackup(it.toJson())
+                    Result.success(Unit)
+                },
+                onFailure = {
+                    Result.failure(ProfileException.InvalidPassword) // TODO integration maybe check specific errors
+                }
+            )
         }
     }
 
@@ -96,12 +96,12 @@ class BackupProfileRepositoryImpl @Inject constructor(
         if (profile == null || profile.mainBabylonFactorSource == null) return null
         return when (backupType) {
             is BackupType.Cloud -> if (profile.appPreferences.security.isCloudProfileSyncEnabled) {
-                profile.serializedJsonString()
+                profile.toJson()
             } else {
                 null
             }
-            is BackupType.File.PlainText -> profile.serializedJsonString()
-            is BackupType.File.Encrypted -> profile.encryptWithPassword(backupType.password)
+            is BackupType.File.PlainText -> profile.toJson()
+            is BackupType.File.Encrypted -> profile.toEncryptedJson(encryptionPassword = backupType.password)
         }
     }
 }

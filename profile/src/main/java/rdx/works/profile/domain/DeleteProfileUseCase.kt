@@ -1,6 +1,6 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.sargon.extensions.serializedJsonString
+import com.radixdlt.sargon.extensions.toJson
 import rdx.works.core.KeystoreManager
 import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.ProfileRepository
@@ -26,7 +26,7 @@ class DeleteProfileUseCase @Inject constructor(
             // Rescuing the copy of the cloud backup so as the user
             // can see it and restore it, even after deleting the profile and the keys.
             backupProfileRepository.saveTemporaryRestoringSnapshot(
-                snapshotSerialised = profileThatWasBackedUpToCloud.serializedJsonString(),
+                snapshotSerialised = profileThatWasBackedUpToCloud.toJson(),
                 backupType = BackupType.Cloud
             )
         }

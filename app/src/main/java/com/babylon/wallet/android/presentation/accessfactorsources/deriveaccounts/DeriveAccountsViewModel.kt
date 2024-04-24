@@ -20,11 +20,13 @@ import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.OnLedgerSettings
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.default
 import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
@@ -174,7 +176,7 @@ class DeriveAccountsViewModel @Inject constructor(
         }
         withContext(ioDispatcher) {
             val networkId = profile?.currentGateway?.network?.id.orDefault()
-            val indicesToScan: Set<HdPathComponent> = computeIndicesToScan(
+            val indicesToScan: Set<HDPathValue> = computeIndicesToScan(
                 derivationPathScheme = if (input.isForLegacyOlympia) DerivationPathScheme.BIP44_OLYMPIA else DerivationPathScheme.CAP26,
                 forNetworkId = networkId,
                 factorSource = input.factorSource as FactorSource
@@ -191,7 +193,7 @@ class DeriveAccountsViewModel @Inject constructor(
             accessFactorSourcesUiProxy.setOutput(
                 output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                     derivedAccounts = derivedAccounts,
-                    nextDerivationPathOffset = indicesToScan.last().value + 1u
+                    nextDerivationPathOffset = indicesToScan.last() + 1u
                 )
             )
         }
@@ -201,10 +203,10 @@ class DeriveAccountsViewModel @Inject constructor(
         return withContext(ioDispatcher) {
             val networkId = profile?.currentGateway?.network?.id.orDefault()
 
-            val indicesToScan: Set<HdPathComponent> = computeIndicesToScan(
+            val indicesToScan = computeIndicesToScan(
                 derivationPathScheme = if (input.isForLegacyOlympia) DerivationPathScheme.BIP44_OLYMPIA else DerivationPathScheme.CAP26,
                 forNetworkId = networkId,
-                factorSource = input.factorSource as FactorSource
+                factorSource = input.factorSource
             )
             reDerivePublicKeysWithGivenAccountIndices(
                 accountIndices = indicesToScan,
@@ -217,7 +219,7 @@ class DeriveAccountsViewModel @Inject constructor(
                 accessFactorSourcesUiProxy.setOutput(
                     output = AccessFactorSourcesOutput.DerivedAccountsWithNextDerivationPath(
                         derivedAccounts = derivedAccounts,
-                        nextDerivationPathOffset = indicesToScan.last().value + 1u
+                        nextDerivationPathOffset = indicesToScan.last() + 1u
                     )
                 )
             }
@@ -225,7 +227,7 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     private fun reDerivePublicKeysWithGivenMnemonic(
-        accountIndices: Set<HdPathComponent>,
+        accountIndices: Set<HDPathValue>,
         forNetworkId: NetworkId
     ): Map<DerivationPath, PublicKey> {
         val derivationPaths = publicKeyProvider.getDerivationPathsForIndices(
@@ -242,7 +244,7 @@ class DeriveAccountsViewModel @Inject constructor(
     }
 
     private suspend fun reDerivePublicKeysWithGivenAccountIndices(
-        accountIndices: Set<HdPathComponent>,
+        accountIndices: Set<HDPathValue>,
         forNetworkId: NetworkId
     ): Result<Map<DerivationPath, PublicKey>> {
         val derivationPaths = publicKeyProvider.getDerivationPathsForIndices(
@@ -295,6 +297,7 @@ class DeriveAccountsViewModel @Inject constructor(
             publicKey = entry.value,
             derivationPath = entry.key,
             factorSourceId = factorSourceId, // TODO integration appearance Id might be wrong
+            onLedgerSettings = OnLedgerSettings.default() // TODO Change that
         )
     }
 
@@ -302,7 +305,7 @@ class DeriveAccountsViewModel @Inject constructor(
         derivationPathScheme: DerivationPathScheme,
         forNetworkId: NetworkId,
         factorSource: FactorSource
-    ): Set<HdPathComponent> {
+    ): Set<HDPathValue> {
         val network = profile?.networks?.getBy(forNetworkId)
         val usedIndices = network?.accounts()
             ?.filter { account ->
@@ -313,12 +316,12 @@ class DeriveAccountsViewModel @Inject constructor(
             }
             ?.toSet().orEmpty()
 
-        val indicesToScan = mutableSetOf<HdPathComponent>()
+        val indicesToScan = mutableSetOf<HDPathValue>()
         val startIndex = nextDerivationPathOffset
         var currentIndex = startIndex
         do {
             if (currentIndex !in usedIndices) {
-                indicesToScan.add(HdPathComponent(currentIndex))
+                indicesToScan.add(currentIndex)
             }
             currentIndex++
         } while (indicesToScan.size < ACCOUNTS_PER_SCAN)

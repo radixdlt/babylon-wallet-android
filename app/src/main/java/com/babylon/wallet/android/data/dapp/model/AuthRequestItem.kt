@@ -17,7 +17,7 @@ sealed class AuthLoginRequestItem : AuthRequestItem()
 @SerialName("loginWithChallenge")
 data class AuthLoginWithChallengeRequestItem(
     @SerialName("challenge")
-    val challenge: String? = null
+    val challenge: String
 ) : AuthLoginRequestItem()
 
 @Serializable
@@ -34,7 +34,7 @@ data class AuthUsePersonaRequestItem(
 fun AuthLoginRequestItem.toDomainModel(): AuthorizedRequest.AuthRequest.LoginRequest {
     return when (this) {
         is AuthLoginWithChallengeRequestItem -> AuthorizedRequest.AuthRequest.LoginRequest.WithChallenge(
-            challenge = Exactly32Bytes.init(challenge.orEmpty().hexToBagOfBytes()) // TODO Integration
+            challenge = Exactly32Bytes.init(challenge.hexToBagOfBytes())
         )
 
         is AuthLoginWithoutChallengeRequestItem -> AuthorizedRequest.AuthRequest.LoginRequest.WithoutChallenge

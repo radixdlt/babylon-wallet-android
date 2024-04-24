@@ -7,17 +7,17 @@ import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
 import com.radixdlt.sargon.EntityFlags
 import com.radixdlt.sargon.EntitySecurityState
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.contains
+import com.radixdlt.sargon.extensions.identity
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.nonHardenedIndex
 
 fun Collection<Persona>.notHiddenPersonas(): List<Persona> = filter { !it.isHidden }
 fun Collection<Persona>.hiddenPersonas(): List<Persona> = filter { it.isHidden }
@@ -28,8 +28,8 @@ val Persona.factorSourceId: FactorSourceId
 val Persona.derivationPathScheme: DerivationPathScheme
     get() = securityState.derivationPathScheme
 
-val Persona.derivationPathEntityIndex: UInt
-    get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.entityIndex ?: 0u
+val Persona.derivationPathEntityIndex: HDPathValue
+    get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.nonHardenedIndex
 
 val Persona.hasAuthSigning: Boolean
     get() = securityState.hasAuthSigning
@@ -43,12 +43,12 @@ val Persona.isHidden: Boolean
 fun Persona.Companion.init(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
     networkId: NetworkId,
-    entityIndex: HdPathComponent,
+    entityIndex: HDPathValue,
     displayName: DisplayName,
     factorSourceId: FactorSourceId.Hash,
     personaData: PersonaData = PersonaData.empty()
 ): Persona {
-    val derivationPath = DerivationPath.identity(
+    val derivationPath = DerivationPath.Cap26.identity(
         networkId = networkId,
         keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
         index = entityIndex

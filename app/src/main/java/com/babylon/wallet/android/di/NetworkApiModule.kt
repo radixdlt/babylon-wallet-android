@@ -9,6 +9,7 @@ import com.babylon.wallet.android.data.gateway.apis.TokenPriceApi
 import com.babylon.wallet.android.data.gateway.apis.TransactionApi
 import com.babylon.wallet.android.data.gateway.survey.NPSSurveyApi
 import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.extensions.string
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -72,7 +73,7 @@ object NetworkApiModule {
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): StateApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url?.toString() ?: Gateway.default.url.toString(),
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.string ?: Gateway.default.string,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )
@@ -84,7 +85,7 @@ object NetworkApiModule {
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): StateApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url?.toString() ?: Gateway.default.url.toString(),
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.string ?: Gateway.default.string,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )
@@ -95,7 +96,7 @@ object NetworkApiModule {
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): TransactionApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url?.toString() ?: Gateway.default.url.toString(),
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.string ?: Gateway.default.string,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )
@@ -106,7 +107,7 @@ object NetworkApiModule {
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): StreamApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url?.toString() ?: Gateway.default.url.toString(),
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.string ?: Gateway.default.string,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )

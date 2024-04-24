@@ -18,11 +18,13 @@ import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
+import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import javax.inject.Inject
 
 class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
     private val mnemonicRepository: MnemonicRepository,
     private val profileRepository: ProfileRepository,
+    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
@@ -31,7 +33,7 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
         personaData: PersonaData
     ): Persona {
         return withContext(defaultDispatcher) {
-            val profile = profileRepository.profile.first()
+            val profile = ensureBabylonFactorSourceExistUseCase()
 
             val networkId = profile.currentGateway.network.id
             val factorSource = profile.mainBabylonFactorSource ?: error("Babylon factor source is not present")

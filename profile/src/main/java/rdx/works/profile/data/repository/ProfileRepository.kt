@@ -2,8 +2,8 @@ package rdx.works.profile.data.repository
 
 import android.app.backup.BackupManager
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.deserializeFromJsonString
-import com.radixdlt.sargon.extensions.serializedJsonString
+import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rdx.works.core.TimestampGenerator
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.domain.ProfileState
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.ApplicationScope
 import rdx.works.profile.di.coroutines.IoDispatcher
@@ -90,7 +90,7 @@ class ProfileRepositoryImpl @Inject constructor(
             header = profile.header.copy(lastModified = TimestampGenerator())
         )
         withContext(ioDispatcher) {
-            val profileContent = profileToSave.serializedJsonString()
+            val profileContent = profileToSave.toJson()
             // Store profile
             encryptedPreferencesManager.putProfileSnapshot(profileContent)
 
@@ -123,7 +123,7 @@ class ProfileRepositoryImpl @Inject constructor(
 
     @Suppress("SwallowedException")
     override fun deriveProfileState(content: String): ProfileState = runCatching {
-        Profile.deserializeFromJsonString(content)
+        Profile.fromJson(content)
     }.fold(
         onSuccess = {
             ProfileState.Restored(it)

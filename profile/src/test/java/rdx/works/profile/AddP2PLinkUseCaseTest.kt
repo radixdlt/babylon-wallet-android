@@ -1,46 +1,45 @@
 package rdx.works.profile
 
-//class AddP2PLinkUseCaseTest {
-//
-//    @Ignore("P2PLink data class or this unit test needs refactor")
-//    @Test
-//    fun `given profile exists, when adding p2p client, verify it is added properly`() = runBlocking {
-//        val profileRepository = mock(ProfileRepository::class.java)
-//        val addP2PLinkUseCase = AddP2PLinkUseCase(profileRepository)
-//        val expectedP2PLink = P2PLink.init(
-//            connectionPassword = "pass1234",
-//            displayName = "Mac browser"
-//        )
-//
-//        val initialProfile = Profile(
-//            header = Header.init(
-//                id = "9958f568-8c9b-476a-beeb-017d1f843266",
-//                deviceInfo = TestData.deviceInfo,
-//                creationDate = InstantGenerator(),
-//                numberOfNetworks = 0
-//            ),
-//            appPreferences = AppPreferences(
-//                transaction = Transaction.default,
-//                display = Display.default,
-//                security = Security.default,
-//                gateways = Gateways(Radix.Gateway.hammunet.url, listOf(Radix.Gateway.hammunet)),
-//                p2pLinks = emptyList()
-//            ),
-//            factorSources = emptyIdentifiedArrayList(),
-//            networks = emptyList()
-//        )
-//        whenever(profileRepository.profile).thenReturn(flowOf(initialProfile))
-//
-//        addP2PLinkUseCase(
-//            displayName = "Mac browser",
-//            connectionPassword = "pass1234"
-//        )
-//
-//        val updatedProfile = initialProfile.copy(
-//            appPreferences = initialProfile.appPreferences.copy(
-//                p2pLinks = listOf(expectedP2PLink)
-//            )
-//        )
-//        verify(profileRepository).saveProfile(updatedProfile)
-//    }
-//}
+import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.P2pLink
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.toBagOfBytes
+import com.radixdlt.sargon.samples.sample
+import kotlinx.coroutines.runBlocking
+import rdx.works.core.sargon.babylon
+import rdx.works.core.sargon.sample
+import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
+import kotlin.random.Random
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class AddP2PLinkUseCaseTest {
+
+    private val profileRepository = FakeProfileRepository()
+    private val addP2PLinkUseCase = AddP2PLinkUseCase(profileRepository)
+
+    @Test
+    fun `given profile exists, when adding p2p client, verify it is added properly`() = runBlocking {
+        val browser = "Browser"
+        val password = RadixConnectPassword(value = Exactly32Bytes.init(Random.nextBytes(32).toBagOfBytes()))
+
+        val profile = Profile.init(
+            deviceFactorSource = DeviceFactorSource.babylon(MnemonicWithPassphrase.sample(), isMain = true).asGeneral(),
+            creatingDeviceName = "Unit Test"
+        )
+        profileRepository.saveProfile(profile)
+        addP2PLinkUseCase(displayName = browser, connectionPassword = password)
+
+        assertEquals(
+            P2pLink(connectionPassword = password, displayName = browser),
+            profileRepository.inMemoryProfileOrNull?.appPreferences?.p2pLinks()?.first()
+        )
+    }
+}

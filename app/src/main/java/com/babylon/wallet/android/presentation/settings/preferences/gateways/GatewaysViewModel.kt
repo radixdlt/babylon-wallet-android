@@ -14,6 +14,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.all
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -73,7 +74,7 @@ class GatewaysViewModel @Inject constructor(
         _state.update { state ->
             // if sanitizedUrl = null it means it didn't pass the validation
             val sanitizedUrl = newUrl.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.isDeveloperModeEnabled)
-            val urlAlreadyAdded = state.gatewayList.map { it.gateway.url.toString() }.any { it == newUrl || it == sanitizedUrl }
+            val urlAlreadyAdded = state.gatewayList.map { it.gateway.string }.any { it == newUrl || it == sanitizedUrl }
             state.copy(
                 newUrlValid = !urlAlreadyAdded && sanitizedUrl?.isValidUrl() == true && newUrl.isValidUrl(),
                 newUrl = newUrl,
@@ -130,7 +131,7 @@ class GatewaysViewModel @Inject constructor(
 
         // this is the case where a url has been added when the developer mode was enabled
         // but at the time the user clicks to switch network the developer mode is disabled
-        if (gateway.url.toString().sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled) == null) return
+        if (gateway.string.sanitizeAndValidateGatewayUrl(isDevModeEnabled = state.value.isDeveloperModeEnabled) == null) return
 
         val isGatewayChanged = changeGatewayIfNetworkExistUseCase(gateway)
         if (isGatewayChanged) {

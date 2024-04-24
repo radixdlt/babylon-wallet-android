@@ -10,9 +10,9 @@ import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.addAccounts
-import rdx.works.core.domain.ProfileState
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
@@ -55,7 +55,7 @@ class GenerateProfileUseCase @Inject constructor(
             is ProfileState.Restored -> state.profile
             else -> withContext(defaultDispatcher) {
                 val profile = Profile.init(
-                    deviceFactorSource = deviceFactorSource.value,
+                    deviceFactorSource = deviceFactorSource,
                     creatingDeviceName = deviceInfoRepository.getDeviceInfo().displayName
                 ).addAccounts(
                     accounts = accounts,

@@ -56,6 +56,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.isWellKnown
+import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -385,7 +386,7 @@ private fun GatewayCard(
 }
 
 @Composable
-private fun Gateway.displayName(): String = url.toString()
+private fun Gateway.displayName(): String = string
 
 @Preview(showBackground = true)
 @Composable

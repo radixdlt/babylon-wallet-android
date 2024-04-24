@@ -1,20 +1,19 @@
 package rdx.works.profile.data.repository
 
-import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Slip10Curve
+import com.radixdlt.sargon.extensions.HDPathValue
+import com.radixdlt.sargon.extensions.account
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.first
-import rdx.works.core.sargon.account
 import rdx.works.core.sargon.derivePublicKey
-import rdx.works.core.sargon.legacyOlympia
 import rdx.works.core.sargon.nextAccountIndex
 import javax.inject.Inject
 
@@ -36,7 +35,7 @@ class PublicKeyProvider @Inject constructor(
             factorSourceId = factorSource.id,
             derivationPathScheme = DerivationPathScheme.CAP26
         )
-        return DerivationPath.account(
+        return DerivationPath.Cap26.account(
             networkId = forNetworkId,
             keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
             index = accountIndex
@@ -45,14 +44,14 @@ class PublicKeyProvider @Inject constructor(
 
     fun getDerivationPathsForIndices(
         forNetworkId: NetworkId,
-        indices: Set<HdPathComponent>,
+        indices: Set<HDPathValue>,
         isForLegacyOlympia: Boolean = false
     ): List<DerivationPath> {
         return indices.map { accountIndex ->
             if (isForLegacyOlympia) {
-                DerivationPath.legacyOlympia(accountIndex)
+                DerivationPath.Bip44Like.init(index = accountIndex)
             } else {
-                DerivationPath.account(
+                DerivationPath.Cap26.account(
                     networkId = forNetworkId,
                     keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
                     index = accountIndex,

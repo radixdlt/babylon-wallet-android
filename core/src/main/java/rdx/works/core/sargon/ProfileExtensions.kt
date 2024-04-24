@@ -6,11 +6,9 @@ import com.radixdlt.sargon.Accounts
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedDapps
-import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.ContentHint
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DerivationPathScheme
-import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
 import com.radixdlt.sargon.EntityFlags
@@ -20,14 +18,11 @@ import com.radixdlt.sargon.FactorSourceFlag
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSources
 import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.Header
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.P2pLink
-import com.radixdlt.sargon.P2pLinks
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.Personas
 import com.radixdlt.sargon.Profile
@@ -37,8 +32,8 @@ import com.radixdlt.sargon.ProfileSnapshotVersion
 import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.TransactionPreferences
+import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.ProfileEntity
-import com.radixdlt.sargon.extensions.SargonException
 import com.radixdlt.sargon.extensions.append
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.changeCurrent
@@ -53,15 +48,10 @@ import com.radixdlt.sargon.extensions.removeByAddress
 import com.radixdlt.sargon.extensions.removeById
 import com.radixdlt.sargon.extensions.size
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.extensions.toBagOfBytes
-import com.radixdlt.sargon.newProfileFromEncryptionBytes
-import com.radixdlt.sargon.profileEncryptWithPassword
 import com.radixdlt.sargon.profileToDebugString
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.annotations.DebugOnly
 import rdx.works.core.mapWhen
-import rdx.works.core.toByteArray
-import java.nio.charset.Charset
 
 val Header.isCompatible: Boolean
     get() = snapshotVersion.value >= ProfileSnapshotVersion.V100.value
@@ -151,25 +141,6 @@ val Profile.olympiaFactorSourcesWithAccounts: Map<FactorSource.Device, List<Acco
  */
 @DebugOnly
 fun Profile.prettyPrinted(): String = profileToDebugString(profile = this)
-
-// TODO integration
-@Throws(SargonException::class)
-fun Profile.Companion.init(encrypted: String, password: String) = init(
-    encryptionBytes = encrypted.toByteArray().toBagOfBytes(),
-    password = password
-)
-
-@Throws(SargonException::class)
-fun Profile.Companion.init(encryptionBytes: BagOfBytes, password: String) = newProfileFromEncryptionBytes(
-    json = encryptionBytes,
-    decryptionPassword = password
-)
-
-// TODO integration
-fun Profile.encryptWithPassword(password: String) =
-    profileEncryptWithPassword(profile = this, encryptionPassword = password).toByteArray().toString(
-        charset = Charset.defaultCharset()
-    )
 
 fun Profile.addAccounts(
     accounts: List<Account>,
@@ -267,15 +238,15 @@ fun Profile.nextAccountIndex(
     forNetworkId: NetworkId,
     factorSourceId: FactorSourceId,
     derivationPathScheme: DerivationPathScheme,
-): HdPathComponent {
-    val forNetwork = networks.getBy(forNetworkId) ?: return HdPathComponent(0u)
+): HDPathValue {
+    val forNetwork = networks.getBy(forNetworkId) ?: return 0u
     val accountsControlledByFactorSource = forNetwork.accounts().filter {
         it.factorSourceId == factorSourceId && it.derivationPathScheme == derivationPathScheme
     }
     return if (accountsControlledByFactorSource.isEmpty()) {
-        HdPathComponent(0u)
+        0u
     } else {
-        HdPathComponent(accountsControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1u)
+        accountsControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1u
     }
 }
 
@@ -283,20 +254,20 @@ fun Profile.nextPersonaIndex(
     forNetworkId: NetworkId,
     derivationPathScheme: DerivationPathScheme,
     factorSourceID: FactorSourceId? = null
-): HdPathComponent {
-    val network = networks().firstOrNull { it.id == forNetworkId } ?: return HdPathComponent(0u)
+): HDPathValue {
+    val network = networks().firstOrNull { it.id == forNetworkId } ?: return 0u
 
     val factorSource = factorSources().find {
         it.id == factorSourceID
-    } ?: mainBabylonFactorSource ?: return HdPathComponent(0u)
+    } ?: mainBabylonFactorSource ?: return 0u
 
     val personasControlledByFactorSource = network.personas().filter {
         it.factorSourceId == factorSource.id && it.derivationPathScheme == derivationPathScheme
     }
     return if (personasControlledByFactorSource.isEmpty()) {
-        HdPathComponent(0u)
+        0u
     } else {
-        HdPathComponent(personasControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1u)
+        personasControlledByFactorSource.maxOf { it.derivationPathEntityIndex } + 1u
     }
 }
 

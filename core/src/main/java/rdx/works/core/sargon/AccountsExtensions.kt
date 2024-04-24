@@ -19,8 +19,11 @@ import com.radixdlt.sargon.OnLedgerSettings
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ThirdPartyDeposits
+import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.contains
+import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.nonHardenedIndex
 import com.radixdlt.sargon.extensions.toBabylonAddress
 
 fun Collection<Account>.notHiddenAccounts(): List<Account> = filter { !it.isHidden }
@@ -35,8 +38,8 @@ val Account.derivationPathScheme: DerivationPathScheme
 val Account.hasAuthSigning: Boolean
     get() = securityState.hasAuthSigning
 
-val Account.derivationPathEntityIndex: UInt
-    get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.entityIndex ?: 0u
+val Account.derivationPathEntityIndex: HDPathValue
+    get() = securityState.transactionSigningFactorInstance.publicKey.derivationPath.nonHardenedIndex
 
 val Account.usesEd25519: Boolean
     get() = securityState.usesEd25519
@@ -62,11 +65,11 @@ fun Account.Companion.initBabylon(
     publicKey: PublicKey,
     derivationPath: DerivationPath,
     factorSourceId: FactorSourceId.Hash,
-    onLedgerSettings: OnLedgerSettings = OnLedgerSettings(
+    onLedgerSettings: OnLedgerSettings = OnLedgerSettings( // TODO integration use default()
         thirdPartyDeposits = ThirdPartyDeposits(
             depositRule = DepositRule.ACCEPT_ALL,
-            assetsExceptionList = emptyList(),
-            depositorsAllowList = emptyList()
+            assetsExceptionList = null,
+            depositorsAllowList = null
         )
     ),
     flags: EntityFlags = EntityFlags.init(),
@@ -101,8 +104,8 @@ fun Account.Companion.initOlympia(
     onLedgerSettings: OnLedgerSettings = OnLedgerSettings(
         thirdPartyDeposits = ThirdPartyDeposits(
             depositRule = DepositRule.ACCEPT_ALL,
-            assetsExceptionList = emptyList(),
-            depositorsAllowList = emptyList()
+            assetsExceptionList = null,
+            depositorsAllowList = null
         )
     ),
     flags: EntityFlags = EntityFlags.init(),
@@ -137,19 +140,12 @@ fun Account.isSignatureRequiredBasedOnDepositRules(
     val hasDenyAll = thirdPartyDeposits.depositRule == DepositRule.DENY_ALL
     val hasAcceptKnown = thirdPartyDeposits.depositRule == DepositRule.ACCEPT_KNOWN
 
-    val hasDenyExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList.any {
-        it.exceptionRule == DepositAddressExceptionRule.DENY && it.address == forSpecificAssetAddress
-    }
-
-    val hasAllowExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList.any {
-        it.exceptionRule == DepositAddressExceptionRule.ALLOW && it.address == forSpecificAssetAddress
-    }
-
+    val rule = thirdPartyDeposits.assetsExceptionList?.getBy(forSpecificAssetAddress)?.exceptionRule
     return when {
-        hasAllowExceptionRuleForAsset -> false
-        hasDenyAll || hasDenyExceptionRuleForAsset -> true
+        rule == DepositAddressExceptionRule.ALLOW -> false
+        hasDenyAll || rule == DepositAddressExceptionRule.DENY -> true
         // and if the receiving account knows the resource then do not require signature
-        hasAcceptKnown -> !addressesOfAssetsOfTargetAccount.contains(forSpecificAssetAddress)
+        hasAcceptKnown -> forSpecificAssetAddress !in addressesOfAssetsOfTargetAccount
         else -> false
     }
 }

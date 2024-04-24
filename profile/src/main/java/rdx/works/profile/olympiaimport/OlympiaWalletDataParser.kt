@@ -6,18 +6,15 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.Bip39WordCount
 import com.radixdlt.sargon.DerivationPath
-import com.radixdlt.sargon.HdPathComponent
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toBabylonAddress
 import com.radixdlt.sargon.extensions.wasMigratedFromLegacyOlympia
 import okio.ByteString.Companion.decodeBase64
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.from
 import rdx.works.core.sargon.init
-import rdx.works.core.sargon.legacyOlympia
 import rdx.works.profile.domain.GetProfileUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -93,7 +90,7 @@ class OlympiaWalletDataParser @Inject constructor(
             address = olympiaAddress,
             publicKey = publicKey,
             accountName = name,
-            derivationPath = DerivationPath.legacyOlympia(HdPathComponent(parsedIndex.toUInt())),
+            derivationPath = DerivationPath.Bip44Like.init(index = parsedIndex.toUInt()),
             alreadyImported = alreadyImported,
             newBabylonAddress = newBabylonAddress,
             appearanceId = AppearanceId.from(parsedIndex.toUInt())
