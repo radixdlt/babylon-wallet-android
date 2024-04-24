@@ -32,8 +32,7 @@ class GetSecurityProblemsUseCase @Inject constructor(
                     it.entity is Network.Persona && it.entity.factorSourceIdString == factorSourceId
                 }
                 add(
-                    SecurityProblem.EntitiesNeedBackup(
-                        factorSourceID = factorSourceId,
+                    SecurityProblem.EntitiesNotRecoverable(
                         accountsNeedBackup = accountsNeedBackup,
                         personasNeedBackup = personasNeedBackup
                     )

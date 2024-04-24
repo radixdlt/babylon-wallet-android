@@ -34,7 +34,6 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.SecurityProblem
-import com.babylon.wallet.android.domain.model.toProblemHeading
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import rdx.works.core.domain.BackupState
@@ -106,7 +105,7 @@ private fun SecurityCenterContent(
             state.securityProblems?.forEach { problem ->
                 val title = problem.toProblemHeading()
                 when (problem) {
-                    is SecurityProblem.EntitiesNeedBackup -> {
+                    is SecurityProblem.EntitiesNotRecoverable -> {
                         NotOkStatusCard(
                             modifier = Modifier
                                 .clip(RadixTheme.shapes.roundedRectMedium)
@@ -341,6 +340,20 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SecurityProblem.toProblemHeading(): String {
+    return when (this) {
+        is SecurityProblem.EntitiesNotRecoverable -> stringResource(
+            id = R.string.securityCenter_problem3_heading,
+            accountsNeedBackup,
+            personasNeedBackup
+        )
+
+        is SecurityProblem.EntitiesNeedRecovery -> stringResource(id = R.string.securityCenter_problem9_heading)
+        SecurityProblem.BackupNotWorking -> stringResource(id = R.string.securityCenter_problem6_heading)
     }
 }
 

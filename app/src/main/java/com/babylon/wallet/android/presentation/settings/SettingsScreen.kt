@@ -37,7 +37,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.toProblemHeading
+import com.babylon.wallet.android.presentation.settings.securitycenter.toProblemHeading
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.radixdlt.sargon.DependencyInformation
