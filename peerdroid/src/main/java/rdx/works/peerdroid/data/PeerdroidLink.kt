@@ -37,7 +37,6 @@ import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
 import rdx.works.peerdroid.domain.ConnectionIdHolder
 import timber.log.Timber
-import javax.inject.Inject
 
 interface PeerdroidLink {
 
