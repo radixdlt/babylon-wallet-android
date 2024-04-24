@@ -20,7 +20,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance

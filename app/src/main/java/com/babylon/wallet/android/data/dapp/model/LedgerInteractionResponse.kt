@@ -3,13 +3,15 @@ package com.babylon.wallet.android.data.dapp.model
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.LedgerResponse
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import rdx.works.core.HexCoded32Bytes
 
 @Serializable
 sealed interface LedgerInteractionResponse : ConnectorExtensionInteraction
@@ -205,7 +207,7 @@ private fun GetDeviceInfoResponse.toDomainModel() =
         LedgerResponse.GetDeviceInfoResponse(
             interactionId = interactionId,
             model = success.model?.toDomainModel() ?: LedgerResponse.LedgerDeviceModel.NanoS,
-            deviceId = HexCoded32Bytes(success.id)
+            deviceId = Exactly32Bytes.init(success.id.hexToBagOfBytes())
         )
     } else {
         LedgerResponse.LedgerErrorResponse(

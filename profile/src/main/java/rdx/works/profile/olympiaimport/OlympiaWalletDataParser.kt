@@ -2,7 +2,6 @@
 
 package rdx.works.profile.olympiaimport
 
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.Bip39WordCount
@@ -15,7 +14,6 @@ import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toBabylonAddress
 import com.radixdlt.sargon.extensions.wasMigratedFromLegacyOlympia
 import okio.ByteString.Companion.decodeBase64
-import rdx.works.core.Identified
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.from
 import rdx.works.core.sargon.init
@@ -153,10 +151,7 @@ data class OlympiaAccountDetails(
     val newBabylonAddress: AccountAddress,
     val appearanceId: AppearanceId,
     val alreadyImported: Boolean = false
-) : Identified {
-    override val identifier: String
-        get() = newBabylonAddress.string
-}
+)
 
 enum class OlympiaAccountType {
     Hardware, Software;

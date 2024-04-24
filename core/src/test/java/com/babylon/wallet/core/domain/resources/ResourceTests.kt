@@ -1,5 +1,6 @@
 package com.babylon.wallet.core.domain.resources
 
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress
@@ -176,7 +177,7 @@ class ResourceTests {
     @Test
     fun `verify that xrd resource shows only supply flexible`() {
         val resource = fungibleResource(
-            address = XrdResource.address(networkId = 1),
+            address = XrdResource.address(networkId = NetworkId.MAINNET),
             name = "Radix fungible token",
             symbol = "XRD"
         )

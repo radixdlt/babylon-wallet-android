@@ -19,7 +19,6 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.whenever
-import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.identifiedArrayListOf
 import rdx.works.profile.data.model.pernetwork.DerivationPath
 import rdx.works.profile.data.model.pernetwork.FactorInstance

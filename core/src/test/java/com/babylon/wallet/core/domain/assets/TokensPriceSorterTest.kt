@@ -1,6 +1,6 @@
 package com.babylon.wallet.core.domain.assets
 
-import com.radixdlt.derivation.model.NetworkId
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -21,7 +21,7 @@ class TokensPriceSorterTest {
 
     private val xrdToken = Token(
         resource = Resource.FungibleResource(
-            address = XrdResource.address(networkId = NetworkId.Mainnet.value),
+            address = XrdResource.address(networkId = NetworkId.MAINNET),
             ownedAmount = null,
             metadata = listOf(
                 Metadata.Primitive("name", "Radix", MetadataType.String),

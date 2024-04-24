@@ -4,7 +4,6 @@ import com.radixdlt.extensions.removeLeadingZero
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
-import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.IdentifiedArrayList
 import rdx.works.core.InstantGenerator
 import rdx.works.core.UUIDGenerator

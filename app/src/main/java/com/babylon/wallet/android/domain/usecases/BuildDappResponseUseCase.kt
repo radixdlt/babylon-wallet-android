@@ -21,6 +21,7 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.string
 import javax.inject.Inject
 
@@ -110,10 +111,10 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
             }
             val oneTimeAccountsResponseItem =
                 buildAccountsResponseItem(
-                    request,
-                    oneTimeAccounts,
-                    request.oneTimeAccountsRequestItem?.challenge?.value,
-                    authProvider
+                    request = request,
+                    accounts = oneTimeAccounts,
+                    challengeHex = request.oneTimeAccountsRequestItem?.challenge?.hex,
+                    deviceBiometricAuthenticationProvider = authProvider
                 )
             if (oneTimeAccountsResponseItem.isFailure) {
                 return Result.failure(
@@ -122,10 +123,10 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
             }
             val ongoingAccountsResponseItem =
                 buildAccountsResponseItem(
-                    request,
-                    ongoingAccounts,
-                    request.ongoingAccountsRequestItem?.challenge?.value,
-                    authProvider
+                    request = request,
+                    accounts = ongoingAccounts,
+                    challengeHex = request.ongoingAccountsRequestItem?.challenge?.hex,
+                    deviceBiometricAuthenticationProvider = authProvider
                 )
             if (ongoingAccountsResponseItem.isFailure) {
                 return Result.failure(
@@ -160,7 +161,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
                 )
                 val signRequest = SignRequest.SignAuthChallengeRequest(
-                    challengeHex = authRequest.challenge.value,
+                    challengeHex = authRequest.challenge.hex,
                     origin = request.metadata.origin,
                     dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
                 )
@@ -175,7 +176,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                                 identityAddress = selectedPersona.address.string,
                                 label = selectedPersona.displayName.value
                             ),
-                            challenge = authRequest.challenge.value,
+                            challenge = authRequest.challenge.hex,
                             proof = signature.toProof()
                         )
                     )
@@ -226,7 +227,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
             buildAccountsResponseItem(
                 request = request,
                 accounts = oneTimeAccounts,
-                challengeHex = request.oneTimeAccountsRequestItem?.challenge?.value,
+                challengeHex = request.oneTimeAccountsRequestItem?.challenge?.hex,
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
             )
         if (oneTimeAccountsResponseItem.isFailure) {

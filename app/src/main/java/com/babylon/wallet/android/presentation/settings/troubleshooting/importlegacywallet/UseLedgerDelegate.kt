@@ -49,14 +49,7 @@ class UseLedgerDelegate(
             _state.update { it.copy(waitingForLedgerResponse = true) }
             val result = ledgerMessenger.sendDeviceInfoRequest(UUIDGenerator.uuid().toString())
             result.onSuccess { deviceInfoResponse ->
-                val existingLedgerFactorSource = getProfileUseCase().factorSourceById(
-                    FactorSourceId.Hash(
-                        value = FactorSourceIdFromHash(
-                            kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                            body = Exactly32Bytes.init(deviceInfoResponse.deviceId.value.hexToBagOfBytes())
-                        )
-                    )
-                )
+                val existingLedgerFactorSource = getProfileUseCase().factorSourceById(deviceInfoResponse.factorSourceId)
                 if (existingLedgerFactorSource == null) {
                     _state.update { state ->
                         state.copy(

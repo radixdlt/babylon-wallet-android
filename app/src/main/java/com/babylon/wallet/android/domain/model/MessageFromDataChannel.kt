@@ -12,11 +12,9 @@ import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.RequestedNumberQuantifier
-import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
-import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.sargon.PersonaDataField
 
@@ -89,7 +87,7 @@ sealed interface MessageFromDataChannel {
 
             sealed interface AuthRequest {
                 sealed class LoginRequest : AuthRequest {
-                    data class WithChallenge(val challenge: HexCoded32Bytes) : LoginRequest()
+                    data class WithChallenge(val challenge: Exactly32Bytes) : LoginRequest()
                     data object WithoutChallenge : LoginRequest()
                 }
 
@@ -145,7 +143,7 @@ sealed interface MessageFromDataChannel {
         data class AccountsRequestItem(
             val isOngoing: Boolean,
             val numberOfValues: NumberOfValues,
-            val challenge: HexCoded32Bytes?
+            val challenge: Exactly32Bytes?
         ) {
 
             fun isValidRequestItem(): Boolean {
@@ -217,14 +215,14 @@ sealed interface MessageFromDataChannel {
         data class GetDeviceInfoResponse(
             val interactionId: String,
             val model: LedgerDeviceModel,
-            val deviceId: HexCoded32Bytes
+            val deviceId: Exactly32Bytes
         ) : LedgerResponse(interactionId) {
 
             val factorSourceId: FactorSourceId.Hash
                 get() = FactorSourceId.Hash(
                     value = FactorSourceIdFromHash(
                         kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                        body = Exactly32Bytes.init(deviceId.value.hexToBagOfBytes())
+                        body = deviceId
                     )
                 )
 
