@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.dapp.authorized.account
 
+import com.babylon.wallet.android.data.dapp.model.Account
 import com.babylon.wallet.android.data.dapp.model.AccountsRequestResponseItem
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.init
@@ -26,7 +27,7 @@ fun List<AccountItemUiModel>.toDataModel(): AccountsRequestResponseItem? {
     }
 
     val accounts = map { accountItemUiModel ->
-        AccountsRequestResponseItem.Account(
+        Account(
             address = accountItemUiModel.address.string,
             label = accountItemUiModel.displayName.orEmpty(),
             appearanceId = accountItemUiModel.appearanceID

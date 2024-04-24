@@ -33,6 +33,7 @@ interface PreferencesManager {
     val isLinkConnectionStatusIndicatorEnabled: Flow<Boolean>
     val lastNPSSurveyInstant: Flow<Instant?>
     val transactionCompleteCounter: Flow<Int>
+    val lastSyncedAccountsWithCE: Flow<String?>
 
     suspend fun updateLastBackupInstant(backupInstant: Instant)
 
@@ -59,6 +60,8 @@ interface PreferencesManager {
     suspend fun incrementTransactionCompleteCounter()
 
     suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant)
+
+    suspend fun updateLastSyncedAccountsWithCE(accountsHash: String)
 
     suspend fun clear(): Preferences
 }
@@ -118,6 +121,11 @@ class PreferencesManagerImpl @Inject constructor(
     override val isDeviceRootedDialogShown: Flow<Boolean> = dataStore.data
         .map { preferences ->
             preferences[KEY_DEVICE_ROOTED_DIALOG_SHOWN] ?: false
+        }
+
+    override val lastSyncedAccountsWithCE: Flow<String?> = dataStore.data
+        .map { preferences ->
+            preferences[KEY_LAST_SYNCED_ACCOUNTS_WITH_CE]
         }
 
     override suspend fun markImportFromOlympiaComplete() {
@@ -228,6 +236,12 @@ class PreferencesManagerImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateLastSyncedAccountsWithCE(accountsHash: String) {
+        dataStore.edit { preferences ->
+            preferences[KEY_LAST_SYNCED_ACCOUNTS_WITH_CE] = accountsHash
+        }
+    }
+
     override suspend fun clear() = dataStore.edit { it.clear() }
 
     companion object {
@@ -243,5 +257,6 @@ class PreferencesManagerImpl @Inject constructor(
         val KEY_TRANSACTIONS_COMPLETE_COUNT = intPreferencesKey("transaction_complete_count")
         val KEY_SHOW_NPS_SURVEY_INSTANT = stringPreferencesKey("show_nps_survey_instant")
         val KEY_UUID = stringPreferencesKey("uuid")
+        val KEY_LAST_SYNCED_ACCOUNTS_WITH_CE = stringPreferencesKey("last_synced_accounts_with_ce")
     }
 }
