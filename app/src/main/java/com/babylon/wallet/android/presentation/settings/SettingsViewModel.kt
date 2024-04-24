@@ -4,15 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.BuildConfig.EXPERIMENTAL_FEATURES_ENABLED
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
-import com.babylon.wallet.android.domain.usecases.settings.GetImportOlympiaSettingVisibilityUseCase
-import com.babylon.wallet.android.domain.usecases.settings.MarkImportOlympiaWalletCompleteUseCase
-import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.AccountSecurityAndSettings
-import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.AppSettings
-import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.AuthorizedDapps
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.DebugSettings
-import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.ImportOlympiaWallet
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.LinkToConnector
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
+import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Preferences
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.SargonBuildInformation
@@ -25,7 +20,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
 import rdx.works.core.sargon.isCurrentNetworkMainnet
 import rdx.works.core.domain.BackupState
@@ -37,62 +31,51 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     getProfileUseCase: GetProfileUseCase,
-    getImportOlympiaSettingVisibilityUseCase: GetImportOlympiaSettingVisibilityUseCase,
-    private val markImportOlympiaWalletCompleteUseCase: MarkImportOlympiaWalletCompleteUseCase,
-    getBackupStateUseCase: GetBackupStateUseCase,
-    getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase
+    getEntitiesWithSecurityPromptUseCase: GetEntitiesWithSecurityPromptUseCase,
+    getBackupStateUseCase: GetBackupStateUseCase
 ) : ViewModel() {
 
     private val defaultSettings = listOf(
-        AuthorizedDapps,
-        Personas(),
-        AccountSecurityAndSettings(showNotificationWarning = false),
-        AppSettings,
-        if (EXPERIMENTAL_FEATURES_ENABLED) DebugSettings else null
+        SettingsUiItem.Settings(SettingsItem.TopLevelSettings.SecurityCenter()),
+        SettingsUiItem.Spacer,
+        SettingsUiItem.Settings(Personas),
+        SettingsUiItem.Settings(SettingsItem.TopLevelSettings.ApprovedDapps),
+        SettingsUiItem.Settings(SettingsItem.TopLevelSettings.LinkedConnectors),
+        SettingsUiItem.Spacer,
+        SettingsUiItem.Settings(Preferences),
+        SettingsUiItem.Spacer,
+        SettingsUiItem.Settings(SettingsItem.TopLevelSettings.Troubleshooting),
+        if (EXPERIMENTAL_FEATURES_ENABLED) SettingsUiItem.Settings(DebugSettings) else null
     ).mapNotNull { it }
 
     val state: StateFlow<SettingsUiState> = combine(
         getProfileUseCase.flow,
-        getImportOlympiaSettingVisibilityUseCase(),
         getBackupStateUseCase(),
-        getEntitiesWithSecurityPromptUseCase.shouldShowPersonaSecurityPrompt
-    ) { profile: Profile, isImportFromOlympiaSettingDismissed: Boolean, backupState: BackupState, showPersonaPrompt: Boolean ->
-        val mutated = defaultSettings.toMutableList()
-        var topIndex = 0
-        if (profile.appPreferences.p2pLinks().isEmpty() && !defaultSettings.contains(LinkToConnector)) {
-            mutated.add(topIndex, LinkToConnector)
-            topIndex += 1
+        getEntitiesWithSecurityPromptUseCase()
+    ) { profile, backupState, entitiesWithSecurityPrompts ->
+        var mutated = defaultSettings
+        val settingsItems = defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map { it.item }
+        if (profile.appPreferences.p2pLinks().isEmpty() && LinkConnector !in settingsItems) {
+            mutated = listOf(SettingsUiItem.Settings(LinkToConnector)) + mutated
         }
-
-        val isImportFeatureAvailable = EXPERIMENTAL_FEATURES_ENABLED || profile.isCurrentNetworkMainnet
-        if (!isImportFromOlympiaSettingDismissed && !defaultSettings.contains(ImportOlympiaWallet) && isImportFeatureAvailable) {
-            mutated.add(topIndex, ImportOlympiaWallet)
+        val anyEntityHasProblem = entitiesWithSecurityPrompts.isNotEmpty()
+        val backupHasProblem = backupState.isWarningVisible
+        if (anyEntityHasProblem || backupHasProblem) {
+            mutated = mutated.mapWhen(
+                predicate = { it is SettingsUiItem.Settings && it.item is SettingsItem.TopLevelSettings.SecurityCenter },
+                mutation = { SettingsUiItem.Settings(SettingsItem.TopLevelSettings.SecurityCenter(true)) }
+            )
         }
-
-        val withBackupWarning = mutated.mapWhen(predicate = { it is AccountSecurityAndSettings }) {
-            AccountSecurityAndSettings(showNotificationWarning = backupState.isWarningVisible)
-        }
-
-        val withPersonaWarning = withBackupWarning.mapWhen(predicate = { it is Personas }) {
-            Personas(showBackupSecurityPrompt = showPersonaPrompt)
-        }
-
-        SettingsUiState(withPersonaWarning.toPersistentList())
+        SettingsUiState(mutated.toPersistentList())
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(Constants.VM_STOP_TIMEOUT_MS),
         SettingsUiState(defaultSettings.toPersistentList())
     )
-
-    fun hideImportOlympiaWalletSettingBox() {
-        viewModelScope.launch {
-            markImportOlympiaWalletCompleteUseCase()
-        }
-    }
 }
 
 data class SettingsUiState(
-    val settings: ImmutableList<SettingsItem.TopLevelSettings>
+    val settings: ImmutableList<SettingsUiItem>
 ) {
 
     val debugBuildInformation: DebugBuildInformation?
@@ -105,4 +88,9 @@ data object DebugBuildInformation {
     val sargonInfo: SargonBuildInformation = Sargon.buildInformation.apply {
         Timber.d(this.dependencies.toString())
     }
+}
+
+sealed interface SettingsUiItem {
+    data object Spacer : SettingsUiItem
+    data class Settings(val item: SettingsItem.TopLevelSettings) : SettingsUiItem
 }

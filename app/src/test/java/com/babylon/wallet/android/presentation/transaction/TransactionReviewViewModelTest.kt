@@ -1,6 +1,7 @@
 package com.babylon.wallet.android.presentation.transaction
 
 import androidx.lifecycle.SavedStateHandle
+import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.dapp.DappMessenger
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
@@ -78,9 +79,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TestRule
-import org.junit.runner.Description
-import org.junit.runners.model.Statement
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Badge
@@ -91,14 +89,12 @@ import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import rdx.works.core.crypto.PrivateKey
-import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionReviewViewModel>() {
 
     @get:Rule
     val defaultLocaleTestRule = DefaultLocaleRule()
-
 
     private val signTransactionUseCase = mockk<SignTransactionUseCase>()
     private val getCurrentGatewayUseCase = mockk<GetCurrentGatewayUseCase>()
@@ -465,15 +461,4 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         ),
         logs = emptyList()
     )
-}
-
-class DefaultLocaleRule : TestRule {
-    override fun apply(base: Statement, description: Description): Statement {
-        return object : Statement() {
-            override fun evaluate() {
-                Locale.setDefault(Locale.UK)
-                base.evaluate()
-            }
-        }
-    }
 }

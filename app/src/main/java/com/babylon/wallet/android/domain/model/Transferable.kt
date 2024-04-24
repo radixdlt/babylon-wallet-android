@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.model
 
-import androidx.annotation.FloatRange
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.ResourceAddress

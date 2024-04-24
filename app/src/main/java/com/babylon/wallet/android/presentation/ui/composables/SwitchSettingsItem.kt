@@ -34,14 +34,14 @@ fun SwitchSettingsItem(
         Column(Modifier.weight(1f)) {
             Text(
                 text = stringResource(id = titleRes),
-                style = RadixTheme.typography.body1HighImportance,
+                style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
             subtitleRes?.let {
                 Text(
                     text = stringResource(id = subtitleRes),
-                    style = RadixTheme.typography.body2Regular,
-                    color = RadixTheme.colors.gray2
+                    style = RadixTheme.typography.body1Regular,
+                    color = RadixTheme.colors.gray1
                 )
             }
         }

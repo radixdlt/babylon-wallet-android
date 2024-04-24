@@ -33,6 +33,7 @@ import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.div
+import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
@@ -545,7 +546,7 @@ sealed interface AccountWithPredictedGuarantee {
     val guaranteeAmountString: String
 
     val guaranteeOffsetDecimal: Decimal192
-        get() = (guaranteeAmountString.toDecimal192OrNull() ?: 0.0.toDecimal192()) / 100.toDecimal192()
+        get() = guaranteeAmountString.toDecimal192OrNull().orZero() / 100.toDecimal192()
 
     val guaranteedAmount: Decimal192
         get() = (transferable.amount * guaranteeOffsetDecimal).roundedWith(divisibility)
@@ -564,19 +565,18 @@ sealed interface AccountWithPredictedGuarantee {
         }
 
     fun increase(): AccountWithPredictedGuarantee {
-        val newOffset = (guaranteeOffsetDecimal.plus(0.001.toDecimal192()) * 100.toDecimal192()).rounded(decimalPlaces = 1u)
+        val newOffset = ((guaranteeOffsetDecimal + changeOffset) * 100.toDecimal192()).rounded(decimalPlaces = 1u)
         return when (this) {
-            is Other -> copy(guaranteeAmountString = newOffset.toString())
-            is Owned -> copy(guaranteeAmountString = newOffset.toString())
+            is Other -> copy(guaranteeAmountString = newOffset.formatted())
+            is Owned -> copy(guaranteeAmountString = newOffset.formatted())
         }
     }
 
     fun decrease(): AccountWithPredictedGuarantee {
-        val newOffset =
-            (guaranteeOffsetDecimal.minus(0.001.toDecimal192()).clamped * 100.toDecimal192()).rounded(decimalPlaces = 1u)
+        val newOffset = ((guaranteeOffsetDecimal - changeOffset).clamped * 100.toDecimal192()).rounded(decimalPlaces = 1u)
         return when (this) {
-            is Other -> copy(guaranteeAmountString = newOffset.toString())
-            is Owned -> copy(guaranteeAmountString = newOffset.toString())
+            is Other -> copy(guaranteeAmountString = newOffset.formatted())
+            is Owned -> copy(guaranteeAmountString = newOffset.formatted())
         }
     }
 
@@ -611,6 +611,10 @@ sealed interface AccountWithPredictedGuarantee {
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
     ) : AccountWithPredictedGuarantee
+
+    companion object {
+        private val changeOffset = 0.001.toDecimal192()
+    }
 }
 
 sealed interface AccountWithTransferableResources {

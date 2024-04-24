@@ -44,6 +44,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.FaucetState
+import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.getDepositRuleCopiesAndIcon
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.ui.composables.AccountQRCodeView
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
@@ -64,6 +65,7 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
+import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -296,12 +298,18 @@ private fun AccountSettingsContent(
                                     onSettingClick(settingsItem)
                                 }
                             },
-                            icon = settingsItem.getIcon(),
+                            leadingIcon = settingsItem.getIcon(),
                             title = stringResource(id = settingsItem.titleRes()),
-                            subtitle = if (settingsItem == AccountSettingItem.AccountLabel) {
-                                accountName
-                            } else {
-                                stringResource(id = settingsItem.subtitleRes())
+                            subtitle = when (settingsItem) {
+                                AccountSettingItem.AccountLabel -> {
+                                    accountName
+                                }
+                                is AccountSettingItem.ThirdPartyDeposits -> {
+                                    getDepositRuleCopiesAndIcon(depositRule = settingsItem.defaultDepositRule).first
+                                }
+                                else -> {
+                                    stringResource(id = settingsItem.subtitleRes())
+                                }
                             }
                         )
                         if (lastSettingsItem != settingsItem) {
@@ -483,7 +491,9 @@ fun AccountSettingsPreview() {
                 AccountSettingsSection.AccountSection(
                     listOf(
                         AccountSettingItem.AccountLabel,
-                        AccountSettingItem.ThirdPartyDeposits
+                        AccountSettingItem.ThirdPartyDeposits(
+                            Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll
+                        )
                     )
                 )
             ),

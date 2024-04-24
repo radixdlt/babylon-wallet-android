@@ -4,9 +4,9 @@ import app.cash.turbine.test
 import com.babylon.wallet.android.domain.model.NetworkInfo
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
-import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewayAddFailure
-import com.babylon.wallet.android.presentation.settings.appsettings.gateways.SettingsEditGatewayEvent
-import com.babylon.wallet.android.presentation.settings.appsettings.gateways.GatewaysViewModel
+import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewayAddFailure
+import com.babylon.wallet.android.presentation.settings.preferences.gateways.SettingsEditGatewayEvent
+import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewaysViewModel
 import com.babylon.wallet.android.utils.isValidUrl
 import io.mockk.coEvery
 import io.mockk.coVerify

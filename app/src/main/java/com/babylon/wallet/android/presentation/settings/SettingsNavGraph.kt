@@ -7,17 +7,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityNavGraph
-import com.babylon.wallet.android.presentation.settings.accountsecurity.accountSecurityScreen
-import com.babylon.wallet.android.presentation.settings.accountsecurity.importlegacywallet.importLegacyWalletScreen
-import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsNavGraph
-import com.babylon.wallet.android.presentation.settings.appsettings.appSettingsScreen
-import com.babylon.wallet.android.presentation.settings.appsettings.linkedconnectors.linkedConnectorsScreen
-import com.babylon.wallet.android.presentation.settings.authorizeddapps.authorizedDAppsScreen
-import com.babylon.wallet.android.presentation.settings.authorizeddapps.dappdetail.dAppDetailScreen
+import com.babylon.wallet.android.presentation.settings.approveddapps.approvedDAppsScreen
+import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.dAppDetailScreen
 import com.babylon.wallet.android.presentation.settings.debug.debugSettings
+import com.babylon.wallet.android.presentation.settings.linkedconnectors.linkedConnectorsScreen
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.personasScreen
 import com.babylon.wallet.android.presentation.settings.personas.personaedit.personaEditScreen
+import com.babylon.wallet.android.presentation.settings.preferences.preferencesNavGraph
+import com.babylon.wallet.android.presentation.settings.preferences.walletPreferencesScreen
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenter
+import com.babylon.wallet.android.presentation.settings.securitycenter.securityCenterNavGraph
+import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingNavGraph
+import com.babylon.wallet.android.presentation.settings.troubleshooting.troubleshootingSettings
 import com.babylon.wallet.android.presentation.status.assets.fungibleAssetDialog
 import com.babylon.wallet.android.presentation.status.assets.nftAssetDialog
 
@@ -30,7 +31,7 @@ fun NavGraphBuilder.settingsNavGraph(
         route = Screen.SettingsDestination.route
     ) {
         settingsAll(navController)
-        authorizedDAppsScreen(
+        approvedDAppsScreen(
             onBackClick = {
                 navController.popBackStack()
             },
@@ -38,6 +39,9 @@ fun NavGraphBuilder.settingsNavGraph(
                 navController.dAppDetailScreen(dAppDefinitionAddress)
             }
         )
+        linkedConnectorsScreen(onBackClick = {
+            navController.popBackStack()
+        })
         dAppDetailScreen(
             onBackClick = {
                 navController.popBackStack()
@@ -52,8 +56,9 @@ fun NavGraphBuilder.settingsNavGraph(
                 navController.nftAssetDialog(resourceAddress = resource.address)
             }
         )
-        accountSecurityNavGraph(navController)
-        appSettingsNavGraph(navController)
+        preferencesNavGraph(navController)
+        securityCenterNavGraph(navController)
+        troubleshootingNavGraph(navController)
         if (BuildConfig.EXPERIMENTAL_FEATURES_ENABLED) {
             debugSettings(navController)
         }
@@ -75,28 +80,31 @@ private fun NavGraphBuilder.settingsAll(navController: NavController) {
                         navController.linkedConnectorsScreen(shouldShowAddLinkConnectorScreen = true)
                     }
 
-                    SettingsItem.TopLevelSettings.ImportOlympiaWallet -> {
-                        navController.importLegacyWalletScreen()
-                    }
-
-                    SettingsItem.TopLevelSettings.AuthorizedDapps -> {
-                        navController.authorizedDAppsScreen()
+                    SettingsItem.TopLevelSettings.ApprovedDapps -> {
+                        navController.approvedDAppsScreen()
                     }
 
                     is SettingsItem.TopLevelSettings.Personas -> {
                         navController.personasScreen()
                     }
 
-                    is SettingsItem.TopLevelSettings.AccountSecurityAndSettings -> {
-                        navController.accountSecurityScreen()
-                    }
-
-                    is SettingsItem.TopLevelSettings.AppSettings -> {
-                        navController.appSettingsScreen()
+                    is SettingsItem.TopLevelSettings.Preferences -> {
+                        navController.walletPreferencesScreen()
                     }
 
                     is SettingsItem.TopLevelSettings.DebugSettings -> {
                         navController.debugSettings()
+                    }
+
+                    SettingsItem.TopLevelSettings.LinkedConnectors -> {
+                        navController.linkedConnectorsScreen()
+                    }
+
+                    is SettingsItem.TopLevelSettings.SecurityCenter -> {
+                        navController.securityCenter()
+                    }
+                    SettingsItem.TopLevelSettings.Troubleshooting -> {
+                        navController.troubleshootingSettings()
                     }
                 }
             }

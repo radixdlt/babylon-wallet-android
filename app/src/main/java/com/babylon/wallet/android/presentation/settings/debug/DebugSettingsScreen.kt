@@ -54,7 +54,7 @@ fun DebugSettingsScreen(
                             SettingsItem.DebugSettingsItem.InspectProfile -> {
                                 DefaultSettingsItem(
                                     title = stringResource(id = debugSettingsItem.descriptionRes()),
-                                    icon = debugSettingsItem.getIcon(),
+                                    leadingIcon = debugSettingsItem.getIcon(),
                                     onClick = {
                                         onItemClick(debugSettingsItem)
                                     }

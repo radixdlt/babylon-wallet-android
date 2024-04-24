@@ -104,14 +104,14 @@ private fun DerivePublicKeyBottomSheetContent(
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             Text(
                 style = RadixTheme.typography.title,
-                text = stringResource(id = R.string.derivePublicKeys_titleCreateAccount)
+                text = stringResource(id = R.string.factorSourceActions_createAccount_title)
             )
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingLarge))
             when (showContentForFactorSource) {
                 DerivePublicKeyUiState.ShowContentForFactorSource.Device -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.derivePublicKeys_subtitleDevice)
+                        text = stringResource(id = R.string.factorSourceActions_device_messageSignature)
                     )
                     if (shouldShowRetryButton) {
                         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXLarge))
@@ -128,7 +128,7 @@ private fun DerivePublicKeyBottomSheetContent(
                 is DerivePublicKeyUiState.ShowContentForFactorSource.Ledger -> {
                     Text(
                         style = RadixTheme.typography.body1Regular,
-                        text = stringResource(id = R.string.derivePublicKeys_subtitleLedger)
+                        text = stringResource(id = R.string.factorSourceActions_ledger_messageDeriveAccounts)
                             .formattedSpans(SpanStyle(fontWeight = FontWeight.Bold))
                     )
                     Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXXLarge))
