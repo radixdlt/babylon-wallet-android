@@ -62,9 +62,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
     }
 
     @Test
-    fun `given persona data provided, when create button hit, verify complete event sent and persona info shown`() =
-        runTest {
-
+    fun `given persona data provided, when create button hit, verify complete event sent and persona info shown`() = runTest {
             val event = mutableListOf<CreatePersonaEvent>()
             val viewModel = CreatePersonaViewModel(createPersonaWithDeviceFactorSourceUseCase, preferencesManager)
 
@@ -78,7 +76,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
             // then
             val state = viewModel.state.first()
             Assert.assertEquals(state.loading, true)
-            Assert.assertEquals(state.personaDisplayName, persona.displayName.value)
+            Assert.assertEquals(state.personaDisplayName.value, persona.displayName.value)
 
             advanceUntilIdle()
 
