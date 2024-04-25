@@ -9,12 +9,15 @@ import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import rdx.works.profile.domain.GetProfileUseCase
@@ -39,7 +42,8 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
     override fun setUp() {
         super.setUp()
 
-        coEvery { getProfileUseCase.flow } returns flowOf(profile)
+        every { getProfileUseCase.flow } returns flowOf(profile)
+        coEvery { getProfileUseCase() } returns profile
     }
 
     @Test
@@ -93,6 +97,7 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         coEvery { changeDefaultDepositGuaranteeUseCase.invoke(any()) } returns Unit
         coEvery { getProfileUseCase.flow } returns flowOf(profileWithGuarantee(guarantee = 2.0.toDecimal192()))
         val vm = vm.value
+        advanceUntilIdle()
 
         // when
         vm.onDepositGuaranteeChanged("200")
@@ -100,8 +105,8 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
 
         // then
         val state = vm.state.first()
-        assert(state.isDepositInputValid)
-        assert(state.depositGuarantee == "200")
+        assertTrue(state.isDepositInputValid)
+        assertEquals("200", state.depositGuarantee)
         coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(2.0.toDecimal192()) }
     }
 

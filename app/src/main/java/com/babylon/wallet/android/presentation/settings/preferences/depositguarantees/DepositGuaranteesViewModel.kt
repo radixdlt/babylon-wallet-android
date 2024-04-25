@@ -51,8 +51,8 @@ class DepositGuaranteesViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            updatedDepositGuarantee?.let { depositGuarantee ->
-                changeDefaultDepositGuaranteeUseCase.invoke(defaultDepositGuarantee = depositGuarantee)
+            updatedDepositGuarantee?.let {
+                changeDefaultDepositGuaranteeUseCase.invoke(defaultDepositGuarantee = it)
             }
         }
     }
