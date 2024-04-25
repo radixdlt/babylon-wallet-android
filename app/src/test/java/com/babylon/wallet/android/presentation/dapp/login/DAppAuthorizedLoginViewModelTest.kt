@@ -3,8 +3,10 @@
 package com.babylon.wallet.android.presentation.dapp.login
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.Ignore
 
-//class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginViewModel>() {
+@Ignore("TODO Integration")
+class DAppAuthorizedLoginViewModelTest/* : StateViewModelTest<DAppAuthorizedLoginViewModel>()*/ {
 //
 //    private val incomingRequestRepository = mockk<IncomingRequestRepository>()
 //    private val appEventBus = mockk<AppEventBus>()
@@ -310,4 +312,4 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 //
 //    }
 //
-//}
+}

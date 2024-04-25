@@ -1,64 +1,130 @@
 package com.babylon.wallet.android.presentation.dapp.selectpersona
 
-//@OptIn(ExperimentalCoroutinesApi::class)
-//internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaViewModel>() {
-//
-//    private val getProfileUseCase = mockk<GetProfileUseCase>()
-//    private val savedStateHandle = mockk<SavedStateHandle>()
-//    private val preferencesManager = mockk<PreferencesManager>()
-//    private val dAppConnectionRepository = DAppConnectionRepositoryFake()
-//
-//    override fun initVM(): SelectPersonaViewModel {
-//        return SelectPersonaViewModel(
-//            savedStateHandle,
-//            dAppConnectionRepository,
-//            getProfileUseCase,
-//            preferencesManager
-//        )
-//    }
-//
-//    @Before
-//    override fun setUp() {
-//        super.setUp()
-//        coEvery { preferencesManager.firstPersonaCreated } returns flow {
-//            emit(true)
-//        }
-//        every { savedStateHandle.get<String>(ARG_DAPP_DEFINITION_ADDRESS) } returns DApp.sampleMainnet().dAppAddress.string
-//        every { getProfileUseCase() } returns flowOf(
-//            profile(
-//                personas = identifiedArrayListOf(
-//                    SampleDataProvider().samplePersona(IdentityAddress.sampleMainnet().string),
-//                    SampleDataProvider().samplePersona(IdentityAddress.sampleMainnet.other().string)
-//                )
-//            )
-//        )
-//    }
-//
-//    @Test
-//    fun `connected dapp exist and has authorized persona`() = runTest {
-//        dAppConnectionRepository.state = DAppConnectionRepositoryFake.InitialState.PredefinedDapp
-//        val vm = vm.value
-//        advanceUntilIdle()
-//        vm.state.test {
-//            val item = expectMostRecentItem()
-//            assert(item.continueButtonEnabled)
-//            assert(item.personaListToDisplay.size == 2)
-//            val onePersonaAuthorized = item.personaListToDisplay.count { it.lastUsedOn != null } == 1
-//            assert(onePersonaAuthorized)
-//        }
-//    }
-//
-//    @Test
-//    fun `connected dapp does not exist`() = runTest {
-//        val vm = vm.value
-//        advanceUntilIdle()
-//        vm.state.test {
-//            val item = expectMostRecentItem()
-//            assert(!item.continueButtonEnabled)
-//            assert(item.personaListToDisplay.size == 2)
-//            val noPersonaAuthorized = item.personaListToDisplay.all { it.lastUsedOn == null }
-//            assert(noPersonaAuthorized)
-//        }
-//    }
-//
-//}
+import androidx.lifecycle.SavedStateHandle
+import app.cash.turbine.test
+import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
+import com.babylon.wallet.android.presentation.StateViewModelTest
+import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.ARG_DAPP_DEFINITION_ADDRESS
+import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.SelectPersonaViewModel
+import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDapps
+import com.radixdlt.sargon.AuthorizedPersonaSimple
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
+import com.radixdlt.sargon.RequestedQuantity
+import com.radixdlt.sargon.SharedPersonaData
+import com.radixdlt.sargon.SharedToDappWithPersonaAccountAddresses
+import com.radixdlt.sargon.Timestamp
+import com.radixdlt.sargon.extensions.atLeast
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.networkId
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.updateOrAppend
+import com.radixdlt.sargon.samples.sample
+import io.mockk.coEvery
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.junit.Before
+import org.junit.Ignore
+import org.junit.Test
+import rdx.works.core.domain.DApp
+import rdx.works.core.preferences.PreferencesManager
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.currentNetwork
+import rdx.works.core.sargon.unHideAllEntities
+import rdx.works.profile.domain.GetProfileUseCase
+
+@Ignore("TODO Integration")
+@OptIn(ExperimentalCoroutinesApi::class)
+internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaViewModel>() {
+
+    private val getProfileUseCase = mockk<GetProfileUseCase>()
+    private val savedStateHandle = mockk<SavedStateHandle>()
+    private val preferencesManager = mockk<PreferencesManager>()
+
+    private val dApp = DApp.sampleMainnet()
+    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let {
+        val mainnet = it.networks.getBy(NetworkId.MAINNET)!!
+        val samplePersonas = mainnet.personas()
+        it.copy(
+            networks = it.networks.updateOrAppend(
+                mainnet.copy(authorizedDapps = AuthorizedDapps.init(
+                    AuthorizedDapp(
+                        networkId = dApp.dAppAddress.networkId,
+                        dappDefinitionAddress = dApp.dAppAddress,
+                        displayName = dApp.name,
+                        referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
+                            AuthorizedPersonaSimple(
+                                identityAddress = samplePersonas[0].address,
+                                sharedPersonaData = SharedPersonaData(null, null, null),
+                                lastLogin = Timestamp.parse("2023-01-31T10:28:14Z"),
+                                sharedAccounts = SharedToDappWithPersonaAccountAddresses(
+                                    request = RequestedQuantity.atLeast(1),
+                                    ids = listOf(mainnet.accounts().first().address)
+                                )
+                            )
+                        )
+                    )
+                ))
+            )
+        )
+    }
+    private val authorizedDapp = profile.currentNetwork!!.authorizedDapps().first()
+    private val dAppConnectionRepository = DAppConnectionRepositoryFake().apply {
+        this.savedDApp = authorizedDapp
+        state = DAppConnectionRepositoryFake.InitialState.SavedDapp
+    }
+
+    override fun initVM(): SelectPersonaViewModel {
+        return SelectPersonaViewModel(
+            savedStateHandle,
+            dAppConnectionRepository,
+            getProfileUseCase,
+            preferencesManager
+        )
+    }
+
+    @Before
+    override fun setUp() {
+        super.setUp()
+        coEvery { preferencesManager.firstPersonaCreated } returns flowOf(true)
+        every { savedStateHandle.get<String>(ARG_DAPP_DEFINITION_ADDRESS) } returns dApp.dAppAddress.string
+        coEvery { getProfileUseCase() } returns profile
+    }
+
+    @Test
+    fun `connected dapp exist and has authorized persona`() = runTest {
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.state.test {
+            val item = expectMostRecentItem()
+            assert(item.continueButtonEnabled)
+            assert(item.personaListToDisplay.size == 2)
+            val onePersonaAuthorized = item.personaListToDisplay.count { it.lastUsedOn != null } == 1
+            assert(onePersonaAuthorized)
+        }
+    }
+
+    @Test
+    fun `connected dapp does not exist`() = runTest {
+        val vm = vm.value
+        advanceUntilIdle()
+        vm.state.test {
+            val item = expectMostRecentItem()
+            assert(!item.continueButtonEnabled)
+            assert(item.personaListToDisplay.size == 2)
+            val noPersonaAuthorized = item.personaListToDisplay.all { it.lastUsedOn == null }
+            assert(noPersonaAuthorized)
+        }
+    }
+
+}
