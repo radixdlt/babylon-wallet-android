@@ -952,7 +952,6 @@ Your old Accounts and Personas will still be listed, but you will have to enter 
   <string name="accountRecoveryScan_chooseSeedPhrase_importMnemonicTitleBabylon">Enter Seed Phrase</string>
   <string name="accountRecoveryScan_chooseSeedPhrase_continueButton">Continue</string>
   <string name="accountRecoveryScan_olympiaLedgerNote">Note: You must still use the new *Radix Babylon* app on your Ledger device, not the old Radix Ledger app.</string>
-  <string name="accountRecoveryScan_derivingAccounts">Deriving Accounts</string>
   <string name="accountSecuritySettings_seedPhrases_title">Seed Phrases</string>
   <string name="accountSecuritySettings_ledgerHardwareWallets_title">Ledger Hardware Wallets</string>
   <string name="accountSecuritySettings_depositGuarantees_title">Default Deposit Guarantees</string>
@@ -1085,13 +1084,13 @@ If you have any “Legacy” Accounts (created on the Olympia network) to import
   <string name="securityFactors_ledgerWallet_counterSingular">1 set</string>
   <string name="securityFactors_ledgerWallet_counterPlural">%d set</string>
   <string name="configurationBackup_title">Configuration Backup</string>
+  <string name="configurationBackup_heading">You need an up-to-date Configuration Backup to recover your Accounts and Personas if you lose access to them.
+
+Your Backup does not contain your keys or seed phrase.</string>
   <string name="configurationBackup_problem5WarningIOS">Automated Configuration Backup not working. Check internet connection and iCloud settings.</string>
   <string name="configurationBackup_problem5WarningAndroid">Automated Configuration Backup not working. Check internet connection and Google Drive settings.</string>
   <string name="configurationBackup_problem6Warning">To secure your wallet, turn on automated backups or manually export backup file.</string>
   <string name="configurationBackup_problem7Warning">Configuration Backup not up to date. Turn on automated backups or manually export backup file.</string>
-  <string name="configurationBackup_automated_heading">You need an up-to-date Configuration Backup to recover your Accounts and Personas if you lose access to them.
-
-Your Backup does not contain your keys or seed phrase.</string>
   <string name="configurationBackup_automated_text">Configuration Backup status</string>
   <string name="configurationBackup_automated_warning">Without an updated Configuration Backup, you cannot recover your Accounts and Personas.</string>
   <string name="configurationBackup_automated_toggleIOS">Automated iCloud Backups</string>
