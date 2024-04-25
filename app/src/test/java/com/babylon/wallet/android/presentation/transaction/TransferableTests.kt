@@ -3,6 +3,7 @@ package com.babylon.wallet.android.presentation.transaction
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sampleMainnet
 import com.radixdlt.sargon.samples.sampleRandom
 import junit.framework.TestCase.assertEquals
@@ -12,17 +13,20 @@ class TransferableTests {
 
     private val account1 = Account.sampleMainnet()
     private val account2 = Account.sampleMainnet.other()
+    private val other = List(2) {
+        AccountAddress.sampleRandom(NetworkId.MAINNET)
+    }.sortedBy { it.string }
 
     @Test
     fun `test ordering of transferable accounts with assets`() {
         val ownedAccounts = listOf(account1, account2)
         val input = listOf(
             AccountWithTransferableResources.Other(
-                address = AccountAddress.sampleRandom(NetworkId.MAINNET),
+                address = other[1],
                 resources = listOf()
             ),
             AccountWithTransferableResources.Other(
-                address = AccountAddress.sampleRandom(NetworkId.MAINNET),
+                address = other[0],
                 resources = listOf()
             ),
             AccountWithTransferableResources.Owned(
@@ -48,11 +52,11 @@ class TransferableTests {
                     resources = listOf()
                 ),
                 AccountWithTransferableResources.Other(
-                    address = AccountAddress.sampleRandom(NetworkId.MAINNET),
+                    address = other[1],
                     resources = listOf()
                 ),
                 AccountWithTransferableResources.Other(
-                    address = AccountAddress.sampleRandom(NetworkId.MAINNET),
+                    address = other[0],
                     resources = listOf()
                 )
             ),
