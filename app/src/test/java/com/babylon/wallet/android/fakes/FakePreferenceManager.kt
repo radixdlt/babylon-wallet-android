@@ -98,6 +98,10 @@ class FakePreferenceManager : PreferencesManager {
         TODO("Not yet implemented")
     }
 
+    override suspend fun removeLastSyncedAccountsWithCE() {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun clear(): Preferences {
         TODO("Not yet implemented")
     }
