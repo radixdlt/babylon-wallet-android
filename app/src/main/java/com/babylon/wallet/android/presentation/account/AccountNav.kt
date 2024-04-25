@@ -7,7 +7,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.babylon.wallet.android.presentation.navigation.Screen
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.FactorSourceId
@@ -25,13 +24,13 @@ class AccountArgs private constructor(
     constructor(savedStateHandle: SavedStateHandle) : this(
         accountAddress = AccountAddress.init(validatingAddress = requireNotNull(savedStateHandle.get<String>(ARG_ACCOUNT_ADDRESS)))
     )
-
 }
 
 fun NavController.account(accountAddress: AccountAddress) {
     navigate(route = "$ROUTE_ACCOUNT/${accountAddress.string}")
 }
 
+@Suppress("LongParameterList")
 fun NavGraphBuilder.account(
     onAccountPreferenceClick: (AccountAddress) -> Unit,
     onBackClick: () -> Unit,

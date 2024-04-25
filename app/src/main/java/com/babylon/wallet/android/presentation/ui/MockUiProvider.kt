@@ -94,7 +94,7 @@ object MockUiProvider {
             address = LegacyOlympiaAccountAddress.sample.other(),
             publicKey = PublicKey.Secp256k1.sample.other(),
             accountName = "account two",
-            derivationPath =Bip44LikePath.sample.other().asGeneral(),
+            derivationPath = Bip44LikePath.sample.other().asGeneral(),
             newBabylonAddress = LegacyOlympiaAccountAddress.sample.other().toBabylonAddress(),
             appearanceId = AppearanceId(1u)
         )

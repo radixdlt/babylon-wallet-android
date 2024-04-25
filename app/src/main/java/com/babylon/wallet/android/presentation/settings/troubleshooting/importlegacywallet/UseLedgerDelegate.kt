@@ -7,13 +7,7 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceUiState
-import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceIdFromHash
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.extensions.hexToBagOfBytes
-import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update

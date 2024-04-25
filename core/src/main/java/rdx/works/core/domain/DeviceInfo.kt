@@ -56,7 +56,6 @@ data class DeviceInfo(
                     manufacturer = "Test",
                     model = "2"
                 )
-
             }
     }
 }

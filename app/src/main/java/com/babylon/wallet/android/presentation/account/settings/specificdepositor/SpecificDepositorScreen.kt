@@ -181,7 +181,7 @@ fun SpecificDepositorScreen(
 @Composable
 fun AddDepositorSheet(
     onResourceAddressChanged: (String) -> Unit,
-    depositor: AssetType.Depositor,
+    depositor: AssetType.DepositorType,
     onAddDepositor: () -> Unit,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
@@ -254,8 +254,8 @@ private fun SpecificDepositorContent(
     error: UiMessage?,
     onShowAddAssetSheet: () -> Unit,
     modifier: Modifier = Modifier,
-    allowedDepositors: ImmutableList<AssetType.Depositor>?,
-    onDeleteDepositor: (AssetType.Depositor) -> Unit
+    allowedDepositors: ImmutableList<AssetType.DepositorType>?,
+    onDeleteDepositor: (AssetType.DepositorType) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -342,9 +342,9 @@ private fun SpecificDepositorContent(
 
 @Composable
 private fun DepositorList(
-    depositors: ImmutableList<AssetType.Depositor>,
+    depositors: ImmutableList<AssetType.DepositorType>,
     modifier: Modifier = Modifier,
-    onDeleteDepositor: (AssetType.Depositor) -> Unit
+    onDeleteDepositor: (AssetType.DepositorType) -> Unit
 ) {
     val lastItem = depositors.last()
     LazyColumn(modifier = modifier) {
@@ -372,8 +372,8 @@ private fun DepositorList(
 @Composable
 private fun DepositorItem(
     modifier: Modifier,
-    depositor: AssetType.Depositor,
-    onDeleteDepositor: (AssetType.Depositor) -> Unit
+    depositor: AssetType.DepositorType,
+    onDeleteDepositor: (AssetType.DepositorType) -> Unit
 ) {
     Row(
         modifier = modifier,
@@ -428,10 +428,10 @@ private fun DepositorItem(
 fun SpecificDepositorPreview() {
     RadixWalletTheme {
         val sampleDepositorResourceAddress = {
-            AssetType.Depositor(depositorAddress = ResourceOrNonFungible.Resource(ResourceAddress.sampleRandom(NetworkId.MAINNET)))
+            AssetType.DepositorType(depositorAddress = ResourceOrNonFungible.Resource(ResourceAddress.sampleRandom(NetworkId.MAINNET)))
         }
         val sampleDepositorNftAddress = {
-            AssetType.Depositor(depositorAddress = ResourceOrNonFungible.NonFungible(NonFungibleGlobalId.sample()))
+            AssetType.DepositorType(depositorAddress = ResourceOrNonFungible.NonFungible(NonFungibleGlobalId.sample()))
         }
 
         SpecificDepositorContent(
@@ -452,6 +452,6 @@ fun SpecificDepositorPreview() {
 @Composable
 fun AddDepositorSheetPreview() {
     RadixWalletTheme {
-        AddDepositorSheet(onResourceAddressChanged = {}, depositor = AssetType.Depositor(), onAddDepositor = {}) {}
+        AddDepositorSheet(onResourceAddressChanged = {}, depositor = AssetType.DepositorType(), onAddDepositor = {}) {}
     }
 }

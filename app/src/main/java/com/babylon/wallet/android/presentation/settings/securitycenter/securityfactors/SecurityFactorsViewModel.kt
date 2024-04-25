@@ -45,7 +45,7 @@ class SecurityFactorsViewModel @Inject constructor(
                 val factorSourcesIds = deviceFactorSources.map { it.deviceFactorSource.id }
                 val anyEntityNeedRecovery = entitiesWithSecurityPrompts.any { entityWithSecurityPrompt ->
                     entityWithSecurityPrompt.prompt == SecurityPromptType.NEEDS_RESTORE &&
-                            entityWithSecurityPrompt.entity.securityState.factorSourceId in factorSourcesIds
+                        entityWithSecurityPrompt.entity.securityState.factorSourceId in factorSourcesIds
                 }
                 SecurityFactorsUiState(
                     settings = persistentSetOf(

@@ -28,7 +28,6 @@ class VerifyAddressOnLedgerUseCase @Inject constructor(
             withAddress = address
         ) ?: return Result.failure(Exception("No account with address: $address"))
 
-
         val factorInstance = account.securityState.transactionSigningFactorInstance
         if (factorInstance.factorSourceId.kind != FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET) {
             return Result.failure(Exception("Account $address is not a Ledger backed account"))

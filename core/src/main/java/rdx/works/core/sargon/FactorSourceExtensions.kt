@@ -3,7 +3,6 @@ package rdx.works.core.sargon
 import com.radixdlt.sargon.Bip39WordCount
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.DeviceFactorSourceHint
-import com.radixdlt.sargon.EntityFlags
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceCommon
@@ -92,6 +91,7 @@ fun DeviceFactorSource.Companion.olympia(
     isMain = false
 )
 
+@Suppress("LongParameterList")
 fun DeviceFactorSource.Companion.device(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
     model: String = "",
@@ -149,6 +149,7 @@ fun LedgerHardwareWalletModel.displayName() = when (this) {
 }
 
 @UsesSampleValues
+@Suppress("MagicNumber")
 val FactorSource.Device.Companion.sample: Sample<FactorSource.Device>
     get() = object : Sample<FactorSource.Device> {
         override fun invoke(): FactorSource.Device = FactorSource.Device(
@@ -190,18 +191,20 @@ val FactorSource.Device.Companion.sample: Sample<FactorSource.Device>
                 )
             )
         )
-
     }
 
 @UsesSampleValues
+@Suppress("MagicNumber")
 val FactorSource.Ledger.Companion.sample: Sample<FactorSource.Ledger>
     get() = object : Sample<FactorSource.Ledger> {
         override fun invoke(): FactorSource.Ledger = FactorSource.Ledger(
             value = LedgerHardwareWalletFactorSource.init(
-                id = FactorSourceId.Hash(value = FactorSourceIdFromHash(
-                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                    body = Exactly32Bytes.init(Random.nextBytes(32).toBagOfBytes())
-                )),
+                id = FactorSourceId.Hash(
+                    value = FactorSourceIdFromHash(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        body = Exactly32Bytes.init(Random.nextBytes(32).toBagOfBytes())
+                    )
+                ),
                 name = "My Nano S",
                 model = LedgerHardwareWalletModel.NANO_S
             )
@@ -209,13 +212,14 @@ val FactorSource.Ledger.Companion.sample: Sample<FactorSource.Ledger>
 
         override fun other(): FactorSource.Ledger = FactorSource.Ledger(
             value = LedgerHardwareWalletFactorSource.init(
-                id = FactorSourceId.Hash(value = FactorSourceIdFromHash(
-                    kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
-                    body = Exactly32Bytes.init(Random.nextBytes(32).toBagOfBytes())
-                )),
+                id = FactorSourceId.Hash(
+                    value = FactorSourceIdFromHash(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        body = Exactly32Bytes.init(Random.nextBytes(32).toBagOfBytes())
+                    )
+                ),
                 name = "My Nano S+",
                 model = LedgerHardwareWalletModel.NANO_S_PLUS
             )
         )
-
     }

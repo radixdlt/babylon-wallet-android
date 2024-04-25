@@ -8,7 +8,6 @@ import com.babylon.wallet.android.data.dapp.model.LedgerErrorCode
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.babylon.wallet.android.utils.replaceDoublePercent
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import rdx.works.profile.domain.ProfileException
 

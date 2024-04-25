@@ -170,7 +170,9 @@ class DAppConnectionRepositoryImpl @Inject constructor(
         val persona = dApp?.referencesToAuthorizedPersonas?.getBy(personaAddress)
         requireNotNull(persona)
         return dApp.copy(
-            referencesToAuthorizedPersonas = dApp.referencesToAuthorizedPersonas.updateOrAppend(persona.copy(sharedAccounts = sharedAccounts))
+            referencesToAuthorizedPersonas = dApp.referencesToAuthorizedPersonas.updateOrAppend(
+                persona.copy(sharedAccounts = sharedAccounts)
+            )
         )
     }
 

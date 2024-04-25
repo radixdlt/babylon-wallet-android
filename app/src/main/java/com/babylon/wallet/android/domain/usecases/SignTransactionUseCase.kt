@@ -15,10 +15,10 @@ import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.TransactionIntent
 import com.radixdlt.sargon.extensions.modifyLockFee
 import com.radixdlt.sargon.extensions.secureRandom
+import rdx.works.core.crypto.PrivateKey
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.then
-import rdx.works.core.crypto.PrivateKey
 import javax.inject.Inject
 
 class SignTransactionUseCase @Inject constructor(

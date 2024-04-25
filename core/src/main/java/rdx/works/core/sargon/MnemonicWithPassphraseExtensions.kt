@@ -98,7 +98,7 @@ fun MnemonicWithPassphrase.validateAgainst(factorSource: FactorSource.Device): B
     toFactorSourceId().value.body == factorSource.value.id.body
 
 fun Bip39WordCount.Companion.init(discriminant: UByte) =
-    Bip39WordCount.entries.find { it.value == discriminant } ?: error("Not valid Bip39WordCount value of `${discriminant}`")
+    Bip39WordCount.entries.find { it.value == discriminant } ?: error("Not valid Bip39WordCount value of `$discriminant`")
 
 private fun Slip10Curve.toEllipticCurveType() = when (this) {
     Slip10Curve.CURVE25519 -> EllipticCurveType.Ed25519

@@ -34,9 +34,9 @@ import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
-import rdx.works.core.domain.ProfileState
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -153,7 +153,7 @@ class MainViewModel @Inject constructor(
                                 val requestId = incomingRequest.id
                                 Timber.d(
                                     "\uD83E\uDD16 wallet received incoming request from " +
-                                            "remote connector $remoteConnectorId with id $requestId"
+                                        "remote connector $remoteConnectorId with id $requestId"
                                 )
                                 verifyIncomingRequest(incomingRequest)
                             }

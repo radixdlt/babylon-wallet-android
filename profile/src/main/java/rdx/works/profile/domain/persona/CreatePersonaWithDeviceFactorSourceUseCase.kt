@@ -7,7 +7,6 @@ import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.core.sargon.addPersona
 import rdx.works.core.sargon.currentGateway

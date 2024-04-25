@@ -9,7 +9,6 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonic.MnemonicType
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 
 private const val ARGS_MNEMONIC_TYPE = "mnemonic_type"

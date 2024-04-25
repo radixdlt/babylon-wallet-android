@@ -41,19 +41,9 @@ import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
-import com.radixdlt.sargon.DeviceFactorSource
-import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.FactorSourceCommon
-import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceIdFromHash
-import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.toBagOfBytes
 import rdx.works.core.sargon.sample
-import kotlin.random.Random
 
 @Composable
 fun ConfirmMnemonicScreen(

@@ -9,7 +9,6 @@ import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.intId
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string

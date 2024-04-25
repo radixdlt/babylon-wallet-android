@@ -23,8 +23,8 @@ internal const val ARG_FACTOR_SOURCE_ID_BODY_HEX = "arg_factor_source_id_body"
 internal const val ARG_IS_OLYMPIA = "arg_is_olympia"
 
 private const val ROUTE = "account_recovery_scan?" +
-        "$ARG_FACTOR_SOURCE_ID_BODY_HEX={$ARG_FACTOR_SOURCE_ID_BODY_HEX}" +
-        "&$ARG_IS_OLYMPIA={$ARG_IS_OLYMPIA}"
+    "$ARG_FACTOR_SOURCE_ID_BODY_HEX={$ARG_FACTOR_SOURCE_ID_BODY_HEX}" +
+    "&$ARG_IS_OLYMPIA={$ARG_IS_OLYMPIA}"
 
 internal class AccountRecoveryScanArgs(
     val factorSourceId: FactorSourceId.Hash?,
@@ -44,8 +44,8 @@ fun NavController.accountRecoveryScan(
 ) {
     navigate(
         route = "account_recovery_scan?" +
-                "$ARG_FACTOR_SOURCE_ID_BODY_HEX=${factorSourceId?.value?.body?.hex}" +
-                "&$ARG_IS_OLYMPIA=$isOlympia"
+            "$ARG_FACTOR_SOURCE_ID_BODY_HEX=${factorSourceId?.value?.body?.hex}" +
+            "&$ARG_IS_OLYMPIA=$isOlympia"
     )
 }
 

@@ -59,6 +59,7 @@ val Account.hasAcceptKnownDepositRule: Boolean
 val Account.isLedgerAccount: Boolean
     get() = securityState.transactionSigningFactorInstance.factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
 
+@Suppress("LongParameterList")
 fun Account.Companion.initBabylon(
     networkId: NetworkId,
     displayName: DisplayName,
@@ -95,6 +96,7 @@ fun Account.Companion.initBabylon(
     )
 }
 
+@Suppress("LongParameterList")
 fun Account.Companion.initOlympia(
     networkId: NetworkId,
     displayName: DisplayName,

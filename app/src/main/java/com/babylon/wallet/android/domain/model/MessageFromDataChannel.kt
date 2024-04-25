@@ -225,7 +225,6 @@ sealed interface MessageFromDataChannel {
                         body = deviceId
                     )
                 )
-
         }
 
         data class DerivePublicKeyResponse(

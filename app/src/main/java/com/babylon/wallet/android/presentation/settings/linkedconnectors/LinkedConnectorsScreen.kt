@@ -45,7 +45,6 @@ import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.samples.sample
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toPersistentList
 
 @Composable
 fun LinkedConnectorsScreen(
@@ -283,7 +282,7 @@ fun LinkedConnectorsContentWithoutActiveLinkedConnectorsPreview() {
 fun LinkedConnectorsContentWithActiveLinkedConnectorsPreview() {
     RadixWalletTheme {
         LinkedConnectorsContent(
-            activeLinkedConnectorsList= persistentListOf(P2pLink.sample()),
+            activeLinkedConnectorsList = persistentListOf(P2pLink.sample()),
             onLinkNewConnectorClick = {},
             isAddingNewLinkConnectorInProgress = false,
             onBackClick = {},

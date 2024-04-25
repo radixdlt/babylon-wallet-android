@@ -10,7 +10,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 
 @VisibleForTesting

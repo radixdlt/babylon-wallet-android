@@ -37,7 +37,6 @@ val PersonaData.fields: List<IdentifiedEntry<out PersonaDataField>>
             value = PersonaDataField.PhoneNumber(it.value.number),
             id = it.id.toString()
         )
-
     } + emailAddresses.collection.map {
         IdentifiedEntry.init(
             value = PersonaDataField.Email(it.value.email),
@@ -48,6 +47,7 @@ val PersonaData.fields: List<IdentifiedEntry<out PersonaDataField>>
 val PersonaData.fieldIds: List<PersonaDataEntryID>
     get() = emailAddresses.collection.map { it.id } + phoneNumbers.collection.map { it.id } + name?.id?.let { listOf(it) }.orEmpty()
 
+@Suppress("ReturnCount")
 fun PersonaData.getDataFieldKind(id: PersonaDataEntryID): PersonaDataField.Kind? {
     if (name?.id == id) return PersonaDataField.Kind.Name
 
@@ -66,13 +66,17 @@ fun PersonaData.toSharedPersonaData(
             request = RequestedQuantity(quantifier = RequestedNumberQuantifier.EXACTLY, quantity = 1u), // TODO integration
             ids = emailAddresses.collection.map { it.id }
         )
-    } else null,
+    } else {
+        null
+    },
     phoneNumbers = if (requestedFields.containsKey(PersonaDataField.Kind.PhoneNumber)) {
         SharedToDappWithPersonaIDsOfPersonaDataEntries(
             request = RequestedQuantity(quantifier = RequestedNumberQuantifier.EXACTLY, quantity = 1u), // TODO integration
             ids = phoneNumbers.collection.map { it.id }
         )
-    } else null
+    } else {
+        null
+    }
 )
 
 val SharedPersonaData.alreadyGrantedIds: List<PersonaDataEntryID>

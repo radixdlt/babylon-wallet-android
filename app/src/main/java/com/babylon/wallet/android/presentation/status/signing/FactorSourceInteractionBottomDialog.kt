@@ -30,8 +30,8 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import rdx.works.core.sargon.sample
 import rdx.works.core.domain.SigningPurpose
+import rdx.works.core.sargon.sample
 
 @Composable
 fun FactorSourceInteractionBottomDialog(

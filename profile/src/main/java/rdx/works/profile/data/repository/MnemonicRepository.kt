@@ -1,7 +1,6 @@
 package rdx.works.profile.data.repository
 
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.hex
 import kotlinx.coroutines.CoroutineDispatcher

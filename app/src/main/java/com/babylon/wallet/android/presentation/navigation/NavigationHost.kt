@@ -72,7 +72,6 @@ import com.babylon.wallet.android.presentation.transaction.transactionReviewScre
 import com.babylon.wallet.android.presentation.transfer.transfer
 import com.babylon.wallet.android.presentation.transfer.transferScreen
 import com.radixdlt.sargon.extensions.networkId
-import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.StateFlow
 import rdx.works.core.domain.resources.XrdResource
 import rdx.works.profile.domain.backup.BackupType

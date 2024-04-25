@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import rdx.works.core.TimestampGenerator
-import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.domain.BackupState
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher

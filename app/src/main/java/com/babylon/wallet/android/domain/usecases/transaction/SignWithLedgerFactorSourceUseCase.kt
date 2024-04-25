@@ -16,11 +16,11 @@ import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
+import rdx.works.core.domain.SigningPurpose
 import rdx.works.core.sargon.authenticationSigningFactorInstance
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.core.sargon.updateLastUsed
 import rdx.works.core.toHexString
-import rdx.works.core.domain.SigningPurpose
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
@@ -125,8 +125,9 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         val hdPublicKey = signers.map { signer ->
             val securityState = signer.securityState
             when (signingPurpose) {
-                SigningPurpose.SignAuth -> securityState.authenticationSigningFactorInstance ?:
-                    securityState.transactionSigningFactorInstance
+                SigningPurpose.SignAuth ->
+                    securityState.authenticationSigningFactorInstance
+                        ?: securityState.transactionSigningFactorInstance
                 SigningPurpose.SignTransaction -> securityState.transactionSigningFactorInstance
             }.publicKey
         }

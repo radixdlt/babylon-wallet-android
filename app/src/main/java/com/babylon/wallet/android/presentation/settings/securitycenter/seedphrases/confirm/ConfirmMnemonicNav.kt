@@ -20,7 +20,8 @@ import com.radixdlt.sargon.extensions.init
 
 private const val ARGS_FACTOR_SOURCE_ID_BODY_HEX = "factorSourceIdBodyHex"
 private const val ARGS_MNEMONIC_SIZE = "mnemonicSize"
-private const val ROUTE = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID_BODY_HEX={$ARGS_FACTOR_SOURCE_ID_BODY_HEX}&$ARGS_MNEMONIC_SIZE={$ARGS_MNEMONIC_SIZE}"
+private const val ROUTE = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID_BODY_HEX={$ARGS_FACTOR_SOURCE_ID_BODY_HEX}" +
+    "&$ARGS_MNEMONIC_SIZE={$ARGS_MNEMONIC_SIZE}"
 
 fun NavController.confirmSeedPhrase(
     factorSourceId: FactorSourceId.Hash,

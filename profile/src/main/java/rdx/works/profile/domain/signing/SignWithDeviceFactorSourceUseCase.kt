@@ -7,9 +7,9 @@ import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
 import kotlinx.coroutines.flow.first
+import rdx.works.core.domain.SigningPurpose
 import rdx.works.core.sargon.derivePrivateKey
 import rdx.works.core.sargon.updateLastUsed
-import rdx.works.core.domain.SigningPurpose
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile

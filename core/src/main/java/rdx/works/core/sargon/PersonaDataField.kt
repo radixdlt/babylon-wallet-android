@@ -96,15 +96,18 @@ data class IdentifiedEntry<T>(
 fun List<PersonaDataField>.toPersonaData(): PersonaData {
     return PersonaData(
         name = filterIsInstance<PersonaDataField.Name>().firstOrNull()?.let {
-            PersonaDataIdentifiedName(id = PersonaDataEntryID.randomUUID(), value = PersonaDataEntryName(
-                variant = when (it.variant) {
-                    PersonaDataField.Name.Variant.Western -> PersonaDataNameVariant.WESTERN
-                    PersonaDataField.Name.Variant.Eastern -> PersonaDataNameVariant.EASTERN
-                },
-                familyName = it.family,
-                givenNames = it.given,
-                nickname = it.nickname
-            ))
+            PersonaDataIdentifiedName(
+                id = PersonaDataEntryID.randomUUID(),
+                value = PersonaDataEntryName(
+                    variant = when (it.variant) {
+                        PersonaDataField.Name.Variant.Western -> PersonaDataNameVariant.WESTERN
+                        PersonaDataField.Name.Variant.Eastern -> PersonaDataNameVariant.EASTERN
+                    },
+                    familyName = it.family,
+                    givenNames = it.given,
+                    nickname = it.nickname
+                )
+            )
         },
         emailAddresses = filterIsInstance<PersonaDataField.Email>().let { field ->
             CollectionOfEmailAddresses(

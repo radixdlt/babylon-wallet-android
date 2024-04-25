@@ -67,8 +67,10 @@ class DepositGuaranteesViewModel @Inject constructor(
 
     fun onDepositGuaranteeDecreased() {
         viewModelScope.launch {
-            val updatedDepositGuarantee = (getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee -
-                    DEPOSIT_CHANGE_THRESHOLD).clamped
+            val updatedDepositGuarantee = (
+                getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee -
+                    DEPOSIT_CHANGE_THRESHOLD
+                ).clamped
             changeAndUpdateDepositGuarantee(
                 updatedDepositGuarantee = updatedDepositGuarantee
             )

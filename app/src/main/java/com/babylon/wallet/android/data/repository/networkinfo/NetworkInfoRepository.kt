@@ -7,7 +7,6 @@ import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.domain.model.NetworkInfo
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.extensions.string
 import okhttp3.OkHttpClient
 import rdx.works.core.sargon.init
 import retrofit2.Converter

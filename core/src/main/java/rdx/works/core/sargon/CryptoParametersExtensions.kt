@@ -36,8 +36,8 @@ val FactorSourceCryptoParameters.Companion.default: FactorSourceCryptoParameters
 
 val FactorSourceCryptoParameters.supportsBabylon: Boolean
     get() = Slip10Curve.CURVE25519 in supportedCurves &&
-            DerivationPathScheme.CAP26 in supportedDerivationPathSchemes
+        DerivationPathScheme.CAP26 in supportedDerivationPathSchemes
 
 val FactorSourceCryptoParameters.supportsOlympia: Boolean
     get() = Slip10Curve.SECP256K1 in supportedCurves &&
-            DerivationPathScheme.BIP44_OLYMPIA in supportedDerivationPathSchemes
+        DerivationPathScheme.BIP44_OLYMPIA in supportedDerivationPathSchemes

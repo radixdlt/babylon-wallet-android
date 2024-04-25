@@ -15,12 +15,10 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
-import com.babylon.wallet.android.utils.decodeUtf8
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -158,8 +156,8 @@ class CreateAccountViewModel @Inject constructor(
     ) {
         _state.update { it.copy(loading = true) }
         val accountName = accountName.value.trim()
-        if (args.networkIdToSwitch != null) {
-            switchNetworkUseCase(args.networkUrl!!)
+        if (args.networkIdToSwitch != null && args.networkUrl != null) {
+            switchNetworkUseCase(args.networkUrl)
         }
         val account = accountProvider(accountName)
         val accountId = account.address

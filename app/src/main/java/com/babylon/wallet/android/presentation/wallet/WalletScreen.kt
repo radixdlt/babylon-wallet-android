@@ -291,7 +291,7 @@ private fun WalletAccountList(
                 isFiatBalancesEnabled = state.isFiatBalancesEnabled,
                 isLoadingResources = accountWithAssets.assets == null,
                 isLoadingBalance = accountWithAssets.assets == null ||
-                        state.isBalanceLoadingForAccount(accountWithAssets.account.address),
+                    state.isBalanceLoadingForAccount(accountWithAssets.account.address),
                 securityPromptType = state.securityPrompt(accountWithAssets.account),
                 onApplySecuritySettings = {
                     onApplySecuritySettings(accountWithAssets.account, it)

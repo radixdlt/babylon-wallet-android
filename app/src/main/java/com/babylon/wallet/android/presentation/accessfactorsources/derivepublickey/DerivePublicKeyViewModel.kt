@@ -16,7 +16,6 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PublicKey
-import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -142,10 +141,12 @@ class DerivePublicKeyViewModel @Inject constructor(
             deviceFactorSource = deviceFactorSource,
             derivationPath = derivationPath
         ).mapCatching { publicKey ->
-            accessFactorSourcesUiProxy.setOutput(output = PublicKeyAndDerivationPath(
-                publicKey = publicKey,
-                derivationPath = derivationPath
-            ))
+            accessFactorSourcesUiProxy.setOutput(
+                output = PublicKeyAndDerivationPath(
+                    publicKey = publicKey,
+                    derivationPath = derivationPath
+                )
+            )
         }
     }
 

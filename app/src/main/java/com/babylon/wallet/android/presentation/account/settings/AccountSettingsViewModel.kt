@@ -83,8 +83,8 @@ class AccountSettingsViewModel @Inject constructor(
 
     private fun loadAccount() {
         viewModelScope.launch {
-            getProfileUseCase.flow.mapNotNull {
-                it.activeAccountsOnCurrentNetwork.firstOrNull { it.address == args.address }
+            getProfileUseCase.flow.mapNotNull { profile ->
+                profile.activeAccountsOnCurrentNetwork.firstOrNull { it.address == args.address }
             }.collect { account ->
                 val thirdPartyDefaultDepositRule = account.onLedgerSettings.thirdPartyDeposits.depositRule
                 _state.update { state ->

@@ -84,7 +84,7 @@ class AccountViewModel @Inject constructor(
 
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountFlow = combine(
-        getProfileUseCase.flow.mapNotNull {profile ->
+        getProfileUseCase.flow.mapNotNull { profile ->
             profile.activeAccountsOnCurrentNetwork.find { it.address == args.accountAddress }
         },
         refreshFlow

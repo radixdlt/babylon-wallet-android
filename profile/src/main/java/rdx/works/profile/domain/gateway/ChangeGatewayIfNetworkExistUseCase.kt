@@ -1,7 +1,6 @@
 package rdx.works.profile.domain.gateway
 
 import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.invoke
 import kotlinx.coroutines.flow.first
 import rdx.works.core.sargon.changeGateway

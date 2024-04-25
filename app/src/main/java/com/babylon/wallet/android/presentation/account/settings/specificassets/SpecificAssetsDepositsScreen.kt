@@ -214,7 +214,7 @@ fun SpecificAssetsDepositsScreen(
 @Composable
 fun AddAssetSheet(
     onResourceAddressChanged: (String) -> Unit,
-    asset: AssetType.Exception,
+    asset: AssetType.ExceptionType,
     onAddAsset: () -> Unit,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
@@ -336,9 +336,9 @@ private fun SpecificAssetsDepositsContent(
     error: UiMessage?,
     onShowAddAssetSheet: (SpecificAssetsTab) -> Unit,
     modifier: Modifier = Modifier,
-    allowedAssets: PersistentList<AssetType.Exception>?,
-    deniedAssets: PersistentList<AssetType.Exception>?,
-    onDeleteAsset: (AssetType.Exception) -> Unit
+    allowedAssets: PersistentList<AssetType.ExceptionType>?,
+    deniedAssets: PersistentList<AssetType.ExceptionType>?,
+    onDeleteAsset: (AssetType.ExceptionType) -> Unit
 ) {
     var selectedTab by remember {
         mutableStateOf(SpecificAssetsTab.Allowed)
@@ -497,9 +497,9 @@ private fun SpecificAssetsDepositsContent(
 
 @Composable
 private fun AssetsList(
-    assets: PersistentList<AssetType.Exception>,
+    assets: PersistentList<AssetType.ExceptionType>,
     modifier: Modifier = Modifier,
-    onDeleteAsset: (AssetType.Exception) -> Unit
+    onDeleteAsset: (AssetType.ExceptionType) -> Unit
 ) {
     val lastItem = assets.last()
     LazyColumn(modifier = modifier) {
@@ -527,8 +527,8 @@ private fun AssetsList(
 @Composable
 private fun AssetItem(
     modifier: Modifier,
-    asset: AssetType.Exception,
-    onDeleteAsset: (AssetType.Exception) -> Unit
+    asset: AssetType.ExceptionType,
+    onDeleteAsset: (AssetType.ExceptionType) -> Unit
 ) {
     Row(
         modifier = modifier,
@@ -661,8 +661,8 @@ enum class SpecificAssetsTab {
 
 sealed interface DeleteDialogState {
     data object None : DeleteDialogState
-    data class AboutToDeleteAssetException(val assetException: AssetType.Exception) : DeleteDialogState
-    data class AboutToDeleteAssetDepositor(val depositor: AssetType.Depositor) : DeleteDialogState
+    data class AboutToDeleteAssetException(val assetException: AssetType.ExceptionType) : DeleteDialogState
+    data class AboutToDeleteAssetDepositor(val depositor: AssetType.DepositorType) : DeleteDialogState
 }
 
 @UsesSampleValues
@@ -670,10 +670,9 @@ sealed interface DeleteDialogState {
 @Composable
 fun SpecificAssetsDepositsPreview() {
     val assetExceptionProvider = {
-        AssetType.Exception(assetAddress = ResourceAddress.sampleRandom(NetworkId.MAINNET))
+        AssetType.ExceptionType(assetAddress = ResourceAddress.sampleRandom(NetworkId.MAINNET))
     }
     RadixWalletTheme {
-
         SpecificAssetsDepositsContent(
             onBackClick = {},
             onMessageShown = {},
@@ -691,7 +690,7 @@ fun AddAssetSheetPreview() {
     RadixWalletTheme {
         AddAssetSheet(
             onResourceAddressChanged = {},
-            asset = AssetType.Exception(),
+            asset = AssetType.ExceptionType(),
             onAddAsset = {},
             onAssetExceptionRuleChanged = {},
             onDismiss = {}

@@ -3,7 +3,6 @@ package com.babylon.wallet.android.utils
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow

@@ -74,40 +74,43 @@ val actionableAddressViewEntryPointMock = object : ActionableAddressViewEntryPoi
 
     private fun fakeGetProfileUseCase(
         initialProfileState: ProfileState = ProfileState.NotInitialised
-    ) = GetProfileUseCase(profileRepository = object : ProfileRepository {
+    ) = GetProfileUseCase(
+        profileRepository = object : ProfileRepository {
 
-        private val profileStateSource: MutableStateFlow<ProfileState> = MutableStateFlow(
-            initialProfileState
-        )
+            private val profileStateSource: MutableStateFlow<ProfileState> = MutableStateFlow(
+                initialProfileState
+            )
 
-        override val profileState: Flow<ProfileState> = profileStateSource
+            override val profileState: Flow<ProfileState> = profileStateSource
 
-        override val inMemoryProfileOrNull: Profile?
-            get() = (profileStateSource.value as? ProfileState.Restored)?.profile
+            override val inMemoryProfileOrNull: Profile?
+                get() = (profileStateSource.value as? ProfileState.Restored)?.profile
 
-        override suspend fun saveProfile(profile: Profile) {
-            profileStateSource.update { ProfileState.Restored(profile) }
+            override suspend fun saveProfile(profile: Profile) {
+                profileStateSource.update { ProfileState.Restored(profile) }
+            }
+
+            override suspend fun clearProfileDataOnly() {
+                profileStateSource.update { ProfileState.None }
+            }
+
+            override suspend fun clearAllWalletData() {
+                profileStateSource.update { ProfileState.None }
+            }
+
+            override fun deriveProfileState(content: String): ProfileState {
+                error("Not needed")
+            }
         }
-
-        override suspend fun clearProfileDataOnly() {
-            profileStateSource.update { ProfileState.None }
-        }
-
-        override suspend fun clearAllWalletData() {
-            profileStateSource.update { ProfileState.None }
-        }
-
-        override fun deriveProfileState(content: String): ProfileState {
-            error("Not needed")
-        }
-    })
+    )
 
     private fun ledgerMessengerFake() = object : LedgerMessenger {
         override val isAnyLinkedConnectorConnected: Flow<Boolean>
             get() = TODO("Not yet implemented")
 
-        override suspend fun sendDeviceInfoRequest(interactionId: String):
-                Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse> {
+        override suspend fun sendDeviceInfoRequest(
+            interactionId: String
+        ): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse> {
             TODO("Not yet implemented")
         }
 

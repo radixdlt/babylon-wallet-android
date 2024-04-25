@@ -68,7 +68,8 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
         return when (val factorSource = requireNotNull(getProfileUseCase().factorSourceById(factorSourceId))) {
             is FactorSource.Device -> createAuthSigningFactorInstanceForDevice(factorSource, authSigningDerivationPath)
             is FactorSource.Ledger -> createAuthSigningFactorInstanceForLedger(
-                factorSource, authSigningDerivationPath
+                factorSource,
+                authSigningDerivationPath
             )
         }
     }

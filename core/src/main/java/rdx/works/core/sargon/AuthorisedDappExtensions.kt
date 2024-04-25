@@ -24,9 +24,11 @@ fun AuthorizedDapp.hasAuthorizedPersona(personaAddress: IdentityAddress): Boolea
 
 fun AuthorizedDapp.updateAuthorizedDAppPersonas(
     authorizedDAppPersonas: List<AuthorizedPersonaSimple>
-): AuthorizedDapp = copy(referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
-    authorizedDAppPersonas + referencesToAuthorizedPersonas()
-))
+): AuthorizedDapp = copy(
+    referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init(
+        authorizedDAppPersonas + referencesToAuthorizedPersonas()
+    )
+)
 
 fun AuthorizedDapp.updateAuthorizedDAppPersonaFields(
     personaAddress: IdentityAddress,

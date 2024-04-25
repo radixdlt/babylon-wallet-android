@@ -11,7 +11,6 @@ import rdx.works.core.hash
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 import retrofit2.Call
 import timber.log.Timber
-import java.net.URL
 import java.time.Duration
 import java.time.ZoneId
 import java.util.Date

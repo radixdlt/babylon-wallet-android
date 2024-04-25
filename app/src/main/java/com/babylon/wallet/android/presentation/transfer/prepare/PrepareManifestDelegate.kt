@@ -7,7 +7,6 @@ import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.PerAssetFungibleResource
@@ -18,7 +17,6 @@ import com.radixdlt.sargon.PerAssetTransfersOfFungibleResource
 import com.radixdlt.sargon.PerAssetTransfersOfNonFungibleResource
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.perAssetTransfers
 import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.TransactionManifestData
@@ -134,7 +132,8 @@ class PrepareManifestDelegate @Inject constructor(
             val factorSourceId = it.factorSourceId ?: return@filter false
 
             factorSourceId.value.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET || (
-                    factorSourceId.value.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(factorSourceId))
+                factorSourceId.value.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(factorSourceId)
+                )
         }
 
     private fun TargetAccount.useTryDepositOrAbort(

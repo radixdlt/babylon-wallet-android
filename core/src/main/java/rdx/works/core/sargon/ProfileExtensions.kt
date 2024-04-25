@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package rdx.works.core.sargon
 
 import com.radixdlt.sargon.Account
@@ -71,7 +73,7 @@ val Profile.isCurrentNetworkMainnet: Boolean
 
 val Profile.activeEntitiesOnCurrentNetwork: List<ProfileEntity>
     get() = activeAccountsOnCurrentNetwork.map { it.asProfileEntity() } +
-            activePersonasOnCurrentNetwork.map { it.asProfileEntity() }
+        activePersonasOnCurrentNetwork.map { it.asProfileEntity() }
 
 val Profile.activeAccountsOnCurrentNetwork: List<Account>
     get() = currentNetwork?.accounts()?.notHiddenAccounts().orEmpty()
@@ -134,7 +136,6 @@ val Profile.olympiaFactorSourcesWithAccounts: Map<FactorSource.Device, List<Acco
     }.mapValues { entry ->
         entry.value.filter { account -> account.usesSECP256k1 }
     }
-
 
 /**
  * Used only by debug features, like inspect profile, where it is the only place
@@ -531,9 +532,11 @@ fun Profile.addMainBabylonDeviceFactorSource(
     val existingBabylonDeviceFactorSources = factorSources().map { factorSource ->
         if (factorSource is FactorSource.Device && factorSource.value.supportsBabylon) {
             factorSource.copy(
-                value = factorSource.value.copy(common = factorSource.value.common.copy(
-                    flags = factorSource.value.common.flags.filterNot { flag -> flag == FactorSourceFlag.MAIN }
-                ))
+                value = factorSource.value.copy(
+                    common = factorSource.value.common.copy(
+                        flags = factorSource.value.common.flags.filterNot { flag -> flag == FactorSourceFlag.MAIN }
+                    )
+                )
             )
         } else {
             factorSource

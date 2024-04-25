@@ -4,7 +4,6 @@ import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepo
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.NetworkId
 import kotlinx.coroutines.flow.first

@@ -15,9 +15,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
 import rdx.works.core.decodeHex
+import rdx.works.core.domain.SigningPurpose
 import rdx.works.core.hash
 import rdx.works.core.toByteArray
-import rdx.works.core.domain.SigningPurpose
 import rdx.works.profile.domain.signing.GetSigningEntitiesByFactorSourceUseCase
 import rdx.works.profile.domain.signing.SignWithDeviceFactorSourceUseCase
 import javax.inject.Inject

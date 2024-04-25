@@ -37,11 +37,9 @@ import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.domain.AddRecoveredAccountsToProfileUseCase
-import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import java.time.Instant
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -50,7 +48,6 @@ class AccountRecoveryScanViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val getProfileUseCase: GetProfileUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
-    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
     private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,

@@ -40,6 +40,7 @@ val Persona.usesEd25519: Boolean
 val Persona.isHidden: Boolean
     get() = EntityFlag.DELETED_BY_USER in flags
 
+@Suppress("LongParameterList")
 fun Persona.Companion.init(
     mnemonicWithPassphrase: MnemonicWithPassphrase,
     networkId: NetworkId,

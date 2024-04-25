@@ -37,7 +37,8 @@ fun List<PersonaFieldWrapper>.toPersonaData(): PersonaData {
         }?.let {
             val nameValue = it.value as PersonaDataField.Name
             PersonaDataIdentifiedName(
-                id = it.uuid, value = PersonaDataEntryName(
+                id = it.uuid,
+                value = PersonaDataEntryName(
                     variant = when (nameValue.variant) {
                         PersonaDataField.Name.Variant.Western -> PersonaDataNameVariant.WESTERN
                         PersonaDataField.Name.Variant.Eastern -> PersonaDataNameVariant.EASTERN
