@@ -12,8 +12,6 @@ abstract class StateViewModelTest<T : ViewModel>(testDispatcherRule: TestDispatc
 
     protected lateinit var vm: Lazy<T>
 
-    protected val sampleDataProvider = SampleDataProvider()
-
     abstract fun initVM(): T
 
     @Before

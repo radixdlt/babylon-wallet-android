@@ -20,7 +20,7 @@ import com.babylon.wallet.android.presentation.model.toPersonaDataRequestRespons
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.string
 import javax.inject.Inject
@@ -55,7 +55,7 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
                     request.metadata.dAppDefinitionAddress
                 )
                 val signatureWithPublicKey =
-                    rolaClient.signAuthChallenge(ProfileEntity.AccountEntity(account), signRequest, biometricAuthProvider)
+                    rolaClient.signAuthChallenge(account.asProfileEntity(), signRequest, biometricAuthProvider)
                 if (signatureWithPublicKey.isFailure) {
                     return Result.failure(
                         signatureWithPublicKey.exceptionOrNull() ?: RadixWalletException.DappRequestException.FailedToSignAuthChallenge()
@@ -166,7 +166,7 @@ class BuildAuthorizedDappResponseUseCase @Inject constructor(
                     dAppDefinitionAddress = request.metadata.dAppDefinitionAddress
                 )
                 rolaClient.signAuthChallenge(
-                    ProfileEntity.PersonaEntity(selectedPersona),
+                    selectedPersona.asProfileEntity(),
                     signRequest,
                     deviceBiometricAuthenticationProvider
                 ).onSuccess { signature ->

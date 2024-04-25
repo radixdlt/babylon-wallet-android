@@ -23,8 +23,6 @@ import com.babylon.wallet.android.domain.usecases.assets.CacheNewlyCreatedEntiti
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.GetTransactionBadgesUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
-import com.babylon.wallet.android.mockdata.account
-import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transaction.analysis.TransactionAnalysisDelegate
 import com.babylon.wallet.android.presentation.transaction.analysis.processor.AccountDepositSettingsProcessor
@@ -48,11 +46,15 @@ import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
+import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
+import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -79,16 +81,14 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import rdx.works.core.crypto.PrivateKey
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.transaction.NotarizationResult
-import rdx.works.core.identifiedArrayListOf
 import rdx.works.core.logNonFatalException
-import rdx.works.core.toIdentifiedArrayList
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.core.crypto.PrivateKey
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionReviewViewModel>() {
@@ -160,7 +160,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     )
     private val sampleRequestId = "requestId1"
     private val sampleTransactionManifestData = mockk<TransactionManifestData>().apply {
-        every { networkId } returns Radix.Gateway.nebunet.network.id
+        every { networkId } returns NetworkId.MAINNET
         every { instructions } returns ""
         every { blobs } returns emptyList()
         every { message } returns TransactionManifestData.TransactionMessage.None
@@ -174,27 +174,17 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         requestId = sampleRequestId,
         transactionManifestData = sampleTransactionManifestData,
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            networkId = NetworkId.MAINNET.discriminant.toInt(),
+            networkId = NetworkId.MAINNET,
             origin = "https://test.origin.com",
             dAppDefinitionAddress = DApp.sampleMainnet().dAppAddress.string,
             isInternal = false
         ),
         transactionType = com.babylon.wallet.android.data.dapp.model.TransactionType.Generic
     )
-    private val fromAccount = account(
-        name = "From Account"
-    )
-    private val otherAccounts = identifiedArrayListOf(
-        account(
-            name = "To Account 1"
-        ),
-        account(
-            name = "To Account 2"
-        ),
-        account(
-            name = "To account 3"
-        )
-    )
+
+    private val profile = Profile.sample()
+    private val fromAccount = profile.networks.getBy(NetworkId.MAINNET)?.accounts()?.first()!!
+    private val otherAccounts = profile.networks.getBy(NetworkId.MAINNET)?.accounts()?.drop(1).orEmpty()
 
     private val emptyExecutionSummary = ExecutionSummary(
         feeLocks = FeeLocks(
@@ -233,7 +223,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         mockkStatic("rdx.works.core.CrashlyticsExtensionsKt")
         every { logNonFatalException(any()) } just Runs
         every { savedStateHandle.get<String>(ARG_TRANSACTION_REQUEST_ID) } returns sampleRequestId
-        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.nebunet
+        coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         coEvery { submitTransactionUseCase(any()) } returns Result.success(notarizationResult)
         coEvery { getTransactionBadgesUseCase(any()) } returns Result.success(listOf(
             Badge(address = ResourceAddress.sampleMainnet())
@@ -261,7 +251,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         } returns Result.success(Unit)
         coEvery { appEventBus.sendEvent(any()) } returns Unit
         incomingRequestRepository.add(sampleRequest)
-        every { getProfileUseCase() } returns flowOf(profile(accounts = (identifiedArrayListOf(fromAccount) + otherAccounts).toIdentifiedArrayList()))
+        every { getProfileUseCase.flow } returns flowOf(profile)
         coEvery { resolveNotaryAndSignersUseCase(any(), any(), any()) } returns Result.success(
             NotaryAndSigners(
                 listOf(),
@@ -320,7 +310,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
 
     @Test
     fun `transaction approval wrong network`() = runTest {
-        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.hammunet
+        coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.STOKENET)
         val vm = vm.value
         advanceUntilIdle()
         vm.approveTransaction { true }

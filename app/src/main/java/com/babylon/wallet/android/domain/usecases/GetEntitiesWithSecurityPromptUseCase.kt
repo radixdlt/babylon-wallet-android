@@ -4,6 +4,7 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.asProfileEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -38,7 +39,7 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
             preferencesManager.getBackedUpFactorSourceIds().distinctUntilChanged()
         ) { personas, backedUpFactorSourceIds ->
             personas.any { persona ->
-                val entity = mapToEntityWithSecurityPrompt(ProfileEntity.PersonaEntity(persona), backedUpFactorSourceIds)
+                val entity = mapToEntityWithSecurityPrompt(persona.asProfileEntity(), backedUpFactorSourceIds)
                 entity?.prompt == SecurityPromptType.NEEDS_BACKUP
             }
         }

@@ -15,7 +15,7 @@ import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
 import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.asProfileEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -93,7 +93,7 @@ class PersonaDetailViewModel @Inject constructor(
                         is AppEvent.Status.Transaction.Success -> {
                             val persona = requireNotNull(state.value.persona)
                             val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
-                            addAuthSigningFactorInstanceUseCase(ProfileEntity.PersonaEntity(persona), authSigningFactorInstance)
+                            addAuthSigningFactorInstanceUseCase(persona.asProfileEntity(), authSigningFactorInstance)
                             _state.update { it.copy(loading = false) }
                         }
 
@@ -118,7 +118,7 @@ class PersonaDetailViewModel @Inject constructor(
         viewModelScope.launch {
             state.value.persona?.let { persona ->
                 _state.update { it.copy(loading = true) }
-                val entity = ProfileEntity.PersonaEntity(persona)
+                val entity = persona.asProfileEntity()
                 rolaClient.generateAuthSigningFactorInstance(entity)
                     .onSuccess { authSigningFactorInstance ->
                         this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance

@@ -1,7 +1,7 @@
 package com.babylon.wallet.android.mockdata
 
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
-import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.NonFungibleResourceAddress
@@ -25,40 +25,36 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
-import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.derivation.model.KeyType
 
-fun account(
-    name: String = "account-name",
-    address: AccountAddress = AccountAddress.sampleMainnet.random(),
-    networkId: NetworkId = Radix.Gateway.default.network.networkId()
-) = Network.Account(
-    address = address.string,
-    appearanceID = 1,
-    displayName = name,
-    networkID = networkId.value,
-    securityState = SecurityState.Unsecured(
-        unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-            transactionSigning = FactorInstance(
-                badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
-                    derivationPath = DerivationPath.forAccount(
-                        networkId = NetworkId.Mainnet,
-                        accountIndex = 0,
-                        keyType = KeyType.TRANSACTION_SIGNING
-                    ),
-                    publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
-                ),
-                factorSourceId = FactorSource.FactorSourceID.FromHash(
-                    kind = FactorSourceKind.DEVICE,
-                    body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
-                )
-            )
-        )
-    ),
-    onLedgerSettings = Network.Account.OnLedgerSettings.init()
-)
+//fun account(
+//    name: String = "account-name",
+//    address: AccountAddress = AccountAddress.sampleMainnet.random(),
+//    networkId: NetworkId = Radix.Gateway.default.network.networkId()
+//) = Network.Account(
+//    address = address.string,
+//    appearanceID = 1,
+//    displayName = name,
+//    networkID = networkId.value,
+//    securityState = SecurityState.Unsecured(
+//        unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
+//            transactionSigning = FactorInstance(
+//                badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
+//                    derivationPath = DerivationPath.forAccount(
+//                        networkId = NetworkId.Mainnet,
+//                        accountIndex = 0,
+//                        keyType = KeyType.TRANSACTION_SIGNING
+//                    ),
+//                    publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
+//                ),
+//                factorSourceId = FactorSource.FactorSourceID.FromHash(
+//                    kind = FactorSourceKind.DEVICE,
+//                    body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
+//                )
+//            )
+//        )
+//    ),
+//    onLedgerSettings = Network.Account.OnLedgerSettings.init()
+//)
 
 val mockResourceAddressXRD = ResourceAddress.sampleMainnet.xrd
 val mockResourceAddress1 = ResourceAddress.sampleMainnet.random()
@@ -82,14 +78,7 @@ val mockNFTAddressForStakeClaim2 = ResourceAddress.init(NonFungibleResourceAddre
 // Total fiat value of all accounts: 110481686.856 + 874160.26252 = 111355847.119
 val mockAccountsWithMockAssets = listOf(
     AccountWithAssets( // Total fiat value of account0: 110415990.053 + 63769.6827967 + 1927.12059 = 110481686.856
-        account = Network.Account(
-            address = "account_address_0",
-            appearanceID = 0,
-            displayName = "account0",
-            networkID = 1,
-            securityState = unsecuredSecurityState(),
-            onLedgerSettings = Network.Account.OnLedgerSettings.init()
-        ),
+        account = Account.sampleMainnet(),
         assets = Assets(
             tokens = listOf( // Total fiat value of tokens: 0.053064186 + 15990 + 110400000 + 0 = 110415990.053
                 Token(
@@ -230,14 +219,7 @@ val mockAccountsWithMockAssets = listOf(
         )
     ),
     AccountWithAssets( // Total fiat value of account1: 870565.11 + 3595.15252 = 874160.26252
-        account = Network.Account(
-            address = "account_address_1",
-            appearanceID = 1,
-            displayName = "account1",
-            networkID = 1,
-            securityState = unsecuredSecurityState(),
-            onLedgerSettings = Network.Account.OnLedgerSettings.init()
-        ),
+        account = Account.sampleMainnet.other(),
         assets = Assets(
             tokens = listOf( // Total fiat value of tokens: 870550 + 15.11 = 870565.11
                 Token(
@@ -336,24 +318,3 @@ val mockAccountsWithMockAssets = listOf(
         )
     )
 )
-
-fun unsecuredSecurityState(): SecurityState.Unsecured {
-    return SecurityState.Unsecured(
-        unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-            transactionSigning = FactorInstance(
-                badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
-                    derivationPath = DerivationPath.forAccount(
-                        networkId = NetworkId.Mainnet,
-                        accountIndex = 0,
-                        keyType = KeyType.TRANSACTION_SIGNING
-                    ),
-                    publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
-                ),
-                factorSourceId = FactorSource.FactorSourceID.FromHash(
-                    kind = FactorSourceKind.DEVICE,
-                    body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
-                )
-            )
-        )
-    )
-}

@@ -5,6 +5,7 @@ import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransaction
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.asProfileEntity
 import rdx.works.core.crypto.PrivateKey
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
@@ -24,9 +25,9 @@ class ResolveNotaryAndSignersUseCase @Inject constructor(
         val personas = profileUseCase().activePersonasOnCurrentNetwork
 
         accountsAddressesRequiringAuth.map { address ->
-            accounts.find { it.address == address }?.let { ProfileEntity.AccountEntity(it) } ?: throw FailedToFindSigningEntities
+            accounts.find { it.address == address }?.asProfileEntity() ?: throw FailedToFindSigningEntities
         } + personaAddressesRequiringAuth.map { address ->
-            personas.find { it.address == address }?.let { ProfileEntity.PersonaEntity(it) } ?: throw FailedToFindSigningEntities
+            personas.find { it.address == address }?.asProfileEntity() ?: throw FailedToFindSigningEntities
         }
     }.map {
         NotaryAndSigners(

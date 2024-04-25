@@ -1,9 +1,12 @@
 package com.babylon.wallet.android.presentation.settings.accountsecurity
 
 import app.cash.turbine.test
-import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.settings.preferences.depositguarantees.DepositGuaranteesViewModel
+import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -14,7 +17,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.Transaction
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.depositguarantees.ChangeDefaultDepositGuaranteeUseCase
 
@@ -23,6 +25,8 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
 
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val changeDefaultDepositGuaranteeUseCase = mockk<ChangeDefaultDepositGuaranteeUseCase>()
+
+    private val profile = profileWithGuarantee(guarantee = 1.5.toDecimal192())
 
     override fun initVM(): DepositGuaranteesViewModel {
         return DepositGuaranteesViewModel(
@@ -35,9 +39,7 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
     override fun setUp() {
         super.setUp()
 
-        coEvery { getProfileUseCase() } returns flowOf(
-            profile(transaction = Transaction(defaultDepositGuarantee = 1.5))
-        )
+        coEvery { getProfileUseCase.flow } returns flowOf(profile)
     }
 
     @Test
@@ -65,7 +67,7 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(state.isDepositInputValid)
         assert(state.depositGuarantee == "151")
-        coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.51) }
+        coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.51.toDecimal192()) }
     }
 
     @Test
@@ -82,16 +84,14 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(state.isDepositInputValid)
         assert(state.depositGuarantee == "149")
-        coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.49) }
+        coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(1.49.toDecimal192()) }
     }
 
     @Test
     fun `when valid deposit guarantees field input provided, verify it is shown properly`() = runTest {
         // given
         coEvery { changeDefaultDepositGuaranteeUseCase.invoke(any()) } returns Unit
-        coEvery { getProfileUseCase() } returns flowOf(
-            profile(transaction = Transaction(defaultDepositGuarantee = 2.0))
-        )
+        coEvery { getProfileUseCase.flow } returns flowOf(profileWithGuarantee(guarantee = 2.0.toDecimal192()))
         val vm = vm.value
 
         // when
@@ -102,16 +102,14 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         val state = vm.state.first()
         assert(state.isDepositInputValid)
         assert(state.depositGuarantee == "200")
-        coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(2.0) }
+        coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(2.0.toDecimal192()) }
     }
 
     @Test
     fun `when invalid deposit guarantees field input provided, verify error shown and input not saved`() = runTest {
         // given
         coEvery { changeDefaultDepositGuaranteeUseCase.invoke(any()) } returns Unit
-        coEvery { getProfileUseCase() } returns flowOf(
-            profile(transaction = Transaction(defaultDepositGuarantee = 2.0))
-        )
+        coEvery { getProfileUseCase.flow } returns flowOf(profileWithGuarantee(guarantee = 2.0.toDecimal192()))
         val vm = vm.value
         advanceUntilIdle()
 
@@ -130,9 +128,7 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
     fun `when longer input is entered, do not round number and save it as is`() = runTest {
         // given
         coEvery { changeDefaultDepositGuaranteeUseCase.invoke(any()) } returns Unit
-        coEvery { getProfileUseCase() } returns flowOf(
-            profile(transaction = Transaction(defaultDepositGuarantee = 2.0))
-        )
+        coEvery { getProfileUseCase.flow } returns flowOf(profileWithGuarantee(guarantee = 2.0.toDecimal192()))
         val vm = vm.value
         advanceUntilIdle()
 
@@ -145,5 +141,9 @@ class DepositGuaranteesViewModelTest : StateViewModelTest<DepositGuaranteesViewM
         assert(state.isDepositInputValid)
         assert(state.depositGuarantee == "99.9999")
         coVerify(exactly = 1) { changeDefaultDepositGuaranteeUseCase.invoke(any()) }
+    }
+
+    private fun profileWithGuarantee(guarantee: Decimal192) = Profile.sample().let {
+        it.copy(appPreferences = it.appPreferences.copy(transaction = it.appPreferences.transaction.copy(defaultDepositGuarantee = guarantee)))
     }
 }

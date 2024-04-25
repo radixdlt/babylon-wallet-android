@@ -2,6 +2,7 @@ package com.babylon.wallet.android.fakes
 
 import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.Decimal192
@@ -9,6 +10,7 @@ import com.radixdlt.sargon.NonFungibleLocalId
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.ProfileEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import rdx.works.core.domain.DApp
@@ -18,22 +20,21 @@ import rdx.works.core.domain.resources.Pool
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
-import rdx.works.profile.data.model.pernetwork.Network
 
 open class StateRepositoryFake : StateRepository {
-    override fun observeAccountsOnLedger(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>> = flowOf()
+    override fun observeAccountsOnLedger(accounts: List<Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>> = flowOf()
 
     override suspend fun getNextNFTsPage(
-        account: Network.Account,
+        account: Account,
         resource: Resource.NonFungibleResource
     ): Result<Resource.NonFungibleResource> = Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun updateLSUsInfo(
-        account: Network.Account,
+        account: Account,
         validatorsWithStakes: List<ValidatorWithStakes>
     ): Result<List<ValidatorWithStakes>> = Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun updateStakeClaims(account: Network.Account, claims: List<StakeClaim>): Result<List<StakeClaim>> =
+    override suspend fun updateStakeClaims(account: Account, claims: List<StakeClaim>): Result<List<StakeClaim>> =
         Result.success(claims)
 
     override suspend fun getResources(addresses: Set<ResourceAddress>, underAccountAddress: AccountAddress?, withDetails: Boolean): Result<List<Resource>> =
@@ -47,10 +48,10 @@ open class StateRepositoryFake : StateRepository {
     override suspend fun getNFTDetails(resourceAddress: ResourceAddress, localIds: Set<NonFungibleLocalId>): Result<List<Resource.NonFungibleResource.Item>> =
         Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, Decimal192>> =
+    override suspend fun getOwnedXRD(accounts: List<Account>): Result<Map<Account, Decimal192>> =
         Result.failure(RuntimeException("Not implemented"))
 
-    override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>> =
+    override suspend fun getEntityOwnerKeys(entities: List<ProfileEntity>): Result<Map<ProfileEntity, List<PublicKeyHash>>> =
         Result.failure(RuntimeException("Not implemented"))
 
     override suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>> =

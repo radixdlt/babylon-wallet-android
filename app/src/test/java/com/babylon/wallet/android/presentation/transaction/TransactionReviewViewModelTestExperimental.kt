@@ -12,8 +12,7 @@ import com.babylon.wallet.android.data.repository.state.StateRepository
 import com.babylon.wallet.android.data.repository.transaction.TransactionRepository
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.usecases.SignTransactionUseCase
-import com.babylon.wallet.android.fakes.fakeProfileDataSource
-import com.babylon.wallet.android.mockdata.createProfile
+import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.transaction.vectors.requestMetadata
@@ -21,7 +20,6 @@ import com.babylon.wallet.android.presentation.transaction.vectors.sampleManifes
 import com.babylon.wallet.android.presentation.transaction.vectors.testViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AccountOrAddressOf
 import com.radixdlt.sargon.CompiledNotarizedIntent
 import com.radixdlt.sargon.IntentHash
@@ -29,9 +27,11 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PerRecipientAssetTransfer
 import com.radixdlt.sargon.PerRecipientAssetTransfers
 import com.radixdlt.sargon.PerRecipientFungibleTransfer
+import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.perRecipientTransfers
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.xrd
@@ -51,9 +51,6 @@ import org.junit.Test
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.Profile
-import rdx.works.core.domain.ProfileState
-import rdx.works.profile.sargon.toSargon
 import java.util.UUID
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -65,10 +62,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     val defaultLocaleTestRule = DefaultLocaleRule()
 
     private val transactionId = UUID.randomUUID().toString()
-    private val testProfile = createProfile(
-        gateway = Radix.Gateway.stokenet,
-        numberOfAccounts = 2
-    )
+    private val testProfile = Profile.sample()
 
     private val savedStateHandle = mockk<SavedStateHandle>().apply {
         every { get<String>(ARG_TRANSACTION_REQUEST_ID) } returns transactionId
@@ -93,7 +87,7 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     }
     private val preferencesManager = mockk<PreferencesManager>()
 
-    private val profileRepository = fakeProfileDataSource(initialProfileState = ProfileState.Restored(testProfile))
+    private val profileRepository = FakeProfileRepository(profile = testProfile)
     private val testScope = TestScope(context = coroutineRule.dispatcher)
 
     override fun initVM(): TransactionReviewViewModel = testViewModel(
@@ -123,9 +117,9 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
     @Test
     fun `transaction approval success`() = runTest {
         mockManifestInput(manifestData = simpleXRDTransfer(testProfile))
-        coEvery { stateRepository.getOwnedXRD(testProfile.networks.first().accounts) } returns Result.success(
-            testProfile.networks.first().accounts.associateWith { 10.toDecimal192() }
-        )
+        coEvery {
+            stateRepository.getOwnedXRD(testProfile.networks.getBy(NetworkId.MAINNET)?.accounts?.invoke().orEmpty())
+        } returns Result.success(testProfile.networks.getBy(NetworkId.MAINNET)?.accounts()?.associateWith { 10.toDecimal192() }.orEmpty())
         val notarization = NotarizationResult(
             intentHash = IntentHash.sample(),
             compiledNotarizedIntent = CompiledNotarizedIntent.sample(),
@@ -165,25 +159,28 @@ internal class TransactionReviewViewModelTestExperimental : StateViewModelTest<T
         coEvery { incomingRequestRepository.getTransactionWriteRequest(transactionId) } returns transactionRequest
     }
 
-    private fun simpleXRDTransfer(withProfile: Profile): TransactionManifestData = TransactionManifestData.from(
-        manifest = TransactionManifest.perRecipientTransfers(
-            transfers = PerRecipientAssetTransfers(
-                addressOfSender = AccountAddress.init(withProfile.networks.first().accounts.first().address),
-                transfers = listOf(
-                    PerRecipientAssetTransfer(
-                        recipient = AccountOrAddressOf.ProfileAccount(value = withProfile.networks.first().accounts[1].toSargon()),
-                        fungibles = listOf(
-                            PerRecipientFungibleTransfer(
-                                useTryDepositOrAbort = false,
-                                amount = 2.toDecimal192(),
-                                divisibility = null,
-                                resourceAddress = ResourceAddress.xrd(NetworkId.init(withProfile.networks.first().networkID.toUByte()))
+    private fun simpleXRDTransfer(withProfile: Profile): TransactionManifestData =
+        with(withProfile.networks.getBy(NetworkId.MAINNET)?.accounts()?.first()!!) {
+            TransactionManifestData.from(
+                manifest = TransactionManifest.perRecipientTransfers(
+                    transfers = PerRecipientAssetTransfers(
+                        addressOfSender = address,
+                        transfers = listOf(
+                            PerRecipientAssetTransfer(
+                                recipient = AccountOrAddressOf.ProfileAccount(value = this),
+                                fungibles = listOf(
+                                    PerRecipientFungibleTransfer(
+                                        useTryDepositOrAbort = false,
+                                        amount = 2.toDecimal192(),
+                                        divisibility = null,
+                                        resourceAddress = ResourceAddress.xrd(networkId)
+                                    )
+                                ),
+                                nonFungibles = emptyList()
                             )
-                        ),
-                        nonFungibles = emptyList()
+                        )
                     )
-                )
+                ),
             )
-        ),
-    )
+        }
 }

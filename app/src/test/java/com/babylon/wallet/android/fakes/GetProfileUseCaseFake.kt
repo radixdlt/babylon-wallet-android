@@ -1,43 +1,48 @@
 package com.babylon.wallet.android.fakes
 
-import com.babylon.wallet.android.mockdata.profile
-import kotlinx.coroutines.flow.Flow
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.fromJson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import rdx.works.profile.data.model.Profile
+import kotlinx.coroutines.flow.updateAndGet
 import rdx.works.core.domain.ProfileState
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.domain.GetProfileUseCase
 
-fun fakeGetProfileUseCase(
-    initialProfileState: ProfileState = ProfileState.Restored(profile = profile())
-) = GetProfileUseCase(profileRepository = fakeProfileDataSource(initialProfileState = initialProfileState))
+class FakeProfileRepository(
+    initialProfileSate: ProfileState = ProfileState.None
+): ProfileRepository {
 
-fun fakeProfileDataSource(initialProfileState: ProfileState) = object : ProfileRepository {
+    constructor(profile: Profile): this(initialProfileSate = ProfileState.Restored(profile))
 
-    private val profileStateSource: MutableStateFlow<ProfileState> = MutableStateFlow(
-        initialProfileState
-    )
-
-    override val profileState: Flow<ProfileState> = profileStateSource
-
+    override val profileState: MutableStateFlow<ProfileState> = MutableStateFlow(initialProfileSate)
     override val inMemoryProfileOrNull: Profile?
-        get() = (profileStateSource.value as? ProfileState.Restored)?.profile
+        get() = (profileState.value as? ProfileState.Restored)?.profile
 
     override suspend fun saveProfile(profile: Profile) {
-        profileStateSource.update { ProfileState.Restored(profile) }
+        profileState.update { ProfileState.Restored(profile) }
     }
 
     override suspend fun clearProfileDataOnly() {
-        profileStateSource.update { ProfileState.None }
+        profileState.update { ProfileState.None }
     }
 
     override suspend fun clearAllWalletData() {
-        profileStateSource.update { ProfileState.None }
+        profileState.update { ProfileState.None }
     }
 
-    override fun deriveProfileState(content: String): ProfileState {
-        error("Not needed")
-    }
+    override fun deriveProfileState(content: String): ProfileState = runCatching {
+        Profile.fromJson(jsonString = content)
+    }.fold(
+        onSuccess = { ProfileState.Restored(it) },
+        onFailure = { ProfileState.Incompatible }
+    )
 
+    fun update(onUpdate: (Profile) -> Profile): Profile {
+        val newState = profileState.updateAndGet {
+            val current = (it as ProfileState.Restored).profile
+            ProfileState.Restored(onUpdate(current))
+        } as ProfileState.Restored
+
+        return newState.profile
+    }
 }

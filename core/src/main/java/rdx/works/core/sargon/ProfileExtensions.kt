@@ -36,6 +36,7 @@ import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.append
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.changeCurrent
 import com.radixdlt.sargon.extensions.contains
 import com.radixdlt.sargon.extensions.getBy
@@ -69,8 +70,8 @@ val Profile.isCurrentNetworkMainnet: Boolean
     get() = currentNetwork?.id == NetworkId.MAINNET
 
 val Profile.activeEntitiesOnCurrentNetwork: List<ProfileEntity>
-    get() = activeAccountsOnCurrentNetwork.map { ProfileEntity.AccountEntity(it) } +
-            activePersonasOnCurrentNetwork.map { ProfileEntity.PersonaEntity(it) }
+    get() = activeAccountsOnCurrentNetwork.map { it.asProfileEntity() } +
+            activePersonasOnCurrentNetwork.map { it.asProfileEntity() }
 
 val Profile.activeAccountsOnCurrentNetwork: List<Account>
     get() = currentNetwork?.accounts()?.notHiddenAccounts().orEmpty()

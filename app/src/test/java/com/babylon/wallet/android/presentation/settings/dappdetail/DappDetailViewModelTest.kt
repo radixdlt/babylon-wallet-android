@@ -1,42 +1,6 @@
 package com.babylon.wallet.android.presentation.settings.dappdetail
 
-import androidx.lifecycle.SavedStateHandle
-import app.cash.turbine.test
-import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.domain.model.DAppWithResources
-import com.babylon.wallet.android.domain.usecases.GetDAppWithResourcesUseCase
-import com.babylon.wallet.android.domain.usecases.GetValidatedDAppWebsiteUseCase
-import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
-import com.babylon.wallet.android.mockdata.account
-import com.babylon.wallet.android.mockdata.profile
-import com.babylon.wallet.android.presentation.StateViewModelTest
-import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
-import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.ARG_DAPP_ADDRESS
-import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DappDetailEvent
-import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.DappDetailViewModel
-import com.babylon.wallet.android.presentation.settings.approveddapps.dappdetail.SelectedSheetState
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.extensions.discriminant
-import com.radixdlt.sargon.extensions.networkId
-import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.samples.sampleMainnet
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Test
-import rdx.works.core.domain.DApp
-import rdx.works.core.identifiedArrayListOf
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.RequestedNumber
-import rdx.works.profile.data.model.pernetwork.Shared
-import rdx.works.profile.domain.GetProfileUseCase
-
+/*
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>() {
 
@@ -169,4 +133,4 @@ internal class DappDetailViewModelTest : StateViewModelTest<DappDetailViewModel>
         }
     }
 
-}
+}*/

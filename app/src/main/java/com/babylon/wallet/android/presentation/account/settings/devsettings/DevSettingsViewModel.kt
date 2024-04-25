@@ -13,6 +13,7 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.asProfileEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
@@ -73,7 +74,7 @@ class DevSettingsViewModel @Inject constructor(
     fun onCreateAndUploadAuthKey() {
         createAndUploadAuthKeyJob = viewModelScope.launch {
             state.value.account?.let { account ->
-                val entity = ProfileEntity.AccountEntity(account)
+                val entity = account.asProfileEntity()
                 _state.update { it.copy(isLoading = true) }
                 rolaClient.generateAuthSigningFactorInstance(entity).onSuccess { authSigningFactorInstance ->
                     val manifest = rolaClient
@@ -111,7 +112,7 @@ class DevSettingsViewModel @Inject constructor(
                     transactionStatusClient.statusHandled(status.txId)
                     when (val type = status.transactionType) {
                         is TransactionType.CreateRolaKey -> {
-                            val account = ProfileEntity.AccountEntity(requireNotNull(state.value.account))
+                            val account = requireNotNull(state.value.account).asProfileEntity()
                             addAuthSigningFactorInstanceUseCase(account, type.factorInstance)
                         }
 
