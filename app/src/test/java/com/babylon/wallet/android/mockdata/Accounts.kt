@@ -26,36 +26,6 @@ import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 
-//fun account(
-//    name: String = "account-name",
-//    address: AccountAddress = AccountAddress.sampleMainnet.random(),
-//    networkId: NetworkId = Radix.Gateway.default.network.networkId()
-//) = Network.Account(
-//    address = address.string,
-//    appearanceID = 1,
-//    displayName = name,
-//    networkID = networkId.value,
-//    securityState = SecurityState.Unsecured(
-//        unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-//            transactionSigning = FactorInstance(
-//                badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
-//                    derivationPath = DerivationPath.forAccount(
-//                        networkId = NetworkId.Mainnet,
-//                        accountIndex = 0,
-//                        keyType = KeyType.TRANSACTION_SIGNING
-//                    ),
-//                    publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
-//                ),
-//                factorSourceId = FactorSource.FactorSourceID.FromHash(
-//                    kind = FactorSourceKind.DEVICE,
-//                    body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
-//                )
-//            )
-//        )
-//    ),
-//    onLedgerSettings = Network.Account.OnLedgerSettings.init()
-//)
-
 val mockResourceAddressXRD = ResourceAddress.sampleMainnet.xrd
 val mockResourceAddress1 = ResourceAddress.sampleMainnet.random()
 val mockResourceAddress2 = ResourceAddress.sampleMainnet.random()
