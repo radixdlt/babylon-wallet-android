@@ -52,6 +52,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.TransactionPreferences
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.invoke
@@ -87,6 +88,9 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.logNonFatalException
+import rdx.works.core.sargon.changeDefaultDepositGuarantee
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
@@ -183,8 +187,8 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
     )
 
     private val profile = Profile.sample()
-    private val fromAccount = profile.networks.getBy(NetworkId.MAINNET)?.accounts()?.first()!!
-    private val otherAccounts = profile.networks.getBy(NetworkId.MAINNET)?.accounts()?.drop(1).orEmpty()
+        .changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+        .changeDefaultDepositGuarantee(defaultDepositGuarantee = 0.99.toDecimal192())
 
     private val emptyExecutionSummary = ExecutionSummary(
         feeLocks = FeeLocks(
@@ -292,7 +296,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
             getDAppsUseCase = getDAppsUseCase
         )
     }
-//    @Ignore("Not working")
+
     @Test
     fun `transaction approval success`() = runTest {
         val vm = vm.value
@@ -328,7 +332,6 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         assertTrue(vm.state.value.isTransactionDismissed)
     }
 
-//    @Ignore("Not working")
     @Test
     fun `transaction approval sign and submit error`() = runTest {
         coEvery { signTransactionUseCase.sign(any(), any()) } returns Result.failure(
