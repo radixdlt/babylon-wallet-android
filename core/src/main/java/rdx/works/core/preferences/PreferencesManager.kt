@@ -63,6 +63,8 @@ interface PreferencesManager {
 
     suspend fun updateLastSyncedAccountsWithCE(accountsHash: String)
 
+    suspend fun removeLastSyncedAccountsWithCE()
+
     suspend fun clear(): Preferences
 }
 
@@ -239,6 +241,12 @@ class PreferencesManagerImpl @Inject constructor(
     override suspend fun updateLastSyncedAccountsWithCE(accountsHash: String) {
         dataStore.edit { preferences ->
             preferences[KEY_LAST_SYNCED_ACCOUNTS_WITH_CE] = accountsHash
+        }
+    }
+
+    override suspend fun removeLastSyncedAccountsWithCE() {
+        dataStore.edit { preferences ->
+            preferences.remove(KEY_LAST_SYNCED_ACCOUNTS_WITH_CE)
         }
     }
 

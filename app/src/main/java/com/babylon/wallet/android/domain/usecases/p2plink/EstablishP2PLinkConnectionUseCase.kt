@@ -8,6 +8,7 @@ import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.hex
 import rdx.works.core.decodeHex
 import rdx.works.core.mapWhen
+import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.data.PeerdroidLink
@@ -20,7 +21,8 @@ import javax.inject.Inject
 class EstablishP2PLinkConnectionUseCase @Inject constructor(
     private val peerdroidLink: PeerdroidLink,
     private val p2PLinksRepository: P2PLinksRepository,
-    private val encryptedPreferencesManager: EncryptedPreferencesManager
+    private val encryptedPreferencesManager: EncryptedPreferencesManager,
+    private val preferencesManager: PreferencesManager
 ) {
 
     suspend fun update(payload: LinkConnectionPayload): Result<Unit> {
@@ -84,6 +86,7 @@ class EstablishP2PLinkConnectionUseCase @Inject constructor(
 
                     return peerdroidLink.sendMessage(connectionId, linkClientInteraction)
                         .onSuccess {
+                            preferencesManager.removeLastSyncedAccountsWithCE()
                             saveP2PLink(p2pLinks)
                         }
                 }
