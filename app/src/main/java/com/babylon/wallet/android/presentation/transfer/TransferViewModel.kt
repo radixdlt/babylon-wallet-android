@@ -379,7 +379,7 @@ class TransferViewModel @Inject constructor(
 
                 val isOwnedAccountsEnabled: Boolean
                     get() = when (selectedAccount) {
-                        is TargetAccount.Other -> selectedAccount.address != null
+                        is TargetAccount.Other -> selectedAccount.address == null
                         is TargetAccount.Owned -> true
                         is TargetAccount.Skeleton -> true
                     }
@@ -563,8 +563,7 @@ sealed class TargetAccount {
         override val id: String,
         override val spendingAssets: ImmutableSet<SpendingAsset> = persistentSetOf()
     ) : TargetAccount() {
-        override val address: AccountAddress?
-            get() = runCatching { AccountAddress.init(typedAddress) }.getOrNull()
+        override val address: AccountAddress? = runCatching { AccountAddress.init(typedAddress) }.getOrNull()
 
         override fun isSignatureRequiredForTransfer(resourceAddress: ResourceAddress): Boolean = false
 
