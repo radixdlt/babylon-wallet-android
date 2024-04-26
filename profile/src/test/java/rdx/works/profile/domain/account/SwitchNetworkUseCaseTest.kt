@@ -1,12 +1,11 @@
 package rdx.works.profile.domain.account
 
-import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.Url
-import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.first
@@ -32,7 +31,7 @@ internal class SwitchNetworkUseCaseTest {
     )
     private val profileRepository = FakeProfileRepository(
         Profile.init(
-            deviceFactorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase, isMain = true).asGeneral(),
+            deviceFactorSource = FactorSource.Device.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase, isMain = true),
             creatingDeviceName = "Unit Test"
         )
     )

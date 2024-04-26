@@ -4,6 +4,7 @@ import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PersonaData
@@ -58,7 +59,7 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
     fun `given profile already exists, when creating new persona, verify its returned and persisted to the profile`() = testScope.runTest {
         // given
         val profile = Profile.init(
-            deviceFactorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase, isMain = true).asGeneral(),
+            deviceFactorSource = FactorSource.Device.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase, isMain = true),
             creatingDeviceName = "Unit Test"
         ).addNetworkIfDoesNotExist(onNetwork = NetworkId.MAINNET)
         profileRepository.saveProfile(profile)

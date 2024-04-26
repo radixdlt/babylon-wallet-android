@@ -1,6 +1,7 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.append
@@ -45,17 +46,17 @@ class EnsureBabylonFactorSourceExistUseCaseTest {
     )
     // Sargon does not allow init without main, so the only possible test case here is to create a new profile,
     // remove main factor source, serialize, deserialize and provide it to repository
-    private val deviceFactorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonic, isMain = true)
+    private val deviceFactorSource = FactorSource.Device.babylon(mnemonicWithPassphrase = mnemonic, isMain = true)
     private val profileWithoutMain = Profile.init(
-        deviceFactorSource = deviceFactorSource.asGeneral(),
+        deviceFactorSource = deviceFactorSource,
         creatingDeviceName = deviceInfo.displayName
     ).let {
         it.copy(
             factorSources = it.factorSources.append(
-                factorSource = DeviceFactorSource.olympia(
+                factorSource = FactorSource.Device.olympia(
                     mnemonicWithPassphrase = MnemonicWithPassphrase.sample.other(),
-                ).asGeneral()
-            ).removeById(deviceFactorSource.id.asGeneral())
+                )
+            ).removeById(deviceFactorSource.id)
         )
     }
 
@@ -68,7 +69,7 @@ class EnsureBabylonFactorSourceExistUseCaseTest {
 
         val profile = ensureBabylonFactorSourceExistUseCase()
         assertEquals(2, profile.factorSources.size)
-        assertEquals(deviceFactorSource.id.asGeneral(), profile.mainBabylonFactorSource?.id)
+        assertEquals(deviceFactorSource.id, profile.mainBabylonFactorSource?.id)
 
         // Run use case again, factor source is in place so no need to add it again
         val profileAgain = ensureBabylonFactorSourceExistUseCase()

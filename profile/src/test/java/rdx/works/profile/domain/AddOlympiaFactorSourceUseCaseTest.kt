@@ -1,6 +1,7 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.asGeneral
@@ -39,7 +40,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
 
 
         val profile = Profile.init(
-            deviceFactorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase = babylonMnemonic, isMain = true).asGeneral(),
+            deviceFactorSource = FactorSource.Device.babylon(mnemonicWithPassphrase = babylonMnemonic, isMain = true),
             creatingDeviceName = "Unit Test"
         )
         profileRepository.saveProfile(profile)

@@ -31,11 +31,11 @@ class AddLedgerFactorSourceUseCase @Inject constructor(
             return AddLedgerFactorSourceResult.AlreadyExist(existingLedgerFactorSource)
         }
 
-        val ledgerFactorSource = LedgerHardwareWalletFactorSource.init(
+        val ledgerFactorSource = FactorSource.Ledger.init(
             id = ledgerId,
             model = model,
             name = name.orEmpty() // it should not be null
-        ).asGeneral()
+        )
 
         val updatedProfile = profile.copy(factorSources = FactorSources.init(profile.factorSources() + ledgerFactorSource))
         profileRepository.saveProfile(updatedProfile)

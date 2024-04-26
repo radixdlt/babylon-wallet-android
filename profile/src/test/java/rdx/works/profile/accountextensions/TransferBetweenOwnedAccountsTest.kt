@@ -11,6 +11,7 @@ import com.radixdlt.sargon.DepositorsAllowList
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -49,12 +50,12 @@ class TransferBetweenOwnedAccountsTest {
     )
 
     private val deviceInfo = DeviceInfo.sample()
-    private val babylonFactorSource = DeviceFactorSource.babylon(
+    private val babylonFactorSource = FactorSource.Device.babylon(
         mnemonicWithPassphrase = mnemonicWithPassphrase,
         model = deviceInfo.model,
         name = deviceInfo.name,
         isMain = true
-    ).asGeneral()
+    )
 
     var profile = Profile.init(
         deviceFactorSource = babylonFactorSource,

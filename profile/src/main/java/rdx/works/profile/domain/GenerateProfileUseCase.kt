@@ -1,7 +1,6 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.sargon.Accounts
-import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
@@ -34,13 +33,13 @@ class GenerateProfileUseCase @Inject constructor(
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Profile {
         val device = deviceInfoRepository.getDeviceInfo()
         return Profile.init(
-            deviceFactorSource = DeviceFactorSource.babylon(
+            deviceFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
                 model = device.model,
                 name = device.name,
                 createdAt = TimestampGenerator(),
                 isMain = true
-            ).asGeneral(),
+            ),
             creatingDeviceName = device.displayName
         ).also {
             profileRepository.saveProfile(it)

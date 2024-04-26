@@ -79,13 +79,13 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 givenTempMnemonic = accessFactorSourcesProxy.getTempMnemonicWithPassphrase()
                 givenTempMnemonic?.let { mnemonic ->
                     val deviceInfo = deviceInfoRepository.getDeviceInfo()
-                    val mainBabylonDeviceFactorSource = DeviceFactorSource.babylon(
+                    val mainBabylonDeviceFactorSource = FactorSource.Device.babylon(
                         mnemonicWithPassphrase = mnemonic,
                         model = deviceInfo.model,
                         name = deviceInfo.name,
                         createdAt = TimestampGenerator(),
                         isMain = true
-                    ).asGeneral()
+                    )
                     _state.update { state ->
                         state.copy(recoveryFactorSource = mainBabylonDeviceFactorSource)
                     }

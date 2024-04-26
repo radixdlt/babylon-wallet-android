@@ -1,6 +1,7 @@
 package rdx.works.profile
 
 import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.asGeneral
@@ -53,41 +54,20 @@ class GenerateProfileUseCaseTest {
         coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
     }
 
-    @Test
-    fun `given profile already exists, when generate profile called, return existing profile`() = testScope.runTest {
-        // given
-        val mnemonicWithPassphrase = MnemonicWithPassphrase.init(
-            phrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                    "humble limb repeat video sudden possible story mask neutral prize goose mandate"
-        )
-
-        val profile = Profile.init(
-            deviceFactorSource = DeviceFactorSource.babylon(
-                mnemonicWithPassphrase = mnemonicWithPassphrase,
-                isMain = true
-            ).asGeneral(),
-            creatingDeviceName = "Unit Test"
-        )
-        profileRepository.saveProfile(profile)
-
-        // then
-        assertEquals(generateProfileUseCase(), profile)
-    }
-
     @Ignore("TODO Integration")
     @Test
-    fun `given profile does not exist, when generating one, verify correct data generated from mnemonic`() {
+    fun `when generating profile, verify correct data generated from mnemonic`() {
         testScope.runTest {
             val mnemonicWithPassphrase = MnemonicWithPassphrase.init(
                 phrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
                         "humble limb repeat video sudden possible story mask neutral prize goose mandate"
             )
-            val babylonFactorSource = DeviceFactorSource.babylon(
+            val babylonFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
                 isMain = true
             )
             // TODO integration this should change
-            val profile = generateProfileUseCase()
+            val profile = generateProfileUseCase(mnemonicWithPassphrase)
 
 //            Assert.assertEquals(
 //                "Factor Source ID",

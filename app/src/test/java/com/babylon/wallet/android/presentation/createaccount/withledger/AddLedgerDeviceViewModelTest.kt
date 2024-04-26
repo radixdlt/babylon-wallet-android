@@ -20,6 +20,7 @@ import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.extensions.append
+import com.radixdlt.sargon.extensions.get
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.invoke
@@ -37,7 +38,6 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test
 import rdx.works.core.sargon.babylon
-import rdx.works.core.sargon.getById
 import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
@@ -115,7 +115,7 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
 
     @Test
     fun `adding ledger and providing name`() = runTest {
-        val ledgerDeviceToAdd = profile.factorSources.getById(firstDeviceId) as FactorSource.Ledger
+        val ledgerDeviceToAdd = profile.factorSources.get(firstDeviceId) as FactorSource.Ledger
         coEvery {
             addLedgerFactorSourceUseCaseMock(
                 ledgerId = firstDeviceId,

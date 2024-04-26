@@ -103,7 +103,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
                     it.factorSourceId == factorSource.id && it.usesSECP256k1
                 }
 
-                if (associatedBabylonAccounts.isEmpty() && associatedOlympiaAccounts.isEmpty() && !factorSource.value.supportsBabylon) {
+                if (associatedBabylonAccounts.isEmpty() && associatedOlympiaAccounts.isEmpty() && !factorSource.supportsBabylon) {
                     return@mapNotNull null
                 }
 

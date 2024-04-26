@@ -1,6 +1,6 @@
 package rdx.works.profile.factorSource
 
-import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.hex
@@ -64,13 +64,13 @@ class FactorSourceTests {
             phrase = "spirit bird issue club alcohol flock skull health lemon judge piece eyebrow"
         )
 
-        val factorSource = DeviceFactorSource.olympia(
+        val factorSource = FactorSource.Device.olympia(
             mnemonicWithPassphrase = mnemonicWithPassphrase,
             model = "computer",
             name = "unit test"
         )
 
         assertTrue(factorSource.supportsOlympia)
-        assertEquals("c23c47a8a37b79298878506692e42f3a1a11967ff1239bb344ad6ab0c21ddda8", factorSource.id.body.hex)
+        assertEquals("c23c47a8a37b79298878506692e42f3a1a11967ff1239bb344ad6ab0c21ddda8", factorSource.value.id.body.hex)
     }
 }

@@ -1,6 +1,5 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceCryptoParameters
 import com.radixdlt.sargon.FactorSources
@@ -39,7 +38,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         if (profile.mainBabylonFactorSource != null) return profile
         val deviceInfo = deviceInfoRepository.getDeviceInfo()
         val mnemonic = mnemonicRepository()
-        val deviceFactorSource = DeviceFactorSource.babylon(
+        val deviceFactorSource = FactorSource.Device.babylon(
             mnemonicWithPassphrase = mnemonic,
             model = deviceInfo.model,
             name = deviceInfo.name,
@@ -47,7 +46,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
             isMain = true
         )
         val updatedProfile = profile.addMainBabylonDeviceFactorSource(
-            mainBabylonFactorSource = deviceFactorSource.asGeneral()
+            mainBabylonFactorSource = deviceFactorSource
         )
         profileRepository.saveProfile(updatedProfile)
         return updatedProfile
@@ -56,7 +55,7 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
     suspend fun addBabylonFactorSource(mnemonic: MnemonicWithPassphrase): Profile {
         val profile = profileRepository.profile.first()
         val deviceInfo = deviceInfoRepository.getDeviceInfo()
-        val deviceFactorSource = DeviceFactorSource.babylon(
+        val deviceFactorSource = FactorSource.Device.babylon(
             mnemonicWithPassphrase = mnemonic,
             model = deviceInfo.model,
             name = deviceInfo.name,
@@ -64,10 +63,10 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
             isMain = false
         )
         val existingFactorSource = profile.factorSources().filterIsInstance<FactorSource.Device>().find {
-            it.value.id == deviceFactorSource.id
+            it.id == deviceFactorSource.id
         }
         val updatedProfile = if (existingFactorSource != null) {
-            if (existingFactorSource.value.supportsOlympia) {
+            if (existingFactorSource.supportsOlympia) {
                 profileRepository.updateProfile { p ->
                     p.copy(
                         factorSources = FactorSources.init(
@@ -89,12 +88,12 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
                 profile
             }
         } else {
-            mnemonicRepository.saveMnemonic(deviceFactorSource.id.asGeneral(), mnemonic)
+            mnemonicRepository.saveMnemonic(deviceFactorSource.value.id.asGeneral(), mnemonic)
             profileRepository.updateProfile { p ->
-                p.copy(factorSources = p.factorSources.append(deviceFactorSource.asGeneral()))
+                p.copy(factorSources = p.factorSources.append(deviceFactorSource))
             }
         }
-        preferencesManager.markFactorSourceBackedUp(deviceFactorSource.id.asGeneral())
+        preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())
         return updatedProfile
     }
 

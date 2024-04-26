@@ -29,9 +29,9 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): FactorSourceId.Hash {
-        val olympiaFactorSource = DeviceFactorSource.olympia(mnemonicWithPassphrase)
-        val existingFactorSource = getProfileUseCase().factorSourceById(olympiaFactorSource.id.asGeneral()) as? FactorSource.Device
-        val mnemonicExist = mnemonicRepository.mnemonicExist(olympiaFactorSource.id.asGeneral())
+        val olympiaFactorSource = FactorSource.Device.olympia(mnemonicWithPassphrase)
+        val existingFactorSource = getProfileUseCase().factorSourceById(olympiaFactorSource.id) as? FactorSource.Device
+        val mnemonicExist = mnemonicRepository.mnemonicExist(olympiaFactorSource.value.id.asGeneral())
         if (mnemonicExist) {
             existingFactorSource?.let { existing ->
                 if (existingFactorSource.value.common.cryptoParameters.supportsBabylon) {
@@ -52,24 +52,24 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
                     }
                 }
             }
-            return olympiaFactorSource.id.asGeneral()
+            return olympiaFactorSource.value.id.asGeneral()
         } else {
             // factor source exist without mnemonic, update mnemonic
             mnemonicRepository.saveMnemonic(
-                key = olympiaFactorSource.id.asGeneral(),
+                key = olympiaFactorSource.value.id.asGeneral(),
                 mnemonicWithPassphrase = mnemonicWithPassphrase
             )
             // Seed phrase was just typed by the user, mark it as backed up
-            preferencesManager.markFactorSourceBackedUp(olympiaFactorSource.id.asGeneral())
+            preferencesManager.markFactorSourceBackedUp(olympiaFactorSource.value.id.asGeneral())
             // we save factor source id only if it does not exist
             if (existingFactorSource == null) {
                 profileRepository.updateProfile { profile ->
                     profile.copy(
-                        factorSources = FactorSources.init(profile.factorSources() + olympiaFactorSource.asGeneral())
+                        factorSources = FactorSources.init(profile.factorSources() + olympiaFactorSource)
                     )
                 }
             }
-            return olympiaFactorSource.id.asGeneral()
+            return olympiaFactorSource.value.id.asGeneral()
         }
     }
 }

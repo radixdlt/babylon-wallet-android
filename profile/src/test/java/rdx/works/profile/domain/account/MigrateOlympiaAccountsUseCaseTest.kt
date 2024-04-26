@@ -4,8 +4,8 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DerivationPath
-import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
@@ -55,7 +55,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
             phrase = "zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo zoo vote"
         )
 
-        val factorSource = DeviceFactorSource.babylon(
+        val factorSource = FactorSource.Device.babylon(
             mnemonicWithPassphrase = babylonMnemonic,
             isMain = true
         )
@@ -65,7 +65,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
             index = 0u
         )
         val profile = Profile.init(
-            deviceFactorSource = factorSource.asGeneral(),
+            deviceFactorSource = factorSource,
             creatingDeviceName = DeviceInfo.sample().displayName
         ).addAccounts(
             accounts = listOf(
@@ -74,7 +74,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                     displayName = DisplayName("my account"),
                     publicKey = babylonMnemonic.derivePublicKey(derivationPath = derivationPath),
                     derivationPath = derivationPath,
-                    factorSourceId = factorSource.id.asGeneral()
+                    factorSourceId = factorSource.value.id.asGeneral()
                 )
             ),
             onNetwork = NetworkId.MAINNET
@@ -87,7 +87,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
 
         val usecase = MigrateOlympiaAccountsUseCase(profileRepository, testDispatcher)
         val capturedProfile = slot<Profile>()
-        usecase(getOlympiaTestAccounts(), factorSource.id.asGeneral())
+        usecase(getOlympiaTestAccounts(), factorSource.value.id.asGeneral())
         coVerify(exactly = 1) { profileRepository.saveProfile(capture(capturedProfile)) }
         assertEquals(12, capturedProfile.captured.currentNetwork!!.accounts.size)
     }

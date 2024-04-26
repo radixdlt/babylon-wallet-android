@@ -3,7 +3,6 @@ package com.babylon.wallet.core
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import org.junit.Assert
 import org.junit.Test
-import rdx.works.core.decodeHex
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
 import rdx.works.core.toByteArray

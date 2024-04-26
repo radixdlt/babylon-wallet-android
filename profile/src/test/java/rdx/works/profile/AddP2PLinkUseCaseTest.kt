@@ -31,7 +31,7 @@ class AddP2PLinkUseCaseTest {
         val password = RadixConnectPassword(value = Exactly32Bytes.init(Random.nextBytes(32).toBagOfBytes()))
 
         val profile = Profile.init(
-            deviceFactorSource = DeviceFactorSource.babylon(MnemonicWithPassphrase.sample(), isMain = true).asGeneral(),
+            deviceFactorSource = FactorSource.Device.babylon(MnemonicWithPassphrase.sample(), isMain = true),
             creatingDeviceName = "Unit Test"
         )
         profileRepository.saveProfile(profile)

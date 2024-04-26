@@ -41,6 +41,7 @@ import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.changeCurrent
 import com.radixdlt.sargon.extensions.contains
+import com.radixdlt.sargon.extensions.get
 import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
@@ -103,7 +104,7 @@ val Profile.deviceFactorSources: List<FactorSource.Device>
 val Profile.ledgerFactorSources: List<FactorSource.Ledger>
     get() = factorSources().filterIsInstance<FactorSource.Ledger>()
 
-fun Profile.factorSourceById(id: FactorSourceId) = factorSources.getById(id = id)
+fun Profile.factorSourceById(id: FactorSourceId) = factorSources.get(id)
 
 private val Profile.deviceFactorSourcesWithAccounts: Map<FactorSource.Device, List<Account>>
     get() {
@@ -132,7 +133,7 @@ val Profile.babylonFactorSourcesWithAccounts: Map<FactorSource.Device, List<Acco
 
 val Profile.olympiaFactorSourcesWithAccounts: Map<FactorSource.Device, List<Account>>
     get() = deviceFactorSourcesWithAccounts.filter { entry ->
-        entry.key.value.supportsOlympia
+        entry.key.supportsOlympia
     }.mapValues { entry ->
         entry.value.filter { account -> account.usesSECP256k1 }
     }
@@ -530,7 +531,7 @@ fun Profile.addMainBabylonDeviceFactorSource(
     mainBabylonFactorSource: FactorSource.Device
 ): Profile {
     val existingBabylonDeviceFactorSources = factorSources().map { factorSource ->
-        if (factorSource is FactorSource.Device && factorSource.value.supportsBabylon) {
+        if (factorSource is FactorSource.Device && factorSource.supportsBabylon) {
             factorSource.copy(
                 value = factorSource.value.copy(
                     common = factorSource.value.common.copy(

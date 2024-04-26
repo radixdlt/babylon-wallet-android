@@ -1,6 +1,6 @@
 package rdx.works.profile.domain.backup
 
-import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.asGeneral
 import rdx.works.core.TimestampGenerator
@@ -28,7 +28,7 @@ class RestoreAndCreateMainSeedPhraseUseCase @Inject constructor(
         if (profile != null) {
             val deviceInfo = deviceInfoRepository.getDeviceInfo()
             val mnemonic = mnemonicRepository()
-            val deviceFactorSource = DeviceFactorSource.babylon(
+            val deviceFactorSource = FactorSource.Device.babylon(
                 mnemonicWithPassphrase = mnemonic,
                 model = deviceInfo.model,
                 name = deviceInfo.name,
@@ -36,7 +36,7 @@ class RestoreAndCreateMainSeedPhraseUseCase @Inject constructor(
                 isMain = true
             )
 
-            val updatedProfile = profile.addMainBabylonDeviceFactorSource(mainBabylonFactorSource = deviceFactorSource.asGeneral())
+            val updatedProfile = profile.addMainBabylonDeviceFactorSource(mainBabylonFactorSource = deviceFactorSource)
             profileRepository.saveProfile(updatedProfile)
         }
     }

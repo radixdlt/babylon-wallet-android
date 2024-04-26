@@ -285,7 +285,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
             val softwareAccountsToMigrate = softwareAccountsToMigrate()
             if (softwareAccountsToMigrate.isNotEmpty()) {
                 val hasOlympiaFactorSource = getProfileUseCase.flow.firstOrNull()?.factorSources()?.any {
-                    it is FactorSource.Device && it.value.supportsOlympia
+                    it is FactorSource.Device && it.supportsOlympia
                 } == true
                 val mnemonicExistForSoftwareAccounts = when {
                     hasOlympiaFactorSource -> {

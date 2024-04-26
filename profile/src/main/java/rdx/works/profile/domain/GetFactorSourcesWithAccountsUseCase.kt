@@ -37,7 +37,7 @@ class GetFactorSourcesWithAccountsUseCase @Inject constructor(
                     val babylonPersonas = allPersonasOnNetwork.filter {
                         it.factorSourceId == deviceFactorSource.id && it.usesEd25519
                     }
-                    if (deviceFactorSource.value.hasBabylonSeedPhraseLength) {
+                    if (deviceFactorSource.hasBabylonSeedPhraseLength) {
                         result.add(
                             DeviceFactorSourceData(
                                 deviceFactorSource = deviceFactorSource,
