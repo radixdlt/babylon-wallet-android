@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.comparator
 import rdx.works.core.sargon.default
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
@@ -57,12 +58,14 @@ class GatewaysViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(
                         currentGateway = current,
-                        gatewayList = pair.first.all.toPersistentList().map {
-                            GatewayWrapper(
-                                gateway = it,
-                                selected = it == current // TODO Integration
-                            )
-                        }.toPersistentList(),
+                        gatewayList = pair.first.all
+                            .sortedWith(Gateway.comparator)
+                            .toPersistentList().map {
+                                GatewayWrapper(
+                                    gateway = it,
+                                    selected = it == current // TODO Integration
+                                )
+                            }.toPersistentList(),
                         isDeveloperModeEnabled = pair.second
                     )
                 }
