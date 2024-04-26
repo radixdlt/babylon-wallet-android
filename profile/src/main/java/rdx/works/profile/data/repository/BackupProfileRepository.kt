@@ -1,6 +1,8 @@
 package rdx.works.profile.data.repository
 
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileFileContents
+import com.radixdlt.sargon.extensions.analyzeContentsOfFile
 import com.radixdlt.sargon.extensions.fromEncryptedJson
 import com.radixdlt.sargon.extensions.toEncryptedJson
 import com.radixdlt.sargon.extensions.toJson
@@ -47,27 +49,35 @@ class BackupProfileRepositoryImpl @Inject constructor(
         }
 
         is BackupType.File.PlainText -> {
-            val profileState = profileRepository.deriveProfileState(snapshotSerialised)
-            if (profileState is ProfileState.Restored) {
-                encryptedPreferencesManager.putProfileSnapshotFromFileBackup(snapshotSerialised)
-                Result.success(Unit)
-            } else {
-                Result.failure(ProfileException.InvalidSnapshot)
+            val contents = Profile.analyzeContentsOfFile(snapshotSerialised)
+            when (contents) {
+                is ProfileFileContents.EncryptedProfile -> Result.failure(ProfileException.InvalidPassword)
+                is ProfileFileContents.PlaintextProfile -> {
+                    encryptedPreferencesManager.putProfileSnapshotFromFileBackup(contents.v1.toJson())
+                    Result.success(Unit)
+                }
+                is ProfileFileContents.NotProfile -> Result.failure(ProfileException.InvalidSnapshot)
             }
         }
 
         is BackupType.File.Encrypted -> {
-            runCatching {
-                Profile.fromEncryptedJson(jsonString = snapshotSerialised, decryptionPassword = backupType.password)
-            }.fold(
-                onSuccess = {
-                    encryptedPreferencesManager.putProfileSnapshotFromFileBackup(it.toJson())
-                    Result.success(Unit)
-                },
-                onFailure = {
-                    Result.failure(ProfileException.InvalidPassword) // TODO integration maybe check specific errors
+            val contents = Profile.analyzeContentsOfFile(snapshotSerialised)
+            when (contents) {
+                is ProfileFileContents.EncryptedProfile -> {
+                    runCatching {
+                        Profile.fromEncryptedJson(jsonString = snapshotSerialised, decryptionPassword = backupType.password)
+                    }.fold(
+                        onSuccess = {
+                            encryptedPreferencesManager.putProfileSnapshotFromFileBackup(it.toJson())
+                            Result.success(Unit)
+                        },
+                        onFailure = {
+                            Result.failure(ProfileException.InvalidPassword)
+                        }
+                    )
                 }
-            )
+                else -> Result.failure(ProfileException.InvalidSnapshot)
+            }
         }
     }
 
