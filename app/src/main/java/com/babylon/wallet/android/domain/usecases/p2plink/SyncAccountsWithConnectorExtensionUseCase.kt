@@ -1,9 +1,10 @@
+@file:Suppress("LongParameterList")
+
 package com.babylon.wallet.android.domain.usecases.p2plink
 
 import com.babylon.wallet.android.data.dapp.PeerdroidClient
 import com.babylon.wallet.android.data.dapp.model.Account
 import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionExchangeInteraction
-import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.radixdlt.sargon.extensions.hash
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import rdx.works.core.decodeHex
 import rdx.works.core.hash
 import rdx.works.core.preferences.PreferencesManager
@@ -38,7 +40,8 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
     private val peerdroidConnector: PeerdroidConnector,
     private val peerdroidClient: PeerdroidClient,
     private val preferencesManager: PreferencesManager,
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
+    private val json: Json
 ) {
 
     operator fun invoke(): Flow<Unit> {
@@ -67,7 +70,7 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
                     )
                 }
             )
-            Serializer.kotlinxSerializationJson.encodeToString(accountListExchangeInteraction)
+            json.encodeToString(accountListExchangeInteraction)
         }
 
         return combine(connectionIdsFlow, accountListMessageFlow) { connectionIds, accountListMessage ->

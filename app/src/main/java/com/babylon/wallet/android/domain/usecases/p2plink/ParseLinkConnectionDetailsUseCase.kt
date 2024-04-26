@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases.p2plink
 
-import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.data.repository.p2plink.findBy
 import com.babylon.wallet.android.domain.RadixWalletException
@@ -12,6 +11,7 @@ import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
+import kotlinx.serialization.json.Json
 import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
 import rdx.works.profile.ret.crypto.PrivateKey
@@ -19,7 +19,8 @@ import timber.log.Timber
 import javax.inject.Inject
 
 class ParseLinkConnectionDetailsUseCase @Inject constructor(
-    private val p2PLinksRepository: P2PLinksRepository
+    private val p2PLinksRepository: P2PLinksRepository,
+    private val json: Json
 ) {
 
     suspend operator fun invoke(raw: String): Result<LinkConnectionPayload> {
@@ -74,7 +75,7 @@ class ParseLinkConnectionDetailsUseCase @Inject constructor(
         }
 
         return runCatching {
-            val content = Serializer.kotlinxSerializationJson.decodeFromString<LinkConnectionQRContent>(value)
+            val content = json.decodeFromString<LinkConnectionQRContent>(value)
 
             // Validate connection password
             Exactly32Bytes.init(content.password.hexToBagOfBytes())

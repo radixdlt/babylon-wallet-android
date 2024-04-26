@@ -42,7 +42,8 @@ class ParseLinkConnectionDetailsUseCaseTest {
     @Before
     fun setup() {
         objectUnderTest = ParseLinkConnectionDetailsUseCase(
-            p2PLinksRepository = p2pLinksRepositoryMock
+            p2PLinksRepository = p2pLinksRepositoryMock,
+            json = json
         )
     }
 
