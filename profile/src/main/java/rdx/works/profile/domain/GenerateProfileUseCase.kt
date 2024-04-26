@@ -70,6 +70,4 @@ class GenerateProfileUseCase @Inject constructor(
             }
         }
     }
-
-
 }

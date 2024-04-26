@@ -1,6 +1,5 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceCryptoParameters
 import com.radixdlt.sargon.FactorSourceId

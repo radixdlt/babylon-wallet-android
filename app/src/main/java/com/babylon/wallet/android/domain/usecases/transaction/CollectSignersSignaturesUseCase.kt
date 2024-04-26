@@ -120,10 +120,10 @@ sealed interface SignRequest {
             get() {
                 require(dAppDefinitionAddress.length <= UByte.MAX_VALUE.toInt())
                 return byteArrayOf(ROLA_PAYLOAD_PREFIX.toByte()) +
-                        challengeHex.hexToBagOfBytes().toByteArray() +
-                        dAppDefinitionAddress.length.toUByte().toByte() +
-                        dAppDefinitionAddress.toByteArray() +
-                        origin.toByteArray()
+                    challengeHex.hexToBagOfBytes().toByteArray() +
+                    dAppDefinitionAddress.length.toUByte().toByte() +
+                    dAppDefinitionAddress.toByteArray() +
+                    origin.toByteArray()
             }
 
         val payloadHex: String

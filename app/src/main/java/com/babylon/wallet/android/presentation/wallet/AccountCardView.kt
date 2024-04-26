@@ -82,7 +82,7 @@ fun AccountCardView(
         ) = createRefs()
 
         val isFiatBalanceVisible = accountWithAssets.assets == null ||
-                accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
+            accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
 
         Text(
             modifier = Modifier.constrainAs(nameLabel) {

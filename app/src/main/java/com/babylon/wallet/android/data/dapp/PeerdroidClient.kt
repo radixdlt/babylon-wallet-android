@@ -12,7 +12,6 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.sargon.P2pLink
 import com.radixdlt.sargon.RadixConnectPassword
-import com.radixdlt.sargon.extensions.hex
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable

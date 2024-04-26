@@ -14,7 +14,7 @@ value class ConnectionIdHolder(
     val id: String
 ) {
 
-    constructor(password: RadixConnectPassword): this(password.value.bytes.hash().hex)
+    constructor(password: RadixConnectPassword) : this(password.value.bytes.hash().hex)
 }
 
 @JvmInline

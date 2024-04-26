@@ -2,7 +2,6 @@ package rdx.works.profile.domain.backup
 
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.extensions.asGeneral
 import rdx.works.core.TimestampGenerator
 import rdx.works.core.sargon.addMainBabylonDeviceFactorSource
 import rdx.works.core.sargon.babylon

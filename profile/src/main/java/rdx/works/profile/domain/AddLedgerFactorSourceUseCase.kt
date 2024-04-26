@@ -3,9 +3,7 @@ package rdx.works.profile.domain
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSources
-import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.LedgerHardwareWalletModel
-import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.invoke
 import kotlinx.coroutines.flow.first
