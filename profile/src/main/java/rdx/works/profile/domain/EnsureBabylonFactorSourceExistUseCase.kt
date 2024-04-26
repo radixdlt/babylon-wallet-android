@@ -1,6 +1,7 @@
 package rdx.works.profile.domain
 
 import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceCryptoParameters
 import com.radixdlt.sargon.FactorSources
 import com.radixdlt.sargon.MnemonicWithPassphrase
@@ -62,22 +63,24 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
             createdAt = TimestampGenerator(),
             isMain = false
         )
-        val existingFactorSource = profile.factorSources().filterIsInstance<DeviceFactorSource>().find {
-            it.id == deviceFactorSource.id
+        val existingFactorSource = profile.factorSources().filterIsInstance<FactorSource.Device>().find {
+            it.value.id == deviceFactorSource.id
         }
         val updatedProfile = if (existingFactorSource != null) {
-            if (existingFactorSource.supportsOlympia) {
+            if (existingFactorSource.value.supportsOlympia) {
                 profileRepository.updateProfile { p ->
                     p.copy(
                         factorSources = FactorSources.init(
                             p.factorSources().mapWhen(predicate = {
-                                it.id == existingFactorSource.id.asGeneral()
+                                it.id == existingFactorSource.id
                             }, mutation = {
                                 existingFactorSource.copy(
-                                    common = existingFactorSource.common.copy(
-                                        cryptoParameters = FactorSourceCryptoParameters.olympiaBackwardsCompatible
+                                    value = existingFactorSource.value.copy(
+                                        common = existingFactorSource.value.common.copy(
+                                            cryptoParameters = FactorSourceCryptoParameters.olympiaBackwardsCompatible
+                                        )
                                     )
-                                ).asGeneral()
+                                )
                             })
                         )
                     )
