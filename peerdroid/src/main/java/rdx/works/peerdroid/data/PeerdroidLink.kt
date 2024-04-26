@@ -2,7 +2,6 @@ package rdx.works.peerdroid.data
 
 import android.content.Context
 import com.radixdlt.sargon.RadixConnectPassword
-import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
@@ -25,6 +24,7 @@ import rdx.works.peerdroid.data.websocket.model.RpcMessage.AnswerPayload.Compani
 import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
 import rdx.works.peerdroid.di.ApplicationScope
 import rdx.works.peerdroid.di.IoDispatcher
+import rdx.works.peerdroid.domain.ConnectionIdHolder
 import timber.log.Timber
 
 interface PeerdroidLink {
@@ -61,7 +61,7 @@ internal class PeerdroidLinkImpl(
         addConnectionDeferred = CompletableDeferred()
         peerConnectionDeferred = CompletableDeferred()
         // get connection id from encryption key
-        val connectionId = encryptionKey.value.hex
+        val connectionId = ConnectionIdHolder(encryptionKey)
         Timber.d("\uD83D\uDDFC️ start process to add a new link connector with connectionId: $connectionId")
 
         withContext(ioDispatcher) {

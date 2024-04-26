@@ -4,7 +4,6 @@ package rdx.works.peerdroid.data
 
 import android.content.Context
 import com.radixdlt.sargon.RadixConnectPassword
-import com.radixdlt.sargon.extensions.hex
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
@@ -108,10 +107,10 @@ internal class PeerdroidConnectorImpl(
         get() = _peerConnectionStatus
 
     override suspend fun connectToConnectorExtension(encryptionKey: RadixConnectPassword): Result<Unit> {
-        val connectionId = encryptionKey.value.hex
+        val connectionId = ConnectionIdHolder(encryptionKey)
 
         return withContext(ioDispatcher) {
-            if (mapOfWebSockets.containsKey(ConnectionIdHolder(id = connectionId))) {
+            if (mapOfWebSockets.containsKey(connectionId)) {
                 Timber.d("⚙️ already tried to establish a link connection with connectionId: $connectionId")
                 return@withContext Result.success(Unit)
             }
@@ -122,9 +121,8 @@ internal class PeerdroidConnectorImpl(
                 connectionId = connectionId,
                 encryptionKey = encryptionKey
             ).onSuccess {
-                val connectionHolder = ConnectionIdHolder(id = connectionId)
-                val job = listenForMessagesFromRemoteClients(connectionHolder, webSocketClient)
-                mapOfWebSockets[connectionHolder] = WebSocketHolder(
+                val job = listenForMessagesFromRemoteClients(connectionId, webSocketClient)
+                mapOfWebSockets[connectionId] = WebSocketHolder(
                     webSocketClient = webSocketClient,
                     listenMessagesJob = job
                 )

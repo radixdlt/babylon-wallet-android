@@ -1,5 +1,9 @@
 package rdx.works.peerdroid.domain
 
+import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.extensions.bytes
+import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.hex
 import kotlinx.coroutines.Job
 import rdx.works.peerdroid.data.webrtc.WebRtcManager
 import rdx.works.peerdroid.data.webrtc.wrappers.datachannel.DataChannelWrapper
@@ -8,7 +12,10 @@ import rdx.works.peerdroid.data.websocket.WebSocketClient
 @JvmInline
 value class ConnectionIdHolder(
     val id: String
-)
+) {
+
+    constructor(password: RadixConnectPassword): this(password.value.bytes.hash().hex)
+}
 
 @JvmInline
 value class RemoteClientHolder(

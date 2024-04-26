@@ -26,8 +26,8 @@ class AddLinkConnectorViewModel @Inject constructor(
     override fun initialState() = AddLinkConnectorUiState.init
 
     fun onQrCodeScanned(connectionPassword: String) {
-        runCatching {
-            currentConnectionPassword = RadixConnectPassword(value = Exactly32Bytes.init(connectionPassword.hexToBagOfBytes()))
+        currentConnectionPassword = runCatching {
+            RadixConnectPassword(Exactly32Bytes.init(connectionPassword.hexToBagOfBytes()))
         }.onSuccess {
             _state.update { state ->
                 state.copy(showContent = AddLinkConnectorUiState.ShowContent.NameLinkConnector)
@@ -36,7 +36,7 @@ class AddLinkConnectorViewModel @Inject constructor(
             _state.update { state ->
                 state.copy(invalidConnectionPassword = true)
             }
-        }
+        }.getOrNull()
     }
 
     fun onConnectorDisplayNameChanged(name: String) {

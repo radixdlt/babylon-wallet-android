@@ -111,8 +111,7 @@ class PeerdroidClientImpl @Inject constructor(
     }
 
     override suspend fun deleteLink(link: P2pLink) {
-        val connectionIdHolder = ConnectionIdHolder(id = link.connectionPassword.value.hex)
-        peerdroidConnector.deleteConnector(connectionIdHolder)
+        peerdroidConnector.deleteConnector(ConnectionIdHolder(password = link.connectionPassword))
     }
 
     override fun terminate() {

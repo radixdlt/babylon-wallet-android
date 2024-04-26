@@ -37,6 +37,7 @@ import rdx.works.peerdroid.data.websocket.model.RpcMessage
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonPayload
 import rdx.works.peerdroid.data.websocket.model.SignalingServerDto
 import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
+import rdx.works.peerdroid.domain.ConnectionIdHolder
 import timber.log.Timber
 import java.nio.charset.StandardCharsets
 
@@ -60,7 +61,6 @@ internal class WebSocketClient(applicationContext: Context) {
     // represents a web socket session between two peers
     private var socket: WebSocketSession? = null
 
-    private lateinit var connectionId: String
     private lateinit var encryptionKey: ByteArray
 
     // this is used only for the PeerdroidLink
@@ -73,18 +73,17 @@ internal class WebSocketClient(applicationContext: Context) {
     }
 
     suspend fun initSession(
-        connectionId: String,
+        connectionId: ConnectionIdHolder,
         encryptionKey: RadixConnectPassword
     ): Result<Unit> {
         return try {
-            this.connectionId = connectionId
             this.encryptionKey = encryptionKey.value.bytes.toByteArray()
 
             // this block has a normal http request builder
             // because we need to do an http request once (initial handshake)
             // to establish the connection the first time
             socket = httpClientEntryPoint.provideHttpClient().webSocketSession {
-                url("${BuildConfig.SIGNALING_SERVER_URL}$connectionId?source=wallet&target=extension")
+                url("${BuildConfig.SIGNALING_SERVER_URL}${connectionId.id}?source=wallet&target=extension")
             }
             if (socket?.isActive == true) {
                 Timber.d("🛰 successfully connected to signaling server")
