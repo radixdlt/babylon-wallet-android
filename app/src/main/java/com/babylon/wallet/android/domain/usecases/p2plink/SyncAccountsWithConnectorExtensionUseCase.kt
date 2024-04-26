@@ -70,7 +70,7 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
                     )
                 }
             )
-            json.encodeToString(accountListExchangeInteraction)
+            json.encodeToString<ConnectorExtensionExchangeInteraction>(accountListExchangeInteraction)
         }
 
         return combine(connectionIdsFlow, accountListMessageFlow) { connectionIds, accountListMessage ->
