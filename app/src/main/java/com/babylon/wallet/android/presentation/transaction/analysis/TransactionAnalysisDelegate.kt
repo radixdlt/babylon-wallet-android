@@ -18,10 +18,10 @@ import com.babylon.wallet.android.presentation.transaction.analysis.processor.Pr
 import com.radixdlt.hex.extensions.toHexString
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.Nonce
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.secureRandom
 import com.radixdlt.sargon.extensions.value
 import kotlinx.coroutines.flow.update
-import rdx.works.core.decodeHex
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.then
 import timber.log.Timber
@@ -61,7 +61,7 @@ class TransactionAnalysisDelegate @Inject constructor(
             ).mapCatching { preview ->
                 logger.v(preview.encodedReceipt)
                 manifestData
-                    .executionSummary(encodedReceipt = preview.encodedReceipt.decodeHex())
+                    .executionSummary(encodedReceipt = preview.encodedReceipt.hexToBagOfBytes())
                     .resolvePreview(notaryAndSigners)
                     .resolveFees(notaryAndSigners)
             }

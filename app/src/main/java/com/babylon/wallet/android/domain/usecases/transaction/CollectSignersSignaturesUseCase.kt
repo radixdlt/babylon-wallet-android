@@ -10,11 +10,11 @@ import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.compile
 import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.update
-import rdx.works.core.decodeHex
 import rdx.works.core.domain.SigningPurpose
 import rdx.works.core.hash
 import rdx.works.core.toByteArray
@@ -119,8 +119,11 @@ sealed interface SignRequest {
         override val dataToSign: ByteArray
             get() {
                 require(dAppDefinitionAddress.length <= UByte.MAX_VALUE.toInt())
-                return byteArrayOf(ROLA_PAYLOAD_PREFIX.toByte()) + challengeHex.decodeHex() + dAppDefinitionAddress.length.toUByte()
-                    .toByte() + dAppDefinitionAddress.toByteArray() + origin.toByteArray()
+                return byteArrayOf(ROLA_PAYLOAD_PREFIX.toByte()) +
+                        challengeHex.hexToBagOfBytes().toByteArray() +
+                        dAppDefinitionAddress.length.toUByte().toByte() +
+                        dAppDefinitionAddress.toByteArray() +
+                        origin.toByteArray()
             }
 
         val payloadHex: String

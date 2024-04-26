@@ -5,13 +5,13 @@ import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.hash
 import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.toBagOfBytes
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.decodeHex
 import rdx.works.core.hash
 import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
@@ -45,7 +45,7 @@ internal class ROLAPayloadTest {
                         val challenge = (origin.toByteArray() + accountAddress.toByteArray() + seed.toUByte().toByte()).toBagOfBytes()
                             .hash().bytes.bytes.toByteArray()
                         val payloadHex = SignRequest.SignAuthChallengeRequest(challenge.toHexString(), origin, accountAddress).payloadHex
-                        val blakeHashOfPayload = payloadHex.decodeHex().hash().hex
+                        val blakeHashOfPayload = payloadHex.hexToBagOfBytes().hash().hex
                         TestVector(payloadHex, blakeHashOfPayload, accountAddress, origin, challenge.toHexString())
                     }
                 }

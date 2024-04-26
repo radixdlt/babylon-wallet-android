@@ -1,6 +1,7 @@
 package rdx.works.core.domain
 
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.Blob
 import com.radixdlt.sargon.Blobs
 import com.radixdlt.sargon.ExecutionSummary
@@ -58,7 +59,7 @@ data class TransactionManifestData(
     }
 
     // Currently the only method that exposes RET
-    fun executionSummary(encodedReceipt: ByteArray): ExecutionSummary = manifestSargon.executionSummary(encodedReceipt.toBagOfBytes())
+    fun executionSummary(encodedReceipt: BagOfBytes): ExecutionSummary = manifestSargon.executionSummary(encodedReceipt)
 
     sealed interface TransactionMessage {
 

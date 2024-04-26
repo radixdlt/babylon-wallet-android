@@ -7,6 +7,7 @@ import com.babylon.wallet.android.presentation.account.createaccount.confirmatio
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountConfirmationViewModel
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.Screen
+import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
@@ -71,7 +72,7 @@ class CreateAccountConfirmationViewModelTest : StateViewModelTest<CreateAccountC
             CreateAccountConfirmationViewModel.AccountConfirmationUiState(
                 accountName = account.displayName.value,
                 accountAddress = account.address.string,
-                appearanceId = 1
+                appearanceId = AppearanceId(1u)
             ),
             viewModel.state.value
         )
@@ -96,7 +97,7 @@ class CreateAccountConfirmationViewModelTest : StateViewModelTest<CreateAccountC
             CreateAccountConfirmationViewModel.AccountConfirmationUiState(
                 accountName = account.displayName.value,
                 accountAddress = account.address.string,
-                appearanceId = 1
+                appearanceId = AppearanceId(1u)
             ),
             viewModel.state.value
         )
