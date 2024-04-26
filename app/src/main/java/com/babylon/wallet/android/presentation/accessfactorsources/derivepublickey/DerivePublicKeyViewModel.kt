@@ -23,9 +23,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.PublicKeyProvider
-import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import java.io.IOException
 import javax.inject.Inject
 
@@ -33,7 +31,6 @@ import javax.inject.Inject
 class DerivePublicKeyViewModel @Inject constructor(
     private val publicKeyProvider: PublicKeyProvider,
     private val accessFactorSourcesUiProxy: AccessFactorSourcesUiProxy,
-    private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val ledgerMessenger: LedgerMessenger
 ) : StateViewModel<DerivePublicKeyViewModel.DerivePublicKeyUiState>(),
     OneOffEventHandler<DerivePublicKeyViewModel.Event> by OneOffEventHandlerImpl() {
@@ -48,18 +45,14 @@ class DerivePublicKeyViewModel @Inject constructor(
             input = accessFactorSourcesUiProxy.getInput() as AccessFactorSourcesInput.ToDerivePublicKey
             when (input.factorSource) {
                 is FactorSource.Ledger -> {
-                    if (ensureBabylonFactorSourceExistUseCase.babylonFactorSourceExist()) {
-                        derivePublicKey().onSuccess {
-                            sendEvent(Event.AccessingFactorSourceCompleted)
-                        }
-                    } else {
-                        // 1st account created with ledger, so we need to create BDFS too and authenticate first
-                        sendEvent(Event.RequestBiometricPrompt)
+                    derivePublicKey().onSuccess {
+                        sendEvent(Event.AccessingFactorSourceCompleted)
                     }
                 }
 
-                is FactorSource.Device,
-                null -> {
+                is FactorSource.Device -> if (input.isBiometricsProvided) {
+                    biometricAuthenticationCompleted()
+                } else {
                     sendEvent(Event.RequestBiometricPrompt)
                 }
             }
@@ -106,25 +99,22 @@ class DerivePublicKeyViewModel @Inject constructor(
         }
     }
 
-    private suspend fun derivePublicKey(): Result<Unit> {
-        val profile = ensureBabylonFactorSourceExistUseCase()
-
-        return if (input.factorSource == null) { // device factor source
-            val deviceFactorSource = profile.mainBabylonFactorSource ?: error("Babylon factor source is not present")
+    private suspend fun derivePublicKey() = when (val factorSource = input.factorSource) {
+        is FactorSource.Device -> {
             derivePublicKeyFromDeviceFactorSource(
                 forNetworkId = input.forNetworkId,
-                deviceFactorSource = deviceFactorSource
+                deviceFactorSource = factorSource
             )
-        } else { // ledger factor source
-            val ledgerFactorSource = input.factorSource as FactorSource.Ledger
+        }
+        is FactorSource.Ledger -> {
             _state.update { uiState ->
                 uiState.copy(
-                    showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = ledgerFactorSource)
+                    showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = factorSource)
                 )
             }
             derivePublicKeyFromLedgerFactorSource(
                 forNetworkId = input.forNetworkId,
-                ledgerFactorSource = ledgerFactorSource
+                ledgerFactorSource = factorSource
             )
         }
     }

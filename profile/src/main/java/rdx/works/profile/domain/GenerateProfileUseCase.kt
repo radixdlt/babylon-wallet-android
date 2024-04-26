@@ -1,18 +1,22 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.Accounts
+import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import rdx.works.core.TimestampGenerator
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.addAccounts
+import rdx.works.core.sargon.babylon
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
@@ -27,30 +31,28 @@ class GenerateProfileUseCase @Inject constructor(
     @DefaultDispatcher private val defaultDispatcher: CoroutineDispatcher
 ) {
 
-    suspend operator fun invoke(): Profile {
-        return when (val state = profileRepository.profileState.first()) {
-            is ProfileState.Restored -> state.profile
-            else -> withContext(defaultDispatcher) {
-                error("Integration")
-//                val profile = Profile.init(
-//                    id = UUIDGenerator.uuid().toString(),
-//                    deviceInfo = deviceInfoRepository.getDeviceInfo(),
-//                    creationDate = InstantGenerator()
-//                )
-//
-//                profileRepository.saveProfile(profile)
-//
-//                profile
-            }
+    suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Profile {
+        val device = deviceInfoRepository.getDeviceInfo()
+        return Profile.init(
+            deviceFactorSource = DeviceFactorSource.babylon(
+                mnemonicWithPassphrase = mnemonicWithPassphrase,
+                model = device.model,
+                name = device.name,
+                createdAt = TimestampGenerator(),
+                isMain = true
+            ).asGeneral(),
+            creatingDeviceName = device.displayName
+        ).also {
+            profileRepository.saveProfile(it)
         }
     }
 
-    suspend fun initWithDeviceFactorSourceAndAccounts(
+    suspend fun derived(
         deviceFactorSource: FactorSource.Device,
         mnemonicWithPassphrase: MnemonicWithPassphrase,
-        accounts: List<Account>
+        accounts: Accounts
     ): Profile {
-        val networkId = accounts.firstOrNull()?.networkId ?: NetworkId.MAINNET
+        val networkId = accounts().firstOrNull()?.networkId ?: NetworkId.MAINNET
         return when (val state = profileRepository.profileState.first()) {
             is ProfileState.Restored -> state.profile
             else -> withContext(defaultDispatcher) {
@@ -58,7 +60,7 @@ class GenerateProfileUseCase @Inject constructor(
                     deviceFactorSource = deviceFactorSource,
                     creatingDeviceName = deviceInfoRepository.getDeviceInfo().displayName
                 ).addAccounts(
-                    accounts = accounts,
+                    accounts = accounts(),
                     onNetwork = networkId
                 )
                 profileRepository.saveProfile(profile)
@@ -69,4 +71,6 @@ class GenerateProfileUseCase @Inject constructor(
             }
         }
     }
+
+
 }

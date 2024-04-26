@@ -48,7 +48,10 @@ sealed interface AccessFactorSourcesInput {
 
     data class ToDerivePublicKey(
         val forNetworkId: NetworkId,
-        val factorSource: FactorSource? = null
+        val factorSource: FactorSource,
+        // Need this information only when a new profile is created, meaning that biometrics have been provided
+        // No need to ask the user for authentication again.
+        val isBiometricsProvided: Boolean
     ) : AccessFactorSourcesInput
 
     sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {

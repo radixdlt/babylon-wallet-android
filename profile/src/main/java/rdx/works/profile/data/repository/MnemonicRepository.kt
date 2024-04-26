@@ -2,11 +2,11 @@ package rdx.works.profile.data.repository
 
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import rdx.works.core.sargon.generate
 import rdx.works.core.sargon.toFactorSourceId
 import rdx.works.profile.datastore.EncryptedPreferencesManager
@@ -23,8 +23,8 @@ class MnemonicRepository @Inject constructor(
      */
     @Suppress("SwallowedException")
     suspend fun readMnemonic(key: FactorSourceId.Hash): Result<MnemonicWithPassphrase> {
-        return encryptedPreferencesManager.readMnemonic("mnemonic${key.value.body.hex}").map {
-            Json.decodeFromString(it) // TODO integration needs sargon serializer
+        return encryptedPreferencesManager.readMnemonic("mnemonic${key.value.body.hex}").mapCatching {
+            MnemonicWithPassphrase.fromJson(it)
         }
     }
 
@@ -40,7 +40,7 @@ class MnemonicRepository @Inject constructor(
         key: FactorSourceId.Hash,
         mnemonicWithPassphrase: MnemonicWithPassphrase
     ) {
-        val serialised = Json.encodeToString(mnemonicWithPassphrase) // TODO integration needs sargon serializer
+        val serialised = mnemonicWithPassphrase.toJson()
         encryptedPreferencesManager.saveMnemonic("mnemonic${key.value.body.hex}", serialised)
     }
 

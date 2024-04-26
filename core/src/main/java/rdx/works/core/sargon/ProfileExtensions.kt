@@ -105,7 +105,7 @@ val Profile.ledgerFactorSources: List<FactorSource.Ledger>
 
 fun Profile.factorSourceById(id: FactorSourceId) = factorSources.getById(id = id)
 
-val Profile.deviceFactorSourcesWithAccounts: Map<FactorSource.Device, List<Account>>
+private val Profile.deviceFactorSourcesWithAccounts: Map<FactorSource.Device, List<Account>>
     get() {
         val allAccountsOnNetwork = activeAccountsOnCurrentNetwork
         return deviceFactorSources.associateWith { deviceFactorSource ->
@@ -437,7 +437,7 @@ fun Profile.changeGateway(
 fun Profile.addGateway(
     gateway: Gateway
 ): Profile {
-    val gateways = appPreferences.gateways.copy(other = appPreferences.gateways.other.append(gateway)) // TODO integration
+    val gateways = appPreferences.gateways.copy(other = appPreferences.gateways.other.append(gateway))
     val appPreferences = appPreferences.copy(gateways = gateways)
     return copy(appPreferences = appPreferences)
 }
@@ -445,7 +445,7 @@ fun Profile.addGateway(
 fun Profile.deleteGateway(
     gateway: Gateway
 ): Profile {
-    val gateways = appPreferences.gateways.copy(other = appPreferences.gateways.other.remove(gateway)) // TODO integration
+    val gateways = appPreferences.gateways.copy(other = appPreferences.gateways.other.remove(gateway))
     val appPreferences = appPreferences.copy(gateways = gateways)
     return copy(appPreferences = appPreferences)
 }

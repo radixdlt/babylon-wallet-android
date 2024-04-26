@@ -37,10 +37,8 @@ internal class CreateAccountNavArgs(
     val networkIdToSwitch: NetworkId?
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        savedStateHandle.get<CreateAccountRequestSource>(
-            ARG_REQUEST_SOURCE
-        ),
-        Url(savedStateHandle.get<String>(ARG_NETWORK_URL)),
+        savedStateHandle.get<CreateAccountRequestSource>(ARG_REQUEST_SOURCE),
+        savedStateHandle.get<String?>(ARG_NETWORK_URL)?.let { Url(it) },
         savedStateHandle.get<String?>(ARG_NETWORK_NAME_TO_SWITCH)?.let { NetworkId.init(name = it) },
     )
 }

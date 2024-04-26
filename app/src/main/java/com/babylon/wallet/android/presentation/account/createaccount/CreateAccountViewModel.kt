@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
 import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
@@ -45,8 +46,9 @@ class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val createAccountUseCase: CreateAccountUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
-    private val getProfileUseCase: GetProfileUseCase,
     private val getProfileStateUseCase: GetProfileStateUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
+    private val mnemonicRepository: MnemonicRepository,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
@@ -72,51 +74,49 @@ class CreateAccountViewModel @Inject constructor(
         savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty() && accountName.count() <= ACCOUNT_NAME_MAX_LENGTH
     }
 
-    fun onAccountCreateClick(isWithLedger: Boolean) {
+    fun onAccountCreateClick(isWithLedger: Boolean, biometricAuthProvider: suspend () -> Boolean) {
         viewModelScope.launch {
-            if (!getProfileStateUseCase.isInitialized()) {
-                generateProfileUseCase()
-                // Since we choose to create a new profile, this is the time
-                // we discard the data copied from the cloud backup, since they represent
-                // a previous instance.
-                discardTemporaryRestoredFileForBackupUseCase(BackupType.Cloud)
+            val isBiometricsProvided = if (!getProfileStateUseCase.isInitialized()) {
+                if (biometricAuthProvider()) {
+                    val newMnemonic = mnemonicRepository()
+
+                    generateProfileUseCase(mnemonicWithPassphrase = newMnemonic)
+                    // Since we choose to create a new profile, this is the time
+                    // we discard the data copied from the cloud backup, since they represent
+                    // a previous instance.
+                    discardTemporaryRestoredFileForBackupUseCase(BackupType.Cloud)
+
+                    true
+                } else {
+                    return@launch
+                }
+            } else {
+                false
             }
 
-            val onNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id
-
             // at the moment you can create a account either with device factor source or ledger factor source
-            var selectedFactorSource: FactorSource? = null
-
-            if (isWithLedger) { // get the selected ledger device
+            val selectedFactorSource = if (isWithLedger) { // get the selected ledger device
                 sendEvent(CreateAccountEvent.AddLedgerDevice)
-                selectedFactorSource = appEventBus.events
+                appEventBus.events
                     .filterIsInstance<AppEvent.AccessFactorSources.SelectedLedgerDevice>()
                     .first()
                     .ledgerFactorSource
+            } else {
+                getProfileUseCase().mainBabylonFactorSource ?: return@launch
             }
 
             // if main babylon factor source is not present, it will be created during the public key derivation
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
-                    forNetworkId = onNetworkId,
-                    factorSource = if (isWithLedger && selectedFactorSource != null) {
-                        selectedFactorSource
-                    } else {
-                        null
-                    }
+                    forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
+                    factorSource = selectedFactorSource,
+                    isBiometricsProvided = isBiometricsProvided
                 )
             ).onSuccess {
                 handleAccountCreate { nameOfAccount ->
-                    // when we reach this point main babylon factor source has already created
-                    if (selectedFactorSource == null && isWithLedger.not()) { // so take it if it is a creation with device
-                        val profile = getProfileUseCase() // get again the profile with its updated state
-                        selectedFactorSource = profile.mainBabylonFactorSource ?: error("Babylon factor source is not present")
-                    }
-
-                    val factorSourceId = when (val factorSource = selectedFactorSource) {
-                        is FactorSource.Device -> factorSource.value.id.asGeneral()
-                        is FactorSource.Ledger -> factorSource.value.id.asGeneral()
-                        null -> error("factor source must not be null")
+                    val factorSourceId = when (selectedFactorSource) {
+                        is FactorSource.Device -> selectedFactorSource.value.id.asGeneral()
+                        is FactorSource.Ledger -> selectedFactorSource.value.id.asGeneral()
                     }
                     createAccountUseCase(
                         displayName = DisplayName(nameOfAccount),

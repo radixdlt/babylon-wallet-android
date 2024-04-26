@@ -216,10 +216,10 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 val bdfs = state.value.recoveryFactorSource
                 val accounts = state.value.activeAccounts +
                     state.value.inactiveAccounts.filter { it.selected }.map { it.data }
-                generateProfileUseCase.initWithDeviceFactorSourceAndAccounts(
+                generateProfileUseCase.derived(
                     deviceFactorSource = bdfs as FactorSource.Device,
                     mnemonicWithPassphrase = givenTempMnemonic!!,
-                    accounts = Accounts.init(accounts).invoke()
+                    accounts = Accounts.init(accounts)
                 )
                 sendEvent(Event.RecoverComplete)
             } else {
