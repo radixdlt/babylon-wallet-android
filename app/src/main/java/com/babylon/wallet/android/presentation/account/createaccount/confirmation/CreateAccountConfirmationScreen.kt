@@ -25,6 +25,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.AccountCardWithStack
+import com.radixdlt.sargon.AppearanceId
 
 @Composable
 fun CreateAccountConfirmationScreen(
@@ -59,7 +60,7 @@ fun CreateAccountConfirmationContent(
     accountName: String,
     accountId: String,
     accountConfirmed: () -> Unit,
-    appearanceId: Int,
+    appearanceId: AppearanceId,
     requestSource: CreateAccountRequestSource,
 ) {
     Column(
@@ -128,7 +129,7 @@ fun CreateAccountConfirmationContentPreview() {
             accountName = "My Account",
             accountId = "mock_account_id",
             accountConfirmed = {},
-            appearanceId = 0,
+            appearanceId = AppearanceId(0u),
             requestSource = CreateAccountRequestSource.FirstTime
         )
     }

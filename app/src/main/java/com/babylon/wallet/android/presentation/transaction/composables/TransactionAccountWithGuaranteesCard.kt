@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -34,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Other
@@ -68,7 +67,7 @@ fun TransactionAccountWithGuaranteesCard(
                 .background(
                     brush = when (accountWithGuarantee) {
                         is Other -> SolidColor(RadixTheme.colors.gray2)
-                        is Owned -> Brush.linearGradient(getAccountGradientColorsFor(accountWithGuarantee.account.appearanceId.value))
+                        is Owned -> accountWithGuarantee.account.appearanceId.gradient()
                     },
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )

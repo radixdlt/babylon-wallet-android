@@ -40,7 +40,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.SetStatusBarColor
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsTab
@@ -62,11 +62,10 @@ import com.babylon.wallet.android.presentation.ui.composables.toText
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
@@ -150,9 +149,7 @@ private fun AccountScreenContent(
     onClaimClick: (List<StakeClaim>) -> Unit,
     onHistoryClick: (AccountAddress) -> Unit
 ) {
-    val gradient = remember(state.accountWithAssets) {
-        getAccountGradientColorsFor(state.accountWithAssets?.account?.appearanceId?.value ?: 0u)
-    }.toPersistentList()
+    val gradient = (state.accountWithAssets?.account?.appearanceId ?: AppearanceId(0u)).gradient()
 
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -165,7 +162,7 @@ private fun AccountScreenContent(
     DefaultPullToRefreshContainer(
         isRefreshing = state.isRefreshing,
         onRefresh = onRefresh,
-        modifier = modifier.background(Brush.horizontalGradient(gradient))
+        modifier = modifier.background(gradient)
     ) {
         Scaffold(
             modifier = Modifier,
@@ -248,7 +245,7 @@ fun AssetsContent(
     onFungibleTokenClick: (Resource.FungibleResource) -> Unit,
     onNonFungibleItemClick: (Resource.NonFungibleResource, Resource.NonFungibleResource.Item) -> Unit,
     onPoolUnitClick: (PoolUnit) -> Unit,
-    gradient: ImmutableList<Color>,
+    gradient: Brush,
     onTransferClick: (AccountAddress) -> Unit,
     onHistoryClick: (AccountAddress) -> Unit,
     onApplySecuritySettings: (SecurityPromptType) -> Unit,
@@ -283,9 +280,7 @@ fun AssetsContent(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(
-                                brush = Brush.horizontalGradient(gradient)
-                            )
+                            .background(brush = gradient)
                             .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
                             .padding(bottom = RadixTheme.dimensions.paddingSemiLarge),
                         horizontalAlignment = Alignment.CenterHorizontally

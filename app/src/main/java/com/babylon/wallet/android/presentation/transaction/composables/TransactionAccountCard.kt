@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
@@ -23,7 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
@@ -128,7 +127,7 @@ fun TransactionAccountCardHeader(
             .background(
                 brush = when (account) {
                     is Other -> SolidColor(RadixTheme.colors.gray2)
-                    is Owned -> Brush.linearGradient(getAccountGradientColorsFor(account.account.appearanceId.value))
+                    is Owned -> account.account.appearanceId.gradient()
                 },
                 shape = shape
             )
@@ -144,7 +143,7 @@ fun AccountDepositAccountCardHeader(account: Account, modifier: Modifier = Modif
         modifier = modifier
             .fillMaxWidth()
             .background(
-                brush = Brush.linearGradient(getAccountGradientColorsFor(account.appearanceId.value)),
+                brush = account.appearanceId.gradient(),
                 shape = RadixTheme.shapes.roundedRectTopMedium
             )
             .padding(RadixTheme.dimensions.paddingMedium),

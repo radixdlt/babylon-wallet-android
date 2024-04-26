@@ -33,7 +33,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
@@ -45,7 +44,7 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.Selectable
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.settings.troubleshooting.accountrecoveryscan.scan.AccountRecoveryScanViewModel.Companion.ACCOUNTS_PER_SCAN
@@ -359,13 +358,12 @@ private fun InactiveAccountsPage(
         }
 
         items(inactiveAccounts) { account ->
-            val gradientColor = getAccountGradientColorsFor(account.data.appearanceId.value)
             AccountSelectionCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = RadixTheme.dimensions.paddingDefault)
                     .background(
-                        brush = Brush.horizontalGradient(gradientColor),
+                        brush = account.data.appearanceId.gradient(),
                         shape = RadixTheme.shapes.roundedRectMedium
                     )
                     .clip(RadixTheme.shapes.roundedRectMedium)

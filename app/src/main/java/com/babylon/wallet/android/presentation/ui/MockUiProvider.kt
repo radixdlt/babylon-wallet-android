@@ -104,25 +104,25 @@ object MockUiProvider {
         AccountItemUiModel(
             displayName = "Account name 1",
             address = AccountAddress.sampleMainnet.random(),
-            appearanceID = 1,
+            appearanceID = AppearanceId(1u),
             isSelected = true
         ),
         AccountItemUiModel(
             displayName = "Account name 2",
             address = AccountAddress.sampleMainnet.random(),
-            appearanceID = 2,
+            appearanceID = AppearanceId(2u),
             isSelected = false
         ),
         AccountItemUiModel(
             displayName = "Account name 3",
             address = AccountAddress.sampleMainnet.random(),
-            appearanceID = 3,
+            appearanceID = AppearanceId(3u),
             isSelected = false
         ),
         AccountItemUiModel(
             displayName = "Account name 4",
             address = AccountAddress.sampleMainnet.random(),
-            appearanceID = 4,
+            appearanceID = AppearanceId(4u),
             isSelected = false
         )
     )

@@ -49,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -64,7 +63,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.toProfileLedgerDeviceModel
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.common.UiMessage
@@ -545,11 +544,10 @@ private fun AccountsToImportListPage(
                 )
             }
             items(olympiaAccountsToImport) { item ->
-                val gradientColor = getAccountGradientColorsFor(item.appearanceId.value)
                 LegacyAccountCard(
                     modifier = Modifier
                         .background(
-                            Brush.horizontalGradient(gradientColor),
+                            item.appearanceId.gradient(),
                             shape = RadixTheme.shapes.roundedRectSmall
                         )
                         .applyIf(
@@ -713,7 +711,6 @@ private fun ImportCompletePage(
                 )
             }
             itemsIndexed(migratedAccounts) { index, item ->
-                val gradientColor = getAccountGradientColorsFor(item.appearanceID.toUByte())
                 if (index == migratedAccounts.size - 1) {
                     AccountCardWithStack(
                         Modifier.fillMaxWidth(0.8f),
@@ -726,7 +723,7 @@ private fun ImportCompletePage(
                         modifier = Modifier
                             .fillMaxWidth(0.8f)
                             .background(
-                                Brush.horizontalGradient(gradientColor),
+                                item.appearanceID.gradient(),
                                 RadixTheme.shapes.roundedRectSmall
                             )
                             .padding(

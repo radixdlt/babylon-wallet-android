@@ -16,12 +16,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import coil.compose.AsyncImage
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.extensions.formatted
@@ -61,7 +60,7 @@ fun AccountQRCodeView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        Brush.horizontalGradient(getAccountGradientColorsFor(dataHolder.accountAppearanceId.value)),
+                        dataHolder.accountAppearanceId.gradient(),
                         RadixTheme.shapes.roundedRectSmall
                     )
                     .padding(

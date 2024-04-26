@@ -7,6 +7,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -36,7 +37,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
                 AccountConfirmationUiState(
                     accountName = account.displayName.value,
                     accountAddress = account.address.string,
-                    appearanceId = account.appearanceId.value.toInt()
+                    appearanceId = account.appearanceId
                 )
             }
         }
@@ -54,7 +55,7 @@ class CreateAccountConfirmationViewModel @Inject constructor(
     data class AccountConfirmationUiState(
         val accountName: String = "",
         val accountAddress: String = "",
-        val appearanceId: Int = 0,
+        val appearanceId: AppearanceId = AppearanceId(0u),
     ) : UiState
 }
 

@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,7 +24,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.LocalBalanceVisibility
@@ -58,12 +57,12 @@ fun AccountCardView(
     securityPromptType: SecurityPromptType?,
     onApplySecuritySettings: (SecurityPromptType) -> Unit
 ) {
-    val gradient = remember(accountWithAssets.account.appearanceId) {
-        getAccountGradientColorsFor(accountWithAssets.account.appearanceId.value)
-    }
     ConstraintLayout(
         modifier
-            .background(Brush.linearGradient(gradient), shape = RadixTheme.shapes.roundedRectMedium)
+            .background(
+                brush = accountWithAssets.account.appearanceId.gradient(),
+                shape = RadixTheme.shapes.roundedRectMedium
+            )
             .fillMaxWidth()
             .heightIn(min = 160.dp)
             .padding(
@@ -83,7 +82,7 @@ fun AccountCardView(
         ) = createRefs()
 
         val isFiatBalanceVisible = accountWithAssets.assets == null ||
-            accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
+                accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
 
         Text(
             modifier = Modifier.constrainAs(nameLabel) {

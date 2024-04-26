@@ -41,7 +41,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -52,10 +51,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.DAppWithResources
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
@@ -79,6 +78,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
@@ -682,9 +682,7 @@ private fun PersonaDetailList(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                Brush.horizontalGradient(
-                                    AccountGradientList[account.appearanceID % AccountGradientList.size]
-                                ),
+                                account.appearanceID.gradient(),
                                 RadixTheme.shapes.roundedRectSmall
                             )
                             .padding(
@@ -751,7 +749,7 @@ fun DappDetailContentPreview() {
                     dApp = DApp.sampleMainnet()
                 ),
                 sharedPersonaAccounts = persistentListOf(
-                    AccountItemUiModel(AccountAddress.sampleMainnet.random(), "Account1", 0)
+                    AccountItemUiModel(AccountAddress.sampleMainnet.random(), "Account1", AppearanceId(0u))
                 ),
                 selectedSheetState = null
             ),
@@ -776,7 +774,7 @@ fun PersonaDetailsSheetPreview() {
         PersonaDetailsSheet(
             persona = PersonaUiModel(Persona.sampleMainnet()),
             sharedPersonaAccounts = persistentListOf(
-                AccountItemUiModel(AccountAddress.sampleMainnet.random(), "Account1", 0)
+                AccountItemUiModel(AccountAddress.sampleMainnet.random(), "Account1", AppearanceId(0u))
             ),
             onCloseClick = {},
             dappName = "dApp",
