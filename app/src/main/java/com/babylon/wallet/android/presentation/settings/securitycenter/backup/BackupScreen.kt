@@ -765,7 +765,10 @@ private fun EncryptSheet(
             RadixTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = RadixTheme.dimensions.paddingXXLarge)
+                    .padding(
+                        vertical = RadixTheme.dimensions.paddingDefault,
+                        horizontal = RadixTheme.dimensions.paddingXXLarge
+                    )
                     .onFocusChanged {
                         isConfirmFocused = it.isFocused
                     },
