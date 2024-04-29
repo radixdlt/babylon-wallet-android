@@ -1,6 +1,5 @@
 package rdx.works.core.domain
 
-import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.invoke
 
