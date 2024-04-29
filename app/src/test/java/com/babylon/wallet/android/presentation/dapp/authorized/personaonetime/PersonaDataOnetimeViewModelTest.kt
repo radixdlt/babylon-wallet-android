@@ -8,8 +8,12 @@ import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Personas
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileNetworks
 import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
@@ -21,7 +25,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.PersonaDataField
@@ -30,7 +33,6 @@ import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
 
-@Ignore("TODO integration")
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataOnetimeViewModel>() {
 
@@ -38,7 +40,12 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
     private val savedStateHandle = mockk<SavedStateHandle>()
     private val preferencesManager = mockk<PreferencesManager>()
 
-    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let { profile ->
+        val network = profile.networks.getBy(NetworkId.MAINNET)!!.let {
+            it.copy(personas = Personas.init(it.personas().first()))
+        }
+        profile.copy(networks = ProfileNetworks.init(network))
+    }
     private val samplePersona = profile.currentNetwork!!.personas().first()
 
     override fun initVM(): PersonaDataOnetimeViewModel {
