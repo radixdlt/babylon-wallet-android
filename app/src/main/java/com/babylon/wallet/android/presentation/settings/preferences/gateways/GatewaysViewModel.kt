@@ -63,7 +63,7 @@ class GatewaysViewModel @Inject constructor(
                             .toPersistentList().map {
                                 GatewayWrapper(
                                     gateway = it,
-                                    selected = it == current // TODO Integration
+                                    selected = it == current
                                 )
                             }.toPersistentList(),
                         isDeveloperModeEnabled = pair.second
@@ -130,7 +130,7 @@ class GatewaysViewModel @Inject constructor(
     }
 
     private suspend fun switchGateway(gateway: Gateway) {
-        if (gateway == state.value.currentGateway) return // TODO integration
+        if (gateway == state.value.currentGateway) return
 
         // this is the case where a url has been added when the developer mode was enabled
         // but at the time the user clicks to switch network the developer mode is disabled
