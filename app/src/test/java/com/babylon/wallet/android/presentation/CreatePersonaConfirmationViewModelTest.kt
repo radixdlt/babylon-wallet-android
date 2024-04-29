@@ -6,11 +6,14 @@ import com.babylon.wallet.android.presentation.settings.personas.createpersona.C
 import com.babylon.wallet.android.presentation.settings.personas.createpersona.CreatePersonaConfirmationViewModel
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Personas
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.updateOrAppend
 import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,7 +37,11 @@ class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaC
     private val savedStateHandle = Mockito.mock(SavedStateHandle::class.java)
     private val getProfileUseCase = Mockito.mock(GetProfileUseCase::class.java)
 
-    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
+    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).let {
+        val mainNetwork = it.networks.getBy(NetworkId.MAINNET)!!
+        val personas = Personas.init(mainNetwork.personas().take(1))
+        it.copy(networks = it.networks.updateOrAppend(mainNetwork.copy(personas = personas)))
+    }
     private val persona = profile.networks.getBy(NetworkId.MAINNET)?.personas?.invoke()?.first()!!
 
     @Before
@@ -77,14 +84,13 @@ class CreatePersonaConfirmationViewModelTest : StateViewModelTest<CreatePersonaC
 
         advanceUntilIdle()
 
-        // TODO integration why was this true?
-//        // then
-//        Assert.assertEquals(
-//            CreatePersonaConfirmationViewModel.PersonaConfirmationUiState(
-//                isFirstPersona = false
-//            ),
-//            viewModel.state.first()
-//        )
+        // then
+        Assert.assertEquals(
+            CreatePersonaConfirmationViewModel.PersonaConfirmationUiState(
+                isFirstPersona = true
+            ),
+            viewModel.state.first()
+        )
     }
 
     override fun initVM(): CreatePersonaConfirmationViewModel {
