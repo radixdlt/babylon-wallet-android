@@ -5,10 +5,10 @@ import com.radixdlt.sargon.CollectionOfPhoneNumbers
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.PersonaDataEntryID
 import com.radixdlt.sargon.PersonaDataNameVariant
-import com.radixdlt.sargon.RequestedNumberQuantifier
 import com.radixdlt.sargon.RequestedQuantity
 import com.radixdlt.sargon.SharedPersonaData
 import com.radixdlt.sargon.SharedToDappWithPersonaIDsOfPersonaDataEntries
+import com.radixdlt.sargon.extensions.exactly
 
 fun PersonaData.Companion.empty() = PersonaData(
     name = null,
@@ -63,7 +63,7 @@ fun PersonaData.toSharedPersonaData(
     name = if (requestedFields.containsKey(PersonaDataField.Kind.Name)) name?.id else null,
     emailAddresses = if (requestedFields.containsKey(PersonaDataField.Kind.EmailAddress)) {
         SharedToDappWithPersonaIDsOfPersonaDataEntries(
-            request = RequestedQuantity(quantifier = RequestedNumberQuantifier.EXACTLY, quantity = 1u), // TODO integration
+            request = RequestedQuantity.exactly(quantity = 1),
             ids = emailAddresses.collection.map { it.id }
         )
     } else {
@@ -71,7 +71,7 @@ fun PersonaData.toSharedPersonaData(
     },
     phoneNumbers = if (requestedFields.containsKey(PersonaDataField.Kind.PhoneNumber)) {
         SharedToDappWithPersonaIDsOfPersonaDataEntries(
-            request = RequestedQuantity(quantifier = RequestedNumberQuantifier.EXACTLY, quantity = 1u), // TODO integration
+            request = RequestedQuantity.exactly(1),
             ids = phoneNumbers.collection.map { it.id }
         )
     } else {
