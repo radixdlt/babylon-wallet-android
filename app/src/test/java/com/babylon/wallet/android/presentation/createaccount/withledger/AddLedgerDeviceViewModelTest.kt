@@ -20,7 +20,7 @@ import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.Timestamp
 import com.radixdlt.sargon.extensions.append
-import com.radixdlt.sargon.extensions.get
+import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.invoke
@@ -35,14 +35,12 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import rdx.works.core.sargon.babylon
 import rdx.works.profile.domain.AddLedgerFactorSourceResult
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 
-@Ignore("TODO integration")
 @OptIn(ExperimentalCoroutinesApi::class)
 class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel>() {
 
@@ -59,14 +57,17 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
         ).append(
             FactorSource.Ledger(
                 LedgerHardwareWalletFactorSource(
-                    firstDeviceId.value,
+                    id = FactorSourceIdFromHash(
+                        kind = FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET,
+                        body = Exactly32Bytes.init("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5".hexToBagOfBytes())
+                    ),
                     FactorSourceCommon(
                         cryptoParameters = FactorSourceCryptoParameters.babylon,
                         addedOn = Timestamp.now(),
                         lastUsedOn = Timestamp.now(),
                         flags = emptyList()
                     ),
-                    LedgerHardwareWalletHint("Name", LedgerHardwareWalletModel.NANO_S)
+                    LedgerHardwareWalletHint("My Ledger", LedgerHardwareWalletModel.NANO_S)
                 )
             )
         )
@@ -115,12 +116,13 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
 
     @Test
     fun `adding ledger and providing name`() = runTest {
-        val ledgerDeviceToAdd = profile.factorSources.get(firstDeviceId) as FactorSource.Ledger
+        val ledgerDeviceToAdd =
+            profile.factorSources().first { it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET } as FactorSource.Ledger
         coEvery {
             addLedgerFactorSourceUseCaseMock(
-                ledgerId = firstDeviceId,
+                ledgerId = ledgerDeviceToAdd.value.id.asGeneral(),
                 model = LedgerHardwareWalletModel.NANO_S,
-                name = "Name"
+                name = ledgerDeviceToAdd.value.hint.name
             )
         } returns AddLedgerFactorSourceResult.Added(
             ledgerFactorSource = ledgerDeviceToAdd
