@@ -27,7 +27,7 @@ class RestoreProfileFromBackupUseCase @Inject constructor(
             val profileWithRestoredHeader = profile.copy(
                 header = profile.header.copy(
                     lastUsedOnDevice = DeviceInfo(
-                        id = profile.header.id, // TODO integration
+                        id = profile.header.id,
                         description = newDeviceName,
                         date = TimestampGenerator()
                     )

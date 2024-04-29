@@ -41,7 +41,7 @@ class MigrateOlympiaAccountsUseCase @Inject constructor(
                     publicKey = olympiaAccount.publicKey,
                     derivationPath = olympiaAccount.derivationPath,
                     factorSourceId = factorSourceId,
-                    customAppearanceId = nextAppearanceId // TODO integration ask Alex
+                    customAppearanceId = nextAppearanceId
                 )
             }
             var updatedProfile = profile

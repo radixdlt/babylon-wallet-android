@@ -30,9 +30,8 @@ sealed class ProfileState {
      * A compatible [ProfileSnapshot] exists and the user can derive the [Profile].
      */
     data class Restored(val profile: Profile) : ProfileState() {
-        // TODO integration might need to just check for empty networks
-        fun hasMainnet(): Boolean {
-            return profile.networks().any { it.id == NetworkId.MAINNET }
+        fun hasNetworks(): Boolean {
+            return profile.networks().isNotEmpty()
         }
     }
 }

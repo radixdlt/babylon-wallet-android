@@ -23,7 +23,7 @@ class GetProfileUseCase @Inject constructor(private val profileRepository: Profi
             ProfileState.None -> false
 
             ProfileState.Incompatible -> true
-            is ProfileState.Restored -> profileState.hasMainnet()
+            is ProfileState.Restored -> profileState.hasNetworks()
         }
     }
 }
