@@ -43,7 +43,6 @@ import rdx.works.core.sargon.currentNetwork
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
 
-@Ignore("TODO Integration")
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaViewModel>() {
 
@@ -99,6 +98,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         coEvery { preferencesManager.firstPersonaCreated } returns flowOf(true)
         every { savedStateHandle.get<String>(ARG_DAPP_DEFINITION_ADDRESS) } returns dApp.dAppAddress.string
         coEvery { getProfileUseCase() } returns profile
+        every { getProfileUseCase.flow } returns flowOf(profile)
     }
 
     @Test
@@ -114,6 +114,7 @@ internal class SelectPersonaViewModelTest : StateViewModelTest<SelectPersonaView
         }
     }
 
+    @Ignore("TODO Integration")
     @Test
     fun `connected dapp does not exist`() = runTest {
         val vm = vm.value
