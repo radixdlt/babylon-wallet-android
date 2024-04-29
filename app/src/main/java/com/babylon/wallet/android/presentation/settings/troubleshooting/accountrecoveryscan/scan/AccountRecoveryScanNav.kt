@@ -37,7 +37,6 @@ fun NavController.accountRecoveryScan(
     factorSourceId: FactorSourceId.Hash? = null,
     isOlympia: Boolean = false
 ) {
-
     navigate(
         route = "account_recovery_scan?" +
             "$ARG_FACTOR_SOURCE_ID=${factorSourceId?.toJson()}" +
