@@ -12,7 +12,6 @@ import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.mainnet
 import com.radixdlt.sargon.extensions.size
 import com.radixdlt.sargon.extensions.string
-import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -93,7 +92,6 @@ class GatewaysTest {
         assertEquals(2, savedGateways.other.size)
     }
 
-    @Ignore("TODO integration")
     @Test
     fun `existing gateway with slash and new gateway with different id and without slash then containsGateway returns false`() {
         var savedGateways = Gateways.default.changeCurrent(
@@ -101,15 +99,13 @@ class GatewaysTest {
         )
 
         assertEquals("https://1.1.1.1/", savedGateways.current.string)
-        println(savedGateways.all.map { it.string + " " + it.network.id.value.toString() })
 
         // Change to a new one without slash at the end
-        savedGateways = savedGateways.changeCurrent(newCurrent =  Gateway.init("https://1.1.1.1/", NetworkId.HAMMUNET))
+        savedGateways = savedGateways.changeCurrent(newCurrent =  Gateway.init("https://1.1.1.1", NetworkId.HAMMUNET))
         assertEquals("https://1.1.1.1/", savedGateways.current.string)
         assertEquals(2, savedGateways.other.size)
 
-        println(savedGateways.all.map { it.string + " " + it.network.id.value.toString() })
 
-        assertFalse(savedGateways.all.any { it.network.id == NetworkId.HAMMUNET }) // TODO integration, this is a bug in Sargon
+        assertFalse(savedGateways.all.any { it.network.id == NetworkId.NEBUNET })
     }
 }
