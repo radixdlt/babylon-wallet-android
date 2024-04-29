@@ -1,11 +1,8 @@
 package rdx.works.profile
 
-import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.id
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.every
@@ -16,11 +13,11 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Ignore
 import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.init
+import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GenerateProfileUseCase
@@ -54,7 +51,6 @@ class GenerateProfileUseCaseTest {
         coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
     }
 
-    @Ignore("TODO Integration")
     @Test
     fun `when generating profile, verify correct data generated from mnemonic`() {
         testScope.runTest {
@@ -66,14 +62,10 @@ class GenerateProfileUseCaseTest {
                 mnemonicWithPassphrase = mnemonicWithPassphrase,
                 isMain = true
             )
-            // TODO integration this should change
+
             val profile = generateProfileUseCase(mnemonicWithPassphrase)
 
-//            Assert.assertEquals(
-//                "Factor Source ID",
-//                expectedFactorSourceId,
-//                profile.mainBabylonFactorSource()!!.id.body.value
-//            )
+            assertEquals(babylonFactorSource.id, profile.mainBabylonFactorSource!!.id)
         }
     }
 }
