@@ -108,9 +108,9 @@ fun Profile.factorSourceById(id: FactorSourceId) = factorSources.get(id)
 
 private val Profile.deviceFactorSourcesWithAccounts: Map<FactorSource.Device, List<Account>>
     get() {
-        val allAccountsOnNetwork = activeAccountsOnCurrentNetwork
+        val activeAccountsOnCurrentNetwork = activeAccountsOnCurrentNetwork
         return deviceFactorSources.associateWith { deviceFactorSource ->
-            allAccountsOnNetwork.filter { it.address.string == deviceFactorSource.value.id.body.hex } // TODO integration check
+            activeAccountsOnCurrentNetwork.filter { it.factorSourceId == deviceFactorSource.id }
         }
     }
 

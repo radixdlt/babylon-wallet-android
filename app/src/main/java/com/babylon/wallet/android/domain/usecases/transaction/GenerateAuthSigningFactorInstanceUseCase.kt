@@ -116,7 +116,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
     ): Result<HierarchicalDeterministicFactorInstance> {
         val mnemonic = mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).getOrNull()
         requireNotNull(mnemonic)
-        val authSigningPublicKey = mnemonic.derivePublicKey(derivationPath = authSigningDerivationPath) // TODO integration
+        val authSigningPublicKey = mnemonic.derivePublicKey(derivationPath = authSigningDerivationPath)
         return Result.success(
             HierarchicalDeterministicFactorInstance(
                 factorSourceId = deviceFactorSource.value.id,

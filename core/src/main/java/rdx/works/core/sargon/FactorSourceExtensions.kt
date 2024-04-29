@@ -31,7 +31,7 @@ val FactorSource.Device.supportsBabylon: Boolean
 val FactorSource.Device.supportsOlympia: Boolean
     get() = value.common.cryptoParameters.supportsOlympia
 
-val FactorSource.Device.hasOlympiaSeedPhraseLength: Boolean // TODO integration were this was used?
+val FactorSource.Device.hasOlympiaSeedPhraseLength: Boolean
     get() = value.hint.mnemonicWordCount != Bip39WordCount.TWENTY_FOUR
 
 val FactorSource.Device.hasBabylonSeedPhraseLength: Boolean
