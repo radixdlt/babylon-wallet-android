@@ -85,7 +85,10 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
             interactionId = UUIDGenerator.uuid().toString(),
             keyParameters = listOf(
                 LedgerInteractionRequest.KeyParameters(
-                    curve = Curve.Curve25519, // TODO integration
+                    curve = Curve.Curve25519, // To whoever works on this feature in the future, this curve should not
+                    // be 25519 hardcoded. (Concluded when scouting this part of code during sargon integration)
+                    // We have to calculate the curve from the derivation path. This feature is not yet
+                    // used by the public so it can stay as a reference.
                     derivationPath = authSigningDerivationPath.string
                 )
             ),
@@ -97,7 +100,7 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
             HierarchicalDeterministicFactorInstance(
                 factorSourceId = ledgerHardwareWalletFactorSource.value.id,
                 publicKey = HierarchicalDeterministicPublicKey(
-                    publicKey = PublicKey.Ed25519.init(hex = hex), // TODO integration,
+                    publicKey = PublicKey.Ed25519.init(hex = hex), // To whoever works on this please read the above statement
                     derivationPath = authSigningDerivationPath
                 )
             )
