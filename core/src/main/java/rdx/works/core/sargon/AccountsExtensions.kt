@@ -21,6 +21,7 @@ import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.contains
+import com.radixdlt.sargon.extensions.default
 import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.nonHardenedIndex
@@ -66,13 +67,7 @@ fun Account.Companion.initBabylon(
     publicKey: PublicKey,
     derivationPath: DerivationPath,
     factorSourceId: FactorSourceId.Hash,
-    onLedgerSettings: OnLedgerSettings = OnLedgerSettings( // TODO integration use default()
-        thirdPartyDeposits = ThirdPartyDeposits(
-            depositRule = DepositRule.ACCEPT_ALL,
-            assetsExceptionList = null,
-            depositorsAllowList = null
-        )
-    ),
+    onLedgerSettings: OnLedgerSettings = OnLedgerSettings.default(),
     flags: EntityFlags = EntityFlags.init(),
     customAppearanceId: AppearanceId? = null
 ): Account {
