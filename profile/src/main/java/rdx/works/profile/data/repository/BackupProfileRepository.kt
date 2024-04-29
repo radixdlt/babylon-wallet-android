@@ -16,7 +16,6 @@ import rdx.works.profile.domain.ProfileException
 import rdx.works.profile.domain.backup.BackupType
 import javax.inject.Inject
 
-// TODO integration
 interface BackupProfileRepository {
 
     suspend fun saveTemporaryRestoringSnapshot(snapshotSerialised: String, backupType: BackupType): Result<Unit>
@@ -49,8 +48,7 @@ class BackupProfileRepositoryImpl @Inject constructor(
         }
 
         is BackupType.File.PlainText -> {
-            val contents = Profile.analyzeContentsOfFile(snapshotSerialised)
-            when (contents) {
+            when (val contents = Profile.analyzeContentsOfFile(snapshotSerialised)) {
                 is ProfileFileContents.EncryptedProfile -> Result.failure(ProfileException.InvalidPassword)
                 is ProfileFileContents.PlaintextProfile -> {
                     encryptedPreferencesManager.putProfileSnapshotFromFileBackup(contents.v1.toJson())
