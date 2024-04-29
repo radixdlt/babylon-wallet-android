@@ -9,26 +9,20 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
-import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceIdFromHash
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.hex
-import com.radixdlt.sargon.extensions.hexToBagOfBytes
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.extensions.toJson
 
-private const val ARGS_FACTOR_SOURCE_ID_BODY_HEX = "factorSourceIdBodyHex"
+private const val ARGS_FACTOR_SOURCE_ID = "factorSourceId"
 private const val ARGS_MNEMONIC_SIZE = "mnemonicSize"
-private const val ROUTE = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID_BODY_HEX={$ARGS_FACTOR_SOURCE_ID_BODY_HEX}" +
+private const val ROUTE = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID={$ARGS_FACTOR_SOURCE_ID}" +
     "&$ARGS_MNEMONIC_SIZE={$ARGS_MNEMONIC_SIZE}"
 
 fun NavController.confirmSeedPhrase(
     factorSourceId: FactorSourceId.Hash,
     mnemonicSize: Int
 ) {
-    val idBody = factorSourceId.value.body.hex
-    navigate(route = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID_BODY_HEX=$idBody&$ARGS_MNEMONIC_SIZE=$mnemonicSize")
+    navigate(route = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID=${factorSourceId.toJson()}&$ARGS_MNEMONIC_SIZE=$mnemonicSize")
 }
 
 internal class ConfirmSeedPhraseArgs(
@@ -36,9 +30,7 @@ internal class ConfirmSeedPhraseArgs(
     val mnemonicSize: Int
 ) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        Exactly32Bytes.init(checkNotNull(savedStateHandle.get<String>(ARGS_FACTOR_SOURCE_ID_BODY_HEX)).hexToBagOfBytes()).let {
-            FactorSourceIdFromHash(kind = FactorSourceKind.DEVICE, body = it).asGeneral()
-        },
+        FactorSourceId.Hash.fromJson(checkNotNull(savedStateHandle.get<String>(ARGS_FACTOR_SOURCE_ID))),
         checkNotNull(savedStateHandle.get<Int>(ARGS_MNEMONIC_SIZE)),
     )
 }
@@ -52,7 +44,7 @@ fun NavGraphBuilder.confirmSeedPhrase(
         route = ROUTE,
         arguments = listOf(
             navArgument(
-                name = ARGS_FACTOR_SOURCE_ID_BODY_HEX,
+                name = ARGS_FACTOR_SOURCE_ID,
             ) {
                 nullable = false
                 type = NavType.StringType

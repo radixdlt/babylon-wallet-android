@@ -11,31 +11,23 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.FactorSourceIdFromHash
-import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.hex
-import com.radixdlt.sargon.extensions.hexToBagOfBytes
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.extensions.toJson
 
 @VisibleForTesting
-internal const val ARG_FACTOR_SOURCE_ID_BODY_HEX = "factor_source_id"
+internal const val ARG_FACTOR_SOURCE_ID = "factor_source_id"
 
-const val ROUTE_REVEAL_SEED_PHRASE = "reveal_seed_phrase/{$ARG_FACTOR_SOURCE_ID_BODY_HEX}"
+const val ROUTE_REVEAL_SEED_PHRASE = "reveal_seed_phrase/{$ARG_FACTOR_SOURCE_ID}"
 
 internal class RevealSeedPhraseArgs(val factorSourceId: FactorSourceId.Hash) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        FactorSourceIdFromHash(
-            kind = FactorSourceKind.DEVICE,
-            body = Exactly32Bytes.init(checkNotNull(savedStateHandle.get<String>(ARG_FACTOR_SOURCE_ID_BODY_HEX)).hexToBagOfBytes())
-        ).asGeneral()
+        FactorSourceId.Hash.fromJson(checkNotNull(savedStateHandle.get<String>(ARG_FACTOR_SOURCE_ID)))
     )
 }
 
 fun NavController.revealSeedPhrase(factorSourceId: FactorSourceId.Hash) {
-    navigate("reveal_seed_phrase/${factorSourceId.value.body.hex}")
+    navigate("reveal_seed_phrase/${factorSourceId.toJson()}")
 }
 
 fun NavGraphBuilder.revealSeedPhrase(
@@ -57,7 +49,7 @@ fun NavGraphBuilder.revealSeedPhrase(
             EnterTransition.None
         },
         arguments = listOf(
-            navArgument(ARG_FACTOR_SOURCE_ID_BODY_HEX) {
+            navArgument(ARG_FACTOR_SOURCE_ID) {
                 type = NavType.StringType
             }
         )
