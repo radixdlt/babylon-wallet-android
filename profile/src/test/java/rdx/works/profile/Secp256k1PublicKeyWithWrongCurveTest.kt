@@ -9,13 +9,13 @@ import rdx.works.profile.data.model.pernetwork.PublicKeySurrogate
 import java.io.File
 import kotlin.test.assertEquals
 
-class BDFSCurve25519ErrorTest {
+class Secp256k1PublicKeyWithWrongCurveTest {
 
     @Test
     fun `test secp256k1 public key with curve25519 decoding`() {
-        val publicKey = Json.decodeFromString<PublicKeySurrogate>(File(FILE_CURVE_25519).readText())
+        val publicKey = Json.decodeFromString<PublicKeySurrogate>(File(TEST_FILE).readText())
         assertEquals(publicKey.curve, Slip10Curve.CURVE_25519) // error state
-        val publicKeyCorrect = Json.decodeFromString<FactorInstance.PublicKey>(File(FILE_CURVE_25519).readText())
+        val publicKeyCorrect = Json.decodeFromString<FactorInstance.PublicKey>(File(TEST_FILE).readText())
         assertEquals(publicKeyCorrect.curve, Slip10Curve.SECP_256K1) // correct state after decoding fix
     }
 
@@ -29,6 +29,6 @@ class BDFSCurve25519ErrorTest {
     }
 
     companion object {
-        private const val FILE_CURVE_25519 = "src/test/resources/raw/secp256k1_public_key_with_curve25519_error.json"
+        private const val TEST_FILE = "src/test/resources/raw/secp256k1_public_key_with_curve25519_error.json"
     }
 }
