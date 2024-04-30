@@ -30,7 +30,6 @@ import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogW
 import com.babylon.wallet.android.utils.formattedSpans
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import rdx.works.core.domain.SigningPurpose
 import rdx.works.core.sargon.sample
 
 @Composable
@@ -153,10 +152,10 @@ private fun SignatureRequestContent(
 }
 
 @Composable
-private fun signingPurposeDescription(signingPurpose: SigningPurpose) =
+private fun signingPurposeDescription(signingPurpose: InteractionState.SigningPurpose) =
     when (signingPurpose) {
-        SigningPurpose.SignAuth -> com.babylon.wallet.android.R.string.empty
-        SigningPurpose.SignTransaction -> com.babylon.wallet.android.R.string.factorSourceActions_device_messageSignature
+        InteractionState.SigningPurpose.AuthChallenge -> com.babylon.wallet.android.R.string.empty
+        InteractionState.SigningPurpose.Transaction -> com.babylon.wallet.android.R.string.factorSourceActions_device_messageSignature
     }
 
 @UsesSampleValues

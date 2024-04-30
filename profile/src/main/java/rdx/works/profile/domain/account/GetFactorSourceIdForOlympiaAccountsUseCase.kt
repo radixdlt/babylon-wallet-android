@@ -1,13 +1,12 @@
 package rdx.works.profile.domain.account
 
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.Slip10Curve
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.validate
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.core.sargon.derivePublicKey
 import rdx.works.core.sargon.deviceFactorSources
 import rdx.works.core.sargon.supportsOlympia
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -41,7 +40,14 @@ class GetFactorSourceIdForOlympiaAccountsUseCase @Inject constructor(
         }
     }
 
-    private fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDetails>): Boolean = accounts.all {
-        derivePublicKey(derivationPath = it.derivationPath, curve = Slip10Curve.SECP256K1).hex == it.publicKey.hex
+    private fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDetails>): Boolean {
+        val hdPublicKeys = accounts.map {
+            HierarchicalDeterministicPublicKey(
+                publicKey = it.publicKey,
+                derivationPath = it.derivationPath
+            )
+        }
+
+        return validate(hdPublicKeys = hdPublicKeys)
     }
 }

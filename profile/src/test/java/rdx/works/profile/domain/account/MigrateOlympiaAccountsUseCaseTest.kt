@@ -11,9 +11,9 @@ import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.PublicKey
-import com.radixdlt.sargon.Slip10Curve
 import com.radixdlt.sargon.extensions.account
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.size
 import com.radixdlt.sargon.extensions.toBabylonAddress
@@ -32,7 +32,6 @@ import rdx.works.core.domain.ProfileState
 import rdx.works.core.sargon.addAccounts
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.currentNetwork
-import rdx.works.core.sargon.derivePublicKey
 import rdx.works.core.sargon.init
 import rdx.works.core.sargon.initBabylon
 import rdx.works.profile.data.repository.MnemonicRepository
@@ -72,8 +71,7 @@ internal class MigrateOlympiaAccountsUseCaseTest {
                 Account.initBabylon(
                     networkId = NetworkId.MAINNET,
                     displayName = DisplayName("my account"),
-                    publicKey = babylonMnemonic.derivePublicKey(derivationPath = derivationPath),
-                    derivationPath = derivationPath,
+                    hdPublicKey = babylonMnemonic.derivePublicKey(path = derivationPath),
                     factorSourceId = factorSource.value.id.asGeneral()
                 )
             ),
@@ -98,10 +96,8 @@ internal class MigrateOlympiaAccountsUseCaseTest {
         )
         val accounts = List(11) { index ->
             val derivationPath = DerivationPath.Bip44Like.init(index = index.toUInt())
-            val publicKey = olympiaMnemonic.derivePublicKey(
-                derivationPath = derivationPath,
-                curve = Slip10Curve.SECP256K1
-            ) as PublicKey.Secp256k1
+            val hdPublicKey = olympiaMnemonic.derivePublicKey(path = derivationPath)
+            val publicKey = hdPublicKey.publicKey as PublicKey.Secp256k1
 
             val olympiaAddress = LegacyOlympiaAccountAddress.init(publicKey)
             OlympiaAccountDetails(

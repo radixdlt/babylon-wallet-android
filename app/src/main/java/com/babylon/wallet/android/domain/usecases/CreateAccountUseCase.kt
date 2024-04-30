@@ -1,10 +1,10 @@
 package com.babylon.wallet.android.domain.usecases
 
 import com.babylon.wallet.android.data.repository.ResolveAccountsLedgerStateRepository
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.NetworkId
 import kotlinx.coroutines.flow.first
 import rdx.works.core.sargon.addAccounts
@@ -23,7 +23,7 @@ class CreateAccountUseCase @Inject constructor(
     suspend operator fun invoke(
         displayName: DisplayName,
         factorSourceId: FactorSourceId.Hash,
-        publicKeyAndDerivationPath: AccessFactorSourcesOutput.PublicKeyAndDerivationPath,
+        hdPublicKey: HierarchicalDeterministicPublicKey,
         onNetworkId: NetworkId? = null
     ): Account {
         val currentProfile = profileRepository.profile.first()
@@ -32,8 +32,7 @@ class CreateAccountUseCase @Inject constructor(
         val newAccount = Account.initBabylon(
             networkId = networkId,
             displayName = displayName,
-            publicKey = publicKeyAndDerivationPath.publicKey,
-            derivationPath = publicKeyAndDerivationPath.derivationPath,
+            hdPublicKey = hdPublicKey,
             factorSourceId = factorSourceId,
             customAppearanceId = currentProfile.nextAppearanceId(forNetworkId = networkId)
         )

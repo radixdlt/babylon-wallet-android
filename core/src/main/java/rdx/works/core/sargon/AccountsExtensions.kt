@@ -13,6 +13,7 @@ import com.radixdlt.sargon.EntityFlags
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.OnLedgerSettings
@@ -64,21 +65,19 @@ val Account.isLedgerAccount: Boolean
 fun Account.Companion.initBabylon(
     networkId: NetworkId,
     displayName: DisplayName,
-    publicKey: PublicKey,
-    derivationPath: DerivationPath,
+    hdPublicKey: HierarchicalDeterministicPublicKey,
     factorSourceId: FactorSourceId.Hash,
     onLedgerSettings: OnLedgerSettings = OnLedgerSettings.default(),
     flags: EntityFlags = EntityFlags.init(),
     customAppearanceId: AppearanceId? = null
 ): Account {
-    val accountAddress = AccountAddress.init(publicKey, networkId)
+    val accountAddress = AccountAddress.init(hdPublicKey.publicKey, networkId)
     val unsecuredSecurityState = EntitySecurityState.unsecured(
-        publicKey = publicKey,
-        derivationPath = derivationPath,
+        hdPublicKey = hdPublicKey,
         factorSourceId = factorSourceId
     )
 
-    val appearanceId = customAppearanceId ?: AppearanceId.from(derivationPath)
+    val appearanceId = customAppearanceId ?: AppearanceId.from(hdPublicKey.derivationPath)
 
     return Account(
         networkId = networkId,
@@ -110,9 +109,11 @@ fun Account.Companion.initOlympia(
 ): Account {
     val accountAddress = LegacyOlympiaAccountAddress.init(publicKey).toBabylonAddress()
     val unsecuredSecurityState = EntitySecurityState.unsecured(
-        publicKey = publicKey,
-        derivationPath = derivationPath,
-        factorSourceId = factorSourceId
+        factorSourceId = factorSourceId,
+        hdPublicKey = HierarchicalDeterministicPublicKey(
+            publicKey = publicKey,
+            derivationPath = derivationPath
+        )
     )
 
     val appearanceId = customAppearanceId ?: AppearanceId.from(derivationPath)

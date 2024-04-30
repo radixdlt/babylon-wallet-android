@@ -14,20 +14,15 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.Slip10Curve
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.bytes
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
-import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.slip10.model.ExtendedKey
 import com.radixdlt.slip10.toKey
-import rdx.works.core.crypto.PrivateKey
-import rdx.works.core.crypto.PrivateKey.Companion.toPrivateKey
 import rdx.works.core.hash
 
 fun MnemonicWithPassphrase.Companion.init(phrase: String) = MnemonicWithPassphrase(
@@ -60,29 +55,6 @@ fun MnemonicWithPassphrase.toFactorSourceId(
         derivationPath = DerivationPath.getIdPath()
     ).keyPair.getCompressedPublicKey().removeLeadingZero().hash().bytes
 ).asGeneral()
-
-fun MnemonicWithPassphrase.derivePrivateKey(
-    hdPublicKey: HierarchicalDeterministicPublicKey
-): PrivateKey = toExtendedKey(
-    curve = when (hdPublicKey.publicKey) {
-        is PublicKey.Ed25519 -> Slip10Curve.CURVE25519
-        is PublicKey.Secp256k1 -> Slip10Curve.SECP256K1
-    },
-    derivationPath = hdPublicKey.derivationPath
-).keyPair.toPrivateKey()
-
-fun MnemonicWithPassphrase.derivePublicKey(
-    derivationPath: DerivationPath,
-    curve: Slip10Curve = Slip10Curve.CURVE25519
-): PublicKey {
-    val publicKeyBytes = toExtendedKey(curve = curve, derivationPath = derivationPath)
-        .keyPair
-        .getCompressedPublicKey()
-        .removeLeadingZero()
-        .toBagOfBytes()
-
-    return PublicKey.init(bytes = publicKeyBytes)
-}
 
 private fun MnemonicWithPassphrase.toExtendedKey(
     curve: Slip10Curve = Slip10Curve.CURVE25519,

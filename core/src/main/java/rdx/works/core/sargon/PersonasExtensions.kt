@@ -15,6 +15,7 @@ import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.contains
+import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.identity
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.nonHardenedIndex
@@ -54,16 +55,15 @@ fun Persona.Companion.init(
         keyKind = Cap26KeyKind.TRANSACTION_SIGNING,
         index = entityIndex
     )
-    val publicKey = mnemonicWithPassphrase.derivePublicKey(derivationPath = derivationPath)
+    val hdPublicKey = mnemonicWithPassphrase.derivePublicKey(path = derivationPath)
 
     return Persona(
-        address = IdentityAddress.init(publicKey = publicKey, networkId = networkId),
+        address = IdentityAddress.init(publicKey = hdPublicKey.publicKey, networkId = networkId),
         displayName = displayName,
         networkId = networkId,
         securityState = EntitySecurityState.unsecured(
             factorSourceId = factorSourceId,
-            publicKey = publicKey,
-            derivationPath = derivationPath
+            hdPublicKey = hdPublicKey
         ),
         personaData = personaData,
         flags = EntityFlags.init()

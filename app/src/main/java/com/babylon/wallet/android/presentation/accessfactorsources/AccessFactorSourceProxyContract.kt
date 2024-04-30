@@ -1,18 +1,17 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
 import com.radixdlt.sargon.Account
-import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.PublicKey
 
 // interface for clients that need access to factor sources
 interface AccessFactorSourcesProxy {
 
     suspend fun getPublicKeyAndDerivationPathForFactorSource(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
-    ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath>
+    ): Result<AccessFactorSourcesOutput.HDPublicKey>
 
     suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
@@ -79,9 +78,8 @@ sealed interface AccessFactorSourcesInput {
 
 sealed interface AccessFactorSourcesOutput {
 
-    data class PublicKeyAndDerivationPath(
-        val publicKey: PublicKey,
-        val derivationPath: DerivationPath
+    data class HDPublicKey(
+        val value: HierarchicalDeterministicPublicKey
     ) : AccessFactorSourcesOutput
 
     data class DerivedAccountsWithNextDerivationPath(
