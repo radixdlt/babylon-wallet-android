@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.presentation.wallet
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
@@ -16,11 +17,13 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddress
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.invoke
@@ -281,8 +284,26 @@ data class WalletUiState(
     val isNpsSurveyShown: Boolean = false
 ) : UiState {
 
-    val accountsAndAssets: List<AccountWithAssets>
-        get() = accountsWithAssets.orEmpty()
+    val accountsAndAssets: List<AccountUiItem> by lazy {
+        accountsWithAssets.orEmpty()
+            .map { accountWithAssets ->
+                val isFiatBalanceVisible = accountWithAssets.assets == null ||
+                    accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
+
+                AccountUiItem(
+                    account = accountWithAssets.account,
+                    address = ActionableAddress.Address(Address.Account(accountWithAssets.account.address)),
+                    assets = accountWithAssets.assets,
+                    securityPromptType = securityPrompt(accountWithAssets.account),
+                    tag = getTag(accountWithAssets.account),
+                    isFiatBalanceVisible = isFiatBalancesEnabled && isFiatBalanceVisible,
+                    fiatTotalValue = totalFiatValueForAccount(accountWithAssets.account.address),
+                    isLoadingResources = accountWithAssets.assets == null,
+                    isLoadingBalance = accountWithAssets.assets == null ||
+                        isBalanceLoadingForAccount(accountWithAssets.account.address)
+                )
+            }
+    }
 
     /**
      * Initial loading of the screen.
@@ -290,14 +311,13 @@ data class WalletUiState(
     val isLoading: Boolean
         get() = accountsWithAssets == null && loading
 
-    val isWalletBalanceLoading: Boolean
-        get() {
-            // if assets loading then getFiatValueUseCase won't fetch any actual prices
-            val areAnyAssetsLoading = accountsAndAssets.any { accountWithAssets -> accountWithAssets.assets == null }
-            return isLoading || areAnyAssetsLoading || accountsAddressesWithAssetsPrices.isNullOrEmpty()
-        }
+    val isWalletBalanceLoading: Boolean by lazy {
+        // if assets loading then getFiatValueUseCase won't fetch any actual prices
+        val areAnyAssetsLoading = accountsAndAssets.any { accountWithAssets -> accountWithAssets.assets == null }
+        isLoading || areAnyAssetsLoading || accountsAddressesWithAssetsPrices.isNullOrEmpty()
+    }
 
-    fun isBalanceLoadingForAccount(accountAddress: AccountAddress): Boolean {
+    private fun isBalanceLoadingForAccount(accountAddress: AccountAddress): Boolean {
         return accountsAddressesWithAssetsPrices?.containsKey(accountAddress) != true
     }
 
@@ -311,26 +331,25 @@ data class WalletUiState(
      * if at least one account failed to fetch at least one price then return Zero
      *
      */
-    val totalFiatValueOfWallet: FiatPrice?
-        get() {
-            val isAnyAccountTotalFailed = accountsAddressesWithAssetsPrices?.values?.any { assetsPrices ->
-                assetsPrices == null
-            } ?: false
-            if (isAnyAccountTotalFailed) return null
+    val totalFiatValueOfWallet: FiatPrice? by lazy {
+        val isAnyAccountTotalFailed = accountsAddressesWithAssetsPrices?.values?.any { assetsPrices ->
+            assetsPrices == null
+        } ?: false
+        if (isAnyAccountTotalFailed) return@lazy null
 
-            var total = 0.toDecimal192()
-            var currency = SupportedCurrency.USD
-            accountsAddressesWithAssetsPrices?.values?.forEach {
-                it?.let { assetsPrices ->
-                    assetsPrices.forEach { assetPrice ->
-                        total += assetPrice.price?.price.orZero()
-                        currency = assetPrice.price?.currency ?: SupportedCurrency.USD
-                    }
+        var total = 0.toDecimal192()
+        var currency = SupportedCurrency.USD
+        accountsAddressesWithAssetsPrices?.values?.forEach {
+            it?.let { assetsPrices ->
+                assetsPrices.forEach { assetPrice ->
+                    total += assetPrice.price?.price.orZero()
+                    currency = assetPrice.price?.currency ?: SupportedCurrency.USD
                 }
-            } ?: return null
+            }
+        } ?: return@lazy null
 
-            return FiatPrice(price = total, currency = currency)
-        }
+        FiatPrice(price = total, currency = currency)
+    }
 
     /**
      * if the account has zero assets then return Zero price
@@ -338,8 +357,8 @@ data class WalletUiState(
      * if the account has assets but failed to fetch prices then return Null
      *
      */
-    fun totalFiatValueForAccount(accountAddress: AccountAddress): FiatPrice? {
-        val accountWithAssets = accountsAndAssets.find {
+    private fun totalFiatValueForAccount(accountAddress: AccountAddress): FiatPrice? {
+        val accountWithAssets = accountsWithAssets?.find {
             it.account.address == accountAddress
         }
         if (accountWithAssets?.assets?.ownsAnyAssetsThatContributeToBalance?.not() == true) {
@@ -363,7 +382,7 @@ data class WalletUiState(
         }
     }
 
-    fun securityPrompt(forAccount: Account) = entitiesWithSecurityPrompt.find {
+    private fun securityPrompt(forAccount: Account) = entitiesWithSecurityPrompt.find {
         it.entity.address.string == forAccount.address.string
     }?.prompt
 
@@ -372,7 +391,7 @@ data class WalletUiState(
             it.entity is ProfileEntity.PersonaEntity && it.prompt == SecurityPromptType.NEEDS_BACKUP
         }
 
-    fun getTag(forAccount: Account): AccountTag? {
+    private fun getTag(forAccount: Account): AccountTag? {
         return when {
             !isDappDefinitionAccount(forAccount) && !isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> null
             isDappDefinitionAccount(forAccount) -> AccountTag.DAPP_DEFINITION
@@ -390,7 +409,7 @@ data class WalletUiState(
     }
 
     private fun isDappDefinitionAccount(forAccount: Account): Boolean {
-        return accountsAndAssets.find { accountWithResources ->
+        return accountsWithAssets?.find { accountWithResources ->
             accountWithResources.account.address == forAccount.address
         }?.isDappDefinitionAccountType ?: false
     }
@@ -432,4 +451,17 @@ data class WalletUiState(
     enum class AccountTag {
         LEDGER_BABYLON, DAPP_DEFINITION, LEDGER_LEGACY, LEGACY_SOFTWARE
     }
+
+    @SuppressLint("VisibleForTests")
+    data class AccountUiItem(
+        val account: Account,
+        val address: ActionableAddress,
+        val assets: Assets?,
+        val fiatTotalValue: FiatPrice?,
+        val tag: AccountTag?,
+        val securityPromptType: SecurityPromptType?,
+        val isFiatBalanceVisible: Boolean,
+        val isLoadingResources: Boolean,
+        val isLoadingBalance: Boolean
+    )
 }
