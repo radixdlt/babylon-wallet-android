@@ -45,8 +45,13 @@ fun Profile.createAccount(
         ).addressString()
     }
 
+    val curve = if (isForLegacyOlympia) {
+        Slip10Curve.SECP_256K1
+    } else {
+        Slip10Curve.CURVE_25519
+    }
     val unsecuredSecurityState = SecurityState.unsecured(
-        publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), Slip10Curve.CURVE_25519),
+        publicKey = FactorInstance.PublicKey(compressedPublicKey.toHexString(), curve),
         derivationPath = derivationPath,
         factorSourceId = (factorSource as FactorSource).id as FactorSource.FactorSourceID.FromHash
     )
