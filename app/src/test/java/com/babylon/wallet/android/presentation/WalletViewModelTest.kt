@@ -12,7 +12,6 @@ import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.get
 import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -25,6 +24,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -37,7 +37,6 @@ import rdx.works.core.domain.resources.XrdResource
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.sargon.currentNetwork
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
@@ -56,6 +55,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     private val npsSurveyStateObserver = mockk<NPSSurveyStateObserver>()
     private val preferencesManager = mockk<PreferencesManager>()
     private val appEventBus = mockk<AppEventBus>()
+    private val testDispatcher = StandardTestDispatcher()
 
     private val sampleProfile = Profile.sample()
     private val sampleXrdResource = Resource.FungibleResource(
@@ -77,6 +77,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
         preferencesManager,
         npsSurveyStateObserver,
         getBackupStateUseCase,
+        testDispatcher
     )
 
     override fun setUp() {
@@ -119,7 +120,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
 
         viewModel.state.test {
             assertEquals(
-                WalletUiState(isBackupWarningVisible = true, factorSources = sampleProfile.factorSources()),
+                WalletUiState(isSettingsWarningVisible = true),
                 expectMostRecentItem()
             )
         }

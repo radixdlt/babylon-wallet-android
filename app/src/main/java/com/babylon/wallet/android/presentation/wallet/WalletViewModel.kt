@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.NPSSurveyState
 import com.babylon.wallet.android.NPSSurveyStateObserver
 import com.babylon.wallet.android.data.repository.tokenprice.FiatPriceRepository
+import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.EntityWithSecurityPrompt
 import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptUseCase
@@ -26,12 +27,12 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.ProfileEntity
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
@@ -40,6 +41,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -74,8 +76,14 @@ class WalletViewModel @Inject constructor(
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val preferencesManager: PreferencesManager,
     private val npsSurveyStateObserver: NPSSurveyStateObserver,
-    getBackupStateUseCase: GetBackupStateUseCase
+    getBackupStateUseCase: GetBackupStateUseCase,
+    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : StateViewModel<WalletUiState>(), OneOffEventHandler<WalletEvent> by OneOffEventHandlerImpl() {
+
+    private var accountsWithAssets: List<AccountWithAssets>? = null
+    private var accountsAddressesWithAssetsPrices: Map<AccountAddress, List<AssetPrice>?>? = null
+    private var entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList()
+    private var isBackupWarningVisible: Boolean = false
 
     override fun initialState() = WalletUiState()
 
@@ -98,7 +106,6 @@ class WalletViewModel @Inject constructor(
             }
         }
         observeAccounts()
-        observeDeviceFactorSources()
         observePrompts()
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
@@ -138,19 +145,31 @@ class WalletViewModel @Inject constructor(
     private fun observeAccounts() {
         accountsFlow
             .flatMapLatest { accounts ->
-                _state.update { it.loadingResources(accounts = accounts, isRefreshing = it.isRefreshing) }
+                this.accountsWithAssets = accounts.map { account ->
+                    val current = accountsWithAssets?.find { account == it.account }
+                    AccountWithAssets(
+                        account = account,
+                        details = current?.details,
+                        assets = current?.assets
+                    )
+                }
+
+                _state.update { loadingResources(isRefreshing = it.isRefreshing) }
+
                 getWalletAssetsUseCase(accounts = accounts, isRefreshing = state.value.isRefreshing).catch { error ->
-                    _state.update { it.onResourcesError(error) }
+                    _state.update { onResourcesError(error) }
                     Timber.w(error)
                 }
             }
             .onEach { accountsWithAssets ->
+                this.accountsWithAssets = accountsWithAssets
+
                 // keep the val here because the onResourcesReceived sets the refreshing to false
                 val isRefreshing = state.value.isRefreshing
 
-                _state.update { it.onResourcesReceived(accountsWithAssets) }
+                _state.update { onResourcesReceived() }
 
-                val accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
+                accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
                     accountWithAssets.account.address to getFiatValueUseCase.forAccount(
                         accountWithAssets = accountWithAssets,
                         isRefreshing = isRefreshing
@@ -162,29 +181,22 @@ class WalletViewModel @Inject constructor(
                         }
                     }.getOrNull()
                 }
-                _state.update { walletUiState ->
-                    walletUiState.copy(
-                        accountsAddressesWithAssetsPrices = accountsAddressesWithAssetsPrices
-                    )
-                }
-            }
-            .launchIn(viewModelScope)
-    }
 
-    private fun observeDeviceFactorSources() {
-        viewModelScope.launch {
-            getProfileUseCase.flow.map { it.factorSources() }.collect { factorSourcesList ->
-                _state.update { state ->
-                    state.copy(factorSources = factorSourcesList)
-                }
+                _state.update { onResourcesReceived() }
             }
-        }
+            .flowOn(ioDispatcher)
+            .launchIn(viewModelScope)
     }
 
     private fun observePrompts() {
         viewModelScope.launch {
-            getEntitiesWithSecurityPromptUseCase().collect { accounts ->
-                _state.update { it.copy(entitiesWithSecurityPrompt = accounts) }
+            getEntitiesWithSecurityPromptUseCase().collect { entitiesWithSecurityPrompt ->
+                this@WalletViewModel.entitiesWithSecurityPrompt = entitiesWithSecurityPrompt
+                _state.update {
+                    it.copy(
+                        isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt()
+                    )
+                }
             }
         }
         viewModelScope.launch {
@@ -197,7 +209,13 @@ class WalletViewModel @Inject constructor(
     private fun observeProfileBackupState(getBackupStateUseCase: GetBackupStateUseCase) {
         viewModelScope.launch {
             getBackupStateUseCase().collect { backupState ->
-                _state.update { it.copy(isBackupWarningVisible = backupState.isWarningVisible) }
+                this@WalletViewModel.isBackupWarningVisible = backupState.isWarningVisible
+
+                _state.update {
+                    it.copy(
+                        isSettingsWarningVisible = isBackupWarningVisible || anyBackupSecurityPrompt()
+                    )
+                }
             }
         }
     }
@@ -222,7 +240,7 @@ class WalletViewModel @Inject constructor(
     }
 
     private fun loadResources(withRefresh: Boolean) {
-        _state.update { it.copy(refreshing = withRefresh) }
+        _state.update { it.copy(isRefreshing = withRefresh) }
         viewModelScope.launch { refreshFlow.emit(Unit) }
     }
 
@@ -261,42 +279,52 @@ class WalletViewModel @Inject constructor(
             walletUiState.copy(isFiatBalancesEnabled = isEnabled)
         }
     }
-}
 
-internal sealed interface WalletEvent : OneOffEvent {
-    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceId.Hash) : WalletEvent
-    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : WalletEvent
+    private fun loadingResources(isRefreshing: Boolean): WalletUiState = state.value.copy(
+        accountUiItems = buildAccountUiItems(),
+        isLoading = accountsWithAssets == null,
+        isRefreshing = isRefreshing
+    )
 
-    data object ShowNpsSurvey : WalletEvent
-}
+    private fun onResourcesReceived(): WalletUiState {
+        val accountUiItems = buildAccountUiItems()
 
-data class WalletUiState(
-    private val accountsWithAssets: List<AccountWithAssets>? = null,
-    private val accountsAddressesWithAssetsPrices: Map<AccountAddress, List<AssetPrice>?>? = null,
-    private val loading: Boolean = true,
-    private val refreshing: Boolean = false,
-    private val entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList(),
-    private val factorSources: List<com.radixdlt.sargon.FactorSource> = emptyList(),
-    val isRadixBannerVisible: Boolean = false,
-    val isBackupWarningVisible: Boolean = false,
-    val isFiatBalancesEnabled: Boolean = true,
-    val uiMessage: UiMessage? = null,
-    val isNpsSurveyShown: Boolean = false
-) : UiState {
+        return state.value.copy(
+            isLoading = false,
+            isRefreshing = false,
+            accountUiItems = accountUiItems,
+            totalFiatValueOfWallet = buildTotalFiatValue()
+        )
+    }
 
-    val accountsAndAssets: List<AccountUiItem> by lazy {
-        accountsWithAssets.orEmpty()
+    private fun onResourcesError(error: Throwable?): WalletUiState = state.value.copy(
+        uiMessage = UiMessage.ErrorMessage(error),
+        accountUiItems = state.value.accountUiItems.map { account ->
+            if (account.assets == null) {
+                // If assets don't exist leave them empty
+                account.copy(assets = Assets())
+            } else {
+                // Else continue with what the user used to see before the refresh
+                account
+            }
+        },
+        isLoading = false,
+        isRefreshing = false
+    )
+
+    private fun buildAccountUiItems(): List<WalletUiState.AccountUiItem> {
+        return accountsWithAssets.orEmpty()
             .map { accountWithAssets ->
                 val isFiatBalanceVisible = accountWithAssets.assets == null ||
                     accountWithAssets.assets.ownsAnyAssetsThatContributeToBalance
 
-                AccountUiItem(
+                WalletUiState.AccountUiItem(
                     account = accountWithAssets.account,
                     address = ActionableAddress.Address(Address.Account(accountWithAssets.account.address)),
                     assets = accountWithAssets.assets,
                     securityPromptType = securityPrompt(accountWithAssets.account),
                     tag = getTag(accountWithAssets.account),
-                    isFiatBalanceVisible = isFiatBalancesEnabled && isFiatBalanceVisible,
+                    isFiatBalanceVisible = state.value.isFiatBalancesEnabled && isFiatBalanceVisible,
                     fiatTotalValue = totalFiatValueForAccount(accountWithAssets.account.address),
                     isLoadingResources = accountWithAssets.assets == null,
                     isLoadingBalance = accountWithAssets.assets == null ||
@@ -305,37 +333,18 @@ data class WalletUiState(
             }
     }
 
-    /**
-     * Initial loading of the screen.
-     */
-    val isLoading: Boolean
-        get() = accountsWithAssets == null && loading
-
-    val isWalletBalanceLoading: Boolean by lazy {
-        // if assets loading then getFiatValueUseCase won't fetch any actual prices
-        val areAnyAssetsLoading = accountsAndAssets.any { accountWithAssets -> accountWithAssets.assets == null }
-        isLoading || areAnyAssetsLoading || accountsAddressesWithAssetsPrices.isNullOrEmpty()
-    }
-
     private fun isBalanceLoadingForAccount(accountAddress: AccountAddress): Boolean {
         return accountsAddressesWithAssetsPrices?.containsKey(accountAddress) != true
     }
 
     /**
-     * Used in pull to refresh mode.
-     */
-    val isRefreshing: Boolean
-        get() = refreshing
-
-    /**
      * if at least one account failed to fetch at least one price then return Zero
-     *
      */
-    val totalFiatValueOfWallet: FiatPrice? by lazy {
+    private fun buildTotalFiatValue(): FiatPrice? {
         val isAnyAccountTotalFailed = accountsAddressesWithAssetsPrices?.values?.any { assetsPrices ->
             assetsPrices == null
         } ?: false
-        if (isAnyAccountTotalFailed) return@lazy null
+        if (isAnyAccountTotalFailed) return null
 
         var total = 0.toDecimal192()
         var currency = SupportedCurrency.USD
@@ -346,16 +355,15 @@ data class WalletUiState(
                     currency = assetPrice.price?.currency ?: SupportedCurrency.USD
                 }
             }
-        } ?: return@lazy null
+        } ?: return null
 
-        FiatPrice(price = total, currency = currency)
+        return FiatPrice(price = total, currency = currency)
     }
 
     /**
      * if the account has zero assets then return Zero price
      * if the account has assets but without prices then return Zero price
      * if the account has assets but failed to fetch prices then return Null
-     *
      */
     private fun totalFiatValueForAccount(accountAddress: AccountAddress): FiatPrice? {
         val accountWithAssets = accountsWithAssets?.find {
@@ -386,18 +394,17 @@ data class WalletUiState(
         it.entity.address.string == forAccount.address.string
     }?.prompt
 
-    val isSettingsWarningVisible: Boolean
-        get() = isBackupWarningVisible || entitiesWithSecurityPrompt.any {
-            it.entity is ProfileEntity.PersonaEntity && it.prompt == SecurityPromptType.NEEDS_BACKUP
-        }
+    private fun anyBackupSecurityPrompt() = entitiesWithSecurityPrompt.any {
+        it.entity is ProfileEntity.PersonaEntity && it.prompt == SecurityPromptType.NEEDS_BACKUP
+    }
 
-    private fun getTag(forAccount: Account): AccountTag? {
+    private fun getTag(forAccount: Account): WalletUiState.AccountTag? {
         return when {
             !isDappDefinitionAccount(forAccount) && !isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> null
-            isDappDefinitionAccount(forAccount) -> AccountTag.DAPP_DEFINITION
-            isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> AccountTag.LEDGER_LEGACY
-            isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> AccountTag.LEGACY_SOFTWARE
-            !isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> AccountTag.LEDGER_BABYLON
+            isDappDefinitionAccount(forAccount) -> WalletUiState.AccountTag.DAPP_DEFINITION
+            isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> WalletUiState.AccountTag.LEDGER_LEGACY
+            isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> WalletUiState.AccountTag.LEGACY_SOFTWARE
+            !isLegacyAccount(forAccount) && isLedgerAccount(forAccount) -> WalletUiState.AccountTag.LEDGER_BABYLON
             else -> null
         }
     }
@@ -413,40 +420,26 @@ data class WalletUiState(
             accountWithResources.account.address == forAccount.address
         }?.isDappDefinitionAccountType ?: false
     }
+}
 
-    fun loadingResources(accounts: List<Account>, isRefreshing: Boolean): WalletUiState = copy(
-        accountsWithAssets = accounts.map { account ->
-            val current = accountsWithAssets?.find { account == it.account }
-            AccountWithAssets(
-                account = account,
-                details = current?.details,
-                assets = current?.assets
-            )
-        },
-        loading = true,
-        refreshing = isRefreshing
-    )
+internal sealed interface WalletEvent : OneOffEvent {
+    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceId.Hash) : WalletEvent
+    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : WalletEvent
 
-    fun onResourcesReceived(accountsWithResources: List<AccountWithAssets>): WalletUiState = copy(
-        accountsWithAssets = accountsWithResources,
-        loading = false,
-        refreshing = false
-    )
+    data object ShowNpsSurvey : WalletEvent
+}
 
-    fun onResourcesError(error: Throwable?): WalletUiState = copy(
-        uiMessage = UiMessage.ErrorMessage(error),
-        accountsWithAssets = accountsWithAssets?.map { account ->
-            if (account.assets == null) {
-                // If assets don't exist leave them empty
-                account.copy(assets = Assets())
-            } else {
-                // Else continue with what the user used to see before the refresh
-                account
-            }
-        },
-        loading = false,
-        refreshing = false
-    )
+data class WalletUiState(
+    val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
+    val accountUiItems: List<AccountUiItem> = emptyList(),
+    val isRadixBannerVisible: Boolean = false,
+    val isFiatBalancesEnabled: Boolean = true,
+    val uiMessage: UiMessage? = null,
+    val isNpsSurveyShown: Boolean = false,
+    val totalFiatValueOfWallet: FiatPrice? = null,
+    val isSettingsWarningVisible: Boolean = false
+) : UiState {
 
     enum class AccountTag {
         LEDGER_BABYLON, DAPP_DEFINITION, LEDGER_LEGACY, LEGACY_SOFTWARE

@@ -35,9 +35,6 @@ import com.babylon.wallet.android.domain.model.TransactionHistoryItem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.name
-import com.babylon.wallet.android.utils.timestampHoursMinutes
-import com.radixdlt.sargon.extensions.abs
-import com.radixdlt.sargon.extensions.formatted
 import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.NonFungibleCollection
 import rdx.works.core.domain.assets.PoolUnit
@@ -92,7 +89,9 @@ fun TransactionHistoryItem(modifier: Modifier = Modifier, transactionItem: Trans
                     .fillMaxWidth()
                     .border(1.dp, RadixTheme.colors.gray4, shape = RadixTheme.shapes.roundedRectMedium)
                     .padding(RadixTheme.dimensions.paddingMedium)
-                val isAccountDepositSettingsUpdate = transactionItem.transactionClass == TransactionClass.AccountDespositSettingsUpdate
+                val isAccountDepositSettingsUpdate = remember(transactionItem.transactionClass) {
+                    transactionItem.transactionClass == TransactionClass.AccountDespositSettingsUpdate
+                }
                 val withdrawn = remember(transactionItem.withdrawn) {
                     transactionItem.withdrawn
                 }
@@ -250,9 +249,12 @@ private fun BalanceChangeItem(balanceChange: BalanceChange) {
         is BalanceChange.NonFungibleBalanceChange -> {
             when (val asset = balanceChange.asset) {
                 is NonFungibleCollection -> {
-                    asset.resource.items.forEachIndexed { _, nftItem ->
-                        val addDivider = nftItem != asset.resource.items.last()
-                        NftItemBalanceChange(nftItem, asset.resource)
+                    balanceChange.items.forEachIndexed { index, item ->
+                        val addDivider = index != balanceChange.items.size - 1
+                        NftItemBalanceChange(
+                            nftResource = asset.resource,
+                            item = item
+                        )
                         if (addDivider) {
                             HorizontalDivider(color = RadixTheme.colors.gray3)
                         }
@@ -354,7 +356,7 @@ private fun PoolUnitBalanceChange(
                 }
             }
             Text(
-                text = balanceChange.balanceChange.abs().formatted(),
+                text = balanceChange.formattedBalanceChange,
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
@@ -409,7 +411,7 @@ private fun LiquidStakeUnitBalanceChange(
                     )
                 }
                 Text(
-                    text = balanceChange.balanceChange.abs().formatted(),
+                    text = balanceChange.formattedBalanceChange,
                     style = RadixTheme.typography.body1HighImportance,
                     color = RadixTheme.colors.gray1,
                     textAlign = TextAlign.End,
@@ -423,8 +425,8 @@ private fun LiquidStakeUnitBalanceChange(
 
 @Composable
 private fun NftItemBalanceChange(
-    nftItem: Resource.NonFungibleResource.Item,
     nftResource: Resource.NonFungibleResource,
+    item: BalanceChange.NonFungibleBalanceChange.Item,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -441,16 +443,14 @@ private fun NftItemBalanceChange(
         )
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
             Text(
-                text = nftResource.name.ifEmpty {
-                    nftResource.address.formatted()
-                },
+                text = item.resourceName,
                 style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = nftItem.name ?: nftItem.localId.formatted(),
+                text = item.name,
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray1,
                 maxLines = 1,
@@ -481,7 +481,7 @@ private fun TokenContent(
         )
         Text(
             modifier = Modifier.weight(1f),
-            text = withdraw.balanceChange.abs().formatted(),
+            text = withdraw.formattedBalanceChange,
             style = RadixTheme.typography.body1HighImportance,
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.End,
@@ -495,7 +495,7 @@ private fun TokenContent(
 fun TypeAndTimestampLabel(modifier: Modifier = Modifier, item: TransactionHistoryItem) {
     val text = buildAnnotatedString {
         append(item.transactionClass.description())
-        item.timestamp?.timestampHoursMinutes()?.let {
+        item.hoursAndMinutes?.let {
             append(" \u2022 $it")
         }
     }
