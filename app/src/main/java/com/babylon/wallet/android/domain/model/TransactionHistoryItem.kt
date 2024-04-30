@@ -246,7 +246,7 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
             asset.resource.name.ifEmpty {
                 asset.resource.address.formatted()
             }
-        } ?: ""
+        }.orEmpty()
         val items = relatedAsset?.let { asset ->
             asset.resource.items.map { nftItem ->
                 BalanceChange.NonFungibleBalanceChange.Item(
@@ -254,7 +254,7 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
                     resourceName = resourceName
                 )
             }
-        } ?: emptyList()
+        }.orEmpty()
 
         BalanceChange.NonFungibleBalanceChange(
             removedIds = item.removed,
