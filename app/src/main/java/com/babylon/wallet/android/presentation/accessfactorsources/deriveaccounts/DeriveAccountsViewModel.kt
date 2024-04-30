@@ -28,7 +28,6 @@ import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.accountRecoveryScanned
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.default
 import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
@@ -293,7 +292,6 @@ class DeriveAccountsViewModel @Inject constructor(
             is FactorSource.Device -> factorSource.value.id.asGeneral()
             is FactorSource.Ledger -> factorSource.value.id.asGeneral()
         }
-        ThirdPartyDeposits.Companion.default()
         Account.initBabylon(
             networkId = forNetworkId,
             displayName = DisplayName(Constants.DEFAULT_ACCOUNT_NAME),
