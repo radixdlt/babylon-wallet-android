@@ -398,7 +398,7 @@ private fun RadixBanner(
 @Preview(showBackground = true)
 @Preview("large font", fontScale = 2f, showBackground = true)
 @Composable
-fun WalletContentPreview(
+private fun WalletContentPreview(
     @PreviewParameter(WalletUiStateProvider::class) uiState: WalletUiState
 ) {
     RadixWalletPreviewTheme {

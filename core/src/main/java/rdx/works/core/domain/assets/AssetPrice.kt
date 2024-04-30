@@ -21,27 +21,29 @@ data class FiatPrice(
 
     val isZero = price.isZero
 
-    val formatted: String = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        NumberFormatter.with()
-            .unit(Currency.getInstance(currency.name))
-            .locale(Locale.getDefault())
-            .let { localizedNumberFormatter ->
-                if (price.isZero) {
-                    localizedNumberFormatter.precision(Precision.fixedFraction(NO_PRECISION))
-                } else {
-                    localizedNumberFormatter
+    val formatted: String by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            NumberFormatter.with()
+                .unit(Currency.getInstance(currency.name))
+                .locale(Locale.getDefault())
+                .let { localizedNumberFormatter ->
+                    if (price.isZero) {
+                        localizedNumberFormatter.precision(Precision.fixedFraction(NO_PRECISION))
+                    } else {
+                        localizedNumberFormatter
+                    }
                 }
-            }
-            .format(price.toDouble())
-            .toString()
-    } else {
-        val javaCurrency = Currency.getInstance(currency.name)
-        NumberFormat.getCurrencyInstance().apply {
-            currency = javaCurrency
-            if (price.isZero) {
-                maximumFractionDigits = NO_PRECISION
-            }
-        }.format(price.toDouble())
+                .format(price.toDouble())
+                .toString()
+        } else {
+            val javaCurrency = Currency.getInstance(currency.name)
+            NumberFormat.getCurrencyInstance().apply {
+                currency = javaCurrency
+                if (price.isZero) {
+                    maximumFractionDigits = NO_PRECISION
+                }
+            }.format(price.toDouble())
+        }
     }
 
     operator fun times(value: Decimal192): FiatPrice = FiatPrice(
