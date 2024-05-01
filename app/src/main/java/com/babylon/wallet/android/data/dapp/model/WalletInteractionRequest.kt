@@ -2,8 +2,8 @@ package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.radixdlt.hex.decode
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -100,7 +100,7 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
         instructions = transactionManifest,
         networkId = metadata.networkId,
         message = message?.let { TransactionMessage.Public(it) } ?: TransactionMessage.None,
-        blobs = blobs?.map { decode(it) }.orEmpty(),
+        blobs = blobs?.map { it.hexToBagOfBytes() }.orEmpty(),
         version = version
     ),
     requestMetadata = metadata

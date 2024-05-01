@@ -8,7 +8,6 @@ import com.radixdlt.sargon.Nonce
 import com.radixdlt.sargon.NotarizedTransaction
 import com.radixdlt.sargon.NotarySignature
 import com.radixdlt.sargon.PublicKey
-import com.radixdlt.sargon.Signature
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.SignedIntent
 import com.radixdlt.sargon.SignedIntentHash

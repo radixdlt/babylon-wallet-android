@@ -31,8 +31,9 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
             when (val securityState = signer.securityState) {
                 is EntitySecurityState.Unsecured -> {
                     val factorInstance = when (request) {
-                        is SignRequest.SignAuthChallengeRequest -> securityState.value.authenticationSigning
-                            ?: securityState.value.transactionSigning
+                        is SignRequest.SignAuthChallengeRequest ->
+                            securityState.value.authenticationSigning
+                                ?: securityState.value.transactionSigning
 
                         is SignRequest.SignTransactionRequest -> securityState.value.transactionSigning
                     }

@@ -54,5 +54,4 @@ sealed class InteractionState(val factorSource: FactorSource) {
             }
         }
     }
-
 }

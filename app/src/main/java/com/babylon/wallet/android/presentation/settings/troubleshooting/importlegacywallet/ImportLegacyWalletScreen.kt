@@ -831,7 +831,11 @@ private fun VerifyWithYourSeedPhrasePage(
             modifier = Modifier.fillMaxWidth(),
             onFocusedWordIndexChanged = onFocusedWordIndexChanged
         )
-        if (seedPhraseInputState.seedPhraseInputValid && seedPhraseInputState.seedPhraseBIP39Valid.not()) {
+
+        val isSeedPhraseValid = remember(seedPhraseInputState) {
+            seedPhraseInputState.isSeedPhraseValid()
+        }
+        if (!isSeedPhraseValid) {
             RedWarningText(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -846,7 +850,7 @@ private fun VerifyWithYourSeedPhrasePage(
             },
             modifier = Modifier.fillMaxWidth(),
             throttleClicks = true,
-            enabled = seedPhraseInputState.seedPhraseInputValid && seedPhraseInputState.seedPhraseBIP39Valid
+            enabled = isSeedPhraseValid
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }

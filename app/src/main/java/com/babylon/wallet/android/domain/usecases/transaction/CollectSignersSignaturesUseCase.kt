@@ -130,10 +130,10 @@ sealed interface SignRequest {
                 require(dAppDefinitionAddress.length <= UByte.MAX_VALUE.toInt())
                 return bagOfBytesOf(
                     byteArrayOf(ROLA_PAYLOAD_PREFIX.toByte()) +
-                            challengeHex.hexToBagOfBytes().toByteArray() +
-                            dAppDefinitionAddress.length.toUByte().toByte() +
-                            dAppDefinitionAddress.toByteArray() +
-                            origin.toByteArray()
+                        challengeHex.hexToBagOfBytes().toByteArray() +
+                        dAppDefinitionAddress.length.toUByte().toByte() +
+                        dAppDefinitionAddress.toByteArray() +
+                        origin.toByteArray()
                 )
             }
 

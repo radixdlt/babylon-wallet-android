@@ -113,8 +113,9 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
         val hdPublicKey = signers.map { signer ->
             val securityState = signer.securityState
             when (signRequest) {
-                is SignRequest.SignAuthChallengeRequest -> securityState.authenticationSigningFactorInstance
-                    ?: securityState.transactionSigningFactorInstance
+                is SignRequest.SignAuthChallengeRequest ->
+                    securityState.authenticationSigningFactorInstance
+                        ?: securityState.transactionSigningFactorInstance
                 is SignRequest.SignTransactionRequest -> securityState.transactionSigningFactorInstance
             }.publicKey
         }
