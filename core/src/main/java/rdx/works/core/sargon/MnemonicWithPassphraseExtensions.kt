@@ -25,6 +25,7 @@ import com.radixdlt.slip10.model.ExtendedKey
 import com.radixdlt.slip10.toKey
 import rdx.works.core.hash
 
+// TODO integration (added in sargon on MnemonicWithPassphrase)
 fun MnemonicWithPassphrase.Companion.init(phrase: String) = MnemonicWithPassphrase(
     mnemonic = Mnemonic.init(phrase = phrase),
     passphrase = BIP39Passphrase()
@@ -46,6 +47,7 @@ fun MnemonicWithPassphrase.Companion.generate(
     passphrase = BIP39Passphrase()
 )
 
+// TODO integration (added in sargon on FactorSourceId.Hash)
 fun MnemonicWithPassphrase.toFactorSourceId(
     curve: Slip10Curve = Slip10Curve.CURVE25519
 ): FactorSourceId.Hash = FactorSourceIdFromHash(
