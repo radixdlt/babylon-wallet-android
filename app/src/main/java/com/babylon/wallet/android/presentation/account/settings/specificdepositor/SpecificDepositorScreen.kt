@@ -403,7 +403,9 @@ private fun DepositorItem(
                 )
             }
             Text(
-                text = depositor.depositorAddress?.formatted().orEmpty(),
+                text = remember(depositor.depositorAddress) {
+                    depositor.depositorAddress?.formatted().orEmpty()
+                },
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 style = RadixTheme.typography.body2Regular,
