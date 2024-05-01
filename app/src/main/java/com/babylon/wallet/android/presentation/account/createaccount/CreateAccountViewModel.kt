@@ -78,7 +78,9 @@ class CreateAccountViewModel @Inject constructor(
         viewModelScope.launch {
             val isBiometricsProvided = if (!getProfileStateUseCase.isInitialized()) {
                 if (biometricAuthProvider()) {
-                    val newMnemonic = mnemonicRepository()
+                    // TODO To be checked with the secure folder PR.
+                    // Guard against problems with secure folder, even when the user has provided biometrics.
+                    val newMnemonic = runCatching { mnemonicRepository() }.getOrNull() ?: return@launch
 
                     generateProfileUseCase(mnemonicWithPassphrase = newMnemonic)
                     // Since we choose to create a new profile, this is the time
