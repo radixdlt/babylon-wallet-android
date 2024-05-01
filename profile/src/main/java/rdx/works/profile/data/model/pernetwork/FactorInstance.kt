@@ -44,7 +44,7 @@ data class FactorInstance(
         }
     }
 
-    @Serializable
+    @Serializable(with = HDPublicKeySerializer::class)
     data class PublicKey(
         @SerialName("compressedData")
         val compressedData: String,
