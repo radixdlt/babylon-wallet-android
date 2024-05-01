@@ -9,13 +9,13 @@ import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Nonce
-import com.radixdlt.sargon.Signature
+import com.radixdlt.sargon.NotarySignature
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.TransactionIntent
+import com.radixdlt.sargon.extensions.NotaryPrivateKey
 import com.radixdlt.sargon.extensions.modifyLockFee
 import com.radixdlt.sargon.extensions.secureRandom
-import rdx.works.core.crypto.PrivateKey
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.transaction.NotarizationResult
 import rdx.works.core.then
@@ -80,7 +80,7 @@ class SignTransactionUseCase @Inject constructor(
         private val manifest: TransactionManifestData,
         val lockFee: Decimal192,
         val tipPercentage: UShort,
-        val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
+        val ephemeralNotaryPrivateKey: NotaryPrivateKey = NotaryPrivateKey.secureRandom(),
         val feePayerAddress: AccountAddress? = null
     ) {
 
@@ -116,7 +116,7 @@ class SignTransactionUseCase @Inject constructor(
             )
         }
 
-        override suspend fun notarise(signedIntentHash: SignedIntentHash): Result<Signature> = runCatching {
+        override suspend fun notarise(signedIntentHash: SignedIntentHash): Result<NotarySignature> = runCatching {
             notaryAndSigners.signWithNotary(signedIntentHash = signedIntentHash)
         }
     }

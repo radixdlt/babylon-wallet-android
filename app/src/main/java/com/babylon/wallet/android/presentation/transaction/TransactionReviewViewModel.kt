@@ -30,6 +30,7 @@ import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.DepositRule
+import com.radixdlt.sargon.extensions.NotaryPrivateKey
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.div
@@ -46,7 +47,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.crypto.PrivateKey
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.resources.Badge
 import rdx.works.core.domain.resources.Divisibility
@@ -249,7 +249,7 @@ class TransactionReviewViewModel @Inject constructor(
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: TransactionErrorMessage? = null,
-        val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
+        val ephemeralNotaryPrivateKey: NotaryPrivateKey = NotaryPrivateKey.secureRandom(),
         val interactionState: InteractionState? = null,
         val isTransactionDismissed: Boolean = false
     ) : UiState {

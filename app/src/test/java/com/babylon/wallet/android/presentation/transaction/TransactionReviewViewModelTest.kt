@@ -52,10 +52,8 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.TransactionPreferences
+import com.radixdlt.sargon.extensions.NotaryPrivateKey
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
@@ -83,7 +81,6 @@ import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.crypto.PrivateKey
 import rdx.works.core.domain.DApp
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Badge
@@ -261,7 +258,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { resolveNotaryAndSignersUseCase(any(), any(), any()) } returns Result.success(
             NotaryAndSigners(
                 listOf(),
-                PrivateKey.EddsaEd25519.newRandom()
+                NotaryPrivateKey.secureRandom()
             )
         )
         every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary

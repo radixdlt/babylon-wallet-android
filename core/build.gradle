@@ -45,7 +45,6 @@ android {
 
 dependencies {
     implementation libs.slip10
-    implementation libs.crypto
     api libs.sargonAndroid
     implementation libs.ktorCore
     implementation libs.zxing
