@@ -242,7 +242,9 @@ private fun SeedPhraseView(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         if (isOlympia) {
-            val tabs = Bip39WordCount.entries
+            val tabs = remember {
+                Bip39WordCount.entries.sortedBy { it.value }
+            }
             var tabIndex by remember { mutableStateOf(0) }
             Text(
                 modifier = Modifier
