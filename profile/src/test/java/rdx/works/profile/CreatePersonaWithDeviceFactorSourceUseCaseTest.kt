@@ -2,14 +2,14 @@ package rdx.works.profile
 
 import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
-import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.invoke
@@ -20,8 +20,6 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import rdx.works.core.sargon.addNetworkIfDoesNotExist
 import rdx.works.core.sargon.babylon
-import rdx.works.core.sargon.init
-import rdx.works.core.sargon.toFactorSourceId
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.persona.CreatePersonaWithDeviceFactorSourceUseCase
@@ -38,7 +36,7 @@ class CreatePersonaWithDeviceFactorSourceUseCaseTest {
     )
     private val mnemonicRepository = mockk<MnemonicRepository>().apply {
         coEvery {
-            readMnemonic(mnemonicWithPassphrase.toFactorSourceId())
+            readMnemonic(FactorSourceId.Hash.init(kind = FactorSourceKind.DEVICE, mnemonicWithPassphrase = mnemonicWithPassphrase))
         } returns Result.success(mnemonicWithPassphrase)
     }
     private val profileRepository = FakeProfileRepository()

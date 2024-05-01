@@ -1,16 +1,16 @@
 package rdx.works.profile.factorSource
 
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import rdx.works.core.sargon.init
 import rdx.works.core.sargon.olympia
 import rdx.works.core.sargon.supportsOlympia
-import rdx.works.core.sargon.toFactorSourceId
 import kotlin.test.Test
 
 class FactorSourceTests {
@@ -24,7 +24,7 @@ class FactorSourceTests {
 
         assertEquals(
             "6facb00a836864511fdf8f181382209e64e83ad462288ea1bc7868f236fb8033",
-            mnemonicWithPassphrase.toFactorSourceId().value.body.hex
+            mnemonicWithPassphrase.toDeviceFactorSourceId().value.body.hex
         )
     }
 
@@ -36,7 +36,7 @@ class FactorSourceTests {
 
         assertEquals(
             "41ac202687326a4fc6cb677e9fd92d08b91ce46c669950d58790d4d5e583adc0",
-            mnemonicWithPassphrase.toFactorSourceId().value.body.hex
+            mnemonicWithPassphrase.toDeviceFactorSourceId().value.body.hex
         )
     }
 
@@ -51,10 +51,13 @@ class FactorSourceTests {
             passphrase = "foo"
         )
 
-        assertEquals("09a501e4fafc7389202a82a3237a405ed191cdb8a4010124ff8e2c9259af1327", mnemonicOnly.toFactorSourceId().value.body.hex)
+        assertEquals(
+            "09a501e4fafc7389202a82a3237a405ed191cdb8a4010124ff8e2c9259af1327",
+            mnemonicOnly.toDeviceFactorSourceId().value.body.hex
+        )
         assertEquals(
             "537b56b9881258f08994392e9858962825d92361b6b4775a3bdfeb4eecc0d069",
-            mnemonicWithPassphrase.toFactorSourceId().value.body.hex
+            mnemonicWithPassphrase.toDeviceFactorSourceId().value.body.hex
         )
     }
 
@@ -73,4 +76,9 @@ class FactorSourceTests {
         assertTrue(factorSource.supportsOlympia)
         assertEquals("c23c47a8a37b79298878506692e42f3a1a11967ff1239bb344ad6ab0c21ddda8", factorSource.value.id.body.hex)
     }
+
+    private fun MnemonicWithPassphrase.toDeviceFactorSourceId() = FactorSourceId.Hash.init(
+        kind = FactorSourceKind.DEVICE,
+        mnemonicWithPassphrase = this
+    )
 }
