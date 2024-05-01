@@ -81,12 +81,12 @@ fun Network.Account.isSignatureRequiredBasedOnDepositRules(
 
     val hasDenyExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList?.any {
         it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Deny &&
-                it.address == forSpecificAssetAddress
+            it.address == forSpecificAssetAddress
     } == true
 
     val hasAllowExceptionRuleForAsset = thirdPartyDeposits.assetsExceptionList?.any {
         it.exceptionRule == Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositAddressExceptionRule.Allow &&
-                it.address == forSpecificAssetAddress
+            it.address == forSpecificAssetAddress
     } == true
 
     if (hasAllowExceptionRuleForAsset) {
@@ -125,7 +125,7 @@ val Network.Account.hasWrongDerivationPathScheme: Boolean
         return when (transactionSigning.badge) {
             is FactorInstance.Badge.VirtualSource.HierarchicalDeterministic -> {
                 transactionSigning.badge.derivationPath.isBip44LikePath() &&
-                        transactionSigning.badge.derivationPath.scheme == DerivationPathScheme.CAP_26
+                    transactionSigning.badge.derivationPath.scheme == DerivationPathScheme.CAP_26
             }
         }
     }
