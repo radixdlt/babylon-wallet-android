@@ -136,7 +136,7 @@ class MainViewModel @Inject constructor(
     }
 
     private suspend fun establishLinkConnection(connectionPassword: RadixConnectPassword) {
-        peerdroidClient.connect(encryptionKey = connectionPassword)
+        peerdroidClient.connect(connectionPassword = connectionPassword)
             .onSuccess {
                 if (incomingDappRequestsJob == null) {
                     Timber.d("\uD83E\uDD16 Listen for incoming requests from dapps")

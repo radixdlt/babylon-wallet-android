@@ -49,7 +49,7 @@ class LinkedConnectorsViewModel @Inject constructor(
     fun onDeleteConnectorClick(p2pLink: P2pLink) {
         viewModelScope.launch {
             deleteP2PLinkUseCase(p2pLink)
-            peerdroidClient.deleteLink(p2pLink)
+            peerdroidClient.deleteLink(p2pLink.connectionPassword)
         }
     }
 
