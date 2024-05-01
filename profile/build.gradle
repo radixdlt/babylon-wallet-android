@@ -62,8 +62,6 @@ dependencies {
     //Timber
     implementation libs.timber
 
-    implementation libs.slip10
-
     testImplementation libs.junit
     testImplementation libs.kotlinTestJunit
     testImplementation libs.coroutinesTest

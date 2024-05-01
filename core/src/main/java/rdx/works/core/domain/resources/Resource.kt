@@ -1,7 +1,6 @@
 package rdx.works.core.domain.resources
 
 import android.net.Uri
-import com.radixdlt.derivation.model.NetworkId
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
