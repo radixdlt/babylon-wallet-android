@@ -27,7 +27,7 @@ import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.nonHardenedIndex
 import com.radixdlt.sargon.extensions.toBabylonAddress
 
-fun Collection<Account>.notHiddenAccounts(): List<Account> = filter { !it.isHidden }
+fun Collection<Account>.notHiddenAccounts(): List<Account> = filterNot { it.isHidden }
 fun Collection<Account>.hiddenAccounts(): List<Account> = filter { it.isHidden }
 
 val Account.factorSourceId: FactorSourceId
@@ -96,7 +96,7 @@ fun Account.Companion.initOlympia(
     networkId: NetworkId,
     displayName: DisplayName,
     publicKey: PublicKey.Secp256k1,
-    derivationPath: DerivationPath,
+    derivationPath: DerivationPath.Bip44Like,
     factorSourceId: FactorSourceId.Hash,
     onLedgerSettings: OnLedgerSettings = OnLedgerSettings(
         thirdPartyDeposits = ThirdPartyDeposits(

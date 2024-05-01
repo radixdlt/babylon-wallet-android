@@ -25,12 +25,6 @@ val FactorSourceCryptoParameters.Companion.olympiaBackwardsCompatible: FactorSou
         supportedDerivationPathSchemes = listOf(DerivationPathScheme.CAP26, DerivationPathScheme.BIP44_OLYMPIA)
     )
 
-val FactorSourceCryptoParameters.Companion.trustedEntity: FactorSourceCryptoParameters
-    get() = FactorSourceCryptoParameters(
-        supportedCurves = SupportedCurves.init(Slip10Curve.CURVE25519),
-        supportedDerivationPathSchemes = emptyList()
-    )
-
 val FactorSourceCryptoParameters.Companion.default: FactorSourceCryptoParameters
     get() = babylon
 
