@@ -10,6 +10,7 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
+import com.radixdlt.sargon.Bip39WordCount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -34,9 +35,9 @@ class AddSingleMnemonicViewModel @Inject constructor(
     init {
         seedPhraseInputDelegate.setSeedPhraseSize(
             size = when (args.mnemonicType) {
-                MnemonicType.BabylonMain -> 24
-                MnemonicType.Babylon -> 24
-                MnemonicType.Olympia -> 12
+                MnemonicType.BabylonMain -> Bip39WordCount.TWENTY_FOUR
+                MnemonicType.Babylon -> Bip39WordCount.TWENTY_FOUR
+                MnemonicType.Olympia -> Bip39WordCount.TWELVE
             }
         )
         viewModelScope.launch {
@@ -67,13 +68,13 @@ class AddSingleMnemonicViewModel @Inject constructor(
         seedPhraseInputDelegate.onPassphraseChanged(value)
     }
 
-    fun onSeedPhraseLengthChanged(value: Int) {
+    fun onSeedPhraseLengthChanged(value: Bip39WordCount) {
         seedPhraseInputDelegate.setSeedPhraseSize(value)
     }
 
     fun onAddFactorSource() {
         viewModelScope.launch {
-            val mnemonic = _state.value.seedPhraseState.mnemonicWithPassphrase
+            val mnemonic = _state.value.seedPhraseState.toMnemonicWithPassphrase()
             when (args.mnemonicType) {
                 MnemonicType.Babylon -> {
                     ensureBabylonFactorSourceExistUseCase.addBabylonFactorSource(mnemonic)
@@ -93,7 +94,7 @@ class AddSingleMnemonicViewModel @Inject constructor(
     fun onAddMainSeedPhrase() {
         viewModelScope.launch {
             accessFactorSourcesProxy.setTempMnemonicWithPassphrase(
-                mnemonicWithPassphrase = state.value.seedPhraseState.mnemonicWithPassphrase
+                mnemonicWithPassphrase = state.value.seedPhraseState.toMnemonicWithPassphrase()
             )
             sendEvent(Event.MainSeedPhraseCompleted)
         }

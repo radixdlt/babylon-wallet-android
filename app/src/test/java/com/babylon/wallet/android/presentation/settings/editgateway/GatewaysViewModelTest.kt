@@ -1,14 +1,18 @@
 package com.babylon.wallet.android.presentation.settings.editgateway
 
 import app.cash.turbine.test
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.NetworkInfo
 import com.babylon.wallet.android.domain.usecases.GetNetworkInfoUseCase
 import com.babylon.wallet.android.presentation.TestDispatcherRule
 import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewayAddFailure
-import com.babylon.wallet.android.presentation.settings.preferences.gateways.SettingsEditGatewayEvent
 import com.babylon.wallet.android.presentation.settings.preferences.gateways.GatewaysViewModel
+import com.babylon.wallet.android.presentation.settings.preferences.gateways.SettingsEditGatewayEvent
 import com.babylon.wallet.android.utils.isValidUrl
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -21,7 +25,8 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.default
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.AddGatewayUseCase
 import rdx.works.profile.domain.gateway.ChangeGatewayIfNetworkExistUseCase
@@ -40,7 +45,7 @@ class GatewaysViewModelTest {
     private val deleteGatewayUseCase = mockk<DeleteGatewayUseCase>()
     private val getNetworkInfoUseCase = mockk<GetNetworkInfoUseCase>()
 
-    private val profile = SampleDataProvider().sampleProfile()
+    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
 
     @Before
     fun setUp() = runTest {
@@ -51,11 +56,11 @@ class GatewaysViewModelTest {
             deleteGatewayUseCase = deleteGatewayUseCase,
             getNetworkInfoUseCase = getNetworkInfoUseCase
         )
-        every { getProfileUseCase() } returns flowOf(profile)
+        every { getProfileUseCase.flow } returns flowOf(profile)
         coEvery { changeGatewayIfNetworkExistUseCase(any()) } returns true
         coEvery { addGatewayUseCase(any()) } returns Unit
         coEvery { getNetworkInfoUseCase(any()) } returns Result.success(
-            NetworkInfo(Radix.Network.nebunet, 0L)
+            NetworkInfo(NetworkId.MAINNET, 0L)
         )
         mockkStatic("com.babylon.wallet.android.utils.StringExtensionsKt")
         every { any<String>().isValidUrl() } returns true
@@ -76,7 +81,7 @@ class GatewaysViewModelTest {
 
     @Test
     fun `adding network triggers network save`() = runTest {
-        val sampleUrl = Radix.Gateway.nebunet.url
+        val sampleUrl = Gateway.forNetwork(NetworkId.MAINNET).url.toString()
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()
         advanceUntilIdle()
@@ -89,11 +94,11 @@ class GatewaysViewModelTest {
 
     @Test
     fun `network switch calls for create account`() = runTest {
-        val sampleUrl = Radix.Gateway.kisharnet.url
-        val gateway = Radix.Gateway(sampleUrl, Radix.Network.kisharnet)
+        val gateway = Gateway.forNetwork(NetworkId.KISHARNET)
+        val sampleUrl = gateway.url.toString()
         vm.onNewUrlChanged(sampleUrl)
         coEvery { changeGatewayIfNetworkExistUseCase(gateway) } returns false
-        vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.kisharnet))
+        vm.onGatewayClick(gateway)
         advanceUntilIdle()
         vm.oneOffEvent.test {
             val item = expectMostRecentItem()
@@ -103,19 +108,19 @@ class GatewaysViewModelTest {
 
     @Test
     fun `network switch calls changes gateway when there are accounts present`() = runTest {
-        val sampleUrl = Radix.Gateway.kisharnet.url
-        val gateway = Radix.Gateway(sampleUrl, Radix.Network.kisharnet)
+        val gateway = Gateway.forNetwork(NetworkId.KISHARNET)
+        val sampleUrl = gateway.url.toString()
         vm.onNewUrlChanged(sampleUrl)
         coEvery { changeGatewayIfNetworkExistUseCase(gateway) } returns true
-        vm.onGatewayClick(Radix.Gateway(sampleUrl, Radix.Network.kisharnet))
+        vm.onGatewayClick(gateway)
         advanceUntilIdle()
         coVerify(exactly = 1) { changeGatewayIfNetworkExistUseCase(gateway) }
     }
 
     @Test
     fun `trying to switch to current network is no op`() = runTest {
-        val sampleUrl = Radix.Gateway.default.url
-        val gateway = Radix.Gateway.default
+        val gateway = Gateway.default
+        val sampleUrl = gateway.url.toString()
         vm.onNewUrlChanged(sampleUrl)
         vm.onGatewayClick(gateway)
         advanceUntilIdle()
@@ -128,7 +133,7 @@ class GatewaysViewModelTest {
         coEvery { getNetworkInfoUseCase(any()) } returns Result.failure(
             Throwable()
         )
-        val sampleUrl = Radix.Gateway.nebunet.url
+        val sampleUrl = Gateway.forNetwork(NetworkId.NEBUNET).url.toString()
         vm.onNewUrlChanged(sampleUrl)
         vm.onAddGateway()
         advanceUntilIdle()

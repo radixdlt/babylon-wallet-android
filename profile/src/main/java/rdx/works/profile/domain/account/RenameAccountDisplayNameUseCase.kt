@@ -1,10 +1,11 @@
 package rdx.works.profile.domain.account
 
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.DisplayName
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.extensions.renameAccountDisplayName
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.renameAccountDisplayName
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -16,8 +17,8 @@ class RenameAccountDisplayNameUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        accountToRename: Network.Account,
-        newDisplayName: String
+        accountToRename: Account,
+        newDisplayName: DisplayName
     ) {
         withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()

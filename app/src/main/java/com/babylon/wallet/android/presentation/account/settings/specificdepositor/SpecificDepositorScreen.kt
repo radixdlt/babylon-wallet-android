@@ -46,7 +46,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.account.composable.UnknownDepositRulesStateInfo
 import com.babylon.wallet.android.presentation.account.settings.specificassets.DeleteDialogState
 import com.babylon.wallet.android.presentation.account.settings.thirdpartydeposits.AccountThirdPartyDepositsViewModel
@@ -59,12 +58,19 @@ import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAp
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import com.babylon.wallet.android.utils.truncatedHash
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.NonFungibleGlobalId
+import com.radixdlt.sargon.ResourceAddress
+import com.radixdlt.sargon.ResourceOrNonFungible
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleRandom
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
+import rdx.works.core.sargon.formatted
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -175,7 +181,7 @@ fun SpecificDepositorScreen(
 @Composable
 fun AddDepositorSheet(
     onResourceAddressChanged: (String) -> Unit,
-    depositor: AssetType.Depositor,
+    depositor: AssetType.DepositorType,
     onAddDepositor: () -> Unit,
     modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
@@ -248,8 +254,8 @@ private fun SpecificDepositorContent(
     error: UiMessage?,
     onShowAddAssetSheet: () -> Unit,
     modifier: Modifier = Modifier,
-    allowedDepositors: ImmutableList<AssetType.Depositor>?,
-    onDeleteDepositor: (AssetType.Depositor) -> Unit
+    allowedDepositors: ImmutableList<AssetType.DepositorType>?,
+    onDeleteDepositor: (AssetType.DepositorType) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -336,9 +342,9 @@ private fun SpecificDepositorContent(
 
 @Composable
 private fun DepositorList(
-    depositors: ImmutableList<AssetType.Depositor>,
+    depositors: ImmutableList<AssetType.DepositorType>,
     modifier: Modifier = Modifier,
-    onDeleteDepositor: (AssetType.Depositor) -> Unit
+    onDeleteDepositor: (AssetType.DepositorType) -> Unit
 ) {
     val lastItem = depositors.last()
     LazyColumn(modifier = modifier) {
@@ -366,8 +372,8 @@ private fun DepositorList(
 @Composable
 private fun DepositorItem(
     modifier: Modifier,
-    depositor: AssetType.Depositor,
-    onDeleteDepositor: (AssetType.Depositor) -> Unit
+    depositor: AssetType.DepositorType,
+    onDeleteDepositor: (AssetType.DepositorType) -> Unit
 ) {
     Row(
         modifier = modifier,
@@ -397,7 +403,9 @@ private fun DepositorItem(
                 )
             }
             Text(
-                text = depositor.depositorAddress?.address?.truncatedHash().orEmpty(),
+                text = remember(depositor.depositorAddress) {
+                    depositor.depositorAddress?.formatted().orEmpty()
+                },
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 style = RadixTheme.typography.body2Regular,
@@ -416,23 +424,29 @@ private fun DepositorItem(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun SpecificDepositorPreview() {
     RadixWalletTheme {
-        with(SampleDataProvider()) {
-            SpecificDepositorContent(
-                onBackClick = {},
-                onMessageShown = {},
-                error = null,
-                onShowAddAssetSheet = {},
-                allowedDepositors = persistentListOf(
-                    sampleDepositorResourceAddress(),
-                    sampleDepositorNftAddress(),
-                    sampleDepositorResourceAddress()
-                )
-            ) {}
+        val sampleDepositorResourceAddress = {
+            AssetType.DepositorType(depositorAddress = ResourceOrNonFungible.Resource(ResourceAddress.sampleRandom(NetworkId.MAINNET)))
         }
+        val sampleDepositorNftAddress = {
+            AssetType.DepositorType(depositorAddress = ResourceOrNonFungible.NonFungible(NonFungibleGlobalId.sample()))
+        }
+
+        SpecificDepositorContent(
+            onBackClick = {},
+            onMessageShown = {},
+            error = null,
+            onShowAddAssetSheet = {},
+            allowedDepositors = persistentListOf(
+                sampleDepositorResourceAddress(),
+                sampleDepositorNftAddress(),
+                sampleDepositorResourceAddress()
+            )
+        ) {}
     }
 }
 
@@ -440,6 +454,6 @@ fun SpecificDepositorPreview() {
 @Composable
 fun AddDepositorSheetPreview() {
     RadixWalletTheme {
-        AddDepositorSheet(onResourceAddressChanged = {}, depositor = AssetType.Depositor(), onAddDepositor = {}) {}
+        AddDepositorSheet(onResourceAddressChanged = {}, depositor = AssetType.DepositorType(), onAddDepositor = {}) {}
     }
 }

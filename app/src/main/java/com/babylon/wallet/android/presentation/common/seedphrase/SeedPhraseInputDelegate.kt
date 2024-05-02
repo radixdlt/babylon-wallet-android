@@ -4,9 +4,12 @@ import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.presentation.common.Stateful
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.toMnemonicWords
-import com.radixdlt.bip39.model.MnemonicWords
-import com.radixdlt.bip39.validate
-import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
+import com.radixdlt.sargon.Bip39Language
+import com.radixdlt.sargon.Bip39WordCount
+import com.radixdlt.sargon.Mnemonic
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.wordList
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -16,21 +19,23 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
-import rdx.works.profile.data.model.MnemonicWithPassphrase
 
 class SeedPhraseInputDelegate(
     private val scope: CoroutineScope
 ) : Stateful<SeedPhraseInputDelegate.State>() {
 
     private var debounceJob: Job? = null
+    private val englishWordList: List<String> by lazy {
+        Bip39Language.ENGLISH.wordList.map { it.word }
+    }
 
-    fun setSeedPhraseSize(size: Int) {
+    fun setSeedPhraseSize(size: Bip39WordCount) {
         _state.update { state ->
             state.copy(
-                seedPhraseWords = (0 until size).map {
+                seedPhraseWords = (0 until size.value.toInt()).map {
                     SeedPhraseWord(
                         it,
-                        lastWord = it == size - 1
+                        lastWord = it == size.value.toInt() - 1
                     )
                 }.toPersistentList()
             )
@@ -85,7 +90,7 @@ class SeedPhraseInputDelegate(
             val wordCandidates = if (value.isEmpty()) {
                 emptyList()
             } else {
-                WORDLIST_ENGLISH.filter { it.startsWith(value) }
+                englishWordList.filter { it.startsWith(value) }
             }
             val newValue = if (wordCandidates.size == 1 && !isDeleting) {
                 shouldMoveToNextWord = true
@@ -135,17 +140,21 @@ class SeedPhraseInputDelegate(
         val wordAutocompleteCandidates: ImmutableList<String> = persistentListOf(),
     ) : UiState {
 
-        val seedPhraseInputValid: Boolean
+        private val seedPhraseInputValid: Boolean
             get() = seedPhraseWords.all { it.valid }
 
-        val seedPhraseBIP39Valid: Boolean
-            get() = seedPhraseInputValid && MnemonicWords(seedPhraseWords.map { it.value }).validate(WORDLIST_ENGLISH)
+        fun isSeedPhraseValid(): Boolean {
+            val mnemonic = runCatching {
+                Mnemonic.init(phrase = seedPhraseWords.joinToString(separator = " ") { it.value })
+            }.getOrNull()
 
-        val wordsPhrase: String
-            get() = seedPhraseWords.joinToString(separator = " ") { it.value }
+            return seedPhraseInputValid && mnemonic != null
+        }
 
-        val mnemonicWithPassphrase: MnemonicWithPassphrase
-            get() = MnemonicWithPassphrase(wordsPhrase, bip39Passphrase)
+        fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = MnemonicWithPassphrase(
+            mnemonic = Mnemonic.init(seedPhraseWords.joinToString(separator = " ") { it.value }),
+            passphrase = bip39Passphrase
+        )
     }
 
     override fun initialState(): State {

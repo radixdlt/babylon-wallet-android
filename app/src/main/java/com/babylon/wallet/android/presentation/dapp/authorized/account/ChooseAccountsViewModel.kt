@@ -7,15 +7,15 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import java.util.Collections.emptyList
 import javax.inject.Inject
 
@@ -36,7 +36,7 @@ class ChooseAccountsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.activeAccountsOnCurrentNetwork.collect { accounts ->
+            getProfileUseCase.flow.map { it.activeAccountsOnCurrentNetwork }.collect { accounts ->
                 // Check if single or multiple choice (radio or chechbox)
                 val isSingleChoice = args.numberOfAccounts == 1 && args.isExactAccountsCount
                 _state.update { it.copy(isSingleChoice = isSingleChoice) }
@@ -47,7 +47,7 @@ class ChooseAccountsViewModel @Inject constructor(
                 val accountItems = accounts.map { account ->
                     val currentAccountItemState =
                         _state.value.availableAccountItems.find { accountItemUiModel ->
-                            accountItemUiModel.address.string == account.address
+                            accountItemUiModel.address == account.address
                         }
                     account.toUiModel(currentAccountItemState?.isSelected ?: false)
                 }

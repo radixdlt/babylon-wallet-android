@@ -1,69 +1,45 @@
 package rdx.works.profile
 
-import kotlinx.coroutines.flow.flowOf
+import com.radixdlt.sargon.DeviceFactorSource
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.P2pLink
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.toBagOfBytes
+import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.runBlocking
-import org.junit.Test
-import org.mockito.Mockito.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
-import rdx.works.core.InstantGenerator
-import rdx.works.core.emptyIdentifiedArrayList
-import rdx.works.profile.data.model.Header
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.apppreferences.AppPreferences
-import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.apppreferences.P2PLink
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.apppreferences.Security
-import rdx.works.profile.data.model.apppreferences.Transaction
-import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.data.repository.profile
-import rdx.works.profile.domain.TestData
+import rdx.works.core.sargon.babylon
+import rdx.works.core.sargon.sample
 import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
-import kotlin.test.Ignore
+import kotlin.random.Random
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AddP2PLinkUseCaseTest {
 
-    @Ignore("P2PLink data class or this unit test needs refactor")
+    private val profileRepository = FakeProfileRepository()
+    private val addP2PLinkUseCase = AddP2PLinkUseCase(profileRepository)
+
     @Test
     fun `given profile exists, when adding p2p client, verify it is added properly`() = runBlocking {
-        val profileRepository = mock(ProfileRepository::class.java)
-        val addP2PLinkUseCase = AddP2PLinkUseCase(profileRepository)
-        val expectedP2PLink = P2PLink.init(
-            connectionPassword = "pass1234",
-            displayName = "Mac browser"
-        )
+        val browser = "Browser"
+        val password = RadixConnectPassword(value = Exactly32Bytes.init(Random.nextBytes(32).toBagOfBytes()))
 
-        val initialProfile = Profile(
-            header = Header.init(
-                id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                deviceInfo = TestData.deviceInfo,
-                creationDate = InstantGenerator(),
-                numberOfNetworks = 0
-            ),
-            appPreferences = AppPreferences(
-                transaction = Transaction.default,
-                display = Display.default,
-                security = Security.default,
-                gateways = Gateways(Radix.Gateway.hammunet.url, listOf(Radix.Gateway.hammunet)),
-                p2pLinks = emptyList()
-            ),
-            factorSources = emptyIdentifiedArrayList(),
-            networks = emptyList()
+        val profile = Profile.init(
+            deviceFactorSource = FactorSource.Device.babylon(MnemonicWithPassphrase.sample(), isMain = true),
+            creatingDeviceName = "Unit Test"
         )
-        whenever(profileRepository.profile).thenReturn(flowOf(initialProfile))
+        profileRepository.saveProfile(profile)
+        addP2PLinkUseCase(displayName = browser, connectionPassword = password)
 
-        addP2PLinkUseCase(
-            displayName = "Mac browser",
-            connectionPassword = "pass1234"
+        assertEquals(
+            P2pLink(connectionPassword = password, displayName = browser),
+            profileRepository.inMemoryProfileOrNull?.appPreferences?.p2pLinks()?.first()
         )
-
-        val updatedProfile = initialProfile.copy(
-            appPreferences = initialProfile.appPreferences.copy(
-                p2pLinks = listOf(expectedP2PLink)
-            )
-        )
-        verify(profileRepository).saveProfile(updatedProfile)
     }
 }

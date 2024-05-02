@@ -30,7 +30,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
@@ -40,10 +39,14 @@ import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.core.sargon.sample
 import rdx.works.profile.domain.DeviceFactorSourceData
 
 @Composable
@@ -52,7 +55,7 @@ fun SeedPhrasesScreen(
     viewModel: SeedPhrasesViewModel,
     onBackClick: () -> Unit,
     onNavigateToRecoverMnemonic: () -> Unit,
-    onNavigateToSeedPhrase: (FactorSource.FactorSourceID.FromHash) -> Unit
+    onNavigateToSeedPhrase: (FactorSourceId.Hash) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     SeedPhraseContent(
@@ -241,16 +244,12 @@ fun AccountPreferencePreview() {
             onBackClick = {},
             deviceFactorSourceData = persistentListOf(
                 DeviceFactorSourceData(
-                    deviceFactorSource = SampleDataProvider().babylonDeviceFactorSource(),
-                    accounts = persistentListOf(
-                        SampleDataProvider().sampleAccount(),
-                        SampleDataProvider().sampleAccount(),
-                        SampleDataProvider().sampleAccount()
-                    )
+                    deviceFactorSource = FactorSource.Device.sample(),
+                    accounts = Account.sampleMainnet.all
                 ),
                 DeviceFactorSourceData(
-                    deviceFactorSource = SampleDataProvider().olympiaDeviceFactorSource(),
-                    accounts = persistentListOf(SampleDataProvider().sampleAccount())
+                    deviceFactorSource = FactorSource.Device.sample.other(),
+                    accounts = persistentListOf(Account.sampleMainnet())
                 )
             ),
             onSeedPhraseClick = {}

@@ -10,21 +10,25 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.di.ShortTimeoutStateApi
 import com.babylon.wallet.android.domain.model.AccountWithOnLedgerStatus
 import com.babylon.wallet.android.utils.Constants
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.DepositRule
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import rdx.works.core.domain.resources.ExplicitMetadataKey
-import rdx.works.profile.data.model.pernetwork.Network
 import javax.inject.Inject
 
 class ResolveAccountsLedgerStateRepository @Inject constructor(
     @ShortTimeoutStateApi private val stateApi: StateApi
 ) {
 
-    suspend operator fun invoke(accounts: List<Network.Account>): Result<List<AccountWithOnLedgerStatus>> {
-        val activeAddresses = mutableSetOf<String>()
-        val defaultDepositRules = mutableMapOf<String, DefaultDepositRule>()
+    suspend operator fun invoke(accounts: List<Account>): Result<List<AccountWithOnLedgerStatus>> {
+        val activeAddresses = mutableSetOf<AccountAddress>()
+        val defaultDepositRules = mutableMapOf<AccountAddress, DefaultDepositRule>()
         accounts.map { it.address }.chunked(Constants.MAX_ITEMS_PER_ENTITY_DETAILS_REQUEST).forEach { addressesChunk ->
             stateApi.stateEntityDetails(
                 StateEntityDetailsRequest(
-                    addressesChunk,
+                    addresses = addressesChunk.map { it.string },
                     optIns = StateEntityDetailsOptIns(
                         explicitMetadata = listOf(
                             ExplicitMetadataKey.OWNER_BADGE.key,
@@ -35,9 +39,10 @@ class ResolveAccountsLedgerStateRepository @Inject constructor(
             ).toResult().onSuccess { response ->
                 response.items.forEach { item ->
                     if (item.isEntityActive) {
-                        activeAddresses.add(item.address)
+                        val accountAddress = AccountAddress.init(item.address)
+                        activeAddresses.add(accountAddress)
                         item.defaultDepositRule?.let { defaultDepositRule ->
-                            defaultDepositRules[item.address] = defaultDepositRule
+                            defaultDepositRules[accountAddress] = defaultDepositRule
                         }
                     }
                 }
@@ -49,7 +54,7 @@ class ResolveAccountsLedgerStateRepository @Inject constructor(
             accounts.map { account ->
                 val defaultDepositRule = defaultDepositRules[account.address]?.toProfileDepositRule()
                 val updatedThirdPartyDeposits = account.onLedgerSettings.thirdPartyDeposits.copy(
-                    depositRule = defaultDepositRule ?: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll
+                    depositRule = defaultDepositRule ?: DepositRule.ACCEPT_ALL
                 )
                 AccountWithOnLedgerStatus(
                     account = account.copy(

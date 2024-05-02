@@ -10,7 +10,8 @@ import androidx.navigation.compose.composable
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
 import com.babylon.wallet.android.presentation.settings.personas.PersonasScreen
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.ROUTE_PERSONA_DETAIL
-import rdx.works.profile.data.model.factorsources.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.IdentityAddress
 
 const val ROUTE_CREATE_PERSONA = "create_persona_route"
 const val ROUTE_PERSONA_INFO = "persona_info_route"
@@ -69,7 +70,7 @@ fun NavGraphBuilder.personaInfoScreen(
 
 fun NavGraphBuilder.createPersonaScreen(
     onBackClick: () -> Unit,
-    onContinueClick: (personaId: String) -> Unit
+    onContinueClick: (personaId: IdentityAddress) -> Unit
 ) {
     markAsHighPriority(ROUTE_CREATE_PERSONA)
     composable(
@@ -99,8 +100,8 @@ fun NavGraphBuilder.createPersonaScreen(
 fun NavGraphBuilder.personasScreen(
     onBackClick: () -> Unit,
     createPersonaScreen: (Boolean) -> Unit,
-    onPersonaClick: (String) -> Unit,
-    onNavigateToMnemonicBackup: (FactorSource.FactorSourceID.FromHash) -> Unit
+    onPersonaClick: (IdentityAddress) -> Unit,
+    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit
 ) {
     composable(
         route = ROUTE_PERSONAS,

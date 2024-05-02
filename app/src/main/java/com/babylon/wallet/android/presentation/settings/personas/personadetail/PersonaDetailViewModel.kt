@@ -13,8 +13,9 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.HierarchicalDeterministicFactorInstance
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.extensions.asProfileEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -22,18 +23,17 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.domain.DApp
-import rdx.works.profile.data.model.extensions.hasAuthSigning
-import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activePersonaOnCurrentNetwork
+import rdx.works.core.sargon.hasAuthSigning
 import rdx.works.profile.data.repository.DAppConnectionRepository
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
-import rdx.works.profile.domain.personaOnCurrentNetworkFlow
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -51,20 +51,20 @@ class PersonaDetailViewModel @Inject constructor(
 ) : StateViewModel<PersonaDetailUiState>(), OneOffEventHandler<Event> by OneOffEventHandlerImpl() {
 
     private val args = PersonaDetailScreenArgs(savedStateHandle)
-    private var authSigningFactorInstance: FactorInstance? = null
+    private var authSigningFactorInstance: HierarchicalDeterministicFactorInstance? = null
     private lateinit var uploadAuthKeyRequestId: String
 
     init {
         viewModelScope.launch {
             combine(
-                getProfileUseCase.personaOnCurrentNetworkFlow(args.personaAddress),
-                dAppConnectionRepository.getAuthorizedDappsByPersona(args.personaAddress)
+                getProfileUseCase.flow.mapNotNull { it.activePersonaOnCurrentNetwork(args.personaAddress) },
+                dAppConnectionRepository.getAuthorizedDAppsByPersona(args.personaAddress)
             ) { persona, dApps ->
                 persona to dApps
             }.collect { personaToDApps ->
                 val metadataResults = personaToDApps.second.map { authorizedDApp ->
                     getDAppsUseCase.invoke(
-                        definitionAddress = AccountAddress.init(authorizedDApp.dAppDefinitionAddress),
+                        definitionAddress = authorizedDApp.dappDefinitionAddress,
                         needMostRecentData = false
                     ).getOrNull()
                 }
@@ -76,7 +76,7 @@ class PersonaDetailViewModel @Inject constructor(
                         authorizedDapps = dApps.toImmutableList(),
                         persona = personaToDApps.first,
                         loading = false,
-                        hasAuthKey = personaToDApps.first.hasAuthSigning()
+                        hasAuthKey = personaToDApps.first.hasAuthSigning
                     )
                 }
             }
@@ -93,7 +93,7 @@ class PersonaDetailViewModel @Inject constructor(
                         is AppEvent.Status.Transaction.Success -> {
                             val persona = requireNotNull(state.value.persona)
                             val authSigningFactorInstance = requireNotNull(authSigningFactorInstance)
-                            addAuthSigningFactorInstanceUseCase(persona, authSigningFactorInstance)
+                            addAuthSigningFactorInstanceUseCase(persona.asProfileEntity(), authSigningFactorInstance)
                             _state.update { it.copy(loading = false) }
                         }
 
@@ -118,21 +118,23 @@ class PersonaDetailViewModel @Inject constructor(
         viewModelScope.launch {
             state.value.persona?.let { persona ->
                 _state.update { it.copy(loading = true) }
-                rolaClient.generateAuthSigningFactorInstance(persona).onSuccess { authSigningFactorInstance ->
-                    this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance
-                    val manifest = rolaClient
-                        .createAuthKeyManifest(persona, authSigningFactorInstance)
-                        .getOrElse {
-                            _state.update { state -> state.copy(loading = false) }
-                            return@launch
-                        }
-                    uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
-                    incomingRequestRepository.add(
-                        manifest.prepareInternalTransactionRequest(
-                            requestId = uploadAuthKeyRequestId
+                val entity = persona.asProfileEntity()
+                rolaClient.generateAuthSigningFactorInstance(entity)
+                    .onSuccess { authSigningFactorInstance ->
+                        this@PersonaDetailViewModel.authSigningFactorInstance = authSigningFactorInstance
+                        val manifest = rolaClient
+                            .createAuthKeyManifest(entity, authSigningFactorInstance)
+                            .getOrElse {
+                                _state.update { state -> state.copy(loading = false) }
+                                return@launch
+                            }
+                        uploadAuthKeyRequestId = UUIDGenerator.uuid().toString()
+                        incomingRequestRepository.add(
+                            manifest.prepareInternalTransactionRequest(
+                                requestId = uploadAuthKeyRequestId
+                            )
                         )
-                    )
-                }
+                    }
             }
         }
     }
@@ -145,6 +147,6 @@ sealed interface Event : OneOffEvent {
 data class PersonaDetailUiState(
     val loading: Boolean = true,
     val authorizedDapps: ImmutableList<DApp> = persistentListOf(),
-    val persona: Network.Persona? = null,
+    val persona: Persona? = null,
     val hasAuthKey: Boolean = false
 ) : UiState

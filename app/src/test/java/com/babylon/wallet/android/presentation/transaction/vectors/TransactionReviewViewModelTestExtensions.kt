@@ -34,15 +34,15 @@ import com.babylon.wallet.android.presentation.transaction.guarantees.Transactio
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.ExceptionMessageProvider
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.test.TestScope
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.core.domain.TransactionManifestData
 
 internal fun TransactionReviewViewModelTestExperimental.testViewModel(
     transactionRepository: TransactionRepository,
@@ -124,7 +124,7 @@ internal fun TransactionReviewViewModelTestExperimental.testViewModel(
 
 internal fun TransactionReviewViewModelTestExperimental.sampleManifest(
     instructions: String,
-    networkId: Int = Radix.Network.mainnet.id,
+    networkId: NetworkId = NetworkId.MAINNET,
     message: String? = null
 ) = TransactionManifestData(
     instructions = instructions,

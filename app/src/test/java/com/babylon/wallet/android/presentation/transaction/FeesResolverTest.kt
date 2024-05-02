@@ -2,22 +2,24 @@ package com.babylon.wallet.android.presentation.transaction
 
 import com.babylon.wallet.android.DefaultLocaleRule
 import com.babylon.wallet.android.data.transaction.NotaryAndSigners
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transaction.analysis.FeesResolver
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
 import com.radixdlt.sargon.NewEntities
+import com.radixdlt.sargon.extensions.NotaryPrivateKey
+import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.formattedPlain
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.profile.ret.crypto.PrivateKey
 
 class FeesResolverTest {
 
@@ -50,7 +52,7 @@ class FeesResolverTest {
     )
     private val notaryAndSigners = NotaryAndSigners(
         listOf(),
-        PrivateKey.EddsaEd25519.newRandom()
+        NotaryPrivateKey.secureRandom()
     )
 
     @Test
@@ -179,12 +181,7 @@ class FeesResolverTest {
         val fees = FeesResolver.resolve(
             summary = summary,
             notaryAndSigners = notaryAndSigners.copy(
-                signers = listOf(
-                    SampleDataProvider().sampleAccount(
-                        address = "rdx_t_12382918379821",
-                        name = "Savings account"
-                    )
-                )
+                signers = listOf(Account.sampleMainnet().asProfileEntity())
             ),
             previewType = PreviewType.None
         )

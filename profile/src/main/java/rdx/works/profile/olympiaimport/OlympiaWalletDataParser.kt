@@ -2,18 +2,20 @@
 
 package rdx.works.profile.olympiaimport
 
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AppearanceId
+import com.radixdlt.sargon.Bip39WordCount
+import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
+import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toBabylonAddress
 import com.radixdlt.sargon.extensions.wasMigratedFromLegacyOlympia
 import okio.ByteString.Companion.decodeBase64
-import rdx.works.core.Identified
-import rdx.works.profile.data.model.pernetwork.DerivationPath
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.from
+import rdx.works.core.sargon.init
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -33,15 +35,14 @@ class OlympiaWalletDataParser @Inject constructor(
         val headerToPayloadList = olympiaWalletDataChunks.map { payloadChunk ->
             val headerAndPayload = payloadChunk.split(HeaderSeparator)
             val headerChunks = headerAndPayload[0].split(InnerSeparator)
-            PayloadHeader(headerChunks[0].toInt(), headerChunks[1].toInt(), headerChunks[2].toInt()) to headerAndPayload[1]
+            val wordCount = Bip39WordCount.init(wordCount = headerChunks[2].toInt())
+            PayloadHeader(headerChunks[0].toInt(), headerChunks[1].toInt(), wordCount) to headerAndPayload[1]
         }.sortedBy { it.first.payloadIndex }
         val fullPayload = headerToPayloadList.joinToString(separator = "") { it.second }
         val header = headerToPayloadList.first().first
         return if (olympiaWalletDataChunks.size == header.payloadCount) {
             try {
-                val importedAccountAddresses = getProfileUseCase.accountsOnCurrentNetwork().map {
-                    AccountAddress.init(it.address)
-                }
+                val importedAccountAddresses = getProfileUseCase().activeAccountsOnCurrentNetwork.map { it.address }
                 val accountsToMigrate = fullPayload.split(OuterSeparator).map { singleAccountData ->
                     parseSingleAccount(singleAccountData, importedAccountAddresses)
                 }.toSet()
@@ -78,7 +79,8 @@ class OlympiaWalletDataParser @Inject constructor(
             ""
         }.ifEmpty { "Unnamed Olympia account $parsedIndex" }
 
-        val olympiaAddress = LegacyOlympiaAccountAddress.init(com.radixdlt.sargon.PublicKey.Secp256k1.init(hex = publicKeyHex))
+        val publicKey = PublicKey.Secp256k1.init(hex = publicKeyHex)
+        val olympiaAddress = LegacyOlympiaAccountAddress.init(publicKey)
         val newBabylonAddress = olympiaAddress.toBabylonAddress()
         val alreadyImported = importedAccountAddresses.any { it.wasMigratedFromLegacyOlympia(olympiaAddress) }
 
@@ -86,12 +88,12 @@ class OlympiaWalletDataParser @Inject constructor(
             index = parsedIndex,
             type = type,
             address = olympiaAddress,
-            publicKey = publicKeyHex,
+            publicKey = publicKey,
             accountName = name,
-            derivationPath = DerivationPath.forLegacyOlympia(accountIndex = parsedIndex),
+            derivationPath = DerivationPath.Bip44Like.init(index = parsedIndex.toUInt()),
             alreadyImported = alreadyImported,
             newBabylonAddress = newBabylonAddress,
-            appearanceId = parsedIndex % AccountGradientList.size
+            appearanceId = AppearanceId.from(parsedIndex.toUInt())
         )
     }
 
@@ -105,7 +107,8 @@ class OlympiaWalletDataParser @Inject constructor(
         return try {
             val headerAndPayload = olympiaWalletDataChunk.split(HeaderSeparator)
             val headerChunks = headerAndPayload[0].split(InnerSeparator)
-            PayloadHeader(headerChunks[0].toInt(), headerChunks[1].toInt(), headerChunks[2].toInt())
+            val wordCount = Bip39WordCount.init(wordCount = headerChunks[2].toInt())
+            PayloadHeader(headerChunks[0].toInt(), headerChunks[1].toInt(), wordCount)
             true
         } catch (e: java.lang.Exception) {
             false
@@ -122,12 +125,12 @@ fun Collection<ByteArray>.containsWithEqualityCheck(value: ByteArray): Boolean {
     return this.any { it.contentEquals(value) }
 }
 
-data class OlympiaWalletData(val mnemonicWordCount: Int, val accountData: Set<OlympiaAccountDetails>)
+data class OlympiaWalletData(val mnemonicWordCount: Bip39WordCount, val accountData: Set<OlympiaAccountDetails>)
 
 data class PayloadHeader(
     val payloadCount: Int,
     val payloadIndex: Int,
-    val mnemonicWordCount: Int
+    val mnemonicWordCount: Bip39WordCount
 )
 
 data class ChunkInfo(
@@ -139,16 +142,13 @@ data class OlympiaAccountDetails(
     val index: Int,
     val type: OlympiaAccountType,
     val address: LegacyOlympiaAccountAddress,
-    val publicKey: String,
+    val publicKey: PublicKey.Secp256k1,
     val accountName: String,
-    val derivationPath: DerivationPath,
+    val derivationPath: DerivationPath.Bip44Like,
     val newBabylonAddress: AccountAddress,
-    val appearanceId: Int,
+    val appearanceId: AppearanceId,
     val alreadyImported: Boolean = false
-) : Identified {
-    override val identifier: String
-        get() = newBabylonAddress.string
-}
+)
 
 enum class OlympiaAccountType {
     Hardware, Software;

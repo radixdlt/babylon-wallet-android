@@ -24,10 +24,11 @@ import com.babylon.wallet.android.presentation.dapp.InitialUnauthorizedLoginRout
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.toUiModel
-import com.babylon.wallet.android.presentation.model.toPersonaData
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -37,13 +38,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.DApp
 import rdx.works.core.logNonFatalException
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.activePersonaOnCurrentNetwork
+import rdx.works.core.sargon.fields
+import rdx.works.core.sargon.toPersonaData
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.accountOnCurrentNetwork
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
-import rdx.works.profile.domain.personaOnCurrentNetwork
 import javax.inject.Inject
 
 @HiltViewModel
@@ -74,7 +75,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             } else {
                 request = requestToHandle
             }
-            val currentNetworkId = getCurrentGatewayUseCase().network.networkId().value
+            val currentNetworkId = getCurrentGatewayUseCase().network.id
             if (currentNetworkId != request.requestMetadata.networkId) {
                 handleRequestError(
                     RadixWalletException.DappRequestException.WrongNetwork(
@@ -196,8 +197,8 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                     ?.fields
                     ?.map { it.kind }
             )
-            getProfileUseCase.personaOnCurrentNetwork(selectedPersona.persona.address)?.let { updatedPersona ->
-                val dataFields = updatedPersona.personaData.allFields.filter { requiredFields.contains(it.value.kind) }
+            getProfileUseCase().activePersonaOnCurrentNetwork(selectedPersona.persona.address)?.let { updatedPersona ->
+                val dataFields = updatedPersona.personaData.fields.filter { requiredFields.contains(it.value.kind) }
                 _state.update { state ->
                     state.copy(
                         selectedPersona = updatedPersona.toUiModel(),
@@ -221,7 +222,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
         }
     }
 
-    fun onSelectPersona(persona: Network.Persona) {
+    fun onSelectPersona(persona: Persona) {
         _state.update { it.copy(selectedPersona = persona.toUiModel()) }
     }
 
@@ -246,7 +247,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             buildUnauthorizedDappResponseUseCase(
                 request = request,
                 oneTimeAccounts = state.value.selectedAccountsOneTime.mapNotNull {
-                    getProfileUseCase.accountOnCurrentNetwork(it.address)
+                    getProfileUseCase().activeAccountOnCurrentNetwork(it.address)
                 },
                 onetimeSharedPersonaData = state.value.selectedPersonaData,
                 deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider

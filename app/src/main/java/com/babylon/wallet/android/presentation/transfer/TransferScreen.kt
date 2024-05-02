@@ -43,7 +43,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transaction.composables.StrokeLine
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State
 import com.babylon.wallet.android.presentation.transfer.accounts.ChooseAccountSheet
@@ -54,11 +53,12 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SimpleAccountCard
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.resources.Resource
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun TransferScreen(
@@ -110,7 +110,7 @@ fun TransferContent(
     onMessageStateChanged: (Boolean) -> Unit,
     onMessageChanged: (String) -> Unit,
     onAddressTyped: (String) -> Unit,
-    onOwnedAccountSelected: (Network.Account) -> Unit,
+    onOwnedAccountSelected: (Account) -> Unit,
     onChooseAccountForSkeleton: (TargetAccount) -> Unit,
     onChooseAccountSubmitted: () -> Unit,
     addAccountClick: () -> Unit,
@@ -439,11 +439,7 @@ fun TransferContentPreview() {
                 .padding(10.dp)
                 .background(color = Color.Gray),
             onBackClick = {},
-            state = State(
-                fromAccount = SampleDataProvider().sampleAccount(
-                    name = "Savings account"
-                )
-            ),
+            state = State(fromAccount = Account.sampleMainnet()),
             onMessageStateChanged = {},
             onMessageChanged = {},
             onAddressTyped = {},

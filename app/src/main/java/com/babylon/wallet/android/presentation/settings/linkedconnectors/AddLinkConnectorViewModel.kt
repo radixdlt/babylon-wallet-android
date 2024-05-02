@@ -3,11 +3,13 @@ package com.babylon.wallet.android.presentation.settings.linkedconnectors
 import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
-import com.babylon.wallet.android.utils.parseEncryptionKeyFromConnectionPassword
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.HexCoded32Bytes
 import rdx.works.peerdroid.data.PeerdroidLink
 import rdx.works.profile.domain.p2plink.AddP2PLinkUseCase
 import timber.log.Timber
@@ -19,13 +21,13 @@ class AddLinkConnectorViewModel @Inject constructor(
     private val addP2PLinkUseCase: AddP2PLinkUseCase
 ) : StateViewModel<AddLinkConnectorUiState>() {
 
-    private var currentConnectionPassword: HexCoded32Bytes? = null
+    private var currentConnectionPassword: RadixConnectPassword? = null
 
     override fun initialState() = AddLinkConnectorUiState.init
 
     fun onQrCodeScanned(connectionPassword: String) {
-        runCatching {
-            currentConnectionPassword = HexCoded32Bytes(connectionPassword)
+        currentConnectionPassword = runCatching {
+            RadixConnectPassword(Exactly32Bytes.init(connectionPassword.hexToBagOfBytes()))
         }.onSuccess {
             _state.update { state ->
                 state.copy(showContent = AddLinkConnectorUiState.ShowContent.NameLinkConnector)
@@ -34,7 +36,7 @@ class AddLinkConnectorViewModel @Inject constructor(
             _state.update { state ->
                 state.copy(invalidConnectionPassword = true)
             }
-        }
+        }.getOrNull()
     }
 
     fun onConnectorDisplayNameChanged(name: String) {
@@ -51,16 +53,12 @@ class AddLinkConnectorViewModel @Inject constructor(
             _state.update {
                 it.copy(isAddingNewLinkConnectorInProgress = true)
             }
-            val encryptionKey = currentConnectionPassword?.let {
-                parseEncryptionKeyFromConnectionPassword(connectionPassword = it.value)
-            }
-            if (encryptionKey != null) {
-                val connectionPassword = requireNotNull(currentConnectionPassword)
-                peerdroidLink.addConnection(encryptionKey)
+            currentConnectionPassword?.let { password ->
+                peerdroidLink.addConnection(password)
                     .onSuccess {
                         addP2PLinkUseCase(
                             displayName = state.value.connectorDisplayName,
-                            connectionPassword = connectionPassword.value
+                            connectionPassword = password
                         )
                     }
                     .onFailure {

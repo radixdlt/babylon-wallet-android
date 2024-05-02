@@ -3,7 +3,7 @@ package com.babylon.wallet.android.presentation.account.settings
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.babylon.wallet.android.R
-import rdx.works.profile.data.model.pernetwork.Network
+import com.radixdlt.sargon.DepositRule
 
 sealed class AccountSettingsSection(open val settingsItems: List<AccountSettingItem>) {
 
@@ -26,9 +26,7 @@ sealed interface AccountSettingItem {
     data object AccountColor : AccountSettingItem
     data object ShowAssetsWithTags : AccountSettingItem
     data object AccountSecurity : AccountSettingItem
-    data class ThirdPartyDeposits(
-        val defaultDepositRule: Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule
-    ) : AccountSettingItem
+    data class ThirdPartyDeposits(val defaultDepositRule: DepositRule) : AccountSettingItem
     data object DevSettings : AccountSettingItem
 
     @StringRes

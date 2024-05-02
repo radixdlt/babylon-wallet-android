@@ -44,12 +44,12 @@ const val ENTITY_DETAILS_PAGE_LIMIT = 20
 const val NFT_DETAILS_PAGE_LIMIT = 50
 
 suspend fun StateApi.fetchAccountGatewayDetails(
-    accountsToRequest: Set<String>,
+    accountsToRequest: Set<AccountAddress>,
     onStateVersion: Long?
 ) = runCatching {
     val items = mutableListOf<Pair<StateEntityDetailsResponseItem, LedgerState>>()
     paginateDetails(
-        addresses = accountsToRequest,
+        addresses = accountsToRequest.map { it.string }.toSet(),
         metadataKeys = ExplicitMetadataKey.forAssets + ExplicitMetadataKey.ACCOUNT_TYPE,
         stateVersion = onStateVersion
     ) { chunkedAccounts ->

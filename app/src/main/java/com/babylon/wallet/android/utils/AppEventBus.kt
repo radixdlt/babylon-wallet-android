@@ -1,12 +1,12 @@
 package com.babylon.wallet.android.utils
 
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,11 +28,11 @@ sealed interface AppEvent {
     data object RestoredMnemonic : AppEvent
     data object BabylonFactorSourceDoesNotExist : AppEvent
     data object NPSSurveySubmitted : AppEvent
-    data class BabylonFactorSourceNeedsRecovery(val factorSourceID: FactorSource.FactorSourceID.FromHash) : AppEvent
+    data class BabylonFactorSourceNeedsRecovery(val factorSourceID: FactorSourceId.Hash) : AppEvent
 
     sealed interface AccessFactorSources : AppEvent {
 
-        data class SelectedLedgerDevice(val ledgerFactorSource: LedgerHardwareWalletFactorSource) : AccessFactorSources
+        data class SelectedLedgerDevice(val ledgerFactorSource: FactorSource.Ledger) : AccessFactorSources
 
         data object DerivePublicKey : AccessFactorSources
 

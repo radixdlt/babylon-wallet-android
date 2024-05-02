@@ -15,23 +15,23 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.DepositRule
+import com.radixdlt.sargon.DisplayName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.mapWhen
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.RenameAccountDisplayNameUseCase
-import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -83,14 +83,14 @@ class AccountSettingsViewModel @Inject constructor(
 
     private fun loadAccount() {
         viewModelScope.launch {
-            getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accounts ->
-                accounts.firstOrNull { it.address == args.address.string }
+            getProfileUseCase.flow.mapNotNull { profile ->
+                profile.activeAccountsOnCurrentNetwork.firstOrNull { it.address == args.address }
             }.collect { account ->
                 val thirdPartyDefaultDepositRule = account.onLedgerSettings.thirdPartyDeposits.depositRule
                 _state.update { state ->
                     state.copy(
-                        accountName = account.displayName,
-                        accountNameChanged = account.displayName,
+                        accountName = account.displayName.value,
+                        accountNameChanged = account.displayName.value,
                         account = account,
                         settingsSections = state.settingsSections.mapWhen(
                             predicate = { it is AccountSettingsSection.AccountSection },
@@ -124,14 +124,14 @@ class AccountSettingsViewModel @Inject constructor(
 
     fun onRenameAccountNameConfirm() {
         viewModelScope.launch {
-            val accountToRename = getProfileUseCase.activeAccountsOnCurrentNetwork.first().find {
-                args.address.string == it.address
+            val accountToRename = getProfileUseCase().activeAccountsOnCurrentNetwork.find {
+                args.address == it.address
             }
             accountToRename?.let {
                 val newAccountName = _state.value.accountNameChanged.trim()
                 renameAccountDisplayNameUseCase(
                     accountToRename = it,
-                    newDisplayName = newAccountName
+                    newDisplayName = DisplayName(newAccountName)
                 )
                 _state.update { accountPreferenceUiState ->
                     accountPreferenceUiState.copy(accountName = newAccountName)
@@ -195,7 +195,7 @@ sealed interface Event : OneOffEvent {
 
 data class AccountPreferenceUiState(
     val settingsSections: ImmutableList<AccountSettingsSection> = defaultSettings,
-    val account: Network.Account? = null,
+    val account: Account? = null,
     val accountAddress: AccountAddress,
     val accountName: String = "",
     val accountNameChanged: String = "",
@@ -218,7 +218,7 @@ data class AccountPreferenceUiState(
         val defaultSettings = persistentListOf(
             AccountSettingsSection.PersonalizeSection(listOf(AccountSettingItem.AccountLabel)),
             AccountSettingsSection.AccountSection(
-                listOf(AccountSettingItem.ThirdPartyDeposits(Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll))
+                listOf(AccountSettingItem.ThirdPartyDeposits(DepositRule.ACCEPT_ALL))
             )
         )
     }

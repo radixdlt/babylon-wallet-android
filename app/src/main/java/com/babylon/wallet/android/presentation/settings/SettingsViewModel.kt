@@ -11,6 +11,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSet
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.SargonBuildInformation
 import com.radixdlt.sargon.extensions.Sargon
+import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -19,7 +20,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import rdx.works.core.mapWhen
-import rdx.works.profile.data.model.Profile
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import timber.log.Timber
@@ -46,15 +46,13 @@ class SettingsViewModel @Inject constructor(
     ).mapNotNull { it }
 
     val state: StateFlow<SettingsUiState> = combine(
-        getProfileUseCase(),
+        getProfileUseCase.flow,
         getBackupStateUseCase(),
         getEntitiesWithSecurityPromptUseCase()
-    ) { profile: Profile, backupState, entitiesWithSecurityPrompts ->
+    ) { profile, backupState, entitiesWithSecurityPrompts ->
         var mutated = defaultSettings
-        if (profile.appPreferences.p2pLinks.isEmpty() && !defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map {
-                it.item
-            }.contains(LinkToConnector)
-        ) {
+        val settingsItems = defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map { it.item }
+        if (profile.appPreferences.p2pLinks().isEmpty() && LinkToConnector !in settingsItems) {
             mutated = listOf(SettingsUiItem.Settings(LinkToConnector)) + mutated
         }
         val anyEntityHasProblem = entitiesWithSecurityPrompts.isNotEmpty()

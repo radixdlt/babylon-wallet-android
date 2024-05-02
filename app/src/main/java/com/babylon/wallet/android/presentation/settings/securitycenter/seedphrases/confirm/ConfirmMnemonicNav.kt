@@ -9,21 +9,28 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.extensions.toJson
 
 private const val ARGS_FACTOR_SOURCE_ID = "factorSourceId"
 private const val ARGS_MNEMONIC_SIZE = "mnemonicSize"
-private const val ROUTE = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID={$ARGS_FACTOR_SOURCE_ID}&$ARGS_MNEMONIC_SIZE={$ARGS_MNEMONIC_SIZE}"
+private const val ROUTE = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID={$ARGS_FACTOR_SOURCE_ID}" +
+    "&$ARGS_MNEMONIC_SIZE={$ARGS_MNEMONIC_SIZE}"
 
 fun NavController.confirmSeedPhrase(
-    factorSourceId: String,
+    factorSourceId: FactorSourceId.Hash,
     mnemonicSize: Int
 ) {
-    navigate(route = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID=$factorSourceId&$ARGS_MNEMONIC_SIZE=$mnemonicSize")
+    navigate(route = "confirm_mnemonic?$ARGS_FACTOR_SOURCE_ID=${factorSourceId.toJson()}&$ARGS_MNEMONIC_SIZE=$mnemonicSize")
 }
 
-internal class ConfirmSeedPhraseArgs(val factorSourceId: String, val mnemonicSize: Int) {
+internal class ConfirmSeedPhraseArgs(
+    val factorSourceId: FactorSourceId.Hash,
+    val mnemonicSize: Int
+) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle.get<String>(ARGS_FACTOR_SOURCE_ID)),
+        FactorSourceId.Hash.fromJson(checkNotNull(savedStateHandle.get<String>(ARGS_FACTOR_SOURCE_ID))),
         checkNotNull(savedStateHandle.get<Int>(ARGS_MNEMONIC_SIZE)),
     )
 }

@@ -8,6 +8,8 @@ import com.babylon.wallet.android.data.gateway.apis.StreamApi
 import com.babylon.wallet.android.data.gateway.apis.TokenPriceApi
 import com.babylon.wallet.android.data.gateway.apis.TransactionApi
 import com.babylon.wallet.android.data.gateway.survey.NPSSurveyApi
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.extensions.string
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,10 +17,10 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineDispatcher
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.default
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.di.IoDispatcher
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentGateway
 import rdx.works.profile.data.repository.ProfileRepository
 import retrofit2.Converter
 import java.util.concurrent.TimeUnit
@@ -71,7 +73,7 @@ object NetworkApiModule {
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): StateApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.string ?: Gateway.default.string,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )
@@ -83,7 +85,7 @@ object NetworkApiModule {
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): StateApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.string ?: Gateway.default.string,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )
@@ -94,7 +96,7 @@ object NetworkApiModule {
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): TransactionApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.string ?: Gateway.default.string,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )
@@ -105,7 +107,7 @@ object NetworkApiModule {
         @JsonConverterFactory jsonConverterFactory: Converter.Factory,
         profileRepository: ProfileRepository
     ): StreamApi = buildApi(
-        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url,
+        baseUrl = profileRepository.inMemoryProfileOrNull?.currentGateway?.string ?: Gateway.default.string,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
     )

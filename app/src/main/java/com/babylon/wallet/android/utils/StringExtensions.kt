@@ -8,7 +8,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
-import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
+import com.radixdlt.sargon.Mnemonic
+import com.radixdlt.sargon.extensions.init
 import org.apache.commons.validator.routines.InetAddressValidator
 import org.apache.commons.validator.routines.UrlValidator
 import java.net.URLDecoder
@@ -28,7 +29,9 @@ fun String.replaceDoublePercent() = replace("%%", "%")
 fun String.toMnemonicWords(expectedWordCount: Int): List<String> {
     val words = trim().split(" ").map { it.trim() }.filter { it.isNotEmpty() }
     if (words.size != expectedWordCount) return emptyList()
-    return if (words.all { WORDLIST_ENGLISH.contains(it) }) {
+
+    val mnemonic = runCatching { Mnemonic.init(phrase = words.joinToString(separator = " ")) }.getOrNull()
+    return if (mnemonic != null) {
         words
     } else {
         emptyList()

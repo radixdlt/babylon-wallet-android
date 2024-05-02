@@ -34,7 +34,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import rdx.works.profile.data.model.BackupState
+import rdx.works.core.domain.BackupState
 
 @Composable
 fun SecurityCenterScreen(

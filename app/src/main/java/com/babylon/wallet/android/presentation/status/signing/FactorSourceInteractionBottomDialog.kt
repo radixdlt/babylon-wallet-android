@@ -28,9 +28,9 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.composables.BottomSheetDialogWrapper
 import com.babylon.wallet.android.utils.formattedSpans
-import rdx.works.core.HexCoded32Bytes
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.pernetwork.SigningPurpose
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import rdx.works.core.sargon.sample
 
 @Composable
 fun FactorSourceInteractionBottomDialog(
@@ -63,7 +63,6 @@ fun FactorSourceInteractionBottomDialogContent(
         is InteractionState.Device.Pending -> {
             SignatureRequestContent(interactionState, modifier)
         }
-
         else -> {}
     }
 }
@@ -153,23 +152,20 @@ private fun SignatureRequestContent(
 }
 
 @Composable
-private fun signingPurposeDescription(signingPurpose: SigningPurpose) =
+private fun signingPurposeDescription(signingPurpose: InteractionState.SigningPurpose) =
     when (signingPurpose) {
-        SigningPurpose.SignAuth -> com.babylon.wallet.android.R.string.empty
-        SigningPurpose.SignTransaction -> com.babylon.wallet.android.R.string.factorSourceActions_device_messageSignature
+        InteractionState.SigningPurpose.AuthChallenge -> com.babylon.wallet.android.R.string.empty
+        InteractionState.SigningPurpose.Transaction -> com.babylon.wallet.android.R.string.factorSourceActions_device_messageSignature
     }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun SignatureRequestContentPreview() {
     RadixWalletTheme {
         SignatureRequestContent(
             interactionState = InteractionState.Ledger.Pending(
-                LedgerHardwareWalletFactorSource.newSource(
-                    model = LedgerHardwareWalletFactorSource.DeviceModel.NANO_S,
-                    name = "nanoS",
-                    deviceID = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
-                )
+                FactorSource.Ledger.sample()
             )
         )
     }

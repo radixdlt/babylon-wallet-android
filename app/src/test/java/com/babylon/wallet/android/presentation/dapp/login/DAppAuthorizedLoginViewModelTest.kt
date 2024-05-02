@@ -6,13 +6,11 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepository
 import com.babylon.wallet.android.data.repository.state.StateRepository
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.BuildAuthorizedDappResponseUseCase
 import com.babylon.wallet.android.fakes.DAppConnectionRepositoryFake
 import com.babylon.wallet.android.fakes.DappMessengerFake
-import com.babylon.wallet.android.mockdata.profile
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
@@ -20,17 +18,31 @@ import com.babylon.wallet.android.presentation.dapp.authorized.login.ARG_INTERAC
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AppearanceId
+import com.radixdlt.sargon.AuthorizedDapp
+import com.radixdlt.sargon.AuthorizedDapps
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleLocalId
+import com.radixdlt.sargon.Personas
 import com.radixdlt.sargon.PoolAddress
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.ProfileNetworks
+import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
-import com.radixdlt.sargon.extensions.discriminant
+import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
 import io.mockk.every
@@ -39,7 +51,6 @@ import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -55,10 +66,8 @@ import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
-import rdx.works.core.identifiedArrayListOf
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.pernetwork.Entity
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 
@@ -74,13 +83,30 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     private val dAppMessenger = DappMessengerFake()
     private val dAppConnectionRepository = spyk<DAppConnectionRepositoryFake> { DAppConnectionRepositoryFake() }
 
-    private val samplePersona = SampleDataProvider().samplePersona(personaAddress = IdentityAddress.sampleMainnet().string)
+    private val sampleProfile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let { profile ->
+        val network = profile.networks.getBy(NetworkId.MAINNET)!!
+        val persona = network.personas().first()
+        profile.copy(networks = ProfileNetworks.init(
+            network.copy(
+                personas = Personas.init(persona),
+                authorizedDapps = AuthorizedDapps.init(
+                    AuthorizedDapp(
+                        networkId = NetworkId.MAINNET,
+                        dappDefinitionAddress =  AccountAddress.sampleMainnet(),
+                        displayName = "1",
+                        referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init()
+                    )
+                )
+            )
+        ))
+    }
+    private val samplePersona = sampleProfile.networks.getBy(NetworkId.MAINNET)!!.personas().first()
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         remoteConnectorId = "remoteConnectorId",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET.discriminant.toInt(),
+            NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
@@ -101,7 +127,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         remoteConnectorId = "remoteConnectorId",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET.discriminant.toInt(),
+            NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
@@ -120,7 +146,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         remoteConnectorId = "1",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET.discriminant.toInt(),
+            NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
@@ -143,7 +169,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         remoteConnectorId = "1",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET.discriminant.toInt(),
+            NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
@@ -162,7 +188,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         remoteConnectorId = "1",
         interactionId = "1",
         requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            NetworkId.MAINNET.discriminant.toInt(),
+            NetworkId.MAINNET,
             "",
             AccountAddress.sampleMainnet().string,
             false
@@ -199,22 +225,10 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     override fun setUp() {
         super.setUp()
         every { savedStateHandle.get<String>(ARG_INTERACTION_ID) } returns "1"
-        coEvery { getCurrentGatewayUseCase() } returns Radix.Gateway.mainnet
+        coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         every { buildAuthorizedDappResponseUseCase.signingState } returns emptyFlow()
         coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any(),) } returns Result.success(any())
-        every { getProfileUseCase() } returns flowOf(
-            profile(
-                personas = identifiedArrayListOf(samplePersona),
-                dApps = listOf(
-                    Network.AuthorizedDapp(
-                        networkID = Radix.Gateway.mainnet.network.id,
-                        dAppDefinitionAddress = AccountAddress.sampleMainnet().string,
-                        displayName = "1",
-                        referencesToAuthorizedPersonas = emptyList()
-                    )
-                )
-            )
-        )
+        coEvery { getProfileUseCase() } returns sampleProfile
         coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns requestWithNonExistingDappAddress
     }
 
@@ -240,7 +254,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         vm.oneOffEvent.test {
             assert(expectMostRecentItem() is Event.DisplayPermission)
         }
-        vm.onAccountsSelected(listOf(AccountItemUiModel(AccountAddress.sampleMainnet(), "account 1", 0)), false)
+        vm.onAccountsSelected(listOf(AccountItemUiModel(AccountAddress.sampleMainnet(), "account 1", AppearanceId(0u))), false)
         advanceUntilIdle()
         vm.oneOffEvent.test {
             val mostRecentItem = expectMostRecentItem()
@@ -288,26 +302,26 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     }
 
     private class StateRepositoryFake: StateRepository {
-        override fun observeAccountsOnLedger(accounts: List<Network.Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>> {
-            error("Not needed")
+        override fun observeAccountsOnLedger(accounts: List<Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>> {
+            TODO("Not yet implemented")
         }
 
         override suspend fun getNextNFTsPage(
-            account: Network.Account,
+            account: Account,
             resource: Resource.NonFungibleResource
         ): Result<Resource.NonFungibleResource> {
-            error("Not needed")
+            TODO("Not yet implemented")
         }
 
         override suspend fun updateLSUsInfo(
-            account: Network.Account,
+            account: Account,
             validatorsWithStakes: List<ValidatorWithStakes>
         ): Result<List<ValidatorWithStakes>> {
-            error("Not needed")
+            TODO("Not yet implemented")
         }
 
-        override suspend fun updateStakeClaims(account: Network.Account, claims: List<StakeClaim>): Result<List<StakeClaim>> {
-            error("Not needed")
+        override suspend fun updateStakeClaims(account: Account, claims: List<StakeClaim>): Result<List<StakeClaim>> {
+            TODO("Not yet implemented")
         }
 
         override suspend fun getResources(
@@ -315,30 +329,30 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
             underAccountAddress: AccountAddress?,
             withDetails: Boolean
         ): Result<List<Resource>> {
-            return Result.success(emptyList())
+            TODO("Not yet implemented")
         }
 
         override suspend fun getPools(poolAddresses: Set<PoolAddress>): Result<List<Pool>> {
-            error("Not needed")
+            TODO("Not yet implemented")
         }
 
         override suspend fun getValidators(validatorAddresses: Set<ValidatorAddress>): Result<List<Validator>> {
-            error("Not needed")
+            TODO("Not yet implemented")
         }
 
         override suspend fun getNFTDetails(
             resourceAddress: ResourceAddress,
             localIds: Set<NonFungibleLocalId>
         ): Result<List<Resource.NonFungibleResource.Item>> {
-            error("Not needed")
+            TODO("Not yet implemented")
         }
 
-        override suspend fun getOwnedXRD(accounts: List<Network.Account>): Result<Map<Network.Account, Decimal192>> {
-            error("Not needed")
+        override suspend fun getOwnedXRD(accounts: List<Account>): Result<Map<Account, Decimal192>> {
+            TODO("Not yet implemented")
         }
 
-        override suspend fun getEntityOwnerKeys(entities: List<Entity>): Result<Map<Entity, List<PublicKeyHash>>> {
-            error("Not needed")
+        override suspend fun getEntityOwnerKeys(entities: List<ProfileEntity>): Result<Map<ProfileEntity, List<PublicKeyHash>>> {
+            TODO("Not yet implemented")
         }
 
         override suspend fun getDAppsDetails(definitionAddresses: List<AccountAddress>, isRefreshing: Boolean): Result<List<DApp>> {
@@ -355,15 +369,15 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         }
 
         override suspend fun getDAppDefinitions(componentAddresses: List<ComponentAddress>): Result<Map<ComponentAddress, AccountAddress?>> {
-            error("Not needed")
+            TODO("Not yet implemented")
         }
 
         override suspend fun cacheNewlyCreatedResources(newResources: List<Resource>): Result<Unit> {
-            error("Not needed")
+            TODO("Not yet implemented")
         }
 
         override suspend fun clearCachedState(): Result<Unit> {
-            error("Not needed")
+            TODO("Not yet implemented")
         }
 
     }

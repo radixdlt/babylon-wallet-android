@@ -21,7 +21,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -34,18 +33,19 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
-import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Other
 import com.babylon.wallet.android.presentation.transaction.AccountWithPredictedGuarantee.Owned
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressView
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.toDecimal192
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
 
@@ -67,7 +67,7 @@ fun TransactionAccountWithGuaranteesCard(
                 .background(
                     brush = when (accountWithGuarantee) {
                         is Other -> SolidColor(RadixTheme.colors.gray2)
-                        is Owned -> Brush.linearGradient(getAccountGradientColorsFor(accountWithGuarantee.account.appearanceID))
+                        is Owned -> accountWithGuarantee.account.appearanceId.gradient()
                     },
                     shape = RadixTheme.shapes.roundedRectTopMedium
                 )
@@ -80,7 +80,7 @@ fun TransactionAccountWithGuaranteesCard(
                         id = com.babylon.wallet.android.R.string.transactionReview_externalAccountName
                     )
 
-                    is Owned -> accountWithGuarantee.account.displayName
+                    is Owned -> accountWithGuarantee.account.displayName.value
                 },
                 style = RadixTheme.typography.body1Header,
                 maxLines = 1,
@@ -249,7 +249,7 @@ fun TransactionAccountWithGuaranteesCardPreview() {
         val state: MutableState<AccountWithPredictedGuarantee> = remember {
             mutableStateOf(
                 Owned(
-                    account = SampleDataProvider().sampleAccount(),
+                    account = Account.sampleMainnet(),
                     transferable = TransferableAsset.Fungible.Token(
                         amount = 10.toDecimal192(),
                         resource = Resource.FungibleResource.sampleMainnet(),

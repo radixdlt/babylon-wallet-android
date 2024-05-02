@@ -7,13 +7,14 @@ import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.encodeToString
-import rdx.works.profile.data.model.factorsources.Slip10Curve
 import javax.inject.Inject
 
 interface LedgerMessenger {
@@ -24,7 +25,7 @@ interface LedgerMessenger {
 
     suspend fun signTransactionRequest(
         interactionId: String,
-        signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
+        hdPublicKeys: List<HierarchicalDeterministicPublicKey>,
         compiledTransactionIntent: String,
         ledgerDevice: LedgerInteractionRequest.LedgerDevice,
         displayHashOnLedgerDisplay: Boolean = true
@@ -38,7 +39,7 @@ interface LedgerMessenger {
 
     suspend fun signChallengeRequest(
         interactionId: String,
-        signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
+        hdPublicKeys: List<HierarchicalDeterministicPublicKey>,
         ledgerDevice: LedgerInteractionRequest.LedgerDevice,
         challengeHex: String,
         origin: String,
@@ -83,17 +84,17 @@ class LedgerMessengerImpl @Inject constructor(
 
     override suspend fun signTransactionRequest(
         interactionId: String,
-        signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
+        hdPublicKeys: List<HierarchicalDeterministicPublicKey>,
         compiledTransactionIntent: String,
         ledgerDevice: LedgerInteractionRequest.LedgerDevice,
         displayHashOnLedgerDisplay: Boolean
     ): Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse> {
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.SignTransaction(
             interactionId = interactionId,
-            signers = signersDerivationPathToCurve.map {
+            signers = hdPublicKeys.map {
                 LedgerInteractionRequest.KeyParameters(
-                    Curve.from(it.second),
-                    it.first
+                    Curve.from(it.publicKey),
+                    it.derivationPath.string
                 )
             },
             ledgerDevice = ledgerDevice,
@@ -108,7 +109,7 @@ class LedgerMessengerImpl @Inject constructor(
 
     override suspend fun signChallengeRequest(
         interactionId: String,
-        signersDerivationPathToCurve: List<Pair<String, Slip10Curve>>,
+        hdPublicKeys: List<HierarchicalDeterministicPublicKey>,
         ledgerDevice: LedgerInteractionRequest.LedgerDevice,
         challengeHex: String,
         origin: String,
@@ -116,10 +117,10 @@ class LedgerMessengerImpl @Inject constructor(
     ): Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse> {
         val ledgerRequest: LedgerInteractionRequest = LedgerInteractionRequest.SignChallenge(
             interactionId = interactionId,
-            signers = signersDerivationPathToCurve.map {
+            signers = hdPublicKeys.map {
                 LedgerInteractionRequest.KeyParameters(
-                    Curve.from(it.second),
-                    it.first
+                    Curve.from(it.publicKey),
+                    it.derivationPath.string
                 )
             },
             ledgerDevice = ledgerDevice,

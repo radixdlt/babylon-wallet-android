@@ -2,9 +2,9 @@ package com.babylon.wallet.android.presentation.main
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSourceId
 import kotlinx.coroutines.flow.StateFlow
-import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
-import rdx.works.profile.data.model.pernetwork.Network
 
 const val MAIN_ROUTE = "main"
 
@@ -12,8 +12,8 @@ const val MAIN_ROUTE = "main"
 fun NavGraphBuilder.main(
     mainUiState: StateFlow<MainUiState>,
     onMenuClick: () -> Unit,
-    onAccountClick: (Network.Account) -> Unit,
-    onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
+    onAccountClick: (Account) -> Unit,
+    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit,
     onNavigateToMnemonicRestore: () -> Unit,
     onAccountCreationClick: () -> Unit,
     onNavigateToOnBoarding: () -> Unit,

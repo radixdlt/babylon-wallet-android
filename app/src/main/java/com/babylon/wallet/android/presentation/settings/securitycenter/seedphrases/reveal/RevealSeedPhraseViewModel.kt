@@ -9,16 +9,14 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
+import com.radixdlt.sargon.FactorSourceId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.MnemonicRepository
 import javax.inject.Inject
 
@@ -37,23 +35,20 @@ class RevealSeedPhraseViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             preferencesManager.getBackedUpFactorSourceIds().collect { backedUpIds ->
-                mnemonicRepository.readMnemonic(
-                    FactorSourceID.FromHash(
-                        kind = FactorSourceKind.DEVICE,
-                        body = HexCoded32Bytes(args.factorSourceId)
-                    )
-                ).getOrNull()?.let { mnemonicWithPassphrase ->
+                mnemonicRepository.readMnemonic(args.factorSourceId).getOrNull()?.let { mnemonicWithPassphrase ->
                     _state.update { state ->
                         state.copy(
                             mnemonicWordsChunked = mnemonicWithPassphrase
                                 .mnemonic
-                                .split(" ").chunked(state.seedPhraseWordsPerLine)
+                                .words
+                                .map { it.word }
+                                .chunked(state.seedPhraseWordsPerLine)
                                 .map {
                                     it.toPersistentList()
                                 }.toPersistentList(),
-                            passphrase = mnemonicWithPassphrase.bip39Passphrase,
+                            passphrase = mnemonicWithPassphrase.passphrase,
                             backedUp = backedUpIds.contains(args.factorSourceId),
-                            mnemonicSize = mnemonicWithPassphrase.wordCount
+                            mnemonicSize = mnemonicWithPassphrase.mnemonic.wordCount.value.toInt()
                         )
                     }
                 }
@@ -86,7 +81,7 @@ class RevealSeedPhraseViewModel @Inject constructor(
 
     sealed interface ConfirmSeedPhraseDialogState {
         data object None : ConfirmSeedPhraseDialogState
-        data class Shown(val factorSourceId: String, val mnemonicSize: Int) : ConfirmSeedPhraseDialogState
+        data class Shown(val factorSourceId: FactorSourceId.Hash, val mnemonicSize: Int) : ConfirmSeedPhraseDialogState
     }
 
     sealed interface Effect : OneOffEvent {

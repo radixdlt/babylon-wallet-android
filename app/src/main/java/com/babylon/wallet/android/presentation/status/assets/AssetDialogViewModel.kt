@@ -10,6 +10,7 @@ import com.babylon.wallet.android.domain.usecases.transaction.SendClaimRequestUs
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Decimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
@@ -20,9 +21,8 @@ import rdx.works.core.domain.assets.LiquidStakeUnit
 import rdx.works.core.domain.assets.PoolUnit
 import rdx.works.core.domain.assets.StakeClaim
 import rdx.works.core.domain.assets.Token
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -77,7 +77,7 @@ class AssetDialogViewModel @Inject constructor(
                 _state.update { it.copy(asset = asset) }
 
                 args.underAccountAddress?.let { accountAddress ->
-                    val account = getProfileUseCase.accountOnCurrentNetwork(accountAddress)
+                    val account = getProfileUseCase().activeAccountOnCurrentNetwork(accountAddress)
                     _state.update { it.copy(accountContext = account) }
 
                     if (account != null) {
@@ -154,7 +154,7 @@ class AssetDialogViewModel @Inject constructor(
         val isFiatBalancesEnabled: Boolean = true,
         val assetPrice: AssetPrice? = null,
         val uiMessage: UiMessage? = null,
-        val accountContext: Network.Account? = null,
+        val accountContext: Account? = null,
     ) : UiState {
 
         val isLoadingBalance = args.underAccountAddress != null && assetPrice == null

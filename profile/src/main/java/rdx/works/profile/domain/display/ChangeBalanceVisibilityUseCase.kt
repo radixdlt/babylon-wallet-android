@@ -3,7 +3,7 @@ package rdx.works.profile.domain.display
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.extensions.changeBalanceVisibility
+import rdx.works.core.sargon.changeBalanceVisibility
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.IoDispatcher

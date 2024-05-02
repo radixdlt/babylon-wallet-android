@@ -60,12 +60,12 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -491,9 +491,7 @@ fun AccountSettingsPreview() {
                 AccountSettingsSection.AccountSection(
                     listOf(
                         AccountSettingItem.AccountLabel,
-                        AccountSettingItem.ThirdPartyDeposits(
-                            Network.Account.OnLedgerSettings.ThirdPartyDeposits.DepositRule.AcceptAll
-                        )
+                        AccountSettingItem.ThirdPartyDeposits(DepositRule.ACCEPT_ALL)
                     )
                 )
             ),

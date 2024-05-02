@@ -2,11 +2,14 @@ package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel
-import com.radixdlt.hex.decode
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionManifestData.TransactionMessage
+import rdx.works.core.sargon.init
 
 @Serializable
 data class WalletInteraction(
@@ -97,7 +100,7 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
         instructions = transactionManifest,
         networkId = metadata.networkId,
         message = message?.let { TransactionMessage.Public(it) } ?: TransactionMessage.None,
-        blobs = blobs?.map { decode(it) }.orEmpty(),
+        blobs = blobs?.map { it.hexToBagOfBytes() }.orEmpty(),
         version = version
     ),
     requestMetadata = metadata
@@ -106,7 +109,7 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
 fun WalletInteraction.toDomainModel(remoteConnectorId: String): MessageFromDataChannel.IncomingRequest {
     try {
         val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
-            networkId = metadata.networkId,
+            networkId = NetworkId.init(discriminant = metadata.networkId.toUByte()),
             origin = metadata.origin,
             dAppDefinitionAddress = metadata.dAppDefinitionAddress,
             isInternal = false

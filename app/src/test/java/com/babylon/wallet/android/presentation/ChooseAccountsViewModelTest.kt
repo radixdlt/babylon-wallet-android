@@ -2,13 +2,16 @@ package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import com.babylon.wallet.android.data.dapp.IncomingRequestRepositoryImpl
-import com.babylon.wallet.android.fakes.fakeGetProfileUseCase
-import com.babylon.wallet.android.mockdata.accountsRequestAtLeast
-import com.babylon.wallet.android.mockdata.accountsRequestExact
-import com.babylon.wallet.android.mockdata.accountsTwoRequestExact
+import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_EXACT_ACCOUNT_COUNT
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.ARG_NUMBER_OF_ACCOUNTS
 import com.babylon.wallet.android.presentation.dapp.unauthorized.accountonetime.OneTimeChooseAccountsViewModel
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.samples.sample
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -18,6 +21,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import rdx.works.core.UUIDGenerator
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.unHideAllEntities
+import rdx.works.profile.domain.GetProfileUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChooseAccountsViewModelTest {
@@ -26,11 +33,57 @@ class ChooseAccountsViewModelTest {
     @get:Rule
     val coroutineRule = TestDispatcherRule()
 
-    private val getProfileUseCase = fakeGetProfileUseCase()
+    private val profileRepository = FakeProfileRepository(
+        profile = Profile.sample()
+            .changeGateway(Gateway.forNetwork(NetworkId.MAINNET))
+            .unHideAllEntities() // Default profile sample has hidden entities.
+    )
+    private val getProfileUseCase = GetProfileUseCase(profileRepository)
 
     private val incomingRequestRepository = IncomingRequestRepositoryImpl()
 
     private lateinit var viewModel: OneTimeChooseAccountsViewModel
+
+    private val accountsRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
+        remoteConnectorId = "remoteConnectorId",
+        interactionId = UUIDGenerator.uuid().toString(),
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+            isOngoing = false,
+            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                1,
+                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+            ),
+            challenge = null
+        )
+    )
+    private val accountsTwoRequestExact = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
+        remoteConnectorId = "remoteConnectorId",
+        interactionId = UUIDGenerator.uuid().toString(),
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+            isOngoing = false,
+            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                2,
+                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
+            ),
+            challenge = null
+        )
+    )
+
+    private val accountsRequestAtLeast = MessageFromDataChannel.IncomingRequest.UnauthorizedRequest(
+        remoteConnectorId = "remoteConnectorId",
+        interactionId = UUIDGenerator.uuid().toString(),
+        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(NetworkId.MAINNET, "", "", false),
+        oneTimeAccountsRequestItem = MessageFromDataChannel.IncomingRequest.AccountsRequestItem(
+            isOngoing = false,
+            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                2,
+                MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+            ),
+            challenge = null
+        )
+    )
 
     @Before
     fun setup() = runTest {

@@ -16,21 +16,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import coil.compose.AsyncImage
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.extensions.formatted
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import rdx.works.core.qr.QRCodeGenerator
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
 
 @Composable
 fun AccountQRCodeView(
@@ -43,10 +43,10 @@ fun AccountQRCodeView(
     }
     var accountQRCodeViewDataHolder: AccountQRCodeViewDataHolder? by remember { mutableStateOf(null) }
     LaunchedEffect(useCaseProvider, accountAddress) {
-        useCaseProvider.profileUseCase().accountOnCurrentNetwork(accountAddress)?.let { account ->
+        useCaseProvider.profileUseCase().invoke().activeAccountOnCurrentNetwork(accountAddress)?.let { account ->
             accountQRCodeViewDataHolder = AccountQRCodeViewDataHolder(
-                accountName = account.displayName,
-                accountAppearanceId = account.appearanceID
+                accountName = account.displayName.value,
+                accountAppearanceId = account.appearanceId
             )
         }
     }
@@ -60,9 +60,7 @@ fun AccountQRCodeView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        Brush.horizontalGradient(
-                            AccountGradientList[dataHolder.accountAppearanceId % AccountGradientList.size]
-                        ),
+                        dataHolder.accountAppearanceId.gradient(),
                         RadixTheme.shapes.roundedRectSmall
                     )
                     .padding(
@@ -106,7 +104,7 @@ fun AccountQRCodeView(
 
 private data class AccountQRCodeViewDataHolder(
     val accountName: String,
-    val accountAppearanceId: Int
+    val accountAppearanceId: AppearanceId
 )
 
 @EntryPoint

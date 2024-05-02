@@ -22,6 +22,7 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.persistentListOf
@@ -156,13 +157,13 @@ fun ChooseAccountContentPreview() {
                 AccountItemUiModel(
                     displayName = "Account name 1",
                     address = AccountAddress.sampleMainnet.random(),
-                    appearanceID = 1,
+                    appearanceID = AppearanceId(1u),
                     isSelected = true
                 ),
                 AccountItemUiModel(
                     displayName = "Account name 2",
                     address = AccountAddress.sampleMainnet.random(),
-                    appearanceID = 1,
+                    appearanceID = AppearanceId(2u),
                     isSelected = false
                 )
             ),

@@ -3,6 +3,7 @@ package com.babylon.wallet.android.di
 import com.babylon.wallet.android.BuildConfig
 import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.radixdlt.sargon.Gateway
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,13 +14,12 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentGateway
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.default
 import rdx.works.profile.data.repository.ProfileRepository
 import retrofit2.Converter.Factory
 import retrofit2.Retrofit
 import timber.log.Timber
-import java.net.URL
 import javax.inject.Inject
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -120,7 +120,7 @@ object NetworkModule {
         private val profileRepository: ProfileRepository
     ) : Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
-            val url = URL(profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Radix.Gateway.default.url)
+            val url = profileRepository.inMemoryProfileOrNull?.currentGateway?.url ?: Gateway.default.url
             val updatedUrl = chain.request().url
                 .newBuilder()
                 .host(url.host)

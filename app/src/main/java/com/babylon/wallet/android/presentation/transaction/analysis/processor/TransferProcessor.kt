@@ -2,13 +2,10 @@ package com.babylon.wallet.android.presentation.transaction.analysis.processor
 
 import com.babylon.wallet.android.domain.usecases.assets.ResolveAssetsFromAddressUseCase
 import com.babylon.wallet.android.presentation.transaction.PreviewType
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.DetailedManifestClass
 import com.radixdlt.sargon.ExecutionSummary
-import com.radixdlt.sargon.extensions.init
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
-import rdx.works.profile.domain.defaultDepositGuarantee
 import javax.inject.Inject
 
 class TransferProcessor @Inject constructor(
@@ -22,8 +19,8 @@ class TransferProcessor @Inject constructor(
         ).getOrThrow()
 
         val involvedAccountAddresses = summary.deposits.keys + summary.withdrawals.keys
-        val allOwnedAccounts = getProfileUseCase.accountsOnCurrentNetwork().filter {
-            involvedAccountAddresses.contains(AccountAddress.init(it.address))
+        val allOwnedAccounts = getProfileUseCase().activeAccountsOnCurrentNetwork.filter {
+            it.address in involvedAccountAddresses
         }
 
         return PreviewType.Transfer.GeneralTransfer(
@@ -34,7 +31,7 @@ class TransferProcessor @Inject constructor(
             to = summary.toDepositingAccountsWithTransferableAssets(
                 involvedAssets = assets,
                 allOwnedAccounts = allOwnedAccounts,
-                defaultGuarantee = getProfileUseCase.defaultDepositGuarantee()
+                defaultGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
             )
         )
     }

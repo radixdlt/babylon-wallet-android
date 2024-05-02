@@ -1,9 +1,9 @@
 package com.babylon.wallet.android.domain.model
 
-import rdx.works.profile.data.model.pernetwork.Network
+import com.radixdlt.sargon.Account
 
 data class AccountWithOnLedgerStatus(
-    val account: Network.Account,
+    val account: Account,
     val status: Status = Status.Inactive
 ) {
     /**

@@ -9,9 +9,8 @@ import com.radixdlt.sargon.ExecutionSummary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
-import rdx.works.profile.domain.defaultDepositGuarantee
 import javax.inject.Inject
 
 class GeneralTransferProcessor @Inject constructor(
@@ -23,7 +22,7 @@ class GeneralTransferProcessor @Inject constructor(
     override suspend fun process(summary: ExecutionSummary, classification: DetailedManifestClass.General): PreviewType {
         val badges = getTransactionBadgesUseCase(addresses = summary.presentedProofs.toSet()).getOrThrow()
         val dApps = summary.resolveDApps()
-        val allOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase.accountsOnCurrentNetwork())
+        val allOwnedAccounts = summary.involvedOwnedAccounts(getProfileUseCase().activeAccountsOnCurrentNetwork)
         val assets = resolveAssetsFromAddressUseCase(
             fungibleAddresses = summary.involvedFungibleAddresses(),
             nonFungibleIds = summary.involvedNonFungibleIds()
@@ -37,7 +36,7 @@ class GeneralTransferProcessor @Inject constructor(
             to = summary.toDepositingAccountsWithTransferableAssets(
                 involvedAssets = assets,
                 allOwnedAccounts = allOwnedAccounts,
-                defaultGuarantee = getProfileUseCase.defaultDepositGuarantee()
+                defaultGuarantee = getProfileUseCase().appPreferences.transaction.defaultDepositGuarantee
             ),
             badges = badges,
             dApps = dApps

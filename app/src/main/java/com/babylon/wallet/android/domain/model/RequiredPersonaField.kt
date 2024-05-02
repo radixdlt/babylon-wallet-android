@@ -4,7 +4,7 @@ import android.os.Parcelable
 import androidx.annotation.Keep
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.PersonaDataField
 
 @Keep
 @Serializable
@@ -17,6 +17,6 @@ data class RequiredPersonaFields(
 @Serializable
 @Parcelize
 data class RequiredPersonaField(
-    val kind: PersonaData.PersonaDataField.Kind,
+    val kind: PersonaDataField.Kind,
     val numberOfValues: MessageFromDataChannel.IncomingRequest.NumberOfValues
 ) : Parcelable

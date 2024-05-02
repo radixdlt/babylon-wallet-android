@@ -106,8 +106,7 @@ private fun NavGraphBuilder.settingsGateway(navController: NavController) {
                 navController.createAccountScreen(
                     CreateAccountRequestSource.Gateways,
                     url,
-                    networkId,
-                    true
+                    networkId
                 )
             }
         )

@@ -36,7 +36,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.designsystem.theme.plus
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.dapp.InitialAuthorizedLoginRoute
 import com.babylon.wallet.android.presentation.dapp.authorized.login.DAppAuthorizedLoginViewModel
 import com.babylon.wallet.android.presentation.dapp.authorized.login.Event
@@ -54,11 +53,12 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun PersonaDataOnetimeScreen(
@@ -159,9 +159,9 @@ private fun PersonaDataOnetimeContent(
     modifier: Modifier = Modifier,
     isFirstScreenInFlow: Boolean,
     personas: ImmutableList<PersonaUiModel>,
-    onSelectPersona: ((Network.Persona) -> Unit)?,
+    onSelectPersona: ((Persona) -> Unit)?,
     onCreatePersona: () -> Unit,
-    onEditClick: (String) -> Unit,
+    onEditClick: (Persona) -> Unit,
     continueButtonEnabled: Boolean,
 ) {
     Scaffold(
@@ -279,7 +279,7 @@ fun LoginPermissionContentPreview() {
             onBackClick = {},
             modifier = Modifier.fillMaxSize(),
             isFirstScreenInFlow = false,
-            personas = persistentListOf(PersonaUiModel(SampleDataProvider().samplePersona())),
+            personas = persistentListOf(PersonaUiModel(Persona.sampleMainnet())),
             onSelectPersona = {},
             onCreatePersona = {},
             onEditClick = {},

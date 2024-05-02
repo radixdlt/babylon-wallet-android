@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.utils
 
+import com.radixdlt.sargon.Timestamp
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -29,16 +30,6 @@ fun LocalDateTime.toEpochMillis(): Long {
     return ZonedDateTime.of(this, ZoneId.systemDefault()).toInstant().toEpochMilli()
 }
 
-@Suppress("SwallowedException")
-fun String.fromISO8601String(): LocalDateTime? {
-    return try {
-        LocalDateTime.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(this))
-    } catch (exception: Exception) {
-        // TODO this may be removed when we have enough confidence that no users would fall into this case
-        null // catch those existing events with the LocalDate date from the existing accounts.
-    }
-}
-
 fun Instant.dayMonthDateShort(): String {
     val zoneId = ZoneId.systemDefault()
     val currentYear = Instant.now().atZone(zoneId).year
@@ -58,6 +49,11 @@ fun Instant.timestampHoursMinutes(): String {
 }
 
 fun Instant.toDateString(): String {
+    val formatter = DateTimeFormatter.ofPattern(LAST_USED_DATE_FORMAT_SHORT_MONTH).withZone(ZoneId.systemDefault())
+    return formatter.format(this)
+}
+
+fun Timestamp.toDateString(): String {
     val formatter = DateTimeFormatter.ofPattern(LAST_USED_DATE_FORMAT_SHORT_MONTH).withZone(ZoneId.systemDefault())
     return formatter.format(this)
 }

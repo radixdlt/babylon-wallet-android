@@ -19,13 +19,16 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEvent.RestoredMnemonic
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
+import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.toDecimal192
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.catch
@@ -35,6 +38,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -43,19 +47,15 @@ import rdx.works.core.domain.assets.Assets
 import rdx.works.core.domain.assets.FiatPrice
 import rdx.works.core.domain.assets.SupportedCurrency
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.extensions.factorSourceId
-import rdx.works.profile.data.model.extensions.isOlympiaAccount
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.factorSourceId
+import rdx.works.core.sargon.isLedgerAccount
+import rdx.works.core.sargon.isOlympia
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
-import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import rdx.works.profile.domain.display.ChangeBalanceVisibilityUseCase
-import rdx.works.profile.domain.factorSources
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -78,7 +78,7 @@ class WalletViewModel @Inject constructor(
 
     private val refreshFlow = MutableSharedFlow<Unit>()
     private val accountsFlow = combine(
-        getProfileUseCase.activeAccountsOnCurrentNetwork.distinctUntilChanged(),
+        getProfileUseCase.flow.map { it.activeAccountsOnCurrentNetwork }.distinctUntilChanged(),
         refreshFlow
     ) { accounts, _ ->
         accounts
@@ -170,9 +170,9 @@ class WalletViewModel @Inject constructor(
 
     private fun observeDeviceFactorSources() {
         viewModelScope.launch {
-            getProfileUseCase.factorSources.collect { factorSourcesList ->
+            getProfileUseCase.flow.map { it.factorSources() }.collect { factorSourcesList ->
                 _state.update { state ->
-                    state.copy(factorSources = factorSourcesList.toPersistentList())
+                    state.copy(factorSources = factorSourcesList)
                 }
             }
         }
@@ -237,10 +237,10 @@ class WalletViewModel @Inject constructor(
         _state.update { it.copy(uiMessage = null) }
     }
 
-    fun onApplySecuritySettings(account: Network.Account, securityPromptType: SecurityPromptType) {
+    fun onApplySecuritySettings(account: Account, securityPromptType: SecurityPromptType) {
         viewModelScope.launch {
-            val factorSourceId = getProfileUseCase.accountOnCurrentNetwork(AccountAddress.init(account.address))
-                ?.factorSourceId as? FactorSourceID.FromHash ?: return@launch
+            val factorSourceId = getProfileUseCase().activeAccountOnCurrentNetwork(withAddress = account.address)
+                ?.factorSourceId as? FactorSourceId.Hash ?: return@launch
 
             when (securityPromptType) {
                 SecurityPromptType.NEEDS_BACKUP -> sendEvent(WalletEvent.NavigateToMnemonicBackup(factorSourceId))
@@ -261,19 +261,19 @@ class WalletViewModel @Inject constructor(
 }
 
 internal sealed interface WalletEvent : OneOffEvent {
-    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceID.FromHash) : WalletEvent
-    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceID.FromHash) : WalletEvent
+    data class NavigateToMnemonicBackup(val factorSourceId: FactorSourceId.Hash) : WalletEvent
+    data class NavigateToMnemonicRestore(val factorSourceId: FactorSourceId.Hash) : WalletEvent
 
     data object ShowNpsSurvey : WalletEvent
 }
 
 data class WalletUiState(
     private val accountsWithAssets: List<AccountWithAssets>? = null,
-    private val accountsAddressesWithAssetsPrices: Map<String, List<AssetPrice>?>? = null,
+    private val accountsAddressesWithAssetsPrices: Map<AccountAddress, List<AssetPrice>?>? = null,
     private val loading: Boolean = true,
     private val refreshing: Boolean = false,
     private val entitiesWithSecurityPrompt: List<EntityWithSecurityPrompt> = emptyList(),
-    private val factorSources: List<FactorSource> = emptyList(),
+    private val factorSources: List<com.radixdlt.sargon.FactorSource> = emptyList(),
     val isRadixBannerVisible: Boolean = false,
     val isBackupWarningVisible: Boolean = false,
     val isFiatBalancesEnabled: Boolean = true,
@@ -297,7 +297,7 @@ data class WalletUiState(
             return isLoading || areAnyAssetsLoading || accountsAddressesWithAssetsPrices.isNullOrEmpty()
         }
 
-    fun isBalanceLoadingForAccount(accountAddress: String): Boolean {
+    fun isBalanceLoadingForAccount(accountAddress: AccountAddress): Boolean {
         return accountsAddressesWithAssetsPrices?.containsKey(accountAddress) != true
     }
 
@@ -338,7 +338,7 @@ data class WalletUiState(
      * if the account has assets but failed to fetch prices then return Null
      *
      */
-    fun totalFiatValueForAccount(accountAddress: String): FiatPrice? {
+    fun totalFiatValueForAccount(accountAddress: AccountAddress): FiatPrice? {
         val accountWithAssets = accountsAndAssets.find {
             it.account.address == accountAddress
         }
@@ -363,16 +363,16 @@ data class WalletUiState(
         }
     }
 
-    fun securityPrompt(forAccount: Network.Account) = entitiesWithSecurityPrompt.find {
-        it.entity.address == forAccount.address
+    fun securityPrompt(forAccount: Account) = entitiesWithSecurityPrompt.find {
+        it.entity.address.string == forAccount.address.string
     }?.prompt
 
     val isSettingsWarningVisible: Boolean
         get() = isBackupWarningVisible || entitiesWithSecurityPrompt.any {
-            it.entity is Network.Persona && it.prompt == SecurityPromptType.NEEDS_BACKUP
+            it.entity is ProfileEntity.PersonaEntity && it.prompt == SecurityPromptType.NEEDS_BACKUP
         }
 
-    fun getTag(forAccount: Network.Account): AccountTag? {
+    fun getTag(forAccount: Account): AccountTag? {
         return when {
             !isDappDefinitionAccount(forAccount) && !isLegacyAccount(forAccount) && !isLedgerAccount(forAccount) -> null
             isDappDefinitionAccount(forAccount) -> AccountTag.DAPP_DEFINITION
@@ -383,23 +383,19 @@ data class WalletUiState(
         }
     }
 
-    private fun isLegacyAccount(forAccount: Network.Account): Boolean = forAccount.isOlympiaAccount()
+    private fun isLegacyAccount(forAccount: Account): Boolean = forAccount.isOlympia
 
-    private fun isLedgerAccount(forAccount: Network.Account): Boolean {
-        val factorSource = factorSources.find {
-            it.id == forAccount.factorSourceId
-        }?.id?.kind
-
-        return factorSource == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET
+    private fun isLedgerAccount(forAccount: Account): Boolean {
+        return forAccount.isLedgerAccount
     }
 
-    private fun isDappDefinitionAccount(forAccount: Network.Account): Boolean {
+    private fun isDappDefinitionAccount(forAccount: Account): Boolean {
         return accountsAndAssets.find { accountWithResources ->
             accountWithResources.account.address == forAccount.address
         }?.isDappDefinitionAccountType ?: false
     }
 
-    fun loadingResources(accounts: List<Network.Account>, isRefreshing: Boolean): WalletUiState = copy(
+    fun loadingResources(accounts: List<Account>, isRefreshing: Boolean): WalletUiState = copy(
         accountsWithAssets = accounts.map { account ->
             val current = accountsWithAssets?.find { account == it.account }
             AccountWithAssets(

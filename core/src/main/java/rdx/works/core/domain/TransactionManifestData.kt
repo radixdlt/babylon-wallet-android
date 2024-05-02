@@ -1,6 +1,7 @@
 package rdx.works.core.domain
 
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.BagOfBytes
 import com.radixdlt.sargon.Blob
 import com.radixdlt.sargon.Blobs
 import com.radixdlt.sargon.ExecutionSummary
@@ -10,30 +11,27 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.blobs
 import com.radixdlt.sargon.extensions.bytes
-import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.executionSummary
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.instructionsString
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.plaintext
 import com.radixdlt.sargon.extensions.summary
-import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.sargon.extensions.toList
-import rdx.works.core.toByteArray
 
 data class TransactionManifestData(
     val instructions: String,
-    val networkId: Int,
+    val networkId: NetworkId,
     val message: TransactionMessage = TransactionMessage.None,
-    val blobs: List<ByteArray> = emptyList(),
+    val blobs: List<BagOfBytes> = emptyList(),
     val version: Long = TransactionVersion.Default.value
 ) {
 
     val manifestSargon: TransactionManifest by lazy {
         TransactionManifest.init(
             instructionsString = instructions,
-            networkId = NetworkId.init(discriminant = networkId.toUByte()),
-            blobs = Blobs.init(blobs = blobs.map { Blob.init(it.toBagOfBytes()) })
+            networkId = networkId,
+            blobs = Blobs.init(blobs = blobs.map { Blob.init(it) })
         )
     }
 
@@ -41,9 +39,6 @@ data class TransactionManifestData(
         TransactionMessage.None -> Message.None
         is TransactionMessage.Public -> Message.plaintext(message.message)
     }
-
-    val networkIdSargon: NetworkId
-        get() = NetworkId.init(discriminant = networkId.toUByte())
 
     fun entitiesRequiringAuth(): EntitiesRequiringAuth {
         val summary = manifestSargon.summary
@@ -62,7 +57,7 @@ data class TransactionManifestData(
     }
 
     // Currently the only method that exposes RET
-    fun executionSummary(encodedReceipt: ByteArray): ExecutionSummary = manifestSargon.executionSummary(encodedReceipt.toBagOfBytes())
+    fun executionSummary(encodedReceipt: BagOfBytes): ExecutionSummary = manifestSargon.executionSummary(encodedReceipt)
 
     sealed interface TransactionMessage {
 
@@ -87,9 +82,9 @@ data class TransactionManifestData(
             message: TransactionMessage = TransactionMessage.None
         ) = TransactionManifestData(
             instructions = manifest.instructionsString,
-            networkId = manifest.networkId.discriminant.toInt(),
+            networkId = manifest.networkId,
             message = message,
-            blobs = manifest.blobs.toList().map { it.bytes.toByteArray() },
+            blobs = manifest.blobs.toList().map { it.bytes },
             version = TransactionVersion.Default.value
         )
     }

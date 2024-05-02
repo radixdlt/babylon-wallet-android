@@ -10,19 +10,19 @@ import com.babylon.wallet.android.data.transaction.InteractionState
 import com.babylon.wallet.android.data.transaction.ROLAClient
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.asProfileEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.model.extensions.hasAuthSigning
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.hasAuthSigning
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.AddAuthSigningFactorInstanceUseCase
-import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -57,13 +57,13 @@ class DevSettingsViewModel @Inject constructor(
 
     private fun loadAccount() {
         viewModelScope.launch {
-            getProfileUseCase.activeAccountsOnCurrentNetwork.mapNotNull { accounts ->
-                accounts.firstOrNull { it.address == args.address.string }
+            getProfileUseCase.flow.mapNotNull { profile ->
+                profile.activeAccountsOnCurrentNetwork.firstOrNull { it.address == args.address }
             }.collect { account ->
                 _state.update { state ->
                     state.copy(
                         account = account,
-                        hasAuthKey = account.hasAuthSigning()
+                        hasAuthKey = account.hasAuthSigning
                     )
                 }
             }
@@ -73,10 +73,11 @@ class DevSettingsViewModel @Inject constructor(
     fun onCreateAndUploadAuthKey() {
         createAndUploadAuthKeyJob = viewModelScope.launch {
             state.value.account?.let { account ->
+                val entity = account.asProfileEntity()
                 _state.update { it.copy(isLoading = true) }
-                rolaClient.generateAuthSigningFactorInstance(account).onSuccess { authSigningFactorInstance ->
+                rolaClient.generateAuthSigningFactorInstance(entity).onSuccess { authSigningFactorInstance ->
                     val manifest = rolaClient
-                        .createAuthKeyManifest(account, authSigningFactorInstance)
+                        .createAuthKeyManifest(entity, authSigningFactorInstance)
                         .getOrElse {
                             _state.update { state ->
                                 state.copy(isLoading = false)
@@ -110,7 +111,7 @@ class DevSettingsViewModel @Inject constructor(
                     transactionStatusClient.statusHandled(status.txId)
                     when (val type = status.transactionType) {
                         is TransactionType.CreateRolaKey -> {
-                            val account = requireNotNull(state.value.account)
+                            val account = requireNotNull(state.value.account).asProfileEntity()
                             addAuthSigningFactorInstanceUseCase(account, type.factorInstance)
                         }
 
@@ -124,7 +125,7 @@ class DevSettingsViewModel @Inject constructor(
 }
 
 data class DevSettingsUiState(
-    val account: Network.Account? = null,
+    val account: Account? = null,
     val accountAddress: AccountAddress,
     val isLoading: Boolean = false,
     val hasAuthKey: Boolean = false,

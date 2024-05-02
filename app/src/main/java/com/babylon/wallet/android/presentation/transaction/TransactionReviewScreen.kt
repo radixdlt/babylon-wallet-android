@@ -60,7 +60,9 @@ import com.babylon.wallet.android.presentation.ui.composables.ReceiptEdge
 import com.babylon.wallet.android.presentation.ui.composables.SlideToSignButton
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.Address
+import com.radixdlt.sargon.NetworkId
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.launch
@@ -69,8 +71,6 @@ import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionManifestData.TransactionMessage
 import rdx.works.core.domain.TransactionVersion
 import rdx.works.core.domain.resources.Resource
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun TransactionReviewScreen(
@@ -168,7 +168,7 @@ private fun TransactionPreviewContent(
     onNonTransferableFungibleClick: (asset: TransferableAsset.NonFungible, Resource.NonFungibleResource.Item) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
-    onPayerSelected: (Network.Account) -> Unit,
+    onPayerSelected: (Account) -> Unit,
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
@@ -403,7 +403,7 @@ private fun BottomSheetContent(
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
-    onPayerSelected: (Network.Account) -> Unit,
+    onPayerSelected: (Account) -> Unit,
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,
@@ -487,11 +487,11 @@ fun TransactionPreviewContentPreview() {
                     requestId = "",
                     transactionManifestData = TransactionManifestData(
                         instructions = "",
-                        networkId = Radix.Gateway.default.network.id,
+                        networkId = NetworkId.MAINNET,
                         message = TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
-                    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Radix.Gateway.default.network.id)
+                    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(NetworkId.MAINNET)
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,
