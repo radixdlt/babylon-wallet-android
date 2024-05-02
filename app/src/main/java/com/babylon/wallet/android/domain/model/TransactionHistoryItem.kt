@@ -193,7 +193,6 @@ fun TransactionClass.toManifestClass(): ManifestClass {
     }
 }
 
-@Suppress("LongMethod")
 fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceChange> {
     val fungibleFungibleBalanceChanges = fungibleBalanceChanges.toFungibleBalanceChangeDomainModels(assets)
     val nonFungibleFungibleBalanceChanges = nonFungibleBalanceChanges.toNonFungibleBalanceChangeDomainModels(assets)
