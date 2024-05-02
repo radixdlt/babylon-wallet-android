@@ -37,6 +37,7 @@ import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import rdx.works.core.InstantGenerator
 import rdx.works.core.domain.DApp
@@ -51,7 +52,8 @@ import rdx.works.core.domain.resources.metadata.PublicKeyHash
 import rdx.works.core.domain.resources.metadata.dAppDefinition
 import rdx.works.core.domain.resources.metadata.ownerKeyHashes
 import rdx.works.core.sargon.currentGateway
-import rdx.works.profile.domain.GetProfileUseCase
+import rdx.works.profile.data.repository.ProfileRepository
+import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
 
 @Suppress("TooManyFunctions")
@@ -107,7 +109,7 @@ class StateRepositoryImpl @Inject constructor(
     private val stateDao: StateDao,
     @DefaultDispatcher private val dispatcher: CoroutineDispatcher,
     private val accountsStateCache: AccountsStateCache,
-    private val getProfileUseCase: GetProfileUseCase
+    private val profileRepository: ProfileRepository
 ) : StateRepository {
 
     override fun observeAccountsOnLedger(
@@ -527,7 +529,7 @@ class StateRepositoryImpl @Inject constructor(
     override suspend fun clearCachedState(): Result<Unit> = accountsStateCache.clear()
 
     private suspend fun getLatestCachedStateVersionInNetwork(): Long? {
-        val currentNetworkId = getProfileUseCase().currentGateway.network.id
+        val currentNetworkId = profileRepository.profile.first().currentGateway.network.id
 
         return stateDao.getAccountStateVersions().filter {
             it.address.networkId == currentNetworkId
