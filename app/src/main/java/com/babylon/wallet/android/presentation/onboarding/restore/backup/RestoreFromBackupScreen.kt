@@ -258,7 +258,7 @@ private fun RestoreFromBackupContent(
                             Text(
                                 text = stringResource(
                                     id = R.string.recoverProfileBackup_numberOfAccounts,
-                                    state.restoringProfile.header.contentHint.numberOfAccountsOnAllNetworksInTotal
+                                    state.restoringProfile.header.contentHint.numberOfAccountsOnAllNetworksInTotal.toInt()
                                 ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                                 color = RadixTheme.colors.gray2,
                                 style = RadixTheme.typography.body2Regular
@@ -267,7 +267,7 @@ private fun RestoreFromBackupContent(
                             Text(
                                 text = stringResource(
                                     id = R.string.recoverProfileBackup_numberOfPersonas,
-                                    state.restoringProfile.header.contentHint.numberOfPersonasOnAllNetworksInTotal
+                                    state.restoringProfile.header.contentHint.numberOfPersonasOnAllNetworksInTotal.toInt()
                                 ).formattedSpans(SpanStyle(fontWeight = FontWeight.Bold)),
                                 color = RadixTheme.colors.gray2,
                                 style = RadixTheme.typography.body2Regular
