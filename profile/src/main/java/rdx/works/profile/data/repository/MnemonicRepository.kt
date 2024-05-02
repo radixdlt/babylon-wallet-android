@@ -1,14 +1,17 @@
 package rdx.works.profile.data.repository
 
+import com.radixdlt.sargon.Bip39Language
+import com.radixdlt.sargon.Bip39WordCount
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.FactorSourceKind
+import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.fromJson
 import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.toJson
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import rdx.works.core.sargon.generate
-import rdx.works.core.sargon.toFactorSourceId
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import javax.inject.Inject
@@ -64,16 +67,18 @@ class MnemonicRepository @Inject constructor(
      */
     suspend operator fun invoke(mnemonicKey: FactorSourceId.Hash? = null): MnemonicWithPassphrase {
         return mnemonicKey?.let { readMnemonic(key = it).getOrNull() } ?: withContext(defaultDispatcher) {
-            MnemonicWithPassphrase.generate(entropyStrength = ENTROPY_STRENGTH).also {
-                saveMnemonic(key = it.toFactorSourceId(), mnemonicWithPassphrase = it)
+            MnemonicWithPassphrase(
+                mnemonic = Mnemonic.init(
+                    wordCount = Bip39WordCount.TWENTY_FOUR,
+                    language = Bip39Language.ENGLISH
+                ),
+                passphrase = ""
+            ).also {
+                saveMnemonic(
+                    key = FactorSourceId.Hash.init(kind = FactorSourceKind.DEVICE, mnemonicWithPassphrase = it),
+                    mnemonicWithPassphrase = it
+                )
             }
         }
-    }
-
-    companion object {
-        /**
-         * This will tell you how random your entropy is, the more the better it has to be 128-256 bit, multiple of 32
-         */
-        const val ENTROPY_STRENGTH = 256
     }
 }

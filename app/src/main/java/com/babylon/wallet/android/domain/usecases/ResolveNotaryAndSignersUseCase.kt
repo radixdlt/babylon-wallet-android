@@ -4,8 +4,8 @@ import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.extensions.NotaryPrivateKey
 import com.radixdlt.sargon.extensions.asProfileEntity
-import rdx.works.core.crypto.PrivateKey
 import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
@@ -18,7 +18,7 @@ class ResolveNotaryAndSignersUseCase @Inject constructor(
     suspend operator fun invoke(
         accountsAddressesRequiringAuth: List<AccountAddress>,
         personaAddressesRequiringAuth: List<IdentityAddress>,
-        notary: PrivateKey
+        notary: NotaryPrivateKey
     ) = runCatching {
         val accounts = profileUseCase().activeAccountsOnCurrentNetwork
         val personas = profileUseCase().activePersonasOnCurrentNetwork

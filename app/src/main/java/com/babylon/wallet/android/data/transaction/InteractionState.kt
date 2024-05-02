@@ -1,8 +1,8 @@
 package com.babylon.wallet.android.data.transaction
 
 import com.babylon.wallet.android.domain.RadixWalletException
+import com.babylon.wallet.android.domain.usecases.transaction.SignRequest
 import com.radixdlt.sargon.FactorSource
-import rdx.works.core.domain.SigningPurpose
 
 @Deprecated("It will be removed once refactoring of access factor sources is complete.")
 sealed class InteractionState(val factorSource: FactorSource) {
@@ -13,7 +13,7 @@ sealed class InteractionState(val factorSource: FactorSource) {
 
         data class Pending(
             private val deviceFactorSource: FactorSource.Device,
-            val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
+            val signingPurpose: SigningPurpose = SigningPurpose.Transaction
         ) : Device(deviceFactorSource)
 
         override val label: String
@@ -28,7 +28,7 @@ sealed class InteractionState(val factorSource: FactorSource) {
 
         data class Pending(
             val ledgerFactorSource: FactorSource.Ledger,
-            val signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
+            val signingPurpose: SigningPurpose = SigningPurpose.Transaction
         ) : Ledger(ledgerFactorSource)
 
         data class Error(
@@ -42,4 +42,16 @@ sealed class InteractionState(val factorSource: FactorSource) {
     }
 
     val usingLedger: Boolean = this is Ledger
+
+    enum class SigningPurpose {
+        AuthChallenge,
+        Transaction;
+
+        companion object {
+            fun from(request: SignRequest) = when (request) {
+                is SignRequest.SignAuthChallengeRequest -> AuthChallenge
+                is SignRequest.SignTransactionRequest -> Transaction
+            }
+        }
+    }
 }

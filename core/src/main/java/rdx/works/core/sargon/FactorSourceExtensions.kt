@@ -82,7 +82,10 @@ fun FactorSource.Device.Companion.device(
         "Olympia Device factor source should never be marked 'main'."
     }
     return DeviceFactorSource(
-        id = mnemonicWithPassphrase.toFactorSourceId().value,
+        id = FactorSourceId.Hash.init(
+            kind = FactorSourceKind.DEVICE,
+            mnemonicWithPassphrase = mnemonicWithPassphrase
+        ).value,
         common = FactorSourceCommon(
             cryptoParameters = if (isOlympia) {
                 FactorSourceCryptoParameters.olympia

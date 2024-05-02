@@ -17,15 +17,13 @@ import com.radixdlt.sargon.extensions.instructionsString
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.plaintext
 import com.radixdlt.sargon.extensions.summary
-import com.radixdlt.sargon.extensions.toBagOfBytes
 import com.radixdlt.sargon.extensions.toList
-import rdx.works.core.toByteArray
 
 data class TransactionManifestData(
     val instructions: String,
     val networkId: NetworkId,
     val message: TransactionMessage = TransactionMessage.None,
-    val blobs: List<ByteArray> = emptyList(),
+    val blobs: List<BagOfBytes> = emptyList(),
     val version: Long = TransactionVersion.Default.value
 ) {
 
@@ -33,7 +31,7 @@ data class TransactionManifestData(
         TransactionManifest.init(
             instructionsString = instructions,
             networkId = networkId,
-            blobs = Blobs.init(blobs = blobs.map { Blob.init(it.toBagOfBytes()) })
+            blobs = Blobs.init(blobs = blobs.map { Blob.init(it) })
         )
     }
 
@@ -86,7 +84,7 @@ data class TransactionManifestData(
             instructions = manifest.instructionsString,
             networkId = manifest.networkId,
             message = message,
-            blobs = manifest.blobs.toList().map { it.bytes.toByteArray() },
+            blobs = manifest.blobs.toList().map { it.bytes },
             version = TransactionVersion.Default.value
         )
     }

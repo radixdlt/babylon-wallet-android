@@ -11,16 +11,12 @@ import com.radixdlt.sargon.UnsecuredEntityControl
 
 fun EntitySecurityState.Companion.unsecured(
     factorSourceId: FactorSourceId.Hash,
-    publicKey: PublicKey,
-    derivationPath: DerivationPath
+    hdPublicKey: HierarchicalDeterministicPublicKey
 ) = EntitySecurityState.Unsecured(
     UnsecuredEntityControl(
         transactionSigning = HierarchicalDeterministicFactorInstance(
             factorSourceId = factorSourceId.value,
-            publicKey = HierarchicalDeterministicPublicKey(
-                publicKey = publicKey,
-                derivationPath = derivationPath
-            )
+            publicKey = hdPublicKey
         ),
         authenticationSigning = null
     )

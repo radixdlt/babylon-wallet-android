@@ -9,6 +9,7 @@ import com.radixdlt.sargon.ExecutionSummary
 import com.radixdlt.sargon.FeeLocks
 import com.radixdlt.sargon.FeeSummary
 import com.radixdlt.sargon.NewEntities
+import com.radixdlt.sargon.extensions.NotaryPrivateKey
 import com.radixdlt.sargon.extensions.asProfileEntity
 import com.radixdlt.sargon.extensions.formatted
 import com.radixdlt.sargon.extensions.formattedPlain
@@ -19,7 +20,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
-import rdx.works.core.crypto.PrivateKey
 
 class FeesResolverTest {
 
@@ -52,7 +52,7 @@ class FeesResolverTest {
     )
     private val notaryAndSigners = NotaryAndSigners(
         listOf(),
-        PrivateKey.EddsaEd25519.newRandom()
+        NotaryPrivateKey.secureRandom()
     )
 
     @Test

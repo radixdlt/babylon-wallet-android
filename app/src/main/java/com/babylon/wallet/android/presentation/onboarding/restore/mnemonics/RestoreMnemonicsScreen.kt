@@ -206,6 +206,9 @@ private fun RestoreMnemonicsContent(
                         }
                     }
 
+                    val isSeedPhraseValid = remember(state.seedPhraseState) {
+                        state.seedPhraseState.isSeedPhraseValid()
+                    }
                     RadixPrimaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -219,8 +222,7 @@ private fun RestoreMnemonicsContent(
                                     R.string.recoverSeedPhrase_skipMainSeedPhraseButton
                             }
                         ),
-                        enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase ||
-                            (state.seedPhraseState.seedPhraseInputValid && state.seedPhraseState.seedPhraseBIP39Valid),
+                        enabled = state.screenType != RestoreMnemonicsViewModel.State.ScreenType.SeedPhrase || isSeedPhraseValid,
                         isLoading = state.isRestoring,
                         onClick = onSubmitClick
                     )
@@ -428,7 +430,10 @@ private fun SeedPhraseView(
             onPassphraseChanged = onPassphraseChanged,
             onFocusedWordIndexChanged = onFocusedWordIndexChanged
         )
-        if (state.seedPhraseState.seedPhraseInputValid && state.seedPhraseState.seedPhraseBIP39Valid.not()) {
+        val isSeedPhraseInvalid = remember(state.seedPhraseState) {
+            !state.seedPhraseState.isSeedPhraseValid()
+        }
+        if (isSeedPhraseInvalid) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RedWarningText(
                 modifier = Modifier.fillMaxWidth(),

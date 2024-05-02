@@ -13,6 +13,7 @@ import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.Flow
@@ -23,7 +24,6 @@ import rdx.works.core.UUIDGenerator
 import rdx.works.core.mapError
 import rdx.works.core.sargon.authenticationSigningFactorInstance
 import rdx.works.core.sargon.currentGateway
-import rdx.works.core.sargon.derivePublicKey
 import rdx.works.core.sargon.factorSourceById
 import rdx.works.core.sargon.toAccountAuthSigningDerivationPath
 import rdx.works.core.sargon.toAuthSigningDerivationPath
@@ -119,14 +119,11 @@ class GenerateAuthSigningFactorInstanceUseCase @Inject constructor(
     ): Result<HierarchicalDeterministicFactorInstance> {
         val mnemonic = mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).getOrNull()
         requireNotNull(mnemonic)
-        val authSigningPublicKey = mnemonic.derivePublicKey(derivationPath = authSigningDerivationPath)
+        val authSigningHDPublicKey = mnemonic.derivePublicKey(path = authSigningDerivationPath)
         return Result.success(
             HierarchicalDeterministicFactorInstance(
                 factorSourceId = deviceFactorSource.value.id,
-                publicKey = HierarchicalDeterministicPublicKey(
-                    publicKey = authSigningPublicKey,
-                    derivationPath = authSigningDerivationPath
-                )
+                publicKey = authSigningHDPublicKey
             )
         )
     }

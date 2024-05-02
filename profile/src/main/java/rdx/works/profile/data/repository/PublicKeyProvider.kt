@@ -4,16 +4,15 @@ import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.NetworkId
-import com.radixdlt.sargon.PublicKey
-import com.radixdlt.sargon.Slip10Curve
 import com.radixdlt.sargon.extensions.HDPathValue
 import com.radixdlt.sargon.extensions.account
 import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.first
-import rdx.works.core.sargon.derivePublicKey
 import rdx.works.core.sargon.nextAccountIndex
 import javax.inject.Inject
 
@@ -60,29 +59,20 @@ class PublicKeyProvider @Inject constructor(
         }
     }
 
-    suspend fun derivePublicKeyForDeviceFactorSource(
+    suspend fun deriveHDPublicKeyForDeviceFactorSource(
         deviceFactorSource: FactorSource.Device,
         derivationPath: DerivationPath
-    ): Result<PublicKey> = mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).mapCatching { mnemonicWithPassphrase ->
-        mnemonicWithPassphrase.derivePublicKey(derivationPath = derivationPath)
-    }
+    ): Result<HierarchicalDeterministicPublicKey> = mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral())
+        .mapCatching { mnemonicWithPassphrase ->
+            mnemonicWithPassphrase.derivePublicKey(path = derivationPath)
+        }
 
     suspend fun derivePublicKeysDeviceFactorSource(
         deviceFactorSource: FactorSource.Device,
-        derivationPaths: List<DerivationPath>,
-        isForLegacyOlympia: Boolean = false
-    ): Result<Map<DerivationPath, PublicKey>> {
+        derivationPaths: List<DerivationPath>
+    ): Result<List<HierarchicalDeterministicPublicKey>> {
         return mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).mapCatching { mnemonicWithPassphrase ->
-            if (isForLegacyOlympia) {
-                derivationPaths.associateWith { derivationPath ->
-                    mnemonicWithPassphrase.derivePublicKey(
-                        derivationPath = derivationPath,
-                        curve = Slip10Curve.CURVE25519
-                    )
-                }
-            } else {
-                derivationPaths.associateWith { derivationPath -> mnemonicWithPassphrase.derivePublicKey(derivationPath = derivationPath) }
-            }
+            derivationPaths.map { mnemonicWithPassphrase.derivePublicKey(path = it) }
         }
     }
 }

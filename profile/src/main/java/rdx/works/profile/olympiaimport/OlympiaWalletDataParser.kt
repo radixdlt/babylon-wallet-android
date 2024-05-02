@@ -35,7 +35,7 @@ class OlympiaWalletDataParser @Inject constructor(
         val headerToPayloadList = olympiaWalletDataChunks.map { payloadChunk ->
             val headerAndPayload = payloadChunk.split(HeaderSeparator)
             val headerChunks = headerAndPayload[0].split(InnerSeparator)
-            val wordCount = Bip39WordCount.init(discriminant = headerChunks[2].toUByte())
+            val wordCount = Bip39WordCount.init(wordCount = headerChunks[2].toInt())
             PayloadHeader(headerChunks[0].toInt(), headerChunks[1].toInt(), wordCount) to headerAndPayload[1]
         }.sortedBy { it.first.payloadIndex }
         val fullPayload = headerToPayloadList.joinToString(separator = "") { it.second }
@@ -107,7 +107,7 @@ class OlympiaWalletDataParser @Inject constructor(
         return try {
             val headerAndPayload = olympiaWalletDataChunk.split(HeaderSeparator)
             val headerChunks = headerAndPayload[0].split(InnerSeparator)
-            val wordCount = Bip39WordCount.init(discriminant = headerChunks[2].toUByte())
+            val wordCount = Bip39WordCount.init(wordCount = headerChunks[2].toInt())
             PayloadHeader(headerChunks[0].toInt(), headerChunks[1].toInt(), wordCount)
             true
         } catch (e: java.lang.Exception) {

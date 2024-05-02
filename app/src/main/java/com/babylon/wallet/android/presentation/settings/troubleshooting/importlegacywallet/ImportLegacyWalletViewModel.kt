@@ -23,12 +23,13 @@ import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.utils.Constants.DELAY_300_MS
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
-import com.radixdlt.sargon.Slip10Curve
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.validate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -41,7 +42,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
-import rdx.works.core.sargon.derivePublicKey
 import rdx.works.core.sargon.supportsOlympia
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.AddOlympiaFactorSourceUseCase
@@ -486,8 +486,15 @@ class ImportLegacyWalletViewModel @Inject constructor(
         }
     }
 
-    private fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDetails>): Boolean =
-        accounts.all { derivePublicKey(derivationPath = it.derivationPath, curve = Slip10Curve.SECP256K1) == it.publicKey }
+    private fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDetails>): Boolean {
+        val hdPublicKeys = accounts.map {
+            HierarchicalDeterministicPublicKey(
+                publicKey = it.publicKey,
+                derivationPath = it.derivationPath
+            )
+        }
+        return validate(hdPublicKeys = hdPublicKeys)
+    }
 }
 
 sealed interface OlympiaImportEvent : OneOffEvent {

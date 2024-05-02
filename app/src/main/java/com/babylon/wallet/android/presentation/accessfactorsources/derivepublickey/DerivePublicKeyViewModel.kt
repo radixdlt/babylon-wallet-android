@@ -5,7 +5,7 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.PublicKeyAndDerivationPath
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.HDPublicKey
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.DerivePublicKeyViewModel.DerivePublicKeyUiState.ShowContentForFactorSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -14,6 +14,7 @@ import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.extensions.init
@@ -127,16 +128,11 @@ class DerivePublicKeyViewModel @Inject constructor(
             forNetworkId = forNetworkId,
             factorSource = deviceFactorSource
         )
-        return publicKeyProvider.derivePublicKeyForDeviceFactorSource(
+        return publicKeyProvider.deriveHDPublicKeyForDeviceFactorSource(
             deviceFactorSource = deviceFactorSource,
             derivationPath = derivationPath
-        ).mapCatching { publicKey ->
-            accessFactorSourcesUiProxy.setOutput(
-                output = PublicKeyAndDerivationPath(
-                    publicKey = publicKey,
-                    derivationPath = derivationPath
-                )
-            )
+        ).mapCatching { hdPublicKey ->
+            accessFactorSourcesUiProxy.setOutput(output = HDPublicKey(hdPublicKey))
         }
     }
 
@@ -153,12 +149,11 @@ class DerivePublicKeyViewModel @Inject constructor(
             keyParameters = listOf(LedgerInteractionRequest.KeyParameters(Curve.Curve25519, derivationPath.string)),
             ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(factorSource = ledgerFactorSource)
         ).onSuccess { derivePublicKeyResponse ->
-            val publicKey = PublicKey.init(derivePublicKeyResponse.publicKeysHex.first().publicKeyHex)
-            val publicKeyAndDerivationPath = PublicKeyAndDerivationPath(
-                publicKey = publicKey,
+            val hdPublicKey = HierarchicalDeterministicPublicKey(
+                publicKey = PublicKey.init(derivePublicKeyResponse.publicKeysHex.first().publicKeyHex),
                 derivationPath = derivationPath
             )
-            accessFactorSourcesUiProxy.setOutput(publicKeyAndDerivationPath)
+            accessFactorSourcesUiProxy.setOutput(HDPublicKey(hdPublicKey))
             return Result.success(Unit)
         }.onFailure { error -> // it failed for some reason to derive the public keys (e.g. lost link connection)
             return Result.failure(error)

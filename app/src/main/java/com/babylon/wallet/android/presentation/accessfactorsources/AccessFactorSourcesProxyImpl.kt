@@ -21,7 +21,7 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
 
     override suspend fun getPublicKeyAndDerivationPathForFactorSource(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
-    ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath> {
+    ): Result<AccessFactorSourcesOutput.HDPublicKey> {
         input = accessFactorSourcesInput
         appEventBus.sendEvent(event = AppEvent.AccessFactorSources.DerivePublicKey)
         val result = _output.first()
@@ -29,7 +29,7 @@ class AccessFactorSourcesProxyImpl @Inject constructor(
         return if (result is AccessFactorSourcesOutput.Failure) {
             Result.failure(result.error)
         } else {
-            Result.success(result as AccessFactorSourcesOutput.PublicKeyAndDerivationPath)
+            Result.success(result as AccessFactorSourcesOutput.HDPublicKey)
         }
     }
 

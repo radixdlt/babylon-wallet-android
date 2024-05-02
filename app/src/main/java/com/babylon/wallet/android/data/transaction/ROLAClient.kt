@@ -15,7 +15,6 @@ import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.setOwnerKeysHashes
 import kotlinx.coroutines.flow.merge
-import rdx.works.core.domain.SigningPurpose
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import javax.inject.Inject
@@ -64,13 +63,12 @@ class ROLAClient @Inject constructor(
 
     suspend fun signAuthChallenge(
         entity: ProfileEntity,
-        signRequest: SignRequest,
+        signRequest: SignRequest.SignAuthChallengeRequest,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean
     ): Result<SignatureWithPublicKey> {
         val result = collectSignersSignaturesUseCase(
             signers = listOf(entity),
             signRequest = signRequest,
-            signingPurpose = SigningPurpose.SignAuth,
             deviceBiometricAuthenticationProvider = deviceBiometricAuthenticationProvider
         )
         return when (val exception = result.exceptionOrNull()) {

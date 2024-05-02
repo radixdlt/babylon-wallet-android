@@ -16,11 +16,9 @@ import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import kotlinx.coroutines.flow.first
 import rdx.works.core.UUIDGenerator
-import rdx.works.core.domain.SigningPurpose
 import rdx.works.core.sargon.authenticationSigningFactorInstance
 import rdx.works.core.sargon.transactionSigningFactorInstance
 import rdx.works.core.sargon.updateLastUsed
-import rdx.works.core.toHexString
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import javax.inject.Inject
@@ -38,45 +36,36 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     suspend operator fun invoke(
         ledgerFactorSource: FactorSource.Ledger,
         signers: List<ProfileEntity>,
-        signRequest: SignRequest,
-        signingPurpose: SigningPurpose = SigningPurpose.SignTransaction
+        signRequest: SignRequest
     ): Result<List<SignatureWithPublicKey>> {
-        return when (signingPurpose) {
-            SigningPurpose.SignAuth -> {
-                require(signRequest is SignRequest.SignAuthChallengeRequest)
-                signAuth(
-                    signers = signers,
-                    ledgerFactorSource = ledgerFactorSource,
-                    request = signRequest,
-                    signingPurpose = signingPurpose
-                )
-            }
-            SigningPurpose.SignTransaction -> {
-                signTransaction(
-                    signers = signers,
-                    ledgerFactorSource = ledgerFactorSource,
-                    dataToSign = signRequest.dataToSign,
-                    signingPurpose = signingPurpose
-                )
-            }
+        return when (signRequest) {
+            is SignRequest.SignAuthChallengeRequest -> signAuth(
+                signers = signers,
+                ledgerFactorSource = ledgerFactorSource,
+                request = signRequest
+            )
+            is SignRequest.SignTransactionRequest -> signTransaction(
+                signers = signers,
+                ledgerFactorSource = ledgerFactorSource,
+                request = signRequest
+            )
         }
     }
 
     private suspend fun signTransaction(
         signers: List<ProfileEntity>,
         ledgerFactorSource: FactorSource.Ledger,
-        dataToSign: ByteArray,
-        signingPurpose: SigningPurpose
+        request: SignRequest.SignTransactionRequest,
     ): Result<List<SignatureWithPublicKey>> {
         return signCommon(
             signers = signers,
             ledgerFactorSource = ledgerFactorSource,
-            signingPurpose = signingPurpose
+            signRequest = request
         ) { hdPublicKeys, deviceModel ->
             ledgerMessenger.signTransactionRequest(
                 interactionId = UUIDGenerator.uuid().toString(),
                 hdPublicKeys = hdPublicKeys,
-                compiledTransactionIntent = dataToSign.toHexString(),
+                compiledTransactionIntent = request.dataToSign.hex,
                 ledgerDevice = LedgerInteractionRequest.LedgerDevice(
                     name = ledgerFactorSource.value.hint.name,
                     model = deviceModel,
@@ -91,13 +80,12 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     private suspend fun signAuth(
         signers: List<ProfileEntity>,
         ledgerFactorSource: FactorSource.Ledger,
-        request: SignRequest.SignAuthChallengeRequest,
-        signingPurpose: SigningPurpose
+        request: SignRequest.SignAuthChallengeRequest
     ): Result<List<SignatureWithPublicKey>> {
         return signCommon(
             signers = signers,
             ledgerFactorSource = ledgerFactorSource,
-            signingPurpose = signingPurpose
+            signRequest = request
         ) { hdPublicKeys, deviceModel ->
             ledgerMessenger.signChallengeRequest(
                 interactionId = UUIDGenerator.uuid().toString(),
@@ -119,16 +107,16 @@ class SignWithLedgerFactorSourceUseCase @Inject constructor(
     private suspend fun signCommon(
         signers: List<ProfileEntity>,
         ledgerFactorSource: FactorSource.Ledger,
-        signingPurpose: SigningPurpose,
+        signRequest: SignRequest,
         signaturesProvider: SignatureProviderCall
     ): Result<List<SignatureWithPublicKey>> {
         val hdPublicKey = signers.map { signer ->
             val securityState = signer.securityState
-            when (signingPurpose) {
-                SigningPurpose.SignAuth ->
+            when (signRequest) {
+                is SignRequest.SignAuthChallengeRequest ->
                     securityState.authenticationSigningFactorInstance
                         ?: securityState.transactionSigningFactorInstance
-                SigningPurpose.SignTransaction -> securityState.transactionSigningFactorInstance
+                is SignRequest.SignTransactionRequest -> securityState.transactionSigningFactorInstance
             }.publicKey
         }
         val deviceModel = LedgerDeviceModel.from(ledgerFactorSource.value.hint.model)

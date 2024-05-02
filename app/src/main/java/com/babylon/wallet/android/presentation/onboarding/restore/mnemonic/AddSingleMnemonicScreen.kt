@@ -160,13 +160,16 @@ private fun AddSingleMnemonicsContent(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
+                    val isEnabled = remember(state.seedPhraseState) {
+                        state.seedPhraseState.isSeedPhraseValid()
+                    }
                     RadixPrimaryButton(
                         modifier = Modifier
                             .fillMaxWidth()
                             .imePadding()
                             .padding(RadixTheme.dimensions.paddingDefault),
                         text = stringResource(R.string.common_continue),
-                        enabled = state.seedPhraseState.seedPhraseInputValid && state.seedPhraseState.seedPhraseBIP39Valid,
+                        enabled = isEnabled,
                         onClick = onSubmitClick
                     )
                 }
@@ -239,7 +242,9 @@ private fun SeedPhraseView(
         )
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
         if (isOlympia) {
-            val tabs = Bip39WordCount.entries
+            val tabs = remember {
+                Bip39WordCount.entries.sortedBy { it.value }
+            }
             var tabIndex by remember { mutableStateOf(0) }
             Text(
                 modifier = Modifier
@@ -307,7 +312,12 @@ private fun SeedPhraseView(
             onFocusedWordIndexChanged = onFocusedWordIndexChanged,
             showAdvancedMode = isOlympia
         )
-        if (seedPhraseState.seedPhraseInputValid && seedPhraseState.seedPhraseBIP39Valid.not()) {
+
+        val isInvalid = remember(seedPhraseState) {
+            !seedPhraseState.isSeedPhraseValid()
+        }
+
+        if (isInvalid) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RedWarningText(
                 modifier = Modifier.fillMaxWidth(),

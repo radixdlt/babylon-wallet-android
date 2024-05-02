@@ -225,9 +225,6 @@ dependencies {
     // KotlinX serialization
     implementation libs.kotlinxSerialization
 
-    //Kotlin toolkit
-    implementation libs.slip10
-
     //Retrofit & OkHttp
     implementation platform(libs.okhttpBom)
     implementation libs.okhttp

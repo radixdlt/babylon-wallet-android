@@ -123,7 +123,7 @@ class CreateAccountViewModel @Inject constructor(
                     createAccountUseCase(
                         displayName = DisplayName(nameOfAccount),
                         factorSourceId = factorSourceId,
-                        publicKeyAndDerivationPath = it
+                        hdPublicKey = it.value
                     )
                 }
             }.onFailure { error ->

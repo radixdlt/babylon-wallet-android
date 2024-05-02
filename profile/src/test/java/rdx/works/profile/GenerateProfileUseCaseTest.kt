@@ -3,6 +3,7 @@ package rdx.works.profile
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.init
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.every

@@ -3,24 +3,21 @@ package rdx.works.profile.accountextensions
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AssetException
 import com.radixdlt.sargon.AssetsExceptionList
-import com.radixdlt.sargon.BIP39Passphrase
 import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DepositAddressExceptionRule
 import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.DepositorsAllowList
 import com.radixdlt.sargon.DerivationPath
-import com.radixdlt.sargon.DeviceFactorSource
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
-import com.radixdlt.sargon.Mnemonic
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ThirdPartyDeposits
 import com.radixdlt.sargon.extensions.account
-import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.get
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
@@ -34,7 +31,6 @@ import org.junit.Test
 import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.sargon.addAccounts
 import rdx.works.core.sargon.babylon
-import rdx.works.core.sargon.derivePublicKey
 import rdx.works.core.sargon.init
 import rdx.works.core.sargon.initBabylon
 import rdx.works.core.sargon.isSignatureRequiredBasedOnDepositRules
@@ -156,11 +152,9 @@ class TransferBetweenOwnedAccountsTest {
         targetAccount = Account.initBabylon(
             networkId = defaultNetwork,
             displayName = DisplayName("target account"),
-            publicKey = mnemonicWithPassphrase.derivePublicKey(derivationPath = derivationPath),
-            derivationPath = derivationPath,
-            factorSourceId = profile.factorSources().first().id as FactorSourceId.Hash,
-
-            )
+            hdPublicKey = mnemonicWithPassphrase.derivePublicKey(path = derivationPath),
+            factorSourceId = profile.factorSources().first().id as FactorSourceId.Hash
+        )
 
         profile = profile.addAccounts(
             accounts = listOf(targetAccount),
