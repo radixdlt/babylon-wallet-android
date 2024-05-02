@@ -109,7 +109,7 @@ class WalletViewModel @Inject constructor(
         observePrompts()
         observeProfileBackupState(getBackupStateUseCase)
         observeGlobalAppEvents()
-        loadResources(withRefresh = false)
+        loadAssets(withRefresh = false)
         observeNpsSurveyState()
     }
 
@@ -154,20 +154,20 @@ class WalletViewModel @Inject constructor(
                     )
                 }
 
-                _state.update { loadingResources(isRefreshing = it.isRefreshing) }
+                _state.update { loadingAssets(isRefreshing = it.isRefreshing) }
 
                 getWalletAssetsUseCase(accounts = accounts, isRefreshing = state.value.isRefreshing).catch { error ->
-                    _state.update { onResourcesError(error) }
+                    _state.update { onAssetsError(error) }
                     Timber.w(error)
                 }
             }
             .onEach { accountsWithAssets ->
                 this.accountsWithAssets = accountsWithAssets
 
-                // keep the val here because the onResourcesReceived sets the refreshing to false
+                // keep the val here because the onAssetsReceived sets the refreshing to false
                 val isRefreshing = state.value.isRefreshing
 
-                _state.update { onResourcesReceived() }
+                _state.update { onAssetsReceived() }
 
                 accountsAddressesWithAssetsPrices = accountsWithAssets.associate { accountWithAssets ->
                     accountWithAssets.account.address to getFiatValueUseCase.forAccount(
@@ -182,7 +182,7 @@ class WalletViewModel @Inject constructor(
                     }.getOrNull()
                 }
 
-                _state.update { onResourcesReceived() }
+                _state.update { onAssetsReceived() }
             }
             .flowOn(ioDispatcher)
             .launchIn(viewModelScope)
@@ -224,9 +224,9 @@ class WalletViewModel @Inject constructor(
         viewModelScope.launch {
             appEventBus.events.collect { event ->
                 when (event) {
-                    AppEvent.RefreshResourcesNeeded,
+                    AppEvent.RefreshAssetsNeeded,
                     RestoredMnemonic -> {
-                        loadResources(withRefresh = event !is RestoredMnemonic)
+                        loadAssets(withRefresh = event !is RestoredMnemonic)
                     }
 
                     AppEvent.NPSSurveySubmitted -> {
@@ -239,13 +239,13 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    private fun loadResources(withRefresh: Boolean) {
+    private fun loadAssets(withRefresh: Boolean) {
         _state.update { it.copy(isRefreshing = withRefresh) }
         viewModelScope.launch { refreshFlow.emit(Unit) }
     }
 
     fun onRefresh() {
-        loadResources(withRefresh = true)
+        loadAssets(withRefresh = true)
     }
 
     fun onShowHideBalanceToggle(isVisible: Boolean) {
@@ -280,13 +280,13 @@ class WalletViewModel @Inject constructor(
         }
     }
 
-    private fun loadingResources(isRefreshing: Boolean): WalletUiState = state.value.copy(
+    private fun loadingAssets(isRefreshing: Boolean): WalletUiState = state.value.copy(
         accountUiItems = buildAccountUiItems(),
         isLoading = accountsWithAssets == null,
         isRefreshing = isRefreshing
     )
 
-    private fun onResourcesReceived(): WalletUiState {
+    private fun onAssetsReceived(): WalletUiState {
         val accountUiItems = buildAccountUiItems()
 
         return state.value.copy(
@@ -297,7 +297,7 @@ class WalletViewModel @Inject constructor(
         )
     }
 
-    private fun onResourcesError(error: Throwable?): WalletUiState = state.value.copy(
+    private fun onAssetsError(error: Throwable?): WalletUiState = state.value.copy(
         uiMessage = UiMessage.ErrorMessage(error),
         accountUiItems = state.value.accountUiItems.map { account ->
             if (account.assets == null) {
@@ -326,7 +326,7 @@ class WalletViewModel @Inject constructor(
                     tag = getTag(accountWithAssets.account),
                     isFiatBalanceVisible = state.value.isFiatBalancesEnabled && isFiatBalanceVisible,
                     fiatTotalValue = totalFiatValueForAccount(accountWithAssets.account.address),
-                    isLoadingResources = accountWithAssets.assets == null,
+                    isLoadingAssets = accountWithAssets.assets == null,
                     isLoadingBalance = accountWithAssets.assets == null ||
                         isBalanceLoadingForAccount(accountWithAssets.account.address)
                 )
@@ -416,8 +416,8 @@ class WalletViewModel @Inject constructor(
     }
 
     private fun isDappDefinitionAccount(forAccount: Account): Boolean {
-        return accountsWithAssets?.find { accountWithResources ->
-            accountWithResources.account.address == forAccount.address
+        return accountsWithAssets?.find { accountWithAssets ->
+            accountWithAssets.account.address == forAccount.address
         }?.isDappDefinitionAccountType ?: false
     }
 }
@@ -454,7 +454,7 @@ data class WalletUiState(
         val tag: AccountTag?,
         val securityPromptType: SecurityPromptType?,
         val isFiatBalanceVisible: Boolean,
-        val isLoadingResources: Boolean,
+        val isLoadingAssets: Boolean,
         val isLoadingBalance: Boolean
     )
 }

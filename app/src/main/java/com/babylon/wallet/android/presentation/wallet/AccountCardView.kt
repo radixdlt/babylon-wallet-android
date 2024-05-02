@@ -195,7 +195,7 @@ fun AccountCardView(
                 width = Dimension.fillToConstraints
             },
             assets = accountWithAssets.assets,
-            isLoading = accountWithAssets.isLoadingResources
+            isLoading = accountWithAssets.isLoadingAssets
         )
 
         Column(
@@ -283,7 +283,7 @@ fun AccountCardPreview() {
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
                     securityPromptType = SecurityPromptType.NEEDS_RESTORE,
                     isFiatBalanceVisible = true,
-                    isLoadingResources = false,
+                    isLoadingAssets = false,
                     isLoadingBalance = false,
                 ),
                 onApplySecuritySettings = {}
@@ -315,7 +315,7 @@ fun AccountCardWithLongNameAndShortTotalValuePreview() {
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
                     securityPromptType = SecurityPromptType.NEEDS_RESTORE,
                     isFiatBalanceVisible = true,
-                    isLoadingResources = false,
+                    isLoadingAssets = false,
                     isLoadingBalance = false
                 ),
                 onApplySecuritySettings = {}
@@ -347,7 +347,7 @@ fun AccountCardWithLongNameAndLongTotalValuePreview() {
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
                     securityPromptType = SecurityPromptType.NEEDS_RESTORE,
                     isFiatBalanceVisible = true,
-                    isLoadingResources = false,
+                    isLoadingAssets = false,
                     isLoadingBalance = false,
                 ),
                 onApplySecuritySettings = {}
@@ -379,7 +379,7 @@ fun AccountCardWithLongNameAndTotalValueHiddenPreview() {
                         fiatTotalValue = FiatPrice(price = 34509008998732.4.toDecimal192(), currency = SupportedCurrency.USD),
                         tag = WalletUiState.AccountTag.DAPP_DEFINITION,
                         securityPromptType = SecurityPromptType.NEEDS_RESTORE,
-                        isLoadingResources = false,
+                        isLoadingAssets = false,
                         isLoadingBalance = false,
                         isFiatBalanceVisible = true
                     ),
@@ -411,7 +411,7 @@ fun AccountCardLoadingPreview() {
                     tag = WalletUiState.AccountTag.DAPP_DEFINITION,
                     securityPromptType = SecurityPromptType.NEEDS_RESTORE,
                     isFiatBalanceVisible = true,
-                    isLoadingResources = true,
+                    isLoadingAssets = true,
                     isLoadingBalance = true
                 ),
                 onApplySecuritySettings = {}

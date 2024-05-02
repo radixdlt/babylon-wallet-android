@@ -4,6 +4,8 @@ import com.babylon.wallet.android.data.gateway.extensions.decode
 import com.babylon.wallet.android.data.gateway.generated.models.CommittedTransactionInfo
 import com.babylon.wallet.android.data.gateway.generated.models.ManifestClass
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionBalanceChanges
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionFungibleBalanceChanges
+import com.babylon.wallet.android.data.gateway.generated.models.TransactionNonFungibleBalanceChanges
 import com.babylon.wallet.android.data.gateway.generated.models.TransactionStatus
 import com.babylon.wallet.android.utils.timestampHoursMinutes
 import com.radixdlt.sargon.AccountAddress
@@ -193,7 +195,13 @@ fun TransactionClass.toManifestClass(): ManifestClass {
 
 @Suppress("LongMethod")
 fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceChange> {
-    val fungibleFungibleBalanceChanges = fungibleBalanceChanges.map { item ->
+    val fungibleFungibleBalanceChanges = fungibleBalanceChanges.toFungibleBalanceChangeDomainModels(assets)
+    val nonFungibleFungibleBalanceChanges = nonFungibleBalanceChanges.toNonFungibleBalanceChangeDomainModels(assets)
+    return (fungibleFungibleBalanceChanges + nonFungibleFungibleBalanceChanges).sorted()
+}
+
+private fun List<TransactionFungibleBalanceChanges>.toFungibleBalanceChangeDomainModels(assets: List<Asset>): List<BalanceChange> {
+    return map { item ->
         val balanceChange = item.balanceChange.toDecimal192()
         val asset = assets.filterIsInstance<Asset.Fungible>()
             .find { it.resource.address.string == item.resourceAddress }
@@ -216,7 +224,10 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
             }
         )
     }
-    val nonFungibleFungibleBalanceChanges = nonFungibleBalanceChanges.map { item ->
+}
+
+private fun List<TransactionNonFungibleBalanceChanges>.toNonFungibleBalanceChangeDomainModels(assets: List<Asset>): List<BalanceChange> {
+    return map { item ->
         val relatedLocalIds = item.removed.toSet() + item.added
         val relatedAsset = when (
             val asset = assets.filterIsInstance<Asset.NonFungible>().find {
@@ -264,7 +275,6 @@ fun TransactionBalanceChanges.toDomainModel(assets: List<Asset>): List<BalanceCh
             asset = relatedAsset
         )
     }
-    return (fungibleFungibleBalanceChanges + nonFungibleFungibleBalanceChanges).sorted()
 }
 
 enum class TransactionClass {

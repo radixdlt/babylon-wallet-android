@@ -151,7 +151,7 @@ class AccountViewModel @Inject constructor(
 
         viewModelScope.launch {
             appEventBus.events.filter { event ->
-                event is AppEvent.RefreshResourcesNeeded || event is AppEvent.RestoredMnemonic
+                event is AppEvent.RefreshAssetsNeeded || event is AppEvent.RestoredMnemonic
             }.collect {
                 loadAccountDetails(withRefresh = it !is AppEvent.RestoredMnemonic)
             }

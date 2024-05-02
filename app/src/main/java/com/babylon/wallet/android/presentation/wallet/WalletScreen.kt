@@ -434,7 +434,7 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                         tag = null,
                         securityPromptType = null,
                         isFiatBalanceVisible = true,
-                        isLoadingResources = false,
+                        isLoadingAssets = false,
                         isLoadingBalance = false
                     ),
                     WalletUiState.AccountUiItem(
@@ -454,7 +454,7 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                         tag = null,
                         securityPromptType = null,
                         isFiatBalanceVisible = true,
-                        isLoadingResources = false,
+                        isLoadingAssets = false,
                         isLoadingBalance = false
                     ),
                     WalletUiState.AccountUiItem(
@@ -465,7 +465,7 @@ class WalletUiStateProvider : PreviewParameterProvider<WalletUiState> {
                         tag = null,
                         securityPromptType = null,
                         isFiatBalanceVisible = false,
-                        isLoadingResources = true,
+                        isLoadingAssets = true,
                         isLoadingBalance = true
                     ),
                 ),

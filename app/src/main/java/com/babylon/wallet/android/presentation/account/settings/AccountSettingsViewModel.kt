@@ -165,7 +165,7 @@ class AccountSettingsViewModel @Inject constructor(
             _state.update { it.copy(isFreeXRDLoading = true) }
             getFreeXrdUseCase(address = args.address).onSuccess { _ ->
                 _state.update { it.copy(isFreeXRDLoading = false) }
-                appEventBus.sendEvent(AppEvent.RefreshResourcesNeeded)
+                appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
             }.onFailure { error ->
                 _state.update {
                     it.copy(
