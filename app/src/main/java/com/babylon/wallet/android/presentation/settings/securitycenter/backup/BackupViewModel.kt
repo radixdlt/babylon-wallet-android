@@ -88,7 +88,7 @@ class BackupViewModel @Inject constructor(
                 }
                 .onFailure { exception ->
                     changeBackupSettingUseCase(isChecked = false)
-                    Timber.e("cloud backup authorization failed: ${exception.message}")
+                    Timber.e("cloud backup authorization failed: $exception")
                 }
         }
     }
