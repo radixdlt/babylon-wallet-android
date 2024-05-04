@@ -6,13 +6,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavOptions
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.ARG_REQUEST_SOURCE
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.babylon.wallet.android.presentation.onboarding.eula.ROUTE_EULA_SCREEN
 import com.babylon.wallet.android.utils.encodeUtf8
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.NetworkId
@@ -46,8 +46,7 @@ internal class CreateAccountNavArgs(
 fun NavController.createAccountScreen(
     requestSource: CreateAccountRequestSource = CreateAccountRequestSource.FirstTimeWithCloudBackupDisabled,
     networkUrl: Url? = null,
-    networkIdToSwitch: NetworkId? = null,
-    navOptions: NavOptions? = null
+    networkIdToSwitch: NetworkId? = null
 ) {
     var route = "create_account_route?$ARG_REQUEST_SOURCE=$requestSource"
     networkUrl?.let {
@@ -56,10 +55,17 @@ fun NavController.createAccountScreen(
     networkIdToSwitch?.let {
         route += "&$ARG_NETWORK_NAME_TO_SWITCH=${it.string}"
     }
-    navigate(
-        route = route,
-        navOptions = navOptions
-    )
+
+    navigate(route = route) {
+        if (requestSource == CreateAccountRequestSource.FirstTimeWithCloudBackupEnabled) {
+            // at this point wallet navigated from ConnectCloudBackupScreen and
+            // user has authenticated/authorized access to Drive therefore
+            // do not navigate back to ConnectCloudBackupScreen but to EulaScreen
+            popUpTo(route = ROUTE_EULA_SCREEN) {
+                inclusive = false
+            }
+        }
+    }
 }
 
 fun NavGraphBuilder.createAccountScreen(
