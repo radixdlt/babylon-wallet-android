@@ -10,6 +10,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.CommonStatusCodes.NETWORK_ERROR
 import com.google.android.gms.common.api.Scope
 import com.google.android.gms.common.api.Status
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.drive.Drive
 import com.google.api.services.drive.DriveScopes
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellableContinuation
@@ -63,12 +67,15 @@ class GoogleSignInManager @Inject constructor(
                     .addOnFailureListener { exception ->
                         continuation.resumeIfActive(Result.failure(exception = exception))
                     }
-            }.also {
-                if (it.isFailure && it.exceptionOrNull() is SecurityException) {
+            }.also { result ->
+                if (result.isFailure && result.exceptionOrNull() is SecurityException) {
                     // user signed in but didn't grant access to Drive therefore sign out
                     signOut()
                 }
             }
+        }.mapCatching { googleAccount ->
+            ensureGoogleAccountAuthorizationToDrive(googleAccount.email)
+            googleAccount
         }
     }
 
@@ -108,7 +115,7 @@ class GoogleSignInManager @Inject constructor(
 
     // IMPORTANT NOTE
     // This method will return the GoogleSignInAccount even if the access has been revoked from Drive settings.
-    // We must use the Drive api (e.g. accessing the files) in order to get a UserRecoverableAuthIOException.
+    // We must use the Drive service (e.g. accessing the files) in order to get a UserRecoverableAuthIOException.
     fun getSignedInGoogleAccount(): GoogleAccount? {
         GoogleSignIn.getLastSignedInAccount(applicationContext)?.let { googleSignInAccount ->
             val isDriveAccessGranted = googleSignInAccount.grantedScopes.contains(driveAppDataScope)
@@ -138,6 +145,36 @@ class GoogleSignInManager @Inject constructor(
             Timber.e("Google sign in failed with reason: ${e.message}")
             CancellationException("something went wrong")
         }
+
+    // In order to confirm that wallet is authorized to access drive files,
+    // we must start the Drive service and access the the files.
+    // If the account (email) is not authorized the function will throw an UserRecoverableAuthIOException.
+    // This method is currently used ONLY when user signs in (see handleSignInResult fun)
+    //
+    // ⚠️ The Drive service might take even seconds to return a result.
+    private suspend fun ensureGoogleAccountAuthorizationToDrive(email: String) {
+        val credential = GoogleAccountCredential.usingOAuth2(
+            applicationContext,
+            listOf(DriveScopes.DRIVE_APPDATA)
+        ).apply {
+            selectedAccountName = email
+        }
+
+        val drive = Drive.Builder(
+            NetHttpTransport(),
+            GsonFactory.getDefaultInstance(),
+            credential
+        )
+            .setApplicationName("get a name")
+            .build()
+
+        withContext(ioDispatcher) {
+            drive.files()
+                .list()
+                .setSpaces("appDataFolder")
+                .execute()
+        }
+    }
 
     companion object {
 
