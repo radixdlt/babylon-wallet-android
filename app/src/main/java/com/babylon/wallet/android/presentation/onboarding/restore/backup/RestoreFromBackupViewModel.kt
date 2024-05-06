@@ -78,7 +78,7 @@ class RestoreFromBackupViewModel @Inject constructor(
             }
     }
 
-    fun onSignInToGoogleClick() = viewModelScope.launch {
+    fun onLoginToGoogleClick() = viewModelScope.launch {
         val intent = googleSignInManager.createSignInIntent()
         sendEvent(Event.SignInToGoogle(intent))
     }
