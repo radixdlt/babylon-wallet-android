@@ -6,7 +6,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 
-const val ROUTE_CONNECT_CLOUD_BACKUP = "connect_cloud_backup_screen"
+const val ROUTE_CONNECT_CLOUD_BACKUP = "route_connect_cloud_backup_screen"
 
 fun NavController.connectCloudBackupScreen() {
     navigate(ROUTE_CONNECT_CLOUD_BACKUP)
