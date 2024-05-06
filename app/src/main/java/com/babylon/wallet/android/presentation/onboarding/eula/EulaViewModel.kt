@@ -15,18 +15,12 @@ class EulaViewModel @Inject constructor(
     private val googleSignInManager: GoogleSignInManager
 ) : ViewModel(), OneOffEventHandler<EulaViewModel.EulaEvent> by OneOffEventHandlerImpl() {
 
-    fun onAcceptClick() {
-        viewModelScope.launch {
-            val isCloudBackupAuthorized = googleSignInManager.getSignedInGoogleAccount()?.email.isNullOrEmpty().not()
-            sendEvent(EulaEvent.ProceedToCreateNewWallet(isWithCloudBackupEnabled = isCloudBackupAuthorized))
-        }
+    fun onAcceptClick() = viewModelScope.launch {
+        sendEvent(EulaEvent.ProceedToCreateNewWallet(isWithCloudBackupEnabled = googleSignInManager.isCloudBackupAuthorized))
     }
 
-    fun onBackClick() {
-        viewModelScope.launch {
-            val isCloudBackupAuthorized = googleSignInManager.getSignedInGoogleAccount()?.email.isNullOrEmpty().not()
-            sendEvent(EulaEvent.NavigateBack(isWithCloudBackupEnabled = isCloudBackupAuthorized))
-        }
+    fun onBackClick() = viewModelScope.launch {
+        sendEvent(EulaEvent.NavigateBack(isWithCloudBackupEnabled = googleSignInManager.isCloudBackupAuthorized))
     }
 
     sealed interface EulaEvent : OneOffEvent {
