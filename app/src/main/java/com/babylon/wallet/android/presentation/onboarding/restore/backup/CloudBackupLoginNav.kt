@@ -7,7 +7,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 
-const val ROUTE_CLOUD_BACKUP_LOGIN = "cloud_backup_login_screen"
+const val ROUTE_CLOUD_BACKUP_LOGIN = "route_cloud_backup_login_screen"
 
 fun NavController.cloudBackupLoginScreen() {
     navigate(route = ROUTE_CLOUD_BACKUP_LOGIN)

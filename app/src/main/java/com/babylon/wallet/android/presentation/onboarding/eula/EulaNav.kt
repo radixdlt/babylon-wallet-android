@@ -5,7 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 
-const val ROUTE_EULA_SCREEN = "eula_screen"
+const val ROUTE_EULA_SCREEN = "route_eula_screen"
 
 fun NavController.navigateToEulaScreen() {
     navigate(route = ROUTE_EULA_SCREEN)
