@@ -16,11 +16,11 @@ class EulaViewModel @Inject constructor(
 ) : ViewModel(), OneOffEventHandler<EulaViewModel.EulaEvent> by OneOffEventHandlerImpl() {
 
     fun onAcceptClick() = viewModelScope.launch {
-        sendEvent(EulaEvent.ProceedToCreateNewWallet(isWithCloudBackupEnabled = googleSignInManager.isCloudBackupAuthorized))
+        sendEvent(EulaEvent.ProceedToCreateNewWallet(isWithCloudBackupEnabled = googleSignInManager.isCloudBackupAuthorized()))
     }
 
     fun onBackClick() = viewModelScope.launch {
-        sendEvent(EulaEvent.NavigateBack(isWithCloudBackupEnabled = googleSignInManager.isCloudBackupAuthorized))
+        sendEvent(EulaEvent.NavigateBack(isWithCloudBackupEnabled = googleSignInManager.isCloudBackupAuthorized()))
     }
 
     sealed interface EulaEvent : OneOffEvent {
