@@ -36,7 +36,10 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.model.SecurityProblem
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import rdx.works.core.domain.BackupState
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.extensions.id
+import rdx.works.core.sargon.sample
 
 @Composable
 fun SecurityCenterScreen(
@@ -374,6 +377,7 @@ fun SecurityCenterContentPreviewAllOk() {
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun SecurityCenterContentPreviewAllNotOk() {
@@ -381,7 +385,7 @@ fun SecurityCenterContentPreviewAllNotOk() {
         SecurityCenterContent(
             state = SecurityCenterViewModel.SecurityCenterUiState(
                 securityProblems = setOf(
-                    SecurityProblem.EntitiesNeedRecovery("")
+                    SecurityProblem.EntitiesNeedRecovery(FactorSource.Device.sample.invoke().id)
                 )
             ),
             onBackClick = {},

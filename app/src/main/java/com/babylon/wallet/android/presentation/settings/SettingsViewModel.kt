@@ -9,6 +9,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSet
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Personas
 import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSettings.Preferences
 import com.babylon.wallet.android.utils.Constants
+import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.SargonBuildInformation
 import com.radixdlt.sargon.extensions.Sargon
 import com.radixdlt.sargon.extensions.invoke
@@ -44,7 +45,7 @@ class SettingsViewModel @Inject constructor(
     ).mapNotNull { it }
 
     val state: StateFlow<SettingsUiState> = combine(
-        getProfileUseCase(),
+        getProfileUseCase.flow,
         getSecurityProblemsUseCase(),
     ) { profile: Profile, securityProblems ->
         var mutated = defaultSettings
