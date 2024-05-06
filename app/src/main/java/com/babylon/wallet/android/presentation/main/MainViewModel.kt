@@ -15,7 +15,9 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.size
@@ -37,10 +39,10 @@ import kotlinx.coroutines.launch
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.sargon.currentGateway
+import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.IsAnyEntityCreatedWithOlympiaUseCase
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -58,7 +60,7 @@ class MainViewModel @Inject constructor(
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
-    private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase,
+    private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -245,7 +247,7 @@ class MainViewModel @Inject constructor(
     }
 
     fun clearOlympiaError() {
-        _state.update { it.copy(olympiaErrorState = OlympiaErrorState.None) }
+        _state.update { it.copy(olympiaErrorState = null) }
     }
 
     fun onAppToForeground() {
@@ -255,10 +257,15 @@ class MainViewModel @Inject constructor(
             if (deviceNotSecure) {
                 appEventBus.sendEvent(AppEvent.AppNotSecure, delayMs = 500L)
             } else {
-                val entitiesCreatedWithOlympiaLegacyFactorSource = isAnyEntityCreatedWithOlympiaUseCase()
-                if (entitiesCreatedWithOlympiaLegacyFactorSource) {
+                val checkResult = checkEntitiesCreatedWithOlympiaUseCase()
+                if (checkResult.isAnyEntityCreatedWithOlympia) {
                     _state.update { state ->
-                        state.copy(olympiaErrorState = OlympiaErrorState.Countdown())
+                        state.copy(
+                            olympiaErrorState = OlympiaErrorState(
+                                affectedAccounts = checkResult.affectedAccounts,
+                                affectedPersonas = checkResult.affectedPersonas
+                            )
+                        )
                     }
                     countdownJob?.cancel()
                     countdownJob = startOlympiaErrorCountdown()
@@ -273,16 +280,15 @@ class MainViewModel @Inject constructor(
 
     private fun startOlympiaErrorCountdown(): Job {
         return viewModelScope.launch {
-            var errorState = state.value.olympiaErrorState
-            while (isActive && errorState is OlympiaErrorState.Countdown) {
+            while (isActive && state.value.olympiaErrorState?.isCountdownActive == true) {
                 delay(TICK_MS)
-                val newState = if (errorState.secondsLeft - 1 <= 0) {
-                    OlympiaErrorState.CanDismiss
-                } else {
-                    OlympiaErrorState.Countdown(errorState.secondsLeft - 1)
+                _state.update { state ->
+                    state.copy(
+                        olympiaErrorState = state.olympiaErrorState?.copy(
+                            secondsLeft = state.olympiaErrorState.secondsLeft - 1
+                        )
+                    )
                 }
-                errorState = newState
-                _state.update { it.copy(olympiaErrorState = newState) }
             }
         }
     }
@@ -302,13 +308,16 @@ data class MainUiState(
     val initialAppState: AppState = AppState.Loading,
     val showDeviceRootedWarning: Boolean = false,
     val dappRequestFailure: RadixWalletException.DappRequestException? = null,
-    val olympiaErrorState: OlympiaErrorState = OlympiaErrorState.None
+    val olympiaErrorState: OlympiaErrorState? = null
 ) : UiState
 
-sealed interface OlympiaErrorState {
-    data class Countdown(val secondsLeft: Int = 30) : OlympiaErrorState
-    data object CanDismiss : OlympiaErrorState
-    data object None : OlympiaErrorState
+data class OlympiaErrorState(
+    val secondsLeft: Int = 30,
+    val affectedAccounts: List<Account>,
+    val affectedPersonas: List<Persona>
+) {
+    val isCountdownActive: Boolean
+        get() = secondsLeft > 0
 }
 
 sealed interface AppState {

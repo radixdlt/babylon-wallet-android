@@ -28,7 +28,6 @@ import com.babylon.wallet.android.presentation.dapp.unauthorized.login.dAppLogin
 import com.babylon.wallet.android.presentation.main.MAIN_ROUTE
 import com.babylon.wallet.android.presentation.main.MainEvent
 import com.babylon.wallet.android.presentation.main.MainViewModel
-import com.babylon.wallet.android.presentation.main.OlympiaErrorState
 import com.babylon.wallet.android.presentation.navigation.NavigationHost
 import com.babylon.wallet.android.presentation.navigation.PriorityRoutes
 import com.babylon.wallet.android.presentation.onboarding.restore.mnemonics.RestoreMnemonicsArgs
@@ -37,6 +36,7 @@ import com.babylon.wallet.android.presentation.rootdetection.ROUTE_ROOT_DETECTIO
 import com.babylon.wallet.android.presentation.status.dapp.dappInteractionDialog
 import com.babylon.wallet.android.presentation.status.transaction.transactionStatusDialog
 import com.babylon.wallet.android.presentation.transaction.transactionReview
+import com.babylon.wallet.android.presentation.ui.composables.BDFSErrorDialog
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.LocalDevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.NotSecureAlertDialog
@@ -129,25 +129,17 @@ fun WalletApp(
         })
     }
     val olympiaErrorState = state.olympiaErrorState
-    if (olympiaErrorState != OlympiaErrorState.None) {
+    if (olympiaErrorState != null) {
         BackHandler {}
-        val confirmText = if (olympiaErrorState is OlympiaErrorState.Countdown) {
-            stringResource(id = R.string.homePage_profileOlympiaError_okCountdown, olympiaErrorState.secondsLeft)
-        } else {
-            stringResource(
-                id = R.string.common_ok
-            )
-        }
-        BasicPromptAlertDialog(
+        BDFSErrorDialog(
             finish = {
-                if (state.olympiaErrorState == OlympiaErrorState.CanDismiss) {
+                if (!olympiaErrorState.isCountdownActive) {
                     mainViewModel.clearOlympiaError()
                 }
             },
-            titleText = stringResource(id = R.string.homePage_profileOlympiaError_title),
-            messageText = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
-            confirmText = confirmText,
-            dismissText = null
+            title = stringResource(id = R.string.homePage_profileOlympiaError_title),
+            message = stringResource(id = R.string.homePage_profileOlympiaError_subtitle),
+            state = olympiaErrorState
         )
     }
     state.dappRequestFailure?.let {
