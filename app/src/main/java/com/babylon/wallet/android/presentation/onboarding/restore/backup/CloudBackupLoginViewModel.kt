@@ -28,7 +28,7 @@ class CloudBackupLoginViewModel @Inject constructor(
 
     override fun initialState(): State = State()
 
-    fun onSignInToGoogleClick() = viewModelScope.launch {
+    fun onLoginToGoogleClick() = viewModelScope.launch {
         if (googleSignInManager.getSignedInGoogleAccount()?.email.isNullOrEmpty().not()) {
             googleSignInManager.signOut()
             googleSignInManager.revokeAccess()

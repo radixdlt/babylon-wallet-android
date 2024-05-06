@@ -81,7 +81,7 @@ fun CloudBackupLoginScreen(
         errorMessage = state.errorMessage,
         onErrorMessageShown = viewModel::onErrorMessageShown,
         onBackClick = onBackClick,
-        onLoginToGoogleClick = viewModel::onSignInToGoogleClick,
+        onLoginToGoogleClick = viewModel::onLoginToGoogleClick,
         onSkipClick = viewModel::onSkipClick
     )
 }

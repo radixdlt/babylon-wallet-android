@@ -100,7 +100,7 @@ fun RestoreFromBackupScreen(
     RestoreFromBackupContent(
         state = state,
         onBackClick = viewModel::onBackClick,
-        onSignInToGoogleClick = viewModel::onSignInToGoogleClick,
+        onLoginToGoogleClick = viewModel::onLoginToGoogleClick,
         onRestoreFromFileClick = {
             openDocument.launch(arrayOf("*/*"))
         },
@@ -139,7 +139,7 @@ private fun RestoreFromBackupContent(
     modifier: Modifier = Modifier,
     state: RestoreFromBackupViewModel.State,
     onBackClick: () -> Unit,
-    onSignInToGoogleClick: () -> Unit,
+    onLoginToGoogleClick: () -> Unit,
     onRestoreFromFileClick: () -> Unit,
     onMessageShown: () -> Unit,
     onPasswordTyped: (String) -> Unit,
@@ -240,7 +240,7 @@ private fun RestoreFromBackupContent(
             )
 
             if (state.isCloudBackupAuthorized.not()) {
-                SignInToGoogleDrive(onSignInToGoogleClick = onSignInToGoogleClick)
+                SignInToGoogleDrive(onLoginToGoogleClick = onLoginToGoogleClick)
             } else {
                 RestoredProfilesList(
                     state = state,
@@ -283,7 +283,7 @@ private fun RestoreFromBackupContent(
 
 @Composable
 private fun SignInToGoogleDrive(
-    onSignInToGoogleClick: () -> Unit
+    onLoginToGoogleClick: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -295,7 +295,7 @@ private fun SignInToGoogleDrive(
                 .fillMaxWidth()
                 .padding(RadixTheme.dimensions.paddingDefault),
             text = "Log in to Google Drive", // TODO Crowdin
-            onClick = onSignInToGoogleClick
+            onClick = onLoginToGoogleClick
         )
     }
 }
@@ -538,7 +538,7 @@ fun RestoreFromBackupPreviewBackupExists() {
                 ).toImmutableList()
             ),
             onBackClick = {},
-            onSignInToGoogleClick = {},
+            onLoginToGoogleClick = {},
             onRestoreFromFileClick = {},
             onMessageShown = {},
             onPasswordTyped = {},
@@ -559,7 +559,7 @@ fun RestoreFromBackupPreviewNoBackupExists() {
         RestoreFromBackupContent(
             state = RestoreFromBackupViewModel.State(),
             onBackClick = {},
-            onSignInToGoogleClick = {},
+            onLoginToGoogleClick = {},
             onRestoreFromFileClick = {},
             onMessageShown = {},
             onPasswordTyped = {},
