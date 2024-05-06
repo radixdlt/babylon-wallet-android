@@ -124,7 +124,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     private suspend fun processLedgerResponse(
         ledgerFactorSource: FactorSource.Ledger,
-        derivePublicKeyResponse: MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse
+        derivePublicKeyResponse: IncomingMessage.LedgerResponse.DerivePublicKeyResponse
     ) {
         _state.update { it.copy(waitingForLedgerResponse = false) }
         val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()

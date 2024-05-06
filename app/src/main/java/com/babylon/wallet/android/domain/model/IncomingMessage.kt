@@ -278,16 +278,16 @@ sealed interface IncomingMessage {
     data class Error(val exception: RadixWalletException) : IncomingMessage
 }
 
-fun MessageFromDataChannel.IncomingRequest.NumberOfValues.toRequestedNumberQuantifier(): RequestedNumberQuantifier = when (quantifier) {
-    MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly -> RequestedNumberQuantifier.EXACTLY
-    MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast -> RequestedNumberQuantifier.AT_LEAST
+fun IncomingMessage.IncomingRequest.NumberOfValues.toRequestedNumberQuantifier(): RequestedNumberQuantifier = when (quantifier) {
+    IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly -> RequestedNumberQuantifier.EXACTLY
+    IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast -> RequestedNumberQuantifier.AT_LEAST
 }
 
-fun MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): LedgerHardwareWalletModel {
+fun IncomingMessage.LedgerResponse.LedgerDeviceModel.toProfileLedgerDeviceModel(): LedgerHardwareWalletModel {
     return when (this) {
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoS -> LedgerHardwareWalletModel.NANO_S
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletModel.NANO_S_PLUS
-        MessageFromDataChannel.LedgerResponse.LedgerDeviceModel.NanoX -> LedgerHardwareWalletModel.NANO_X
+        IncomingMessage.LedgerResponse.LedgerDeviceModel.NanoS -> LedgerHardwareWalletModel.NANO_S
+        IncomingMessage.LedgerResponse.LedgerDeviceModel.NanoSPlus -> LedgerHardwareWalletModel.NANO_S_PLUS
+        IncomingMessage.LedgerResponse.LedgerDeviceModel.NanoX -> LedgerHardwareWalletModel.NANO_X
     }
 }
 
@@ -298,7 +298,7 @@ fun IncomingMessage.IncomingRequest.PersonaRequestItem.toRequiredFields(): Requi
                 it.add(
                     RequiredPersonaField(
                         PersonaDataField.Kind.Name,
-                        MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                        IncomingMessage.IncomingRequest.NumberOfValues(
                             1,
                             IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )

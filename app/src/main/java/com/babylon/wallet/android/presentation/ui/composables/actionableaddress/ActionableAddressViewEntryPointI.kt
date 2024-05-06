@@ -7,7 +7,7 @@ import androidx.compose.runtime.compositionLocalOf
 import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.di.coroutines.ApplicationScope
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.usecases.VerifyAddressOnLedgerUseCase
 import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.Profile
@@ -110,7 +110,7 @@ val actionableAddressViewEntryPointMock = object : ActionableAddressViewEntryPoi
 
         override suspend fun sendDeviceInfoRequest(
             interactionId: String
-        ): Result<MessageFromDataChannel.LedgerResponse.GetDeviceInfoResponse> {
+        ): Result<IncomingMessage.LedgerResponse.GetDeviceInfoResponse> {
             TODO("Not yet implemented")
         }
 
@@ -120,7 +120,7 @@ val actionableAddressViewEntryPointMock = object : ActionableAddressViewEntryPoi
             compiledTransactionIntent: String,
             ledgerDevice: LedgerInteractionRequest.LedgerDevice,
             displayHashOnLedgerDisplay: Boolean
-        ): Result<MessageFromDataChannel.LedgerResponse.SignTransactionResponse> {
+        ): Result<IncomingMessage.LedgerResponse.SignTransactionResponse> {
             TODO("Not yet implemented")
         }
 
@@ -128,7 +128,7 @@ val actionableAddressViewEntryPointMock = object : ActionableAddressViewEntryPoi
             interactionId: String,
             keyParameters: List<LedgerInteractionRequest.KeyParameters>,
             ledgerDevice: LedgerInteractionRequest.LedgerDevice
-        ): Result<MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse> {
+        ): Result<IncomingMessage.LedgerResponse.DerivePublicKeyResponse> {
             TODO("Not yet implemented")
         }
 
@@ -139,7 +139,7 @@ val actionableAddressViewEntryPointMock = object : ActionableAddressViewEntryPoi
             challengeHex: String,
             origin: String,
             dAppDefinitionAddress: String
-        ): Result<MessageFromDataChannel.LedgerResponse.SignChallengeResponse> {
+        ): Result<IncomingMessage.LedgerResponse.SignChallengeResponse> {
             TODO("Not yet implemented")
         }
 
@@ -147,7 +147,7 @@ val actionableAddressViewEntryPointMock = object : ActionableAddressViewEntryPoi
             interactionId: String,
             keyParameters: LedgerInteractionRequest.KeyParameters,
             ledgerDevice: LedgerInteractionRequest.LedgerDevice
-        ): Result<MessageFromDataChannel.LedgerResponse.DeriveAndDisplayAddressResponse> {
+        ): Result<IncomingMessage.LedgerResponse.DeriveAndDisplayAddressResponse> {
             TODO("Not yet implemented")
         }
     }

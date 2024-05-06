@@ -33,7 +33,7 @@ class RcrRepositoryImpl @Inject constructor(
         api.executeRequest(RcrRequest.GetRequests(sessionId)).toResult().mapCatching { response ->
             val dappLink = dappLinkRepository.getDappLinks().getOrThrow().first { it.sessionId == sessionId }
             response.mapNotNull { d ->
-                val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.value.decodeHex()).getOrNull() ?: return@mapNotNull null
+                val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.decodeHex()).getOrNull() ?: return@mapNotNull null
                 val decryptedRequestString = String(decryptedBytes, StandardCharsets.UTF_8)
                 peerdroidRequestJson.decodeFromString<WalletInteraction>(decryptedRequestString)
             }.find { it.interactionId == interactionId } ?: error("No interaction with id $interactionId")
@@ -42,7 +42,7 @@ class RcrRepositoryImpl @Inject constructor(
 
     override suspend fun sendResponse(sessionId: String, data: String) = withContext(ioDispatcher) {
         val dappLink = dappLinkRepository.getDappLinks().getOrThrow().first { it.sessionId == sessionId }
-        val encryptedData = data.toByteArray().encrypt(dappLink.secret.value.decodeHex()).getOrThrow().toHexString()
+        val encryptedData = data.toByteArray().encrypt(dappLink.secret.decodeHex()).getOrThrow().toHexString()
         api.executeRequest(RcrRequest.SendResponse(sessionId, encryptedData)).toResult().map { }
     }
 
@@ -54,7 +54,7 @@ class RcrRepositoryImpl @Inject constructor(
         api.executeRequest(RcrRequest.GetRequests(sessionId)).toResult().mapCatching { response ->
             val dappLink = dappLinkRepository.getDappLinks().getOrThrow().first { it.sessionId == sessionId }
             response.map { d ->
-                val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.value.decodeHex()).getOrThrow()
+                val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.decodeHex()).getOrThrow()
                 String(decryptedBytes, StandardCharsets.UTF_8)
             }
         }

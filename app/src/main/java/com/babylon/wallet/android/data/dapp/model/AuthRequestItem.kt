@@ -1,10 +1,9 @@
 package com.babylon.wallet.android.data.dapp.model
 
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest.AuthorizedRequest
+import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
-import com.babylon.wallet.android.domain.model.IncomingMessage.IncomingRequest.AuthorizedRequest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

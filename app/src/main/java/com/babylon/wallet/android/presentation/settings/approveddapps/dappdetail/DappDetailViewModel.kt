@@ -207,18 +207,18 @@ class DappDetailViewModel @Inject constructor(
                     val request = IncomingMessage.IncomingRequest.AuthorizedRequest(
                         remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId(""),
                         interactionId = UUIDGenerator.uuid().toString(),
-                        requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+                        requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata(
                             authorizedDapp.networkId,
                             "",
                             authorizedDapp.dappDefinitionAddress.string,
                             isInternal = true
                         ),
-                        authRequest = MessageFromDataChannel.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
+                        authRequest = IncomingMessage.IncomingRequest.AuthorizedRequest.AuthRequest.UsePersonaRequest(
                             persona.address.string
                         ),
                         ongoingAccountsRequestItem = IncomingMessage.IncomingRequest.AccountsRequestItem(
                             isOngoing = true,
-                            numberOfValues = MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                            numberOfValues = IncomingMessage.IncomingRequest.NumberOfValues(
                                 quantity = sharedAccounts.request.quantity.toInt(),
                                 quantifier = sharedAccounts.request.quantifier.toQuantifierUsedInRequest()
                             ),

@@ -2,8 +2,6 @@ package com.babylon.wallet.android.data.dapp.model
 
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.IncomingMessage
-import com.radixdlt.hex.decode
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
@@ -11,7 +9,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.TransactionManifestData.TransactionMessage
-import rdx.works.core.sargon.init
 
 @Serializable
 data class WalletInteraction(
@@ -94,10 +91,10 @@ data class WalletTransactionItems(
 fun WalletTransactionItems.SendTransactionItem.toDomainModel(
     remoteConnectorId: IncomingMessage.RemoteEntityID, // from which CE comes the message
     requestId: String,
-    metadata: MessageFromDataChannel.IncomingRequest.RequestMetadata
-) = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-    remoteConnectorId = remoteConnectorId,
-    requestId = requestId,
+    metadata: IncomingMessage.IncomingRequest.RequestMetadata
+) = IncomingMessage.IncomingRequest.TransactionRequest(
+    remoteEntityId = remoteConnectorId,
+    interactionId = requestId,
     transactionManifestData = TransactionManifestData(
         instructions = transactionManifest,
         networkId = metadata.networkId,
@@ -110,7 +107,7 @@ fun WalletTransactionItems.SendTransactionItem.toDomainModel(
 
 fun WalletInteraction.toDomainModel(remoteEntityId: IncomingMessage.RemoteEntityID): IncomingMessage.IncomingRequest {
     try {
-        val metadata = MessageFromDataChannel.IncomingRequest.RequestMetadata(
+        val metadata = IncomingMessage.IncomingRequest.RequestMetadata(
             networkId = NetworkId.init(discriminant = metadata.networkId.toUByte()),
             origin = metadata.origin,
             dAppDefinitionAddress = metadata.dAppDefinitionAddress,

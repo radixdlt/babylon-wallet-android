@@ -185,7 +185,7 @@ fun TransactionPreviewHeaderPreview() {
                         message = TransactionManifestData.TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
-                    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(Gateway.default.network.id)
+                    requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata.internal(Gateway.default.network.id)
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,

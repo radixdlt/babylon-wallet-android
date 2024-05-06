@@ -30,9 +30,9 @@ fun List<PersonaDataField.Kind>.encodeToString(): String {
     return joinToString(",") { it.name }.encodeUtf8()
 }
 
-fun RequestedNumberQuantifier.toQuantifierUsedInRequest(): MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier = when (this) {
-    RequestedNumberQuantifier.EXACTLY -> MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.Exactly
-    RequestedNumberQuantifier.AT_LEAST -> MessageFromDataChannel.IncomingRequest.NumberOfValues.Quantifier.AtLeast
+fun RequestedNumberQuantifier.toQuantifierUsedInRequest(): IncomingMessage.IncomingRequest.NumberOfValues.Quantifier = when (this) {
+    RequestedNumberQuantifier.EXACTLY -> IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+    RequestedNumberQuantifier.AT_LEAST -> IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.AtLeast
 }
 
 @Suppress("UNUSED_EXPRESSION")
