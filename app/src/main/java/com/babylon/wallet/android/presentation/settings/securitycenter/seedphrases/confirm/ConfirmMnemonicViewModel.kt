@@ -9,10 +9,10 @@ import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseVerificationDelegate
-import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.extensions.asGeneral
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.extensions.asGeneral
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -21,7 +21,6 @@ import rdx.works.core.sargon.factorSourceById
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.domain.factorSourceByIdValue
 import javax.inject.Inject
 
 @HiltViewModel

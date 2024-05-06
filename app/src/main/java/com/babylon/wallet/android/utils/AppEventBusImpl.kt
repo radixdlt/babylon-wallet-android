@@ -2,12 +2,10 @@ package com.babylon.wallet.android.utils
 
 import com.babylon.wallet.android.data.dapp.model.WalletErrorType
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.FactorSourceId
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
 import javax.inject.Inject
 import javax.inject.Singleton
 

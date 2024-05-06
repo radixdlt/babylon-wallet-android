@@ -47,7 +47,7 @@ class CreatePersonaViewModelTest : StateViewModelTest<CreatePersonaViewModel>() 
         }
         coEvery { preferencesManager.markFirstPersonaCreated() } just Runs
 
-        coEvery { createPersonaWithDeviceFactorSourceUseCase.invoke(any(), any()) } returns persona
+        coEvery { createPersonaWithDeviceFactorSourceUseCase.invoke(any(), any()) } returns Result.success(persona)
     }
 
     @Test

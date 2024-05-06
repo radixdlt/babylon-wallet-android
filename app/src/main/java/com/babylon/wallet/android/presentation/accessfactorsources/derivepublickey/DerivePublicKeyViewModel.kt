@@ -5,9 +5,8 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.data.dapp.model.Curve
 import com.babylon.wallet.android.data.dapp.model.LedgerInteractionRequest
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesInput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.HDPublicKey
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput
-import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.PublicKeyAndDerivationPath
+import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesOutput.HDPublicKey
 import com.babylon.wallet.android.presentation.accessfactorsources.AccessFactorSourcesUiProxy
 import com.babylon.wallet.android.presentation.accessfactorsources.derivepublickey.DerivePublicKeyViewModel.DerivePublicKeyUiState.ShowContentForFactorSource
 import com.babylon.wallet.android.presentation.common.OneOffEvent
@@ -27,8 +26,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
 import rdx.works.profile.data.repository.PublicKeyProvider
-import rdx.works.profile.derivation.model.NetworkId
-import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.ProfileException
 import java.io.IOException
 import javax.inject.Inject
@@ -59,7 +56,7 @@ class DerivePublicKeyViewModel @Inject constructor(
                 is FactorSource.Device -> if (input.isBiometricsProvided) {
                     biometricAuthenticationCompleted()
                 } else {
-                    sendEvent(Event.RequestBiometricPrompt)
+                    sendEvent(Event.RequestBiometricPrompt())
                 }
             }
         }
@@ -118,48 +115,26 @@ class DerivePublicKeyViewModel @Inject constructor(
     }
 
     private suspend fun derivePublicKey(): Result<Unit> {
-        return ensureBabylonFactorSourceExistUseCase().mapCatching { profile ->
-            if (input.factorSource == null) { // device factor source
-                val deviceFactorSource = profile.mainBabylonFactorSource() ?: error("Babylon factor source is not present")
+        return when (val factorSource = input.factorSource) {
+            is FactorSource.Device -> {
                 derivePublicKeyFromDeviceFactorSource(
                     forNetworkId = input.forNetworkId,
-                    deviceFactorSource = deviceFactorSource
-                ).fold(
-                    onSuccess = { Unit },
-                    onFailure = { e -> throw e }
+                    deviceFactorSource = factorSource
                 )
-            } else { // ledger factor source
-                val ledgerFactorSource = input.factorSource as LedgerHardwareWalletFactorSource
+            }
+
+            is FactorSource.Ledger -> {
                 _state.update { uiState ->
                     uiState.copy(
-                        showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = ledgerFactorSource)
+                        showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = factorSource)
                     )
                 }
                 derivePublicKeyFromLedgerFactorSource(
                     forNetworkId = input.forNetworkId,
-                    ledgerFactorSource = ledgerFactorSource
+                    ledgerFactorSource = factorSource
                 )
             }
         }
-//        when (val factorSource = input.factorSource) {
-//            is FactorSource.Device -> {
-//                derivePublicKeyFromDeviceFactorSource(
-//                    forNetworkId = input.forNetworkId,
-//                    deviceFactorSource = factorSource
-//                )
-//            }
-//            is FactorSource.Ledger -> {
-//                _state.update { uiState ->
-//                    uiState.copy(
-//                        showContentForFactorSource = ShowContentForFactorSource.Ledger(selectedLedgerDevice = factorSource)
-//                    )
-//                }
-//                derivePublicKeyFromLedgerFactorSource(
-//                    forNetworkId = input.forNetworkId,
-//                    ledgerFactorSource = factorSource
-//                )
-//            }
-//        }
     }
 
     private suspend fun derivePublicKeyFromDeviceFactorSource(

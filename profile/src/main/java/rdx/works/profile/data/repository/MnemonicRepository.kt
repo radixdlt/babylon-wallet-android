@@ -62,13 +62,7 @@ class MnemonicRepository @Inject constructor(
                 ),
                 passphrase = ""
             )
-            val key = FactorSource.factorSourceId(mnemonicWithPassphrase = generated)
-            val fromHash = FactorSource.FactorSourceID.FromHash(
-                kind = FactorSourceKind.DEVICE,
-                body = HexCoded32Bytes(key)
-            )
-
-            val key = FactorSourceId.Hash.init(kind = FactorSourceKind.DEVICE, mnemonicWithPassphrase = it)
+            val key = FactorSourceId.Hash.init(kind = FactorSourceKind.DEVICE, mnemonicWithPassphrase = generated)
             saveMnemonic(key = key, mnemonicWithPassphrase = generated).mapCatching { generated }
         }
     }

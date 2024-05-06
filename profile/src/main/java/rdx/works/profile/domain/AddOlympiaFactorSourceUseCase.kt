@@ -25,7 +25,7 @@ class AddOlympiaFactorSourceUseCase @Inject constructor(
     private val preferencesManager: PreferencesManager
 ) {
 
-    suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Result<FactorSource.FactorSourceID.FromHash> {
+    suspend operator fun invoke(mnemonicWithPassphrase: MnemonicWithPassphrase): Result<FactorSourceId.Hash> {
         val olympiaFactorSource = FactorSource.Device.olympia(mnemonicWithPassphrase)
         val existingFactorSource = getProfileUseCase().factorSourceById(olympiaFactorSource.id) as? FactorSource.Device
         val mnemonicExist = mnemonicRepository.mnemonicExist(olympiaFactorSource.value.id.asGeneral())

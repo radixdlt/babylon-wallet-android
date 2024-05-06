@@ -12,10 +12,10 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toPersonaData
-import com.radixdlt.sargon.DisplayName
-import com.radixdlt.sargon.IdentityAddress
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.IdentityAddress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf

@@ -23,7 +23,6 @@ class GetFactorSourceIdForOlympiaAccountsUseCase @Inject constructor(
     suspend operator fun invoke(olympiaAccounts: List<OlympiaAccountDetails>): Result<FactorSourceId.Hash?> {
         return withContext(defaultDispatcher) {
             val existingId = getProfileUseCase().deviceFactorSources
-                .first()
                 .filter { deviceFactorSource ->
                     deviceFactorSource.value.common.cryptoParameters.supportsOlympia
                 }
@@ -36,7 +35,7 @@ class GetFactorSourceIdForOlympiaAccountsUseCase @Inject constructor(
                         return@withContext Result.failure(mnemonic.exceptionOrNull()!!)
                     }
                     mnemonic.getOrNull()?.validatePublicKeysOf(olympiaAccounts) == true
-                }?.id
+                }?.value?.asGeneral()
             Result.success(existingId)
         }
     }

@@ -10,7 +10,7 @@ import rdx.works.profile.data.repository.BackupProfileRepository
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import java.time.Instant
+import rdx.works.profile.domain.ProfileException
 import javax.inject.Inject
 
 class RestoreAndCreateMainSeedPhraseUseCase @Inject constructor(

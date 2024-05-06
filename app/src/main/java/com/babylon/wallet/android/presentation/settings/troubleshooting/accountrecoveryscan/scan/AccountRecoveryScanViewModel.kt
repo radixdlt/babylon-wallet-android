@@ -48,7 +48,6 @@ class AccountRecoveryScanViewModel @Inject constructor(
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val addRecoveredAccountsToProfileUseCase: AddRecoveredAccountsToProfileUseCase,
-    private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
     private val appEventBus: AppEventBus,
     private val resolveAccountsLedgerStateRepository: ResolveAccountsLedgerStateRepository,
     private val deviceInfoRepository: DeviceInfoRepository
@@ -216,7 +215,7 @@ class AccountRecoveryScanViewModel @Inject constructor(
                 val bdfs = state.value.recoveryFactorSource
                 val accounts = state.value.activeAccounts +
                     state.value.inactiveAccounts.filter { it.selected }.map { it.data }
-                generateProfileUseCase.derived(
+                generateProfileUseCase.derive(
                     deviceFactorSource = bdfs as FactorSource.Device,
                     mnemonicWithPassphrase = givenTempMnemonic!!,
                     accounts = Accounts(accounts)

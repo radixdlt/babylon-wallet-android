@@ -30,7 +30,6 @@ import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.samples.sample
-import com.babylon.wallet.android.utils.AppEventBusImpl
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.every
@@ -44,6 +43,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import rdx.works.core.sargon.babylon
+import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.gateway.GetCurrentGatewayUseCase
 

@@ -5,7 +5,6 @@ import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
 import com.radixdlt.sargon.extensions.asGeneral
-import com.radixdlt.sargon.extensions.id
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import rdx.works.core.sargon.addPersona
@@ -15,7 +14,6 @@ import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.core.sargon.nextPersonaIndex
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import javax.inject.Inject
@@ -30,13 +28,13 @@ class CreatePersonaWithDeviceFactorSourceUseCase @Inject constructor(
     suspend operator fun invoke(
         displayName: DisplayName,
         personaData: PersonaData
-    ): Result<Network.Persona> {
+    ): Result<Persona> {
         return withContext(defaultDispatcher) {
             ensureBabylonFactorSourceExistUseCase().mapCatching { profile ->
-                val networkID = profile.currentGateway.network.id
-                val factorSource = profile.mainBabylonFactorSource()
+                val networkId = profile.currentGateway.network.id
+                val factorSource = profile.mainBabylonFactorSource
                     ?: error("Babylon factor source is not present")
-                val mnemonicWithPassphrase = mnemonicRepository.readMnemonic(factorSource.value.id.asGeneral()).getOrNull()
+                val mnemonicWithPassphrase = mnemonicRepository.readMnemonic(factorSource.value.id.asGeneral()).getOrThrow()
                 // Construct new persona
                 val newPersona = Persona.init(
                     entityIndex = profile.nextPersonaIndex(
