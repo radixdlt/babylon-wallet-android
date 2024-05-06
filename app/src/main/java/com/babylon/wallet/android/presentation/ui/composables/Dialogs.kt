@@ -62,6 +62,7 @@ import com.babylon.wallet.android.presentation.ui.modifier.applyIf
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.IntentHash
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.math.roundToInt
 
@@ -293,7 +294,7 @@ fun BDFSErrorDialog(
                 )
                 state.affectedAccounts.forEach { account ->
                     ActionableAddressView(
-                        address = Address.init(account.address),
+                        address = Address.init(account.address.string),
                         textStyle = RadixTheme.typography.body1Header,
                         textColor = RadixTheme.colors.blue1,
                         iconColor = RadixTheme.colors.gray2
@@ -308,7 +309,7 @@ fun BDFSErrorDialog(
                 )
                 state.affectedPersonas.forEach { persona ->
                     ActionableAddressView(
-                        address = Address.init(persona.address),
+                        address = Address.init(persona.address.string),
                         textStyle = RadixTheme.typography.body1Header,
                         textColor = RadixTheme.colors.blue1,
                         iconColor = RadixTheme.colors.gray2

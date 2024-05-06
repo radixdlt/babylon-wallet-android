@@ -15,7 +15,9 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.size
@@ -36,17 +38,11 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.ProfileState
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentGateway
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.core.sargon.currentGateway
+import rdx.works.profile.domain.CheckEntitiesCreatedWithOlympiaUseCase
 import rdx.works.profile.domain.CheckMnemonicIntegrityUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.IsAnyEntityCreatedWithOlympiaUseCase
-import rdx.works.profile.domain.p2pLinks
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -64,8 +60,7 @@ class MainViewModel @Inject constructor(
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
-    private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase,
-    private val correctLegacyAccountsDerivationPathSchemeUseCase: CorrectLegacyAccountsDerivationPathSchemeUseCase
+    private val checkEntitiesCreatedWithOlympiaUseCase: CheckEntitiesCreatedWithOlympiaUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -318,8 +313,8 @@ data class MainUiState(
 
 data class OlympiaErrorState(
     val secondsLeft: Int = 30,
-    val affectedAccounts: List<Network.Account>,
-    val affectedPersonas: List<Network.Persona>
+    val affectedAccounts: List<Account>,
+    val affectedPersonas: List<Persona>
 ) {
     val isCountdownActive: Boolean
         get() = secondsLeft > 0
