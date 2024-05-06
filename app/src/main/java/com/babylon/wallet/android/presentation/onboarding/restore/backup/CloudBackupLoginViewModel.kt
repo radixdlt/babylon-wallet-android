@@ -29,7 +29,7 @@ class CloudBackupLoginViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     fun onLoginToGoogleClick() = viewModelScope.launch {
-        if (googleSignInManager.isCloudBackupAuthorized) {
+        if (googleSignInManager.isCloudBackupAuthorized()) {
             googleSignInManager.signOut()
             googleSignInManager.revokeAccess()
         }
@@ -83,7 +83,7 @@ class CloudBackupLoginViewModel @Inject constructor(
     // sign out and revoke access if previously the user authenticated/authorized Drive access
     // so the next screen RestoreFromBackupScreen won't show any available profiles, but the sign in button
     fun onSkipClick() = viewModelScope.launch {
-        if (googleSignInManager.isCloudBackupAuthorized) {
+        if (googleSignInManager.isCloudBackupAuthorized()) {
             googleSignInManager.signOut()
             googleSignInManager.revokeAccess()
         }

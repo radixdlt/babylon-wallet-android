@@ -32,8 +32,6 @@ class GoogleSignInManager @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
 
-    val isCloudBackupAuthorized = getSignedInGoogleAccount()?.email.isNullOrEmpty().not()
-
     suspend fun createSignInIntent(): Intent {
         return withContext(ioDispatcher) {
             val client = getGoogleSignInClient(applicationContext)
@@ -134,6 +132,8 @@ class GoogleSignInManager @Inject constructor(
             }
         } ?: return null
     }
+
+    fun isCloudBackupAuthorized() = getSignedInGoogleAccount()?.email.isNullOrEmpty().not()
 
     private fun getCancelReason(resultData: Intent?) =
         try {
