@@ -422,7 +422,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
 
     private suspend fun handleOngoingPersonaDataRequestItem(
         personaAddress: IdentityAddress,
-        requestItem: MessageFromDataChannel.IncomingRequest.PersonaRequestItem
+        requestItem: IncomingMessage.IncomingRequest.PersonaRequestItem
     ) {
         val dapp = requireNotNull(editedDapp)
         val dataAccessAlreadyGranted = personaDataAccessAlreadyGranted(requestItem, personaAddress)

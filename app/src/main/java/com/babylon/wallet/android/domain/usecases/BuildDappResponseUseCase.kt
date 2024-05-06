@@ -34,7 +34,6 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
     protected suspend fun buildAccountsResponseItem(
         request: IncomingMessage.IncomingRequest,
         accounts: List<Account>,
-        accounts: List<Network.Account>,
         challengeHex: String?,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean,
     ): Result<AccountsRequestResponseItem?> {
@@ -219,7 +218,7 @@ class BuildUnauthorizedDappResponseUseCase @Inject constructor(
 
     @Suppress("LongParameterList", "ReturnCount")
     suspend operator fun invoke(
-        request: MessageFromDataChannel.IncomingRequest.UnauthorizedRequest,
+        request: IncomingMessage.IncomingRequest.UnauthorizedRequest,
         oneTimeAccounts: List<Account> = emptyList(),
         onetimeSharedPersonaData: PersonaData? = null,
         deviceBiometricAuthenticationProvider: suspend () -> Boolean = { true },

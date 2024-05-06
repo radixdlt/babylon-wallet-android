@@ -1,6 +1,6 @@
 package com.babylon.wallet.android.presentation.model
 
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
@@ -8,7 +8,7 @@ import com.radixdlt.sargon.FactorSourceKind
 
 data class LedgerDeviceUiModel(
     val id: Exactly32Bytes,
-    val model: MessageFromDataChannel.LedgerResponse.LedgerDeviceModel,
+    val model: IncomingMessage.LedgerResponse.LedgerDeviceModel,
     val name: String? = null
 ) {
     val factorSourceId: FactorSourceId.Hash

@@ -5,8 +5,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.core.IdentifiedArrayList
-import rdx.works.core.emptyIdentifiedArrayList
 import rdx.works.core.mapWhen
 import rdx.works.profile.datastore.EncryptedPreferencesManager
 import rdx.works.profile.di.coroutines.IoDispatcher
@@ -26,13 +24,13 @@ class DappLinkRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : DappLinkRepository {
 
-    override suspend fun getDappLinks(): Result<IdentifiedArrayList<DappLink>> {
+    override suspend fun getDappLinks(): Result<List<DappLink>> {
         return runCatching {
             val linksSerialized = encryptedPreferencesManager.getDappLinks().orEmpty()
             if (linksSerialized.isEmpty()) {
-                emptyIdentifiedArrayList()
+                emptyList()
             } else {
-                json.decodeFromString<IdentifiedArrayList<DappLink>>(linksSerialized)
+                json.decodeFromString<List<DappLink>>(linksSerialized)
             }
         }
     }
@@ -47,7 +45,7 @@ class DappLinkRepositoryImpl @Inject constructor(
     override suspend fun saveDappLink(link: DappLink): Result<DappLink> {
         return runCatching {
             withContext(ioDispatcher) {
-                val links = getDappLinks().getOrThrow()
+                val links = getDappLinks().getOrThrow().toMutableSet()
                 val updatedLinks = if (links.any { it.dAppDefinitionAddress == link.dAppDefinitionAddress }) {
                     links.mapWhen({ it.dAppDefinitionAddress == link.dAppDefinitionAddress }) {
                         Timber.d("Dapp link: Updating existing link")

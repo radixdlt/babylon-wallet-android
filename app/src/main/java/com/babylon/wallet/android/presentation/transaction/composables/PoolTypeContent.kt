@@ -9,7 +9,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.model.MessageFromDataChannel
+import com.babylon.wallet.android.domain.model.IncomingMessage
 import com.babylon.wallet.android.domain.model.Transferable
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
@@ -69,16 +69,16 @@ fun PoolTypePreview() {
     RadixWalletTheme {
         PoolTypeContent(
             state = TransactionReviewViewModel.State(
-                request = MessageFromDataChannel.IncomingRequest.TransactionRequest(
-                    remoteConnectorId = "b49d643908be5b79b1d233c0b21c1c9dd31a8376ab7caee242af42f6ff1c3bcc",
-                    requestId = "7294770e-5aec-4e49-ada0-e6a2213fc8c8",
+                request = IncomingMessage.IncomingRequest.TransactionRequest(
+                    remoteEntityId = IncomingMessage.RemoteEntityID.ConnectorId("b49d643908be5b79b1d233c0b21c1c9dd31a8376ab7caee242af42f6ff1c3bcc"),
+                    interactionId = "7294770e-5aec-4e49-ada0-e6a2213fc8c8",
                     transactionManifestData = TransactionManifestData(
                         instructions = "CREATE_FUNGIBLE_RESOURCE_WITH_INITIAL_SUPPLY",
                         networkId = NetworkId.MAINNET,
                         message = TransactionManifestData.TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
-                    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(NetworkId.MAINNET)
+                    requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata.internal(NetworkId.MAINNET)
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,

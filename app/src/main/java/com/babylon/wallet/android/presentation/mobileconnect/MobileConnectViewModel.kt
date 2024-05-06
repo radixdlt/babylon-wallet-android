@@ -23,13 +23,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.core.HexCoded32Bytes
 import rdx.works.core.decodeHex
 import rdx.works.core.domain.DApp
+import rdx.works.core.domain.ProfileState
 import rdx.works.core.generateX25519KeyPair
 import rdx.works.core.generateX25519SharedSecret
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.ProfileState
 import rdx.works.profile.domain.GetProfileStateUseCase
 import timber.log.Timber
 import javax.inject.Inject
@@ -56,7 +55,7 @@ class MobileConnectViewModel @Inject constructor(
         viewModelScope.launch {
             val profileState = profileStateUseCase().firstOrNull()
             val connectDelaySeconds = preferencesManager.mobileConnectDelaySeconds.firstOrNull() ?: 0
-            val profileInitialized = profileState is ProfileState.Restored && profileState.hasMainnet()
+            val profileInitialized = profileState is ProfileState.Restored && profileState.hasNetworks()
             if (!profileInitialized) {
                 _state.update {
                     it.copy(isProfileInitialized = false)
@@ -102,9 +101,9 @@ class MobileConnectViewModel @Inject constructor(
                                 val dappLink = DappLink(
                                     origin = args.origin,
                                     address = dAppDefinition.dAppDefinitionAddress.string,
-                                    secret = HexCoded32Bytes(secret),
+                                    secret = secret,
                                     sessionId = args.sessionId.orEmpty(),
-                                    x25519PrivateKeyCompressed = HexCoded32Bytes(keyPair.first),
+                                    x25519PrivateKeyCompressed = keyPair.first,
                                     callbackPath = dAppDefinitions.callbackPath
                                 )
                                 dappLinkRepository.saveDappLink(dappLink).getOrThrow() to publicKeyHex
@@ -120,7 +119,7 @@ class MobileConnectViewModel @Inject constructor(
                                         )
                                         appendQueryParameter(
                                             Constants.RadixMobileConnect.CONNECT_URL_PARAM_SECRET,
-                                            dappLinkToPublicKey.first.secret.value
+                                            dappLinkToPublicKey.first.secret
                                         )
                                         fragment(dappLinkToPublicKey.first.callbackPath?.replace("#", ""))
                                     }.build().toString()

@@ -492,7 +492,7 @@ fun TransactionPreviewContentPreview() {
                         message = TransactionMessage.Public("Hello"),
                         version = TransactionVersion.Default.value
                     ),
-                    requestMetadata = MessageFromDataChannel.IncomingRequest.RequestMetadata.internal(NetworkId.MAINNET)
+                    requestMetadata = IncomingMessage.IncomingRequest.RequestMetadata.internal(NetworkId.MAINNET)
                 ),
                 isLoading = false,
                 isNetworkFeeLoading = false,
