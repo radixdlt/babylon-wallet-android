@@ -97,7 +97,7 @@ sealed class UiMessage(val id: String = UUIDGenerator.uuid().toString()) {
     ) : UiMessage() {
 
         @Composable
-        override fun getMessage(): String {
+        override fun getMessage(): String { // TODO update copies accordingly
             return when (error) {
                 is GoogleJsonResponseException -> stringResource(id = R.string.common_somethingWentWrong)
                 is GooglePlayServicesAvailabilityException -> stringResource(id = R.string.common_somethingWentWrong)
