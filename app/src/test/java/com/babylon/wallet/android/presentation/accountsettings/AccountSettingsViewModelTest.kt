@@ -10,9 +10,13 @@ import com.babylon.wallet.android.presentation.account.settings.AccountSettingsV
 import com.babylon.wallet.android.presentation.account.settings.Event
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -28,7 +32,9 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
-import rdx.works.profile.data.model.currentNetwork
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.currentNetwork
+import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.RenameAccountDisplayNameUseCase
@@ -41,8 +47,8 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
     private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val renameAccountDisplayNameUseCase = mockk<RenameAccountDisplayNameUseCase>()
     private val changeEntityVisibilityUseCase = mockk<ChangeEntityVisibilityUseCase>()
-    private val sampleProfile = sampleDataProvider.sampleProfile()
-    private val sampleAddress = AccountAddress.init(sampleProfile.currentNetwork!!.accounts.first().address)
+    private val sampleProfile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+    private val sampleAddress = sampleProfile.currentNetwork!!.accounts().first().address
     private val eventBus = mockk<AppEventBus>()
     private val sampleTxId = "txId1"
 
@@ -63,7 +69,8 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         super.setUp()
         every { getFreeXrdUseCase.getFaucetState(any()) } returns flowOf(FaucetState.Available(true))
         coEvery { getFreeXrdUseCase(any()) } returns Result.success(sampleTxId)
-        every { getProfileUseCase() } returns flowOf(sampleDataProvider.sampleProfile())
+        coEvery { getProfileUseCase() } returns sampleProfile
+        every { getProfileUseCase.flow } returns flowOf(sampleProfile)
         every { savedStateHandle.get<String>(ARG_ACCOUNT_SETTINGS_ADDRESS) } returns sampleAddress.string
         coEvery { changeEntityVisibilityUseCase.hideAccount(any()) } just Runs
         coEvery { eventBus.sendEvent(any()) } just Runs

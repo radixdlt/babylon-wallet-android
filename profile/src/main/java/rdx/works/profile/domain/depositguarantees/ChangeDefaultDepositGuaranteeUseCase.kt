@@ -1,9 +1,10 @@
 package rdx.works.profile.domain.depositguarantees
 
+import com.radixdlt.sargon.Decimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import rdx.works.profile.data.model.extensions.changeDefaultDepositGuarantee
+import rdx.works.core.sargon.changeDefaultDepositGuarantee
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -15,7 +16,7 @@ class ChangeDefaultDepositGuaranteeUseCase @Inject constructor(
 ) {
 
     suspend operator fun invoke(
-        defaultDepositGuarantee: Double
+        defaultDepositGuarantee: Decimal192
     ) {
         withContext(defaultDispatcher) {
             val profile = profileRepository.profile.first()

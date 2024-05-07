@@ -31,17 +31,18 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.transaction.AccountWithDepositSettingsChanges
 import com.babylon.wallet.android.presentation.transaction.PreviewType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
 import com.babylon.wallet.android.utils.formattedSpans
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.DepositRule
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.sampleMainnet
-import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 
 @Suppress("CyclomaticComplexMethod")
 @Composable
@@ -66,15 +67,15 @@ fun AccountDepositSettingsTypeContent(
                 accountWithSettings.defaultDepositRule?.let { newRule ->
                     val ruleText = stringResource(
                         id = when (newRule) {
-                            ThirdPartyDeposits.DepositRule.AcceptAll -> R.string.transactionReview_accountDepositSettings_acceptAllRule
-                            ThirdPartyDeposits.DepositRule.DenyAll -> R.string.transactionReview_accountDepositSettings_denyAllRule
-                            ThirdPartyDeposits.DepositRule.AcceptKnown -> R.string.transactionReview_accountDepositSettings_acceptKnownRule
+                            DepositRule.ACCEPT_ALL -> R.string.transactionReview_accountDepositSettings_acceptAllRule
+                            DepositRule.DENY_ALL -> R.string.transactionReview_accountDepositSettings_denyAllRule
+                            DepositRule.ACCEPT_KNOWN -> R.string.transactionReview_accountDepositSettings_acceptKnownRule
                         }
                     ).formattedSpans(boldStyle = SpanStyle(fontWeight = FontWeight.SemiBold, color = RadixTheme.colors.gray1))
                     val icon = when (newRule) {
-                        ThirdPartyDeposits.DepositRule.AcceptAll -> com.babylon.wallet.android.designsystem.R.drawable.ic_accept_all
-                        ThirdPartyDeposits.DepositRule.DenyAll -> com.babylon.wallet.android.designsystem.R.drawable.ic_deny_all
-                        ThirdPartyDeposits.DepositRule.AcceptKnown -> com.babylon.wallet.android.designsystem.R.drawable.ic_accept_known
+                        DepositRule.ACCEPT_ALL -> com.babylon.wallet.android.designsystem.R.drawable.ic_accept_all
+                        DepositRule.DENY_ALL -> com.babylon.wallet.android.designsystem.R.drawable.ic_deny_all
+                        DepositRule.ACCEPT_KNOWN -> com.babylon.wallet.android.designsystem.R.drawable.ic_accept_known
                     }
                     val ruleBackgroundShape =
                         if (accountWithSettings.onlyDepositRuleChanged) RadixTheme.shapes.roundedRectBottomMedium else RectangleShape
@@ -280,43 +281,41 @@ private fun AccountRuleChangeRow(resource: Resource?, modifier: Modifier = Modif
 @Composable
 fun AccountDepositSettingsTypeContentPreview() {
     RadixWalletTheme {
-        with(SampleDataProvider()) {
-            AccountDepositSettingsTypeContent(
-                preview = PreviewType.AccountsDepositSettings(
-                    accountsWithDepositSettingsChanges = listOf(
-                        AccountWithDepositSettingsChanges(
-                            SampleDataProvider().sampleAccount(),
-                            defaultDepositRule = ThirdPartyDeposits.DepositRule.AcceptAll,
-                            assetChanges = listOf(
-                                AccountWithDepositSettingsChanges.AssetPreferenceChange(
-                                    AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Allow,
-                                    Resource.NonFungibleResource.sampleMainnet()
-                                ),
-                                AccountWithDepositSettingsChanges.AssetPreferenceChange(
-                                    AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Disallow,
-                                    Resource.NonFungibleResource.sampleMainnet.other()
-                                ),
-                                AccountWithDepositSettingsChanges.AssetPreferenceChange(
-                                    AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Clear,
-                                    Resource.NonFungibleResource.sampleMainnet.random()
-                                )
+        AccountDepositSettingsTypeContent(
+            preview = PreviewType.AccountsDepositSettings(
+                accountsWithDepositSettingsChanges = listOf(
+                    AccountWithDepositSettingsChanges(
+                        account = Account.sampleMainnet(),
+                        defaultDepositRule = DepositRule.ACCEPT_ALL,
+                        assetChanges = listOf(
+                            AccountWithDepositSettingsChanges.AssetPreferenceChange(
+                                AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Allow,
+                                Resource.NonFungibleResource.sampleMainnet()
                             ),
-                            depositorChanges = listOf(
-                                AccountWithDepositSettingsChanges.DepositorPreferenceChange(
-                                    AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add,
-                                    Resource.NonFungibleResource.sampleMainnet()
-                                ),
-                                AccountWithDepositSettingsChanges.DepositorPreferenceChange(
-                                    AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Remove,
-                                    Resource.NonFungibleResource.sampleMainnet.other()
-                                )
+                            AccountWithDepositSettingsChanges.AssetPreferenceChange(
+                                AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Disallow,
+                                Resource.NonFungibleResource.sampleMainnet.other()
+                            ),
+                            AccountWithDepositSettingsChanges.AssetPreferenceChange(
+                                AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Clear,
+                                Resource.NonFungibleResource.sampleMainnet.random()
+                            )
+                        ),
+                        depositorChanges = listOf(
+                            AccountWithDepositSettingsChanges.DepositorPreferenceChange(
+                                AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add,
+                                Resource.NonFungibleResource.sampleMainnet()
+                            ),
+                            AccountWithDepositSettingsChanges.DepositorPreferenceChange(
+                                AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Remove,
+                                Resource.NonFungibleResource.sampleMainnet.other()
                             )
                         )
                     )
-
                 )
+
             )
-        }
+        )
     }
 }
 
@@ -329,8 +328,8 @@ fun AccountDepositSettingsTypeContentPreviewJustRule() {
             preview = PreviewType.AccountsDepositSettings(
                 accountsWithDepositSettingsChanges = listOf(
                     AccountWithDepositSettingsChanges(
-                        SampleDataProvider().sampleAccount(),
-                        defaultDepositRule = ThirdPartyDeposits.DepositRule.AcceptAll,
+                        account = Account.sampleMainnet(),
+                        defaultDepositRule = DepositRule.ACCEPT_ALL,
                         assetChanges = emptyList(),
                         depositorChanges = emptyList()
                     )
@@ -345,32 +344,30 @@ fun AccountDepositSettingsTypeContentPreviewJustRule() {
 @Composable
 fun AccountDepositSettingsTypeContentPreviewJustAssetChanges() {
     RadixWalletTheme {
-        with(SampleDataProvider()) {
-            AccountDepositSettingsTypeContent(
-                preview = PreviewType.AccountsDepositSettings(
-                    accountsWithDepositSettingsChanges = listOf(
-                        AccountWithDepositSettingsChanges(
-                            SampleDataProvider().sampleAccount(),
-                            assetChanges = listOf(
-                                AccountWithDepositSettingsChanges.AssetPreferenceChange(
-                                    AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Allow,
-                                    Resource.NonFungibleResource.sampleMainnet()
-                                ),
-                                AccountWithDepositSettingsChanges.AssetPreferenceChange(
-                                    AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Disallow,
-                                    Resource.NonFungibleResource.sampleMainnet.other()
-                                ),
-                                AccountWithDepositSettingsChanges.AssetPreferenceChange(
-                                    AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Clear,
-                                    Resource.NonFungibleResource.sampleMainnet.random()
-                                )
+        AccountDepositSettingsTypeContent(
+            preview = PreviewType.AccountsDepositSettings(
+                accountsWithDepositSettingsChanges = listOf(
+                    AccountWithDepositSettingsChanges(
+                        account = Account.sampleMainnet(),
+                        assetChanges = listOf(
+                            AccountWithDepositSettingsChanges.AssetPreferenceChange(
+                                AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Allow,
+                                Resource.NonFungibleResource.sampleMainnet()
+                            ),
+                            AccountWithDepositSettingsChanges.AssetPreferenceChange(
+                                AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Disallow,
+                                Resource.NonFungibleResource.sampleMainnet.other()
+                            ),
+                            AccountWithDepositSettingsChanges.AssetPreferenceChange(
+                                AccountWithDepositSettingsChanges.AssetPreferenceChange.ChangeType.Clear,
+                                Resource.NonFungibleResource.sampleMainnet.random()
                             )
                         )
                     )
-
                 )
+
             )
-        }
+        )
     }
 }
 
@@ -379,27 +376,25 @@ fun AccountDepositSettingsTypeContentPreviewJustAssetChanges() {
 @Composable
 fun AccountDepositSettingsTypeContentPreviewJustDepositorChanges() {
     RadixWalletTheme {
-        with(SampleDataProvider()) {
-            AccountDepositSettingsTypeContent(
-                preview = PreviewType.AccountsDepositSettings(
-                    accountsWithDepositSettingsChanges = listOf(
-                        AccountWithDepositSettingsChanges(
-                            SampleDataProvider().sampleAccount(),
-                            depositorChanges = listOf(
-                                AccountWithDepositSettingsChanges.DepositorPreferenceChange(
-                                    AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add,
-                                    Resource.NonFungibleResource.sampleMainnet()
-                                ),
-                                AccountWithDepositSettingsChanges.DepositorPreferenceChange(
-                                    AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Remove,
-                                    Resource.NonFungibleResource.sampleMainnet.other()
-                                )
+        AccountDepositSettingsTypeContent(
+            preview = PreviewType.AccountsDepositSettings(
+                accountsWithDepositSettingsChanges = listOf(
+                    AccountWithDepositSettingsChanges(
+                        account = Account.sampleMainnet(),
+                        depositorChanges = listOf(
+                            AccountWithDepositSettingsChanges.DepositorPreferenceChange(
+                                AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Add,
+                                Resource.NonFungibleResource.sampleMainnet()
+                            ),
+                            AccountWithDepositSettingsChanges.DepositorPreferenceChange(
+                                AccountWithDepositSettingsChanges.DepositorPreferenceChange.ChangeType.Remove,
+                                Resource.NonFungibleResource.sampleMainnet.other()
                             )
                         )
                     )
-
                 )
+
             )
-        }
+        )
     }
 }

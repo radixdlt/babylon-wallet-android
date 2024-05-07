@@ -11,6 +11,8 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.model.PersonaDisplayNameFieldWrapper
 import com.babylon.wallet.android.presentation.model.PersonaFieldWrapper
 import com.babylon.wallet.android.presentation.model.toPersonaData
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.IdentityAddress
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -52,7 +54,7 @@ class CreatePersonaViewModel @Inject constructor(
         viewModelScope.launch {
             val personaData = _state.value.currentFields.toPersonaData()
             val persona = createPersonaWithDeviceFactorSourceUseCase(
-                displayName = _state.value.personaDisplayName.value,
+                displayName = DisplayName(_state.value.personaDisplayName.value),
                 personaData = personaData
             )
 
@@ -86,6 +88,6 @@ class CreatePersonaViewModel @Inject constructor(
 
 internal sealed interface CreatePersonaEvent : OneOffEvent {
     data class Complete(
-        val personaId: String
+        val personaId: IdentityAddress
     ) : CreatePersonaEvent
 }

@@ -36,7 +36,6 @@ import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -47,7 +46,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
 import com.babylon.wallet.android.designsystem.composable.RadixTextField
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
 import com.babylon.wallet.android.presentation.settings.linkedconnectors.qrcode.CameraPreview
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
@@ -57,9 +56,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
-import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
-import rdx.works.profile.data.model.pernetwork.Network
+import com.radixdlt.sargon.Account
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -68,7 +65,7 @@ fun ChooseAccountSheet(
     state: ChooseAccounts,
     onCloseClick: () -> Unit,
     onAddressChanged: (String) -> Unit,
-    onOwnedAccountSelected: (Network.Account) -> Unit,
+    onOwnedAccountSelected: (Account) -> Unit,
     onChooseAccountSubmitted: () -> Unit,
     onQrCodeIconClick: () -> Unit,
     onAddressDecoded: (String) -> Unit,
@@ -157,7 +154,7 @@ private fun ChooseAccountContent(
     state: ChooseAccounts,
     onAddressChanged: (String) -> Unit,
     onQrCodeIconClick: () -> Unit,
-    onOwnedAccountSelected: (Network.Account) -> Unit
+    onOwnedAccountSelected: (Account) -> Unit
 ) {
     LazyColumn(
         modifier = modifier
@@ -178,7 +175,7 @@ private fun ChooseAccountContent(
         item {
             val (typedAddress, errorResource) = remember(state.selectedAccount) {
                 if (state.selectedAccount is TargetAccount.Other) {
-                    val address = state.selectedAccount.address
+                    val address = state.selectedAccount.typedAddress
 
                     // Do not show the error when the field has an empty value
                     if (address.isBlank()) {
@@ -289,12 +286,11 @@ private fun ChooseAccountContent(
         items(state.ownedAccounts.size) { index ->
             val accountItem = state.ownedAccounts[index]
 
-            val gradientColor = getAccountGradientColorsFor(accountItem.appearanceID)
             AccountSelectionCard(
                 modifier = Modifier
                     .padding(horizontal = RadixTheme.dimensions.paddingLarge)
                     .background(
-                        brush = Brush.horizontalGradient(gradientColor),
+                        brush = accountItem.appearanceId.gradient(),
                         shape = RadixTheme.shapes.roundedRectSmall,
                         alpha = if (state.isOwnedAccountsEnabled) 1f else 0.5f
                     )
@@ -305,10 +301,8 @@ private fun ChooseAccountContent(
                             focusManager.clearFocus(true)
                         }
                     },
-                accountName = accountItem.displayName,
-                address = remember(accountItem.address) {
-                    AccountAddress.init(accountItem.address)
-                },
+                accountName = accountItem.displayName.value,
+                address = accountItem.address,
                 checked = state.isOwnedAccountSelected(account = accountItem),
                 isSingleChoice = true,
                 radioButtonClicked = {

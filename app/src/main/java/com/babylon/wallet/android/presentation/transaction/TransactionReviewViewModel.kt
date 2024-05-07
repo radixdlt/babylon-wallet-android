@@ -24,10 +24,13 @@ import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFeesDelegate
 import com.babylon.wallet.android.presentation.transaction.guarantees.TransactionGuaranteesDelegate
 import com.babylon.wallet.android.presentation.transaction.submit.TransactionSubmitDelegate
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.Address
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.Decimal192
+import com.radixdlt.sargon.DepositRule
+import com.radixdlt.sargon.extensions.NotaryPrivateKey
 import com.radixdlt.sargon.extensions.clamped
 import com.radixdlt.sargon.extensions.compareTo
 import com.radixdlt.sargon.extensions.div
@@ -37,7 +40,6 @@ import com.radixdlt.sargon.extensions.minus
 import com.radixdlt.sargon.extensions.orZero
 import com.radixdlt.sargon.extensions.plus
 import com.radixdlt.sargon.extensions.rounded
-import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.times
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.extensions.toDecimal192OrNull
@@ -52,10 +54,7 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.roundedWith
 import rdx.works.core.mapWhen
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.Network.Account.OnLedgerSettings.ThirdPartyDeposits
 import rdx.works.profile.domain.ProfileException
-import rdx.works.profile.ret.crypto.PrivateKey
 import javax.inject.Inject
 
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -186,20 +185,20 @@ class TransactionReviewViewModel @Inject constructor(
 
     fun onViewAdvancedModeClick() = fees.onViewAdvancedModeClick()
 
-    fun onPayerSelected(selectedFeePayer: Network.Account) {
+    fun onPayerSelected(selectedFeePayer: Account) {
         val feePayerSearchResult = state.value.feePayers
         val transactionFees = state.value.transactionFees
         val signersCount = state.value.defaultSignersCount
 
         val updatedFeePayerResult = feePayerSearchResult?.copy(
-            selectedAccountAddress = AccountAddress.init(selectedFeePayer.address),
+            selectedAccountAddress = selectedFeePayer.address,
             candidates = feePayerSearchResult.candidates
         )
 
         val customizeFeesSheet = state.value.sheetState as? State.Sheet.CustomizeFees ?: return
         val selectedFeePayerInvolvedInTransaction = state.value.request?.transactionManifestData?.feePayerCandidates()
             .orEmpty().any { accountAddress ->
-                accountAddress.string == selectedFeePayer.address
+                accountAddress == selectedFeePayer.address
             }
 
         val updatedSignersCount = if (selectedFeePayerInvolvedInTransaction) signersCount else signersCount + 1
@@ -250,7 +249,7 @@ class TransactionReviewViewModel @Inject constructor(
         val sheetState: Sheet = Sheet.None,
         private val latestFeesMode: Sheet.CustomizeFees.FeesMode = Sheet.CustomizeFees.FeesMode.Default,
         val error: TransactionErrorMessage? = null,
-        val ephemeralNotaryPrivateKey: PrivateKey = PrivateKey.EddsaEd25519.newRandom(),
+        val ephemeralNotaryPrivateKey: NotaryPrivateKey = NotaryPrivateKey.secureRandom(),
         val interactionState: InteractionState? = null,
         val isTransactionDismissed: Boolean = false
     ) : UiState {
@@ -265,7 +264,7 @@ class TransactionReviewViewModel @Inject constructor(
             )
         )
 
-        fun candidateSelectedState(feePayerCandidate: Network.Account): State = copy(
+        fun candidateSelectedState(feePayerCandidate: Account): State = copy(
             sheetState = Sheet.CustomizeFees(
                 feePayerMode = Sheet.CustomizeFees.FeePayerMode.FeePayerSelected(
                     feePayerCandidate = feePayerCandidate
@@ -338,7 +337,7 @@ class TransactionReviewViewModel @Inject constructor(
                 val candidateAddress = feePayers.selectedAccountAddress ?: return true
 
                 val xrdInCandidateAccount = feePayers.candidates.find {
-                    it.account.address == candidateAddress.string
+                    it.account.address == candidateAddress
                 }?.xrdAmount.orZero()
 
                 // Calculate how many XRD have been used from accounts withdrawn from
@@ -395,7 +394,7 @@ class TransactionReviewViewModel @Inject constructor(
                     data object NoFeePayerRequired : FeePayerMode
 
                     data class FeePayerSelected(
-                        val feePayerCandidate: Network.Account
+                        val feePayerCandidate: Account
                     ) : FeePayerMode
 
                     data class NoFeePayerSelected(
@@ -512,8 +511,8 @@ sealed interface PreviewType {
 }
 
 data class AccountWithDepositSettingsChanges(
-    val account: Network.Account,
-    val defaultDepositRule: ThirdPartyDeposits.DepositRule? = null,
+    val account: Account,
+    val defaultDepositRule: DepositRule? = null,
     val assetChanges: List<AssetPreferenceChange> = emptyList(),
     val depositorChanges: List<DepositorPreferenceChange> = emptyList()
 ) {
@@ -597,13 +596,13 @@ sealed interface AccountWithPredictedGuarantee {
         transferable.resourceAddress == with.transferable.resourceAddress
 
     data class Owned(
-        val account: Network.Account,
+        val account: Account,
         override val transferable: TransferableAsset.Fungible,
         override val instructionIndex: Long,
         override val guaranteeAmountString: String
     ) : AccountWithPredictedGuarantee {
         override val address: AccountAddress
-            get() = AccountAddress.init(account.address)
+            get() = account.address
     }
 
     data class Other(
@@ -624,11 +623,11 @@ sealed interface AccountWithTransferableResources {
     val resources: List<Transferable>
 
     data class Owned(
-        val account: Network.Account,
+        val account: Account,
         override val resources: List<Transferable>
     ) : AccountWithTransferableResources {
         override val address: AccountAddress
-            get() = AccountAddress.init(account.address)
+            get() = account.address
     }
 
     data class Other(
@@ -669,11 +668,11 @@ sealed interface AccountWithTransferableResources {
 
     companion object {
         class Sorter(
-            private val ownedAccountsOrder: List<Network.Account>
+            private val ownedAccountsOrder: List<Account>
         ) : Comparator<AccountWithTransferableResources> {
             override fun compare(thisAccount: AccountWithTransferableResources?, otherAccount: AccountWithTransferableResources?): Int {
-                val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.address?.string }
-                val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.address?.string }
+                val indexOfThisAccount = ownedAccountsOrder.indexOfFirst { it.address == thisAccount?.address }
+                val indexOfOtherAccount = ownedAccountsOrder.indexOfFirst { it.address == otherAccount?.address }
 
                 return if (indexOfThisAccount == -1 && indexOfOtherAccount >= 0) {
                     1 // The other account is owned, so it takes higher priority

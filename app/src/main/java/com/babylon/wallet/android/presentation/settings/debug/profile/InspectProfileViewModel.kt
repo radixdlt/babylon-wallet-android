@@ -4,12 +4,12 @@ import androidx.lifecycle.viewModelScope
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.debug.profile.InspectProfileViewModel.State
+import com.radixdlt.sargon.Profile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.annotations.DebugOnly
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.prettyPrinted
+import rdx.works.core.sargon.prettyPrinted
 import rdx.works.profile.domain.GetProfileUseCase
 import javax.inject.Inject
 
@@ -22,7 +22,7 @@ class InspectProfileViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase().collect { profile ->
+            getProfileUseCase.flow.collect { profile ->
                 _state.update { it.copy(profile = profile) }
             }
         }

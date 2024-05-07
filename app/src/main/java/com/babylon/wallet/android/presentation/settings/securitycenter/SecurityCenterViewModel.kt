@@ -5,12 +5,12 @@ import com.babylon.wallet.android.domain.usecases.GetEntitiesWithSecurityPromptU
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
+import com.radixdlt.sargon.extensions.ProfileEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.BackupState
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.domain.BackupState
 import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import javax.inject.Inject
 
@@ -32,9 +32,11 @@ class SecurityCenterViewModel @Inject constructor(
             ) { entitiesWithSecurityPrompts, backupState ->
                 val anyEntityNeedRestore = entitiesWithSecurityPrompts.any { it.prompt == SecurityPromptType.NEEDS_RESTORE }
                 val anyEntityNeedBackup = entitiesWithSecurityPrompts.any { it.prompt == SecurityPromptType.NEEDS_BACKUP }
-                val entitiesNeedingBackup = entitiesWithSecurityPrompts.filter { it.prompt == SecurityPromptType.NEEDS_BACKUP }
-                val accountsNeedRecovery = entitiesNeedingBackup.filterIsInstance<Network.Account>().size
-                val personasNeedRecovery = entitiesNeedingBackup.filterIsInstance<Network.Persona>().size
+                val entitiesNeedingBackup = entitiesWithSecurityPrompts
+                    .filter { it.prompt == SecurityPromptType.NEEDS_BACKUP }
+                    .map { it.entity }
+                val accountsNeedRecovery = entitiesNeedingBackup.filterIsInstance<ProfileEntity.AccountEntity>().size
+                val personasNeedRecovery = entitiesNeedingBackup.filterIsInstance<ProfileEntity.PersonaEntity>().size
                 SecurityCenterUiState(
                     securityFactorsState = mutableSetOf<SecurityPromptType>().apply {
                         if (anyEntityNeedRestore) add(SecurityPromptType.NEEDS_RESTORE)

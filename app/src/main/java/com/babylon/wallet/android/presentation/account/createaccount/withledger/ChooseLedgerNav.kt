@@ -10,7 +10,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
-import rdx.works.profile.data.model.factorsources.FactorSource
+import com.radixdlt.sargon.FactorSourceId
 
 @VisibleForTesting
 const val ARG_SELECTION_PURPOSE = "arg_selection_purpose"
@@ -36,7 +36,7 @@ fun NavController.chooseLedger(
 fun NavGraphBuilder.chooseLedger(
     onBackClick: () -> Unit,
     onFinish: () -> Unit,
-    onStartRecovery: (FactorSource, Boolean) -> Unit
+    onStartRecovery: (FactorSourceId.Hash, Boolean) -> Unit
 ) {
     markAsHighPriority(ROUTE_CHOOSE_LEDGER)
     composable(

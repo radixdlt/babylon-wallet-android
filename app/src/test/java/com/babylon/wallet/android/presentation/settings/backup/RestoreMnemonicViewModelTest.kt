@@ -1,27 +1,5 @@
 package com.babylon.wallet.android.presentation.settings.backup
 
-import androidx.lifecycle.SavedStateHandle
-import app.cash.turbine.test
-import com.babylon.wallet.android.presentation.StateViewModelTest
-import com.babylon.wallet.android.utils.AppEventBus
-import io.mockk.every
-import io.mockk.mockk
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertFalse
-import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Test
-import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.backup.RestoreMnemonicUseCase
-
 /*
 @OptIn(ExperimentalCoroutinesApi::class)
 class RestoreMnemonicViewModelTest : StateViewModelTest<RestoreMnemonicViewModel>() {

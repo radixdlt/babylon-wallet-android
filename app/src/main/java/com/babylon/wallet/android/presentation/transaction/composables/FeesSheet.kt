@@ -33,9 +33,8 @@ import com.babylon.wallet.android.presentation.transaction.TransactionReviewView
 import com.babylon.wallet.android.presentation.transaction.fees.TransactionFees
 import com.babylon.wallet.android.presentation.ui.composables.BottomDialogHeader
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.extensions.formatted
-import com.radixdlt.sargon.extensions.string
-import rdx.works.profile.data.model.pernetwork.Network
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -47,7 +46,7 @@ fun FeesSheet(
     onClose: () -> Unit,
     onChangeFeePayerClick: () -> Unit,
     onSelectFeePayerClick: () -> Unit,
-    onPayerSelected: (Network.Account) -> Unit,
+    onPayerSelected: (Account) -> Unit,
     onFeePaddingAmountChanged: (String) -> Unit,
     onTipPercentageChanged: (String) -> Unit,
     onViewDefaultModeClick: () -> Unit,

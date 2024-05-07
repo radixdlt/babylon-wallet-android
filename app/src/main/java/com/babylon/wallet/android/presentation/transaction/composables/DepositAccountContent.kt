@@ -31,13 +31,14 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.domain.model.TransferableAsset
 import com.babylon.wallet.android.presentation.transaction.AccountWithTransferableResources
 import com.babylon.wallet.android.presentation.transaction.hasCustomizableGuarantees
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.assets.dashedCircleBorder
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import rdx.works.core.domain.resources.Resource
@@ -145,7 +146,12 @@ fun StrokeLine(
 fun DepositAccountPreview() {
     RadixWalletTheme {
         DepositAccountContent(
-            to = listOf(SampleDataProvider().accountWithTransferableResourcesOwned).toPersistentList(),
+            to = listOf(
+                AccountWithTransferableResources.Owned(
+                    account = Account.sampleMainnet(),
+                    resources = emptyList()
+                )
+            ).toPersistentList(),
             promptForGuarantees = {},
             onTransferableFungibleClick = { },
             onNonTransferableFungibleClick = { _, _ -> }

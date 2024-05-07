@@ -2,7 +2,9 @@ package com.babylon.wallet.android.presentation.common.seedphrase
 
 import com.babylon.wallet.android.presentation.common.Stateful
 import com.babylon.wallet.android.presentation.common.UiState
-import com.radixdlt.bip39.wordlists.WORDLIST_ENGLISH
+import com.radixdlt.sargon.Bip39Language
+import com.radixdlt.sargon.Bip39Word
+import com.radixdlt.sargon.extensions.wordList
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -25,7 +27,7 @@ class SeedPhraseVerificationDelegate(
             SeedPhraseWord(
                 index,
                 lastWord = index == seedSize - 1,
-                value = WORDLIST_ENGLISH[Random.nextInt(WORDLIST_ENGLISH.size)],
+                value = randomEnglishWord().word,
                 state = SeedPhraseWord.State.ValidDisabled
             )
         }.toPersistentList()
@@ -69,6 +71,11 @@ class SeedPhraseVerificationDelegate(
                 )
             }
         }
+    }
+
+    private fun randomEnglishWord(): Bip39Word {
+        val wordList = Bip39Language.ENGLISH.wordList
+        return wordList[Random.nextInt(wordList.size)]
     }
 
     data class State(

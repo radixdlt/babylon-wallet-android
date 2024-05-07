@@ -10,7 +10,6 @@ import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetai
 import com.babylon.wallet.android.data.gateway.generated.models.StateEntityDetailsResponseNonFungibleResourceDetails
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.VaultAddress
-import com.radixdlt.sargon.extensions.discriminant
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
@@ -45,7 +44,7 @@ val StateEntityDetailsResponseItem.totalXRDStake: Decimal192?
         val xrdVaultAddress = details?.xrdVaultAddress?.let { runCatching { VaultAddress.init(it) }.getOrNull() } ?: return null
 
         val xrdResource = fungibleResources?.items?.find {
-            XrdResource.address(networkId = xrdVaultAddress.networkId.discriminant.toInt()).string == it.resourceAddress
+            XrdResource.address(networkId = xrdVaultAddress.networkId).string == it.resourceAddress
         }
 
         return if (xrdResource is FungibleResourcesCollectionItemVaultAggregated) {

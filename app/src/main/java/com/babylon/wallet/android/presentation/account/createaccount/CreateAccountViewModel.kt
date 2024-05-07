@@ -15,21 +15,21 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
 import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
-import com.babylon.wallet.android.utils.decodeUtf8
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentNetwork
-import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.derivation.model.NetworkId
+import rdx.works.core.sargon.currentGateway
+import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.DeleteProfileUseCase
 import rdx.works.profile.domain.GenerateProfileUseCase
 import rdx.works.profile.domain.GetProfileStateUseCase
@@ -46,8 +46,9 @@ class CreateAccountViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val createAccountUseCase: CreateAccountUseCase,
     private val accessFactorSourcesProxy: AccessFactorSourcesProxy,
-    private val getProfileUseCase: GetProfileUseCase,
     private val getProfileStateUseCase: GetProfileStateUseCase,
+    private val getProfileUseCase: GetProfileUseCase,
+    private val mnemonicRepository: MnemonicRepository,
     private val generateProfileUseCase: GenerateProfileUseCase,
     private val deleteProfileUseCase: DeleteProfileUseCase,
     private val discardTemporaryRestoredFileForBackupUseCase: DiscardTemporaryRestoredFileForBackupUseCase,
@@ -73,55 +74,56 @@ class CreateAccountViewModel @Inject constructor(
         savedStateHandle[CREATE_ACCOUNT_BUTTON_ENABLED] = accountName.trim().isNotEmpty() && accountName.count() <= ACCOUNT_NAME_MAX_LENGTH
     }
 
-    fun onAccountCreateClick(isWithLedger: Boolean) {
+    fun onAccountCreateClick(isWithLedger: Boolean, biometricAuthProvider: suspend () -> Boolean) {
         viewModelScope.launch {
-            if (!getProfileStateUseCase.isInitialized()) {
-                generateProfileUseCase()
-                // Since we choose to create a new profile, this is the time
-                // we discard the data copied from the cloud backup, since they represent
-                // a previous instance.
-                discardTemporaryRestoredFileForBackupUseCase(BackupType.Cloud)
-            }
+            val isBiometricsProvided = if (!getProfileStateUseCase.isInitialized()) {
+                if (biometricAuthProvider()) {
+                    // TODO To be checked with the secure folder PR.
+                    // Guard against problems with secure folder, even when the user has provided biometrics.
+                    val newMnemonic = runCatching { mnemonicRepository() }.getOrNull() ?: return@launch
 
-            val onNetworkId = if (args.networkId != -1) {
-                NetworkId.from(args.networkId)
+                    generateProfileUseCase(mnemonicWithPassphrase = newMnemonic)
+                    // Since we choose to create a new profile, this is the time
+                    // we discard the data copied from the cloud backup, since they represent
+                    // a previous instance.
+                    discardTemporaryRestoredFileForBackupUseCase(BackupType.Cloud)
+
+                    true
+                } else {
+                    return@launch
+                }
             } else {
-                val profile = getProfileUseCase.invoke().first()
-                profile.currentNetwork?.knownNetworkId ?: Radix.Gateway.default.network.networkId()
+                false
             }
 
             // at the moment you can create a account either with device factor source or ledger factor source
-            var selectedFactorSource: FactorSource.CreatingEntity? = null
-
-            if (isWithLedger) { // get the selected ledger device
+            val selectedFactorSource = if (isWithLedger) { // get the selected ledger device
                 sendEvent(CreateAccountEvent.AddLedgerDevice)
-                selectedFactorSource = appEventBus.events
+                appEventBus.events
                     .filterIsInstance<AppEvent.AccessFactorSources.SelectedLedgerDevice>()
-                    .first().ledgerFactorSource
+                    .first()
+                    .ledgerFactorSource
+            } else {
+                getProfileUseCase().mainBabylonFactorSource ?: return@launch
             }
 
             // if main babylon factor source is not present, it will be created during the public key derivation
             accessFactorSourcesProxy.getPublicKeyAndDerivationPathForFactorSource(
                 accessFactorSourcesInput = AccessFactorSourcesInput.ToDerivePublicKey(
-                    forNetworkId = onNetworkId,
-                    factorSource = if (isWithLedger && selectedFactorSource != null) {
-                        selectedFactorSource
-                    } else {
-                        null
-                    }
+                    forNetworkId = args.networkIdToSwitch ?: getProfileUseCase().currentGateway.network.id,
+                    factorSource = selectedFactorSource,
+                    isBiometricsProvided = isBiometricsProvided
                 )
             ).onSuccess {
-                handleAccountCreate { nameOfAccount, networkId ->
-                    // when we reach this point main babylon factor source has already created
-                    if (selectedFactorSource == null && isWithLedger.not()) { // so take it if it is a creation with device
-                        val profile = getProfileUseCase.invoke().first() // get again the profile with its updated state
-                        selectedFactorSource = profile.mainBabylonFactorSource() ?: error("Babylon factor source is not present")
+                handleAccountCreate { nameOfAccount ->
+                    val factorSourceId = when (selectedFactorSource) {
+                        is FactorSource.Device -> selectedFactorSource.value.id.asGeneral()
+                        is FactorSource.Ledger -> selectedFactorSource.value.id.asGeneral()
                     }
                     createAccountUseCase(
-                        displayName = nameOfAccount,
-                        factorSource = selectedFactorSource ?: error("factor source must not be null"),
-                        publicKeyAndDerivationPath = it,
-                        onNetworkId = networkId
+                        displayName = DisplayName(nameOfAccount),
+                        factorSourceId = factorSourceId,
+                        hdPublicKey = it.value
                     )
                 }
             }.onFailure { error ->
@@ -152,18 +154,20 @@ class CreateAccountViewModel @Inject constructor(
     }
 
     private suspend fun handleAccountCreate(
-        accountProvider: suspend (String, NetworkId?) -> Network.Account
+        accountProvider: suspend (String) -> Account
     ) {
         _state.update { it.copy(loading = true) }
         val accountName = accountName.value.trim()
-        val networkId = switchNetworkIfNeeded()
-        val account = accountProvider(accountName, networkId)
+        if (args.networkIdToSwitch != null && args.networkUrl != null) {
+            switchNetworkUseCase(args.networkUrl)
+        }
+        val account = accountProvider(accountName)
         val accountId = account.address
 
         _state.update {
             it.copy(
                 loading = true,
-                accountId = accountId,
+                accountId = accountId.string,
                 accountName = accountName
             )
         }
@@ -174,22 +178,10 @@ class CreateAccountViewModel @Inject constructor(
 
         sendEvent(
             CreateAccountEvent.Complete(
-                accountId = AccountAddress.init(accountId),
+                accountId = accountId,
                 requestSource = args.requestSource
             )
         )
-    }
-
-    @Suppress("UnsafeCallOnNullableType")
-    private suspend fun switchNetworkIfNeeded(): NetworkId? {
-        val switchNetwork = args.switchNetwork ?: false
-        var networkId: NetworkId? = null
-        if (switchNetwork) {
-            val networkUrl = args.networkUrlEncoded!!.decodeUtf8()
-            val id = args.networkId
-            networkId = switchNetworkUseCase(networkUrl, id)
-        }
-        return networkId
     }
 
     data class CreateAccountUiState(

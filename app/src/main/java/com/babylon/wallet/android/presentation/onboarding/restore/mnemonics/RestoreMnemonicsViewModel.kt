@@ -11,23 +11,26 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.common.seedphrase.SeedPhraseInputDelegate
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.currentNetwork
-import rdx.works.profile.data.model.extensions.changeGateway
-import rdx.works.profile.data.model.extensions.factorSourceId
-import rdx.works.profile.data.model.extensions.isHidden
-import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
-import rdx.works.profile.data.model.extensions.usesCurve25519
-import rdx.works.profile.data.model.extensions.usesSecp256k1
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.changeGatewayToNetworkId
+import rdx.works.core.sargon.currentNetwork
+import rdx.works.core.sargon.factorSourceId
+import rdx.works.core.sargon.isHidden
+import rdx.works.core.sargon.mainBabylonFactorSource
+import rdx.works.core.sargon.supportsBabylon
+import rdx.works.core.sargon.usesEd25519
+import rdx.works.core.sargon.usesSECP256k1
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.backup.BackupType
@@ -64,15 +67,15 @@ class RestoreMnemonicsViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val profile = args.backupType?.let { backupType ->
-                getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGateway(Radix.Gateway.mainnet)
+                getTemporaryRestoringProfileForBackupUseCase(backupType)?.changeGatewayToNetworkId(NetworkId.MAINNET)
             } ?: run {
-                getProfileUseCase().firstOrNull()
+                getProfileUseCase.flow.firstOrNull()
             }
             val factorSources = profile.recoverableFactorSources()
             _state.update {
                 it.copy(
                     recoverableFactorSources = factorSources,
-                    mainBabylonFactorSourceId = profile?.mainBabylonFactorSource()?.id
+                    mainBabylonFactorSourceId = profile?.mainBabylonFactorSource?.value?.id?.asGeneral()
                 )
             }
 
@@ -87,17 +90,17 @@ class RestoreMnemonicsViewModel @Inject constructor(
     }
 
     private suspend fun Profile?.recoverableFactorSources(): List<RecoverableFactorSource> {
-        val allAccounts = this?.currentNetwork?.accounts.orEmpty()
+        val allAccounts = this?.currentNetwork?.accounts().orEmpty()
 
-        return this?.factorSources
-            ?.filterIsInstance<DeviceFactorSource>()
-            ?.filter { !mnemonicRepository.mnemonicExist(it.id) }
+        return this?.factorSources()
+            ?.filterIsInstance<FactorSource.Device>()
+            ?.filter { !mnemonicRepository.mnemonicExist(it.value.id.asGeneral()) }
             ?.mapNotNull { factorSource ->
                 val associatedBabylonAccounts = allAccounts.filter {
-                    it.factorSourceId == factorSource.id && it.usesCurve25519
+                    it.factorSourceId == factorSource.id && it.usesEd25519
                 }
                 val associatedOlympiaAccounts = allAccounts.filter {
-                    it.factorSourceId == factorSource.id && it.usesSecp256k1
+                    it.factorSourceId == factorSource.id && it.usesSECP256k1
                 }
 
                 if (associatedBabylonAccounts.isEmpty() && associatedOlympiaAccounts.isEmpty() && !factorSource.supportsBabylon) {
@@ -182,10 +185,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         _state.update { it.copy(isRestoring = true) }
         restoreMnemonicUseCase(
             factorSource = factorSourceToRecover,
-            mnemonicWithPassphrase = MnemonicWithPassphrase(
-                mnemonic = _state.value.seedPhraseState.wordsPhrase,
-                bip39Passphrase = _state.value.seedPhraseState.bip39Passphrase
-            )
+            mnemonicWithPassphrase = _state.value.seedPhraseState.toMnemonicWithPassphrase()
         ).onSuccess {
             appEventBus.sendEvent(AppEvent.RestoredMnemonic)
             _state.update { state -> state.copy(isRestoring = false) }
@@ -205,7 +205,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
         val nextRecoverableFactorSource = state.value.nextRecoverableFactorSource
         if (nextRecoverableFactorSource != null) {
             seedPhraseInputDelegate.reset()
-            seedPhraseInputDelegate.setSeedPhraseSize(nextRecoverableFactorSource.factorSource.hint.mnemonicWordCount)
+            seedPhraseInputDelegate.setSeedPhraseSize(nextRecoverableFactorSource.factorSource.value.hint.mnemonicWordCount)
 
             _state.update { it.proceedToNextRecoverable() }
         } else {
@@ -235,7 +235,7 @@ class RestoreMnemonicsViewModel @Inject constructor(
 
     data class State(
         private val recoverableFactorSources: List<RecoverableFactorSource> = emptyList(),
-        private val mainBabylonFactorSourceId: FactorSource.FactorSourceID.FromHash? = null,
+        private val mainBabylonFactorSourceId: FactorSourceId.Hash? = null,
         private val selectedIndex: Int = -1,
         val screenType: ScreenType = ScreenType.Entities,
         val isMovingForward: Boolean = false,
@@ -276,12 +276,12 @@ class RestoreMnemonicsViewModel @Inject constructor(
 }
 
 data class RecoverableFactorSource(
-    val associatedAccounts: List<Network.Account>,
-    val factorSource: DeviceFactorSource
+    val associatedAccounts: List<Account>,
+    val factorSource: FactorSource.Device
 ) {
-    val nonHiddenAccountsToDisplay: List<Network.Account>
-        get() = associatedAccounts.filter { it.isHidden().not() }
+    val nonHiddenAccountsToDisplay: List<Account>
+        get() = associatedAccounts.filter { it.isHidden.not() }
 
     val areAllAccountsHidden: Boolean
-        get() = associatedAccounts.all { it.isHidden() }
+        get() = associatedAccounts.all { it.isHidden }
 }

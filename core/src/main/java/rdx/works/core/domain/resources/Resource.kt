@@ -1,7 +1,6 @@
 package rdx.works.core.domain.resources
 
 import android.net.Uri
-import com.radixdlt.derivation.model.NetworkId
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.NonFungibleGlobalId
 import com.radixdlt.sargon.NonFungibleLocalId
@@ -9,7 +8,6 @@ import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.intId
 import com.radixdlt.sargon.extensions.networkId
 import com.radixdlt.sargon.extensions.string
@@ -302,13 +300,12 @@ private fun String.truncate(maxNumberOfCharacters: Int, addEllipsis: Boolean = t
 object XrdResource {
     const val SYMBOL = "XRD"
 
-    fun address(networkId: Int): ResourceAddress {
-        return ResourceAddress.xrd(com.radixdlt.sargon.NetworkId.init(discriminant = networkId.toUByte()))
+    fun address(networkId: com.radixdlt.sargon.NetworkId): ResourceAddress {
+        return ResourceAddress.xrd(networkId)
     }
 
-    fun addressesPerNetwork(): Map<Int, ResourceAddress> = NetworkId.entries.associate { entry ->
-        entry.value to address(networkId = entry.value)
-    }
+    fun addressesPerNetwork(): Map<com.radixdlt.sargon.NetworkId, ResourceAddress> =
+        com.radixdlt.sargon.NetworkId.entries.associateWith { entry -> address(networkId = entry) }
 }
 
 @Suppress("MagicNumber")

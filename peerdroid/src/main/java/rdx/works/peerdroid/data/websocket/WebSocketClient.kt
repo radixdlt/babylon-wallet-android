@@ -1,6 +1,8 @@
 package rdx.works.peerdroid.data.websocket
 
 import android.content.Context
+import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.extensions.bytes
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -26,6 +28,7 @@ import kotlinx.serialization.json.Json
 import okio.ByteString.Companion.decodeHex
 import rdx.works.core.decrypt
 import rdx.works.core.encrypt
+import rdx.works.core.toByteArray
 import rdx.works.core.toHexString
 import rdx.works.peerdroid.BuildConfig
 import rdx.works.peerdroid.data.webrtc.model.PeerConnectionEvent
@@ -34,6 +37,7 @@ import rdx.works.peerdroid.data.websocket.model.RpcMessage
 import rdx.works.peerdroid.data.websocket.model.RpcMessage.IceCandidatePayload.Companion.toJsonPayload
 import rdx.works.peerdroid.data.websocket.model.SignalingServerDto
 import rdx.works.peerdroid.data.websocket.model.SignalingServerMessage
+import rdx.works.peerdroid.domain.ConnectionIdHolder
 import timber.log.Timber
 import java.nio.charset.StandardCharsets
 
@@ -57,7 +61,6 @@ internal class WebSocketClient(applicationContext: Context) {
     // represents a web socket session between two peers
     private var socket: WebSocketSession? = null
 
-    private lateinit var connectionId: String
     private lateinit var encryptionKey: ByteArray
 
     // this is used only for the PeerdroidLink
@@ -70,18 +73,17 @@ internal class WebSocketClient(applicationContext: Context) {
     }
 
     suspend fun initSession(
-        connectionId: String,
-        encryptionKey: ByteArray
+        connectionId: ConnectionIdHolder,
+        encryptionKey: RadixConnectPassword
     ): Result<Unit> {
         return try {
-            this.connectionId = connectionId
-            this.encryptionKey = encryptionKey
+            this.encryptionKey = encryptionKey.value.bytes.toByteArray()
 
             // this block has a normal http request builder
             // because we need to do an http request once (initial handshake)
             // to establish the connection the first time
             socket = httpClientEntryPoint.provideHttpClient().webSocketSession {
-                url("${BuildConfig.SIGNALING_SERVER_URL}$connectionId?source=wallet&target=extension")
+                url("${BuildConfig.SIGNALING_SERVER_URL}${connectionId.id}?source=wallet&target=extension")
             }
             if (socket?.isActive == true) {
                 Timber.d("🛰 successfully connected to signaling server")

@@ -13,12 +13,12 @@ import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.presentation.model.fullName
 import com.babylon.wallet.android.presentation.model.toDisplayResource
-import rdx.works.profile.data.model.pernetwork.PersonaData
+import rdx.works.core.sargon.PersonaDataField
 
 @Composable
-fun PersonaDataFieldRow(modifier: Modifier, field: PersonaData.PersonaDataField) {
+fun PersonaDataFieldRow(modifier: Modifier, field: PersonaDataField) {
     when (field) {
-        is PersonaData.PersonaDataField.Email -> {
+        is PersonaDataField.Email -> {
             PersonaDataStringField(
                 modifier = modifier,
                 label = stringResource(id = field.kind.toDisplayResource()),
@@ -26,7 +26,7 @@ fun PersonaDataFieldRow(modifier: Modifier, field: PersonaData.PersonaDataField)
             )
         }
 
-        is PersonaData.PersonaDataField.Name -> {
+        is PersonaDataField.Name -> {
             PersonaDataStringField(
                 modifier = modifier,
                 label = stringResource(id = field.kind.toDisplayResource()),
@@ -35,7 +35,7 @@ fun PersonaDataFieldRow(modifier: Modifier, field: PersonaData.PersonaDataField)
             )
         }
 
-        is PersonaData.PersonaDataField.PhoneNumber -> {
+        is PersonaDataField.PhoneNumber -> {
             PersonaDataStringField(
                 modifier = modifier,
                 label = stringResource(id = field.kind.toDisplayResource()),

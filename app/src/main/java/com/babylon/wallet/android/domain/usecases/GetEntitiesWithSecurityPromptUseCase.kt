@@ -1,18 +1,21 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.asProfileEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.extensions.factorSourceId
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
-import rdx.works.profile.data.model.pernetwork.Entity
+import rdx.works.core.sargon.activeEntitiesOnCurrentNetwork
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
+import rdx.works.core.sargon.factorSourceById
+import rdx.works.core.sargon.factorSourceId
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.entitiesOnCurrentNetwork
-import rdx.works.profile.domain.factorSourceById
-import rdx.works.profile.domain.personasOnCurrentNetwork
 import javax.inject.Inject
 
 class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
@@ -22,7 +25,7 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
 ) {
 
     operator fun invoke() = combine(
-        getProfileUseCase.entitiesOnCurrentNetwork,
+        getProfileUseCase.flow.map { it.activeEntitiesOnCurrentNetwork },
         preferencesManager.getBackedUpFactorSourceIds()
     ) { entities, backedUpFactorSourceIds ->
         entities.mapNotNull { entity ->
@@ -32,25 +35,28 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
 
     val shouldShowPersonaSecurityPrompt: Flow<Boolean>
         get() = combine(
-            getProfileUseCase.personasOnCurrentNetwork,
+            getProfileUseCase.flow.map { it.activePersonasOnCurrentNetwork },
             preferencesManager.getBackedUpFactorSourceIds().distinctUntilChanged()
         ) { personas, backedUpFactorSourceIds ->
             personas.any { persona ->
-                val entity = mapToEntityWithSecurityPrompt(persona, backedUpFactorSourceIds)
+                val entity = mapToEntityWithSecurityPrompt(persona.asProfileEntity(), backedUpFactorSourceIds)
                 entity?.prompt == SecurityPromptType.NEEDS_BACKUP
             }
         }
 
-    private suspend fun mapToEntityWithSecurityPrompt(entity: Entity, backedUpFactorSourceIds: Set<String>): EntityWithSecurityPrompt? {
-        val factorSourceId = entity.factorSourceId as? FactorSourceID.FromHash ?: return null
-        val factorSource = getProfileUseCase.factorSourceById(factorSourceId) as? DeviceFactorSource ?: return null
+    private suspend fun mapToEntityWithSecurityPrompt(
+        entity: ProfileEntity,
+        backedUpFactorSourceIds: Set<FactorSourceId.Hash>
+    ): EntityWithSecurityPrompt? {
+        val factorSourceId = entity.securityState.factorSourceId as? FactorSourceId.Hash ?: return null
+        val factorSource = getProfileUseCase().factorSourceById(factorSourceId) as? FactorSource.Device ?: return null
 
-        return if (!mnemonicRepository.mnemonicExist(factorSource.id)) {
+        return if (!mnemonicRepository.mnemonicExist(factorSource.value.id.asGeneral())) {
             EntityWithSecurityPrompt(
                 entity = entity,
                 prompt = SecurityPromptType.NEEDS_RESTORE
             )
-        } else if (!backedUpFactorSourceIds.contains(factorSourceId.body.value)) {
+        } else if (!backedUpFactorSourceIds.contains(factorSourceId)) {
             EntityWithSecurityPrompt(
                 entity = entity,
                 prompt = SecurityPromptType.NEEDS_BACKUP
@@ -62,7 +68,7 @@ class GetEntitiesWithSecurityPromptUseCase @Inject constructor(
 }
 
 data class EntityWithSecurityPrompt(
-    val entity: Entity,
+    val entity: ProfileEntity,
     val prompt: SecurityPromptType
 )
 

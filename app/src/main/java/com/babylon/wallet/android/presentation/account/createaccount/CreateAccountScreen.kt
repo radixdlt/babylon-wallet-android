@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +41,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BackIconType
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
+import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.radixdlt.sargon.AccountAddress
 
 @Composable
@@ -62,9 +64,15 @@ fun CreateAccountScreen(
         val buttonEnabled by viewModel.buttonEnabled.collectAsStateWithLifecycle()
         val isAccountNameLengthMoreThanTheMax by viewModel.isAccountNameLengthMoreThanTheMax.collectAsStateWithLifecycle()
 
+        val context = LocalContext.current
         CreateAccountContent(
             onAccountNameChange = viewModel::onAccountNameChange,
-            onAccountCreateClick = viewModel::onAccountCreateClick,
+            onAccountCreateClick = {
+                viewModel.onAccountCreateClick(
+                    isWithLedger = it,
+                    biometricAuthProvider = { context.biometricAuthenticateSuspend() }
+                )
+            },
             accountName = accountName,
             isAccountNameLengthMoreThanTheMaximum = isAccountNameLengthMoreThanTheMax,
             buttonEnabled = buttonEnabled,

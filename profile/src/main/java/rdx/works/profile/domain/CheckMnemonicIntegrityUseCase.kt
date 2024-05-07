@@ -1,12 +1,14 @@
 package rdx.works.profile.domain
 
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.asGeneral
 import kotlinx.coroutines.flow.firstOrNull
 import rdx.works.core.KeySpec
 import rdx.works.core.KeystoreManager
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.checkIfKeyWasPermanentlyInvalidated
-import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
+import rdx.works.core.sargon.deviceFactorSources
+import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import javax.inject.Inject
@@ -19,14 +21,14 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
 
     suspend operator fun invoke() {
         if (getProfileUseCase.isInitialized().not()) return
-        val deviceFactorSources = getProfileUseCase.deviceFactorSources.firstOrNull().orEmpty()
+        val deviceFactorSources = getProfileUseCase().deviceFactorSources
         if (deviceFactorSources.isEmpty()) return
         // try to encrypt random string
         val keyInvalid = checkIfKeyWasPermanentlyInvalidated(UUIDGenerator.uuid().toString(), KeySpec.Mnemonic())
         if (keyInvalid) {
             // if we have invalid mnemonic encryption key we delete all mnemonics which we can no longer decrypt
             deviceFactorSources.forEach { deviceFactorSource ->
-                mnemonicRepository.deleteMnemonic(deviceFactorSource.id)
+                mnemonicRepository.deleteMnemonic(deviceFactorSource.value.id.asGeneral())
             }
             // just for safety, removing key, although it seem that Android system delete it so it is always null
             keystoreManager.removeMnemonicEncryptionKey().onFailure {
@@ -35,11 +37,11 @@ class CheckMnemonicIntegrityUseCase @Inject constructor(
         }
     }
 
-    suspend fun babylonMnemonicNeedsRecovery(): FactorSource.FactorSourceID.FromHash? {
+    suspend fun babylonMnemonicNeedsRecovery(): FactorSourceId.Hash? {
         if (getProfileUseCase.isInitialized().not()) return null
-        val mainBabylonFactorSourceToRecover = getProfileUseCase.invoke().firstOrNull()?.mainBabylonFactorSource() ?: return null
-        return if (mnemonicRepository.mnemonicExist(mainBabylonFactorSourceToRecover.id).not()) {
-            mainBabylonFactorSourceToRecover.id
+        val factSourceIdToRecover = getProfileUseCase.flow.firstOrNull()?.mainBabylonFactorSource?.value?.id?.asGeneral() ?: return null
+        return if (mnemonicRepository.mnemonicExist(factSourceIdToRecover).not()) {
+            factSourceIdToRecover
         } else {
             null
         }

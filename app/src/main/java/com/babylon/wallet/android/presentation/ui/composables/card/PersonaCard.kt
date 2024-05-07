@@ -29,16 +29,17 @@ import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.dapp.authorized.selectpersona.PersonaUiModel
 import com.babylon.wallet.android.presentation.ui.composables.ApplySecuritySettingsLabel
 import com.babylon.wallet.android.presentation.ui.composables.Thumbnail
-import rdx.works.profile.data.model.pernetwork.Network
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 
 @Composable
 fun PersonaCard(
     modifier: Modifier = Modifier,
-    persona: Network.Persona,
+    persona: Persona,
     showChevron: Boolean = true,
     elevation: Dp = 8.dp,
     onApplySecuritySettings: (() -> Unit)? = null,
@@ -67,7 +68,7 @@ fun PersonaCard(
             )
             Text(
                 modifier = Modifier.weight(1f),
-                text = persona.displayName,
+                text = persona.displayName.value,
                 style = RadixTheme.typography.secondaryHeader,
                 color = RadixTheme.colors.gray1,
                 maxLines = 2,
@@ -95,7 +96,7 @@ fun PersonaCard(
 }
 
 @Composable
-fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (Network.Persona) -> Unit) {
+fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectPersona: (Persona) -> Unit) {
     val paddingDefault = RadixTheme.dimensions.paddingDefault
     Column(modifier) {
         Row(
@@ -111,7 +112,7 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
             )
             Text(
                 modifier = Modifier.weight(1f),
-                text = persona.persona.displayName,
+                text = persona.persona.displayName.value,
                 textAlign = TextAlign.Start,
                 maxLines = 2,
                 style = RadixTheme.typography.secondaryHeader,
@@ -144,16 +145,17 @@ fun PersonaSelectableCard(modifier: Modifier, persona: PersonaUiModel, onSelectP
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun DAppLoginContentPreview() {
     RadixWalletTheme {
-        PersonaCard(persona = SampleDataProvider().samplePersona())
+        PersonaCard(persona = Persona.sampleMainnet())
         PersonaSelectableCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(120.dp),
-            persona = PersonaUiModel(SampleDataProvider().samplePersona())
+            persona = PersonaUiModel(Persona.sampleMainnet.other())
         ) {}
     }
 }

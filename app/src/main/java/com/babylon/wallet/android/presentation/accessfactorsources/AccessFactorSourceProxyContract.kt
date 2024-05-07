@@ -1,17 +1,17 @@
 package com.babylon.wallet.android.presentation.accessfactorsources
 
-import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.derivation.model.NetworkId
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.NetworkId
 
 // interface for clients that need access to factor sources
 interface AccessFactorSourcesProxy {
 
     suspend fun getPublicKeyAndDerivationPathForFactorSource(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToDerivePublicKey
-    ): Result<AccessFactorSourcesOutput.PublicKeyAndDerivationPath>
+    ): Result<AccessFactorSourcesOutput.HDPublicKey>
 
     suspend fun reDeriveAccounts(
         accessFactorSourcesInput: AccessFactorSourcesInput.ToReDeriveAccounts
@@ -47,26 +47,29 @@ sealed interface AccessFactorSourcesInput {
 
     data class ToDerivePublicKey(
         val forNetworkId: NetworkId,
-        val factorSource: FactorSource.CreatingEntity? = null
+        val factorSource: FactorSource,
+        // Need this information only when a new profile is created, meaning that biometrics have been provided
+        // No need to ask the user for authentication again.
+        val isBiometricsProvided: Boolean
     ) : AccessFactorSourcesInput
 
     sealed interface ToReDeriveAccounts : AccessFactorSourcesInput {
 
-        val factorSource: FactorSource.CreatingEntity
+        val factorSource: FactorSource
         val isForLegacyOlympia: Boolean
-        val nextDerivationPathOffset: Int // is used as pointer when user clicks "scan the next 50"
+        val nextDerivationPathOffset: UInt // is used as pointer when user clicks "scan the next 50"
 
         data class WithGivenMnemonic(
-            override val factorSource: FactorSource.CreatingEntity,
+            override val factorSource: FactorSource,
             override val isForLegacyOlympia: Boolean = false,
-            override val nextDerivationPathOffset: Int,
+            override val nextDerivationPathOffset: UInt,
             val mnemonicWithPassphrase: MnemonicWithPassphrase,
         ) : ToReDeriveAccounts
 
         data class WithGivenFactorSource(
-            override val factorSource: FactorSource.CreatingEntity,
+            override val factorSource: FactorSource,
             override val isForLegacyOlympia: Boolean,
-            override val nextDerivationPathOffset: Int,
+            override val nextDerivationPathOffset: UInt,
         ) : ToReDeriveAccounts
     }
 
@@ -75,14 +78,13 @@ sealed interface AccessFactorSourcesInput {
 
 sealed interface AccessFactorSourcesOutput {
 
-    data class PublicKeyAndDerivationPath(
-        val compressedPublicKey: ByteArray,
-        val derivationPath: DerivationPath
+    data class HDPublicKey(
+        val value: HierarchicalDeterministicPublicKey
     ) : AccessFactorSourcesOutput
 
     data class DerivedAccountsWithNextDerivationPath(
-        val derivedAccounts: List<Network.Account>,
-        val nextDerivationPathOffset: Int // is used as pointer when user clicks "scan the next 50"
+        val derivedAccounts: List<Account>,
+        val nextDerivationPathOffset: UInt // is used as pointer when user clicks "scan the next 50"
     ) : AccessFactorSourcesOutput
 
     data class Failure(

@@ -5,20 +5,19 @@ import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel.State.Sheet.ChooseAccounts
+import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
-import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.domain.validatedOnNetworkOrNull
-import rdx.works.profile.data.model.extensions.hasAcceptKnownDepositRule
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.hasAcceptKnownDepositRule
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
 import javax.inject.Inject
 
 class AccountsChooserDelegate @Inject constructor(
@@ -27,7 +26,7 @@ class AccountsChooserDelegate @Inject constructor(
 ) : ViewModelDelegate<TransferViewModel.State>() {
 
     suspend fun onChooseAccount(
-        fromAccount: Network.Account,
+        fromAccount: Account,
         slotAccount: TargetAccount,
         selectedAccounts: List<TargetAccount>
     ) {
@@ -41,7 +40,7 @@ class AccountsChooserDelegate @Inject constructor(
             )
         }
 
-        val accounts = getProfileUseCase.accountsOnCurrentNetwork().filterNot { account ->
+        val accounts = getProfileUseCase().activeAccountsOnCurrentNetwork.filterNot { account ->
             account.address == fromAccount.address || selectedAccounts.any { it.address == account.address }
         }
 
@@ -49,13 +48,14 @@ class AccountsChooserDelegate @Inject constructor(
     }
 
     fun addressTyped(address: String) {
-        val currentNetworkId = _state.value.fromAccount?.networkID ?: return
+        val currentNetworkId = _state.value.fromAccount?.networkId ?: return
         updateSheetState { sheetState ->
-            val validity = if (AccountAddress.validatedOnNetworkOrNull(address, NetworkId.init(currentNetworkId.toUByte())) == null) {
+            val validity = if (AccountAddress.validatedOnNetworkOrNull(address, currentNetworkId) == null) {
                 TargetAccount.Other.AddressValidity.INVALID
             } else {
-                val selectedAccountAddresses = _state.value.targetAccounts.map { it.address }
-                if (address in selectedAccountAddresses || address == _state.value.fromAccount?.address) {
+                val fromAccountAddressString = _state.value.fromAccount?.address?.string.orEmpty()
+                val selectedAccountAddressesString = _state.value.targetAccounts.map { it.address?.string.orEmpty() }
+                if (address in selectedAccountAddressesString || address == fromAccountAddressString) {
                     TargetAccount.Other.AddressValidity.USED
                 } else {
                     TargetAccount.Other.AddressValidity.VALID
@@ -63,7 +63,7 @@ class AccountsChooserDelegate @Inject constructor(
             }
             sheetState.copy(
                 selectedAccount = TargetAccount.Other(
-                    address = address,
+                    typedAddress = address,
                     validity = validity,
                     id = sheetState.selectedAccount.id,
                     spendingAssets = sheetState.selectedAccount.spendingAssets
@@ -83,7 +83,7 @@ class AccountsChooserDelegate @Inject constructor(
 
     fun onQRAddressDecoded(address: String) = addressTyped(address = address)
 
-    fun onOwnedAccountSelected(account: Network.Account) {
+    fun onOwnedAccountSelected(account: Account) {
         updateSheetState {
             it.copy(
                 selectedAccount = TargetAccount.Owned(
@@ -114,7 +114,7 @@ class AccountsChooserDelegate @Inject constructor(
                 val selectedAccount = if (ownedAccount != null) {
                     // if the target owned account has accept known rule then we need to fetch its known resources
                     // in order to later check if a an extra signature is required
-                    val areTargetAccountResourcesRequired = ownedAccount.hasAcceptKnownDepositRule()
+                    val areTargetAccountResourcesRequired = ownedAccount.hasAcceptKnownDepositRule
 
                     TargetAccount.Owned(
                         account = ownedAccount,
@@ -148,7 +148,7 @@ class AccountsChooserDelegate @Inject constructor(
         }
     }
 
-    private suspend fun fetchKnownResourcesOfOwnedAccount(ownedAccount: Network.Account): List<ResourceAddress> {
+    private suspend fun fetchKnownResourcesOfOwnedAccount(ownedAccount: Account): List<ResourceAddress> {
         return getWalletAssetsUseCase(
             accounts = listOf(ownedAccount),
             isRefreshing = false

@@ -12,11 +12,9 @@ import com.babylon.wallet.android.domain.toConnectorExtensionError
 import com.babylon.wallet.android.utils.isValidHttpsUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.extensions.init
-import kotlinx.coroutines.flow.first
 import rdx.works.core.domain.DApp
 import rdx.works.core.then
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.security
 import javax.inject.Inject
 
 class VerifyDAppUseCase @Inject constructor(
@@ -36,7 +34,7 @@ class VerifyDAppUseCase @Inject constructor(
             return Result.failure(RadixWalletException.DappRequestException.InvalidRequest)
         }
 
-        val developerMode = getProfileUseCase.security.first().isDeveloperModeEnabled
+        val developerMode = getProfileUseCase().appPreferences.security.isDeveloperModeEnabled
         return if (developerMode) {
             Result.success(true)
         } else {

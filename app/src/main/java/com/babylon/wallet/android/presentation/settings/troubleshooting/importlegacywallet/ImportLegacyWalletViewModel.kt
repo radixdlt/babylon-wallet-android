@@ -22,6 +22,15 @@ import com.babylon.wallet.android.presentation.model.LedgerDeviceUiModel
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.AddLedgerDeviceUiState
 import com.babylon.wallet.android.utils.Constants.ACCOUNT_NAME_MAX_LENGTH
 import com.babylon.wallet.android.utils.Constants.DELAY_300_MS
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.validate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -33,19 +42,13 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import rdx.works.core.UUIDGenerator
-import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
-import rdx.works.profile.data.model.validatePublicKeysOf
+import rdx.works.core.sargon.activeAccountOnCurrentNetwork
+import rdx.works.core.sargon.supportsOlympia
 import rdx.works.profile.domain.AddLedgerFactorSourceUseCase
 import rdx.works.profile.domain.AddOlympiaFactorSourceUseCase
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.account.GetFactorSourceIdForOlympiaAccountsUseCase
 import rdx.works.profile.domain.account.MigrateOlympiaAccountsUseCase
-import rdx.works.profile.domain.accountOnCurrentNetwork
-import rdx.works.profile.domain.factorSources
 import rdx.works.profile.olympiaimport.ChunkInfo
 import rdx.works.profile.olympiaimport.OlympiaAccountDetails
 import rdx.works.profile.olympiaimport.OlympiaAccountType
@@ -116,13 +119,13 @@ class ImportLegacyWalletViewModel @Inject constructor(
     }
 
     private suspend fun processLedgerResponse(
-        ledgerFactorSource: LedgerHardwareWalletFactorSource,
+        ledgerFactorSource: FactorSource.Ledger,
         derivePublicKeyResponse: MessageFromDataChannel.LedgerResponse.DerivePublicKeyResponse
     ) {
         _state.update { it.copy(waitingForLedgerResponse = false) }
         val hardwareAccountsToMigrate = hardwareAccountsLeftToMigrate()
         val derivedKeys = derivePublicKeyResponse.publicKeysHex.map { it.publicKeyHex }.toSet()
-        val verifiedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey) }
+        val verifiedAccounts = hardwareAccountsToMigrate.filter { derivedKeys.contains(it.publicKey.hex) }
         if (verifiedAccounts.isEmpty()) {
             _state.update {
                 it.copy(
@@ -188,9 +191,8 @@ class ImportLegacyWalletViewModel @Inject constructor(
                         importButtonEnabled = data.accountData.any { !it.alreadyImported },
                         migratedAccounts = if (allImported) {
                             data.accountData.mapNotNull {
-                                getProfileUseCase.accountOnCurrentNetwork(it.newBabylonAddress)?.toUiModel()
-                            }
-                                .toPersistentList()
+                                getProfileUseCase().activeAccountOnCurrentNetwork(it.newBabylonAddress)?.toUiModel()
+                            }.toPersistentList()
                         } else {
                             persistentListOf()
                         }
@@ -284,8 +286,9 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
             val softwareAccountsToMigrate = softwareAccountsToMigrate()
             if (softwareAccountsToMigrate.isNotEmpty()) {
-                val hasOlympiaFactorSource =
-                    getProfileUseCase.factorSources.firstOrNull()?.any { it is DeviceFactorSource && it.supportsOlympia } == true
+                val hasOlympiaFactorSource = getProfileUseCase.flow.firstOrNull()?.factorSources()?.any {
+                    it is FactorSource.Device && it.supportsOlympia
+                } == true
                 val mnemonicExistForSoftwareAccounts = when {
                     hasOlympiaFactorSource -> {
                         if (biometricAuthProvider()) {
@@ -361,14 +364,14 @@ class ImportLegacyWalletViewModel @Inject constructor(
                 verifiedHardwareAccounts.entries.forEach { entry ->
                     migrateOlympiaAccountsUseCase(
                         olympiaAccounts = entry.value,
-                        factorSourceId = entry.key.id as FactorSourceID.FromHash
+                        factorSourceId = entry.key.id as FactorSourceId.Hash
                     )
                 }
             }
             _state.update { state ->
                 state.copy(
                     migratedAccounts = state.olympiaAccountsToImport.mapNotNull {
-                        getProfileUseCase.accountOnCurrentNetwork(it.newBabylonAddress)?.toUiModel()
+                        getProfileUseCase().activeAccountOnCurrentNetwork(it.newBabylonAddress)?.toUiModel()
                     }.toPersistentList()
                 )
             }
@@ -387,16 +390,16 @@ class ImportLegacyWalletViewModel @Inject constructor(
         useLedgerDelegate.onConfirmLedgerName(name)
     }
 
-    private fun onUseLedger(ledgerFactorSource: LedgerHardwareWalletFactorSource) {
+    private fun onUseLedger(ledgerFactorSource: FactorSource.Ledger) {
         updateHardwareAccountLeftToMigrateCount()
         viewModelScope.launch {
             _state.update { it.copy(waitingForLedgerResponse = true) }
-            val hardwareAccountsDerivationPaths = hardwareAccountsLeftToMigrate().map { it.derivationPath.path }
+            val hardwareAccountsDerivationPaths = hardwareAccountsLeftToMigrate().map { it.derivationPath }
             val interactionId = UUIDGenerator.uuid().toString()
             ledgerMessenger.sendDerivePublicKeyRequest(
                 interactionId = interactionId,
                 keyParameters = hardwareAccountsDerivationPaths.map { derivationPath ->
-                    LedgerInteractionRequest.KeyParameters(Curve.Secp256k1, derivationPath)
+                    LedgerInteractionRequest.KeyParameters(Curve.Secp256k1, derivationPath.string)
                 },
                 ledgerDevice = LedgerInteractionRequest.LedgerDevice.from(ledgerFactorSource)
             ).onFailure {
@@ -484,6 +487,16 @@ class ImportLegacyWalletViewModel @Inject constructor(
             it.copy(shouldShowAddLinkConnectorScreen = false)
         }
     }
+
+    private fun MnemonicWithPassphrase.validatePublicKeysOf(accounts: List<OlympiaAccountDetails>): Boolean {
+        val hdPublicKeys = accounts.map {
+            HierarchicalDeterministicPublicKey(
+                publicKey = it.publicKey,
+                derivationPath = it.derivationPath
+            )
+        }
+        return validate(hdPublicKeys = hdPublicKeys)
+    }
 }
 
 sealed interface OlympiaImportEvent : OneOffEvent {
@@ -504,17 +517,17 @@ data class ImportLegacyWalletUiState(
     val qrChunkInfo: ChunkInfo? = null,
     val hardwareAccountsLeftToImport: Int = 0,
     val waitingForLedgerResponse: Boolean = false,
-    val verifiedLedgerDevices: ImmutableList<LedgerHardwareWalletFactorSource> = persistentListOf(),
+    val verifiedLedgerDevices: ImmutableList<FactorSource.Ledger> = persistentListOf(),
     val recentlyConnectedLedgerDevice: LedgerDeviceUiModel? = null,
     val addLedgerSheetState: AddLedgerDeviceUiState.ShowContent = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
     val seedPhraseInputState: SeedPhraseInputDelegate.State = SeedPhraseInputDelegate.State(),
     val shouldShowAddLinkConnectorScreen: Boolean = false,
     val shouldShowAddLedgerDeviceScreen: Boolean = false,
-    var existingOlympiaFactorSourceId: FactorSourceID.FromHash? = null
+    var existingOlympiaFactorSourceId: FactorSourceId.Hash? = null
 ) : UiState {
 
     fun mnemonicWithPassphrase(): MnemonicWithPassphrase {
-        return seedPhraseInputState.mnemonicWithPassphrase
+        return seedPhraseInputState.toMnemonicWithPassphrase()
     }
 
     enum class Page {

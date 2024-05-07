@@ -8,19 +8,19 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.usecases.transaction.PollTransactionStatusUseCase
 import com.babylon.wallet.android.domain.usecases.transaction.SubmitTransactionUseCase
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.TransactionManifest
 import com.radixdlt.sargon.extensions.faucet
 import com.radixdlt.sargon.extensions.toDecimal192
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.preferences.PreferencesManager
 import rdx.works.core.then
-import rdx.works.profile.data.model.apppreferences.Radix
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.gateways
 import javax.inject.Inject
 
 @Suppress("LongParameterList")
@@ -76,10 +76,10 @@ class GetFreeXrdUseCase @Inject constructor(
     }
 
     fun getFaucetState(address: AccountAddress): Flow<FaucetState> = combine(
-        getProfileUseCase.gateways,
+        getProfileUseCase.flow.map { it.appPreferences.gateways },
         preferencesManager.getLastUsedEpochFlow(address)
     ) { gateways, lastUsedEpoch ->
-        if (gateways.current().network.id == Radix.Gateway.mainnet.network.id) {
+        if (gateways.current.network.id == NetworkId.MAINNET) {
             FaucetState.Unavailable
         } else {
             if (lastUsedEpoch == null) return@combine FaucetState.Available(isEnabled = true)

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -17,8 +16,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.designsystem.theme.getAccountGradientColorsFor
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.LegacyOlympiaAccountAddress
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.extensions.formatted
@@ -100,7 +100,7 @@ fun LegacyAccountCardPreview() {
         LegacyAccountCard(
             modifier = Modifier
                 .background(
-                    Brush.horizontalGradient(getAccountGradientColorsFor(1)),
+                    AppearanceId(1u).gradient(),
                     shape = RadixTheme.shapes.roundedRectSmall
                 ),
             accountName = "Account name",

@@ -1,7 +1,6 @@
 package com.babylon.wallet.android.presentation
 
 import androidx.lifecycle.ViewModel
-import com.babylon.wallet.android.domain.SampleDataProvider
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Before
 import org.junit.Rule
@@ -12,8 +11,6 @@ abstract class StateViewModelTest<T : ViewModel>(testDispatcherRule: TestDispatc
     val coroutineRule = testDispatcherRule
 
     protected lateinit var vm: Lazy<T>
-
-    protected val sampleDataProvider = SampleDataProvider()
 
     abstract fun initVM(): T
 

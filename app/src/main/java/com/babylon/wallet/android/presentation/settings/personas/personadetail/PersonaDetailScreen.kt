@@ -36,7 +36,6 @@ import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixTheme.dimensions
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.GrayBackgroundWrapper
@@ -49,17 +48,21 @@ import com.babylon.wallet.android.presentation.ui.composables.card.DappCard
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
+import com.radixdlt.sargon.IdentityAddress
+import com.radixdlt.sargon.Persona
+import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.fields
 
 @Composable
 fun PersonaDetailScreen(
     viewModel: PersonaDetailViewModel,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onEditPersona: (String) -> Unit,
+    onEditPersona: (IdentityAddress) -> Unit,
     onDAppClick: (DApp) -> Unit
 ) {
     val context = LocalContext.current
@@ -114,7 +117,7 @@ private fun PersonaDetailContent(
     modifier: Modifier = Modifier,
     state: PersonaDetailUiState,
     onBackClick: () -> Unit,
-    onEditPersona: (String) -> Unit,
+    onEditPersona: (IdentityAddress) -> Unit,
     onDAppClick: (DApp) -> Unit,
     onCreateAndUploadAuthKey: () -> Unit,
     onHidePersona: () -> Unit
@@ -124,7 +127,7 @@ private fun PersonaDetailContent(
         topBar = {
             Column {
                 RadixCenteredTopAppBar(
-                    title = state.persona?.displayName.orEmpty(),
+                    title = state.persona?.displayName?.value.orEmpty(),
                     onBackClick = onBackClick,
                     windowInsets = WindowInsets.statusBars
                 )
@@ -157,10 +160,10 @@ private fun PersonaDetailContent(
 @Composable
 private fun PersonaDetailList(
     modifier: Modifier = Modifier,
-    persona: Network.Persona,
+    persona: Persona,
     authorizedDapps: ImmutableList<DApp>,
     onDAppClick: (DApp) -> Unit,
-    onEditPersona: (String) -> Unit,
+    onEditPersona: (IdentityAddress) -> Unit,
     hasAuthKey: Boolean,
     onCreateAndUploadAuthKey: () -> Unit,
     loading: Boolean,
@@ -185,11 +188,11 @@ private fun PersonaDetailList(
                     .fillMaxWidth()
                     .padding(horizontal = dimensions.paddingDefault),
                 label = stringResource(id = R.string.authorizedDapps_personaDetails_personaLabelHeading),
-                value = persona.displayName
+                value = persona.displayName.value
             )
             HorizontalDivider(modifier = Modifier.padding(dimensions.paddingDefault), color = RadixTheme.colors.gray4)
         }
-        val allFields = persona.personaData.allFields
+        val allFields = persona.personaData.fields
         if (allFields.isNotEmpty()) {
             val lastItem = allFields.last()
             items(allFields) { field ->
@@ -271,6 +274,7 @@ private fun PersonaDetailList(
     }
 }
 
+@UsesSampleValues
 @Preview(showBackground = true)
 @Composable
 fun PersonaDetailContentPreview() {
@@ -279,7 +283,7 @@ fun PersonaDetailContentPreview() {
             modifier = Modifier.fillMaxSize(),
             state = PersonaDetailUiState(
                 authorizedDapps = persistentListOf(),
-                persona = SampleDataProvider().samplePersona(),
+                persona = Persona.sampleMainnet(),
                 loading = false,
                 hasAuthKey = false
             ),

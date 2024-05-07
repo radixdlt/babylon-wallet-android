@@ -11,25 +11,28 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.extensions.toJson
 
 @VisibleForTesting
 internal const val ARG_FACTOR_SOURCE_ID = "factor_source_id"
 
 const val ROUTE_REVEAL_SEED_PHRASE = "reveal_seed_phrase/{$ARG_FACTOR_SOURCE_ID}"
 
-internal class RevealSeedPhraseArgs(val factorSourceId: String) {
+internal class RevealSeedPhraseArgs(val factorSourceId: FactorSourceId.Hash) {
     constructor(savedStateHandle: SavedStateHandle) : this(
-        checkNotNull(savedStateHandle[ARG_FACTOR_SOURCE_ID]) as String
+        FactorSourceId.Hash.fromJson(checkNotNull(savedStateHandle.get<String>(ARG_FACTOR_SOURCE_ID)))
     )
 }
 
-fun NavController.revealSeedPhrase(factorSourceId: String) {
-    navigate("reveal_seed_phrase/$factorSourceId")
+fun NavController.revealSeedPhrase(factorSourceId: FactorSourceId.Hash) {
+    navigate("reveal_seed_phrase/${factorSourceId.toJson()}")
 }
 
 fun NavGraphBuilder.revealSeedPhrase(
     onBackClick: () -> Unit,
-    onConfirmSeedPhraseClick: (String, Int) -> Unit
+    onConfirmSeedPhraseClick: (FactorSourceId.Hash, Int) -> Unit
 ) {
     composable(
         route = ROUTE_REVEAL_SEED_PHRASE,

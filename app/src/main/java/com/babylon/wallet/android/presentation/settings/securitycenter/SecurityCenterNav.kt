@@ -86,7 +86,7 @@ fun NavGraphBuilder.securityCenterNavGraph(
             onNavigateToRecoverMnemonic = {
                 navController.restoreMnemonics(args = RestoreMnemonicsArgs())
             },
-            onNavigateToSeedPhrase = { navController.revealSeedPhrase(it.body.value) }
+            onNavigateToSeedPhrase = { navController.revealSeedPhrase(it) }
         )
         ledgerHardwareWalletsScreen(
             onBackClick = {

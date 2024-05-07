@@ -10,12 +10,22 @@ import com.babylon.wallet.android.domain.usecases.assets.GetFiatValueUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetNextNFTsPageUseCase
 import com.babylon.wallet.android.domain.usecases.assets.GetWalletAssetsUseCase
 import com.babylon.wallet.android.domain.usecases.assets.UpdateLSUsInfo
-import com.babylon.wallet.android.mockdata.account
-import com.babylon.wallet.android.mockdata.profile
+import com.babylon.wallet.android.fakes.FakeProfileRepository
 import com.babylon.wallet.android.presentation.StateViewModelTest
 import com.babylon.wallet.android.presentation.transfer.accounts.AccountsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.assets.AssetsChooserDelegate
 import com.babylon.wallet.android.presentation.transfer.prepare.PrepareManifestDelegate
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.Gateway
+import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.forNetwork
+import com.radixdlt.sargon.extensions.getBy
+import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.samples.sample
+import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
@@ -29,8 +39,8 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import rdx.works.core.toIdentifiedArrayList
-import rdx.works.profile.data.model.pernetwork.Network
+import rdx.works.core.sargon.changeGateway
+import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.domain.GetProfileUseCase
 
@@ -38,7 +48,6 @@ import rdx.works.profile.domain.GetProfileUseCase
 class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
 
     private val savedStateHandle = mockk<SavedStateHandle>()
-    private val getProfileUseCase = mockk<GetProfileUseCase>()
     private val getWalletAssetsUseCase = mockk<GetWalletAssetsUseCase>()
     private val getFiatValueUseCase = mockk<GetFiatValueUseCase>()
     private val getNextNFTsPageUseCase = mockk<GetNextNFTsPageUseCase>()
@@ -47,25 +56,15 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     private val incomingRequestRepository = mockk<IncomingRequestRepository>()
     private val mnemonicRepository = mockk<MnemonicRepository>()
 
-    private val fromAccount = account(
-        name = "From Account"
-    )
-    private val otherAccounts = listOf(
-        account(
-            name = "To Account 1"
-        ),
-        account(
-            name = "To Account 2"
-        ),
-        account(
-            name = "To account 3"
-        )
-    )
+    private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
+    private val fromAccount = profile.networks.getBy(NetworkId.MAINNET)?.accounts?.invoke()?.first()!!
+    private val otherAccounts = profile.networks.getBy(NetworkId.MAINNET)?.accounts?.invoke()?.drop(1).orEmpty()
     private val account1WithAssets = AccountWithAssets(
         account = otherAccounts[0],
         details = null,
         assets = null
     )
+    private val getProfileUseCase = GetProfileUseCase(FakeProfileRepository(profile))
 
     override fun initVM(): TransferViewModel {
         return TransferViewModel(
@@ -92,8 +91,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     @Before
     override fun setUp() = runTest {
         super.setUp()
-        every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address
-        every { getProfileUseCase() } returns flowOf(profile(accounts = (listOf(fromAccount) + otherAccounts).toIdentifiedArrayList()))
+        every { savedStateHandle.get<String>(ARG_ACCOUNT_ID) } returns fromAccount.address.string
         every { getWalletAssetsUseCase(listOf(otherAccounts[0]), false) } returns flowOf(listOf(account1WithAssets))
     }
 
@@ -129,12 +127,12 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
     }
 
     @Test
-    fun `choosing an third party address from the accounts chooser`() = runTest {
+    fun `choosing a third party address from the accounts chooser`() = runTest {
         val viewModel = vm.value
         viewModel.state.test {
             assertFromAccountSet()
             assertOpenSheetForSkeleton(viewModel, viewModel.state.value.targetAccounts[0] as TargetAccount.Skeleton)
-            assertOtherAccountSubmitted(viewModel, "account_rdx128mzhnzjcr65d8atr0qlyc4e7a0tag5hnmhdvjkstcddx4zq46uhd9")
+            assertOtherAccountSubmitted(viewModel, AccountAddress.sampleMainnet.random().string)
         }
     }
 
@@ -207,7 +205,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
 
     private suspend fun ReceiveTurbine<TransferViewModel.State>.assertSubmittingOwnedAccount(
         viewModel: TransferViewModel,
-        account: Network.Account
+        account: Account
     ) {
         val skeletonAccount = viewModel.state.value.targetAccounts[0]
         viewModel.onOwnedAccountSelected(account)
@@ -244,7 +242,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
         assertEquals(
             sheetState.selectedAccount,
              TargetAccount.Other(
-                address = address,
+                typedAddress = address,
                 validity = TargetAccount.Other.AddressValidity.VALID,
                 id = skeletonAccount.id
             )
@@ -259,7 +257,7 @@ class TransferViewModelTest : StateViewModelTest<TransferViewModel>() {
                 fromAccount = fromAccount,
                 targetAccounts = persistentListOf(
                     TargetAccount.Other(
-                        address = address,
+                        typedAddress = address,
                         validity = TargetAccount.Other.AddressValidity.VALID,
                         id = skeletonAccount.id
                     )

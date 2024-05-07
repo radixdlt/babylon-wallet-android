@@ -1,54 +1,42 @@
 package rdx.works.profile
 
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.MnemonicWithPassphrase
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.init
 import io.mockk.Runs
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Before
-import org.junit.Test
-import rdx.works.core.HexCoded32Bytes
-import rdx.works.core.InstantGenerator
-import rdx.works.core.emptyIdentifiedArrayList
-import rdx.works.core.identifiedArrayListOf
+import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.DeviceInfo
-import rdx.works.profile.data.model.Header
-import rdx.works.profile.data.model.MnemonicWithPassphrase
-import rdx.works.profile.data.model.Profile
-import rdx.works.profile.data.model.ProfileState
-import rdx.works.profile.data.model.apppreferences.AppPreferences
-import rdx.works.profile.data.model.apppreferences.Display
-import rdx.works.profile.data.model.apppreferences.Gateways
-import rdx.works.profile.data.model.apppreferences.Radix
-import rdx.works.profile.data.model.apppreferences.Security
-import rdx.works.profile.data.model.apppreferences.Transaction
-import rdx.works.profile.data.model.extensions.mainBabylonFactorSource
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
-import rdx.works.profile.data.model.pernetwork.DerivationPath
-import rdx.works.profile.data.model.pernetwork.FactorInstance
-import rdx.works.profile.data.model.pernetwork.Network
-import rdx.works.profile.data.model.pernetwork.SecurityState
+import rdx.works.core.sargon.babylon
+import rdx.works.core.sargon.init
+import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.DeviceInfoRepository
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.data.repository.ProfileRepository
-import rdx.works.profile.derivation.model.KeyType
 import rdx.works.profile.domain.GenerateProfileUseCase
-import rdx.works.profile.domain.TestData
+import kotlin.test.Test
 
 class GenerateProfileUseCaseTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private val fakeDeviceInfoRepository = FakeDeviceInfoRepository()
+    private val fakeDeviceInfoRepository = mockk<DeviceInfoRepository>().apply {
+        every { getDeviceInfo() } returns DeviceInfo(
+            name = "Unit",
+            manufacturer = "Test",
+            model = ""
+        )
+    }
     private val mnemonicRepository = mockk<MnemonicRepository>()
     private val preferencesManager = mockk<PreferencesManager>()
-    private val profileRepository = mockk<ProfileRepository>()
+    private val profileRepository = FakeProfileRepository()
     private val testScope = TestScope(testDispatcher)
     val generateProfileUseCase = GenerateProfileUseCase(
         profileRepository = profileRepository,
@@ -60,123 +48,25 @@ class GenerateProfileUseCaseTest {
 
     @Before
     fun setUp() {
-        coEvery { profileRepository.saveProfile(any()) } just Runs
         coEvery { mnemonicRepository.saveMnemonic(any(), any()) } just Runs
         coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
     }
 
     @Test
-    fun `given profile already exists, when generate profile called, return existing profile`() {
+    fun `when generating profile, verify correct data generated from mnemonic`() {
         testScope.runTest {
-            // given
-            val mnemonicWithPassphrase = MnemonicWithPassphrase(
-                mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                        "humble limb repeat video sudden possible story mask neutral prize goose mandate",
-                bip39Passphrase = ""
+            val mnemonicWithPassphrase = MnemonicWithPassphrase.init(
+                phrase = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
+                        "humble limb repeat video sudden possible story mask neutral prize goose mandate"
             )
-            val profile = Profile(
-                header = Header.init(
-                    id = "9958f568-8c9b-476a-beeb-017d1f843266",
-                    deviceInfo = TestData.deviceInfo,
-                    creationDate = InstantGenerator(),
-                    numberOfNetworks = 1,
-                    numberOfAccounts = 1
-                ),
-                appPreferences = AppPreferences(
-                    transaction = Transaction.default,
-                    display = Display.default,
-                    security = Security.default,
-                    gateways = Gateways(Radix.Gateway.hammunet.url, listOf(Radix.Gateway.hammunet))
-                ),
-                factorSources = identifiedArrayListOf(
-                    DeviceFactorSource.babylon(mnemonicWithPassphrase = mnemonicWithPassphrase)
-                ),
-                networks = listOf(
-                    Network(
-                        accounts = identifiedArrayListOf(
-                            Network.Account(
-                                address = "fj3489fj348f",
-                                appearanceID = 123,
-                                displayName = "my account",
-                                networkID = Radix.Gateway.hammunet.network.id,
-                                securityState = SecurityState.Unsecured(
-                                    unsecuredEntityControl = SecurityState.UnsecuredEntityControl(
-                                        transactionSigning = FactorInstance(
-                                            badge = FactorInstance.Badge.VirtualSource.HierarchicalDeterministic(
-                                                derivationPath = DerivationPath.forAccount(
-                                                    networkId = Radix.Gateway.hammunet.network.networkId(),
-                                                    accountIndex = 0,
-                                                    keyType = KeyType.TRANSACTION_SIGNING
-                                                ),
-                                                publicKey = FactorInstance.PublicKey.curve25519PublicKey("")
-                                            ),
-                                            factorSourceId = FactorSource.FactorSourceID.FromHash(
-                                                kind = FactorSourceKind.DEVICE,
-                                                body = HexCoded32Bytes("5f07ec336e9e7891bff04004c817201e73c097b6b1e1b3a26bc501e0010196f5")
-                                            )
-                                        )
-                                    )
-                                ),
-                                onLedgerSettings = Network.Account.OnLedgerSettings.init()
-                            )
-                        ),
-                        authorizedDapps = emptyList(),
-                        networkID = 999,
-                        personas = emptyIdentifiedArrayList()
-                    )
-                )
+            val babylonFactorSource = FactorSource.Device.babylon(
+                mnemonicWithPassphrase = mnemonicWithPassphrase,
+                isMain = true
             )
-            coEvery { profileRepository.profileState } returns flowOf(ProfileState.Restored(profile))
-            // then
-            Assert.assertEquals(generateProfileUseCase(), profile)
+
+            val profile = generateProfileUseCase(mnemonicWithPassphrase)
+
+            assertEquals(babylonFactorSource.id, profile.mainBabylonFactorSource!!.id)
         }
-    }
-
-    @Test
-    fun `given profile does not exist, when generating one, verify correct data generated from mnemonic`() {
-        testScope.runTest {
-            val mnemonicWithPassphrase = MnemonicWithPassphrase(
-                mnemonic = "bright club bacon dinner achieve pull grid save ramp cereal blush woman " +
-                        "humble limb repeat video sudden possible story mask neutral prize goose mandate",
-                bip39Passphrase = ""
-            )
-            val babylonFactorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase)
-            val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase)
-            coEvery { profileRepository.profileState } returns flowOf(ProfileState.None)
-
-            val profile = generateProfileUseCase().copy(factorSources = identifiedArrayListOf(babylonFactorSource))
-
-            Assert.assertEquals(
-                "Factor Source ID",
-                expectedFactorSourceId,
-                profile.mainBabylonFactorSource()!!.id.body.value
-            )
-        }
-    }
-
-    @Test
-    fun `given profile does not exist, when generating one, verify correct data generated from other mnemonic`() {
-        testScope.runTest {
-            val mnemonicWithPassphrase = MnemonicWithPassphrase(
-                mnemonic = "travel organ kick vote head divide express recall oblige foster banner spin shield stone scan pretty sort skate knock kangaroo pill test belt father",
-                bip39Passphrase = ""
-            )
-            val babylonFactorSource = DeviceFactorSource.babylon(mnemonicWithPassphrase)
-
-            val expectedFactorSourceId = FactorSource.factorSourceId(mnemonicWithPassphrase = mnemonicWithPassphrase)
-            coEvery { profileRepository.profileState } returns flowOf(ProfileState.None)
-            val profile = generateProfileUseCase().copy(factorSources = identifiedArrayListOf(babylonFactorSource))
-
-            Assert.assertEquals(
-                "Factor Source ID",
-                expectedFactorSourceId,
-                profile.mainBabylonFactorSource()!!.id.body.value
-            )
-        }
-    }
-
-    private class FakeDeviceInfoRepository : DeviceInfoRepository {
-        override fun getDeviceInfo(): DeviceInfo = TestData.deviceInfo
-
     }
 }

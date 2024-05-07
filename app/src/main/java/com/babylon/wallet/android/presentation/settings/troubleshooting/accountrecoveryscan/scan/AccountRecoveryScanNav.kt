@@ -9,6 +9,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.babylon.wallet.android.presentation.navigation.markAsHighPriority
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.fromJson
+import com.radixdlt.sargon.extensions.toJson
 
 @VisibleForTesting
 internal const val ARG_FACTOR_SOURCE_ID = "arg_factor_source_id"
@@ -19,22 +22,24 @@ private const val ROUTE = "account_recovery_scan?" +
     "&$ARG_IS_OLYMPIA={$ARG_IS_OLYMPIA}"
 
 internal class AccountRecoveryScanArgs(
-    val factorSourceId: String?,
+    val factorSourceId: FactorSourceId.Hash?,
     val isOlympia: Boolean?
 ) {
     constructor(savedStateHandle: androidx.lifecycle.SavedStateHandle) : this(
-        savedStateHandle.get<String>(ARG_FACTOR_SOURCE_ID),
+        savedStateHandle.get<String>(ARG_FACTOR_SOURCE_ID)?.let {
+            FactorSourceId.Hash.fromJson(it)
+        },
         savedStateHandle.get<Boolean>(ARG_IS_OLYMPIA),
     )
 }
 
 fun NavController.accountRecoveryScan(
-    factorSourceId: String? = null,
+    factorSourceId: FactorSourceId.Hash? = null,
     isOlympia: Boolean = false
 ) {
     navigate(
         route = "account_recovery_scan?" +
-            "$ARG_FACTOR_SOURCE_ID=$factorSourceId" +
+            "$ARG_FACTOR_SOURCE_ID=${factorSourceId?.toJson()}" +
             "&$ARG_IS_OLYMPIA=$isOlympia"
     )
 }

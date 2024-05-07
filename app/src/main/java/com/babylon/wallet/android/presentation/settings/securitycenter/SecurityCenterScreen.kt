@@ -34,7 +34,7 @@ import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.composables.DSR
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
-import rdx.works.profile.data.model.BackupState
+import rdx.works.core.domain.BackupState
 
 @Composable
 fun SecurityCenterScreen(
@@ -170,7 +170,7 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
             Icon(painter = painterResource(id = DSR.ic_warning_error), contentDescription = null, tint = RadixTheme.colors.white)
             Text(
                 text = title,
-                style = RadixTheme.typography.body1Regular,
+                style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.white
             )
         }
@@ -184,7 +184,7 @@ private fun NotOkStatusCard(modifier: Modifier = Modifier, title: String, subtit
             Text(
                 modifier = Modifier.weight(1f),
                 text = subtitle,
-                style = RadixTheme.typography.body1Regular,
+                style = RadixTheme.typography.body2HighImportance,
                 color = RadixTheme.colors.orange1
             )
             Icon(painter = painterResource(id = DSR.ic_chevron_right), contentDescription = null, tint = RadixTheme.colors.orange1)

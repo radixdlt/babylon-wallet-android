@@ -2,6 +2,7 @@ package com.babylon.wallet.android.presentation.dapp
 
 import com.babylon.wallet.android.domain.model.RequiredPersonaFields
 import com.radixdlt.sargon.AccountAddress
+import com.radixdlt.sargon.IdentityAddress
 
 sealed interface InitialAuthorizedLoginRoute {
     data object CompleteRequest : InitialAuthorizedLoginRoute
@@ -14,7 +15,7 @@ sealed interface InitialAuthorizedLoginRoute {
     ) : InitialAuthorizedLoginRoute
 
     data class OngoingPersonaData(
-        val personaAddress: String,
+        val personaAddress: IdentityAddress,
         val requiredPersonaFields: RequiredPersonaFields
     ) : InitialAuthorizedLoginRoute
 

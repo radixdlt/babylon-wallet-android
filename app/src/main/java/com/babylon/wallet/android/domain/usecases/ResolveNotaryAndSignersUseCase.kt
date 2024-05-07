@@ -4,11 +4,11 @@ import com.babylon.wallet.android.data.transaction.NotaryAndSigners
 import com.babylon.wallet.android.domain.RadixWalletException.PrepareTransactionException.FailedToFindSigningEntities
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
-import com.radixdlt.sargon.extensions.string
+import com.radixdlt.sargon.extensions.NotaryPrivateKey
+import com.radixdlt.sargon.extensions.asProfileEntity
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
+import rdx.works.core.sargon.activePersonasOnCurrentNetwork
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.accountsOnCurrentNetwork
-import rdx.works.profile.domain.personasOnCurrentNetwork
-import rdx.works.profile.ret.crypto.PrivateKey
 import javax.inject.Inject
 
 class ResolveNotaryAndSignersUseCase @Inject constructor(
@@ -18,15 +18,15 @@ class ResolveNotaryAndSignersUseCase @Inject constructor(
     suspend operator fun invoke(
         accountsAddressesRequiringAuth: List<AccountAddress>,
         personaAddressesRequiringAuth: List<IdentityAddress>,
-        notary: PrivateKey
+        notary: NotaryPrivateKey
     ) = runCatching {
-        val accounts = profileUseCase.accountsOnCurrentNetwork()
-        val personas = profileUseCase.personasOnCurrentNetwork()
+        val accounts = profileUseCase().activeAccountsOnCurrentNetwork
+        val personas = profileUseCase().activePersonasOnCurrentNetwork
 
         accountsAddressesRequiringAuth.map { address ->
-            accounts.find { it.address == address.string } ?: throw FailedToFindSigningEntities
+            accounts.find { it.address == address }?.asProfileEntity() ?: throw FailedToFindSigningEntities
         } + personaAddressesRequiringAuth.map { address ->
-            personas.find { it.address == address.string } ?: throw FailedToFindSigningEntities
+            personas.find { it.address == address }?.asProfileEntity() ?: throw FailedToFindSigningEntities
         }
     }.map {
         NotaryAndSigners(

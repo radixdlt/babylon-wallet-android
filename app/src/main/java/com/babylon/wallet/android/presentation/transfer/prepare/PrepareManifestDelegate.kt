@@ -7,8 +7,8 @@ import com.babylon.wallet.android.presentation.common.ViewModelDelegate
 import com.babylon.wallet.android.presentation.transfer.SpendingAsset
 import com.babylon.wallet.android.presentation.transfer.TargetAccount
 import com.babylon.wallet.android.presentation.transfer.TransferViewModel
-import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AccountOrAddressOf
+import com.radixdlt.sargon.FactorSourceKind
 import com.radixdlt.sargon.PerAssetFungibleResource
 import com.radixdlt.sargon.PerAssetFungibleTransfer
 import com.radixdlt.sargon.PerAssetNonFungibleTransfer
@@ -17,14 +17,11 @@ import com.radixdlt.sargon.PerAssetTransfersOfFungibleResource
 import com.radixdlt.sargon.PerAssetTransfersOfNonFungibleResource
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.TransactionManifest
-import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.perAssetTransfers
 import kotlinx.coroutines.flow.update
 import rdx.works.core.domain.TransactionManifestData
 import rdx.works.core.domain.resources.Resource
-import rdx.works.profile.data.model.factorsources.FactorSourceKind
 import rdx.works.profile.data.repository.MnemonicRepository
-import rdx.works.profile.sargon.toSargon
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -40,7 +37,7 @@ class PrepareManifestDelegate @Inject constructor(
         runCatching {
             TransactionManifest.perAssetTransfers(
                 transfers = PerAssetTransfers(
-                    fromAccount = AccountAddress.init(validatingAddress = fromAccount.address),
+                    fromAccount = fromAccount.address,
                     fungibleResources = _state.value.toFungibleTransfers(accountsAbleToSign),
                     nonFungibleResources = _state.value.toNonFungibleTransfers(accountsAbleToSign)
                 )
@@ -125,8 +122,8 @@ class PrepareManifestDelegate @Inject constructor(
     }
 
     private fun TargetAccount.toAssetTransfersRecipient(): AccountOrAddressOf = when (this) {
-        is TargetAccount.Other -> AccountOrAddressOf.AddressOfExternalAccount(value = AccountAddress.init(address))
-        is TargetAccount.Owned -> AccountOrAddressOf.ProfileAccount(value = account.toSargon())
+        is TargetAccount.Other -> AccountOrAddressOf.AddressOfExternalAccount(value = requireNotNull(address))
+        is TargetAccount.Owned -> AccountOrAddressOf.ProfileAccount(value = account)
         is TargetAccount.Skeleton -> error("Not a valid recipient")
     }
 
@@ -134,8 +131,8 @@ class PrepareManifestDelegate @Inject constructor(
         filterIsInstance<TargetAccount.Owned>().filter {
             val factorSourceId = it.factorSourceId ?: return@filter false
 
-            factorSourceId.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET || (
-                factorSourceId.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(factorSourceId)
+            factorSourceId.value.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET || (
+                factorSourceId.value.kind == FactorSourceKind.DEVICE && mnemonicRepository.mnemonicExist(factorSourceId)
                 )
         }
 

@@ -37,6 +37,7 @@ import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDi
 import com.babylon.wallet.android.presentation.ui.composables.InfoLink
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SecureScreen
+import com.radixdlt.sargon.FactorSourceId
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -46,7 +47,7 @@ fun RevealSeedPhraseScreen(
     modifier: Modifier = Modifier,
     viewModel: RevealSeedPhraseViewModel,
     onBackClick: () -> Unit,
-    onConfirmSeedPhraseClick: (String, Int) -> Unit
+    onConfirmSeedPhraseClick: (FactorSourceId.Hash, Int) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val backClickHandler = {

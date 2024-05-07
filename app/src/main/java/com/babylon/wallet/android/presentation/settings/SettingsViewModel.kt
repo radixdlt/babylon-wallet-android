@@ -12,6 +12,7 @@ import com.babylon.wallet.android.presentation.settings.SettingsItem.TopLevelSet
 import com.babylon.wallet.android.utils.Constants
 import com.radixdlt.sargon.SargonBuildInformation
 import com.radixdlt.sargon.extensions.Sargon
+import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -45,15 +46,13 @@ class SettingsViewModel @Inject constructor(
     ).mapNotNull { it }
 
     val state: StateFlow<SettingsUiState> = combine(
+        p2PLinksRepository.observeP2PLinks(),
         getBackupStateUseCase(),
-        getEntitiesWithSecurityPromptUseCase(),
-        p2PLinksRepository.observeP2PLinks()
-    ) { backupState, entitiesWithSecurityPrompts, p2pLinks ->
+        getEntitiesWithSecurityPromptUseCase()
+    ) { p2pLinks, backupState, entitiesWithSecurityPrompts ->
         var mutated = defaultSettings
-        if (p2pLinks.isEmpty() && !defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map {
-                it.item
-            }.contains(LinkToConnector)
-        ) {
+        val settingsItems = defaultSettings.filterIsInstance<SettingsUiItem.Settings>().map { it.item }
+        if (p2pLinks.isEmpty() && LinkToConnector !in settingsItems) {
             mutated = listOf(SettingsUiItem.Settings(LinkToConnector)) + mutated
         }
         val anyEntityHasProblem = entitiesWithSecurityPrompts.isNotEmpty()

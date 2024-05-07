@@ -51,7 +51,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
-import com.babylon.wallet.android.domain.SampleDataProvider
+import com.babylon.wallet.android.domain.model.assets.AccountWithAssets
 import com.babylon.wallet.android.domain.usecases.SecurityPromptType
 import com.babylon.wallet.android.presentation.ui.RadixWalletPreviewTheme
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
@@ -62,18 +62,20 @@ import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
 import com.babylon.wallet.android.utils.Constants.RADIX_START_PAGE_URL
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.openUrl
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.DisplayName
+import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
+import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.assets.SupportedCurrency
-import rdx.works.profile.data.model.factorsources.FactorSource.FactorSourceID
-import rdx.works.profile.data.model.pernetwork.Network
 
 @Composable
 fun WalletScreen(
     modifier: Modifier = Modifier,
     viewModel: WalletViewModel,
     onMenuClick: () -> Unit,
-    onAccountClick: (Network.Account) -> Unit = { },
-    onNavigateToMnemonicBackup: (FactorSourceID.FromHash) -> Unit,
+    onAccountClick: (Account) -> Unit = { },
+    onNavigateToMnemonicBackup: (FactorSourceId.Hash) -> Unit,
     onNavigateToMnemonicRestore: () -> Unit,
     onAccountCreationClick: () -> Unit,
     showNPSSurvey: () -> Unit
@@ -142,12 +144,12 @@ private fun WalletContent(
     state: WalletUiState,
     onMenuClick: () -> Unit,
     onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
-    onAccountClick: (Network.Account) -> Unit,
+    onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onRefresh: () -> Unit,
     onMessageShown: () -> Unit,
     onRadixBannerDismiss: () -> Unit,
-    onApplySecuritySettings: (Network.Account, SecurityPromptType) -> Unit
+    onApplySecuritySettings: (Account, SecurityPromptType) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -239,10 +241,10 @@ private fun WalletAccountList(
     modifier: Modifier = Modifier,
     state: WalletUiState,
     onShowHideBalanceToggle: (isVisible: Boolean) -> Unit,
-    onAccountClick: (Network.Account) -> Unit,
+    onAccountClick: (Account) -> Unit,
     onAccountCreationClick: () -> Unit,
     onRadixBannerDismiss: () -> Unit,
-    onApplySecuritySettings: (Network.Account, SecurityPromptType) -> Unit,
+    onApplySecuritySettings: (Account, SecurityPromptType) -> Unit,
 ) {
     LazyColumn(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         item {
@@ -395,26 +397,30 @@ private fun RadixBanner(
 @Composable
 fun WalletContentPreview() {
     RadixWalletPreviewTheme {
-        with(SampleDataProvider()) {
-            WalletContent(
-                state = WalletUiState(
-                    accountsWithAssets = listOf(
-                        sampleAccountWithoutResources(),
-                        sampleAccountWithoutResources(name = "my account with a way too much long name")
+        WalletContent(
+            state = WalletUiState(
+                accountsWithAssets = listOf(
+                    AccountWithAssets(
+                        account = Account.sampleMainnet()
                     ),
-                    loading = false,
-                    isBackupWarningVisible = true,
-                    uiMessage = null
+                    AccountWithAssets(
+                        account = Account.sampleMainnet.other().copy(
+                            displayName = DisplayName("my account with a way too much long name")
+                        )
+                    )
                 ),
-                onMenuClick = {},
-                onShowHideBalanceToggle = {},
-                onAccountClick = {},
-                onAccountCreationClick = { },
-                onRefresh = { },
-                onMessageShown = {},
-                onApplySecuritySettings = { _, _ -> },
-                onRadixBannerDismiss = {}
-            )
-        }
+                loading = false,
+                isBackupWarningVisible = true,
+                uiMessage = null
+            ),
+            onMenuClick = {},
+            onShowHideBalanceToggle = {},
+            onAccountClick = {},
+            onAccountCreationClick = { },
+            onRefresh = { },
+            onMessageShown = {},
+            onApplySecuritySettings = { _, _ -> },
+            onRadixBannerDismiss = {}
+        )
     }
 }

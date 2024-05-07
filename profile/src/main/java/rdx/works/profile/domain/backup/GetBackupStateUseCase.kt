@@ -7,9 +7,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
-import rdx.works.core.InstantGenerator
+import rdx.works.core.TimestampGenerator
+import rdx.works.core.domain.BackupState
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.profile.data.model.BackupState
 import rdx.works.profile.data.repository.ProfileRepository
 import rdx.works.profile.data.repository.profile
 import rdx.works.profile.di.coroutines.DefaultDispatcher
@@ -30,7 +30,7 @@ class GetBackupStateUseCase @Inject constructor(
             BackupState.Open(
                 lastCloudBackupTime = lastBackupInstant,
                 lastProfileUpdate = profile.header.lastModified,
-                lastCheck = InstantGenerator()
+                lastCheck = TimestampGenerator()
             )
         } else {
             BackupState.Closed

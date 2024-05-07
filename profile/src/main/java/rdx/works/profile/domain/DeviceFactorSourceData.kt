@@ -1,12 +1,13 @@
 package rdx.works.profile.domain
 
-import rdx.works.profile.data.model.factorsources.DeviceFactorSource
-import rdx.works.profile.data.model.pernetwork.Network
+import com.radixdlt.sargon.Account
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.Persona
 
 data class DeviceFactorSourceData(
-    val deviceFactorSource: DeviceFactorSource,
-    val accounts: List<Network.Account> = emptyList(),
-    val personas: List<Network.Persona> = emptyList(),
+    val deviceFactorSource: FactorSource.Device,
+    val accounts: List<Account> = emptyList(),
+    val personas: List<Persona> = emptyList(),
     val mnemonicState: MnemonicState = MnemonicState.NotBackedUp,
     val isBabylon: Boolean = false
 ) {

@@ -13,15 +13,20 @@ import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.presentation.settings.securitycenter.ledgerhardwarewallets.ShowLinkConnectorPromptState
 import com.babylon.wallet.android.utils.AppEvent
 import com.babylon.wallet.android.utils.AppEventBus
+import com.radixdlt.sargon.FactorSource
+import com.radixdlt.sargon.FactorSourceId
+import com.radixdlt.sargon.extensions.asGeneral
+import com.radixdlt.sargon.extensions.id
+import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import rdx.works.profile.data.model.factorsources.FactorSource
-import rdx.works.profile.data.model.factorsources.LedgerHardwareWalletFactorSource
+import rdx.works.core.sargon.ledgerFactorSources
 import rdx.works.profile.domain.GetProfileUseCase
 import rdx.works.profile.domain.ledgerFactorSources
 import javax.inject.Inject
@@ -41,7 +46,7 @@ class ChooseLedgerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getProfileUseCase.ledgerFactorSources.collect { ledgerDevices ->
+            getProfileUseCase.flow.map { it.ledgerFactorSources }.collect { ledgerDevices ->
                 _state.update { uiState ->
                     uiState.copy(
                         loading = false,
@@ -64,10 +69,10 @@ class ChooseLedgerViewModel @Inject constructor(
         }
     }
 
-    fun onLedgerDeviceSelected(selectedLedgerDevice: LedgerHardwareWalletFactorSource) {
+    fun onLedgerDeviceSelected(selectedLedgerDevice: FactorSource.Ledger) {
         _state.update { uiState ->
             uiState.copy(
-                selectedLedgerDeviceId = selectedLedgerDevice.id,
+                selectedLedgerDeviceId = selectedLedgerDevice.value.id.asGeneral(),
                 ledgerDevices = uiState.ledgerDevices.map { selectableLedgerDevice ->
                     val updatedSelectableLedgerDevice = selectableLedgerDevice.copy(
                         selected = selectableLedgerDevice.data.id == selectedLedgerDevice.id
@@ -123,7 +128,7 @@ class ChooseLedgerViewModel @Inject constructor(
                     LedgerSelectionPurpose.RecoveryScanOlympia -> {
                         sendEvent(
                             ChooseLedgerEvent.RecoverAccounts(
-                                ledgerFactorSource.data,
+                                ledgerFactorSource.data.value.id.asGeneral(),
                                 args.ledgerSelectionPurpose == LedgerSelectionPurpose.RecoveryScanOlympia
                             )
                         )
@@ -181,8 +186,8 @@ class ChooseLedgerViewModel @Inject constructor(
 data class ChooseLedgerUiState(
     val loading: Boolean = false,
     val showContent: ShowContent = ShowContent.ChooseLedger,
-    val ledgerDevices: ImmutableList<Selectable<LedgerHardwareWalletFactorSource>> = persistentListOf(),
-    val selectedLedgerDeviceId: FactorSource.FactorSourceID.FromHash? = null,
+    val ledgerDevices: ImmutableList<Selectable<FactorSource.Ledger>> = persistentListOf(),
+    val selectedLedgerDeviceId: FactorSourceId.Hash? = null,
     val showLinkConnectorPromptState: ShowLinkConnectorPromptState = ShowLinkConnectorPromptState.None,
     val shouldShowChooseLedgerContentAfterNewLinkedConnector: Boolean = false,
     val uiMessage: UiMessage? = null
@@ -198,5 +203,5 @@ data class ChooseLedgerUiState(
 
 internal sealed interface ChooseLedgerEvent : OneOffEvent {
     data object LedgerSelected : ChooseLedgerEvent
-    data class RecoverAccounts(val factorSource: FactorSource, val isOlympia: Boolean) : ChooseLedgerEvent
+    data class RecoverAccounts(val factorSource: FactorSourceId.Hash, val isOlympia: Boolean) : ChooseLedgerEvent
 }

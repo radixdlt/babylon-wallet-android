@@ -1,4 +1,5 @@
 package com.babylon.wallet.android.data.dapp.model
+
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.publicKey

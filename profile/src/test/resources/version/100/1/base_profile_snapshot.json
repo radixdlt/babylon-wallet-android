@@ -155,27 +155,22 @@
             {
               "transactionSigning":
               {
-                "badge":
-                {
-                  "virtualSource":
-                  {
-                    "hierarchicalDeterministicPublicKey":
-                    {
-                      "publicKey":
-                      {
-                        "curve": "curve25519",
-                        "compressedData": "3feb8194ead2e526fbcc4c1673a7a8b29d8cee0b32bb9393692f739821dd256b"
-                      },
-                      "derivationPath":
-                      {
-                        "scheme": "cap26",
-                        "path": "m/44H/1022H/14H/525H/1460H/0H"
-                      }
-                    },
-                    "discriminator": "hierarchicalDeterministicPublicKey"
-                  },
-                  "discriminator": "virtualSource"
-                },
+  "badge": {
+    "virtualSource": {
+      "hierarchicalDeterministicPublicKey": {
+        "publicKey": {
+          "curve": "curve25519",
+          "compressedData": "3feb8194ead2e526fbcc4c1673a7a8b29d8cee0b32bb9393692f739821dd256b"
+        },
+        "derivationPath": {
+          "scheme": "cap26",
+          "path": "m/44H/1022H/14H/525H/1460H/0H"
+        }
+      },
+      "discriminator": "hierarchicalDeterministicPublicKey"
+    },
+    "discriminator": "virtualSource"
+  },
                 "factorSourceID":
                 {
                   "fromHash":

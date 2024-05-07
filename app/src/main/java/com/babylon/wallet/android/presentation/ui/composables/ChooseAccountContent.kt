@@ -19,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -27,8 +26,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixTextButton
-import com.babylon.wallet.android.designsystem.theme.AccountGradientList
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.gradient
 import com.babylon.wallet.android.designsystem.theme.plus
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountItemUiModel
 import com.babylon.wallet.android.presentation.dapp.authorized.account.AccountSelectionCard
@@ -107,11 +106,10 @@ fun ChooseAccountContent(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             }
             itemsIndexed(accountItems) { index, accountItem ->
-                val gradientColor = AccountGradientList[accountItem.appearanceID % AccountGradientList.size]
                 AccountSelectionCard(
                     modifier = Modifier
                         .background(
-                            Brush.horizontalGradient(gradientColor),
+                            accountItem.appearanceID.gradient(),
                             shape = RadixTheme.shapes.roundedRectSmall
                         )
                         .clip(RadixTheme.shapes.roundedRectSmall)

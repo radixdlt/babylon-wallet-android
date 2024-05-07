@@ -39,6 +39,7 @@ android {
 
 dependencies {
 
+    implementation libs.sargonAndroid
     implementation libs.composeFoundation
     implementation libs.composeMaterial3
 

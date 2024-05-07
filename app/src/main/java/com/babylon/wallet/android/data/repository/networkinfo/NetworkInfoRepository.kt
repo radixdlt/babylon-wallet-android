@@ -6,8 +6,9 @@ import com.babylon.wallet.android.di.JsonConverterFactory
 import com.babylon.wallet.android.di.SimpleHttpClient
 import com.babylon.wallet.android.di.buildApi
 import com.babylon.wallet.android.domain.model.NetworkInfo
+import com.radixdlt.sargon.NetworkId
 import okhttp3.OkHttpClient
-import rdx.works.profile.data.model.apppreferences.Radix
+import rdx.works.core.sargon.init
 import retrofit2.Converter
 import javax.inject.Inject
 
@@ -24,10 +25,11 @@ class NetworkInfoRepositoryImpl @Inject constructor(
         baseUrl = networkUrl,
         okHttpClient = okHttpClient,
         jsonConverterFactory = jsonConverterFactory
-    ).gatewayStatus().toResult().mapCatching {
+    ).gatewayStatus().toResult().mapCatching { response ->
+        val networkId = NetworkId.init(response.ledgerState.network)
         NetworkInfo(
-            network = Radix.Network.fromName(it.ledgerState.network),
-            epoch = it.ledgerState.epoch
+            id = networkId,
+            epoch = response.ledgerState.epoch
         )
     }
 }
