@@ -7,12 +7,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
@@ -22,11 +20,18 @@ import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import com.babylon.wallet.android.designsystem.R
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
+import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
 import com.babylon.wallet.android.presentation.ui.modifier.throttleClickable
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
+@Suppress("DestructuringDeclarationWithTooManyEntries")
 @Composable
 fun DefaultSettingsItem(
     modifier: Modifier = Modifier,
@@ -35,7 +40,7 @@ fun DefaultSettingsItem(
     subtitleView: @Composable (ColumnScope.() -> Unit)? = null,
     infoView: @Composable (ColumnScope.() -> Unit)? = null,
     leadingIcon: @Composable (BoxScope.() -> Unit)? = null,
-    warningView: @Composable (ColumnScope.() -> Unit)? = null,
+    warningView: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = {
         Icon(
             painter = painterResource(id = R.drawable.ic_chevron_right),
@@ -44,28 +49,40 @@ fun DefaultSettingsItem(
         )
     }
 ) {
-    Row(
+    ConstraintLayout(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 72.dp)
             .background(RadixTheme.colors.defaultBackground)
             .throttleClickable(onClick = onClick)
             .padding(horizontal = RadixTheme.dimensions.paddingDefault, vertical = RadixTheme.dimensions.paddingLarge),
-        verticalAlignment = CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
     ) {
+        val (leadingIconRef, contentRef, trailingIconRef, warningRef) = createRefs()
+        val paddingMedium = RadixTheme.dimensions.paddingMedium
         leadingIcon?.let { icon ->
             Box(
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier
+                    .size(32.dp)
+                    .constrainAs(leadingIconRef) {
+                        start.linkTo(parent.start)
+                        end.linkTo(contentRef.start, paddingMedium)
+                        top.linkTo(contentRef.top)
+                        bottom.linkTo(contentRef.bottom)
+                    },
                 contentAlignment = Center
             ) {
                 icon()
             }
         }
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .height(IntrinsicSize.Max),
+            modifier = Modifier.constrainAs(contentRef) {
+                start.linkTo(if (leadingIcon == null) parent.start else leadingIconRef.end)
+                end.linkTo(if (trailingIcon == null) parent.end else trailingIconRef.start)
+                top.linkTo(parent.top)
+                if (warningView == null) {
+                    bottom.linkTo(parent.bottom)
+                }
+                width = Dimension.fillToConstraints
+            },
             verticalArrangement = Arrangement.Center
         ) {
             Text(
@@ -80,11 +97,33 @@ fun DefaultSettingsItem(
                 Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingXSmall))
                 info()
             }
-            warningView?.let { warning ->
+        }
+        trailingIcon?.let { trailing ->
+            Box(
+                modifier = Modifier
+                    .constrainAs(trailingIconRef) {
+                        start.linkTo(contentRef.end, paddingMedium)
+                        end.linkTo(parent.end)
+                        top.linkTo(contentRef.top)
+                        bottom.linkTo(contentRef.bottom)
+                    },
+                contentAlignment = Center
+            ) {
+                trailing()
+            }
+        }
+        warningView?.let { warning ->
+            val paddingLarge = RadixTheme.dimensions.paddingLarge
+            Box(
+                modifier = Modifier.constrainAs(warningRef) {
+                    centerHorizontallyTo(contentRef, bias = 0f)
+                    top.linkTo(contentRef.bottom, paddingLarge)
+                    width = Dimension.fillToConstraints
+                }
+            ) {
                 warning()
             }
         }
-        trailingIcon?.invoke()
     }
 }
 
@@ -95,7 +134,7 @@ fun DefaultSettingsItem(
     onClick: () -> Unit,
     subtitle: String? = null,
     info: String? = null,
-    warning: String? = null,
+    warnings: ImmutableList<String>? = null,
     @DrawableRes leadingIcon: Int? = null,
     trailingIcon: @Composable (() -> Unit)? = {
         Icon(
@@ -137,25 +176,47 @@ fun DefaultSettingsItem(
                 )
             }
         },
-        warningView = warning?.let {
+        warningView = warnings?.let {
             {
-                Row(
-                    verticalAlignment = CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_warning_error),
-                        contentDescription = null,
-                        tint = RadixTheme.colors.orange1
-                    )
-                    Text(
-                        text = it,
-                        style = RadixTheme.typography.body2HighImportance,
-                        color = RadixTheme.colors.orange1
-                    )
+                    it.forEach { warning ->
+                        Row(
+                            verticalAlignment = CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingXSmall)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_warning_error),
+                                contentDescription = null,
+                                tint = RadixTheme.colors.orange1
+                            )
+                            Text(
+                                text = warning,
+                                style = RadixTheme.typography.body2HighImportance,
+                                color = RadixTheme.colors.orange1
+                            )
+                        }
+                    }
                 }
             }
         },
         trailingIcon = trailingIcon
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SettingsScreenWithoutActiveConnectionPreview() {
+    RadixWalletTheme {
+        DefaultSettingsItem(
+            title = "Title",
+            onClick = {},
+            subtitle = "Subtitle",
+            info = "Info",
+            warnings = persistentListOf("Warning"),
+            leadingIcon = R.drawable.ic_gateways
+        )
+    }
 }

@@ -37,6 +37,7 @@ import com.babylon.wallet.android.R
 import com.babylon.wallet.android.designsystem.composable.RadixSecondaryButton
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.designsystem.theme.RadixWalletTheme
+import com.babylon.wallet.android.presentation.settings.securitycenter.toProblemHeading
 import com.babylon.wallet.android.presentation.ui.composables.DefaultSettingsItem
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.radixdlt.sargon.DependencyInformation
@@ -121,14 +122,15 @@ private fun SettingsContent(
                                             subtitle = stringResource(id = settingsItem.item.subtitleRes()),
                                             leadingIcon = settingsItem.item.getIcon(),
                                             title = stringResource(id = settingsItem.item.descriptionRes()),
-                                            warning = when (settingsItem.item) {
+                                            warnings = when (settingsItem.item) {
                                                 is SettingsItem.TopLevelSettings.SecurityCenter -> {
-                                                    if (settingsItem.item.needAction) {
-                                                        stringResource(R.string.securityCenter_problem9_heading)
+                                                    if (settingsItem.item.securityProblems.isNotEmpty()) {
+                                                        settingsItem.item.securityProblems.map { it.toProblemHeading() }.toPersistentList()
                                                     } else {
                                                         null
                                                     }
                                                 }
+
                                                 else -> null
                                             }
                                         )

@@ -55,6 +55,12 @@ fun NavGraphBuilder.securityCenterNavGraph(
                 },
                 onBackupConfigurationClick = {
                     navController.backupScreen()
+                },
+                onRecoverEntitiesClick = {
+                    navController.restoreMnemonics(args = RestoreMnemonicsArgs())
+                },
+                onBackupEntities = {
+                    navController.seedPhrases()
                 }
             )
         }
