@@ -37,13 +37,22 @@ suspend fun Context.biometricAuthenticateSuspend(allowIfDeviceIsNotSecure: Boole
     return findFragmentActivity()?.biometricAuthenticateSuspend() ?: false
 }
 
-fun Context.openUrl(url: String) = openUrl(url.toUri())
+fun Context.openUrl(url: String, browserName: String? = null) = openUrl(url.toUri(), browserName)
 
 @Suppress("SwallowedException")
-fun Context.openUrl(uri: Uri) {
+fun Context.openUrl(uri: Uri, browserName: String? = null) {
     val intent = Intent(Intent.ACTION_VIEW).apply {
         data = uri
     }
+//    browserName?.let { name ->
+//        val info = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
+//        info.find { resolveInfo ->
+//            val appName = resolveInfo.loadLabel(packageManager).toString()
+//            appName.lowercase().contains(name.lowercase())
+//        }?.let { resolveInfo ->
+//            intent.setPackage(resolveInfo.activityInfo.packageName)
+//        }
+//    }
     try {
         startActivity(intent)
     } catch (activityNotFound: ActivityNotFoundException) {

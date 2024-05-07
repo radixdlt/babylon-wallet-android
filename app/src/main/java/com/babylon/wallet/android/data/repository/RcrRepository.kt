@@ -3,6 +3,7 @@ package com.babylon.wallet.android.data.repository
 import com.babylon.wallet.android.data.dapp.model.WalletInteraction
 import com.babylon.wallet.android.data.dapp.model.peerdroidRequestJson
 import com.babylon.wallet.android.data.gateway.apis.RcrApi
+import com.babylon.wallet.android.data.gateway.model.RcrHandshakeRequest
 import com.babylon.wallet.android.data.gateway.model.RcrRequest
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
 import kotlinx.coroutines.CoroutineDispatcher
@@ -17,9 +18,8 @@ import javax.inject.Inject
 interface RcrRepository {
     suspend fun sendResponse(sessionId: String, data: String): Result<Unit>
     suspend fun getRequest(sessionId: String, interactionId: String): Result<WalletInteraction>
-    suspend fun sendTest(sessionId: String, data: String): Result<Unit>
-
-    suspend fun getRequestTest(sessionId: String, interactionId: String): Result<List<String>>
+    suspend fun sendHandshakeResponse(sessionId: String, publicKeyHex: String): Result<Unit>
+    suspend fun getHandshake(sessionId: String): Result<String>
 }
 
 class RcrRepositoryImpl @Inject constructor(
@@ -27,7 +27,7 @@ class RcrRepositoryImpl @Inject constructor(
     private val dappLinkRepository: DappLinkRepository,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 
-) : RcrRepository {
+    ) : RcrRepository {
 
     override suspend fun getRequest(sessionId: String, interactionId: String) = withContext(ioDispatcher) {
         api.executeRequest(RcrRequest.GetRequests(sessionId)).toResult().mapCatching { response ->
@@ -46,17 +46,14 @@ class RcrRepositoryImpl @Inject constructor(
         api.executeRequest(RcrRequest.SendResponse(sessionId, encryptedData)).toResult().map { }
     }
 
-    override suspend fun sendTest(sessionId: String, data: String) = withContext(ioDispatcher) {
-        api.executeRequest(RcrRequest.SendRequest(sessionId, data)).toResult().map { }
+    override suspend fun sendHandshakeResponse(sessionId: String, publicKeyHex: String) = withContext(ioDispatcher) {
+        api.executeHandshakeRequest(RcrHandshakeRequest.SendHandshakeResponse(sessionId, publicKeyHex)).toResult().map { }
     }
 
-    override suspend fun getRequestTest(sessionId: String, interactionId: String) = withContext(ioDispatcher) {
-        api.executeRequest(RcrRequest.GetRequests(sessionId)).toResult().mapCatching { response ->
-            val dappLink = dappLinkRepository.getDappLinks().getOrThrow().first { it.sessionId == sessionId }
-            response.map { d ->
-                val decryptedBytes = d.decodeHex().decrypt(dappLink.secret.decodeHex()).getOrThrow()
-                String(decryptedBytes, StandardCharsets.UTF_8)
-            }
+    override suspend fun getHandshake(sessionId: String) = withContext(ioDispatcher) {
+        api.executeHandshakeRequest(RcrHandshakeRequest.GetHandshake(sessionId)).toResult().map {
+            it.publicKeyHex
         }
     }
+
 }

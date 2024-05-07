@@ -24,6 +24,7 @@ class DappLinkRepositoryImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
 ) : DappLinkRepository {
 
+    private val pendingDappLinks: MutableSet<DappLink> = mutableSetOf()
     override suspend fun getDappLinks(): Result<List<DappLink>> {
         return runCatching {
             val linksSerialized = encryptedPreferencesManager.getDappLinks().orEmpty()
@@ -43,6 +44,7 @@ class DappLinkRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveDappLink(link: DappLink): Result<DappLink> {
+        pendingDappLinks.add(link)
         return runCatching {
             withContext(ioDispatcher) {
                 val links = getDappLinks().getOrThrow().toMutableSet()

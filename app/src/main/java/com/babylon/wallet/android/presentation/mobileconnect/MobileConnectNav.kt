@@ -13,29 +13,33 @@ private const val ARG_DAPP_ORIGIN = "origin"
 private const val ARG_PUBLIC_KEY = "publicKey"
 private const val ARG_SESSION_ID = "sessionId"
 private const val ARG_INTERACTION_ID = "interactionId"
+private const val ARG_BROWSER = "browser"
 
 private const val ROUTE_ARGS = "$ARG_PUBLIC_KEY={$ARG_PUBLIC_KEY}" +
     "&$ARG_SESSION_ID={$ARG_SESSION_ID}" +
     "&$ARG_DAPP_ORIGIN={$ARG_DAPP_ORIGIN}" +
-    "&$ARG_INTERACTION_ID={$ARG_INTERACTION_ID}"
+    "&$ARG_INTERACTION_ID={$ARG_INTERACTION_ID}" +
+    "&$ARG_BROWSER={$ARG_BROWSER}"
 
 private const val ROUTE = "mobileConnect?$ROUTE_ARGS"
 
-fun NavController.mobileConnect(publicKeyHex: String = "", sessionId: String = "", origin: String = "", interactionId: String = "") {
+fun NavController.mobileConnect(publicKeyHex: String = "", sessionId: String = "", origin: String = "", interactionId: String = "", browser: String = "") {
     navigate(
         route = "mobileConnect?$$ARG_PUBLIC_KEY={$publicKeyHex}" +
             "&$ARG_SESSION_ID={$sessionId}" +
             "&$ARG_DAPP_ORIGIN={$origin}" +
-            "&$ARG_INTERACTION_ID={$interactionId}"
+            "&$ARG_INTERACTION_ID={$interactionId}" +
+            "&$ARG_BROWSER={$browser}"
     )
 }
 
-internal class MobileConnectArgs(val publicKey: String?, val sessionId: String?, val origin: String?, val interactionId: String? = null) {
+internal class MobileConnectArgs(val publicKey: String?, val sessionId: String?, val origin: String?, val interactionId: String? = null, val browser: String? = null) {
     constructor(savedStateHandle: SavedStateHandle) : this(
         savedStateHandle.get<String>(ARG_PUBLIC_KEY),
         savedStateHandle.get<String>(ARG_SESSION_ID),
         savedStateHandle.get<String>(ARG_DAPP_ORIGIN),
-        savedStateHandle.get<String>(ARG_INTERACTION_ID)
+        savedStateHandle.get<String>(ARG_INTERACTION_ID),
+        savedStateHandle.get<String>(ARG_BROWSER)
     )
 
     fun isValidRequest(): Boolean {
@@ -70,6 +74,10 @@ fun NavGraphBuilder.mobileConnect(onBackClick: () -> Unit) {
                 nullable = true
             },
             navArgument(ARG_INTERACTION_ID) {
+                type = NavType.StringType
+                nullable = true
+            },
+            navArgument(ARG_BROWSER) {
                 type = NavType.StringType
                 nullable = true
             }

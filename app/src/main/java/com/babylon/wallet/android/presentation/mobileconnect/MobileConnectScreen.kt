@@ -1,10 +1,13 @@
 package com.babylon.wallet.android.presentation.mobileconnect
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
@@ -22,9 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.babylon.wallet.android.R
+import com.babylon.wallet.android.designsystem.composable.RadixPrimaryButton
+import com.babylon.wallet.android.designsystem.composable.RadixSwitch
 import com.babylon.wallet.android.designsystem.theme.RadixTheme
 import com.babylon.wallet.android.presentation.common.FullscreenCircularProgressContent
-import com.babylon.wallet.android.presentation.mobileconnect.State.RequestType.CONNECT
 import com.babylon.wallet.android.presentation.ui.composables.BasicPromptAlertDialog
 import com.babylon.wallet.android.presentation.ui.composables.RadixSnackbarHost
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUIMessage
@@ -43,7 +47,7 @@ fun MobileConnectScreen(
         viewModel.oneOffEvent.collect { event ->
             when (event) {
                 is MobileConnectViewModel.Event.OpenUrl -> {
-                    context.openUrl(event.url)
+                    context.openUrl(event.url, event.browserName)
                     onBackClick()
                 }
 
@@ -51,7 +55,13 @@ fun MobileConnectScreen(
             }
         }
     }
-    MobileConnectContent(modifier = modifier.fillMaxSize(), state = state, onMessageShown = viewModel::onMessageShown)
+    MobileConnectContent(
+        modifier = modifier.fillMaxSize(),
+        state = state,
+        onMessageShown = viewModel::onMessageShown,
+        onLinkWithDapp = viewModel::onLinkWithDapp,
+        onAutoConfirmChange = viewModel::onAutoConfirmChange
+    )
     if (!state.isProfileInitialized) {
         BasicPromptAlertDialog(
             finish = {
@@ -69,7 +79,9 @@ fun MobileConnectScreen(
 fun MobileConnectContent(
     modifier: Modifier,
     state: State,
-    onMessageShown: () -> Unit
+    onMessageShown: () -> Unit,
+    onLinkWithDapp: () -> Unit,
+    onAutoConfirmChange: (Boolean) -> Unit
 ) {
     val snackBarHostState = remember { SnackbarHostState() }
     SnackbarUIMessage(
@@ -85,37 +97,79 @@ fun MobileConnectContent(
                 hostState = snackBarHostState,
                 modifier = Modifier.padding(RadixTheme.dimensions.paddingDefault)
             )
+        },
+        bottomBar = {
+            if (state.isLoading.not()) {
+                Column(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .padding(RadixTheme.dimensions.paddingDefault),
+                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(id = R.string.mobileConnect_autoConfirmTitle),
+                                style = RadixTheme.typography.body1Header,
+                                color = RadixTheme.colors.gray1
+                            )
+                            Text(
+                                text = stringResource(id = R.string.mobileConnect_autoConfirmSubtitle),
+                                style = RadixTheme.typography.body1Regular,
+                                color = RadixTheme.colors.gray1
+                            )
+                        }
+                        RadixSwitch(checked = state.autoLink, onCheckedChange = onAutoConfirmChange)
+                    }
+                    RadixPrimaryButton(
+                        text = stringResource(id = R.string.createAccount_nameNewAccount_continue),
+                        onClick = onLinkWithDapp,
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        throttleClicks = true
+                    )
+                }
+            }
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
-            when (state.requestType) {
-                CONNECT -> {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.CenterStart),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
-                    ) {
-                        Text(text = "Connecting...", color = RadixTheme.colors.gray1, style = RadixTheme.typography.body1HighImportance)
-                        state.dApp?.let { dApp ->
-                            Thumbnail.DApp(
-                                modifier = Modifier
-                                    .size(64.dp),
-                                dapp = dApp,
-                                shape = RadixTheme.shapes.roundedRectSmall
-                            )
-                            dApp.name?.let {
-                                Text(
-                                    text = it, color = RadixTheme.colors.gray1, style = RadixTheme.typography.body1HighImportance
-                                )
-                            }
-                        }
+            AnimatedVisibility(visible = state.isLoading.not()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(RadixTheme.dimensions.paddingLarge)
+                        .align(Alignment.CenterStart),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(RadixTheme.dimensions.paddingMedium)
+                ) {
+                    state.dApp?.let { dApp ->
+                        Thumbnail.DApp(
+                            modifier = Modifier
+                                .size(64.dp),
+                            dapp = dApp,
+                            shape = RadixTheme.shapes.roundedRectSmall
+                        )
                     }
+                    Text(text = "Verifying dApp", color = RadixTheme.colors.gray1, style = RadixTheme.typography.title)
+                    val dAppName = state.dApp?.name?.ifEmpty { "Unknown dApp" } ?: "Unknown dApp"
+                    Text(
+                        text = "$dAppName is requesting verification",
+                        color = RadixTheme.colors.gray2,
+                        style = RadixTheme.typography.body1HighImportance
+                    )
+                    Text(
+                        text = "$dAppName wants to make requests to your Radix Wallet. Click Continue to verify the identity of this dApp and proceed with the request. ",
+                        color = RadixTheme.colors.gray1,
+                        style = RadixTheme.typography.body1Regular
+                    )
                 }
-
-                else -> {}
             }
+        }
+        if (state.isLoading) {
             FullscreenCircularProgressContent()
         }
     }
