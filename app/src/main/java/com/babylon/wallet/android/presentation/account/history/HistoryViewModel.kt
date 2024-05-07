@@ -78,17 +78,19 @@ class HistoryViewModel @Inject constructor(
                         it.copy(uiMessage = UiMessage.ErrorMessage(error = error))
                     }
                 }.firstOrNull().let { genesisTxInstant ->
-                    _state.update { state ->
-                        state.copy(
-                            filters = state.filters.copy(
-                                genesisTxDate = ZonedDateTime.ofInstant(
-                                    genesisTxInstant,
-                                    ZoneId.systemDefault()
+                    genesisTxInstant?.let {
+                        computeTimeFilters(it)
+                        _state.update { state ->
+                            state.copy(
+                                filters = state.filters.copy(
+                                    genesisTxDate = ZonedDateTime.ofInstant(
+                                        genesisTxInstant,
+                                        ZoneId.systemDefault()
+                                    )
                                 )
                             )
-                        )
+                        }
                     }
-                    genesisTxInstant?.let { computeTimeFilters(it) }
                     loadHistory()
                 }
             }
