@@ -103,7 +103,7 @@ class MobileConnectViewModel @Inject constructor(
                         sendEvent(Event.Close)
                     }
                     if (_state.value.autoLink && _state.value.canLink) {
-                        linkWithDapp()
+                        linkWithDapp(withDelay = true)
                     }
                 }
 
@@ -126,9 +126,14 @@ class MobileConnectViewModel @Inject constructor(
         }
     }
 
-    private suspend fun linkWithDapp() {
-        val connectDelaySeconds = preferencesManager.mobileConnectDelaySeconds.firstOrNull() ?: 0
-        delay(connectDelaySeconds * 1000L)
+    private suspend fun linkWithDapp(withDelay: Boolean = false) {
+        _state.update {
+            it.copy(isLinking = true)
+        }
+        if (withDelay) {
+            val connectDelaySeconds = preferencesManager.mobileConnectDelaySeconds.firstOrNull() ?: 0
+            delay(connectDelaySeconds * 1000L)
+        }
         val keyPair = generateX25519KeyPair().getOrNull() ?: error("Failed to generate X25519 key pair")
         val publicKeyHex = keyPair.second
         val receivedPublicKey = args.publicKey!!.decodeHex()
@@ -143,7 +148,10 @@ class MobileConnectViewModel @Inject constructor(
             x25519PrivateKeyCompressed = keyPair.first,
             callbackPath = _state.value.callbackPath
         )
-        dappLinkRepository.saveDappLink(dappLink).onSuccess {
+        dappLinkRepository.saveAsTemporary(dappLink).onSuccess {
+            _state.update {
+                it.copy(isLinking = false)
+            }
             sendEvent(
                 Event.OpenUrl(
                     Uri.parse(args.origin).buildUpon().apply {
@@ -158,7 +166,7 @@ class MobileConnectViewModel @Inject constructor(
             )
         }.onFailure { error ->
             _state.update {
-                it.copy(uiMessage = UiMessage.ErrorMessage(error))
+                it.copy(uiMessage = UiMessage.ErrorMessage(error), isLinking = false)
             }
             delay(Constants.SNACKBAR_SHOW_DURATION_MS)
             sendEvent(Event.Close)
@@ -195,7 +203,8 @@ data class State(
     val isLoading: Boolean = true,
     val linkDelaySeconds: Int = 0,
     val callbackPath: String = "",
-    val autoLink: Boolean = false
+    val autoLink: Boolean = false,
+    val isLinking: Boolean = false
 ) : UiState {
     val canLink: Boolean
         get() = dApp != null && dAppDefinition != null

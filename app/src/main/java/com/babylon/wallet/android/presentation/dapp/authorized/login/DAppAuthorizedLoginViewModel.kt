@@ -713,6 +713,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     mutex.withLock {
                         editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                     }
+                    sendEvent(Event.LoginFlowCompleted)
                     if (!request.isInternal) {
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
@@ -722,7 +723,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                             )
                         )
                     }
-                    sendEvent(Event.LoginFlowCompleted)
                 }.onFailure { throwable ->
                     handleRequestError(throwable)
                     if (abortOnFailure) {

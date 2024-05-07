@@ -12,10 +12,10 @@ import timber.log.Timber
 import javax.inject.Inject
 
 interface DappLinkRepository {
-    suspend fun getDappLinks(): Result<List<DappLink>>
-
     suspend fun getDappLink(sessionId: String): Result<DappLink>
-    suspend fun saveDappLink(link: DappLink): Result<DappLink>
+    suspend fun persistDappLinkForSessionId(sessionId: String): Result<DappLink>
+
+    suspend fun saveAsTemporary(link: DappLink): Result<DappLink>
 }
 
 class DappLinkRepositoryImpl @Inject constructor(
@@ -25,42 +25,56 @@ class DappLinkRepositoryImpl @Inject constructor(
 ) : DappLinkRepository {
 
     private val pendingDappLinks: MutableSet<DappLink> = mutableSetOf()
-    override suspend fun getDappLinks(): Result<List<DappLink>> {
+    private suspend fun getPersistedDappLinks(): Result<Set<DappLink>> {
         return runCatching {
             val linksSerialized = encryptedPreferencesManager.getDappLinks().orEmpty()
             if (linksSerialized.isEmpty()) {
-                emptyList()
+                emptySet()
             } else {
-                json.decodeFromString<List<DappLink>>(linksSerialized)
+                json.decodeFromString<Set<DappLink>>(linksSerialized)
             }
         }
     }
 
     override suspend fun getDappLink(sessionId: String): Result<DappLink> {
-        return getDappLinks().mapCatching { links ->
+        pendingDappLinks.firstOrNull { it.sessionId == sessionId }?.let {
+            return Result.success(it)
+        }
+        return getPersistedDappLinks().mapCatching { links ->
             links.firstOrNull { it.sessionId == sessionId }
                 ?: error("No dapp link found for session id $sessionId")
         }
     }
 
-    override suspend fun saveDappLink(link: DappLink): Result<DappLink> {
-        pendingDappLinks.add(link)
+    override suspend fun persistDappLinkForSessionId(sessionId: String): Result<DappLink> {
         return runCatching {
             withContext(ioDispatcher) {
-                val links = getDappLinks().getOrThrow().toMutableSet()
-                val updatedLinks = if (links.any { it.dAppDefinitionAddress == link.dAppDefinitionAddress }) {
-                    links.mapWhen({ it.dAppDefinitionAddress == link.dAppDefinitionAddress }) {
+                val toPersist =
+                    pendingDappLinks.firstOrNull { it.sessionId == sessionId } ?: error("No dapp link found for session id $sessionId")
+                val links = getPersistedDappLinks().getOrThrow().toMutableSet()
+                val updatedLinks = if (links.any { it.dAppDefinitionAddress == toPersist.dAppDefinitionAddress }) {
+                    links.mapWhen({ it.dAppDefinitionAddress == toPersist.dAppDefinitionAddress }) {
                         Timber.d("Dapp link: Updating existing link")
-                        link
+                        toPersist
                     }
                 } else {
                     Timber.d("Dapp link: Adding new link")
-                    links.apply { add(link) }
-                }
+                    links.apply { add(toPersist) }
+                }.toSet()
                 val linksSerialized = json.encodeToString(updatedLinks)
                 encryptedPreferencesManager.putDappLinks(linksSerialized)
-                link
+                pendingDappLinks.removeIf { it.sessionId == sessionId }
+                Timber.d("Pending dApp links: ${pendingDappLinks.size}")
+                toPersist
             }
+        }
+    }
+
+    override suspend fun saveAsTemporary(link: DappLink): Result<DappLink> {
+        return runCatching {
+            pendingDappLinks.removeIf { it.sessionId == link.sessionId}
+            pendingDappLinks.add(link)
+            link
         }
     }
 }
