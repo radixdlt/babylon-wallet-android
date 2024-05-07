@@ -27,6 +27,7 @@ import com.babylon.wallet.android.presentation.ui.composables.DevBannerState
 import com.babylon.wallet.android.presentation.ui.composables.DevelopmentPreviewWrapper
 import com.babylon.wallet.android.presentation.ui.composables.actionableaddress.ActionableAddressViewEntryPoint
 import dagger.hilt.android.AndroidEntryPoint
+import timber.log.Timber
 import javax.inject.Inject
 
 // Extending from FragmentActivity because of Biometric
@@ -54,6 +55,7 @@ class MainActivity : FragmentActivity() {
         setSplashExitAnimation(splashScreen)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
+        Timber.d("Deep link: ${intent.data}")
         setContent {
             RadixWalletTheme {
                 val isVisible by balanceVisibilityObserver.isBalanceVisible.collectAsState(initial = true)
