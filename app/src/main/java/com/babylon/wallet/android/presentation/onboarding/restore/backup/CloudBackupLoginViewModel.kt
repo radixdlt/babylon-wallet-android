@@ -63,7 +63,9 @@ class CloudBackupLoginViewModel @Inject constructor(
                     }
                 }
                 .also {
-                    _state.update { it.copy(isAccessToGoogleDriveInProgress = false) }
+                    _state.update { state ->
+                        state.copy(isAccessToGoogleDriveInProgress = false)
+                    }
                 }
         }
     }
