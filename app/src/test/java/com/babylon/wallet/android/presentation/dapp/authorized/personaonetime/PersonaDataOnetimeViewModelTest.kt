@@ -60,10 +60,8 @@ internal class PersonaDataOnetimeViewModelTest : StateViewModelTest<PersonaDataO
         every { savedStateHandle.get<RequiredPersonaFields>(ARG_REQUIRED_FIELDS) } returns RequiredPersonaFields(
             fields = listOf(
                 RequiredPersonaField(
-                    PersonaData.PersonaDataField.Kind.Name,
-                    IncomingMessage.IncomingRequest.NumberOfValues(
                     PersonaDataField.Kind.Name,
-                    MessageFromDataChannel.IncomingRequest.NumberOfValues(
+                    IncomingMessage.IncomingRequest.NumberOfValues(
                         1,
                         IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
                     )
