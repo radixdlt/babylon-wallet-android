@@ -70,6 +70,7 @@ fun ConnectCloudBackupScreen(
 
     ConnectCloudBackupContent(
         modifier = modifier,
+        isAccessToGoogleDriveInProgress = state.isAccessToGoogleDriveInProgress,
         errorMessage = state.errorMessage,
         onErrorMessageShown = viewModel::onErrorMessageShown,
         onBackClick = onBackClick,
@@ -81,6 +82,7 @@ fun ConnectCloudBackupScreen(
 @Composable
 private fun ConnectCloudBackupContent(
     modifier: Modifier = Modifier,
+    isAccessToGoogleDriveInProgress: Boolean,
     errorMessage: UiMessage?,
     onErrorMessageShown: () -> Unit,
     onBackClick: () -> Unit,
@@ -160,6 +162,7 @@ private fun ConnectCloudBackupContent(
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = "Back up to Google Drive", // TODO Crowdin
+                isLoading = isAccessToGoogleDriveInProgress,
                 onClick = onLoginToGoogleClick
             )
             Spacer(modifier = Modifier.weight(0.1f))
@@ -173,6 +176,7 @@ fun ConnectCloudBackupScreenPreview() {
     RadixWalletPreviewTheme {
         ConnectCloudBackupContent(
             errorMessage = null,
+            isAccessToGoogleDriveInProgress = false,
             onErrorMessageShown = {},
             onBackClick = {},
             onLoginToGoogleClick = {},
