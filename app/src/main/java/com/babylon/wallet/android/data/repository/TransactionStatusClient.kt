@@ -55,7 +55,7 @@ class TransactionStatusClient @Inject constructor(
             val pollResult = pollTransactionStatusUseCase(txID, requestId, transactionType, endEpoch)
             pollResult.result.onSuccess {
                 preferencesManager.incrementTransactionCompleteCounter()
-                appEventBus.sendEvent(AppEvent.RefreshResourcesNeeded)
+                appEventBus.sendEvent(AppEvent.RefreshAssetsNeeded)
             }
             updateTransactionStatus(pollResult)
         }

@@ -24,7 +24,7 @@ class AppEventBus @Inject constructor() {
 
 sealed interface AppEvent {
     data object AppNotSecure : AppEvent
-    data object RefreshResourcesNeeded : AppEvent
+    data object RefreshAssetsNeeded : AppEvent
     data object RestoredMnemonic : AppEvent
     data object BabylonFactorSourceDoesNotExist : AppEvent
     data object NPSSurveySubmitted : AppEvent

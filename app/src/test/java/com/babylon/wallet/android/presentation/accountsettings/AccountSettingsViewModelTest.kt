@@ -129,7 +129,7 @@ internal class AccountSettingsViewModelTest : StateViewModelTest<AccountSettings
         advanceUntilIdle()
         vm.onGetFreeXrdClick()
         advanceUntilIdle()
-        coVerify(exactly = 1) { eventBus.sendEvent(AppEvent.RefreshResourcesNeeded) }
+        coVerify(exactly = 1) { eventBus.sendEvent(AppEvent.RefreshAssetsNeeded) }
         coVerify(exactly = 1) { getFreeXrdUseCase(sampleAddress) }
     }
 
