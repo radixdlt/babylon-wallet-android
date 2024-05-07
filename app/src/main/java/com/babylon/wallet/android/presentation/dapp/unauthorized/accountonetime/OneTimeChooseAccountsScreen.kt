@@ -25,7 +25,6 @@ import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import com.radixdlt.sargon.samples.sampleMainnet
-import com.babylon.wallet.android.utils.openUrl
 import kotlinx.collections.immutable.persistentListOf
 import rdx.works.core.domain.DApp
 
@@ -65,8 +64,6 @@ fun OneTimeChooseAccountsScreen(
                         }
                     }
                 }
-
-                is Event.OpenUrl -> context.openUrl(event.url)
             }
         }
     }

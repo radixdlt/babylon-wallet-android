@@ -227,7 +227,7 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             }
 
             ongoingPersonaDataRequestItem != null &&
-                ongoingPersonaDataRequestItem.isValid() && (!ongoingDataAlreadyGranted || resetPersonaData) -> {
+                    ongoingPersonaDataRequestItem.isValid() && (!ongoingDataAlreadyGranted || resetPersonaData) -> {
                 _state.update { state ->
                     state.copy(
                         initialAuthorizedLoginRoute = InitialAuthorizedLoginRoute.OngoingPersonaData(
@@ -287,11 +287,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
         val exception = (_state.value.failureDialog as? FailureDialogState.Open)?.dappRequestException ?: return@launch
         respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
-            .onSuccess {
-                if (it is IncomingRequestResponse.SuccessRadixMobileConnect) {
-                    sendEvent(Event.MobileConnectFlowComplete(it.redirectUrl))
-                }
-            }
         _state.update { it.copy(failureDialog = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.interactionId)
@@ -595,11 +590,6 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
             incomingRequestRepository.requestHandled(request.interactionId)
             if (!request.isInternal) {
                 respondToIncomingRequestUseCase.respondWithFailure(request, walletWalletErrorType)
-                    .onSuccess {
-                        if (it is IncomingRequestResponse.SuccessRadixMobileConnect) {
-                            sendEvent(Event.MobileConnectFlowComplete(it.redirectUrl))
-                        }
-                    }
             }
             sendEvent(Event.CloseLoginFlow)
         }
@@ -723,13 +713,12 @@ class DAppAuthorizedLoginViewModel @Inject constructor(
                     mutex.withLock {
                         editedDapp?.let { dAppConnectionRepository.updateOrCreateAuthorizedDApp(it) }
                     }
-                    if (result is IncomingRequestResponse.SuccessRadixMobileConnect) {
-                        sendEvent(Event.MobileConnectFlowComplete(result.redirectUrl))
-                    } else if (!request.isInternal) {
+                    if (!request.isInternal) {
                         appEventBus.sendEvent(
                             AppEvent.Status.DappInteraction(
                                 requestId = request.interactionId,
-                                dAppName = state.value.dapp?.name
+                                dAppName = state.value.dapp?.name,
+                                isMobileConnect = result is IncomingRequestResponse.SuccessRadixMobileConnect
                             )
                         )
                     }
@@ -751,8 +740,6 @@ sealed interface Event : OneOffEvent {
     data class RequestCompletionBiometricPrompt(val isSignatureRequired: Boolean) : Event
 
     data object LoginFlowCompleted : Event
-    data class MobileConnectFlowComplete(val url: String) : Event
-
     data class DisplayPermission(
         val numberOfAccounts: Int,
         val isExactAccountsCount: Boolean,

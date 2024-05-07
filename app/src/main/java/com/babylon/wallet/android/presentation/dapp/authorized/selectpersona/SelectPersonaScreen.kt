@@ -53,7 +53,6 @@ import com.babylon.wallet.android.utils.BiometricAuthenticationResult
 import com.babylon.wallet.android.utils.biometricAuthenticate
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
 import com.babylon.wallet.android.utils.formattedSpans
-import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.annotation.UsesSampleValues
 import kotlinx.collections.immutable.ImmutableList
@@ -154,7 +153,6 @@ private fun HandleOneOffEvents(
     onPersonaDataOnetime: (Event.PersonaDataOnetime) -> Unit,
     onBiometricPrompt: (signtureReguired: Boolean) -> Unit
 ) {
-    val context = LocalContext.current
     LaunchedEffect(Unit) {
         oneOffEvent.collect { event ->
             when (event) {
@@ -165,7 +163,6 @@ private fun HandleOneOffEvents(
                 is Event.PersonaDataOngoing -> onPersonaDataOngoing(event)
                 is Event.PersonaDataOnetime -> onPersonaDataOnetime(event)
                 is Event.RequestCompletionBiometricPrompt -> onBiometricPrompt(event.isSignatureRequired)
-                is Event.MobileConnectFlowComplete -> context.openUrl(event.url)
             }
         }
     }

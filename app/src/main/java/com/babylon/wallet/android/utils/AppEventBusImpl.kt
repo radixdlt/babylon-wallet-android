@@ -44,10 +44,10 @@ sealed interface AppEvent {
 
     sealed class Status : AppEvent {
         abstract val requestId: String
-
         data class DappInteraction(
             override val requestId: String,
-            val dAppName: String?
+            val dAppName: String?,
+            val isMobileConnect: Boolean = false
         ) : Status()
 
         sealed class Transaction : Status() {

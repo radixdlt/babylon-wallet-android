@@ -132,7 +132,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                         initialUnauthorizedLoginRoute = InitialUnauthorizedLoginRoute.ChooseAccount(
                             request.oneTimeAccountsRequestItem.numberOfValues.quantity,
                             request.oneTimeAccountsRequestItem.numberOfValues.quantifier
-                                == IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
+                                    == IncomingMessage.IncomingRequest.NumberOfValues.Quantifier.Exactly
                         )
                     )
                 }
@@ -185,11 +185,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     fun onAcknowledgeFailureDialog() = viewModelScope.launch {
         val exception = (_state.value.failureDialogState as? FailureDialogState.Open)?.dappRequestException ?: return@launch
         respondToIncomingRequestUseCase.respondWithFailure(request, exception.ceError, exception.getDappMessage())
-            .onSuccess {
-                if (it is IncomingRequestResponse.SuccessRadixMobileConnect) {
-                    sendEvent(Event.OpenUrl(it.redirectUrl))
-                }
-            }
         _state.update { it.copy(failureDialogState = FailureDialogState.Closed) }
         sendEvent(Event.CloseLoginFlow)
         incomingRequestRepository.requestHandled(requestId = args.requestId)
@@ -224,11 +219,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
     fun onRejectRequest() {
         viewModelScope.launch {
             incomingRequestRepository.requestHandled(requestId = args.requestId)
-            respondToIncomingRequestUseCase.respondWithFailure(request, WalletErrorType.RejectedByUser).onSuccess { response ->
-                if (response is IncomingRequestResponse.SuccessRadixMobileConnect) {
-                    sendEvent(Event.OpenUrl(response.redirectUrl))
-                }
-            }
+            respondToIncomingRequestUseCase.respondWithFailure(request, WalletErrorType.RejectedByUser)
             sendEvent(Event.CloseLoginFlow)
         }
     }
@@ -265,13 +256,12 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             ).mapCatching {
                 respondToIncomingRequestUseCase.respondWithSuccess(request, it).getOrThrow()
             }.onSuccess { result ->
-                if (result is IncomingRequestResponse.SuccessRadixMobileConnect) {
-                    sendEvent(Event.OpenUrl(result.redirectUrl))
-                } else if (!request.isInternal) {
+                if (!request.isInternal) {
                     appEventBus.sendEvent(
                         AppEvent.Status.DappInteraction(
                             requestId = request.interactionId,
-                            dAppName = state.value.dapp?.name
+                            dAppName = state.value.dapp?.name,
+                            isMobileConnect = result is IncomingRequestResponse.SuccessRadixMobileConnect
                         )
                     )
                 }
@@ -291,8 +281,6 @@ sealed interface Event : OneOffEvent {
 
     data class RequestCompletionBiometricPrompt(val requestDuringSigning: Boolean) : Event
     data object CloseLoginFlow : Event
-
-    data class OpenUrl(val url: String) : Event
 
     data object LoginFlowCompleted : Event
 

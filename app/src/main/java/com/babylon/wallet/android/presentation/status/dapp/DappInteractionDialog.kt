@@ -83,6 +83,14 @@ private fun DappInteractionDialogContent(
             color = RadixTheme.colors.gray1,
             textAlign = TextAlign.Center
         )
+        if (state.isMobileConnect) {
+            Text(
+                text = "You can return back to the dApp!",
+                style = RadixTheme.typography.body1HighImportance,
+                color = RadixTheme.colors.gray1,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -90,6 +98,12 @@ private fun DappInteractionDialogContent(
 @Composable
 fun DappInteractionDialogPreview() {
     RadixWalletTheme {
-        DappInteractionDialogContent(state = DappInteractionDialogViewModel.State(requestId = "abc", dAppName = "dApp"))
+        DappInteractionDialogContent(
+            state = DappInteractionDialogViewModel.State(
+                requestId = "abc",
+                dAppName = "dApp",
+                isMobileConnect = true
+            )
+        )
     }
 }
