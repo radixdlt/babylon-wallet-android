@@ -131,7 +131,7 @@ class MobileConnectViewModel @Inject constructor(
             it.copy(isLinking = true)
         }
         if (withDelay) {
-            val connectDelaySeconds = preferencesManager.mobileConnectDelaySeconds.firstOrNull() ?: 0
+            val connectDelaySeconds = preferencesManager.mobileConnectDelaySeconds.firstOrNull() ?: 1
             delay(connectDelaySeconds * 1000L)
         }
         val keyPair = generateX25519KeyPair().getOrNull() ?: error("Failed to generate X25519 key pair")
@@ -149,9 +149,6 @@ class MobileConnectViewModel @Inject constructor(
             callbackPath = _state.value.callbackPath
         )
         dappLinkRepository.saveAsTemporary(dappLink).onSuccess {
-            _state.update {
-                it.copy(isLinking = false)
-            }
             sendEvent(
                 Event.OpenUrl(
                     Uri.parse(args.origin).buildUpon().apply {
@@ -164,6 +161,9 @@ class MobileConnectViewModel @Inject constructor(
                     }.build().toString(), args.browser
                 )
             )
+            _state.update {
+                it.copy(isLinking = false)
+            }
         }.onFailure { error ->
             _state.update {
                 it.copy(uiMessage = UiMessage.ErrorMessage(error), isLinking = false)

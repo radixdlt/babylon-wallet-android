@@ -59,7 +59,6 @@ class MainActivity : FragmentActivity() {
         setSplashExitAnimation(splashScreen)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
-
         cloudBackupSyncExecutor.startPeriodicChecks(lifecycleOwner = this)
 
         Timber.d("Dapp deep link: ${intent.data}")
