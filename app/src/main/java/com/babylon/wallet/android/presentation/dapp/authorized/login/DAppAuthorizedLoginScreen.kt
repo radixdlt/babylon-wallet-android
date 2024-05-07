@@ -33,7 +33,6 @@ import com.babylon.wallet.android.presentation.ui.composables.NoMnemonicAlertDia
 import com.babylon.wallet.android.presentation.ui.composables.RadixCenteredTopAppBar
 import com.babylon.wallet.android.presentation.ui.composables.SnackbarUiMessageHandler
 import com.babylon.wallet.android.utils.biometricAuthenticateSuspend
-import com.babylon.wallet.android.utils.openUrl
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.IdentityAddress
 import kotlinx.coroutines.flow.Flow
@@ -150,13 +149,11 @@ private fun HandleOneOffEvents(
     onBackClick: () -> Unit,
     onLoginFlowComplete: () -> Unit
 ) {
-    val context = LocalContext.current
     LaunchedEffect(Unit) {
         events.collect { event ->
             when (event) {
                 Event.CloseLoginFlow -> onBackClick()
                 Event.LoginFlowCompleted -> onLoginFlowComplete()
-                is Event.MobileConnectFlowComplete -> context.openUrl(event.url)
                 else -> {}
             }
         }

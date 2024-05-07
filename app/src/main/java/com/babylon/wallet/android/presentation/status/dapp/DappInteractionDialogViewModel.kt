@@ -22,7 +22,8 @@ class DappInteractionDialogViewModel @Inject constructor(
     override fun initialState(): State = with(DappInteractionSuccessDialogArgs(savedStateHandle)) {
         State(
             requestId = requestId,
-            dAppName = dAppName
+            dAppName = dAppName,
+            isMobileConnect = mobileConnect
         )
     }
 
@@ -35,10 +36,11 @@ class DappInteractionDialogViewModel @Inject constructor(
 
     data class State(
         val requestId: String,
-        val dAppName: String
+        val dAppName: String,
+        val isMobileConnect: Boolean
     ) : UiState
 
     sealed interface Event : OneOffEvent {
-        object DismissDialog : Event
+        data object DismissDialog : Event
     }
 }
