@@ -17,8 +17,9 @@ class EulaViewModel @Inject constructor(
 
     init {
         // if user login but then decides to leave the [CreateAccountScreen] and navigates to the [OnboardingScreen]
-        // or kills the app before while is in [CreateAccountScreen],
+        // or kills the app before is in [CreateAccountScreen],
         // then the next time the wallet navigates to [EulaScreen] ensure to revoke access.
+        //
         // If we don't do this, and e.g. user kills the app, at the next launch they won't be able to login!
         //
         // This won't change the fact that when user navigates from [CreateAccountScreen] to [EulaScreen] and
