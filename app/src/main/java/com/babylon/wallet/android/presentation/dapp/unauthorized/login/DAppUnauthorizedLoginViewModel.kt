@@ -256,6 +256,7 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
             ).mapCatching {
                 respondToIncomingRequestUseCase.respondWithSuccess(request, it).getOrThrow()
             }.onSuccess { result ->
+                sendEvent(Event.LoginFlowCompleted)
                 if (!request.isInternal) {
                     appEventBus.sendEvent(
                         AppEvent.Status.DappInteraction(
@@ -265,7 +266,6 @@ class DAppUnauthorizedLoginViewModel @Inject constructor(
                         )
                     )
                 }
-                sendEvent(Event.LoginFlowCompleted)
             }.onFailure { exception ->
                 handleRequestError(exception)
             }

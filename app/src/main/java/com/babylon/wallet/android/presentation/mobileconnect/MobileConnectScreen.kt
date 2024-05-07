@@ -130,7 +130,9 @@ fun MobileConnectContent(
                         onClick = onLinkWithDapp,
                         modifier = Modifier
                             .fillMaxWidth(),
-                        throttleClicks = true
+                        throttleClicks = true,
+                        isLoading = state.isLinking,
+                        enabled = state.isLinking.not()
                     )
                 }
             }
