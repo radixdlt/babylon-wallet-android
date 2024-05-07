@@ -26,6 +26,8 @@ class ConnectCloudBackupViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     fun onLoginToGoogleClick() = viewModelScope.launch {
+        _state.update { it.copy(isAccessToGoogleDriveInProgress = true) }
+
         val intent = googleSignInManager.createSignInIntent()
         sendEvent(Event.SignInToGoogle(intent))
     }
@@ -36,6 +38,8 @@ class ConnectCloudBackupViewModel @Inject constructor(
 
     fun handleSignInResult(result: ActivityResult) {
         viewModelScope.launch {
+            _state.update { it.copy(isAccessToGoogleDriveInProgress = true) }
+
             googleSignInManager.handleSignInResult(result)
                 .onSuccess { googleAccount ->
                     Timber.d("cloud backup is authorized for email: ${googleAccount.email}")
@@ -51,10 +55,14 @@ class ConnectCloudBackupViewModel @Inject constructor(
                         Timber.e("cloud backup authorization failed: $exception")
                     }
                 }
+                .also {
+                    _state.update { it.copy(isAccessToGoogleDriveInProgress = false) }
+                }
         }
     }
 
     data class State(
+        val isAccessToGoogleDriveInProgress: Boolean = false,
         val errorMessage: UiMessage.GoogleAuthErrorMessage? = null
     ) : UiState
 

@@ -29,6 +29,8 @@ class CloudBackupLoginViewModel @Inject constructor(
     override fun initialState(): State = State()
 
     fun onLoginToGoogleClick() = viewModelScope.launch {
+        _state.update { it.copy(isAccessToGoogleDriveInProgress = true) }
+
         if (googleSignInManager.isCloudBackupAuthorized()) {
             googleSignInManager.signOut()
             googleSignInManager.revokeAccess()
@@ -40,6 +42,8 @@ class CloudBackupLoginViewModel @Inject constructor(
 
     fun handleSignInResult(result: ActivityResult) {
         viewModelScope.launch {
+            _state.update { it.copy(isAccessToGoogleDriveInProgress = true) }
+
             googleSignInManager.handleSignInResult(result)
                 .onSuccess {
                     Timber.d("cloud backup is authorized")
@@ -57,6 +61,9 @@ class CloudBackupLoginViewModel @Inject constructor(
                             }
                         }
                     }
+                }
+                .also {
+                    _state.update { it.copy(isAccessToGoogleDriveInProgress = false) }
                 }
         }
     }
@@ -93,6 +100,7 @@ class CloudBackupLoginViewModel @Inject constructor(
     fun onErrorMessageShown() = _state.update { it.copy(errorMessage = null) }
 
     data class State(
+        val isAccessToGoogleDriveInProgress: Boolean = false,
         val errorMessage: UiMessage.GoogleAuthErrorMessage? = null
     ) : UiState
 

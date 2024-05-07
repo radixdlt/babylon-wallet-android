@@ -78,6 +78,7 @@ fun CloudBackupLoginScreen(
 
     CloudBackupLoginContent(
         modifier = modifier,
+        isAccessToGoogleDriveInProgress = state.isAccessToGoogleDriveInProgress,
         errorMessage = state.errorMessage,
         onErrorMessageShown = viewModel::onErrorMessageShown,
         onBackClick = onBackClick,
@@ -89,6 +90,7 @@ fun CloudBackupLoginScreen(
 @Composable
 private fun CloudBackupLoginContent(
     modifier: Modifier = Modifier,
+    isAccessToGoogleDriveInProgress: Boolean,
     errorMessage: UiMessage?,
     onErrorMessageShown: () -> Unit,
     onBackClick: () -> Unit,
@@ -164,6 +166,7 @@ private fun CloudBackupLoginContent(
             RadixPrimaryButton(
                 modifier = Modifier.fillMaxWidth(),
                 text = "Log in to Google Drive", // TODO Crowdin
+                isLoading = isAccessToGoogleDriveInProgress,
                 onClick = onLoginToGoogleClick
             )
             Spacer(modifier = Modifier.weight(0.1f))
@@ -177,6 +180,7 @@ fun CloudBackupLoginPreview() {
     RadixWalletPreviewTheme {
         CloudBackupLoginContent(
             errorMessage = null,
+            isAccessToGoogleDriveInProgress = false,
             onErrorMessageShown = {},
             onBackClick = {},
             onLoginToGoogleClick = {},
