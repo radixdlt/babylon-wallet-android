@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.data.dapp
 
+import com.babylon.wallet.android.data.dapp.model.Account
 import com.babylon.wallet.android.data.dapp.model.AccountProof
 import com.babylon.wallet.android.data.dapp.model.AccountsRequestItem
 import com.babylon.wallet.android.data.dapp.model.AccountsRequestResponseItem
@@ -26,12 +27,12 @@ class WalletInteractionModelsTest {
     fun `OneTimeAccountsRequestResponseItem serialization & deserialization`() {
         val responseItem1 = AccountsRequestResponseItem(
             accounts = listOf(
-                AccountsRequestResponseItem.Account(
+                Account(
                     address = "address1",
                     label = "Test account 1",
                     appearanceId = 1
                 ),
-                AccountsRequestResponseItem.Account(
+                Account(
                     address = "address2",
                     label = "Test account 2",
                     appearanceId = 2
@@ -59,12 +60,12 @@ class WalletInteractionModelsTest {
         )
         val responseItem2 = AccountsRequestResponseItem(
             accounts = listOf(
-                AccountsRequestResponseItem.Account(
+                Account(
                     address = "address1",
                     label = "Test account",
                     appearanceId = 0
                 ),
-                AccountsRequestResponseItem.Account(
+                Account(
                     address = "address2",
                     label = "Test account",
                     appearanceId = 1

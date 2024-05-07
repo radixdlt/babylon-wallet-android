@@ -1,6 +1,5 @@
 package com.babylon.wallet.android.domain.usecases.p2plink
 
-import com.babylon.wallet.android.data.gateway.generated.infrastructure.Serializer
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionPayload
@@ -14,6 +13,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -33,6 +33,7 @@ class ParseLinkConnectionDetailsUseCaseTest {
         private lateinit var objectUnderTest: ParseLinkConnectionDetailsUseCase
 
         private val p2pLinksRepositoryMock: P2PLinksRepository = mock()
+        private val json = Json
     }
 
     private val testDispatcher = StandardTestDispatcher()
@@ -41,13 +42,29 @@ class ParseLinkConnectionDetailsUseCaseTest {
     @Before
     fun setup() {
         objectUnderTest = ParseLinkConnectionDetailsUseCase(
-            p2PLinksRepository = p2pLinksRepositoryMock
+            p2PLinksRepository = p2pLinksRepositoryMock,
+            json = json
         )
     }
 
     @After
     fun tearDown() {
         reset(p2pLinksRepositoryMock)
+    }
+
+    @Test
+    fun `given an old version of link details, the result is failure with old qr version exception`() {
+        testScope.runTest {
+            val raw = "eb71c52ec7c61cea3791835d84c1a851d2a70c19149da71fc4852fd5ff585fbb"
+
+            val result = objectUnderTest(raw)
+
+            verifyNoInteractions(p2pLinksRepositoryMock)
+            assertEquals(
+                Result.failure<LinkConnectionPayload>(RadixWalletException.LinkConnectionException.OldQRVersion),
+                result
+            )
+        }
     }
 
     @Test
@@ -159,7 +176,7 @@ class ParseLinkConnectionDetailsUseCaseTest {
     }
 
     private fun toRawInput(content: LinkConnectionQRContent): String {
-        return Serializer.kotlinxSerializationJson.encodeToString(content)
+        return json.encodeToString(content)
     }
 
     private fun buildQRContent(
@@ -180,15 +197,13 @@ class ParseLinkConnectionDetailsUseCaseTest {
         password: String = "eb71c52ec7c61cea3791835d84c1a851d2a70c19149da71fc4852fd5ff585fbb",
         name: String = "Test Name",
         publicKey: String = "8020845f1d7d1fe45e3e4e4e5ac5484e8650a1151adc7fe38283af9d0bbef2ac",
-        purpose: P2PLinkPurpose = P2PLinkPurpose.General,
-        walletPrivateKey: String = ""
+        purpose: P2PLinkPurpose = P2PLinkPurpose.General
     ): P2PLink {
         return P2PLink(
             connectionPassword = password,
             displayName = name,
             publicKey = publicKey,
-            purpose = purpose,
-            walletPrivateKey = walletPrivateKey
+            purpose = purpose
         )
     }
 }

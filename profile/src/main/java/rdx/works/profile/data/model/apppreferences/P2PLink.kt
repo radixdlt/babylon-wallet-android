@@ -22,8 +22,5 @@ data class P2PLink(
     val publicKey: String,
 
     @SerialName("purpose")
-    val purpose: P2PLinkPurpose,
-
-    @SerialName("walletPrivateKey")
-    val walletPrivateKey: String
+    val purpose: P2PLinkPurpose
 )

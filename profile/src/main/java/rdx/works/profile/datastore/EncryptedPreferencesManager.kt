@@ -153,6 +153,21 @@ class EncryptedPreferencesManager @Inject constructor(
         putString(permanentPreferences, P2P_LINKS_PREFERENCES_KEY, p2pLinkListJson, KeySpec.Profile())
     }
 
+    suspend fun saveP2PLinksWalletPrivateKey(privateKeyHex: String) {
+        putString(permanentPreferences, P2P_LINKS_WALLET_PK_PREFERENCES_KEY, privateKeyHex, KeySpec.Profile())
+    }
+
+    suspend fun getP2PLinksWalletPrivateKey(): String? {
+        return permanentPreferences.data.catchIOException()
+            .map { preferences ->
+                preferences[stringPreferencesKey(P2P_LINKS_WALLET_PK_PREFERENCES_KEY)]
+                    .takeIf { !it.isNullOrEmpty() }
+                    ?.decrypt(KeySpec.Profile())
+            }
+            .firstOrNull()
+            ?.getOrNull()
+    }
+
     suspend fun clear() = preferences.edit { it.clear() }
 
     private fun Flow<Preferences>.catchIOException() = catch { exception ->
@@ -170,7 +185,8 @@ class EncryptedPreferencesManager @Inject constructor(
         private const val PROFILE_PREFERENCES_KEY = "profile_preferences_key"
         private const val RESTORED_PROFILE_CLOUD_PREFERENCES_KEY = "restored_cloud_profile_key"
         private const val RESTORED_PROFILE_FILE_PREFERENCES_KEY = "restored_file_profile_key"
-        private const val P2P_LINKS_PREFERENCES_KEY = "p2p_links_keys_key"
+        private const val P2P_LINKS_PREFERENCES_KEY = "p2p_links_key"
+        private const val P2P_LINKS_WALLET_PK_PREFERENCES_KEY = "p2p_links_wallet_pk_key"
         private const val RETRY_COUNT = 3L
         private const val RETRY_DELAY = 1500L
     }

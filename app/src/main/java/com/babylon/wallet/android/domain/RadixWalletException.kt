@@ -193,6 +193,8 @@ sealed class RadixWalletException(cause: Throwable? = null) : Throwable(cause = 
 
     sealed class LinkConnectionException : RadixWalletException() {
 
+        data object OldQRVersion : LinkConnectionException()
+
         data object InvalidQR : LinkConnectionException()
 
         data object InvalidSignature : LinkConnectionException()
@@ -302,6 +304,9 @@ fun RadixWalletException.GatewayException.toUserFriendlyMessage(context: Context
 }
 
 fun RadixWalletException.LinkConnectionException.toUserFriendlyMessage(context: Context): String = when (this) {
+    RadixWalletException.LinkConnectionException.OldQRVersion -> {
+        context.getString(R.string.linkedConnectors_oldQRErrorMessage)
+    }
     RadixWalletException.LinkConnectionException.InvalidQR,
     RadixWalletException.LinkConnectionException.InvalidSignature -> {
         context.getString(R.string.linkedConnectors_incorrectQrMessage)

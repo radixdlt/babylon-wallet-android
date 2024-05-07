@@ -32,6 +32,9 @@ class FakePreferenceManager : PreferencesManager {
     override val lastNPSSurveyInstant: Flow<Instant?>
         get() = _lastNPSSurveyInstant
 
+    override val lastSyncedAccountsWithCE: Flow<String?>
+        get() = TODO("Not yet implemented")
+
     override suspend fun updateLastBackupInstant(backupInstant: Instant) {
         TODO("Not yet implemented")
     }
@@ -89,6 +92,14 @@ class FakePreferenceManager : PreferencesManager {
 
     override suspend fun updateLastNPSSurveyInstant(npsSurveyInstant: Instant) {
         _lastNPSSurveyInstant.emit(npsSurveyInstant)
+    }
+
+    override suspend fun updateLastSyncedAccountsWithCE(accountsHash: String) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun removeLastSyncedAccountsWithCE() {
+        TODO("Not yet implemented")
     }
 
     override suspend fun clear(): Preferences {

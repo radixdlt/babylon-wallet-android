@@ -8,6 +8,7 @@ import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.MessageFromDataChannel.IncomingRequest
 import com.babylon.wallet.android.domain.usecases.AuthorizeSpecifiedPersonaUseCase
 import com.babylon.wallet.android.domain.usecases.VerifyDAppUseCase
+import com.babylon.wallet.android.domain.usecases.p2plink.SyncAccountsWithConnectorExtensionUseCase
 import com.babylon.wallet.android.presentation.common.OneOffEvent
 import com.babylon.wallet.android.presentation.common.OneOffEventHandler
 import com.babylon.wallet.android.presentation.common.OneOffEventHandlerImpl
@@ -58,7 +59,8 @@ class MainViewModel @Inject constructor(
     private val preferencesManager: PreferencesManager,
     private val checkMnemonicIntegrityUseCase: CheckMnemonicIntegrityUseCase,
     private val isAnyEntityCreatedWithOlympiaUseCase: IsAnyEntityCreatedWithOlympiaUseCase,
-    private val correctLegacyAccountsDerivationPathSchemeUseCase: CorrectLegacyAccountsDerivationPathSchemeUseCase
+    private val correctLegacyAccountsDerivationPathSchemeUseCase: CorrectLegacyAccountsDerivationPathSchemeUseCase,
+    private val syncAccountsWithConnectorExtensionUseCase: SyncAccountsWithConnectorExtensionUseCase
 ) : StateViewModel<MainUiState>(), OneOffEventHandler<MainEvent> by OneOffEventHandlerImpl() {
 
     private var verifyingDappRequestJob: Job? = null
@@ -119,6 +121,10 @@ class MainViewModel @Inject constructor(
             }.collect()
         }
         handleAllIncomingRequests()
+
+        viewModelScope.launch {
+            syncAccountsWithConnectorExtensionUseCase().collect()
+        }
     }
 
     override fun initialState(): MainUiState {

@@ -1,5 +1,6 @@
 package com.babylon.wallet.android.domain.usecases
 
+import com.babylon.wallet.android.data.dapp.model.Account
 import com.babylon.wallet.android.data.dapp.model.AccountProof
 import com.babylon.wallet.android.data.dapp.model.AccountsRequestResponseItem
 import com.babylon.wallet.android.data.dapp.model.AuthLoginWithChallengeRequestResponseItem
@@ -63,7 +64,7 @@ open class BuildDappResponseUseCase(private val rolaClient: ROLAClient) {
         }
 
         val accountsResponses = accounts.map { account ->
-            AccountsRequestResponseItem.Account(
+            Account(
                 address = account.address,
                 label = account.displayName,
                 appearanceId = account.appearanceID
