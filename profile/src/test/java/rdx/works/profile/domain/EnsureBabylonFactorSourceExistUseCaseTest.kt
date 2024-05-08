@@ -59,14 +59,14 @@ class EnsureBabylonFactorSourceExistUseCaseTest {
         profileRepository.saveProfile(profileWithoutMain)
         coEvery { preferenceManager.markFactorSourceBackedUp(any()) } just Runs
         every { deviceInfoRepository.getDeviceInfo() } returns deviceInfo
-        coEvery { mnemonicRepository() } returns mnemonic
+        coEvery { mnemonicRepository.createNew() } returns Result.success(mnemonic)
 
-        val profile = ensureBabylonFactorSourceExistUseCase()
+        val profile = ensureBabylonFactorSourceExistUseCase().getOrThrow()
         assertEquals(2, profile.factorSources.size)
         assertEquals(deviceFactorSource.id, profile.mainBabylonFactorSource?.id)
 
         // Run use case again, factor source is in place so no need to add it again
-        val profileAgain = ensureBabylonFactorSourceExistUseCase()
+        val profileAgain = ensureBabylonFactorSourceExistUseCase().getOrThrow()
         assertEquals(2, profileAgain.factorSources.size)
     }
 }

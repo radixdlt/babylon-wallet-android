@@ -42,7 +42,7 @@ internal class AddOlympiaFactorSourceUseCaseTest {
         profileRepository.saveProfile(profile)
 
         coEvery { mnemonicRepository.mnemonicExist(any()) } returns false
-        coEvery { mnemonicRepository.saveMnemonic(any(), any()) } just Runs
+        coEvery { mnemonicRepository.saveMnemonic(any(), any()) } returns Result.success(Unit)
         coEvery { preferencesManager.markFactorSourceBackedUp(any()) } just Runs
 
 
