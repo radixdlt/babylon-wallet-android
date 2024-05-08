@@ -1,14 +1,11 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.asGeneral
-import kotlinx.coroutines.flow.firstOrNull
 import rdx.works.core.KeySpec
 import rdx.works.core.KeystoreManager
 import rdx.works.core.UUIDGenerator
 import rdx.works.core.checkIfKeyWasPermanentlyInvalidated
 import rdx.works.core.sargon.deviceFactorSources
-import rdx.works.core.sargon.mainBabylonFactorSource
 import rdx.works.profile.data.repository.MnemonicRepository
 import timber.log.Timber
 import javax.inject.Inject

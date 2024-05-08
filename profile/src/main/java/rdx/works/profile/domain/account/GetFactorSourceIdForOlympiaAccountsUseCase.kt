@@ -30,11 +30,12 @@ class GetFactorSourceIdForOlympiaAccountsUseCase @Inject constructor(
                     deviceFactorSource.value.id.asGeneral()
                 }
                 .find { fromHashId ->
-                    val mnemonic = mnemonicRepository.readMnemonic(fromHashId)
-                    if (mnemonic.exceptionOrNull() != null) {
-                        return@withContext Result.failure(mnemonic.exceptionOrNull()!!)
+                    val readMnemonicResult = mnemonicRepository.readMnemonic(fromHashId)
+                    val exception = readMnemonicResult.exceptionOrNull()
+                    if (exception != null) {
+                        return@withContext Result.failure(exception)
                     }
-                    mnemonic.getOrNull()?.validatePublicKeysOf(olympiaAccounts) == true
+                    readMnemonicResult.getOrNull()?.validatePublicKeysOf(olympiaAccounts) == true
                 }?.value?.asGeneral()
             Result.success(existingId)
         }

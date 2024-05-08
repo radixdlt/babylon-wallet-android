@@ -95,9 +95,11 @@ class EnsureBabylonFactorSourceExistUseCase @Inject constructor(
         } else {
             mnemonicRepository.saveMnemonic(deviceFactorSource.value.id.asGeneral(), mnemonic).fold(onSuccess = {
                 preferencesManager.markFactorSourceBackedUp(deviceFactorSource.value.id.asGeneral())
-                Result.success(profileRepository.updateProfile { p ->
-                    p.copy(factorSources = p.factorSources.asIdentifiable().append(deviceFactorSource).asList())
-                })
+                Result.success(
+                    profileRepository.updateProfile { p ->
+                        p.copy(factorSources = p.factorSources.asIdentifiable().append(deviceFactorSource).asList())
+                    }
+                )
             }, onFailure = {
                 Result.failure(ProfileException.SecureStorageAccess)
             })
