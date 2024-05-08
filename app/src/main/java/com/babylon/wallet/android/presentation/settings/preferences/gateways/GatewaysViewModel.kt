@@ -173,5 +173,4 @@ enum class GatewayAddFailure {
 data class GatewayWrapper(val gateway: Gateway, val selected: Boolean) {
 
     val canBeDeleted: Boolean = !gateway.isWellKnown
-
 }

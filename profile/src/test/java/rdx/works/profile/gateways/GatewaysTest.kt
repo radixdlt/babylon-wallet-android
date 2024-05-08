@@ -1,8 +1,8 @@
 package rdx.works.profile.gateways
 
 import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.Gateways
 import com.radixdlt.sargon.NetworkId
+import com.radixdlt.sargon.SavedGateways
 import com.radixdlt.sargon.Url
 import com.radixdlt.sargon.extensions.all
 import com.radixdlt.sargon.extensions.changeCurrent
@@ -20,7 +20,7 @@ class GatewaysTest {
 
     @Test
     fun `containsGateway extension with Radix mainnet gateway`() {
-        var savedGateways = Gateways.default.copy(
+        var savedGateways = SavedGateways.default.copy(
             current = Gateway.mainnet.copy(
                 url = Url("https://mainnet.radixdlt.com"), // Without slash at the end,
                 network = Gateway.mainnet.network.copy(logicalName = "Mainnet") // With uppercase
@@ -38,7 +38,7 @@ class GatewaysTest {
 
     @Test
     fun `existing custom gateway with slash and new gateway with same id but without path then containsGateway returns true`() {
-        var savedGateways = Gateways.default.changeCurrent(
+        var savedGateways = SavedGateways.default.changeCurrent(
             newCurrent = Gateway.init("https://my.gateway.com/", NetworkId.NEBUNET)
         )
 
@@ -52,7 +52,7 @@ class GatewaysTest {
 
     @Test
     fun `existing gateway with path and new gateway with same id but without path then containsGateway returns false`() {
-        var savedGateways = Gateways.default.changeCurrent(
+        var savedGateways = SavedGateways.default.changeCurrent(
             newCurrent = Gateway.init("https://my.gateway.com/path/morepath", NetworkId.NEBUNET)
         )
 
@@ -66,7 +66,7 @@ class GatewaysTest {
 
     @Test
     fun `existing gateway with path and new gateway with same id and with slash then containsGateway returns true`() {
-        var savedGateways = Gateways.default.changeCurrent(
+        var savedGateways = SavedGateways.default.changeCurrent(
             newCurrent = Gateway.init("https://my.gateway.com/path/morepath", NetworkId.NEBUNET)
         )
 
@@ -80,7 +80,7 @@ class GatewaysTest {
 
     @Test
     fun `existing gateway with slash and new gateway with same id but without slash then containsGateway returns true`() {
-        var savedGateways = Gateways.default.changeCurrent(
+        var savedGateways = SavedGateways.default.changeCurrent(
             newCurrent = Gateway.init("https://1.1.1.1/", NetworkId.NEBUNET)
         )
 
@@ -94,7 +94,7 @@ class GatewaysTest {
 
     @Test
     fun `existing gateway with slash and new gateway with different id and without slash then containsGateway returns false`() {
-        var savedGateways = Gateways.default.changeCurrent(
+        var savedGateways = SavedGateways.default.changeCurrent(
             newCurrent = Gateway.init("https://1.1.1.1/", NetworkId.NEBUNET)
         )
 
