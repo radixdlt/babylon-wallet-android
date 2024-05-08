@@ -5,12 +5,14 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavController
 import com.babylon.wallet.android.R
+import timber.log.Timber
 
 val backupSettingsScreenIntent: Intent
     get() = Intent().apply {
@@ -44,15 +46,16 @@ fun Context.openUrl(uri: Uri, browserName: String? = null) {
     val intent = Intent(Intent.ACTION_VIEW).apply {
         data = uri
     }
-//    browserName?.let { name ->
-//        val info = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-//        info.find { resolveInfo ->
-//            val appName = resolveInfo.loadLabel(packageManager).toString()
-//            appName.lowercase().contains(name.lowercase())
-//        }?.let { resolveInfo ->
-//            intent.setPackage(resolveInfo.activityInfo.packageName)
-//        }
-//    }
+    browserName?.let { name ->
+        val info = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
+        info.find { resolveInfo ->
+            val appName = resolveInfo.loadLabel(packageManager).toString()
+            appName.lowercase().contains(name.lowercase())
+        }?.let { resolveInfo ->
+            Timber.d("Handling browser: ${resolveInfo.activityInfo.packageName}")
+            intent.setComponent(ComponentName(resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name))
+        }
+    }
     try {
         startActivity(intent)
     } catch (activityNotFound: ActivityNotFoundException) {
