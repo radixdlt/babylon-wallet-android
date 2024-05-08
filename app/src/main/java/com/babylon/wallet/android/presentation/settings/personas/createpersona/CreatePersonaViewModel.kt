@@ -58,7 +58,7 @@ class CreatePersonaViewModel @Inject constructor(
         _state.update { it.copy(loading = true) }
         viewModelScope.launch {
             val personaData = _state.value.currentFields.toPersonaData()
-            val persona = createPersonaWithDeviceFactorSourceUseCase(
+            createPersonaWithDeviceFactorSourceUseCase(
                 displayName = DisplayName(_state.value.personaDisplayName.value),
                 personaData = personaData
             ).onSuccess { persona ->
@@ -72,18 +72,20 @@ class CreatePersonaViewModel @Inject constructor(
                     )
                 )
             }.onFailure { error ->
-                when {
-                    error is ProfileException.SecureStorageAccess -> {
+                when (error) {
+                    is ProfileException.SecureStorageAccess -> {
+                        _state.update { it.copy(loading = false) }
                         appEventBus.sendEvent(AppEvent.SecureFolderWarning)
                     }
 
                     else -> {
                         _state.update {
-                            if (error is ProfileException.NoMnemonic) {
-                                it.copy(loading = false, isNoMnemonicErrorVisible = true)
-                            } else {
-                                it.copy(loading = false, uiMessage = UiMessage.ErrorMessage(error))
-                            }
+                            val noMnemonic = error is ProfileException.NoMnemonic
+                            it.copy(
+                                loading = false,
+                                isNoMnemonicErrorVisible = noMnemonic,
+                                uiMessage = if (!noMnemonic) UiMessage.ErrorMessage(error) else null
+                            )
                         }
                     }
                 }

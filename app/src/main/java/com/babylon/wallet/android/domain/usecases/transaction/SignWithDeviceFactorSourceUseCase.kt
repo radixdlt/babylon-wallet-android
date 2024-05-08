@@ -39,16 +39,17 @@ class SignWithDeviceFactorSourceUseCase @Inject constructor(
                     }
                     val mnemonicExist = mnemonicRepository.mnemonicExist(deviceFactorSource.value.id.asGeneral())
                     if (mnemonicExist.not()) return Result.failure(ProfileException.NoMnemonic)
-                    val mnemonic = requireNotNull(mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).getOrNull())
-
-                    val signatureWithPublicKey = mnemonic.sign(
-                        hash = request.hashedDataToSign,
-                        path = factorInstance.publicKey.derivationPath
-                    )
-
-                    result.add(signatureWithPublicKey)
-                    val profile = profileRepository.profile.first()
-                    profileRepository.saveProfile(profile.updateLastUsed(deviceFactorSource.id))
+                    mnemonicRepository.readMnemonic(deviceFactorSource.value.id.asGeneral()).mapCatching { mnemonic ->
+                        val signatureWithPublicKey = mnemonic.sign(
+                            hash = request.hashedDataToSign,
+                            path = factorInstance.publicKey.derivationPath
+                        )
+                        result.add(signatureWithPublicKey)
+                        val profile = profileRepository.profile.first()
+                        profileRepository.saveProfile(profile.updateLastUsed(deviceFactorSource.id))
+                    }.onFailure {
+                        return Result.failure(it)
+                    }
                 }
             }
         }
