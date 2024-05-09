@@ -71,7 +71,7 @@ private fun SettingsContent(
         modifier = modifier,
         topBar = {
             RadixCenteredTopAppBar(
-                title = stringResource(R.string.appSettings_title),
+                title = stringResource(R.string.walletSettings_title),
                 onBackClick = onBackClick,
                 contentColor = RadixTheme.colors.gray1,
                 windowInsets = WindowInsets.statusBars,
