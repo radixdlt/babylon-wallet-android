@@ -310,12 +310,12 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
             verticalArrangement = Arrangement.spacedBy(space = RadixTheme.dimensions.paddingSmall, alignment = Alignment.CenterVertically)
         ) {
             Text(
-                text = stringResource(id = R.string.configurationBackup_title),
+                text = stringResource(id = R.string.securityCenter_configurationBackupItem_title),
                 style = RadixTheme.typography.body1Header,
                 color = RadixTheme.colors.gray1
             )
             Text(
-                text = stringResource(id = R.string.configurationBackup_automated_heading),
+                text = stringResource(id = R.string.securityCenter_configurationBackupItem_subtitle),
                 style = RadixTheme.typography.body2Regular,
                 color = RadixTheme.colors.gray2
             )
@@ -329,7 +329,7 @@ private fun BackupConfigurationCard(needsAction: Boolean, onBackupConfigurationC
                 val text = if (needsAction) {
                     stringResource(id = R.string.securityCenter_anyItem_actionRequiredStatus)
                 } else {
-                    stringResource(id = R.string.securityCenter_securityFactorsItem_activeStatus)
+                    stringResource(id = R.string.securityCenter_configurationBackupItem_backedUpStatus)
                 }
                 Icon(
                     painter = painterResource(id = icon),
