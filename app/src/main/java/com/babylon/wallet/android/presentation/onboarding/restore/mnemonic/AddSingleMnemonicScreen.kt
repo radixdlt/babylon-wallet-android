@@ -161,7 +161,7 @@ private fun AddSingleMnemonicsContent(
                         .fillMaxWidth()
                 ) {
                     val isEnabled = remember(state.seedPhraseState) {
-                        state.seedPhraseState.isSeedPhraseValid()
+                        state.seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
                     }
                     RadixPrimaryButton(
                         modifier = Modifier
@@ -314,7 +314,7 @@ private fun SeedPhraseView(
         )
 
         val isInvalid = remember(seedPhraseState) {
-            !seedPhraseState.isSeedPhraseValid()
+            !seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
         }
 
         if (isInvalid) {
