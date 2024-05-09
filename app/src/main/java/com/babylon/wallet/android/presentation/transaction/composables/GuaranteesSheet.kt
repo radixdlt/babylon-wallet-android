@@ -34,7 +34,7 @@ fun GuaranteesSheet(
     onGuaranteeValueDecreased: (AccountWithPredictedGuarantee) -> Unit,
 ) {
     Column(
-        modifier = modifier.imePadding()
+        modifier = modifier
     ) {
         BottomDialogHeader(
             modifier = Modifier

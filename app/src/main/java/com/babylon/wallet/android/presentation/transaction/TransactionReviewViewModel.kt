@@ -286,6 +286,7 @@ class TransactionReviewViewModel @Inject constructor(
             transactionFees = transactionFees,
             sheetState = Sheet.CustomizeFees(
                 feePayerMode = Sheet.CustomizeFees.FeePayerMode.SelectFeePayer(
+                    preselectedCandidate = feePayers?.selectedAccountAddress,
                     candidates = feePayers?.candidates.orEmpty()
                 ),
                 feesMode = latestFeesMode
@@ -402,6 +403,7 @@ class TransactionReviewViewModel @Inject constructor(
                     ) : FeePayerMode
 
                     data class SelectFeePayer(
+                        val preselectedCandidate: AccountAddress?,
                         val candidates: List<TransactionFeePayers.FeePayerCandidate>
                     ) : FeePayerMode
                 }
