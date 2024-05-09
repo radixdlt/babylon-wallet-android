@@ -833,7 +833,7 @@ private fun VerifyWithYourSeedPhrasePage(
         )
 
         val isSeedPhraseValid = remember(seedPhraseInputState) {
-            seedPhraseInputState.isSeedPhraseValid()
+            seedPhraseInputState.shouldDisplayInvalidSeedPhraseWarning()
         }
         if (!isSeedPhraseValid) {
             RedWarningText(
