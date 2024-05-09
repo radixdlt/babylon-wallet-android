@@ -21,7 +21,7 @@ interface P2PLinksRepository {
 
     suspend fun save(p2pLinks: List<P2PLink>)
 
-    suspend fun removeP2PLink(publicKey: String)
+    suspend fun removeP2PLink(id: String)
 }
 
 class P2PLinksRepositoryImpl @Inject constructor(
@@ -47,11 +47,11 @@ class P2PLinksRepositoryImpl @Inject constructor(
         withContext(ioDispatcher) { saveP2PLinks(p2pLinks) }
     }
 
-    override suspend fun removeP2PLink(publicKey: String) {
+    override suspend fun removeP2PLink(id: String) {
         withContext(ioDispatcher) {
             val p2pLinks = getSavedP2PLinks()
-            val p2pLink = p2pLinks.findBy(publicKey) ?: return@withContext
-            val newP2PLinks = getSavedP2PLinks().filter { it.publicKey != publicKey }
+            val p2pLink = p2pLinks.findBy(id) ?: return@withContext
+            val newP2PLinks = getSavedP2PLinks().filter { it.id != id }
 
             saveP2PLinks(newP2PLinks)
             peerdroidClient.deleteLink(p2pLink.connectionPassword)

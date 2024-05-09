@@ -1,7 +1,9 @@
 package rdx.works.core.serializers
 
-import com.radixdlt.sargon.PublicKey
+import com.radixdlt.sargon.Exactly32Bytes
+import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.extensions.hex
+import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -10,7 +12,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-object PublicKeySerializer : KSerializer<PublicKey> {
+object RadixConnectPasswordSerializer : KSerializer<RadixConnectPassword> {
 
     private const val SERIAL_NAME = "rdx.works.core.serializers.PublicKeySerializer"
 
@@ -19,11 +21,11 @@ object PublicKeySerializer : KSerializer<PublicKey> {
         kind = PrimitiveKind.STRING
     )
 
-    override fun deserialize(decoder: Decoder): PublicKey {
-        return PublicKey.init(decoder.decodeString())
+    override fun deserialize(decoder: Decoder): RadixConnectPassword {
+        return RadixConnectPassword(Exactly32Bytes.init(decoder.decodeString().hexToBagOfBytes()))
     }
 
-    override fun serialize(encoder: Encoder, value: PublicKey) {
-        encoder.encodeString(value.hex)
+    override fun serialize(encoder: Encoder, value: RadixConnectPassword) {
+        encoder.encodeString(value.value.hex)
     }
 }

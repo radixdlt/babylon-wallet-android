@@ -36,7 +36,7 @@ class LinkedConnectorsViewModel @Inject constructor(
                         it.copy(
                             activeConnectors = p2pLinks.map { link ->
                                 LinkedConnectorsUiState.ConnectorUiItem(
-                                    id = link.publicKey,
+                                    id = link.id,
                                     name = link.displayName
                                 )
                             }.toPersistentList()

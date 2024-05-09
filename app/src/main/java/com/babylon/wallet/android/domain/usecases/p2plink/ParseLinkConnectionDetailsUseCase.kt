@@ -5,21 +5,22 @@ import com.babylon.wallet.android.data.repository.p2plink.findBy
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionPayload
 import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionQRContent
-import com.babylon.wallet.android.utils.getSignatureMessageFromConnectionPassword
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.RadixConnectPassword
+import com.radixdlt.sargon.Signature
+import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.isValid
 import kotlinx.serialization.json.Json
-import rdx.works.core.decodeHex
 import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
-import rdx.works.profile.ret.crypto.PrivateKey
 import timber.log.Timber
 import javax.inject.Inject
 
 class ParseLinkConnectionDetailsUseCase @Inject constructor(
     private val p2PLinksRepository: P2PLinksRepository,
+    private val getP2PLinkClientSignatureMessageUseCase: GetP2PLinkClientSignatureMessageUseCase,
     private val json: Json
 ) {
 
@@ -31,11 +32,13 @@ class ParseLinkConnectionDetailsUseCase @Inject constructor(
         }
 
         runCatching {
-            PrivateKey.EddsaEd25519.verifySignature(
-                signature = content.signature.decodeHex(),
-                hashedData = getSignatureMessageFromConnectionPassword(content.password),
-                publicKey = content.publicKey.decodeHex()
-            )
+            val password = RadixConnectPassword(Exactly32Bytes.init(content.password.hexToBagOfBytes()))
+            val hashedData = getP2PLinkClientSignatureMessageUseCase(password)
+
+            SignatureWithPublicKey.Ed25519(
+                publicKey = PublicKey.Ed25519.init(content.publicKey).v1,
+                signature = Signature.Ed25519.init(content.signature.hexToBagOfBytes()).value
+            ).isValid(hashedData)
         }.getOrElse { throwable ->
             Timber.e("Failed to verify the link signature: ${content.signature} Error: ${throwable.message}")
             return Result.failure(RadixWalletException.LinkConnectionException.InvalidSignature)

@@ -13,7 +13,7 @@ import com.radixdlt.sargon.NotarySignature
 import com.radixdlt.sargon.SignatureWithPublicKey
 import com.radixdlt.sargon.SignedIntentHash
 import com.radixdlt.sargon.TransactionIntent
-import com.radixdlt.sargon.extensions.NotaryPrivateKey
+import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.modifyLockFee
 import com.radixdlt.sargon.extensions.secureRandom
 import rdx.works.core.domain.TransactionManifestData
@@ -80,7 +80,7 @@ class SignTransactionUseCase @Inject constructor(
         private val manifest: TransactionManifestData,
         val lockFee: Decimal192,
         val tipPercentage: UShort,
-        val ephemeralNotaryPrivateKey: NotaryPrivateKey = NotaryPrivateKey.secureRandom(),
+        val ephemeralNotaryPrivateKey: Curve25519SecretKey = Curve25519SecretKey.secureRandom(),
         val feePayerAddress: AccountAddress? = null
     ) {
 

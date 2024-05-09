@@ -4,6 +4,7 @@ import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.domain.RadixWalletException
 import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionPayload
 import com.babylon.wallet.android.domain.model.p2plink.LinkConnectionQRContent
+import com.radixdlt.sargon.Ed25519PublicKey
 import com.radixdlt.sargon.Exactly32Bytes
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.RadixConnectPassword
@@ -33,6 +34,7 @@ class ParseLinkConnectionDetailsUseCaseTest {
         private lateinit var objectUnderTest: ParseLinkConnectionDetailsUseCase
 
         private val p2pLinksRepositoryMock: P2PLinksRepository = mock()
+        private val getP2PLinkClientSignatureMessageUseCase = GetP2PLinkClientSignatureMessageUseCase()
         private val json = Json
     }
 
@@ -43,6 +45,7 @@ class ParseLinkConnectionDetailsUseCaseTest {
     fun setup() {
         objectUnderTest = ParseLinkConnectionDetailsUseCase(
             p2PLinksRepository = p2pLinksRepositoryMock,
+            getP2PLinkClientSignatureMessageUseCase = getP2PLinkClientSignatureMessageUseCase,
             json = json
         )
     }
@@ -200,9 +203,9 @@ class ParseLinkConnectionDetailsUseCaseTest {
         purpose: P2PLinkPurpose = P2PLinkPurpose.General
     ): P2PLink {
         return P2PLink(
-            connectionPassword = password,
+            connectionPassword = RadixConnectPassword(Exactly32Bytes.init(password.hexToBagOfBytes())),
             displayName = name,
-            publicKey = publicKey,
+            publicKey = PublicKey.Ed25519(Ed25519PublicKey(publicKey.hexToBagOfBytes())),
             purpose = purpose
         )
     }

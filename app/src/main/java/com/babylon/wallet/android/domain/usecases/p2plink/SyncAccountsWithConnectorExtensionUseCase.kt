@@ -7,9 +7,10 @@ import com.babylon.wallet.android.data.dapp.model.Account
 import com.babylon.wallet.android.data.dapp.model.ConnectorExtensionExchangeInteraction
 import com.babylon.wallet.android.data.repository.p2plink.P2PLinksRepository
 import com.babylon.wallet.android.di.coroutines.IoDispatcher
-import com.radixdlt.sargon.extensions.hash
+import com.radixdlt.sargon.Hash
 import com.radixdlt.sargon.extensions.hex
-import com.radixdlt.sargon.extensions.hexToBagOfBytes
+import com.radixdlt.sargon.extensions.init
+import com.radixdlt.sargon.extensions.string
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -22,15 +23,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import rdx.works.core.decodeHex
 import rdx.works.core.hash
 import rdx.works.core.preferences.PreferencesManager
-import rdx.works.core.toHexString
+import rdx.works.core.sargon.activeAccountsOnCurrentNetwork
 import rdx.works.peerdroid.data.PeerdroidConnector
 import rdx.works.peerdroid.domain.PeerConnectionStatus
 import rdx.works.profile.data.model.apppreferences.P2PLinkPurpose
 import rdx.works.profile.domain.GetProfileUseCase
-import rdx.works.profile.domain.activeAccountsOnCurrentNetwork
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -44,7 +43,7 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
     private val json: Json
 ) {
 
-    operator fun invoke(): Flow<Unit> {
+    suspend operator fun invoke(): Flow<Unit> {
         val connectionIdsFlow = peerdroidConnector.peerConnectionStatus
             .filter { connectionStatuses ->
                 connectionStatuses.isNotEmpty() &&
@@ -53,20 +52,22 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
             .map { statuses ->
                 val generalPurposeConnectionIds = p2pLinksRepository.getP2PLinks()
                     .filter { it.purpose == P2PLinkPurpose.General }
-                    .map { it.connectionPassword.hexToBagOfBytes().hash().hex }
+                    .map { it.connectionPassword.value.hex }
                 val openConnectionIds = statuses.filter { it.value == PeerConnectionStatus.OPEN }.keys
 
                 generalPurposeConnectionIds.filter { connectionId -> connectionId in openConnectionIds }
             }
             .filter { connectionIds -> connectionIds.isNotEmpty() }
 
-        val accountListMessageFlow = getProfileUseCase.activeAccountsOnCurrentNetwork.map { accounts ->
+        val accountListMessageFlow = getProfileUseCase.flow.map {
+            val accounts = it.activeAccountsOnCurrentNetwork
+
             val accountListExchangeInteraction = ConnectorExtensionExchangeInteraction.AccountList(
                 accounts = accounts.map { account ->
                     Account(
-                        address = account.address,
-                        label = account.displayName,
-                        appearanceId = account.appearanceID
+                        address = account.address.string,
+                        label = account.displayName.value,
+                        appearanceId = account.appearanceId.value.toInt()
                     )
                 }
             )
@@ -78,8 +79,8 @@ class SyncAccountsWithConnectorExtensionUseCase @Inject constructor(
                 .hash()
                 .hex
             val lastSyncedMessageHash = preferencesManager.lastSyncedAccountsWithCE.firstOrNull()
-                ?.decodeHex()
-                ?.toHexString()
+                ?.let { Hash.init(it) }
+                ?.hex
 
             if (messageHash != lastSyncedMessageHash) {
                 Timber.d("Accounts sync with CE is required")

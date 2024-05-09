@@ -3,13 +3,13 @@ package com.babylon.wallet.android.data.transaction
 import com.radixdlt.sargon.NotarySignature
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.SignedIntentHash
-import com.radixdlt.sargon.extensions.NotaryPrivateKey
+import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.ProfileEntity
 import rdx.works.core.sargon.transactionSigningFactorInstance
 
 data class NotaryAndSigners(
     val signers: List<ProfileEntity>,
-    private val ephemeralNotaryPrivateKey: NotaryPrivateKey
+    private val ephemeralNotaryPrivateKey: Curve25519SecretKey
 ) {
     val notaryIsSignatory: Boolean
         get() = signers.isEmpty()
