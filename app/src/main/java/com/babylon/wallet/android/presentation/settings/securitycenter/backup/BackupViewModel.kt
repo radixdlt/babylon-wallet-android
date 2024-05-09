@@ -13,15 +13,15 @@ import com.babylon.wallet.android.presentation.common.UiMessage
 import com.babylon.wallet.android.presentation.common.UiState
 import com.babylon.wallet.android.utils.DeviceCapabilityHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import rdx.works.core.domain.BackupState
 import rdx.works.profile.cloudbackup.GoogleSignInManager
 import rdx.works.profile.domain.EnsureBabylonFactorSourceExistUseCase
 import rdx.works.profile.domain.backup.BackupProfileToFileUseCase
 import rdx.works.profile.domain.backup.BackupType
 import rdx.works.profile.domain.backup.ChangeBackupSettingUseCase
-import rdx.works.profile.domain.backup.GetCloudProfileSyncStateUseCase
+import rdx.works.profile.domain.backup.GetBackupStateUseCase
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -34,30 +34,18 @@ class BackupViewModel @Inject constructor(
     private val ensureBabylonFactorSourceExistUseCase: EnsureBabylonFactorSourceExistUseCase,
     private val deviceCapabilityHelper: DeviceCapabilityHelper,
     private val googleSignInManager: GoogleSignInManager,
-    private val getCloudProfileSyncStateUseCase: GetCloudProfileSyncStateUseCase
+    getBackupStateUseCase: GetBackupStateUseCase
 ) : StateViewModel<BackupViewModel.State>(), OneOffEventHandler<BackupViewModel.Event> by OneOffEventHandlerImpl() {
 
     override fun initialState(): State = State(
-        cloudBackupState = State.CloudBackupState.Off(warningMessage = null),
+        backupState = BackupState.Closed,
         canAccessSystemBackupSettings = deviceCapabilityHelper.canOpenSystemBackupSettings()
     )
 
     init {
-        observeCloudBackupState()
-    }
-
-    private fun observeCloudBackupState() = viewModelScope.launch {
-        getCloudProfileSyncStateUseCase().collectLatest { isCloudBackupEnabledInProfile ->
-            val signedEmail = googleSignInManager.getSignedInGoogleAccount()?.email // if not null then user is signed in
-
-            if (isCloudBackupEnabledInProfile && signedEmail != null) {
-                _state.update {
-                    it.copy(cloudBackupState = State.CloudBackupState.On(signedEmail = signedEmail))
-                }
-            } else {
-                _state.update {
-                    it.copy(cloudBackupState = State.CloudBackupState.Off())
-                }
+        viewModelScope.launch {
+            getBackupStateUseCase().collect { backupState ->
+                _state.update { it.copy(backupState = backupState) }
             }
         }
     }
@@ -70,8 +58,8 @@ class BackupViewModel @Inject constructor(
         }
     }
 
-    fun onBackupSettingChanged(isOn: Boolean) = viewModelScope.launch {
-        if (isOn) {
+    fun onBackupSettingChanged(isChecked: Boolean) = viewModelScope.launch {
+        if (isChecked) {
             val intent = googleSignInManager.createSignInIntent()
             sendEvent(Event.SignInToGoogle(intent))
         } else { // just turn off the cloud backup sync
@@ -194,7 +182,7 @@ class BackupViewModel @Inject constructor(
     }
 
     data class State(
-        private val cloudBackupState: CloudBackupState,
+        val backupState: BackupState,
         val isExportFileDialogVisible: Boolean = false,
         val encryptSheet: EncryptSheet = EncryptSheet.Closed,
         val deleteWalletDialogVisible: Boolean = false,
@@ -203,22 +191,11 @@ class BackupViewModel @Inject constructor(
         val isLoggedIn: Boolean = false
     ) : UiState {
 
-        val isCloudBackupEnabled: Boolean
-            get() = cloudBackupState is CloudBackupState.On
-
-        val cloudBackupEmail: String
-            get() = when (cloudBackupState) {
-                is CloudBackupState.On -> cloudBackupState.signedEmail
-                is CloudBackupState.Off -> cloudBackupState.warningMessage.orEmpty()
-            }
+        val isBackupEnabled: Boolean
+            get() = backupState is BackupState.Open
 
         val isEncryptSheetVisible: Boolean
             get() = encryptSheet is EncryptSheet.Open
-
-        sealed interface CloudBackupState {
-            data class On(val signedEmail: String) : CloudBackupState
-            data class Off(val warningMessage: String? = null) : CloudBackupState
-        }
 
         sealed interface EncryptSheet {
             data object Closed : EncryptSheet
