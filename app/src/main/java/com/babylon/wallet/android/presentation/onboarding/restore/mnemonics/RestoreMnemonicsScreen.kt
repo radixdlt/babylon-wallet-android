@@ -207,7 +207,7 @@ private fun RestoreMnemonicsContent(
                     }
 
                     val isSeedPhraseValid = remember(state.seedPhraseState) {
-                        state.seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
+                        state.seedPhraseState.isValidSeedPhrase()
                     }
                     RadixPrimaryButton(
                         modifier = Modifier

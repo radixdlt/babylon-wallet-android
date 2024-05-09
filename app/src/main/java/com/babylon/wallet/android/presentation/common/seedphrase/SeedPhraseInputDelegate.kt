@@ -150,9 +150,16 @@ class SeedPhraseInputDelegate(
             if (isInputEmpty) {
                 return false
             }
-            return !isSeedPhraseInputValid || runCatching {
+            return !isValidSeedPhrase()
+        }
+
+        fun isValidSeedPhrase(): Boolean {
+            if (isInputEmpty) {
+                return false
+            }
+            return isSeedPhraseInputValid && runCatching {
                 Mnemonic.init(phrase = seedPhraseWords.joinToString(separator = " ") { it.value })
-            }.getOrNull() == null
+            }.getOrNull() != null
         }
 
         fun toMnemonicWithPassphrase(): MnemonicWithPassphrase = MnemonicWithPassphrase(

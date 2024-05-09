@@ -161,7 +161,7 @@ private fun AddSingleMnemonicsContent(
                         .fillMaxWidth()
                 ) {
                     val isEnabled = remember(state.seedPhraseState) {
-                        state.seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
+                        state.seedPhraseState.isValidSeedPhrase()
                     }
                     RadixPrimaryButton(
                         modifier = Modifier
@@ -313,11 +313,11 @@ private fun SeedPhraseView(
             showAdvancedMode = isOlympia
         )
 
-        val isInvalid = remember(seedPhraseState) {
-            !seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
+        val shouldDisplayInvalidSeedPhraseWarning = remember(seedPhraseState) {
+            seedPhraseState.shouldDisplayInvalidSeedPhraseWarning()
         }
 
-        if (isInvalid) {
+        if (shouldDisplayInvalidSeedPhraseWarning) {
             Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
             RedWarningText(
                 modifier = Modifier.fillMaxWidth(),
