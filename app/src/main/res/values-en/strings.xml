@@ -917,7 +917,7 @@ Your old Accounts and Personas will still be listed, but you will have to enter 
   <string name="customizeNetworkFees_tipFieldLabel">Adjust Tip to Lock</string>
   <string name="customizeNetworkFees_tipFieldInfo">(%% of Execution + Finalization Fees)</string>
   <string name="customizeNetworkFees_warning_selectFeePayer">Please select a fee payer for the transaction fee</string>
-  <string name="customizeNetworkFees_warning_insufficientBalance">Insufficient balance to pay the transaction fee</string>
+  <string name="customizeNetworkFees_warning_insufficientBalance">Not enough XRD for transaction fee</string>
   <string name="accountRecoveryScan_inProgress_headerTitle">Scanning in progress</string>
   <string name="accountRecoveryScan_inProgress_headerSubtitle">Scanning for Accounts that have been included in at least one transaction, using:</string>
   <string name="accountRecoveryScan_inProgress_factorSourceBabylonSeedPhrase">**Babylon Seed Phrase**</string>
