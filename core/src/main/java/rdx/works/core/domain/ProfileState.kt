@@ -1,6 +1,7 @@
 package rdx.works.core.domain
 
 import com.radixdlt.sargon.Profile
+import rdx.works.core.sargon.hasNetworks
 
 sealed class ProfileState {
 
@@ -29,7 +30,7 @@ sealed class ProfileState {
      */
     data class Restored(val profile: Profile) : ProfileState() {
         fun hasNetworks(): Boolean {
-            return profile.networks.isNotEmpty()
+            return profile.hasNetworks
         }
     }
 }
