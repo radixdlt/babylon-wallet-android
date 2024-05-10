@@ -444,10 +444,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
                 useLedgerDelegate.onSendAddLedgerRequest()
             } else {
                 _state.update {
-                    it.copy(
-                        addLedgerSheetState = AddLedgerDeviceUiState.ShowContent.AddLedgerDeviceInfo,
-                        shouldShowAddLedgerDeviceScreen = true,
-                    )
+                    it.copy(shouldShowAddLinkConnectorScreen = true)
                 }
             }
         }
