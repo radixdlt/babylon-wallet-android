@@ -45,7 +45,6 @@ import com.radixdlt.sargon.samples.sampleMainnet
 import rdx.works.core.domain.resources.XrdResource
 import kotlin.random.Random
 
-@Suppress("LongMethod")
 fun LazyListScope.feePayerSelectionContent(
     candidates: List<TransactionFeePayers.FeePayerCandidate>,
     selectedCandidateAddress: AccountAddress? = null,
@@ -67,93 +66,107 @@ fun LazyListScope.feePayerSelectionContent(
         Spacer(modifier = Modifier.height(RadixTheme.dimensions.paddingDefault))
     }
     items(candidates) { candidate ->
-        Card(
+        FeePayerCard(
+            candidate = candidate,
+            onPayerSelected = onPayerSelected,
+            selectedCandidateAddress = selectedCandidateAddress
+        )
+    }
+}
+
+@Composable
+private fun FeePayerCard(
+    modifier: Modifier = Modifier,
+    candidate: TransactionFeePayers.FeePayerCandidate,
+    onPayerSelected: (Account) -> Unit,
+    selectedCandidateAddress: AccountAddress?
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(RadixTheme.dimensions.paddingDefault),
+        shape = RadixTheme.shapes.roundedRectMedium,
+        colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.defaultBackground),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = 6.dp
+        )
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .background(
+                    brush = candidate.account.appearanceId.gradient(),
+                    shape = RadixTheme.shapes.roundedRectTopMedium
+                )
                 .padding(RadixTheme.dimensions.paddingDefault),
-            shape = RadixTheme.shapes.roundedRectMedium,
-            colors = CardDefaults.cardColors(containerColor = RadixTheme.colors.defaultBackground),
-            elevation = CardDefaults.elevatedCardElevation(
-                defaultElevation = 6.dp
-            )
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
+            Text(
+                text = candidate.account.displayName.value,
+                textAlign = TextAlign.Start,
+                maxLines = 2,
+                style = RadixTheme.typography.body1Header,
+                color = Color.White
+            )
+
+            ActionableAddressView(
+                address = remember(candidate) {
+                    candidate.account.address.asGeneral()
+                },
+                textStyle = RadixTheme.typography.body2HighImportance,
+                textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .throttleClickable {
+                    onPayerSelected(candidate.account)
+                }
+                .padding(start = RadixTheme.dimensions.paddingDefault)
+                .padding(vertical = RadixTheme.dimensions.paddingSmall),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
+                contentDescription = null,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        brush = candidate.account.appearanceId.gradient(),
-                        shape = RadixTheme.shapes.roundedRectTopMedium
-                    )
-                    .padding(RadixTheme.dimensions.paddingDefault),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = candidate.account.displayName.value,
-                    textAlign = TextAlign.Start,
-                    maxLines = 2,
-                    style = RadixTheme.typography.body1Header,
-                    color = Color.White
-                )
+                    .size(24.dp)
+                    .clip(RadixTheme.shapes.circle),
+                tint = Color.Unspecified
+            )
 
-                ActionableAddressView(
-                    address = remember(candidate) {
-                        candidate.account.address.asGeneral()
-                    },
-                    textStyle = RadixTheme.typography.body2HighImportance,
-                    textColor = RadixTheme.colors.white.copy(alpha = 0.8f)
-                )
-            }
+            Spacer(modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall))
+            Text(
+                modifier = Modifier.weight(1f),
+                text = XrdResource.SYMBOL,
+                style = RadixTheme.typography.body2HighImportance,
+                color = RadixTheme.colors.gray1,
+                maxLines = 1
+            )
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .throttleClickable {
-                        onPayerSelected(candidate.account)
-                    }
-                    .padding(start = RadixTheme.dimensions.paddingDefault)
-                    .padding(vertical = RadixTheme.dimensions.paddingSmall),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = painterResource(id = com.babylon.wallet.android.designsystem.R.drawable.ic_xrd_token),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(RadixTheme.shapes.circle),
-                    tint = Color.Unspecified
-                )
+            Text(
+                text = remember(candidate) {
+                    candidate.xrdAmount.formatted()
+                },
+                style = RadixTheme.typography.secondaryHeader,
+                color = RadixTheme.colors.gray1,
+                maxLines = 2
+            )
 
-                Spacer(modifier = Modifier.padding(RadixTheme.dimensions.paddingSmall))
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = XrdResource.SYMBOL,
-                    style = RadixTheme.typography.body2HighImportance,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 1
-                )
-
-                Text(
-                    text = remember(candidate) {
-                        candidate.xrdAmount.formatted()
-                    },
-                    style = RadixTheme.typography.secondaryHeader,
-                    color = RadixTheme.colors.gray1,
-                    maxLines = 2
-                )
-
-                RadioButton(
-                    selected = candidate.account.address == selectedCandidateAddress,
-                    colors = RadioButtonDefaults.colors(
-                        selectedColor = RadixTheme.colors.gray1,
-                        unselectedColor = RadixTheme.colors.gray3,
-                        disabledSelectedColor = Color.White
-                    ),
-                    onClick = {
-                        onPayerSelected(candidate.account)
-                    },
-                )
-            }
+            RadioButton(
+                selected = candidate.account.address == selectedCandidateAddress,
+                colors = RadioButtonDefaults.colors(
+                    selectedColor = RadixTheme.colors.gray1,
+                    unselectedColor = RadixTheme.colors.gray3,
+                    disabledSelectedColor = Color.White
+                ),
+                onClick = {
+                    onPayerSelected(candidate.account)
+                },
+            )
         }
     }
 }
