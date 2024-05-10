@@ -52,7 +52,7 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NewEntities
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
-import com.radixdlt.sargon.extensions.NotaryPrivateKey
+import com.radixdlt.sargon.extensions.Curve25519SecretKey
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.rounded
 import com.radixdlt.sargon.extensions.string
@@ -258,7 +258,7 @@ internal class TransactionReviewViewModelTest : StateViewModelTest<TransactionRe
         coEvery { resolveNotaryAndSignersUseCase(any(), any(), any()) } returns Result.success(
             NotaryAndSigners(
                 listOf(),
-                NotaryPrivateKey.secureRandom()
+                Curve25519SecretKey.secureRandom()
             )
         )
         every { sampleTransactionManifestData.executionSummary(any()) } returns emptyExecutionSummary

@@ -22,25 +22,22 @@ import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AccountAddress
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.AuthorizedDapp
-import com.radixdlt.sargon.AuthorizedDapps
 import com.radixdlt.sargon.ComponentAddress
 import com.radixdlt.sargon.Decimal192
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.NonFungibleLocalId
-import com.radixdlt.sargon.Personas
 import com.radixdlt.sargon.PoolAddress
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.ProfileNetworks
-import com.radixdlt.sargon.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ValidatorAddress
+import com.radixdlt.sargon.extensions.AuthorizedDapps
+import com.radixdlt.sargon.extensions.Personas
 import com.radixdlt.sargon.extensions.ProfileEntity
+import com.radixdlt.sargon.extensions.ProfileNetworks
+import com.radixdlt.sargon.extensions.ReferencesToAuthorizedPersonas
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import com.radixdlt.sargon.samples.sampleMainnet
@@ -66,6 +63,7 @@ import rdx.works.core.domain.resources.Validator
 import rdx.works.core.domain.resources.metadata.Metadata
 import rdx.works.core.domain.resources.metadata.MetadataType
 import rdx.works.core.domain.resources.metadata.PublicKeyHash
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.GetProfileUseCase
@@ -84,23 +82,25 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
     private val dAppConnectionRepository = spyk<DAppConnectionRepositoryFake> { DAppConnectionRepositoryFake() }
 
     private val sampleProfile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities().let { profile ->
-        val network = profile.networks.getBy(NetworkId.MAINNET)!!
-        val persona = network.personas().first()
-        profile.copy(networks = ProfileNetworks.init(
-            network.copy(
-                personas = Personas.init(persona),
-                authorizedDapps = AuthorizedDapps.init(
-                    AuthorizedDapp(
-                        networkId = NetworkId.MAINNET,
-                        dappDefinitionAddress =  AccountAddress.sampleMainnet(),
-                        displayName = "1",
-                        referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas.init()
-                    )
+        val network = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!
+        val persona = network.personas.first()
+        profile.copy(
+            networks = ProfileNetworks(
+                network.copy(
+                    personas = Personas(persona).asList(),
+                    authorizedDapps = AuthorizedDapps(
+                        AuthorizedDapp(
+                            networkId = NetworkId.MAINNET,
+                            dappDefinitionAddress = AccountAddress.sampleMainnet(),
+                            displayName = "1",
+                            referencesToAuthorizedPersonas = ReferencesToAuthorizedPersonas().asList()
+                        )
+                    ).asList()
                 )
-            )
-        ))
+            ).asList()
+        )
     }
-    private val samplePersona = sampleProfile.networks.getBy(NetworkId.MAINNET)!!.personas().first()
+    private val samplePersona = sampleProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.personas.first()
 
     private val requestWithNonExistingDappAddress = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
         remoteConnectorId = "remoteConnectorId",
@@ -227,7 +227,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         every { savedStateHandle.get<String>(ARG_INTERACTION_ID) } returns "1"
         coEvery { getCurrentGatewayUseCase() } returns Gateway.forNetwork(NetworkId.MAINNET)
         every { buildAuthorizedDappResponseUseCase.signingState } returns emptyFlow()
-        coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any(),) } returns Result.success(any())
+        coEvery { buildAuthorizedDappResponseUseCase.invoke(any(), any(), any(), any(), any(), any()) } returns Result.success(any())
         coEvery { getProfileUseCase() } returns sampleProfile
         coEvery { incomingRequestRepository.getAuthorizedRequest(any()) } returns requestWithNonExistingDappAddress
     }
@@ -301,7 +301,7 @@ class DAppAuthorizedLoginViewModelTest : StateViewModelTest<DAppAuthorizedLoginV
         }
     }
 
-    private class StateRepositoryFake: StateRepository {
+    private class StateRepositoryFake : StateRepository {
         override fun observeAccountsOnLedger(accounts: List<Account>, isRefreshing: Boolean): Flow<List<AccountWithAssets>> {
             TODO("Not yet implemented")
         }

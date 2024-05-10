@@ -9,7 +9,6 @@ import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
-import com.radixdlt.sargon.EntityFlags
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceKind
@@ -20,10 +19,9 @@ import com.radixdlt.sargon.OnLedgerSettings
 import com.radixdlt.sargon.PublicKey
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ThirdPartyDeposits
+import com.radixdlt.sargon.extensions.EntityFlags
 import com.radixdlt.sargon.extensions.HDPathValue
-import com.radixdlt.sargon.extensions.contains
 import com.radixdlt.sargon.extensions.default
-import com.radixdlt.sargon.extensions.getBy
 import com.radixdlt.sargon.extensions.init
 import com.radixdlt.sargon.extensions.nonHardenedIndex
 import com.radixdlt.sargon.extensions.toBabylonAddress
@@ -68,7 +66,7 @@ fun Account.Companion.initBabylon(
     hdPublicKey: HierarchicalDeterministicPublicKey,
     factorSourceId: FactorSourceId.Hash,
     onLedgerSettings: OnLedgerSettings = OnLedgerSettings.default(),
-    flags: EntityFlags = EntityFlags.init(),
+    flags: EntityFlags = EntityFlags(),
     customAppearanceId: AppearanceId? = null
 ): Account {
     val accountAddress = AccountAddress.init(hdPublicKey.publicKey, networkId)
@@ -85,7 +83,7 @@ fun Account.Companion.initBabylon(
         displayName = displayName,
         securityState = unsecuredSecurityState,
         appearanceId = appearanceId,
-        flags = flags,
+        flags = flags.asList(),
         onLedgerSettings = onLedgerSettings
     )
 }
@@ -104,7 +102,7 @@ fun Account.Companion.initOlympia(
             depositorsAllowList = null
         )
     ),
-    flags: EntityFlags = EntityFlags.init(),
+    flags: EntityFlags = EntityFlags(),
     customAppearanceId: AppearanceId? = null
 ): Account {
     val accountAddress = LegacyOlympiaAccountAddress.init(publicKey).toBabylonAddress()
@@ -124,7 +122,7 @@ fun Account.Companion.initOlympia(
         displayName = displayName,
         securityState = unsecuredSecurityState,
         appearanceId = appearanceId,
-        flags = flags,
+        flags = flags.asList(),
         onLedgerSettings = onLedgerSettings
     )
 }
@@ -138,7 +136,7 @@ fun Account.isSignatureRequiredBasedOnDepositRules(
     val hasDenyAll = thirdPartyDeposits.depositRule == DepositRule.DENY_ALL
     val hasAcceptKnown = thirdPartyDeposits.depositRule == DepositRule.ACCEPT_KNOWN
 
-    val rule = thirdPartyDeposits.assetsExceptionList?.getBy(forSpecificAssetAddress)?.exceptionRule
+    val rule = thirdPartyDeposits.assetsExceptionList?.asIdentifiable()?.getBy(forSpecificAssetAddress)?.exceptionRule
     return when {
         rule == DepositAddressExceptionRule.ALLOW -> false
         hasDenyAll || rule == DepositAddressExceptionRule.DENY -> true

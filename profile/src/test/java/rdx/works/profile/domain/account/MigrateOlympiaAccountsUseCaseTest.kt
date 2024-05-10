@@ -15,7 +15,6 @@ import com.radixdlt.sargon.extensions.account
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.size
 import com.radixdlt.sargon.extensions.toBabylonAddress
 import io.mockk.Runs
 import io.mockk.coEvery
@@ -32,7 +31,6 @@ import rdx.works.core.domain.ProfileState
 import rdx.works.core.sargon.addAccounts
 import rdx.works.core.sargon.babylon
 import rdx.works.core.sargon.currentNetwork
-import rdx.works.core.sargon.init
 import rdx.works.core.sargon.initBabylon
 import rdx.works.profile.data.repository.MnemonicRepository
 import rdx.works.profile.data.repository.ProfileRepository

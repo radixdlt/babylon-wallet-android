@@ -5,7 +5,6 @@ import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DerivationPathScheme
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.EntityFlag
-import com.radixdlt.sargon.EntityFlags
 import com.radixdlt.sargon.EntitySecurityState
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.IdentityAddress
@@ -13,8 +12,8 @@ import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Persona
 import com.radixdlt.sargon.PersonaData
+import com.radixdlt.sargon.extensions.EntityFlags
 import com.radixdlt.sargon.extensions.HDPathValue
-import com.radixdlt.sargon.extensions.contains
 import com.radixdlt.sargon.extensions.derivePublicKey
 import com.radixdlt.sargon.extensions.identity
 import com.radixdlt.sargon.extensions.init
@@ -66,6 +65,6 @@ fun Persona.Companion.init(
             hdPublicKey = hdPublicKey
         ),
         personaData = personaData,
-        flags = EntityFlags.init()
+        flags = EntityFlags().asList()
     )
 }

@@ -3,7 +3,7 @@ package rdx.works.core.sargon
 import com.radixdlt.sargon.CollectionOfEmailAddresses
 import com.radixdlt.sargon.CollectionOfPhoneNumbers
 import com.radixdlt.sargon.PersonaData
-import com.radixdlt.sargon.PersonaDataEntryID
+import com.radixdlt.sargon.PersonaDataEntryId
 import com.radixdlt.sargon.PersonaDataNameVariant
 import com.radixdlt.sargon.RequestedQuantity
 import com.radixdlt.sargon.SharedPersonaData
@@ -44,11 +44,11 @@ val PersonaData.fields: List<IdentifiedEntry<out PersonaDataField>>
         )
     }
 
-val PersonaData.fieldIds: List<PersonaDataEntryID>
+val PersonaData.fieldIds: List<PersonaDataEntryId>
     get() = emailAddresses.collection.map { it.id } + phoneNumbers.collection.map { it.id } + name?.id?.let { listOf(it) }.orEmpty()
 
 @Suppress("ReturnCount")
-fun PersonaData.getDataFieldKind(id: PersonaDataEntryID): PersonaDataField.Kind? {
+fun PersonaData.getDataFieldKind(id: PersonaDataEntryId): PersonaDataField.Kind? {
     if (name?.id == id) return PersonaDataField.Kind.Name
 
     if (id in phoneNumbers.collection.map { it.id }) return PersonaDataField.Kind.PhoneNumber
@@ -79,5 +79,5 @@ fun PersonaData.toSharedPersonaData(
     }
 )
 
-val SharedPersonaData.alreadyGrantedIds: List<PersonaDataEntryID>
+val SharedPersonaData.alreadyGrantedIds: List<PersonaDataEntryId>
     get() = listOfNotNull(name) + emailAddresses?.ids.orEmpty() + phoneNumbers?.ids.orEmpty()

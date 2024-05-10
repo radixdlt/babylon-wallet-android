@@ -27,7 +27,6 @@ import com.radixdlt.sargon.HierarchicalDeterministicPublicKey
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.extensions.hex
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.extensions.validate
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -284,7 +283,7 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
             val softwareAccountsToMigrate = softwareAccountsToMigrate()
             if (softwareAccountsToMigrate.isNotEmpty()) {
-                val hasOlympiaFactorSource = getProfileUseCase.flow.firstOrNull()?.factorSources()?.any {
+                val hasOlympiaFactorSource = getProfileUseCase.flow.firstOrNull()?.factorSources?.any {
                     it is FactorSource.Device && it.supportsOlympia
                 } == true
                 val mnemonicExistForSoftwareAccounts = when {
@@ -439,14 +438,10 @@ class ImportLegacyWalletViewModel @Inject constructor(
 
     fun onContinueWithLedgerClick() {
         viewModelScope.launch {
-            val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks().isNotEmpty()
+            val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks.isNotEmpty()
 
             if (hasAtLeastOneLinkedConnector) {
                 useLedgerDelegate.onSendAddLedgerRequest()
-            } else if (hasAtLeastOneLinkedConnector.not()) {
-                _state.update {
-                    it.copy(shouldShowAddLinkConnectorScreen = true)
-                }
             } else {
                 _state.update {
                     it.copy(

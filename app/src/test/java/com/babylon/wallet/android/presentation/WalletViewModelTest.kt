@@ -12,8 +12,7 @@ import com.babylon.wallet.android.presentation.wallet.WalletViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.invoke
+import com.radixdlt.sargon.extensions.asIdentifiable
 import com.radixdlt.sargon.extensions.toDecimal192
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
@@ -95,7 +94,7 @@ class WalletViewModelTest : StateViewModelTest<WalletViewModel>() {
     fun `when view model init, view model will fetch accounts & resources`() = runTest {
         val viewModel = vm.value
         advanceUntilIdle()
-        val accounts = sampleProfile.networks.getBy(NetworkId.MAINNET)?.accounts?.invoke().orEmpty()
+        val accounts = sampleProfile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts.orEmpty()
         coEvery {
             getWalletAssetsUseCase(
                 accounts = accounts,

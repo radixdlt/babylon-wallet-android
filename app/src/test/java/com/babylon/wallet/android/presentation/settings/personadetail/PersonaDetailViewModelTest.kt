@@ -11,15 +11,11 @@ import com.babylon.wallet.android.presentation.settings.personas.personadetail.A
 import com.babylon.wallet.android.presentation.settings.personas.personadetail.PersonaDetailViewModel
 import com.babylon.wallet.android.utils.AppEventBus
 import com.radixdlt.sargon.Gateway
-import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
-import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -33,6 +29,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import rdx.works.core.domain.DApp
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGateway
 import rdx.works.core.sargon.unHideAllEntities
 import rdx.works.profile.domain.ChangeEntityVisibilityUseCase
@@ -53,7 +50,7 @@ internal class PersonaDetailViewModelTest : StateViewModelTest<PersonaDetailView
     private val eventBus = mockk<AppEventBus>()
 
     val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).unHideAllEntities()
-    val persona = profile.networks.getBy(NetworkId.MAINNET)!!.personas.invoke().first()
+    val persona = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.personas.first()
 
     override fun initVM(): PersonaDetailViewModel {
         return PersonaDetailViewModel(

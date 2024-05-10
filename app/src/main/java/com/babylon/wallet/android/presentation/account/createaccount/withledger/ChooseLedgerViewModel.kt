@@ -16,7 +16,6 @@ import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.id
-import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -99,7 +98,7 @@ class ChooseLedgerViewModel @Inject constructor(
             selectableLedgerDevice.selected
         }?.let { ledgerFactorSource ->
             viewModelScope.launch {
-                val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks().isNotEmpty()
+                val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks.isNotEmpty()
                 // check if there is not linked connector and show link new connector screen
                 if (hasAtLeastOneLinkedConnector.not()) {
                     _state.update {
@@ -138,7 +137,7 @@ class ChooseLedgerViewModel @Inject constructor(
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
             _state.update { uiState ->
-                val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks().isNotEmpty()
+                val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks.isNotEmpty()
                 if (hasAtLeastOneLinkedConnector) {
                     uiState.copy(showContent = ChooseLedgerUiState.ShowContent.AddLedger)
                 } else {

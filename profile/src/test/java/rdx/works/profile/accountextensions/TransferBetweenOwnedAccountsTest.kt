@@ -2,11 +2,9 @@ package rdx.works.profile.accountextensions
 
 import com.radixdlt.sargon.Account
 import com.radixdlt.sargon.AssetException
-import com.radixdlt.sargon.AssetsExceptionList
 import com.radixdlt.sargon.Cap26KeyKind
 import com.radixdlt.sargon.DepositAddressExceptionRule
 import com.radixdlt.sargon.DepositRule
-import com.radixdlt.sargon.DepositorsAllowList
 import com.radixdlt.sargon.DerivationPath
 import com.radixdlt.sargon.DisplayName
 import com.radixdlt.sargon.FactorSource
@@ -16,12 +14,12 @@ import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.ResourceAddress
 import com.radixdlt.sargon.ThirdPartyDeposits
+import com.radixdlt.sargon.extensions.AssetsExceptionList
+import com.radixdlt.sargon.extensions.DepositorsAllowList
 import com.radixdlt.sargon.extensions.account
 import com.radixdlt.sargon.extensions.derivePublicKey
-import com.radixdlt.sargon.extensions.get
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.samples.sampleMainnet
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -31,7 +29,6 @@ import org.junit.Test
 import rdx.works.core.domain.DeviceInfo
 import rdx.works.core.sargon.addAccounts
 import rdx.works.core.sargon.babylon
-import rdx.works.core.sargon.init
 import rdx.works.core.sargon.initBabylon
 import rdx.works.core.sargon.isSignatureRequiredBasedOnDepositRules
 import rdx.works.core.sargon.updateThirdPartyDepositSettings
@@ -68,75 +65,75 @@ class TransferBetweenOwnedAccountsTest {
 
     private val acceptAll = ThirdPartyDeposits(
         depositRule = DepositRule.ACCEPT_ALL,
-        assetsExceptionList = AssetsExceptionList.init(),
-        depositorsAllowList = DepositorsAllowList.init()
+        assetsExceptionList = AssetsExceptionList().asList(),
+        depositorsAllowList = DepositorsAllowList().asList()
     )
 
     private val acceptAllAndDenyAsset1 = ThirdPartyDeposits(
         depositRule = DepositRule.ACCEPT_ALL,
-        assetsExceptionList = AssetsExceptionList.init(
+        assetsExceptionList = AssetsExceptionList(
             AssetException(
                 address = asset1address,
                 exceptionRule = DepositAddressExceptionRule.DENY
             )
-        ),
-        depositorsAllowList = DepositorsAllowList.init()
+        ).asList(),
+        depositorsAllowList = DepositorsAllowList().asList()
     )
 
     private val denyAll = ThirdPartyDeposits(
         depositRule = DepositRule.DENY_ALL,
-        assetsExceptionList = AssetsExceptionList.init(),
-        depositorsAllowList = DepositorsAllowList.init()
+        assetsExceptionList = AssetsExceptionList().asList(),
+        depositorsAllowList = DepositorsAllowList().asList()
     )
 
     private val denyAllAndAllowAsset1 = ThirdPartyDeposits(
         depositRule = DepositRule.DENY_ALL,
-        assetsExceptionList = AssetsExceptionList.init(
+        assetsExceptionList = AssetsExceptionList(
             AssetException(
                 address = asset1address,
                 exceptionRule = DepositAddressExceptionRule.ALLOW
             )
-        ),
-        depositorsAllowList = DepositorsAllowList.init()
+        ).asList(),
+        depositorsAllowList = DepositorsAllowList().asList()
     )
 
     private val denyAllAndDenyAsset1 = ThirdPartyDeposits(
         depositRule = DepositRule.DENY_ALL,
-        assetsExceptionList = AssetsExceptionList.init(
+        assetsExceptionList = AssetsExceptionList(
             AssetException(
                 address = asset1address,
                 exceptionRule = DepositAddressExceptionRule.DENY
             )
-        ),
-        depositorsAllowList = DepositorsAllowList.init()
+        ).asList(),
+        depositorsAllowList = DepositorsAllowList().asList()
     )
 
     private val acceptKnown = ThirdPartyDeposits(
         depositRule = DepositRule.ACCEPT_KNOWN,
-        assetsExceptionList = AssetsExceptionList.init(),
-        depositorsAllowList = DepositorsAllowList.init()
+        assetsExceptionList = AssetsExceptionList().asList(),
+        depositorsAllowList = DepositorsAllowList().asList()
     )
 
     private val acceptKnownAndAllowAsset1 = ThirdPartyDeposits(
         depositRule = DepositRule.ACCEPT_KNOWN,
-        assetsExceptionList = AssetsExceptionList.init(
+        assetsExceptionList = AssetsExceptionList(
             AssetException(
                 address = asset1address,
                 exceptionRule = DepositAddressExceptionRule.ALLOW
             )
-        ),
-        depositorsAllowList = DepositorsAllowList.init()
+        ).asList(),
+        depositorsAllowList = DepositorsAllowList().asList()
     )
 
     private val acceptKnownAndDenyAsset1 = ThirdPartyDeposits(
         depositRule = DepositRule.ACCEPT_KNOWN,
-        assetsExceptionList = AssetsExceptionList.init(
+        assetsExceptionList = AssetsExceptionList(
             AssetException(
                 address = asset1address,
                 exceptionRule = DepositAddressExceptionRule.DENY
             )
-        ),
-        depositorsAllowList = DepositorsAllowList.init()
+        ).asList(),
+        depositorsAllowList = DepositorsAllowList().asList()
     )
 
     @Before
@@ -153,7 +150,7 @@ class TransferBetweenOwnedAccountsTest {
             networkId = defaultNetwork,
             displayName = DisplayName("target account"),
             hdPublicKey = mnemonicWithPassphrase.derivePublicKey(path = derivationPath),
-            factorSourceId = profile.factorSources().first().id as FactorSourceId.Hash
+            factorSourceId = profile.factorSources.first().id as FactorSourceId.Hash
         )
 
         profile = profile.addAccounts(

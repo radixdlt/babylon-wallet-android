@@ -15,7 +15,6 @@ import com.radixdlt.sargon.FactorSourceCryptoParameters
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.FactorSources
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.LedgerHardwareWalletHint
@@ -25,12 +24,11 @@ import com.radixdlt.sargon.P2pLink
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.RadixConnectPassword
 import com.radixdlt.sargon.Timestamp
-import com.radixdlt.sargon.extensions.append
+import com.radixdlt.sargon.extensions.FactorSources
 import com.radixdlt.sargon.extensions.forNetwork
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.id
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.samples.sample
 import io.mockk.Runs
@@ -68,8 +66,8 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
     )
 
     private val profile = Profile.sample().let {
-        val factorSources = FactorSources.init(
-            it.factorSources().filterNot { fs -> fs.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET }
+        val factorSources = FactorSources(
+            it.factorSources.filterNot { fs -> fs.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET }
         ).append(
             FactorSource.Ledger(
                 LedgerHardwareWalletFactorSource(
@@ -84,7 +82,7 @@ internal class ChooseLedgerViewModelTest : StateViewModelTest<ChooseLedgerViewMo
                 )
             )
         )
-        it.copy(factorSources = factorSources)
+        it.copy(factorSources = factorSources.asList())
     }
 
     override fun initVM(): ChooseLedgerViewModel {

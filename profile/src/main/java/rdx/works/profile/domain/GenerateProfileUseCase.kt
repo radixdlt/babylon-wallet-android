@@ -1,13 +1,12 @@
 package rdx.works.profile.domain
 
-import com.radixdlt.sargon.Accounts
 import com.radixdlt.sargon.FactorSource
 import com.radixdlt.sargon.MnemonicWithPassphrase
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
+import com.radixdlt.sargon.extensions.Accounts
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -51,7 +50,8 @@ class GenerateProfileUseCase @Inject constructor(
         mnemonicWithPassphrase: MnemonicWithPassphrase,
         accounts: Accounts
     ): Profile {
-        val networkId = accounts().firstOrNull()?.networkId ?: NetworkId.MAINNET
+        val accountsList = accounts.asList()
+        val networkId = accountsList.firstOrNull()?.networkId ?: NetworkId.MAINNET
         return when (val state = profileRepository.profileState.first()) {
             is ProfileState.Restored -> state.profile
             else -> withContext(defaultDispatcher) {
@@ -59,7 +59,7 @@ class GenerateProfileUseCase @Inject constructor(
                     deviceFactorSource = deviceFactorSource,
                     creatingDeviceName = deviceInfoRepository.getDeviceInfo().displayName
                 ).addAccounts(
-                    accounts = accounts(),
+                    accounts = accountsList,
                     onNetwork = networkId
                 )
                 profileRepository.saveProfile(profile)

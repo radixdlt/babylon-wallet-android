@@ -13,17 +13,15 @@ import com.radixdlt.sargon.FactorSourceCryptoParameters
 import com.radixdlt.sargon.FactorSourceId
 import com.radixdlt.sargon.FactorSourceIdFromHash
 import com.radixdlt.sargon.FactorSourceKind
-import com.radixdlt.sargon.FactorSources
 import com.radixdlt.sargon.LedgerHardwareWalletFactorSource
 import com.radixdlt.sargon.LedgerHardwareWalletHint
 import com.radixdlt.sargon.LedgerHardwareWalletModel
 import com.radixdlt.sargon.Profile
 import com.radixdlt.sargon.Timestamp
-import com.radixdlt.sargon.extensions.append
+import com.radixdlt.sargon.extensions.FactorSources
 import com.radixdlt.sargon.extensions.asGeneral
 import com.radixdlt.sargon.extensions.hexToBagOfBytes
 import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.kind
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
@@ -52,8 +50,8 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
         )
     )
     private val profile = Profile.sample().let {
-        val factorSources = FactorSources.init(
-            it.factorSources().filterNot { fs -> fs.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET }
+        val factorSources = FactorSources(
+            it.factorSources.filterNot { fs -> fs.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET }
         ).append(
             FactorSource.Ledger(
                 LedgerHardwareWalletFactorSource(
@@ -71,7 +69,7 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
                 )
             )
         )
-        it.copy(factorSources = factorSources)
+        it.copy(factorSources = factorSources.asList())
     }
 
     private val getProfileUseCaseMock = mockk<GetProfileUseCase>()
@@ -117,7 +115,7 @@ class AddLedgerDeviceViewModelTest : StateViewModelTest<AddLedgerDeviceViewModel
     @Test
     fun `adding ledger and providing name`() = runTest {
         val ledgerDeviceToAdd =
-            profile.factorSources().first { it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET } as FactorSource.Ledger
+            profile.factorSources.first { it.kind == FactorSourceKind.LEDGER_HQ_HARDWARE_WALLET } as FactorSource.Ledger
         coEvery {
             addLedgerFactorSourceUseCaseMock(
                 ledgerId = ledgerDeviceToAdd.value.id.asGeneral(),

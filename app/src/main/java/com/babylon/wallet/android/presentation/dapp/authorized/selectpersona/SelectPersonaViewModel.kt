@@ -13,7 +13,6 @@ import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.AuthorizedPersonaSimple
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -46,7 +45,7 @@ class SelectPersonaViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             authorizedDapp = dAppConnectionRepository.getAuthorizedDApp(args.dappDefinitionAddress)
-            val allAuthorizedPersonas = authorizedDapp?.referencesToAuthorizedPersonas()
+            val allAuthorizedPersonas = authorizedDapp?.referencesToAuthorizedPersonas
             _state.update { state ->
                 val personas = generatePersonasListForDisplay(
                     allAuthorizedPersonas,
@@ -68,7 +67,7 @@ class SelectPersonaViewModel @Inject constructor(
         viewModelScope.launch {
             getProfileUseCase.flow.map { it.activePersonasOnCurrentNetwork }.collect { personas ->
                 authorizedDapp = dAppConnectionRepository.getAuthorizedDApp(args.dappDefinitionAddress)
-                val allAuthorizedPersonas = authorizedDapp?.referencesToAuthorizedPersonas()
+                val allAuthorizedPersonas = authorizedDapp?.referencesToAuthorizedPersonas
                 _state.update { state ->
                     val personasListForDisplay = generatePersonasListForDisplay(
                         allAuthorizedPersonas,

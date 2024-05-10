@@ -7,16 +7,13 @@ import com.babylon.wallet.android.presentation.account.createaccount.confirmatio
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountConfirmationViewModel
 import com.babylon.wallet.android.presentation.account.createaccount.confirmation.CreateAccountRequestSource
 import com.babylon.wallet.android.presentation.navigation.Screen
-import com.radixdlt.sargon.Accounts
 import com.radixdlt.sargon.AppearanceId
 import com.radixdlt.sargon.Gateway
 import com.radixdlt.sargon.NetworkId
 import com.radixdlt.sargon.Profile
-import com.radixdlt.sargon.ProfileNetworks
+import com.radixdlt.sargon.extensions.Accounts
+import com.radixdlt.sargon.extensions.ProfileNetworks
 import com.radixdlt.sargon.extensions.forNetwork
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.init
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
 import com.radixdlt.sargon.samples.sample
 import io.mockk.coEvery
@@ -33,6 +30,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.changeGateway
 import rdx.works.profile.domain.GetProfileUseCase
 
@@ -43,12 +41,12 @@ class CreateAccountConfirmationViewModelTest : StateViewModelTest<CreateAccountC
     private val getProfileUseCase = mockk<GetProfileUseCase>()
 
     private val profile = Profile.sample().changeGateway(Gateway.forNetwork(NetworkId.MAINNET)).let {
-        val mainnetNetwork = it.networks.getBy(NetworkId.MAINNET)!!.let { network ->
-            network.copy(accounts = Accounts.init(network.accounts().take(1)))
+        val mainnetNetwork = it.networks.asIdentifiable().getBy(NetworkId.MAINNET)!!.let { network ->
+            network.copy(accounts = Accounts(network.accounts.take(1)).asList())
         }
-        it.copy(networks = ProfileNetworks.init(mainnetNetwork))
+        it.copy(networks = ProfileNetworks(mainnetNetwork).asList())
     }
-    private val account = profile.networks.getBy(NetworkId.MAINNET)?.accounts?.invoke()?.first()!!
+    private val account = profile.networks.asIdentifiable().getBy(NetworkId.MAINNET)?.accounts?.first()!!
 
     @Before
     override fun setUp() = runTest {

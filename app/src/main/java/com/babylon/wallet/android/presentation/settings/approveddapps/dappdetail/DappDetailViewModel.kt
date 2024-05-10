@@ -21,8 +21,6 @@ import com.babylon.wallet.android.presentation.model.toQuantifierUsedInRequest
 import com.radixdlt.sargon.AuthorizedDapp
 import com.radixdlt.sargon.IdentityAddress
 import com.radixdlt.sargon.Persona
-import com.radixdlt.sargon.extensions.getBy
-import com.radixdlt.sargon.extensions.invoke
 import com.radixdlt.sargon.extensions.string
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
@@ -35,6 +33,7 @@ import rdx.works.core.domain.resources.Resource
 import rdx.works.core.sargon.activeAccountOnCurrentNetwork
 import rdx.works.core.sargon.activePersonaOnCurrentNetwork
 import rdx.works.core.sargon.alreadyGrantedIds
+import rdx.works.core.sargon.asIdentifiable
 import rdx.works.core.sargon.getDataFieldKind
 import rdx.works.core.then
 import rdx.works.profile.data.repository.DAppConnectionRepository
@@ -96,7 +95,7 @@ class DappDetailViewModel @Inject constructor(
                 } else {
                     authorizedDapp = checkNotNull(dAppConnectionRepository.getAuthorizedDApp(args.dappDefinitionAddress))
                 }
-                val personas = authorizedDapp.referencesToAuthorizedPersonas().mapNotNull { personaSimple ->
+                val personas = authorizedDapp.referencesToAuthorizedPersonas.mapNotNull { personaSimple ->
                     getProfileUseCase().activePersonaOnCurrentNetwork(personaSimple.identityAddress)
                 }
                 (state.value.selectedSheetState as? SelectedSheetState.SelectedPersona)?.persona?.persona?.let { persona ->
@@ -132,7 +131,7 @@ class DappDetailViewModel @Inject constructor(
 
     private suspend fun updateSelectedPersonaData(persona: Persona) {
         val personaSimple =
-            authorizedDapp.referencesToAuthorizedPersonas().firstOrNull { it.identityAddress == persona.address }
+            authorizedDapp.referencesToAuthorizedPersonas.firstOrNull { it.identityAddress == persona.address }
         val sharedAccounts = personaSimple?.sharedAccounts?.ids?.mapNotNull {
             getProfileUseCase().activeAccountOnCurrentNetwork(it)?.toUiModel()
         }.orEmpty()
@@ -203,7 +202,7 @@ class DappDetailViewModel @Inject constructor(
             if (_state.value.selectedSheetState is SelectedSheetState.SelectedPersona) {
                 (_state.value.selectedSheetState as SelectedSheetState.SelectedPersona).persona?.persona?.let { persona ->
                     val sharedAccounts = checkNotNull(
-                        authorizedDapp.referencesToAuthorizedPersonas.getBy(persona.address)?.sharedAccounts
+                        authorizedDapp.referencesToAuthorizedPersonas.asIdentifiable().getBy(persona.address)?.sharedAccounts
                     )
                     val request = MessageFromDataChannel.IncomingRequest.AuthorizedRequest(
                         remoteConnectorId = "",

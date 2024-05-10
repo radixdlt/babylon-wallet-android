@@ -5,7 +5,6 @@ import com.babylon.wallet.android.data.dapp.LedgerMessenger
 import com.babylon.wallet.android.presentation.common.StateViewModel
 import com.babylon.wallet.android.presentation.common.UiState
 import com.radixdlt.sargon.FactorSource
-import com.radixdlt.sargon.extensions.invoke
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -39,7 +38,7 @@ class LedgerHardwareWalletsViewModel @Inject constructor(
 
     fun onAddLedgerDeviceClick() {
         viewModelScope.launch {
-            val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks().isNotEmpty()
+            val hasAtLeastOneLinkedConnector = getProfileUseCase().appPreferences.p2pLinks.isNotEmpty()
             if (hasAtLeastOneLinkedConnector) {
                 _state.update {
                     it.copy(showContent = LedgerHardwareWalletsUiState.ShowContent.AddLedger)

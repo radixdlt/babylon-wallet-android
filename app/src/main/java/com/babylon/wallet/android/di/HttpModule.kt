@@ -124,7 +124,7 @@ object NetworkModule {
             val updatedUrl = chain.request().url
                 .newBuilder()
                 .host(url.host)
-                .scheme(url.protocol)
+                .scheme(url.scheme)
                 .build()
 
             val request = chain.request().newBuilder()
